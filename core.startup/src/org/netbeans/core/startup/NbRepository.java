@@ -126,14 +126,20 @@ public final class NbRepository extends Repository {
             }
         }
         String ud = CLIOptions.getUserDir ();
-        if (!ud.equals("memory")) { // NOI18N
+        MEMORY: if (!ud.equals("memory")) { // NOI18N
             File userDirFile = new File (ud);
             if (!userDirFile.exists ()) {
                 System.err.println (NbBundle.getMessage(NbRepository.class, "CTL_Netbeanshome2"));
+                if (CLIOptions.isFallbackToMemory()) {
+                    break MEMORY;
+                }
                 doExit (4);
             }
             if (!userDirFile.isDirectory ()) {
                 System.err.println (NbBundle.getMessage(NbRepository.class, "CTL_Netbeanshome3"));
+                if (CLIOptions.isFallbackToMemory()) {
+                    break MEMORY;
+                }
                 doExit (5);
             }
             u = new File (userDirFile, CONFIG_FOLDER);

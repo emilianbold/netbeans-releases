@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.subversion.ui.history;
 
-import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.ui.history.RepositoryRevision.Event;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -68,8 +67,7 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.openide.util.Cancellable;
-import org.tigris.subversion.svnclientadapter.ISVNInfo;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.openide.util.WeakListeners;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -93,6 +91,9 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     private boolean                     dividerSet;
     protected List<RepositoryRevision>  results;
     private static final RequestProcessor rp = new RequestProcessor("SubversionDiff", 1, true);  // NOI18N
+    private final PropertyChangeListener list;
+    private Node[] selectedNodes;
+    private final Set<RepositoryRevision> revisionsToRefresh = new HashSet<RepositoryRevision>(2);
 
     public DiffResultsView(SearchHistoryPanel parent, List<RepositoryRevision> results) {
         this.parent = parent;
@@ -104,6 +105,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         diffView = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         diffView.setTopComponent(treeView);
         setBottomComponent(new NoContentPanel(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions"))); // NOI18N
+        list = WeakListeners.propertyChange(this, null);
     }
 
     @Override
@@ -135,66 +137,113 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-            final Node [] nodes = (Node[]) evt.getNewValue();
+            assert EventQueue.isDispatchThread();
+            selectedNodes = (Node[]) evt.getNewValue();
             currentDifferenceIndex = 0;
-            if (nodes.length == 0) {
+            if (selectedNodes.length == 0) {
                 showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")); // NOI18N
                 parent.refreshComponents(false);
                 return;
             }
-            else if (nodes.length > 2) {
+            else if (selectedNodes.length > 2) {
                 showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_TooManyRevisions")); // NOI18N
                 parent.refreshComponents(false);
                 return;
             }
+            revisionsToRefresh.clear();
 
             // invoked asynchronously becase treeView.getSelection() may not be ready yet
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
-                    RepositoryRevision container1 = nodes[0].getLookup().lookup(RepositoryRevision.class);
-                    RepositoryRevision.Event r1 = nodes[0].getLookup().lookup(RepositoryRevision.Event.class);
-                    try {
-                        currentIndex = treeView.getSelection()[0];
-                        if (nodes.length == 1) {
-                            if (container1 != null) {
-                                showContainerDiff(container1, onSelectionshowLastDifference);
-                            }
-                            else if (r1 != null) {
-                                showRevisionDiff(r1, onSelectionshowLastDifference);
-                            }
-                        } else if (nodes.length == 2) {
-                            RepositoryRevision.Event revOlder = null;
-                            if (container1 != null) {
-                                /**
-                                 * second repository revision is acquired from a container, not through a Lookup as before,
-                                 * since only two containers are present in the lookup
-                                 */
-                                RepositoryRevision container2 = nodes[1].getLookup().lookup(RepositoryRevision.class);
-                                r1 = getEventForRoots(container1);
-                                revOlder = getEventForRoots(container2);
-                            } else {
-                                revOlder = (RepositoryRevision.Event) nodes[1].getLookup().lookup(RepositoryRevision.Event.class);
-                            }
-                            if (r1 == null || revOlder == null || revOlder.getFile() == null || 
-                                    (!revOlder.getFile().equals(r1.getFile()) 
-                                        && (revOlder.getChangedPath() == null || r1.getChangedPath() == null || !revOlder.getChangedPath().getPath().equals(r1.getChangedPath().getCopySrcPath())) // two files with different names, fileA is copied to fileB
-                                    )) {
-                                throw new Exception();
-                            }
-                            long revisionNumberOlder = r1.getLogInfoHeader().getLog().getRevision().getNumber();
-                            long revisionNumberNewer = revOlder.getLogInfoHeader().getLog().getRevision().getNumber();
-                            showDiff(r1, Long.toString(revisionNumberNewer), Long.toString(revisionNumberOlder), false);
-                        }
-                    } catch (Exception e) {
-                        showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_IllegalSelection")); // NOI18N
-                        parent.refreshComponents(false);
-                        return;
-                    }
-
+                    showDiff();
                 }
             };
-            SwingUtilities.invokeLater(runnable);
+            EventQueue.invokeLater(runnable);
+        } else if (RepositoryRevision.PROP_EVENTS_CHANGED.equals(evt.getPropertyName())) {
+            if (evt.getSource() instanceof RepositoryRevision) {
+                RepositoryRevision revision = (RepositoryRevision) evt.getSource();
+                revision.removePropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list);
+                if (revisionsToRefresh.contains(revision) && selectedNodes != null && selectedNodes.length > 0) {
+                    showDiff();
+                }
+            }
+        }
+    }
+    
+    private void showDiff () {
+        RepositoryRevision container1 = selectedNodes[0].getLookup().lookup(RepositoryRevision.class);
+        RepositoryRevision.Event r1 = selectedNodes[0].getLookup().lookup(RepositoryRevision.Event.class);
+        boolean error = false;
+        boolean loading = false;
+        try {
+            currentIndex = treeView.getSelection()[0];
+            if (selectedNodes.length == 1) {
+                if (container1 != null) {
+                    container1.removePropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list);
+                    container1.addPropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list);
+                    if (container1.expandEvents()) {
+                        revisionsToRefresh.add(container1);
+                        loading = true;
+                    } else {
+                        container1.removePropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list);
+                    }
+                    if (showContainerDiff(container1, onSelectionshowLastDifference)) {
+                        loading = false;
+                    }
+                } else if (r1 != null) {
+                    showRevisionDiff(r1, onSelectionshowLastDifference);
+                }
+            } else if (selectedNodes.length == 2) {
+                RepositoryRevision.Event revOlder = null;
+                if (container1 != null) {
+                    /**
+                        * both repository revision events must be acquired from a container, not through a Lookup as before,
+                        * since only two containers (and no rev-event) are present in the lookup
+                        */
+                    RepositoryRevision container2 = selectedNodes[1].getLookup().lookup(RepositoryRevision.class);
+                    if (container2 == null) {
+                        error = true;
+                    } else {
+                        container1.removePropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list);
+                        container1.addPropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list);
+                        container2.removePropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list);
+                        container2.addPropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list);
+                        if (container1.expandEvents() || container2.expandEvents()) {
+                            loading = true;
+                            revisionsToRefresh.add(container1);
+                            revisionsToRefresh.add(container2);
+                        } else {
+                            container1.removePropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list);
+                            container2.removePropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list);
+                        }
+                        r1 = getEventForRoots(container1, null);
+                        revOlder = getEventForRoots(container2, r1 == null ? null : r1.getFile());
+                        if (r1 != null && revOlder != null) {
+                            loading = false;
+                        }
+                    }
+                } else {
+                    revOlder = (RepositoryRevision.Event) selectedNodes[1].getLookup().lookup(RepositoryRevision.Event.class);
+                }
+                if (r1 == null || revOlder == null || revOlder.getFile() == null) {
+                    error = true;
+                } else {
+                    showDiff(r1.getLogInfoHeader().getRepositoryRootUrl(), revOlder, r1, false);
+                }
+            }
+        } catch (Exception e) {
+            error = true;
+        }
+        
+        if (loading) {
+            showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_LoadingDiff")); //NOI18N
+            parent.refreshComponents(false);
+        } else if (error) {
+            showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_IllegalSelection")); // NOI18N
+            parent.refreshComponents(false);
+        } else {
+            revisionsToRefresh.clear();
         }
     }
 
@@ -237,26 +286,26 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         }
     }
 
-    protected SvnProgressSupport createShowDiffTask(Event header, String revision1, String revision2, boolean showLastDifference) {
-        return new ShowDiffTask(header, revision1, revision2, showLastDifference);
+    protected SvnProgressSupport createShowDiffTask(Event revision1, Event revision2, boolean showLastDifference) {
+        return new ShowDiffTask(revision1, revision2, showLastDifference);
     }
 
-    protected void setBottomComponent(Component component) {
+    protected final void setBottomComponent(Component component) {
         assert EventQueue.isDispatchThread();
         int dl = diffView.getDividerLocation();
         diffView.setBottomComponent(component);
         diffView.setDividerLocation(dl);
     }
 
-    protected void showDiff(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
+    protected void showDiff (SVNUrl repositoryRootUrl, RepositoryRevision.Event revision1, RepositoryRevision.Event revision2, boolean showLastDifference) {
         synchronized(this) {
             cancelBackgroundTasks();
-            currentTask = createShowDiffTask(header, revision1, revision2, showLastDifference);
-            currentShowDiffTask = currentTask.start(rp, header.getLogInfoHeader().getRepositoryRootUrl(), NbBundle.getMessage(DiffResultsView.class, "LBL_SearchHistory_Diffing"));
+            currentTask = createShowDiffTask(revision1, revision2, showLastDifference);
+            currentTask.start(rp, repositoryRootUrl, NbBundle.getMessage(DiffResultsView.class, "LBL_SearchHistory_Diffing")); //NOI18N
         }
     }
 
-    private synchronized void cancelBackgroundTasks() {
+    synchronized void cancelBackgroundTasks() {
         if (currentShowDiffTask != null && !currentShowDiffTask.isFinished()) {
             currentTask.cancel();
             currentShowDiffTask.cancel();  // it almost always late it's enqueued, so:
@@ -272,36 +321,56 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     }
 
     protected void showRevisionDiff(RepositoryRevision.Event rev, boolean showLastDifference) {
-        if (rev.getFile() == null) return;
-        long revision2 = rev.getLogInfoHeader().getLog().getRevision().getNumber();
-        long revision1 = revision2 - 1;
-        showDiff(rev, Long.toString(revision1), Long.toString(revision2), showLastDifference);
+        showDiff(rev.getLogInfoHeader().getRepositoryRootUrl(), null, rev, showLastDifference);
     }
 
-    protected void showContainerDiff(RepositoryRevision container, boolean showLastDifference) {
-        List<RepositoryRevision.Event> revs = container.getEvents(true);
-
-        RepositoryRevision.Event newest = getEventForRoots(container);
+    protected boolean showContainerDiff(RepositoryRevision container, boolean showLastDifference) {
+        boolean initialized = container.isEventsInitialized();
+        List<RepositoryRevision.Event> revs = container.getEvents();
+        
+        RepositoryRevision.Event newest = getEventForRoots(container, null);
         if(newest == null) {
-            newest = revs.get(0);
+            newest = revs.get(0);   
         }
-        showRevisionDiff(newest, showLastDifference);
+        if (newest == null && !initialized) {
+            return false;
+        } else {
+            showRevisionDiff(newest, showLastDifference);
+            return true;
+        }
     }
 
-    protected RepositoryRevision.Event getEventForRoots(RepositoryRevision container) {
+    private RepositoryRevision.Event getEventForRoots (RepositoryRevision container, File preferedFile) {
         RepositoryRevision.Event event = null;
-        List<RepositoryRevision.Event> revs = container.getEvents(true);
+        List<RepositoryRevision.Event> revs;
+        if (container.isEventsInitialized()) {
+            revs = container.getEvents();
+        } else {
+            revs = container.getDummyEvents();
+        }
 
         //try to get the root
         File[] roots = parent.getRoots();
-        for(File root : roots) {
-            for(RepositoryRevision.Event evt : revs) {
-                if(root.equals(evt.getFile())) {
+        outer:
+        for(RepositoryRevision.Event evt : revs) {
+            if (preferedFile == null) {
+                for(File root : roots) {
+                    if (root.equals(evt.getFile())) {
+                        event = evt;
+                        break outer;
+                    } else if (similarPaths(root, evt.getFile())) {
+                        event = evt;
+                    }
+                }
+            } else {
+                if (preferedFile.equals(evt.getFile())) {
+                    event = evt;
+                    break;
+                } else if (similarPaths(preferedFile, evt.getFile())) {
                     event = evt;
                 }
             }
         }
-
         return event;
     }
     
@@ -358,60 +427,76 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         treeView.setSelection(container);
     }
 
+    void refreshResults (List<RepositoryRevision> res) {
+        results = res;
+        treeView.refreshResults(res);
+    }
+
+    private boolean similarPaths (File referenceFile, File file) {
+        return referenceFile.getName().equals(file.getName())
+                || referenceFile.getAbsolutePath().equalsIgnoreCase(null);
+    }
+
     private class ShowDiffTask extends SvnProgressSupport {
         
-        private final RepositoryRevision.Event header;
-        private final String revision1;
-        private String revision2;
+        private File file1;
+        private String revision1;
         private boolean showLastDifference;
+        private final RepositoryRevision.Event event2;
+        private DiffStreamSource s1;
+        private DiffStreamSource s2;
+        private String filePath1;
+        private String name1;
 
-        public ShowDiffTask(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
-            this.header = header;
-            this.revision1 = revision1;
-            this.revision2 = revision2;
+        public ShowDiffTask(RepositoryRevision.Event event1, RepositoryRevision.Event event2, boolean showLastDifference) {
+            this.event2 = event2;
+            if (event1 != null) {
+                revision1 = event1.getLogInfoHeader().getLog().getRevision().toString();
+                file1 = event1.getOriginalFile() == null ? event1.getFile() : event1.getOriginalFile();
+                filePath1 = event1.getOriginalPath() == null ? event1.getChangedPath().getPath() : event1.getOriginalPath();
+            }
             this.showLastDifference = showLastDifference;
         }
 
         @Override
         protected void perform() {
             showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_LoadingDiff")); // NOI18N
-            SVNUrl repotUrl = header.getLogInfoHeader().getRepositoryRootUrl();
-            SVNUrl fileUrl = repotUrl.appendPath(header.getChangedPath().getPath());
-            File file = header.getFile();
-
-            String title1 = revision1;
-            String title2 = revision2;
-
-            String pegRevision1 = header.getChangedPath().getAction() == 'D' ? revision1 : revision2;
-            String pegRevision2 = revision2;
-            if(header.isFakeRoot()) {
-                try {
-                    SvnClient client = Subversion.getInstance().getClient(false);
-                    ISVNInfo info = client.getInfoFromWorkingCopy(file);
-                    if(info != null) {
-                        pegRevision1 = info.getRevision().toString();
-                        pegRevision2 = pegRevision1;
-                    }
-                } catch (SVNClientException ex) {
-                    Subversion.LOG.log(Level.WARNING, file != null ? file.getAbsolutePath() : "null", ex); // NOI18N
-                }
+            if (revision1 == null) {
+                revision1 = Long.toString(event2.getChangedPath().getCopySrcRevision() == null 
+                        ? event2.getLogInfoHeader().getLog().getRevision().getNumber() - 1
+                        : event2.getChangedPath().getCopySrcRevision().getNumber());
+                file1 = event2.getOriginalFile() == null ? event2.getFile() : event2.getOriginalFile();
+                name1 = event2.getOriginalName() == null ? event2.getName() : event2.getOriginalName();
+                filePath1 = event2.getOriginalPath() == null ? event2.getChangedPath().getPath() : event2.getOriginalPath();
             }
+            if (isCanceled()) {
+                return;
+            }
+            String revision2 = event2.getLogInfoHeader().getLog().getRevision().toString();
+            String pegRevision1 = revision1;
+            String pegRevision2 = revision2;
+            String title1 = name1 + " (" + revision1 + ")"; //NOI18N
+            String title2 = event2.getName() + " (" + revision2 + ")"; //NOI18N
+            SVNUrl repoUrl = event2.getLogInfoHeader().getRepositoryRootUrl();
+            SVNUrl fileUrl = repoUrl.appendPath(event2.getChangedPath().getPath());
 
             // through peg revision always except from 'deleting the file', since the file does not exist in the newver revision
-            final DiffStreamSource s1 = new DiffStreamSource(
-                    file,
-                    repotUrl,
-                    fileUrl,
+            s1 = new DiffStreamSource(
+                    file1,
+                    name1,
+                    repoUrl,
+                    repoUrl.appendPath(filePath1),
                     revision1,
                     pegRevision1, title1);
 
-            final DiffStreamSource s2 = 
-                    new DiffStreamSource(
-                        file,
-                        repotUrl, fileUrl,
-                        revision2,
-                        pegRevision2,
-                        title2);
+            s2 = new DiffStreamSource(
+                    event2.getFile(),
+                    event2.getName(),
+                    repoUrl,
+                    fileUrl,
+                    revision2,
+                    pegRevision2,
+                    title2);
 
             this.setCancellableDelegate(new Cancellable() {
                 @Override

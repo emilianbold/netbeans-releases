@@ -54,7 +54,7 @@ import org.netbeans.modules.git.ui.repository.RepositoryInfo;
  *
  * @author ondra
  */
-public class RemoteConfig implements GitRemoteConfig {
+public class RemoteConfig {
     private final String remoteName;
     private final LinkedList<String> pushRefSpecs;
     private final LinkedList<String> pushUris;
@@ -77,27 +77,22 @@ public class RemoteConfig implements GitRemoteConfig {
         this(originalConfig.getRemoteName(), originalConfig.getUris(), originalConfig.getPushUris(), originalConfig.getFetchRefSpecs(), originalConfig.getPushRefSpecs());
     }
 
-    @Override
     public String getRemoteName () {
         return remoteName;
     }
 
-    @Override
     public List<String> getUris () {
         return Collections.unmodifiableList(fetchUris);
     }
 
-    @Override
     public List<String> getPushUris () {
         return Collections.unmodifiableList(pushUris);
     }
 
-    @Override
     public List<String> getFetchRefSpecs () {
         return Collections.unmodifiableList(fetchRefSpecs);
     }
 
-    @Override
     public List<String> getPushRefSpecs () {
         return Collections.unmodifiableList(pushRefSpecs);
     }
@@ -125,5 +120,13 @@ public class RemoteConfig implements GitRemoteConfig {
     private void update (LinkedList<String> toUpdate, List<String> newValues) {
         toUpdate.clear();
         toUpdate.addAll(newValues);
+    }
+
+    GitRemoteConfig toGitRemote () {
+        return new GitRemoteConfig(getRemoteName(),
+                getUris(),
+                getPushUris(),
+                getFetchRefSpecs(),
+                getPushRefSpecs());
     }
 }

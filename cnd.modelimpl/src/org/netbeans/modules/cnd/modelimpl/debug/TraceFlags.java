@@ -165,6 +165,8 @@ public class TraceFlags {
     public static final boolean EXPRESSION_EVALUATOR_RECURSIVE_CALC = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator.recursive.calc", false); // NOI18N
     public static final boolean EXPRESSION_EVALUATOR_EXTRA_SPEC_PARAMS_MATCHING = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator.extra.spec.params.matching", false); // NOI18N
 
+    public static final boolean CPP_PARSER_ACTION = DebugUtils.getBoolean("cnd.modelimpl.cpp.parser.action", false); // NOI18N
+    
     public static final List<String> logMacros;
     static {
          String text = System.getProperty("parser.log.macro"); //NOI18N

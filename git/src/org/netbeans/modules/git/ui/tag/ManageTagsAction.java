@@ -46,7 +46,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitTag;
 import org.netbeans.modules.git.Git;
@@ -82,7 +82,7 @@ public class ManageTagsAction extends SingleRepositoryAction {
             protected void perform () {
                 try {
                     GitClient client = getClient();
-                    Map<String, GitTag> tags = client.getTags(this, true);
+                    Map<String, GitTag> tags = client.getTags(getProgressMonitor(), true);
                     final ManageTags createTag = new ManageTags(repository, tags, preselectedTag);
                     EventQueue.invokeLater(new Runnable() {
                         @Override

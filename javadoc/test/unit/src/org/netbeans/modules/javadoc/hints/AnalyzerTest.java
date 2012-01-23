@@ -45,6 +45,8 @@ package org.netbeans.modules.javadoc.hints;
 import com.sun.javadoc.Doc;
 import com.sun.javadoc.MethodDoc;
 import com.sun.source.util.TreePath;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -125,6 +127,38 @@ public class AnalyzerTest extends JavadocTestSupport {
         
         assertNotNull(JavadocUtilities.findParamTag(info, mLedenDoc, "prvniho", false, true));
         assertNotNull(JavadocUtilities.findParamTag(info, mLedenDoc, "T", true, true));
-}
+    }
     
+    public void testThrows() throws Exception {
+        String code =
+                "package test;\n" +
+                "import java.io.IOException;\n" +
+                "class ZimaImpl {\n" +
+                "    /**\n" +
+                "     * @throws NullPointerException reason1\n" +
+                "     * @throws IOException reason2\n" +
+                "     * @throws InternalError reason3\n" +
+                "     */\n" +
+                "    public void leden() {\n" +
+                "    }\n" +
+                "}\n";
+
+        prepareTest(code);
+
+        TypeElement zimaImpl = info.getTopLevelElements().get(0);
+        assertNotNull(zimaImpl);
+        ExecutableElement leden = (ExecutableElement) zimaImpl.getEnclosedElements().get(1);
+        assertEquals("leden", leden.getSimpleName().toString());
+
+        TreePath zimapath = info.getTrees().getPath(leden);
+        assertNotNull(zimapath);
+        Analyzer an = new Analyzer(info, doc, zimapath, Severity.WARNING, HintSeverity.WARNING, false, Access.PRIVATE);
+        List<ErrorDescription> errs = an.analyze();
+        assertNotNull(errs);
+        List<String> errorsAsStrings = new ArrayList<String>(errs.size());
+        for (ErrorDescription ed : errs) {
+            errorsAsStrings.add(ed.toString());
+        }
+        assertEquals(Arrays.asList("5:7-5:14:warning:Unknown throwable: @throws IOException"), errorsAsStrings);
+    }
 }

@@ -35,31 +35,17 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.TypeMirrorHandle;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.api.java.source.*;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.openide.filesystems.FileObject;
 
@@ -76,8 +62,9 @@ public final class JavaRefactoringUtils {
      * @param info 
      * @return collection of ExecutableElements which are overidden by 'method'
      */
+    @SuppressWarnings("deprecation")
     public static Collection<ExecutableElement> getOverriddenMethods(ExecutableElement method, CompilationInfo info) {
-        return RetoucheUtils.getOverridenMethods (method, info);
+        return RefactoringUtils.getOverridenMethods (method, info);
     }
 
     /**
@@ -85,8 +72,9 @@ public final class JavaRefactoringUtils {
      * @param info 
      * @return collection of ExecutableElements which overrides 'method'
      */
+    @SuppressWarnings("deprecation")
     public static Collection<ExecutableElement> getOverridingMethods(ExecutableElement method, CompilationInfo info) {
-        return RetoucheUtils.getOverridingMethods(method, info);
+        return RefactoringUtils.getOverridingMethods(method, info);
     }
 
     /**
@@ -95,8 +83,9 @@ public final class JavaRefactoringUtils {
      * @param fo 
      * @return 
      */
+    @SuppressWarnings("deprecation")
     public static boolean isOnSourceClasspath(FileObject fo) {
-        return RetoucheUtils.isOnSourceClasspath(fo);
+        return RefactoringUtils.isOnSourceClasspath(fo);
     }
 
     /**
@@ -104,8 +93,9 @@ public final class JavaRefactoringUtils {
      * @param file 
      * @return 
      */
+    @SuppressWarnings("deprecation")
     public static boolean isRefactorable(FileObject file) {
-        return RetoucheUtils.isRefactorable(file) && file.canWrite() && file.canRead();
+        return RefactoringUtils.isRefactorable(file) && file.canWrite() && file.canRead();
     }
 
     /**
@@ -115,8 +105,9 @@ public final class JavaRefactoringUtils {
      * @param sourceOnly library classes ignored if true
      * @return 
      */
+    @SuppressWarnings("deprecation")
     public static Collection<TypeElement> getSuperTypes(TypeElement type, CompilationInfo info, boolean sourceOnly) {
-        return RetoucheUtils.getSuperTypes(type, info);
+        return RefactoringUtils.getSuperTypes(type, info, sourceOnly);
     }
 
     /**
@@ -135,12 +126,14 @@ public final class JavaRefactoringUtils {
      * @param isAnonymous check if class or interface is annonymous
      * @return path to the enclosing ClassTree
      */
+    @SuppressWarnings("deprecation")
     public static TreePath findEnclosingClass(CompilationInfo javac, TreePath path, boolean isClass, boolean isInterface, boolean isEnum, boolean isAnnotation, boolean isAnonymous) {
-        return RetoucheUtils.findEnclosingClass(javac, path, isClass, isInterface, isEnum, isAnnotation, isAnonymous);
+        return RefactoringUtils.findEnclosingClass(javac, path, isClass, isInterface, isEnum, isAnnotation, isAnonymous);
     }
 
+    @SuppressWarnings("deprecation")
     public static List<TypeMirror> elementsToTypes(List<? extends Element> typeParams) {
-        return RetoucheUtils.resolveTypeParamsAsTypes(typeParams);
+        return RefactoringUtils.resolveTypeParamsAsTypes(typeParams);
     }
 
 //    /**
@@ -152,11 +145,12 @@ public final class JavaRefactoringUtils {
 //     * @param tm parametrized type to analyze
 //     */
 //    public static void findUsedGenericTypes(Types utils, List<TypeMirror> typeArgs, List<TypeMirror> result, TypeMirror tm) {
-//        RetoucheUtils.findUsedGenericTypes(utils, typeArgs, result, tm);
+//        RefactoringUtils.findUsedGenericTypes(utils, typeArgs, result, tm);
 //    }
 
+    @SuppressWarnings("deprecation")
     public static ClasspathInfo getClasspathInfoFor(FileObject ... files) {
-        return RetoucheUtils.getClasspathInfoFor(files);
+        return RefactoringUtils.getClasspathInfoFor(files);
     }
 
     //From here down is useful stuff from contrib/refactorings
@@ -334,10 +328,12 @@ public final class JavaRefactoringUtils {
         }
 
         boolean cancelled;
+        @Override
         public void cancel() {
             cancelled = true;
         }
 
+        @Override
         public void run(CompilationController cc) throws Exception {
             if (cancelled) return;
             cc.toPhase(Phase.RESOLVED);

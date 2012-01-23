@@ -46,11 +46,11 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.util.TreePath;
+import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
@@ -93,16 +93,19 @@ public class RemoveUnnecessaryReturn {
                     break OUTER;
                 case BLOCK: statements = ((BlockTree) tp.getLeaf()).getStatements(); break;
                 case CASE: {
-                    boolean exits = Utilities.exitsFromAllBranchers(ctx.getInfo(), tp);
-                    
                     if (tp.getParentPath().getLeaf().getKind() == Kind.SWITCH) {
                         List<? extends CaseTree> cases = ((SwitchTree) tp.getParentPath().getLeaf()).getCases();
-                        exits |= cases.get(cases.size() - 1) == tp.getLeaf();
-                    }
+                        List<StatementTree> locStatements = new ArrayList<StatementTree>();
 
-                    if (!exits) return null;
-                    
-                    statements = ((CaseTree) tp.getLeaf()).getStatements();
+                        for (int i = cases.indexOf(tp.getLeaf()); i < cases.size(); i++) {
+                            locStatements.addAll(cases.get(i).getStatements());
+                        }
+
+                        statements = locStatements;
+                    } else {
+                        //???
+                        statements = ((CaseTree) tp.getLeaf()).getStatements();
+                    }
                     break;
                 }
                 case DO_WHILE_LOOP:
@@ -117,7 +120,34 @@ public class RemoveUnnecessaryReturn {
 
             assert !statements.isEmpty();
 
-            if (statements.get(statements.size() - 1) != current) return null;
+            int i = statements.indexOf(current);
+
+            if (i == (-1)) {
+                //XXX: should not happen?
+                return null;
+            }
+
+            while (i + 1 < statements.size()) {
+                StatementTree next = statements.get(i + 1);
+
+                if (next.getKind() == Kind.EMPTY_STATEMENT) {
+                    i++;
+                    continue;
+                }
+
+                if (next.getKind() == Kind.BLOCK) {
+                    statements = ((BlockTree) next).getStatements();
+                    i = -1;
+                    continue;
+                }
+
+                if (next.getKind() == Kind.BREAK) {
+                    tp = TreePath.getPath(ctx.getInfo().getCompilationUnit(), ctx.getInfo().getTreeUtilities().getBreakContinueTarget(new TreePath(tp, next)));
+                    continue OUTER;
+                }
+
+                return null;
+            }
         }
 
         String displayName = NbBundle.getMessage(RemoveUnnecessaryReturn.class, "ERR_UnnecessaryReturnStatement");

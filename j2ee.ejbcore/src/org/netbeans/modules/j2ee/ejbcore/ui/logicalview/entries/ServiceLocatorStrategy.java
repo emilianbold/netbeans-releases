@@ -219,11 +219,13 @@ public class ServiceLocatorStrategy {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement(serviceLocator);
-                for (ExecutableElement executableElement : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
-                    Set<Modifier> modifiers = executableElement.getModifiers();
-                    if (modifiers.contains(Modifier.STATIC) && modifiers.contains(Modifier.PUBLIC) &&
-                        controller.getTypes().isSameType(typeElement.asType(), executableElement.getReturnType())) {
-                            methodName[0] = executableElement.getSimpleName().toString();
+                if (typeElement != null) {
+                    for (ExecutableElement executableElement : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
+                        Set<Modifier> modifiers = executableElement.getModifiers();
+                        if (modifiers.contains(Modifier.STATIC) && modifiers.contains(Modifier.PUBLIC) &&
+                            controller.getTypes().isSameType(typeElement.asType(), executableElement.getReturnType())) {
+                                methodName[0] = executableElement.getSimpleName().toString();
+                        }
                     }
                 }
             }

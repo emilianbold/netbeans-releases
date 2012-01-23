@@ -76,8 +76,7 @@ import org.netbeans.libs.git.GitConflictDescriptor;
 import org.netbeans.libs.git.GitConflictDescriptor.Type;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
-import org.netbeans.libs.git.jgit.JGitConflictDescriptor;
-import org.netbeans.libs.git.jgit.JGitStatus;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.libs.git.progress.StatusListener;
@@ -93,8 +92,8 @@ public class StatusCommand extends GitCommand {
     private final StatusListener listener;
     private static final String PROP_TRACK_SYMLINKS = "org.netbeans.libs.git.trackSymLinks"; //NOI18N
 
-    public StatusCommand (Repository repository, File[] roots, ProgressMonitor monitor, StatusListener listener) {
-        super(repository, monitor);
+    public StatusCommand (Repository repository, GitClassFactory gitFactory, File[] roots, ProgressMonitor monitor, StatusListener listener) {
+        super(repository, gitFactory, monitor);
         this.roots = roots;
         this.monitor = monitor;
         this.listener = listener;
@@ -199,6 +198,9 @@ public class StatusCommand extends GitCommand {
                             treeWalk.enterSubtree();
                             continue;
                         }
+                    } else if (Utils.isFromNested(mWorking) || Utils.isFromNested(mIndex) || Utils.isFromNested(mHead)) {
+                        // nested repository
+                        continue;
                     } else {
                         if (mWorking == FileMode.MISSING.getBits() && mIndex != FileMode.MISSING.getBits()) {
                             statusIndexWC = GitStatus.Status.STATUS_REMOVED;
@@ -217,7 +219,10 @@ public class StatusCommand extends GitCommand {
                             statusHeadWC = GitStatus.Status.STATUS_REMOVED;
                         } else if (mHead == FileMode.MISSING.getBits() && mWorking != FileMode.MISSING.getBits()) {
                             statusHeadWC = GitStatus.Status.STATUS_ADDED;
-                        } else if (!isExistingSymlink(mIndex, mWorking) && (differ(mHead, mWorking, checkExecutable) || (mWorking != 0 && mWorking != FileMode.TREE.getBits() && !treeWalk.getObjectId(T_HEAD).equals(fti.getEntryObjectId())))) {
+                        } else if (!isExistingSymlink(mIndex, mWorking) && (differ(mHead, mWorking, checkExecutable) 
+                                || (mWorking != 0 && mWorking != FileMode.TREE.getBits() 
+                                    && (indexEntry == null || !indexEntry.isAssumeValid()) //no update-index --assume-unchanged
+                                    && !treeWalk.getObjectId(T_HEAD).equals(fti.getEntryObjectId())))) {
                             statusHeadWC = GitStatus.Status.STATUS_MODIFIED;
                         } else {
                             statusHeadWC = GitStatus.Status.STATUS_NORMAL;
@@ -226,7 +231,7 @@ public class StatusCommand extends GitCommand {
 
                     int stage = indexEntry == null ? 0 : indexEntry.getStage();
 
-                    GitStatus status = new JGitStatus(tracked, path, workTreePath, file, statusHeadIndex, statusIndexWC, statusHeadWC, null, isFolder, renames.get(path));
+                    GitStatus status = getClassFactory().createStatus(tracked, path, workTreePath, file, statusHeadIndex, statusIndexWC, statusHeadWC, null, isFolder, renames.get(path));
                     if (stage == 0) {
                         if (!trackSymLinks && isSymlinkFolder(mHead, mWorking, symlink)) {
                             symLinks.add(status);
@@ -307,8 +312,8 @@ public class StatusCommand extends GitCommand {
                 status = conflicts[1];
             }
             // how do we get other types??
-            GitConflictDescriptor desc = new JGitConflictDescriptor(type);
-            status = new JGitStatus(true, status.getRelativePath(), workTreePath, status.getFile(), GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL,
+            GitConflictDescriptor desc = getClassFactory().createConflictDescriptor(type);
+            status = getClassFactory().createStatus(true, status.getRelativePath(), workTreePath, status.getFile(), GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL,
                     GitStatus.Status.STATUS_NORMAL, desc, status.isFolder(), null);
             addStatus(status.getFile(), status);
         }
@@ -384,7 +389,7 @@ public class StatusCommand extends GitCommand {
         if (!symLinks.isEmpty()) {
             boolean removed = symLinks.size() == 1;
             GitStatus status = symLinks.get(0);
-            status = new JGitStatus(true, status.getRelativePath(), workTreePath, status.getFile(), status.getStatusHeadIndex(),
+            status = getClassFactory().createStatus(true, status.getRelativePath(), workTreePath, status.getFile(), status.getStatusHeadIndex(),
                     !removed || status.getStatusHeadIndex() == GitStatus.Status.STATUS_REMOVED ? GitStatus.Status.STATUS_NORMAL : GitStatus.Status.STATUS_REMOVED,
                     removed ? GitStatus.Status.STATUS_REMOVED : GitStatus.Status.STATUS_NORMAL,
                     null, status.isFolder(), null);

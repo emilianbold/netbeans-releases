@@ -44,45 +44,30 @@
 
 package org.netbeans.modules.search;
 
-import javax.swing.JEditorPane;
-import org.openide.text.NbDocument;
-import org.openide.cookies.EditorCookie;
-import org.openide.windows.TopComponent;
-import org.openide.nodes.Node;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.ParallelGroup;
-import javax.swing.GroupLayout.SequentialGroup;
-import javax.swing.LayoutStyle;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridLayout;
+import java.awt.Cursor;
+import java.awt.FlowLayout;
 import java.awt.ItemSelectable;
-import java.awt.SystemColor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.HierarchyEvent;
+import static java.awt.event.HierarchyEvent.DISPLAYABILITY_CHANGED;
 import java.awt.event.HierarchyListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.SwingConstants;
-import javax.swing.UIManager;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -92,11 +77,14 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
+import org.openide.cookies.EditorCookie;
+import org.openide.nodes.Node;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 import org.openidex.search.SearchHistory;
 import org.openidex.search.SearchPattern;
-import static java.awt.event.HierarchyEvent.DISPLAYABILITY_CHANGED;
 
 /**
  *
@@ -104,13 +92,16 @@ import static java.awt.event.HierarchyEvent.DISPLAYABILITY_CHANGED;
  */
 final class BasicSearchForm extends JPanel implements ChangeListener,
                                                       ItemListener {
+    public static final String HTML_LINK_PREFIX =
+            "<html><u><a href=\"#\">";                                  //NOI18N
+    public static final String HTML_LINK_SUFFIX = "</a></u></html>";    //NOI18N
     
     private final BasicSearchCriteria searchCriteria;
     private final Map<SearchScope, Boolean> searchScopes;
     private final String preferredSearchScopeType;
     private SearchScope selectedSearchScope;
     private ChangeListener usabilityChangeListener;
-        
+
     /** Creates new form BasicSearchForm */
     BasicSearchForm(Map<SearchScope, Boolean> searchScopes,
                     String preferredSearchScopeType,
@@ -123,10 +114,9 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         this.searchScopes = searchScopes;
         this.preferredSearchScopeType = preferredSearchScopeType;
         initComponents(searchAndReplace);
-        initAccessibility();
+        initAccessibility(searchAndReplace);
         initHistory();
-        initInteraction();
-
+        initInteraction(searchAndReplace);
         if (searchAndReplace && (searchCriteria.getReplaceExpr() == null)) {
             /* We must set the initial replace string, otherwise it might not
              * be initialized at all if the user keeps the field "Replace With:"
@@ -134,31 +124,45 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
              * BasicSearchCriteria.isSearchAndReplace() would return 'false'. */
             searchCriteria.setReplaceExpr("");                        //NOI18N
         }
+        setValuesOfComponents(usePreviousValues, searchAndReplace);
+    }
 
-        /*
-         * Interaction must be already set up when we set values, otherwise
-         * state of the dialog might not be corresponding to the values,
-         * e.g. the Find dialog could be disabled although valid values
-         * are entered.
-         */
+    /**
+     * Set values of form components.
+     *
+     * Interaction must be already set up when we set values, otherwise state of
+     * the dialog might not be corresponding to the values, e.g. the Find dialog
+     * could be disabled although valid values are entered.
+     */
+    private void setValuesOfComponents(
+            boolean usePreviousValues, boolean searchAndReplace) {
+        
         if (usePreviousValues) {
             initPreviousValues();
         } else {
-            initValuesFromHistory();
+            initValuesFromHistory(searchAndReplace);
         }
         updateTextPatternColor();
-        if (searchAndReplace){
+        updateFileNamePatternColor();
+        if (searchAndReplace) {
             updateReplacePatternColor();
         }
-        
-        Node[] arr = TopComponent.getRegistry ().getActivatedNodes();
+        useCurrentlySelectedText();
+    }
+
+    /**
+     * Set currently selected text (in editor) as "Text to find" value.
+     */
+    public void useCurrentlySelectedText() {
+        Node[] arr = TopComponent.getRegistry().getActivatedNodes();
         if (arr.length > 0) {
-            EditorCookie ec = arr[0].getCookie (EditorCookie.class);
+            EditorCookie ec = arr[0].getLookup().lookup(EditorCookie.class);
             if (ec != null) {
                 JEditorPane recentPane = NbDocument.findRecentEditorPane(ec);
                 if (recentPane != null) {
                     String initSearchText = null;
-                    if (org.netbeans.editor.Utilities.isSelectionShowing(recentPane.getCaret())) {
+                    if (org.netbeans.editor.Utilities.isSelectionShowing(
+                            recentPane.getCaret())) {
                         initSearchText = recentPane.getSelectedText();
                     }
                     if (initSearchText != null) {
@@ -169,9 +173,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                 }
             }
         }
-
     }
-
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -182,149 +185,54 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
      *                           {@code false} otherwise
      */
     private void initComponents(final boolean searchAndReplace) {
-        JLabel lblTextToFind = new JLabel();
-        cboxTextToFind = new JComboBox();
+
+        lblTextToFind = new JLabel();
+        cboxTextToFind = new JComboBox();        
+        cboxTextToFind.setEditable(true);
         lblTextToFind.setLabelFor(cboxTextToFind);
-        lblHintTextToFind = new JLabel();
-        lblHintTextToFind.setMinimumSize(new Dimension(0, 0));
-        
-        JLabel lblReplacement;
-	if (searchAndReplace) {
+        btnTestTextToFind = new JButton();
+
+        if (searchAndReplace) {
             lblReplacement = new JLabel();
             cboxReplacement = new JComboBox();
-            cboxReplacement.getAccessibleContext().setAccessibleDescription(getText("BasicSearchForm.cbox.Replacement.AccessibleDescription"));
+            cboxReplacement.setEditable(true);
             lblReplacement.setLabelFor(cboxReplacement);
-	} else {
-            lblReplacement = null;
-            cboxReplacement = null;
+            chkPreserveCase = new JCheckBox();
         }
-        
-        JLabel lblFileNamePattern = new JLabel();
+
+        lblScope = new JLabel();
+        cboxScope = new JComboBox();
+        cboxScope.setEditable(false);
+        lblScope.setLabelFor(cboxScope);
+
+        lblFileNamePattern = new JLabel();
         cboxFileNamePattern = new JComboBox();
-        lblFileNamePattern.setLabelFor(cboxFileNamePattern);
-        JLabel lblHintFileNamePattern = new JLabel();
-        
+        cboxFileNamePattern.setEditable(true);
+        lblFileNamePattern.setLabelFor(cboxFileNamePattern);        
+        btnTestFileNamePattern = new JButton();
+
+        chkFileNameRegex = new JCheckBox();
         chkWholeWords = new JCheckBox();
         chkCaseSensitive = new JCheckBox();
         chkRegexp = new JCheckBox();
-        chkPreserveCase = new JCheckBox();
-        chkPreserveCase.setVisible(searchAndReplace);
-        
-        Mnemonics.setLocalizedText(
-                lblTextToFind,
-                getText("BasicSearchForm.lblTextToFind.text"));         //NOI18N
-        lblHintTextToFind.setText(
-                getText("BasicSearchForm.lblHintTextToFind.text"));     //NOI18N
-        lblHintTextToFind.setForeground(SystemColor.textInactiveText);
-        cboxTextToFind.setEditable(true);
-        
-        if (searchAndReplace) {
-            Mnemonics.setLocalizedText(
-                    lblReplacement,
-                    getText("BasicSearchForm.lblReplacement.text"));        //NOI18N
-            cboxReplacement.setEditable(true);
+
+        TextPatternCheckBoxGroup.bind(
+                chkCaseSensitive, chkWholeWords, chkRegexp, chkPreserveCase);
+
+        if (!searchAndReplace) {
+            chkArchives = new JCheckBox();
+            chkArchives.setEnabled(false); // not implemented yet
+            chkGenerated = new JCheckBox();
+            chkGenerated.setEnabled(false); // not implemented yet
         }
+        chkUseIgnoreList = new JCheckBox();
+        btnEditIgnoreList = new JButton();
 
-        Mnemonics.setLocalizedText(
-                lblFileNamePattern,
-                getText("BasicSearchForm.lblFileNamePattern.text"));    //NOI18N
-        lblHintFileNamePattern.setText(
-                getText("BasicSearchForm.lblHintFileNamePattern.text"));//NOI18N
-        lblHintFileNamePattern.setForeground(SystemColor.textInactiveText);
-        cboxFileNamePattern.setEditable(true);
-        
-        Mnemonics.setLocalizedText(
-                chkWholeWords,
-                getText("BasicSearchForm.chkWholeWords.text"));         //NOI18N
+        setMnemonics(searchAndReplace);
+        initIgnoreListControlComponents();
+        initFormPanel(searchAndReplace);
+        this.add(formPanel);
 
-        Mnemonics.setLocalizedText(
-                chkCaseSensitive,
-                getText("BasicSearchForm.chkCaseSensitive.text"));      //NOI18N
-
-        Mnemonics.setLocalizedText(
-                chkRegexp,
-                getText("BasicSearchForm.chkRegexp.text"));             //NOI18N
-        
-        Mnemonics.setLocalizedText(
-                chkPreserveCase, 
-                getText("BasicSearchForm.chkPreserveCase.text"));       //NOI18N
-
-        JComponent optionsPanel
-                = createButtonsPanel("LBL_OptionsPanelTitle",           //NOI18N
-                                     chkCaseSensitive,
-                                     chkWholeWords,
-                                     chkRegexp,
-                                     chkPreserveCase);
-        JComponent scopePanel
-                = createButtonsPanel("LBL_ScopePanelTitle",             //NOI18N
-                                     createSearchScopeButtons());
-        
-        GridLayout lowerPanelLayout = new GridLayout(1, 0);
-        JComponent lowerPanel = new JPanel(lowerPanelLayout);
-        lowerPanel.add(optionsPanel);
-        lowerPanel.add(scopePanel);
-        lowerPanelLayout.setHgap(
-                LayoutStyle.getInstance()
-                .getPreferredGap(optionsPanel,  
-                                 scopePanel,
-                                 ComponentPlacement.UNRELATED,
-                                 SwingConstants.EAST,
-                                 null));
-
-        GroupLayout criteriaPanelLayout = new GroupLayout(this);
-        setLayout(criteriaPanelLayout);
-        criteriaPanelLayout.setHonorsVisibility(false);
-        criteriaPanelLayout.setHorizontalGroup(
-            criteriaPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(criteriaPanelLayout.createParallelGroup(Alignment.LEADING)
-                    .addGroup(criteriaPanelLayout.createSequentialGroup()
-                        .addGroup(createParallelGroup(criteriaPanelLayout, Alignment.LEADING,
-                                                 lblTextToFind,
-                                                 lblReplacement,
-                                                 lblFileNamePattern))
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addGroup(createParallelGroup(criteriaPanelLayout, Alignment.LEADING,
-                                                 lblHintFileNamePattern,
-                                                 lblHintTextToFind,
-                                                 cboxTextToFind,
-                                                 cboxReplacement,
-                                                 cboxFileNamePattern)))
-                    .addComponent(lowerPanel))
-                .addContainerGap()
-        );
-
-        SequentialGroup seqGroup = criteriaPanelLayout.createSequentialGroup();
-        seqGroup.addContainerGap()
-                .addGroup(criteriaPanelLayout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(lblTextToFind)
-                    .addComponent(cboxTextToFind, GroupLayout.PREFERRED_SIZE,
-                                         GroupLayout.DEFAULT_SIZE,
-                                         GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(lblHintTextToFind);
-        if (cboxReplacement != null) {
-            seqGroup.addPreferredGap(ComponentPlacement.UNRELATED)
-                    .addGroup(criteriaPanelLayout.createParallelGroup(Alignment.BASELINE)
-                        .addComponent(lblReplacement)
-                        .addComponent(cboxReplacement, GroupLayout.PREFERRED_SIZE,
-                                              GroupLayout.DEFAULT_SIZE,
-                                              GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(ComponentPlacement.RELATED);
-        }
-        seqGroup.addPreferredGap(ComponentPlacement.UNRELATED)
-                .addGroup(criteriaPanelLayout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(lblFileNamePattern)
-                    .addComponent(cboxFileNamePattern, GroupLayout.PREFERRED_SIZE,
-                                              GroupLayout.DEFAULT_SIZE,
-                                              GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(lblHintFileNamePattern)
-                .addPreferredGap(ComponentPlacement.UNRELATED)
-                .addComponent(lowerPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addContainerGap();
-        criteriaPanelLayout.setVerticalGroup(seqGroup);
-        
         /* find the editor components of combo-boxes: */
         Component cboxEditorComp;
         cboxEditorComp = cboxTextToFind.getEditor().getEditorComponent();
@@ -335,54 +243,145 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             cboxEditorComp = cboxReplacement.getEditor().getEditorComponent();
             replacementPatternEditor = (JTextComponent) cboxEditorComp;
         }
+        this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
     }
 
     /**
-     * Creates a {@code ParallelGroup} and adds the given components to it,
-     * skipping {@code null} components.
-     * Calling
-     * <blockquote><pre><code>createParallelGroup(groupLayout, alignment,
-     *                     component1,
-     *                     component2,
-     *                     component3,
-     *                     ...
-     *                     component<i>n</i>)</code></pre></blockquote>
-     * is equivalent to calling
-     * <blockquote><pre><code>groupLayout.createParallelGroup(alignment)
-     *      .addComponent(component1)
-     *      .addComponent(component2)
-     *      .addComponent(component3)
-     *      ...
-     *      .addComponent(component<i>n</i>)</code></pre></blockquote>
-     * except that {@code null} components are skipped and {@code JComboBox}
-     * components are automatically added with size constraints
-     * {@code (0, 300, Short.MAX_VALUE)}.
+     * Initialize form panel and add appropriate components to it.
      */
-    private static ParallelGroup createParallelGroup(GroupLayout groupLayout,
-                                                     Alignment alignment,
-                                                     Component... components) {
-        ParallelGroup group = groupLayout.createParallelGroup(alignment);
-        for (Component c : components) {
-            if (c == null) {
-                continue;
-            }
+    protected void initFormPanel(boolean searchAndReplace) {
 
-            if (c.getClass() == JComboBox.class) {
-                group.addComponent(c, 0, 300, Short.MAX_VALUE);
-            } else {
-                group.addComponent(c);
+        formPanel = new SearchFormPanel();
+        formPanel.addRow(lblTextToFind, cboxTextToFind);
+        initContainingTextOptionsRow(searchAndReplace);
+        if (searchAndReplace) {
+            formPanel.addRow(lblReplacement, cboxReplacement);
+        }
+        initScopeRow();
+        formPanel.addRow(lblScope, cboxScope);
+        formPanel.addRow(lblFileNamePattern, cboxFileNamePattern);
+        initScopeOptionsRow(searchAndReplace);
+    }
+
+    /**
+     * Initialize ignoreListOptionPanel and related control components.
+     */
+    private void initIgnoreListControlComponents() {
+        ignoreListOptionPanel = new CheckBoxWithButtonPanel(chkUseIgnoreList,
+                btnEditIgnoreList);
+    }
+
+    /**
+     * Add row with selection of scope to the form panel.
+     */
+    protected final void initScopeRow() {
+
+        for (Map.Entry<SearchScope, Boolean> e : orderSearchScopes()) {
+            if (e.getValue()) { // add only enabled search scopes
+                SearchScope ss = e.getKey();
+                ScopeItem si = new ScopeItem(ss);
+                cboxScope.addItem(si);
+                if (selectedSearchScope == null) {
+                    if (ss.getTypeId().equals(preferredSearchScopeType)) {
+                        selectedSearchScope = ss;
+                        cboxScope.setSelectedItem(si);
+                    }
+                }
             }
         }
-        return group;
+        if (selectedSearchScope == null) {
+            ScopeItem si = (ScopeItem) cboxScope.getItemAt(0);
+            selectedSearchScope = si.getSearchScope();
+            cboxScope.setSelectedIndex(0);
+        }
+        cboxScope.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ScopeItem item = (ScopeItem) cboxScope.getSelectedItem();
+                selectedSearchScope = item.getSearchScope();
+                stateChanged(null);
+            }
+        });
+    }
+
+    /**
+     * Initialize panel for controls for text pattern options and add it to the
+     * form panel.
+     */
+    private void initContainingTextOptionsRow(boolean searchAndReplace) {
+
+        JPanel jp = new JPanel();
+        if (searchAndReplace) {
+            FormLayoutHelper flh = new FormLayoutHelper(jp,
+                    FormLayoutHelper.DEFAULT_COLUMN,
+                    FormLayoutHelper.DEFAULT_COLUMN);
+            flh.addRow(chkCaseSensitive, chkPreserveCase);
+            flh.addRow(chkWholeWords,
+                    new CheckBoxWithButtonPanel(chkRegexp, btnTestTextToFind));
+            jp.setMaximumSize(jp.getMinimumSize());
+
+            formPanel.addRow(new JLabel(), jp);
+        } else {
+            jp.setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
+            jp.add(chkCaseSensitive);
+            jp.add(chkWholeWords);
+            jp.add(new CheckBoxWithButtonPanel(chkRegexp, btnTestTextToFind));
+            jp.setMaximumSize(jp.getPreferredSize());
+            formPanel.addRow(new JLabel(), jp);
+        }
+    }
+
+    /**
+     * Initialize panel for controls for scope options and add it to the form
+     * panel.
+     */
+    private void initScopeOptionsRow(boolean searchAndReplace) {
+
+        JPanel jp = new JPanel();
+        if (searchAndReplace) {
+            jp.setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
+            jp.add(ignoreListOptionPanel);
+            jp.add(chkFileNameRegex);
+            jp.setMaximumSize(jp.getMinimumSize());
+        } else {
+            FormLayoutHelper flh = new FormLayoutHelper(jp,
+                    FormLayoutHelper.DEFAULT_COLUMN,
+                    FormLayoutHelper.DEFAULT_COLUMN);
+            flh.addRow(chkArchives, chkGenerated);
+            flh.addRow(ignoreListOptionPanel,
+                    new CheckBoxWithButtonPanel(
+                    chkFileNameRegex, btnTestFileNamePattern));
+            jp.setMaximumSize(jp.getMinimumSize());
+        }
+        formPanel.addRow(new JLabel(), jp);
     }
 
     /**
      */
-    private void initAccessibility() {
-        chkCaseSensitive.getAccessibleContext().setAccessibleDescription(getText("BasicSearchForm.chkCaseSensitive.AccessibleDescription"));
-        chkRegexp.getAccessibleContext().setAccessibleDescription(getText("BasicSearchForm.chkRegexp.AccessibleDescription"));
-        chkWholeWords.getAccessibleContext().setAccessibleDescription(getText("BasicSearchForm.chkWholeWords.AccessibleDescription"));
-        chkPreserveCase.getAccessibleContext().setAccessibleDescription(getText("BasicSearchForm.chkPreserveCase.AccessibleDescription"));
+    private void initAccessibility(boolean searchAndReplace) {
+        chkCaseSensitive.getAccessibleContext().setAccessibleDescription(
+                getText(
+                "BasicSearchForm.chkCaseSensitive."                     //NOI18N
+                + "AccessibleDescription"));                            //NOI18N
+        chkRegexp.getAccessibleContext().setAccessibleDescription(
+                getText(
+                "BasicSearchForm.chkRegexp."                            //NOI18N
+                + "AccessibleDescription"));                            //NOI18N
+        chkWholeWords.getAccessibleContext().setAccessibleDescription(
+                getText(
+                "BasicSearchForm.chkWholeWords."                        //NOI18N
+                + "AccessibleDescription"));                            //NOI18N
+        if (searchAndReplace) {
+            cboxReplacement.getAccessibleContext().setAccessibleDescription(
+                    getText(
+                    "BasicSearchForm.cbox.Replacement."                 //NOI18N
+                    + "AccessibleDescription"));                        //NOI18N
+            chkPreserveCase.getAccessibleContext().setAccessibleDescription(
+                    getText(
+                    "BasicSearchForm.chkPreserveCase."                  //NOI18N
+                    + "AccessibleDescription"));                        //NOI18N
+        }
     }
 
     /**
@@ -399,64 +398,25 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         chkWholeWords.setSelected(searchCriteria.isWholeWords());
         chkCaseSensitive.setSelected(searchCriteria.isCaseSensitive());
         chkRegexp.setSelected(searchCriteria.isRegexp());
-        chkPreserveCase.setSelected(searchCriteria.isPreserveCase());
+        chkFileNameRegex.setSelected(searchCriteria.isFileNameRegexp());
+        chkUseIgnoreList.setSelected(searchCriteria.isUseIgnoreList());
+
+        selectChk(chkPreserveCase, searchCriteria.isPreserveCase());
+        selectChk(chkArchives, searchCriteria.isSearchInArchives());
+        selectChk(chkGenerated, searchCriteria.isSearchInGenerated());
+    }
+
+    private static void selectChk(JCheckBox checkbox, boolean value) {
+        if (checkbox != null) {
+            checkbox.setSelected(value);
+        }
     }
     
     /**
      */
-    private void initInteraction() {
+    private void initInteraction(final boolean searchAndReplace) {
         /* set up updating of the validity status: */
-        class PatternChangeListener implements DocumentListener {
-            private final JComboBox sourceComboBox;
-            PatternChangeListener(JComboBox srcCBox) {
-                this.sourceComboBox = srcCBox;
-            }
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                update(e);
-            }
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                update(e);
-            }
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                update(e);
-            }
-            private void update(DocumentEvent e) {
-                if ((sourceComboBox == cboxFileNamePattern)
-                        && ignoreFileNamePatternChanges) {
-                    return;
-                }
-                
-                final Document doc = e.getDocument();
-                
-                String text;
-                try {
-                    text = doc.getText(0, doc.getLength());
-                } catch (BadLocationException ex) {
-                    assert false;
-                    ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
-                    text = "";                                          //NOI18N
-                }
-                
-                if (sourceComboBox == cboxTextToFind) {
-                    searchCriteria.setTextPattern(text);
-                    updateTextPatternColor();
-                    if (cboxReplacement != null){
-                        updateReplacePatternColor();
-                    }
-                } else if (sourceComboBox == cboxFileNamePattern) {
-                    searchCriteria.setFileNamePattern(text);
-                } else {
-                    assert sourceComboBox == cboxReplacement;
-                    searchCriteria.setReplaceExpr(text);
-                    if (cboxReplacement != null){
-                        updateReplacePatternColor();
-                    }
-                }
-            }
-        }
+        
 
         final TextFieldFocusListener focusListener = new TextFieldFocusListener();
         textToFindEditor.addFocusListener(focusListener);
@@ -464,9 +424,10 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             replacementPatternEditor.addFocusListener(focusListener);
         }
 
-        final FileNamePatternWatcher watcher = new FileNamePatternWatcher(fileNamePatternEditor);
-        fileNamePatternEditor.addFocusListener(watcher);
-        fileNamePatternEditor.addHierarchyListener(watcher);
+        fileNamePatternWatcher = 
+                new FileNamePatternWatcher(fileNamePatternEditor);        
+        fileNamePatternEditor.addFocusListener(fileNamePatternWatcher);
+        fileNamePatternEditor.addHierarchyListener(fileNamePatternWatcher);
         
         textToFindEditor.getDocument().addDocumentListener(
                 new PatternChangeListener(cboxTextToFind));
@@ -480,14 +441,86 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         chkRegexp.addItemListener(this);
         chkCaseSensitive.addItemListener(this);
         chkWholeWords.addItemListener(this);
-        chkPreserveCase.addItemListener(this);
+        chkFileNameRegex.addItemListener(this);
+        chkUseIgnoreList.addItemListener(this);
 
         boolean regexp = chkRegexp.isSelected();
         boolean caseSensitive = chkCaseSensitive.isSelected();
         chkWholeWords.setEnabled(!regexp);
-        chkPreserveCase.setEnabled(!regexp && !caseSensitive);
-
+        if (searchAndReplace) {
+            chkPreserveCase.addItemListener(this);
+            chkPreserveCase.setEnabled(!regexp && !caseSensitive);
+        } else {
+            chkArchives.addItemListener(this);
+            chkGenerated.addItemListener(this);
+        }
         searchCriteria.setUsabilityChangeListener(this);
+
+        initButtonInteraction();
+    }
+
+    private void initButtonInteraction() {
+        btnTestFileNamePattern.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openPathPatternSandbox();
+            }
+        });
+        btnTestTextToFind.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openTextPatternSandbox();
+            }
+        });
+        btnEditIgnoreList.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                IgnoreListPanel.openDialog(btnEditIgnoreList);
+            }
+        });
+    }
+
+    private void openPathPatternSandbox() {
+
+        PatternSandbox.openDialog(new PatternSandbox.PathPatternSandbox(
+                cboxFileNamePattern.getSelectedItem() == null
+                ? "" : (String) cboxFileNamePattern.getSelectedItem()){ //NOI18N
+
+            @Override
+            protected void onApply(String pattern) {
+                if (pattern.isEmpty()) {
+                    if (!fileNamePatternWatcher.infoDisplayed) {
+                        cboxFileNamePattern.setSelectedItem(pattern);
+                        fileNamePatternWatcher.displayInfo();
+                    }
+                } else {
+                    if (fileNamePatternWatcher.infoDisplayed) {
+                        fileNamePatternWatcher.hideInfo();
+                    }
+                    cboxFileNamePattern.setSelectedItem(pattern);
+                }
+            }
+        }, btnTestFileNamePattern);
+    }
+
+    private void openTextPatternSandbox() {
+
+        String expr = cboxTextToFind.getSelectedItem() == null ? "" // NOI18N
+                : cboxTextToFind.getSelectedItem().toString();
+        boolean matchCase = chkCaseSensitive.isSelected();
+
+        PatternSandbox.openDialog(new PatternSandbox.TextPatternSandbox(
+                expr, matchCase) {
+
+            @Override
+            protected void onApply(String newExpr, boolean newMatchCase) {
+                cboxTextToFind.setSelectedItem(newExpr);
+                chkCaseSensitive.setSelected(newMatchCase);
+            }
+        }, btnTestTextToFind);
     }
 
     /**
@@ -526,7 +559,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     
     /**
      */
-    private void initValuesFromHistory() {
+    private void initValuesFromHistory(final boolean searchAndReplace) {
         final FindDialogMemory memory = FindDialogMemory.getDefault();
 
         if (memory.isTextPatternSpecified()
@@ -544,7 +577,14 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         chkWholeWords.setSelected(memory.isWholeWords());
         chkCaseSensitive.setSelected(memory.isCaseSensitive());
         chkRegexp.setSelected(memory.isRegularExpression());
-        chkPreserveCase.setSelected(memory.isPreserveCase());
+        chkFileNameRegex.setSelected(memory.isFilePathRegex());
+        chkUseIgnoreList.setSelected(memory.IsUseIgnoreList());
+        if (searchAndReplace) {
+            chkPreserveCase.setSelected(memory.isPreserveCase());
+        } else {
+            chkArchives.setSelected(memory.isSearchInArchives());
+            chkGenerated.setSelected(memory.isSearchInGenerated());
+        }
     }
     
     @Override
@@ -571,14 +611,32 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         boolean wasInvalid = invalidTextPattern;
         invalidTextPattern = searchCriteria.isTextPatternInvalid();
         if (invalidTextPattern != wasInvalid) {
-            if (defaultTextColor == null) {
-                assert !wasInvalid;
-                defaultTextColor = textToFindEditor.getForeground();
-            }
+            Color dfltColor = getDefaultTextColor(); // need to be here to init
             textToFindEditor.setForeground(
                     invalidTextPattern ? getErrorTextColor()
-                                       : defaultTextColor);
+                    : dfltColor);
         }
+    }
+
+    /**
+     * Sets proper color of file pattern.
+     */
+    private void updateFileNamePatternColor() {
+        boolean wasInvalid = invalidFileNamePattern;
+        invalidFileNamePattern = searchCriteria.isFileNamePatternInvalid();
+        if (invalidFileNamePattern != wasInvalid) {
+            Color dfltColor = getDefaultTextColor(); // need to be here to init
+            fileNamePatternEditor.setForeground(
+                    invalidFileNamePattern ? getErrorTextColor()
+                    : dfltColor);
+        }
+    }
+
+    private Color getDefaultTextColor() {
+        if (defaultTextColor == null) {
+            defaultTextColor = textToFindEditor.getForeground();
+        }
+        return defaultTextColor;
     }
 
     /**
@@ -656,73 +714,46 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             if (cboxReplacement != null){
                 updateReplacePatternColor();
             }
-            chkWholeWords.setEnabled(!selected);
-            chkPreserveCase.setEnabled(!selected && !chkCaseSensitive.isSelected());
-            lblHintTextToFind.setVisible(!selected);
+            setTextToFindToolTip();
         } else if (toggle == chkCaseSensitive) {
             searchCriteria.setCaseSensitive(selected);
-            chkPreserveCase.setEnabled(!selected && !chkRegexp.isSelected());
         } else if (toggle == chkWholeWords) {
             searchCriteria.setWholeWords(selected);
         } else if (toggle == chkPreserveCase) {
             searchCriteria.setPreserveCase(selected);
+        } else if (toggle == chkArchives) {
+            searchCriteria.setSearchInArchives(selected);
+        } else if (toggle == chkGenerated) {
+            searchCriteria.setSearchInGenerated(selected);
+        } else if (toggle == chkFileNameRegex) {
+            searchCriteria.setFileNameRegexp(selected);
+            updateFileNamePatternColor();
+            setFileNamePatternToolTip();
+        } else if (toggle == chkUseIgnoreList) {
+            searchCriteria.setUseIgnoreList(selected);
         } else {
             assert false;
         }
     }
 
-    /**
-     */
-    private AbstractButton[] createSearchScopeButtons() {
-        radioBtnGroup = new ButtonGroup();
-        
-        ItemListener buttonStateListener = new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    AbstractButton selectedButton = (AbstractButton) e.getSource();
-                    Object storedObject = selectedButton.getClientProperty("searchScope");
-                    selectedSearchScope = (SearchScope) storedObject;
-                }
-            }
-        };
-
-        AbstractButton[] result = new AbstractButton[searchScopes.size()];
-        int index = 0;
-        
-        boolean preferredScopeSelected = false;
-        int firstEnabled = -1;
-        for (Map.Entry<SearchScope, Boolean> entry : orderSearchScopes()) {
-            SearchScope searchScope = entry.getKey();
-            boolean enabled = entry.getValue();
-            String searchScopeInfo = enabled ? searchScope.getAdditionalInfo()
-                                             : null;
-            AbstractButton button = (searchScopeInfo == null)
-                                    ? new JRadioButton()
-                                    : new ButtonWithExtraInfo(searchScopeInfo);
-            Mnemonics.setLocalizedText(button, searchScope.getDisplayName());
-            button.getAccessibleContext().setAccessibleDescription(searchScope.getDisplayName());
-            button.putClientProperty("searchScope", searchScope);
-            button.addItemListener(buttonStateListener);
-
-            button.setEnabled(enabled);
-            if (enabled) {
-                if (searchScope.getTypeId().equals(preferredSearchScopeType)) {
-                    button.setSelected(true);
-                    preferredScopeSelected = true;
-                } else if (firstEnabled == -1) {
-                    firstEnabled = index;
-                }
-            }
-            result[index++] = button;
-            
-            radioBtnGroup.add(button);
+    private void setTextToFindToolTip() {
+        String t;
+        if (searchCriteria.isRegexp()) {
+            t = null;
+        } else {
+            t = getText("BasicSearchForm.cboxTextToFind.tooltip");      //NOI18N
         }
-        
-        if (!preferredScopeSelected && (firstEnabled != -1)) {
-            result[firstEnabled].setSelected(true);
+        cboxTextToFind.setToolTipText(t);
+    }
+
+    private void setFileNamePatternToolTip() {
+        String t;
+        if (searchCriteria.isFileNameRegexp()) {
+            t = null;
+        } else {
+            t = getText("BasicSearchForm.cboxFileNamePattern.tooltip"); //NOI18N
         }
-        return result;
+        cboxFileNamePattern.setToolTipText(t);
     }
 
     /**
@@ -752,56 +783,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         return newCollection;
     }
     
-    /**
-     */
-    private JComponent createButtonsPanel(String borderTitleBundleKey,
-                                          AbstractButton... buttons) {
-        JComponent buttonsPanel = new JPanel();
-        GroupLayout buttonsPanelLayout = new GroupLayout(buttonsPanel);
-        buttonsPanel.setLayout(buttonsPanelLayout);
-        
-        ParallelGroup parallelGroup = buttonsPanelLayout.createParallelGroup();
-        for (AbstractButton button : buttons) {
-            if (button instanceof ButtonWithExtraInfo) {
-                /*
-                 * parallelGroup.addComponent(button) makes the button's maximum size
-                 * equal to its preferred size. We need the button to expand
-                 * horizontally so we set its maximum width to MAX_VALUE.
-                 * If horizontal expanding is set on a button, it causes
-                 * that the button passes the invalidate-validate cycle much
-                 * more frequently - so we only set it on buttons which need it
-                 * (i.e. on buttons with extra information available).
-                 */
-                parallelGroup.addComponent(button, GroupLayout.DEFAULT_SIZE,
-                                          GroupLayout.PREFERRED_SIZE,
-                                          Short.MAX_VALUE);
-            } else {
-                parallelGroup.addComponent(button);
-            }
-        }
-        buttonsPanelLayout.setHorizontalGroup(parallelGroup);
-        
-        GroupLayout.SequentialGroup sequentialGroup = buttonsPanelLayout.createSequentialGroup();
-        boolean first = true;
-        for (AbstractButton button : buttons) {
-            if (!first) {
-                sequentialGroup.addPreferredGap(ComponentPlacement.RELATED);
-            }
-            sequentialGroup.addComponent(button);
-            first = false;
-        }
-        buttonsPanelLayout.setVerticalGroup(sequentialGroup);
-        
-        buttonsPanelLayout.linkSize(buttons);
-        
-        buttonsPanel.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createTitledBorder(
-                                getText(borderTitleBundleKey)),
-                        BorderFactory.createEmptyBorder(3, 5, 5, 5)));
-        
-        return buttonsPanel;
-    }
 
     /**
      * Called when the criteria in the Find dialog are confirmed by the user
@@ -832,12 +813,21 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         memory.setWholeWords(chkWholeWords.isSelected());
         memory.setCaseSensitive(chkCaseSensitive.isSelected());
         memory.setRegularExpression(chkRegexp.isSelected());
-        memory.setPreserveCase(chkPreserveCase.isSelected());
+        if (searchCriteria.isSearchAndReplace()) {
+            memory.setPreserveCase(chkPreserveCase.isSelected());
+        } else {
+            memory.setSearchInArchives(chkArchives.isSelected());
+            memory.setSearchInGenerated(chkGenerated.isSelected());
+        }
+        memory.setFilePathRegex(chkFileNameRegex.isSelected());
+        memory.setUseIgnoreList(chkUseIgnoreList.isSelected());
     }
 
     /**
      * Read current dialog contents as a SearchPattern.
-     * @return SearchPattern for the contents of the current dialog. Null if the     *         search string is empty, meaning that the dialog is empty.
+     *
+     * @return SearchPattern for the contents of the current dialog. Null if the
+     * * search string is empty, meaning that the dialog is empty.
      */
     private SearchPattern getCurrentSearchPattern() {
         return SearchPattern.create(textToFindEditor.getText(),
@@ -861,6 +851,50 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     boolean isUsable() {
         return (selectedSearchScope != null)
                && searchCriteria.isUsable();
+    }
+
+    private void setMnemonics(boolean searchAndReplace) {
+
+        lclz(lblTextToFind, "BasicSearchForm.lblTextToFind.text");      //NOI18N
+        lclz(lblScope, "BasicSearchForm.lblScope.text");                //NOI18N
+        lclz(lblFileNamePattern,
+                "BasicSearchForm.lblFileNamePattern.text");             //NOI18N
+        lclz(chkWholeWords, "BasicSearchForm.chkWholeWords.text");      //NOI18N
+        lclz(chkCaseSensitive, "BasicSearchForm.chkCaseSensitive.text");//NOI18N
+        lclz(chkRegexp, "BasicSearchForm.chkRegexp.text");              //NOI18N
+        lclz(chkFileNameRegex, "BasicSearchForm.chkFileNameRegex.text");//NOI18N
+        btnTestTextToFind.setText(getHtmlLink(
+                "BasicSearchForm.btnTestTextToFind.text"));             //NOI18N
+        btnTestFileNamePattern.setText(getHtmlLink(
+                "BasicSearchForm.btnTestFileNamePattern.text"));        //NOI18N
+        btnEditIgnoreList.setText(
+                getHtmlLink("BasicSearchForm.btnEditIgnoreList.text")); //NOI18N
+        lclz(chkUseIgnoreList, "BasicSearchForm.chkUseIgnoreList.text");//NOI18N
+
+        if (searchAndReplace) {
+            lclz(lblReplacement, "BasicSearchForm.lblReplacement.text");//NOI18N
+            lclz(chkPreserveCase,
+                    "BasicSearchForm.chkPreserveCase.text");            //NOI18N
+        } else {
+            lclz(chkArchives, "BasicSearchForm.chkArchives.text");      //NOI18N
+            lclz(chkGenerated, "BasicSearchForm.chkGenerated.text");    //NOI18N
+        }
+        setTextToFindToolTip();
+        setFileNamePatternToolTip();
+    }
+
+    /**
+     * Convenience method for setting localized text and mnemonics of buttons.
+     */
+    private void lclz(AbstractButton obj, String key) {
+        Mnemonics.setLocalizedText(obj, getText(key));
+    }
+
+    /**
+     * Convenience method for setting localized text and mnemonics of labels
+     */
+    private void lclz(JLabel obj, String key) {
+        Mnemonics.setLocalizedText(obj, getText(key));
     }
     
     /**
@@ -919,7 +953,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                 return;
             }
             
-            watcherLogger.finer("componentShown()");
+            watcherLogger.finer("componentShown()");                    //NOI18N
             if (foregroundColor == null) {
                 foregroundColor = txtComp.getForeground();
             }
@@ -968,7 +1002,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         
         private void displayInfo() {
             assert ((doc.getLength() == 0) && !txtComp.isFocusOwner());
-            watcherLogger.finer("displayInfo()");
+            watcherLogger.finer("displayInfo()");                       //NOI18N
             
             try {
                 txtComp.setForeground(txtComp.getDisabledTextColor());
@@ -984,12 +1018,14 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         }
         
         private void hideInfo() {
-            watcherLogger.finer("hideInfo()");
+            watcherLogger.finer("hideInfo()");                          //NOI18N
             
             txtComp.setEnabled(true);
             try {
                 ignoreFileNamePatternChanges = true;
-                doc.remove(0, doc.getLength());
+                if (doc.getText(0, doc.getLength()).equals(getInfoText())) {
+                    doc.remove(0, doc.getLength());
+                }
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
@@ -1003,7 +1039,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             if (infoText == null) {
                 infoText = NbBundle.getMessage(
                         getClass(),
-                        "BasicSearchForm.cboxFileNamePattern.allFiles");     //NOI18N
+                        "BasicSearchForm.cboxFileNamePattern.allFiles");//NOI18N
             }
             return infoText;
         }
@@ -1013,8 +1049,11 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     private String getText(String bundleKey) {
         return NbBundle.getMessage(getClass(), bundleKey);
     }
-    
-    private ButtonGroup radioBtnGroup;
+
+    private String getHtmlLink(String key) {
+        return HTML_LINK_PREFIX + getText(key) + HTML_LINK_SUFFIX;
+    }
+
     private JComboBox cboxTextToFind;
     private JComboBox cboxReplacement;
     private JComboBox cboxFileNamePattern;
@@ -1025,11 +1064,26 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     private JTextComponent textToFindEditor;
     private JTextComponent fileNamePatternEditor;
     private JTextComponent replacementPatternEditor;
-    private JLabel lblHintTextToFind;
-    
+    protected SearchFormPanel formPanel;
+    private JButton btnEditIgnoreList;
+    protected JPanel ignoreListOptionPanel;
+    protected JCheckBox chkUseIgnoreList;
+    private JCheckBox chkFileNameRegex;
+    private JButton btnTestTextToFind;
+    private JButton btnTestFileNamePattern;
+    private JLabel lblTextToFind;
+    private JComboBox cboxScope;
+    private JLabel lblFileNamePattern;
+    private JCheckBox chkArchives;
+    private JCheckBox chkGenerated;
+    private JLabel lblScope;
+    private JLabel lblReplacement;
+    private FileNamePatternWatcher fileNamePatternWatcher;
+
     private Color errorTextColor, defaultTextColor;
     private boolean invalidTextPattern = false;
     private boolean invalidReplacePattern = false;
+    private boolean invalidFileNamePattern = false;
     
     /**
      * When set to {@link true}, changes of file name pattern are ignored.
@@ -1039,4 +1093,381 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
      */
     private boolean ignoreFileNamePatternChanges = false;
 
+    /**
+     * Form panel to which rows can be added.
+     */
+    private final class SearchFormPanel extends JPanel {
+
+        private FormLayoutHelper flh;
+
+        public SearchFormPanel() {
+            super();
+            this.flh = new FormLayoutHelper(this,
+                    FormLayoutHelper.DEFAULT_COLUMN,
+                    FormLayoutHelper.DEFAULT_COLUMN);
+            flh.setAllGaps(true);
+        }
+
+        public void addRow(JComponent label, JComponent component) {
+
+            flh.addRow(label, component);
+        }
+    }
+
+    /**
+     * Panel for a checkbox and a button that is enbled if and only if the
+     * checkbox is selected.
+     */
+    private class CheckBoxWithButtonPanel extends JPanel
+            implements ItemListener {
+
+        private JCheckBox checkbox;
+        private JButton button;
+        private JLabel leftParenthesis;
+        private JLabel rightParenthesis;
+        private String enabledText;
+        private String disabledText;
+
+        /**
+         * Constructor.
+         *
+         *  * The text of the button must be already set.
+         *
+         * @param checkbox
+         * @param button
+         */
+        public CheckBoxWithButtonPanel(JCheckBox checkbox, JButton button) {
+            this.checkbox = checkbox;
+            this.button = button;
+            initTexts();
+            init();
+        }
+
+        /**
+         * Init panel and helper elements.
+         */
+        private void init() {
+            this.setLayout(new FlowLayout(
+                    FlowLayout.LEADING, 0, 0));
+            this.add(checkbox);
+            setLinkLikeButton(button);
+            leftParenthesis = new JLabel("(");                         // NOI18N
+            rightParenthesis = new JLabel(")");                         //NOI18N
+            add(leftParenthesis);
+            add(button);
+            add(rightParenthesis);
+            MouseListener ml = createLabelMouseListener();
+            leftParenthesis.addMouseListener(ml);
+            rightParenthesis.addMouseListener(ml);
+            button.setEnabled(false);
+
+            this.setMaximumSize(
+                    this.getMinimumSize());
+            checkbox.addItemListener(this);
+            if (checkbox.isSelected()) {
+                enableButton();
+            } else {
+                disableButton();
+            }
+        }
+
+        /**
+         * Init values of enabled and disabled button texts.
+         */
+        private void initTexts() {
+            enabledText = button.getText();
+            if (enabledText.startsWith(HTML_LINK_PREFIX)
+                    && enabledText.endsWith(HTML_LINK_SUFFIX)) {
+                disabledText = enabledText.substring(HTML_LINK_PREFIX.length(),
+                        enabledText.length() - HTML_LINK_SUFFIX.length());
+            } else {
+                disabledText = enabledText;
+            }
+        }
+
+        /**
+         * Create listener that delegates mouse clicks on parenthesis to the
+         * button.
+         */
+        private MouseListener createLabelMouseListener() {
+            return new MouseAdapter() {
+
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (button.isEnabled()) {
+                        for (ActionListener al : button.getActionListeners()) {
+                            al.actionPerformed(null);
+                        }
+                    }
+                }
+            };
+        }
+
+        /**
+         * Set button border and background to look like a label with link.
+         */
+        private void setLinkLikeButton(JButton button) {
+            button.setBorderPainted(false);
+            button.setContentAreaFilled(false);
+            button.setBorder(new EmptyBorder(0, 0, 0, 0));
+            button.setCursor(Cursor.getPredefinedCursor(
+                    Cursor.HAND_CURSOR));
+        }
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            if (checkbox.isSelected()) {
+                enableButton();
+            } else {
+                disableButton();
+            }
+        }
+
+        /**
+         * Enable button and parentheses around it.
+         */
+        private void enableButton() {
+            button.setText(enabledText);
+            button.setEnabled(true);
+            leftParenthesis.setCursor(
+                    Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            rightParenthesis.setCursor(
+                    Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            leftParenthesis.setEnabled(true);
+            rightParenthesis.setEnabled(true);
+        }
+
+        /**
+         * Disable button and parentheses around it.
+         */
+        private void disableButton() {
+            button.setText(disabledText);
+            button.setEnabled(false);
+            leftParenthesis.setCursor(Cursor.getDefaultCursor());
+            rightParenthesis.setCursor(Cursor.getDefaultCursor());
+            leftParenthesis.setEnabled(false);
+            rightParenthesis.setEnabled(false);
+        }
+    }
+
+    /**
+     * Wrapper of scope to be used as JComboBox item.
+     */
+    private final class ScopeItem {
+
+        private static final String START = "(";                       // NOI18N
+        private static final String END = ")";                         // NOI18N
+        private static final String SP = " ";                          // NOI18N
+        private static final String ELLIPSIS = "...";                  // NOI18N
+        private static final int MAX_EXTRA_INFO_LEN = 20;
+        private SearchScope searchScope;
+
+        public ScopeItem(SearchScope searchScope) {
+            this.searchScope = searchScope;
+        }
+
+        public SearchScope getSearchScope() {
+            return this.searchScope;
+        }
+
+        private boolean isAdditionaInfoAvailable() {
+            return searchScope.getAdditionalInfo() != null
+                    && searchScope.getAdditionalInfo().length() > 0;
+        }
+
+        private String getTextForLabel(String text) {
+            String extraInfo = searchScope.getAdditionalInfo();
+            String extraText = extraInfo;
+            if (extraInfo.length() > MAX_EXTRA_INFO_LEN) {
+                extraText = extraInfo.substring(0, MAX_EXTRA_INFO_LEN)
+                        + ELLIPSIS;
+                if (extraText.length() >= extraInfo.length()) {
+                    extraText = extraInfo;
+                }
+            }
+            return getFullText(text, extraText);
+        }
+
+        private String getFullText(String text, String extraText) {
+            return text + SP + START + SP + extraText + SP + END;
+        }
+
+        @Override
+        public String toString() {
+            if (isAdditionaInfoAvailable()) {
+                return getTextForLabel(clr(searchScope.getDisplayName()));
+            } else {
+                return clr(searchScope.getDisplayName());
+            }
+        }
+
+        /**
+         * Clear some legacy special characters from scope names.
+         *
+         * Some providers can still include ampresands that were used for
+         * mnemonics in previous versions, but now are ignored.
+         */
+        private String clr(String s) {
+            return s.replaceAll("\\&", "");                             //NOI18N
+        }
+    }
+
+    /**
+     * Class for controlling which settings of text pattern depend on other
+     * settings and how.
+     */
+    static class TextPatternCheckBoxGroup implements ItemListener {
+
+        private JCheckBox matchCase;
+        private JCheckBox wholeWords;
+        private JCheckBox regexp;
+        private JCheckBox preserveCase;
+        private boolean lastPreserveCaseValue;
+        private boolean lastWholeWordsValue;
+
+        private TextPatternCheckBoxGroup(
+                JCheckBox matchCase,
+                JCheckBox wholeWords,
+                JCheckBox regexp,
+                JCheckBox preserveCase) {
+
+            this.matchCase = matchCase;
+            this.wholeWords = wholeWords;
+            this.regexp = regexp;
+            this.preserveCase = preserveCase;
+        }
+
+        private void initListeners() {
+            this.matchCase.addItemListener(this);
+            this.wholeWords.addItemListener(this);
+            this.regexp.addItemListener(this);
+            if (this.preserveCase != null) {
+                this.preserveCase.addItemListener(this);
+            }
+        }
+
+        private void matchCaseChanged() {
+            updatePreserveCaseAllowed();
+        }
+
+        private void regexpChanged() {
+            updateWholeWordsAllowed();
+            updatePreserveCaseAllowed();
+        }
+
+        private void updateWholeWordsAllowed() {
+            if (regexp.isSelected() == wholeWords.isEnabled()) {
+                if (regexp.isSelected()) {
+                    lastWholeWordsValue = wholeWords.isSelected();
+                    wholeWords.setSelected(false);
+                    wholeWords.setEnabled(false);
+                } else {
+                    wholeWords.setEnabled(true);
+                    wholeWords.setSelected(lastWholeWordsValue);
+                }
+            }
+        }
+
+        private void updatePreserveCaseAllowed() {
+            if (preserveCase == null) {
+                return;
+            }
+            if (preserveCase.isEnabled()
+                    == (regexp.isSelected() || matchCase.isSelected())) {
+                if (preserveCase.isEnabled()) {
+                    lastPreserveCaseValue = preserveCase.isSelected();
+                    preserveCase.setSelected(false);
+                    preserveCase.setEnabled(false);
+                } else {
+                    preserveCase.setEnabled(true);
+                    preserveCase.setSelected(lastPreserveCaseValue);
+                }
+            }
+        }
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            ItemSelectable is = e.getItemSelectable();
+            if (is == matchCase) {
+                matchCaseChanged();
+            } else if (is == regexp) {
+                regexpChanged();
+            }
+        }
+
+        static void bind(JCheckBox matchCase,
+                JCheckBox wholeWords,
+                JCheckBox regexp,
+                JCheckBox preserveCase) {
+
+            TextPatternCheckBoxGroup tpcbg = new TextPatternCheckBoxGroup(
+                    matchCase, wholeWords, regexp, preserveCase);
+            tpcbg.initListeners();
+        }
+    }
+
+    /**
+     * Listener to changes of pattern combo boxes.
+     */
+    private class PatternChangeListener implements DocumentListener {
+
+        private final JComboBox sourceComboBox;
+
+        PatternChangeListener(JComboBox srcCBox) {
+            this.sourceComboBox = srcCBox;
+        }
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            update(e);
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            update(e);
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            update(e);
+        }
+
+        private void update(DocumentEvent e) {
+            if ((sourceComboBox == cboxFileNamePattern)
+                    && ignoreFileNamePatternChanges) {
+                return;
+            }
+
+            final Document doc = e.getDocument();
+
+            String text;
+            try {
+                text = doc.getText(0, doc.getLength());
+            } catch (BadLocationException ex) {
+                assert false;
+                ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+                text = "";                                          //NOI18N
+            }
+            handleComboBoxChange(text);
+        }
+
+        private void handleComboBoxChange(String text) {
+            if (sourceComboBox == cboxTextToFind) {
+                searchCriteria.setTextPattern(text);
+                updateTextPatternColor();
+                if (cboxReplacement != null) {
+                    updateReplacePatternColor();
+                }
+            } else if (sourceComboBox == cboxFileNamePattern) {
+                searchCriteria.setFileNamePattern(text);
+                updateFileNamePatternColor();
+            } else {
+                assert sourceComboBox == cboxReplacement;
+                searchCriteria.setReplaceExpr(text);
+                if (cboxReplacement != null) {
+                    updateReplacePatternColor();
+                }
+            }
+        }
+    }
 }

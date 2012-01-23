@@ -48,11 +48,13 @@ import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
  *
  * @author mkleint
  */
+@ProjectServiceProvider(service=PrerequisitesChecker.class, projectType="org-netbeans-modules-maven")
 public class TestChecker implements PrerequisitesChecker {
 
     /**
@@ -62,10 +64,7 @@ public class TestChecker implements PrerequisitesChecker {
      */
     public static final String PROP_SKIP_TEST = "skipTests"; // NOI18N
 
-    public TestChecker() {
-    }
-
-    public boolean checkRunConfig(RunConfig config) {
+    @Override public boolean checkRunConfig(RunConfig config) {
         String action = config.getActionName();
         if (ActionProvider.COMMAND_TEST.equals(action) ||
             ActionProvider.COMMAND_TEST_SINGLE.equals(action) ||

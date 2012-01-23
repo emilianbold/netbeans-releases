@@ -1,13 +1,12 @@
 /*
- * To change this template, choose Tools | Templates and open the template in
- * the editor.
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
  */
 package o.n.m.ws.qaf.rest.patterns;
 
 import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.POST;
 import javax.ws.rs.PathParam;
@@ -15,11 +14,12 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
 
 /**
  * REST Web Service
  *
- * @author lukas
+ * @author jskrivanek
  */
 @Path("/CI2ContainerURI")
 public class CI2CClass {
@@ -27,7 +27,9 @@ public class CI2CClass {
     @Context
     private UriInfo context;
 
-    /** Creates a new instance of CI2CClass */
+    /**
+     * Creates a new instance of CI2CClass
+     */
     public CI2CClass() {
     }
 

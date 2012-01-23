@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -56,10 +56,10 @@ import org.openide.util.NbBundle;
  * @author Petr Pisl
  */
 public class TemplateIterator implements TemplateWizard.Iterator {
-    
+
     private int index;
     private transient WizardDescriptor.Panel[] panels;
-    
+
     private TemplatePanel templatePanel;
     private transient SourceGroup[] sourceGroups;
     private static final String CSS_FOLDER = "css"; //NOI18N
@@ -70,7 +70,7 @@ public class TemplateIterator implements TemplateWizard.Iterator {
     private static String TEMPLATE_XHTML = "template.xhtml"; //NOI18N
     private static String TEMPLATE_XHTML2 = "template-jsf2.xhtml"; //NOI18N
     private static String FL_RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/facelets/resources/templates/"; //NOI18N
-    
+
     /** Creates a new instance of TemplateIterator */
     public TemplateIterator() {
     }
@@ -87,7 +87,7 @@ public class TemplateIterator implements TemplateWizard.Iterator {
                 JSFConfigUtilities.extendJsfFramework(dir, false);
             }
 
-            boolean isJSF20 = JSFUtils.isJSF20(wm);
+            boolean isJSF20 = JSFUtils.isJSF20Plus(wm);
             String templateFile = TEMPLATE_XHTML;
             if (isJSF20) {
                 templateFile = TEMPLATE_XHTML2;
@@ -114,7 +114,7 @@ public class TemplateIterator implements TemplateWizard.Iterator {
                 if (!JSFConfigUtilities.hasJsfFramework(docBase)) {
                     JSFConfigUtilities.extendJsfFramework(dir, false);
                 }
-                final boolean isJSF20 = JSFUtils.isJSF20(wm);
+                final boolean isJSF20 = JSFUtils.isJSF20Plus(wm);
 
                 df.getPrimaryFile().getFileSystem().runAtomicAction(new FileSystem.AtomicAction(){
                     public void run() throws IOException {
@@ -170,13 +170,13 @@ public class TemplateIterator implements TemplateWizard.Iterator {
         }
         return Collections.EMPTY_SET;
     }
-    
+
     public void initialize(TemplateWizard wiz) {
         //this.wiz = wiz;
         index = 0;
         Project project = Templates.getProject( wiz );
         panels = createPanels(project, wiz);
-        
+
         // Creating steps.
         Object prop = wiz.getProperty(WizardDescriptor.PROP_CONTENT_DATA);
         String[] beforeSteps = null;
@@ -184,7 +184,7 @@ public class TemplateIterator implements TemplateWizard.Iterator {
             beforeSteps = (String[])prop;
         }
         String[] steps = createSteps(beforeSteps, panels);
-        
+
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
             if (steps[i] == null) {
@@ -202,44 +202,44 @@ public class TemplateIterator implements TemplateWizard.Iterator {
             }
         }
     }
-    
+
     public void uninitialize(TemplateWizard wiz) {
         panels = null;
     }
-    
+
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
-    
+
     public String name() {
         return NbBundle.getMessage(TemplateIterator.class, "TITLE_x_of_y",
                 new Integer(index + 1), new Integer(panels.length));
     }
-    
+
     public void previousPanel() {
         if (! hasPrevious()) throw new NoSuchElementException();
         index--;
     }
-    
+
     public void nextPanel() {
         if (! hasNext()) throw new NoSuchElementException();
         index++;
     }
-    
+
     public boolean hasPrevious() {
         return index > 0;
     }
-    
+
     public boolean hasNext() {
         return index < panels.length - 1;
     }
-    
+
     public void addChangeListener(ChangeListener l) {
     }
-    
+
     public void removeChangeListener(ChangeListener l) {
     }
-    
+
     protected WizardDescriptor.Panel[] createPanels(Project project, TemplateWizard wiz) {
         Sources sources = (Sources) project.getLookup().lookup(org.netbeans.api.project.Sources.class);
         SourceGroup[] sourceGroups1 = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
@@ -248,7 +248,7 @@ public class TemplateIterator implements TemplateWizard.Iterator {
             sourceGroups = new SourceGroup[]{sourceGroups1[0], sourceGroups1[0]};
         else
             sourceGroups = sourceGroups1;
-        
+
         templatePanel = new TemplatePanel(wiz);
         // creates simple wizard panel with bottom panel
         WizardDescriptor.Panel firstPanel = new JSFValidationPanel(
@@ -261,7 +261,7 @@ public class TemplateIterator implements TemplateWizard.Iterator {
             firstPanel
         };
     }
-    
+
     private String[] createSteps(String[] before, WizardDescriptor.Panel[] panels) {
         int diff = 0;
         if (before == null) {

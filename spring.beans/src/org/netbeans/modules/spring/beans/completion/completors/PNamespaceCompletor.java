@@ -91,7 +91,7 @@ public class PNamespaceCompletor extends Completor {
 
             public void run(CompilationController cc) throws Exception {
                 String className = new BeanClassFinder(SpringXMLConfigEditorUtils.getTagAttributes(context.getTag()),
-                        context.getFileObject()).findImplementationClass();
+                        context.getFileObject()).findImplementationClass(true);
                 if (className == null) {
                     return;
                 }

@@ -52,10 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -75,28 +72,19 @@ import static org.netbeans.modules.apisupport.hints.Bundle.*;
 @ServiceProvider(service=Hinter.class)
 public class ActionRegistrationHinter implements Hinter {
 
-    private static final String[] EAGER_INTERFACES = {
-        "org.openide.util.actions.Presenter.Menu",
-        "org.openide.util.actions.Presenter.Toolbar",
-        "org.openide.util.actions.Presenter.Popup",
-        "org.openide.util.ContextAwareAction",
-        "org.openide.awt.DynamicMenuContent"
-    };
-
-    @Messages({"# {0} - class or method return type", "ActionRegistrationHinter.not_presenter=You cannot use @ActionRegistration on the eager action {0} unless it is assignable to ContextAwareAction, DynamicMenuContent, or some Presenter.* interface."})
      public @Override void process(final Context ctx) throws Exception {
         final FileObject file = ctx.file();
-        if (!file.isData() || !file.hasExt("instance")) {
-            return; // not supporting *.settings etc. for now
+        final Object instanceCreate = ctx.instanceAttribute(file);
+        if (instanceCreate == null) {
+            return;
         }
-        final Object instanceCreate = file.getAttribute("literal:instanceCreate");
         if ("method:org.openide.awt.Actions.alwaysEnabled".equals(instanceCreate)) {
             ctx.addStandardAnnotationHint(new Callable<Void>() {
                 public @Override Void call() throws Exception {
                     if (!annotationsAvailable(ctx)) {
                         return null;
                     }
-                    ctx.findAndModifyDeclaration(file.getAttribute("literal:delegate"), new RegisterAction(ctx));
+                    ctx.findAndModifyDeclaration(file.getAttribute("literal:delegate"), new RegisterAction(ctx, false));
                     return null;
                 }
             });
@@ -115,40 +103,7 @@ public class ActionRegistrationHinter implements Hinter {
                     if (!annotationsAvailable(ctx)) {
                         return null;
                     }
-                    Object action;
-                    if (instanceCreate != null) {
-                        action = instanceCreate;
-                    } else {
-                        Object clazz = file.getAttribute("instanceClass");
-                        if (clazz != null) {
-                            action = "new:" + clazz;
-                        } else {
-                            action = "new:" + file.getName().replace('-', '.');
-                        }
-                    }
-                    ctx.findAndModifyDeclaration(action, new RegisterAction(ctx) {
-                        public @Override void run(WorkingCopy wc, Element declaration, ModifiersTree modifiers) throws Exception {
-                            TypeMirror type;
-                            if (declaration.getKind() == ElementKind.CLASS) {
-                                type = ((TypeElement) declaration).asType();
-                            } else {
-                                type = ((ExecutableElement) declaration).getReturnType();
-                            }
-                            boolean ok = false;
-                            for (String xface : EAGER_INTERFACES) {
-                                TypeElement xfaceEl = wc.getElements().getTypeElement(xface);
-                                if (xfaceEl != null && wc.getTypes().isAssignable(type, xfaceEl.asType())) {
-                                    ok = true;
-                                    break;
-                                }
-                            }
-                            if (!ok) {
-                                DialogDisplayer.getDefault().notify(new Message(ActionRegistrationHinter_not_presenter(type), NotifyDescriptor.WARNING_MESSAGE));
-                                return;
-                            }
-                            super.run(wc, declaration, modifiers);
-                        }
-                    });
+                    ctx.findAndModifyDeclaration(instanceCreate, new RegisterAction(ctx, true));
                     return null;
                 }
             });
@@ -168,9 +123,11 @@ public class ActionRegistrationHinter implements Hinter {
     private static class RegisterAction implements Context.ModifyDeclarationTask {
 
         private final Context ctx;
+        private final boolean eager;
 
-        RegisterAction(Context ctx) {
+        RegisterAction(Context ctx, boolean eager) {
             this.ctx = ctx;
+            this.eager = eager;
         }
 
         public @Override void run(WorkingCopy wc, Element declaration, ModifiersTree modifiers) throws Exception {
@@ -192,6 +149,11 @@ public class ActionRegistrationHinter implements Hinter {
                 params.put("iconInMenu", !((Boolean) noIconInMenu));
             }
             params.put("asynchronous", file.getAttribute("asynchronous"));
+            if (eager) {
+                params.put("lazy", false);
+            } else {
+                // XXX specify lazy=true if implements one of the 5 specials even though using Actions.* factory (but probably rare)
+            }
             nue = ctx.addAnnotation(wc, nue, "org.openide.awt.ActionRegistration", null, params);
             ctx.delete(file);
             TreeMaker make = wc.getTreeMaker();

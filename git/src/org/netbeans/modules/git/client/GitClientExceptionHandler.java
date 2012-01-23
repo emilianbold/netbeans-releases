@@ -44,7 +44,6 @@ package org.netbeans.modules.git.client;
 
 import java.util.logging.Level;
 import javax.swing.JButton;
-import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.ui.repository.remote.RemoteRepository;

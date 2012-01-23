@@ -49,6 +49,89 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="FileObject.toURI">
+            <api name="filesystems"/>
+            <summary>Introduced <code>FileObject.toURI</code></summary>
+            <version major="7" minor="57"/>
+            <date year="2012" month="1" day="20"/>
+            <author login="jglick"/>
+            <compatibility addition="yes" deprecation="yes">
+                <p>
+                    <code>FileObject.getURL</code> should be replaced with <code>toURL</code> (or <code>toURI</code>),
+                    which also throw no checked exceptions.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    Added <code>FileObject.toURI</code> for convenience.
+                </p>
+                <p>
+                    Also deprecated <code>FileObject.getURL</code> in favor of <code>toURL</code>
+                    which is the same but does not throw <code>FileStateInvalidException</code>,
+                    and clarified that <code>URLMapper.findURL(fo, INTERNAL)</code>
+                    will never return null.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileObject"/>
+            <issue number="207294"/>
+        </change>
+         <change id="default-line-separator">
+            <api name="filesystems"/>
+            <summary>Provides default line separator</summary>
+            <version major="7" minor="56"/>
+            <date day="13" month="1" year="2012"/>
+            <author login="alexvsimon"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                <p>
+                    FileObject.DEFAULT_LINE_SEPARATOR_ATTR defines file object attribute name to get default line separator.
+                    File object can provide default line separator if it differs from
+                    <code>System.getProperty("line.separator")</code>. Call
+                    <code>fo.getAttribute(FileObject.DEFAULT_LINE_SEPARATOR_ATTR)</code> returns string with
+                    default line separator. Default line separator will be used by the text
+                    editor if saving new content to an initially empty file. Any other code
+                    which creates file content programmatically must manually read this
+                    property if it cares.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileObject"/>
+            <issue number="199534"/>
+        </change>
+        <change id="FileObject.revert">
+            <api name="filesystems"/>
+            <summary>Introduced <code>FileObject.revert</code></summary>
+            <version major="7" minor="55"/>
+            <date year="2011" month="11" day="29"/>
+            <author login="jglick"/>
+            <compatibility addition="yes">
+                <p>
+                    The previous SPI has been kept. Only a more convenient API has been introduced,
+                    so it is no longer necessary for callers to look for a <code>removeWritables</code> attribute.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    Added <code>revert</code> and <code>canRevert</code> to <code>FileObject</code>.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileObject"/>
+            <issue number="162526"/>
+        </change>
+        <change id="FileEvent.4.constructor">
+            <api name="filesystems"/>
+            <summary>Detailed FileEvent constructor</summary>
+            <version major="7" minor="54"/>
+            <date day="22" month="11" year="2011"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>New <code>FileEvent</code> constructor allowing specification
+                of expected state as well as time.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileEvent"/>
+            <issue number="203477"/>
+        </change>
         <change id="FileObject.getMIMEType...">
             <api name="filesystems"/>
             <summary>FileObject.getMIMEType(String... withinMIMETypes)</summary>

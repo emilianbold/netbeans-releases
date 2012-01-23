@@ -62,13 +62,13 @@ public class EEIcons implements SpecialIcon {
     @Override public Icon getIcon() {
         String type = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
         if (type.equals(NbMavenProject.TYPE_WAR)) {
-            return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/j2ee/web/maven_web_application_16.png", true);
+            return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/j2ee/resources/maven_web_application_16.png", true);
         } else if (type.equals(NbMavenProject.TYPE_EJB)) {
-            return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/j2ee/ejb/maven_ejb_module_16.png", true);
+            return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/j2ee/resources/maven_ejb_module_16.png", true);
         } else if (type.equals(NbMavenProject.TYPE_APPCLIENT)) {
-            return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/j2ee/appclient/appclient.png", true);
+            return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/j2ee/resources/appclient.png", true);
         } else {
-            return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/j2ee/ear/maven_enterprise_application_16.png", true);
+            return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/j2ee/resources/maven_enterprise_application_16.png", true);
         }
     }
 

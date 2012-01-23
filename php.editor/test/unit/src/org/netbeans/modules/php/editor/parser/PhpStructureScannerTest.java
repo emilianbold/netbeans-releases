@@ -77,7 +77,7 @@ public class PhpStructureScannerTest extends ParserTestBase{
     /**
      * Test of scan method, of class PhpStructureScanner.
      */
-    
+
     public void testNamespace() throws Exception {
         performTest("structure/php53/namespace");
 
@@ -106,7 +106,7 @@ public class PhpStructureScannerTest extends ParserTestBase{
     public void testClass() throws Exception {
         performTest("class005");
     }
-    
+
     public void testIssue142644() throws Exception {
         performTest("issue142644");
     }
@@ -117,6 +117,18 @@ public class PhpStructureScannerTest extends ParserTestBase{
 
     public void testPHPDocTagProperty() throws Exception {
         performTest("propertyTag");
+    }
+
+    public void testIssue205886_01() throws Exception {
+        performTest("issue205886_01");
+    }
+
+    public void testTraits_01() throws Exception {
+        performTest("traitsStructure_01");
+    }
+
+    public void testTraits_02() throws Exception {
+        performTest("traitsStructure_02");
     }
 
     @Override
@@ -133,7 +145,9 @@ public class PhpStructureScannerTest extends ParserTestBase{
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 PHPParseResult info = (PHPParseResult)resultIterator.getParserResult();
-                result.addAll(instance.scan(info));
+                if (info != null) {
+                    result.addAll(instance.scan(info));
+                }
             }
         });
         Comparator<StructureItem> comparator = new Comparator<StructureItem>() {

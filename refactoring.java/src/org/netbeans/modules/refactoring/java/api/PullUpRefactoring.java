@@ -56,7 +56,7 @@ import org.openide.util.lookup.Lookups;
  * @see org.netbeans.modules.refactoring.spi.RefactoringPlugin
  * @see org.netbeans.modules.refactoring.spi.RefactoringPluginFactory
  * @see AbstractRefactoring
- * @see RefactoringSession
+ * @see org.netbeans.modules.refactoring.api.RefactoringSession
  *
  * @author Jan Becicka
  * @author Martin Matula

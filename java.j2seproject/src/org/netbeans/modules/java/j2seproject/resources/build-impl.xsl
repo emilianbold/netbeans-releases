@@ -1926,9 +1926,12 @@ is divided into following sections:
             <target name="-check-call-dep">
                 <property file="${{call.built.properties}}" prefix="already.built."/>
                 <condition property="should.call.dep">
-                    <not>
-                        <isset property="already.built.${{call.subproject}}"/>
-                    </not>
+                    <and>
+                        <not>
+                            <isset property="already.built.${{call.subproject}}"/>
+                        </not>
+                        <available file="${{call.script}}"/>
+                    </and>
                 </condition>
                 <!--<echo message="I am {$codename}; should.call.dep=${{should.call.dep}} due to already.built.${{call.subproject}}"/><echoproperties prefix="already.built."/>-->
             </target>

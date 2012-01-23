@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Future;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -65,12 +66,14 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -96,6 +99,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -114,9 +118,25 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
 
     public ManagedBeanCustomizer(Project project, boolean collection, boolean enableReadOnly) {
         initComponents();
+        scanningLabel.setVisible(SourceUtils.isScanInProgress());
         EntityClassScope scope = EntityClassScope.getEntityClassScope(project.getProjectDirectory());
         EntityClosure ec = EntityClosure.create(scope, project);
         entityBeanCombo.setModel(EntityClosure.getAsComboModel(ec));
+        entityBeanCombo.getModel().addListDataListener(new ListDataListener() {
+            @Override
+            public void intervalAdded(ListDataEvent e) {
+                setScanningLabelVisible(SourceUtils.isScanInProgress());
+            }
+
+            @Override
+            public void intervalRemoved(ListDataEvent e) {
+            }
+
+            @Override
+            public void contentsChanged(ListDataEvent e) {
+                setScanningLabelVisible(SourceUtils.isScanInProgress());
+            }
+        });
         this.project = project;
         this.collection = collection;
         readOnlyCheckBox.setVisible(enableReadOnly);
@@ -173,6 +193,7 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
         readOnlyCheckBox = new javax.swing.JCheckBox();
         customizeTemplatesLabel = new javax.swing.JLabel();
         hint = new javax.swing.JLabel();
+        scanningLabel = new javax.swing.JLabel();
 
         entityBeanLabel.setText(org.openide.util.NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.entityBeanLabel.text")); // NOI18N
 
@@ -202,6 +223,10 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
 
         hint.setText(org.openide.util.NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.hint.text")); // NOI18N
 
+        scanningLabel.setFont(new java.awt.Font("Dialog", 2, 12)); // NOI18N
+        scanningLabel.setForeground(new java.awt.Color(153, 153, 153));
+        scanningLabel.setText(org.openide.util.NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.scanningLabel.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -215,11 +240,15 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
                             .addComponent(managedBeanLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(entityBeanCombo, 0, 324, Short.MAX_VALUE)
-                            .addComponent(managedBeanCombo, 0, 324, Short.MAX_VALUE)
+                            .addComponent(entityBeanCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(managedBeanCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(readOnlyCheckBox)
-                            .addComponent(hint, javax.swing.GroupLayout.DEFAULT_SIZE, 324, Short.MAX_VALUE)))
-                    .addComponent(customizeTemplatesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(hint, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(scanningLabel)
+                            .addComponent(customizeTemplatesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -237,8 +266,10 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
                 .addComponent(hint)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(readOnlyCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 77, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 67, Short.MAX_VALUE)
                 .addComponent(customizeTemplatesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(scanningLabel)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -350,6 +381,7 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
     private javax.swing.JComboBox managedBeanCombo;
     private javax.swing.JLabel managedBeanLabel;
     private javax.swing.JCheckBox readOnlyCheckBox;
+    private javax.swing.JLabel scanningLabel;
     // End of variables declaration//GEN-END:variables
 
 
@@ -385,7 +417,7 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
         return webBeansModel;
     }
 
-    public static List<String> getManagedBeanPropertyNames(Project project,
+    public List<String> getManagedBeanPropertyNames(Project project,
             final String managedBean, final String entityClassName,
             final String managedBeanName, final boolean collection) {
         final List<String> res = new ArrayList<String>();
@@ -402,68 +434,104 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
                 ClassPathSupport.createProxyClassPath(ClassPath.getClassPath(root, ClassPath.SOURCE)));
         JavaSource js = JavaSource.create(classpathInfo);
         try {
-            js.runUserActionTask(new Task<CompilationController>() {
-                public void run(CompilationController cc) throws Exception {
-                    cc.toPhase(Phase.ELEMENTS_RESOLVED);
-                    TypeMirror entityClassType = cc.getElements().getTypeElement(entityClassName).asType();
-                    TypeElement te = cc.getElements().getTypeElement(managedBean);
-                    for (ExecutableElement el : ElementFilter.methodsIn(te.getEnclosedElements())) {
-                        if (el.getParameters().size() > 0) {
-                            continue;
-                        }
-                        if (el.getReturnType().getKind() != TypeKind.DECLARED) {
-                            continue;
-                        }
-                        DeclaredType declaredReturnType = (DeclaredType)el.getReturnType();
-                        Element returnElement = declaredReturnType.asElement();
-                        TypeElement returnTypeElement;
-                        if ((returnElement.getKind() == ElementKind.CLASS ||
-                            returnElement.getKind() == ElementKind.INTERFACE) &&
-                            (returnElement instanceof TypeElement) ) {
-                            returnTypeElement = (TypeElement)returnElement;
-                        } else {
-                            continue;
-                        }
-                        TypeMirror returnTypeMirror;
-                        TypeElement returnCollectionTypeElement = null;
-                        if (declaredReturnType.getTypeArguments().size() > 0) {
-                            returnCollectionTypeElement = returnTypeElement;
-                            returnTypeMirror = declaredReturnType.getTypeArguments().get(0);
-                        } else {
-                            returnTypeMirror = returnTypeElement.asType();
-                        }
-                        if (collection) {
-                            if (returnCollectionTypeElement == null) {
-                                continue;
-                            }
-                            if (isCollection(returnCollectionTypeElement) &&
-                                    cc.getTypes().isAssignable(returnTypeMirror, entityClassType)) {
-                                res.add(managedBeanName+"."+JpaControllerUtil.getPropNameFromMethod(el.getSimpleName().toString()));
-                            }
-                        } else {
-                            if (entityClassType.equals(returnTypeMirror)) {
-                                res.add(managedBeanName+"."+JpaControllerUtil.getPropNameFromMethod(el.getSimpleName().toString()));
-                            }
-                        }
-                    }
-                }
-
-                private boolean isCollection(TypeElement type) {
-                    String collectionTypeClass = type.getQualifiedName().toString();
-                    Class collectionTypeAsClass = null;
-                    try {
-                        collectionTypeAsClass = Class.forName(collectionTypeClass);
-                    } catch (ClassNotFoundException cfne) {
-                        //let collectionTypeAsClass be null
-                    }
-                    return (collectionTypeAsClass != null && Collection.class.isAssignableFrom(collectionTypeAsClass));
-                }
-                
-            }, true);
+            Future<Void> searchingTask = js.runWhenScanFinished(
+                    new SearchTask(managedBean, entityClassName, managedBeanName, res, false),
+                    true);
+            if (searchingTask.isDone()) {
+                return res;
+            }
+            js.runUserActionTask(new SearchTask(managedBean, entityClassName, managedBeanName, res, true), true);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
         return res;
     }
 
+    private void setScanningLabelVisible(final boolean visible) {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                scanningLabel.setVisible(visible);
+            }
+        });
+    }
+
+    private class SearchTask implements Task<CompilationController> {
+
+        private final String managedBean;
+        private final String entityClassName;
+        private final String managedBeanName;
+        private final List<String> result;
+        private boolean scanning;
+
+        public SearchTask(String managedBean, String entityClassName, String managedBeanName, 
+                List<String> result, boolean scanning) {
+            this.managedBean = managedBean;
+            this.entityClassName = entityClassName;
+            this.managedBeanName = managedBeanName;
+            this.scanning = scanning;
+            this.result = result;
+        }
+
+        @Override
+        public void run(CompilationController cc) throws Exception {
+            cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            TypeElement entityClassTypeElement = cc.getElements().getTypeElement(entityClassName);
+            TypeElement beanTypeElement = cc.getElements().getTypeElement(managedBean);
+            if (entityClassTypeElement != null && beanTypeElement != null) {
+                TypeMirror entityClassType = entityClassTypeElement.asType();
+                for (ExecutableElement el : ElementFilter.methodsIn(beanTypeElement.getEnclosedElements())) {
+                    if (el.getParameters().size() > 0) {
+                        continue;
+                    }
+                    if (el.getReturnType().getKind() != TypeKind.DECLARED) {
+                        continue;
+                    }
+                    DeclaredType declaredReturnType = (DeclaredType)el.getReturnType();
+                    Element returnElement = declaredReturnType.asElement();
+                    TypeElement returnTypeElement;
+                    if ((returnElement.getKind() == ElementKind.CLASS ||
+                        returnElement.getKind() == ElementKind.INTERFACE) &&
+                        (returnElement instanceof TypeElement) ) {
+                        returnTypeElement = (TypeElement)returnElement;
+                    } else {
+                        continue;
+                    }
+                    TypeMirror returnTypeMirror;
+                    TypeElement returnCollectionTypeElement = null;
+                    if (declaredReturnType.getTypeArguments().size() > 0) {
+                        returnCollectionTypeElement = returnTypeElement;
+                        returnTypeMirror = declaredReturnType.getTypeArguments().get(0);
+                    } else {
+                        returnTypeMirror = returnTypeElement.asType();
+                    }
+                    if (collection) {
+                        if (returnCollectionTypeElement == null) {
+                            continue;
+                        }
+                        if (isCollection(returnCollectionTypeElement) &&
+                                cc.getTypes().isAssignable(returnTypeMirror, entityClassType)) {
+                            result.add(managedBeanName+"."+JpaControllerUtil.getPropNameFromMethod(el.getSimpleName().toString()));
+                        }
+                    } else {
+                        if (entityClassType.equals(returnTypeMirror)) {
+                            result.add(managedBeanName+"."+JpaControllerUtil.getPropNameFromMethod(el.getSimpleName().toString()));
+                        }
+                    }
+                }
+            }
+            setScanningLabelVisible(SourceUtils.isScanInProgress());
+        }
+
+        private boolean isCollection(TypeElement type) {
+            String collectionTypeClass = type.getQualifiedName().toString();
+            Class collectionTypeAsClass = null;
+            try {
+                collectionTypeAsClass = Class.forName(collectionTypeClass);
+            } catch (ClassNotFoundException cfne) {
+                //let collectionTypeAsClass be null
+            }
+            return (collectionTypeAsClass != null && Collection.class.isAssignableFrom(collectionTypeAsClass));
+        }
+    }
 }

@@ -58,6 +58,9 @@ final class RegexpMaker {
     private static final String checkNotBeforeWordChar
                                 = "(?!" + wordCharsExpr + ")";          //NOI18N
     
+    private static String MULTILINE_REGEXP_PATTERN =
+            ".*(\\\\n|\\\\r|\\\\f|\\\\u|\\\\0|\\\\x|\\(\\?[idmux]*s).*";//NOI18N
+
     private RegexpMaker() {
     }
 
@@ -343,4 +346,11 @@ final class RegexpMaker {
         return (c >= '0') && (c <= '9');
     }
 
+    /**
+     * Line-by-line is not sufficient and whole-file matching must be performed
+     * for a pattern.
+     */
+    static boolean canBeMultilinePattern(String expr) {
+        return expr.matches(MULTILINE_REGEXP_PATTERN);
+    }
 }

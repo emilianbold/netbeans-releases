@@ -63,7 +63,6 @@ import java.beans.PropertyVetoException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -71,7 +70,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -93,7 +91,6 @@ import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.NodeAdapter;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -1089,40 +1086,9 @@ public class PropertySheet extends JPanel {
         public void actionPerformed(ActionEvent e) {
             HelpCtx ctx = getContext();
 
-            if (ctx == null) {
+            if (ctx == null || !ctx.display()) {
                 Toolkit.getDefaultToolkit().beep();
-
-                return;
             }
-
-            try {
-                //Copied from original property sheet implementation
-                Class<?> c = Lookup.getDefault().lookup(ClassLoader.class).loadClass(
-                        "org.netbeans.api.javahelp.Help"
-                    ); // NOI18N
-
-                Object o = Lookup.getDefault().lookup(c);
-
-                if (o != null) {
-                    Method m = c.getMethod("showHelp", // NOI18N
-                            new Class[] { HelpCtx.class }
-                        );
-
-                    if (m != null) { //Unit tests
-                        m.invoke(o, new Object[] { ctx });
-                    }
-
-                    return;
-                }
-            } catch (ClassNotFoundException cnfe) {
-                // ignore - maybe javahelp module is not installed, not so strange
-            } catch (Exception ee) {
-                // potentially more serious
-                Logger.getLogger(PropertySheet.class.getName()).log(Level.WARNING, null, ee);
-            }
-
-            // Did not work.
-            Toolkit.getDefaultToolkit().beep();
         }
 
         public HelpCtx getContext() {

@@ -79,27 +79,21 @@ import javax.swing.event.DocumentListener;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "TimeCustomizer_UnitsMinutes=minutes",
+    "TimeCustomizer_UnitsHours=hours",
+    "TimeCustomizer_TakeAtLabelText=Take &at",
+    "TimeCustomizer_NowButtonText=N&ow",
+    "TimeCustomizer_TodayButtonText=Toda&y",
+    "TimeCustomizer_TakeOnceRadioText=Ta&ke once",
+    "TimeCustomizer_TakeEveryRadioText=Take e&very",
+    "TimeCustomizer_TimeFieldAccessName=Time of Profiling Point invocation",
+    "TimeCustomizer_DateFieldAccessName=Date of Profiling Point invocation",
+    "TimeCustomizer_FrequencyComboAccessName=Units"
+})
 public class TimeCustomizer extends ValidityAwarePanel implements ActionListener, ChangeListener, DocumentListener {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String UNITS_MINUTES = NbBundle.getMessage(TimeCustomizer.class, "TimeCustomizer_UnitsMinutes"); // NOI18N
-    private static final String UNITS_HOURS = NbBundle.getMessage(TimeCustomizer.class, "TimeCustomizer_UnitsHours"); // NOI18N
-    private static final String TAKE_AT_LABEL_TEXT = NbBundle.getMessage(TimeCustomizer.class, "TimeCustomizer_TakeAtLabelText"); // NOI18N
-    private static final String NOW_BUTTON_TEXT = NbBundle.getMessage(TimeCustomizer.class, "TimeCustomizer_NowButtonText"); // NOI18N
-    private static final String TODAY_BUTTON_TEXT = NbBundle.getMessage(TimeCustomizer.class, "TimeCustomizer_TodayButtonText"); // NOI18N
-    private static final String TAKE_ONCE_RADIO_TEXT = NbBundle.getMessage(TimeCustomizer.class,
-                                                                           "TimeCustomizer_TakeOnceRadioText"); // NOI18N
-    private static final String TAKE_EVERY_RADIO_TEXT = NbBundle.getMessage(TimeCustomizer.class,
-                                                                            "TimeCustomizer_TakeEveryRadioText"); // NOI18N
-    private static final String TIME_FIELD_ACCESS_NAME = NbBundle.getMessage(TimeCustomizer.class,
-                                                                             "TimeCustomizer_TimeFieldAccessName"); // NOI18N
-    private static final String DATE_FIELD_ACCESS_NAME = NbBundle.getMessage(TimeCustomizer.class,
-                                                                             "TimeCustomizer_DateFieldAccessName"); // NOI18N
-    private static final String FREQUENCY_COMBO_ACCESS_NAME = NbBundle.getMessage(TimeCustomizer.class,
-                                                                                  "TimeCustomizer_FrequencyComboAccessName"); // NOI18N
-                                                                                                                              // -----
     private static final DateFormat TIME_FORMAT = DateFormat.getTimeInstance();
     private static final DateFormat DATE_FORMAT = DateFormat.getDateInstance();
 
@@ -143,11 +137,11 @@ public class TimeCustomizer extends ValidityAwarePanel implements ActionListener
 
         switch (condition.getPeriodUnits()) {
             case TimedGlobalProfilingPoint.TimeCondition.UNITS_MINUTES:
-                timeFrequencyCombo.setSelectedItem(UNITS_MINUTES);
+                timeFrequencyCombo.setSelectedItem(Bundle.TimeCustomizer_UnitsMinutes());
 
                 break;
             case TimedGlobalProfilingPoint.TimeCondition.UNITS_HOURS:
-                timeFrequencyCombo.setSelectedItem(UNITS_HOURS);
+                timeFrequencyCombo.setSelectedItem(Bundle.TimeCustomizer_UnitsHours());
 
                 break;
             default:
@@ -180,9 +174,9 @@ public class TimeCustomizer extends ValidityAwarePanel implements ActionListener
         condition.setRepeats(timeFrequencyRadio.isSelected());
         condition.setPeriodTime(((Integer) timeFrequencySpinner.getValue()).intValue());
 
-        if (timeFrequencyCombo.getSelectedItem() == UNITS_MINUTES) {
+        if (timeFrequencyCombo.getSelectedItem() == Bundle.TimeCustomizer_UnitsMinutes()) {
             condition.setPeriodUnits(TimedGlobalProfilingPoint.TimeCondition.UNITS_MINUTES);
-        } else if (timeFrequencyCombo.getSelectedItem() == UNITS_HOURS) {
+        } else if (timeFrequencyCombo.getSelectedItem() == Bundle.TimeCustomizer_UnitsHours()) {
             condition.setPeriodUnits(TimedGlobalProfilingPoint.TimeCondition.UNITS_HOURS);
         }
 
@@ -285,7 +279,7 @@ public class TimeCustomizer extends ValidityAwarePanel implements ActionListener
 
         // timeTakeAtLabel
         timeTakeAtLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(timeTakeAtLabel, TAKE_AT_LABEL_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(timeTakeAtLabel, Bundle.TimeCustomizer_TakeAtLabelText());
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -304,7 +298,7 @@ public class TimeCustomizer extends ValidityAwarePanel implements ActionListener
                     return getPreferredSize();
                 }
             };
-        timeTakeAtField.getAccessibleContext().setAccessibleName(TIME_FIELD_ACCESS_NAME);
+        timeTakeAtField.getAccessibleContext().setAccessibleName(Bundle.TimeCustomizer_TimeFieldAccessName());
         timeTakeAtLabel.setLabelFor(timeTakeAtField);
         timeTakeAtField.getDocument().addDocumentListener(this);
         timeTakeAtField.setHorizontalAlignment(JTextField.TRAILING);
@@ -318,7 +312,7 @@ public class TimeCustomizer extends ValidityAwarePanel implements ActionListener
 
         // timeTakeAtButton
         timeTakeAtButton = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(timeTakeAtButton, NOW_BUTTON_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(timeTakeAtButton, Bundle.TimeCustomizer_NowButtonText());
         timeTakeAtButton.addActionListener(this);
         constraints = new GridBagConstraints();
         constraints.gridx = 2;
@@ -338,7 +332,7 @@ public class TimeCustomizer extends ValidityAwarePanel implements ActionListener
                     return getPreferredSize();
                 }
             };
-        timeTakeAtDateField.getAccessibleContext().setAccessibleName(DATE_FIELD_ACCESS_NAME);
+        timeTakeAtDateField.getAccessibleContext().setAccessibleName(Bundle.TimeCustomizer_DateFieldAccessName());
         timeTakeAtDateField.getDocument().addDocumentListener(this);
         timeTakeAtDateField.setHorizontalAlignment(JTextField.TRAILING);
         constraints = new GridBagConstraints();
@@ -351,7 +345,7 @@ public class TimeCustomizer extends ValidityAwarePanel implements ActionListener
 
         // timeTakeAtDateButton
         timeTakeAtDateButton = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(timeTakeAtDateButton, TODAY_BUTTON_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(timeTakeAtDateButton, Bundle.TimeCustomizer_TodayButtonText());
         timeTakeAtDateButton.addActionListener(this);
         constraints = new GridBagConstraints();
         constraints.gridx = 4;
@@ -387,7 +381,7 @@ public class TimeCustomizer extends ValidityAwarePanel implements ActionListener
 
         // timeOnceRadio
         timeOnceRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(timeOnceRadio, TAKE_ONCE_RADIO_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(timeOnceRadio, Bundle.TimeCustomizer_TakeOnceRadioText());
         triggerRadiosGroup.add(timeOnceRadio);
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
@@ -399,7 +393,7 @@ public class TimeCustomizer extends ValidityAwarePanel implements ActionListener
 
         // timeFrequencyRadio
         timeFrequencyRadio = new JRadioButton();
-        org.openide.awt.Mnemonics.setLocalizedText(timeFrequencyRadio, TAKE_EVERY_RADIO_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(timeFrequencyRadio, Bundle.TimeCustomizer_TakeEveryRadioText());
         triggerRadiosGroup.add(timeFrequencyRadio);
         timeFrequencyRadio.setSelected(true);
         timeFrequencyRadio.addChangeListener(this);
@@ -431,7 +425,7 @@ public class TimeCustomizer extends ValidityAwarePanel implements ActionListener
         triggerRadiosContainer.add(timeFrequencySpinner, constraints);
 
         // timeFrequencyCombo
-        timeFrequencyCombo = new JComboBox(new Object[] { UNITS_MINUTES, UNITS_HOURS }) {
+        timeFrequencyCombo = new JComboBox(new Object[] { Bundle.TimeCustomizer_UnitsMinutes(), Bundle.TimeCustomizer_UnitsMinutes() }) {
                 public Dimension getPreferredSize() {
                     return new Dimension(Math.min(super.getPreferredSize().width, 200), super.getPreferredSize().height);
                 }
@@ -440,7 +434,7 @@ public class TimeCustomizer extends ValidityAwarePanel implements ActionListener
                     return getPreferredSize();
                 }
             };
-        timeFrequencyCombo.getAccessibleContext().setAccessibleName(FREQUENCY_COMBO_ACCESS_NAME);
+        timeFrequencyCombo.getAccessibleContext().setAccessibleName(Bundle.TimeCustomizer_FrequencyComboAccessName());
         constraints = new GridBagConstraints();
         constraints.gridx = 3;
         constraints.gridy = 0;

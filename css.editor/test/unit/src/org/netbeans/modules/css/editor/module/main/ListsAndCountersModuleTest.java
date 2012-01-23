@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
@@ -53,13 +55,59 @@ public class ListsAndCountersModuleTest extends CssModuleTestBase {
         super(testName);
     }
 
-    public void testProperties() {
-        assertPropertyDeclaration("list-style: upper-roman inside ");
-        assertPropertyDeclaration("list-style: circle outside)");
+    public void testListStyle() {
+        assertPropertyDeclaration("list-style: circle outside");
         assertPropertyDeclaration("list-style: lower-alpha");
+        assertPropertyDeclaration("list-style: upper-roman inside ");
+        assertPropertyDeclaration("list-style: symbols(\"*\" \"\\2020\" \"\\2021\" \"\\A7\");");
+    }
+    
+    public void testListStyleCompletion() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("list-style");
+        assertAlternatives(p.getGrammar(), "",
+                "repeating-linear-gradient","lower-latin","lower-greek",
+                "repeating-radial-gradient","disc","lower-alpha","lower-roman",
+                "!identifier","georgian","element","upper-alpha","armenian",
+                "upper-latin","linear-gradient","!string","image","decimal",
+                "upper-roman","url","cross-fade","radial-gradient","inside",
+                "decimal-leading-zero","square", "circle","none","symbols","outside");
+    }
+    
+    public void testListStyleType() {
+        assertPropertyDeclaration("list-style-type: circle");
+        assertPropertyDeclaration("list-style-type: none");
+        assertPropertyDeclaration("list-style-type: \"hello\"");
+        assertPropertyDeclaration("list-style-type: someident");
+        assertPropertyDeclaration("list-style-type: symbols(\"*\" \"\\2020\" \"\\2021\" \"\\A7\");");
+    }
+    
+    public void testListStyleTypeCompletion() {
+        PropertyModel p = CssModuleSupport.getPropertyModel("list-style-type");
+        assertAlternatives(p.getGrammar(), "",
+                "georgian","armenian","upper-alpha","upper-latin","!string","lower-latin",
+                "circle","lower-greek","decimal","upper-roman","disc","lower-alpha",
+                "symbols","lower-roman","none","decimal-leading-zero","square","!identifier");
+        
+        assertAlternatives(p.getGrammar(), "symbols", "(");
+        assertAlternatives(p.getGrammar(), "symbols(",
+                "repeating-linear-gradient","element","numeric","linear-gradient",
+                "!string","alphabetic","image","symbolic","repeating-radial-gradient",
+                "url","repeating","cross-fade","non-repeating","radial-gradient");
+    }
+    
+    public void testListStyleImage() {
+        assertPropertyDeclaration("list-style-image: none");        
+        assertPropertyDeclaration("list-style-image: url(\"http://www.example.com/ellipse.png\")");        
 
-        assertPropertyDeclaration("list-style-image: url(\"http://www.example.com/ellipse.png\")");
-
+    }
+    public void testMarkerAttachmement() {
+        assertPropertyDeclaration("marker-attachment: list-container");
+        assertPropertyDeclaration("marker-attachment: list-item");
+    }
+    
+    public void testListStylePosition() {
+        assertPropertyDeclaration("list-style-position: inside");
+        assertPropertyDeclaration("list-style-position: outside");
     }
 
     public void testMarkerPseudoElementCompletion() throws ParseException {

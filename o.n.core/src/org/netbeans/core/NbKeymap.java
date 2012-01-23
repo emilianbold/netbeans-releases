@@ -84,7 +84,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=Keymap.class)
 public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
 
-    private static final RequestProcessor RP = new RequestProcessor("NbKeyMap", 1); //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(NbKeymap.class);
     //for unit testing only
     private RequestProcessor.Task refreshTask;
 
@@ -168,9 +168,8 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
     }
 
     //for unit testing only
-    void waitFinished() throws InterruptedException {
-        if( null != refreshTask )
-            refreshTask.waitFinished(5000);
+    boolean waitFinished() throws InterruptedException {
+        return refreshTask != null ? refreshTask.waitFinished(9999) : false;
     }
 
     private synchronized Map<KeyStroke,Binding> bindings() {

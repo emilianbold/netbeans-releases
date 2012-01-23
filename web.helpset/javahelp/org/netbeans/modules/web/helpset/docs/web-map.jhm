@@ -99,8 +99,7 @@
 	<mapID target="listener_create" url="web/create/listener/listener_create.html"/>
 	<mapID target="listener_run" url="web/create/listener/listener_run.html"/>
 
-	<mapID target="org.netbeans.modules.editor.html.HTMLKit" url="web/create/jsp/about_jsp_edit.html"/>
-	<mapID target="org.netbeans.modules.web.core.syntax.JSPKit" url="web/create/jsp/about_jsp_edit.html"/>
+		
 	<mapID target="org.netbeans.modules.web.freeform.ui.WebClasspathPanel" url="web/csh/dbox_projprops_freeform/WebClasspathPanel.html"/>
 	<mapID target="org.netbeans.modules.web.freeform.ui.WebClasspathWizardPanel" url="web/csh/projwiz_freeform/WebClasspathWizardPanel.html"/>
 	<mapID target="org.netbeans.modules.web.freeform.ui.WebLocationsPanel" url="web/csh/dbox_projprops_freeform/WebLocationsPanel.html"/>
@@ -144,12 +143,12 @@
 	<mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel" url="web/framework/struts/csh/file_ActionPanel.html"/>
 	<mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel1" url="web/framework/struts/csh/file_ActionPanel1.html"/>
 	<mapID target="org.netbeans.modules.web.struts.wizards.FormBeanNewPanel" url="web/framework/struts/csh/file_FormBeanNewPanel.html"/>
-	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetProjectLocationStep" url="web/framework/grails/NewGrailsProjectWizard.html"/>
-	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-controller" url="web/framework/grails/NewGrailsArtifact.html"/>
-	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-domain-class" url="web/framework/grails/NewGrailsArtifact.html"/>
-	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-script" url="web/framework/grails/NewGrailsArtifact.html"/>
-	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-service" url="web/framework/grails/NewGrailsArtifact.html"/>
-	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-unit-test" url="web/framework/grails/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetProjectLocationStep" url="web/framework/grails/csh/NewGrailsProjectWizard.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-controller" url="web/framework/grails/csh/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-domain-class" url="web/framework/grails/csh/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-script" url="web/framework/grails/csh/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-service" url="web/framework/grails/csh/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-unit-test" url="web/framework/grails/csh/NewGrailsArtifact.html"/>
 	<mapID target="servlet_create" url="web/create/servlet/servlet_create.html"/>
 	<mapID target="servlet_edit" url="web/create/servlet/servlet_edit.html"/>
 	<mapID target="servlet_run" url="web/create/servlet/servlet_run.html"/>

@@ -49,17 +49,13 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.Constants;
 import org.netbeans.modules.welcome.content.LinkButton;
 import org.netbeans.modules.welcome.content.Utils;
-import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
+import org.openide.awt.Actions;
 import org.openide.util.Exceptions;
 
 /**
@@ -115,6 +111,7 @@ class PluginsPanel extends JPanel implements Constants {
         add( new JLabel(), new GridBagConstraints(0, 2, 1, 1, 1.0, 1.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(0,0,0,0), 0, 0));
     }
 
+    // XXX why is this an Action when it is only invoked directly?
     private static class ShowPluginManagerAction extends AbstractAction {
         private final String initialTab;
         public ShowPluginManagerAction(String initialTab) {
@@ -125,9 +122,7 @@ class PluginsPanel extends JPanel implements Constants {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                FileObject fo = FileUtil.getConfigFile( "Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance"); // NOI18N
-                Action a = (Action) DataObject.find(fo).getLookup().lookup(InstanceCookie.class).instanceCreate();
-                a.actionPerformed(new ActionEvent(e.getSource(), 100, initialTab));
+                Actions.forID("System", "org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction").actionPerformed(new ActionEvent(e.getSource(), 100, initialTab));
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }

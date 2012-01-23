@@ -66,6 +66,7 @@ public class InactiveCodeTest extends SemanticHighlightingTestBase {
         performTest("defines.c"); // NOI18N
     }
 
+    @Override
     protected List<CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
         return ModelUtils.getInactiveCodeBlocks(testFile);
     }

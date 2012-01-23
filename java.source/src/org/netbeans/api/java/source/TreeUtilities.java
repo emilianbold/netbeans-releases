@@ -232,7 +232,6 @@ public final class TreeUtilities {
 
             if (automap) {
                 GeneratorUtilities.importComments(info, tree, info.getCompilationUnit());
-                set.commentsMapped();
             }
         }
     }
@@ -979,6 +978,9 @@ public final class TreeUtilities {
         public void classEntered(ClassTree clazz) {}
 
         @Override
+        public void enterVisibleThroughClasses(ClassTree clazz) {}
+
+        @Override
         public void classLeft() {}
 
         @Override
@@ -1164,5 +1166,19 @@ public final class TreeUtilities {
         public int size() {
             return list.size();
         }
+    }
+
+    /**Checks whether the given expression is a compile-time constant, as per JLS 15.28.
+     *
+     * @param expression the expression to check
+     * @return true if and only if the given expression represents a compile-time constant value
+     * @since 0.91
+     */
+    public boolean isCompileTimeConstantExpression(TreePath expression) {
+        Scope s = info.getTrees().getScope(expression);
+        TypeMirror attributeTree = attributeTree(expression.getLeaf(), s);
+        Type attributeTreeImpl = (Type) attributeTree;
+
+        return attributeTreeImpl != null && attributeTreeImpl.constValue() != null;
     }
 }

@@ -53,7 +53,7 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitObjectType;
 import org.netbeans.libs.git.GitRevisionInfo;
-import org.netbeans.libs.git.jgit.JGitRevisionInfo;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -66,8 +66,8 @@ public class GetPreviousCommitCommand extends GitCommand {
     private GitRevisionInfo previousRevision;
     private final File file;
 
-    public GetPreviousCommitCommand (Repository repository, File file, String revision, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public GetPreviousCommitCommand (Repository repository, GitClassFactory gitFactory, File file, String revision, ProgressMonitor monitor) {
+        super(repository, gitFactory, monitor);
         this.file = file;
         this.revision = revision;
     }
@@ -87,7 +87,7 @@ public class GetPreviousCommitCommand extends GitCommand {
                     }
                     Iterator<RevCommit> it = walk.iterator();
                     if (it.hasNext()) {
-                        previousRevision = new JGitRevisionInfo(new RevWalk(repository).parseCommit(it.next()), repository);
+                        previousRevision = getClassFactory().createRevisionInfo(new RevWalk(repository).parseCommit(it.next()), repository);
                     }
                 }
             } catch (MissingObjectException ex) {

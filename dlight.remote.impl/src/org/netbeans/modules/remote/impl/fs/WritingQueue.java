@@ -61,6 +61,9 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.remote.impl.RemoteLogger;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.FilesystemInterceptor;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -102,6 +105,7 @@ public class WritingQueue {
     }
 
     public void add(RemotePlainFile fo) {
+        RemoteLogger.assertTrue(RemoteFileObjectBase.DEFER_WRITES);
         String dstFileName = fo.getPath();
         LOGGER.log(Level.FINEST, "WritingQueue: adding file {0}", dstFileName); //NOI18N
         synchronized (lock) {
@@ -158,7 +162,7 @@ public class WritingQueue {
                 }
             }
             synchronized (monitor) {
-                monitor.wait();
+                monitor.wait(100);
             }
         }
         return failedFiles.isEmpty();
@@ -170,12 +174,10 @@ public class WritingQueue {
         }
         while (true) {
             if (entriesEmpty(filesToWait, failedFiles)) {
-                if (entries.isEmpty()) {
-                    break;
-                }
+                break;
             }
             synchronized (monitor) {
-                monitor.wait();
+                monitor.wait(100);
             }
         }
         return failedFiles.isEmpty();
@@ -226,6 +228,7 @@ public class WritingQueue {
 
         private void taskFinished(Future<UploadStatus> finishedTask) {
             LOGGER.log(Level.FINEST, "WritingQueue: Task {0} at {1} finished", new Object[]{finishedTask, execEnv});
+            boolean done = false;
             synchronized (lock) {
                 if (currentTask != null && currentTask != finishedTask) {
                     // currentTask can contain either null or the last task
@@ -246,12 +249,13 @@ public class WritingQueue {
                         LOGGER.log(Level.FINEST, "WritingQueue: uploading {0} succeeded", fo);
                         failed.remove(fo.getPath()); // paranoia                        
                         fo.getParent().updateStat(fo, uploadStatus.getStatInfo());
+                        fo.getParent().fireFileChangedEvent(fo.getListenersWithParent(), new FileEvent(fo, fo, true));
+                        done = true;
                     } else {
                         LOGGER.log(Level.FINEST, "WritingQueue: uploading {0} failed", fo);
                         failed.add(fo.getPath());
                         fo.setPendingRemoteDelivery(false);
                     }
-                    fo.getParent();                                        
                 } catch (InterruptedException ex) {
                     // don't report InterruptedException
                 } catch (ExecutionException ex) {
@@ -260,6 +264,12 @@ public class WritingQueue {
                     entries.remove(fo.getPath());
                 }
                 progress.entryDone(entries.size());
+            }
+            if (RemoteFileObjectBase.USE_VCS && done) {
+                FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fo.getFileSystem());
+                if (interceptor != null) {
+                    interceptor.fileChanged(FilesystemInterceptorProvider.toFileProxy(fo));
+                }
             }
         }
     }

@@ -1,0 +1,9 @@
+[[89,94]-Syntax error:
+expected: exit, if, identifier, variable, echo, do, while, for, foreach, declare, switch, break, continue, function, const, return, try, throw, use, global, unset, isset, empty, class, interface, array, {, include, include_once, eval, require, require_once, print, ';', +, -, !, ~, ++, --, @, [, new, static, abstract, final, (, $] 89-94:Syntax error:
+expected: exit, if, identifier, variable, echo, do, while, for, foreach, declare, switch, break, continue, function, const, return, try, throw, use, global, unset, isset, empty, class, interface, array, {, include, include_once, eval, require, require_once, print, ';', +, -, !, ~, ++, --, @, [, new, static, abstract, final, (, $
+[[89,94]-Syntax error:
+expected: variable, ::] 89-94:Syntax error:
+expected: variable, ::
+[[89,94]-Syntax error:
+expected: variable, function, static, abstract, final] 89-94:Syntax error:
+expected: variable, function, static, abstract, final

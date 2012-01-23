@@ -61,6 +61,7 @@ public class ClassFieldsTest extends SemanticHighlightingTestBase {
         performTest("welcome.cc"); // NOI18N
     }
     
+    @Override
     protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile, int offset) {
         List<? extends CsmOffsetable> list = ModelUtils.collect(
                 testFile, new ModelUtils.FieldReferenceCollector());

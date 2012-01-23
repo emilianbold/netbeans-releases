@@ -70,14 +70,16 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.OpenProjectListSettings;
 import org.netbeans.modules.project.ui.ProjectTab;
 import org.netbeans.modules.project.ui.ProjectUtilities;
+import static org.netbeans.modules.project.ui.groups.Bundle.*;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 
 /**
@@ -149,15 +151,12 @@ public abstract class Group {
     /**
      * Set the currently active group (or null).
      */
+    @Messages({
+        "# {0} - internal group info", "Group.UI.setActiveGroup=Selecting project group: {0}",
+        "#NOI18N", "Group.UI.setActiveGroup_ICON_BASE=org/netbeans/modules/project/ui/resources/openProject.png"
+    })
     public static void setActiveGroup(Group nue) {
         LOG.log(Level.FINE, "set active group: {0}", nue);
-        if (UILOG.isLoggable(Level.FINER)) {
-            LogRecord rec = new LogRecord(Level.FINER, "Group.UI.setActiveGroup");
-            rec.setParameters(new Object[] {nue != null ? nue.toString(true) : null});
-            rec.setResourceBundle(NbBundle.getBundle(Group.class));
-            rec.setLoggerName(UILOG.getName());
-            UILOG.log(rec);
-        }
         Group old = getActiveGroup();
         if (nue != null) {
             NODE.put(KEY_ACTIVE, nue.id);
@@ -181,6 +180,13 @@ public abstract class Group {
             settings.setOpenProjectsURLsAsStrings(nue != null ? nue.projectPaths() : Collections.<String>emptyList());
             settings.setMainProjectURL(nue != null ? nue.prefs().get(KEY_MAIN, null) : null);
             // XXX with #168578 could adjust open files too
+        }
+        if (UILOG.isLoggable(Level.FINER)) {
+            LogRecord rec = new LogRecord(Level.FINER, "Group.UI.setActiveGroup");
+            rec.setParameters(new Object[] {nue != null ? nue.toString(true) : null});
+            rec.setResourceBundle(NbBundle.getBundle(Group.class));
+            rec.setLoggerName(UILOG.getName());
+            UILOG.log(rec);
         }
     }
     private static boolean projectsLoaded;
@@ -269,7 +275,7 @@ public abstract class Group {
         prefs().put(KEY_NAME, n);
         if (this.equals(getActiveGroup())) {
             EventQueue.invokeLater(new Runnable() {
-                public void run() {
+                @Override public void run() {
                     ProjectTab.findDefault(ProjectTab.ID_LOGICAL).setGroup(Group.this);
                 }
             });
@@ -318,17 +324,14 @@ public abstract class Group {
     protected List<String> projectPaths() {
         List<String> urls = new ArrayList<String>();
         for (Project p : getProjects()) {
-            try {
-                urls.add(p.getProjectDirectory().getURL().toString());
-            } catch (FileStateInvalidException x) {
-                Exceptions.printStackTrace(x);
-            }
+            urls.add(p.getProjectDirectory().toURL().toString());
         }
         return urls;
     }
 
+    @Messages({"# {0} - project display name", "Group.progress_project=Loading project \"{0}\""})
     protected static String progressMessage(Project p) {
-        return NbBundle.getMessage(Group.class, "Group.progress_project", ProjectUtils.getInformation(p).getDisplayName());
+        return Group_progress_project(ProjectUtils.getInformation(p).getDisplayName());
     }
 
     /**
@@ -346,11 +349,7 @@ public abstract class Group {
         LOG.log(Level.FINE, "updating main project for {0} to {1}", new Object[] {id, mainProject});
         URL f = null;
         if (mainProject != null && getProjects().contains(mainProject)) {
-            try {
-                f = mainProject.getProjectDirectory().getURL();
-            } catch (FileStateInvalidException x) {
-                LOG.log(Level.WARNING, null, x);
-            }
+            f = mainProject.getProjectDirectory().toURL();
         }
         if (f != null) {
             prefs().put(KEY_MAIN, f.toExternalForm());
@@ -365,24 +364,30 @@ public abstract class Group {
     /**
      * Open a group, replacing any open projects with this group's project set.
      */
+    @Messages({
+        "# {0} - group display name", "Group.open_handle=Opening group \"{0}\"",
+        "Group.close_handle=Closing group",
+        "# {0} - count", "Group.progress_closing=Closing {0} old projects",
+        "# {0} - count", "Group.progress_opening=Opening {0} new projects"
+    })
     private static void open(final Group g) {
         EventQueue.invokeLater(new Runnable() {
-            public void run() {
+            @Override public void run() {
                 ProjectTab.findDefault(ProjectTab.ID_LOGICAL).setGroup(g);
             }
         });
         String handleLabel;
         if (g != null) {
-            handleLabel = NbBundle.getMessage(Group.class, "Group.open_handle", g.getName());
+            handleLabel = Group_open_handle(g.getName());
         } else {
-            handleLabel = NbBundle.getMessage(Group.class, "Group.close_handle");
+            handleLabel = Group_close_handle();
         }
         ProgressHandle h = ProgressHandleFactory.createHandle(handleLabel);
         try {
         h.start(200);
         ProjectUtilities.WaitCursor.show();
-        OpenProjects op = OpenProjects.getDefault();
-        Set<Project> oldOpen = new HashSet<Project>(Arrays.asList(op.getOpenProjects()));
+        OpenProjectList opl = OpenProjectList.getDefault();
+        Set<Project> oldOpen = new HashSet<Project>(Arrays.asList(opl.getOpenProjects()));
         Set<Project> newOpen = g != null ? g.getProjects(h, 10, 100) : Collections.<Project>emptySet();
         Set<Project> toClose = new HashSet<Project>(oldOpen);
         toClose.removeAll(newOpen);
@@ -390,12 +395,13 @@ public abstract class Group {
         toOpen.removeAll(oldOpen);
         assert !toClose.contains(null) : toClose;
         assert !toOpen.contains(null) : toOpen;
-        h.progress(NbBundle.getMessage(Group.class, "Group.progress_closing", toClose.size()), 120);
-        op.close(toClose.toArray(new Project[toClose.size()]));
-        h.progress(NbBundle.getMessage(Group.class, "Group.progress_opening", toOpen.size()), 140);
-        op.open(toOpen.toArray(new Project[toOpen.size()]), false);
+        h.progress(Group_progress_closing(toClose.size()), 110);
+        opl.close(toClose.toArray(new Project[toClose.size()]), false);
+        h.switchToIndeterminate();
+        h.progress(Group_progress_opening(toOpen.size()));
+        opl.open(toOpen.toArray(new Project[toOpen.size()]), false, h, null);
         if (g != null) {
-            op.setMainProject(g.getMainProject());
+            opl.setMainProject(g.getMainProject());
         }
         } finally {
             ProjectUtilities.WaitCursor.hide();
@@ -435,7 +441,7 @@ public abstract class Group {
     public static Comparator<Group> displayNameComparator() {
         return new Comparator<Group>() {
             Collator COLLATOR = Collator.getInstance();
-            public int compare(Group g1, Group g2) {
+            @Override public int compare(Group g1, Group g2) {
                 return COLLATOR.compare(g1.getName(), g2.getName());
             }
         };

@@ -50,6 +50,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
+import org.netbeans.modules.php.project.phpunit.PhpUnitSkelGen;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -74,6 +75,7 @@ public class PhpUnitOptionsPanelController extends OptionsPanelController implem
     @Override
     public void update() {
         phpUnitOptionsPanel.setPhpUnit(getPhpOptions().getPhpUnit());
+        phpUnitOptionsPanel.setPhpUnitSkelGen(getPhpOptions().getPhpUnitSkelGen());
 
         changed = false;
     }
@@ -81,6 +83,7 @@ public class PhpUnitOptionsPanelController extends OptionsPanelController implem
     @Override
     public void applyChanges() {
         getPhpOptions().setPhpUnit(phpUnitOptionsPanel.getPhpUnit());
+        getPhpOptions().setPhpUnitSkelGen(phpUnitOptionsPanel.getPhpUnitSkelGen());
 
         changed = false;
     }
@@ -91,15 +94,15 @@ public class PhpUnitOptionsPanelController extends OptionsPanelController implem
 
     @Override
     public boolean isValid() {
-        PhpUnit phpUnit = null;
+        // phpunit
         try {
-            phpUnit = PhpUnit.getCustom(phpUnitOptionsPanel.getPhpUnit());
+            PhpUnit.getCustom(phpUnitOptionsPanel.getPhpUnit());
         } catch (InvalidPhpProgramException ex) {
             phpUnitOptionsPanel.setWarning(ex.getLocalizedMessage());
             return true;
         }
-        assert phpUnit != null;
-        String warning = PhpUnit.validateVersion(phpUnit);
+        // skel-gen
+        String warning = PhpUnitSkelGen.validate(phpUnitOptionsPanel.getPhpUnitSkelGen());
         if (warning != null) {
             phpUnitOptionsPanel.setWarning(warning);
             return true;
@@ -143,8 +146,6 @@ public class PhpUnitOptionsPanelController extends OptionsPanelController implem
     public void stateChanged(ChangeEvent e) {
         if (!changed) {
             changed = true;
-            // #202620 - #isValid() is called several times in a row, reset PhpUnit version only once
-            PhpUnit.resetVersion();
             propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
         }
         propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);

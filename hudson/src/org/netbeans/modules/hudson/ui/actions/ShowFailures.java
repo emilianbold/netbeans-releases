@@ -97,6 +97,7 @@ import org.xml.sax.helpers.DefaultHandler;
 public class ShowFailures extends AbstractAction implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(ShowFailures.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(ShowFailures.class);
     
     private final HudsonJob job;
     private final String url;
@@ -128,7 +129,8 @@ public class ShowFailures extends AbstractAction implements Runnable {
         "# {0} - job #build", "ShowFailures.title={0} Test Failures",
         "# {0} - class & method name of failed test", "# {1} - suite name of failed test", "ShowFailures.from_suite={0} (from {1})",
         "LBL_GotoSource=Go to Source",
-        "no_test_result=No test result found for this build."
+        "no_test_result=No test result found for this build.",
+        "# {0} - Java source file resource path", "no_source_to_hyperlink=Could not find {0} among open projects."
     })
     public void run() {
         try {
@@ -167,24 +169,24 @@ public class ShowFailures extends AbstractAction implements Runnable {
                         return new CallstackFrameNode(frameInfo, displayName) {
                             public @Override Action getPreferredAction() {
                                 return new AbstractAction(LBL_GotoSource()) {
-                                    FileObject f;
-                                    int line;
-                                    {
+                                    public @Override void actionPerformed(ActionEvent e) {
                                         // XXX should have utility API to parse stack traces
-                                        Matcher m = Pattern.compile("\tat (.+[.])[^.]+[.][^.]+[(]([^.]+[.]java):([0-9]+)[)]").matcher(frameInfo);
+                                        final Matcher m = Pattern.compile("\tat (.+[.])[^.]+[.][^.]+[(]([^.]+[.]java):([0-9]+)[)]").matcher(frameInfo);
                                         if (m.matches()) {
-                                            String resource = m.group(1).replace('.', '/') + m.group(2);
-                                            f = GlobalPathRegistry.getDefault().findResource(resource);
-                                            line = Integer.parseInt(m.group(3));
-                                            LOG.log(Level.FINER, "matched {0} -> {1}", new Object[] {resource, f});
+                                            final String resource = m.group(1).replace('.', '/') + m.group(2);
+                                            RP.post(new Runnable() {
+                                                @Override public void run() {
+                                                    FileObject f = GlobalPathRegistry.getDefault().findResource(resource);
+                                                    LOG.log(Level.FINER, "matched {0} -> {1}", new Object[] {resource, f});
+                                                    if (f != null) {
+                                                        HudsonLogger.Helper.openAt(f, Integer.parseInt(m.group(3)) - 1, -1, true);
+                                                    } else {
+                                                        StatusDisplayer.getDefault().setStatusText(no_source_to_hyperlink(resource));
+                                                    }
+                                                }
+                                            });
                                         } else {
                                             LOG.log(Level.FINER, "no match for {0}", frameInfo);
-                                        }
-                                        setEnabled(f != null);
-                                    }
-                                    public @Override void actionPerformed(ActionEvent e) {
-                                        if (f != null) {
-                                            HudsonLogger.Helper.openAt(f, line - 1, -1, true);
                                         }
                                     }
                                 };

@@ -45,18 +45,15 @@ package org.netbeans.test.php.cc;
 
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.junit.NbModuleSuite;
-import junit.framework.Test;
-import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import java.util.List;
+import junit.framework.Test;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
+import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.WindowOperator;
-import org.netbeans.jemmy.Timeouts;
-import org.netbeans.jemmy.operators.JComponentOperator;
-import org.netbeans.jemmy.operators.JScrollPaneOperator;
-import org.netbeans.jemmy.util.Dumper;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -88,7 +85,7 @@ public class testCC extends cc {
                 "Verify_code_completion_with_a_single_option",
                 "Verify_JavaDoc_window",
                 "Verify_code_completion_after_EXTENDS",
-                "Verify_that_require_directive_is_automatically_added",
+//                "Verify_that_require_directive_is_automatically_added", not supported #195851
                 "Verify_code_completion_in_slash_slash_comments",
                 "Verify_code_completion_in_slash_star_comments",
                 "Verify_code_completion_in_slash_star_star_comments").enableModules(".*").clusters(".*") //.gui( true )
@@ -172,6 +169,7 @@ public class testCC extends cc {
         EditorOperator eoPHP = new EditorOperator("newEmptyPHP.php");
         TypeCode(eoPHP, "function function_0001( )\n{\n$variable_0001 = 1;\n$va");
         eoPHP.typeKey(' ', InputEvent.CTRL_MASK);
+        new EventTool().waitNoEvent(1000);
         CheckResult(eoPHP, "$variable_0001");
 
         // Cleanup
@@ -186,8 +184,10 @@ public class testCC extends cc {
 
         EditorOperator eoPHP = new EditorOperator("newEmptyPHP.php");
         eoPHP.setCaretPosition("*/\n", false);
+        int lineNumber = eoPHP.getLineNumber();
+        TypeCode(eoPHP, "\n");
         TypeCode(eoPHP, "$variable_0002 = 2;\n");
-        eoPHP.setCaretPosition("{", false);
+        eoPHP.setCaretPositionToLine(lineNumber);
         TypeCode(eoPHP, "\nglobal $va");
 
         eoPHP.typeKey(' ', InputEvent.CTRL_MASK);
@@ -245,7 +245,7 @@ public class testCC extends cc {
         eoPHP.setCaretPosition("$variable_0002", false);
         eoPHP.deleteLine(eoPHP.getLineNumber());
         eoPHP.setCaretPosition("}", false);
-        TypeCode(eoPHP, "\n$va");
+        TypeCode(eoPHP, "\n $va");
         eoPHP.typeKey(' ', InputEvent.CTRL_MASK);
         Sleep(1000);
         CheckResult(eoPHP, "$variable_0003");
@@ -279,6 +279,7 @@ public class testCC extends cc {
 
         EditorOperator eoPHP = new EditorOperator("newEmptyPHP.php");
         eoPHP.setCaretPosition("*/", false);
+        TypeCode(eoPHP, "\n");
         //TypeCode( eoPHP, "$" );
         eoPHP.typeKey(' ', InputEvent.CTRL_MASK);
         Sleep(5000);

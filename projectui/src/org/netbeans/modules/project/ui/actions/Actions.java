@@ -50,11 +50,12 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.modules.project.uiapi.ActionsFactory;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.FileActionPerformer;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -157,7 +158,12 @@ public class Actions implements ActionsFactory {
 
     
     public Action fileCommandAction(String command, String name, Icon icon) {
-        return new FileCommandAction( command, name, icon, null );
+        return new FileAction( command, name, icon, null );
+    }
+
+    @Override
+    public Action fileSensitiveAction(FileActionPerformer performer, String name, Icon icon) {
+        return new FileAction(performer, name, icon, null);
     }
     
     // Project specific actions ------------------------------------------------
@@ -236,7 +242,7 @@ public class Actions implements ActionsFactory {
             null );
 
         try {
-            final Action delete = FileUtil.getConfigObject("Actions/Edit/org-openide-actions-DeleteAction.instance", Action.class);
+            final Action delete = org.openide.awt.Actions.forID("Edit", "org.openide.actions.DeleteAction");
             a.putValue(Action.ACCELERATOR_KEY, delete.getValue(Action.ACCELERATOR_KEY));
             delete.addPropertyChangeListener(new PropertyChangeListener() {
                 public @Override void propertyChange(PropertyChangeEvent evt) {
@@ -292,7 +298,7 @@ public class Actions implements ActionsFactory {
     // 1-off actions -----------------------------------------------------------
     
     public static Action compileSingle() {
-        Action a = new FileCommandAction(
+        Action a = new FileAction(
             ActionProvider.COMMAND_COMPILE_SINGLE,
             NbBundle.getMessage(Actions.class, "LBL_CompileSingleAction_Name"),
             ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/compileSingle.png", true),
@@ -303,7 +309,7 @@ public class Actions implements ActionsFactory {
     }
     
     public static Action runSingle() {
-        Action a = new FileCommandAction(
+        Action a = new FileAction(
             ActionProvider.COMMAND_RUN_SINGLE,
             NbBundle.getMessage(Actions.class, "LBL_RunSingleAction_Name"),
             ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/runSingle.png", true),
@@ -314,7 +320,7 @@ public class Actions implements ActionsFactory {
     }
     
     public static Action testSingle() {
-        Action a = new FileCommandAction(
+        Action a = new FileAction(
             ActionProvider.COMMAND_TEST_SINGLE,
             NbBundle.getMessage(Actions.class, "LBL_TestSingleAction_Name"),
             ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/testSingle.png", true),

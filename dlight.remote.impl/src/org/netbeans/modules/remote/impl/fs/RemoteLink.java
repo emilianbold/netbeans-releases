@@ -47,6 +47,7 @@ import java.util.HashSet;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -106,7 +107,7 @@ public final class RemoteLink extends RemoteLinkBase {
     }
 
     @Override
-    protected void deleteImpl() throws IOException {
-        RemoteFileSystemUtils.delete(getExecutionEnvironment(), getPath(), false);
+    protected boolean deleteImpl(FileLock lock) throws IOException {
+        return RemoteFileSystemUtils.delete(getExecutionEnvironment(), getPath(), false);
     }
 }

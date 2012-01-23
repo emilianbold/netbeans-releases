@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
  */
 public class RefactoringTest extends CndBaseTestSuite {
     
-    public RefactoringTest() {
+    private RefactoringTest() {
         super("C/C++ Refactoring Test"); // NOI18N
         
         addTestSuite(InstantRenamePerformerTestCase.class);

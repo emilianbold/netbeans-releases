@@ -1,0 +1,1 @@
+token #0 T_TWIG_OTHER [1 {{ true }}\n2 {{ TRUE }}\n3 {{ false }}\n4 {{ FALSE }}\n5 {{ none }}\n6 {{ NONE }}\n7 {{ null }}\n8 {{ NULL }}\n]

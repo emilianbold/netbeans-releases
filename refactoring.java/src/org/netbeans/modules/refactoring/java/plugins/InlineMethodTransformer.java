@@ -41,37 +41,11 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
-import com.sun.source.tree.AssertTree;
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.DoWhileLoopTree;
-import com.sun.source.tree.EnhancedForLoopTree;
-import com.sun.source.tree.ExpressionStatementTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.ForLoopTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.IfTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.PrimitiveTypeTree;
-import com.sun.source.tree.ReturnTree;
-import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.SwitchTree;
-import com.sun.source.tree.SynchronizedTree;
-import com.sun.source.tree.ThrowTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
-import com.sun.source.tree.WhileLoopTree;
+import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -79,7 +53,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.Pair;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.openide.util.NbBundle;
 
@@ -411,7 +385,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 public Void visitVariable(VariableTree node, ExecutableElement p) {
                     Element variable = trees.getElement(trees.getPath(workingCopy.getCompilationUnit(), node));
                     if(!(variable.getKind() == ElementKind.PARAMETER && p.getParameters().contains((VariableElement)variable))) {
-                        String msg = RetoucheUtils.variableClashes(node.getName().toString(), currentPath, workingCopy);
+                        String msg = RefactoringUtils.variableClashes(node.getName().toString(), currentPath, workingCopy);
                         if (msg != null) {
                             problem = MoveTransformer.createProblem(problem, true, NbBundle.getMessage(InlineRefactoringPlugin.class,
                                     "ERR_InlineMethodNameClash", msg)); // NOI18N

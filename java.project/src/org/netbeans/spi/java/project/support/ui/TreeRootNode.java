@@ -55,6 +55,7 @@ import java.util.StringTokenizer;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.AccessibilityQuery;
 import org.netbeans.api.project.SourceGroup;
@@ -115,7 +116,7 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
         Icon icon = g.getIcon(opened);
         if (icon == null) {
             Image image = opened ? super.getOpenedIcon(type) : super.getIcon(type);
-            return ImageUtilities.mergeImages(image, PackageRootNode.PACKAGE_BADGE, 7, 7);
+            return ImageUtilities.mergeImages(image, ImageUtilities.loadImage(PackageRootNode.PACKAGE_BADGE), 7, 7);
         } else {
             return ImageUtilities.icon2Image(icon);
         }
@@ -249,11 +250,7 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
         }
 
         public boolean acceptFileObject(FileObject fo) {
-            try {
-                return fo.isValid() && g.contains(fo) && VisibilityQuery.getDefault().isVisible(fo);
-            } catch (IllegalArgumentException iae) {
-                return false;
-            }
+            return fo.isValid() && g.contains(fo) && VisibilityQuery.getDefault().isVisible(fo);
         }
         
     }
@@ -274,8 +271,8 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
     
     private static final class PackageFilterNode extends FilterNode {
         
-        private static final String PUBLIC_PACKAGE_BADGE = "org/netbeans/spi/java/project/support/ui/publicBadge.gif";    //NOI18N
-        private static final String PRIVATE_PACKAGE_BADGE = "org/netbeans/spi/java/project/support/ui/privateBadge.gif";  //NOI18N
+        private static final @StaticResource String PUBLIC_PACKAGE_BADGE = "org/netbeans/spi/java/project/support/ui/publicBadge.gif";    //NOI18N
+        private static final @StaticResource String PRIVATE_PACKAGE_BADGE = "org/netbeans/spi/java/project/support/ui/privateBadge.gif";  //NOI18N
         private static Image unlockBadge;
         private static Image lockBadge;
         

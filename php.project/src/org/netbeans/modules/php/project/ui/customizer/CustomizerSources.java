@@ -62,7 +62,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
+import org.netbeans.modules.php.project.api.PhpLanguageProperties.PhpVersion;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.environment.PhpEnvironment.DocumentRoot;
 import org.netbeans.modules.php.project.ui.CopyFilesVisual;

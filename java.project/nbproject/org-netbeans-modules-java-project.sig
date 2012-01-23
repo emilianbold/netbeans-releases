@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.38
+#Version 1.42
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
@@ -67,6 +67,8 @@ meth public static boolean removeAntArtifacts(org.netbeans.api.project.ant.AntAr
 meth public static boolean removeLibraries(org.netbeans.api.project.libraries.Library[],org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
 meth public static boolean removeRoots(java.net.URI[],org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
 meth public static boolean removeRoots(java.net.URL[],org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
+meth public static org.netbeans.spi.java.project.classpath.ProjectClassPathExtender extenderForModifier(org.netbeans.api.project.Project)
+meth public static org.netbeans.spi.java.project.classpath.ProjectClassPathExtender extenderForModifier(org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation)
 supr java.lang.Object
 hcls Extensible
 
@@ -148,6 +150,7 @@ hfds HOW_MANY_DIRS_TO_TRAVERSE_DEEP,JAVA_FILE,LOG,PACKAGE_INFO
 CLSS public final org.netbeans.spi.java.project.support.LookupMergerSupport
 cons public init()
 meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.spi.java.classpath.ClassPathProvider> createClassPathProviderMerger(org.netbeans.spi.java.classpath.ClassPathProvider)
+meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation> createClassPathModifierMerger()
 meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation> createJFBLookupMerger()
 meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation> createSFBLookupMerger()
 supr java.lang.Object
@@ -165,7 +168,7 @@ meth public static void showAlert(org.netbeans.spi.project.support.ant.AntProjec
  anno 5 org.netbeans.api.annotations.common.NonNull()
 meth public static void showCustomizer(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.ReferenceHelper,java.lang.String[],java.lang.String[])
 supr java.lang.Object
-hfds BROKEN_ALERT_TIMEOUT,RP,context,rpTask
+hfds BROKEN_ALERT_TIMEOUT,RP,context,rpTask,suppressBrokenRefAlert
 
 CLSS public abstract interface static org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport$LibraryDefiner
  outer org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport
@@ -227,7 +230,8 @@ hfds PROP_ACTIONS,PROP_HELPER,PROP_JAR_REFS,PROP_LAST_SHARABLE,PROP_LIBRARIES,PR
 hcls CopyIterator,CopyJars,CopyLibraryJars,KeepJarAtLocation,KeepLibraryAtLocation
 
 CLSS public org.netbeans.spi.java.project.support.ui.templates.JavaTemplates
-meth public static org.openide.WizardDescriptor$InstantiatingIterator createJavaTemplateIterator()
+fld public final static java.lang.String JAVA_ICON = "org/netbeans/spi/java/project/support/ui/templates/class.png"
+meth public static org.openide.WizardDescriptor$InstantiatingIterator<org.openide.WizardDescriptor> createJavaTemplateIterator()
 meth public static org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor> createPackageChooser(org.netbeans.api.project.Project,org.netbeans.api.project.SourceGroup[])
 meth public static org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor> createPackageChooser(org.netbeans.api.project.Project,org.netbeans.api.project.SourceGroup[],org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor>)
 meth public static org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor> createPackageChooser(org.netbeans.api.project.Project,org.netbeans.api.project.SourceGroup[],org.openide.WizardDescriptor$Panel<org.openide.WizardDescriptor>,boolean)

@@ -45,7 +45,7 @@ package org.netbeans.modules.git.ui.clone;
 import java.awt.EventQueue;
 import org.netbeans.modules.git.ui.repository.remote.RemoteRepository;
 import javax.swing.event.ChangeEvent;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import java.awt.event.ActionEvent;
@@ -57,7 +57,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.libs.git.utils.GitURI;
+import org.netbeans.libs.git.GitURI;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
@@ -185,9 +185,9 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
         public void perform() {
             try {
                 GitClient client = Git.getInstance().getClient(getRepositoryRoot(), this, false);
-                client.init(this);
+                client.init(getProgressMonitor());
                 branches = new HashMap<String, GitBranch>();
-                branches.putAll(client.listRemoteBranches(uri.toPrivateString(), this));
+                branches.putAll(client.listRemoteBranches(uri.toPrivateString(), getProgressMonitor()));
             } catch (final GitException ex) {
                 GitClientExceptionHandler.notifyException(ex, false);
                 message = new Message(ex.getMessage(), false);

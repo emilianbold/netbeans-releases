@@ -73,6 +73,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.apisupport.project.api.Util;
+import org.netbeans.modules.apisupport.project.spi.LayerUtil;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 import org.netbeans.tax.InvalidArgumentException;
 import org.netbeans.tax.ReadOnlyException;
@@ -387,7 +388,7 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
                 }
                  */
                 final FileObject parent = findLayerParent();
-                final String externalName = LayerUtils.findGeneratedName(parent, name);
+                final String externalName = LayerUtil.findGeneratedName(parent, name);
                 assert externalName.indexOf('/') == -1 : externalName;
                 parent.getFileSystem().runAtomicAction(new AtomicAction() {
                     public void run() throws IOException {

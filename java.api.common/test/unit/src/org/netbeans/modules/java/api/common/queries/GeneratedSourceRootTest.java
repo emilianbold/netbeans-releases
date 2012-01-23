@@ -142,16 +142,16 @@ public class GeneratedSourceRootTest extends NbTestCase {
         FileObject src = d.getFileObject("src");
         FileObject test = d.getFileObject("test");
         FileObject stuff = d.getFileObject("build/generated-sources/stuff");
-        URL classes = new URL(d.getURL(), "build/classes/");
-        URL testClasses = new URL(d.getURL(), "build/test/classes/");
+        URL classes = new URL(d.toURL(), "build/classes/");
+        URL testClasses = new URL(d.toURL(), "build/test/classes/");
         FileObject xgen = stuff.getFileObject("net/nowhere/XGen.java");
         assertEquals(Arrays.asList(src, stuff), Arrays.asList(SourceForBinaryQuery.findSourceRoots(classes).getRoots()));
         assertEquals(Arrays.asList(test), Arrays.asList(SourceForBinaryQuery.findSourceRoots(testClasses).getRoots()));
-        assertEquals(Collections.singletonList(classes), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(src.getURL()).getRoots()));
-        assertEquals(Collections.singletonList(testClasses), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(test.getURL()).getRoots()));
-        assertEquals(Collections.singletonList(classes), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(stuff.getURL()).getRoots()));
-        assertEquals(Collections.singletonList(src.getURL()), Arrays.asList(UnitTestForSourceQuery.findSources(test)));
-        assertEquals(Collections.singletonList(test.getURL()), Arrays.asList(UnitTestForSourceQuery.findUnitTests(src)));
+        assertEquals(Collections.singletonList(classes), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(src.toURL()).getRoots()));
+        assertEquals(Collections.singletonList(testClasses), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(test.toURL()).getRoots()));
+        assertEquals(Collections.singletonList(classes), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(stuff.toURL()).getRoots()));
+        assertEquals(Collections.singletonList(src.toURL()), Arrays.asList(UnitTestForSourceQuery.findSources(test)));
+        assertEquals(Collections.singletonList(test.toURL()), Arrays.asList(UnitTestForSourceQuery.findUnitTests(src)));
         assertEquals("1.5", SourceLevelQuery.getSourceLevel(stuff));
         FileBuiltQuery.Status status = FileBuiltQuery.getStatus(xgen);
         assertNotNull(status);
@@ -164,7 +164,7 @@ public class GeneratedSourceRootTest extends NbTestCase {
         FileObject ygen = FileUtil.createData(moreStuff, "net/nowhere/YGen.java");
         assertEquals(new HashSet<FileObject>(Arrays.asList(src, stuff, moreStuff)),
                 new HashSet<FileObject>(Arrays.asList(SourceForBinaryQuery.findSourceRoots(classes).getRoots())));
-        assertEquals(Collections.singletonList(classes), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(moreStuff.getURL()).getRoots()));
+        assertEquals(Collections.singletonList(classes), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(moreStuff.toURL()).getRoots()));
         // XXX should previously created Result objects fire changes? ideally yes, but probably unnecessary
         assertEquals("1.5", SourceLevelQuery.getSourceLevel(moreStuff));
         status = FileBuiltQuery.getStatus(ygen);
@@ -181,7 +181,7 @@ public class GeneratedSourceRootTest extends NbTestCase {
         Project p = createTestProject(false);
         FileObject d = p.getProjectDirectory();
         FileObject src = d.getFileObject("src");
-        URL classes = new URL(d.getURL(), "build/classes/");
+        URL classes = new URL(d.toURL(), "build/classes/");
         ClassPath sourcePath = ClassPath.getClassPath(src, ClassPath.SOURCE);
         assertEquals(Arrays.asList(src), Arrays.asList(sourcePath.getRoots()));
         assertEquals(Arrays.asList(src), Arrays.asList(SourceForBinaryQuery.findSourceRoots(classes).getRoots()));
@@ -191,7 +191,7 @@ public class GeneratedSourceRootTest extends NbTestCase {
         assertEquals(Arrays.asList(src, stuff), Arrays.asList(sourcePath.getRoots()));
         assertEquals(ClassPath.getClassPath(src, ClassPath.COMPILE), ClassPath.getClassPath(stuff, ClassPath.COMPILE));
         assertEquals(Arrays.asList(src, stuff), Arrays.asList(SourceForBinaryQuery.findSourceRoots(classes).getRoots()));
-        assertEquals(Collections.singletonList(classes), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(stuff.getURL()).getRoots()));
+        assertEquals(Collections.singletonList(classes), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(stuff.toURL()).getRoots()));
         FileBuiltQuery.Status status = FileBuiltQuery.getStatus(xgen);
         assertNotNull(status);
         assertFalse(status.isBuilt());

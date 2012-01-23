@@ -229,7 +229,8 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
         webApp.setContextRoot("");
         webApp.setKeepJspGenerated(true);
         webApp.setDebug(true);
-        webApp.setFastSwap(true);
+// DISABLED SINCE 7.1.1 see #206798
+//        webApp.setFastSwap(true);
         return webApp;
     }
     

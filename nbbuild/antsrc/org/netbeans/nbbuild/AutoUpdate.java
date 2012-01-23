@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -61,10 +62,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.xpath.XPathFactory;
@@ -74,6 +76,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Get;
 import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.ant.util.FileUtils;
 import org.netbeans.nbbuild.AutoUpdateCatalogParser.ModuleItem;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -273,7 +276,10 @@ public class AutoUpdate extends Task {
                 module_version.setAttribute("origin", "Ant"); // XXX set to URL origin
                 module_version.setAttribute("specification_version", uu.getSpecVersion());
 
-                ZipFile  zf = new ZipFile(tmp);
+                JarFile  zf = new JarFile(tmp);
+                try {
+                Manifest manifest = zf.getManifest();
+                if (manifest == null || manifest.getMainAttributes().getValue("Bundle-SymbolicName") == null) { // regular NBM
                 Enumeration<? extends ZipEntry> en = zf.entries();
                 while (en.hasMoreElements()) {
                     ZipEntry zipEntry = en.nextElement();
@@ -336,6 +342,35 @@ public class AutoUpdate extends Task {
                     file.setAttribute("crc", String.valueOf(crcValue));
                     file.setAttribute("name", relName);
                 }
+                } else { // OSGi
+                    String relName = "config/Modules/" + dash + ".xml";
+                    File configModulesXml = new File(whereTo, relName);
+                    configModulesXml.getParentFile().mkdirs();
+                    PrintWriter w = new PrintWriter(configModulesXml);
+                    try {
+                        w.print("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Module Status 1.0//EN\"\n                        \"http://www.netbeans.org/dtds/module-status-1_0.dtd\">\n<module name=\"");
+                        w.print(uu.getCodeName());
+                        w.print("\">\n    <param name=\"autoload\">true</param>\n    <param name=\"eager\">false</param>\n    <param name=\"jar\">modules/");
+                        w.print(dash);
+                        w.print(".jar</param>\n    <param name=\"reloadable\">false</param>\n</module>\n");
+                    } finally {
+                        w.close();
+                    }
+                    Element file = (Element) module_version.appendChild(doc.createElement("file"));
+                    file.setAttribute("crc", String.valueOf(getFileCRC(configModulesXml)));
+                    file.setAttribute("name", relName);
+                    relName = "modules/" + dash + ".jar";
+                    zf.close();
+                    File bundle = new File(whereTo, relName);
+                    bundle.getParentFile().mkdirs();
+                    FileUtils.getFileUtils().copyFile(tmp, bundle);
+                    file = (Element) module_version.appendChild(doc.createElement("file"));
+                    file.setAttribute("crc", String.valueOf(getFileCRC(bundle)));
+                    file.setAttribute("name", relName);
+                }
+                } finally {
+                    zf.close();
+                }
                 File tracking = new File(new File(whereTo, "update_tracking"), dash + ".xml");
                 log("Writing tracking file " + tracking, Project.MSG_VERBOSE);
                 tracking.getParentFile().mkdirs();
@@ -392,11 +427,19 @@ public class AutoUpdate extends Task {
                     return conn.getInputStream();
                 } catch (IOException ex) {
                     log("Cannot connect to " + url, Project.MSG_WARN);
-                    log("Details", ex, Project.MSG_VERBOSE);
+                    try {
+                        logThrowable(ex);
+                    } catch (LinkageError err) {
+                        ex.printStackTrace();
+                    }
                 }
             }
         }
         throw new IOException("Cannot resolve external references");
+    }
+
+    private void logThrowable(IOException ex) {
+        log("Details", ex, Project.MSG_VERBOSE);
     }
 
     

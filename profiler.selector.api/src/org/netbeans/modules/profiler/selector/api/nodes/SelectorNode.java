@@ -220,25 +220,27 @@ abstract public class SelectorNode extends CheckTreeNode implements Lookup.Provi
     }
 
     @Override
-    public boolean equals(Object anotherNode) {
-        if (anotherNode == null) {
+    public boolean equals(Object obj) {
+        if (obj == null) {
             return false;
         }
-
-        if (!(anotherNode instanceof SelectorNode)) {
+        if (getClass() != obj.getClass()) {
             return false;
         }
-
-        if ((((SelectorNode) anotherNode).getSignature() != null) && (getSignature() != null)) {
-            return (((SelectorNode) anotherNode).getSignature().equals(getSignature()));
+        final SelectorNode other = (SelectorNode) obj;
+        SourceCodeSelection sel1 = this.getSignature(), sel2 = other.getSignature();
+        if ((sel1 == null) ? (sel2 != null) : !sel1.equals(sel2)) {
+            return false;
         }
-
-        return ((SelectorNode) anotherNode).getNodeName().equals(getNodeName());
+        return true;
     }
 
     @Override
     public int hashCode() {
-        return getNodeName().hashCode() + ((getSignature() != null) ? getSignature().hashCode() : 0);
+        int hash = 7;
+        SourceCodeSelection sel = this.getSignature();
+        hash = 71 * hash + (sel != null ? sel.hashCode() : 0);
+        return hash;
     }
 
     @Override

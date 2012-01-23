@@ -141,3 +141,20 @@ void NameTable::AddTable (const NameTable &other) {
     NameId moreParams = other.AddSymbol("Default", "second", 1, 3, "tree");
 
 }
+
+
+void checkDifferentScopes() {
+    {
+        int xx;
+        for (int xx = 1; xx > 0; xx--) {
+            xx = -xx;
+        }
+        xx = 10;
+    } 
+    while (true) {
+        int xx;
+        xx = 10;
+        break;
+    }
+
+}

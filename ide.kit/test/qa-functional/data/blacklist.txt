@@ -545,3 +545,8 @@ org.netbeans.modules.web.debug.util.Utils
 org.netbeans.modules.versioning.system.cvss.options.AnnotationColorProvider
 org.netbeans.modules.versioning.util.OptionsPanelColorProvider
 org.netbeans.modules.versioning.util.OptionsPanelColorProvider$AnnotationFormat
+
+#200035
+org.netbeans.modules.project.ui.groups.GroupOptionProcessor
+org.netbeans.modules.project.ui.groups.Bundle
+org.netbeans.modules.openfile.Handler

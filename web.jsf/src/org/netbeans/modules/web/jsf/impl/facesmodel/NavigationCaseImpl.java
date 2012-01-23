@@ -90,10 +90,14 @@ public class NavigationCaseImpl extends IdentifiableDescriptionGroupImpl
         setChildElementText(FROM_ACTION, fromAction, 
                 JSFConfigQNames.FROM_ACTION.getQName(getNamespaceURI()));
     }
-    
+
+    /**
+     * Gets from-outcome of the faces-config-navigation-caseType.
+     * @return trimmed from-outcome if any, {@code null} otherwise
+     */
     public String getFromOutcome() {
-        return getChildElementText(JSFConfigQNames.FROM_OUTCOME.getQName(
-                getNamespaceURI()));
+        String fromOutcome = getChildElementText(JSFConfigQNames.FROM_OUTCOME.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickString(fromOutcome);
     }
     
     public void setFromOutcome(String fromOutcome) {

@@ -84,20 +84,22 @@ class ClientBehaviorRendererImpl extends JSFConfigComponentImpl implements
                 JSFConfigQNames.CLIENT_BEHAVIOR_RENDERER_TYPE.getQName(getNamespaceURI()));
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.ClientBehaviorRenderer#getClientBehaviorRendererClass()
+    /**
+     * Gets client-behavior-renderer-class of the faces-config-client-behavior-rendererType.
+     * @return trimmed client-behavior-renderer-class if any, {@code null} otherwise
      */
     public String getClientBehaviorRendererClass() {
-        return getChildElementText(
-                JSFConfigQNames.CLIENT_BEHAVIOR_RENDERER_CLASS.getQName(getNamespaceURI()));
+        String rendererClass = getChildElementText(JSFConfigQNames.CLIENT_BEHAVIOR_RENDERER_CLASS.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickFullyQualifiedClassType(rendererClass);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.ClientBehaviorRenderer#getClientBehaviorRendererType()
+    /**
+     * Gets client-behavior-renderer-type of the faces-config-client-behavior-rendererType.
+     * @return trimmed client-behavior-renderer-type if any, {@code null} otherwise
      */
     public String getClientBehaviorRendererType() {
-        return getChildElementText(
-                JSFConfigQNames.CLIENT_BEHAVIOR_RENDERER_TYPE.getQName(getNamespaceURI()));
+        String rendererType = getChildElementText(JSFConfigQNames.CLIENT_BEHAVIOR_RENDERER_TYPE.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickString(rendererType);
     }
 
     /* (non-Javadoc)

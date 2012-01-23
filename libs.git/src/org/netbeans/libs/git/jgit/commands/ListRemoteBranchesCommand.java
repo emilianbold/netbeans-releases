@@ -47,6 +47,7 @@ import java.util.Map;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitBranch;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -57,15 +58,15 @@ public class ListRemoteBranchesCommand extends ListRemoteObjectsCommand {
     private HashMap<String, GitBranch> remoteBranches;
     private final String remoteUrl;
 
-    public ListRemoteBranchesCommand (Repository repository, String remoteRepositoryUrl, ProgressMonitor monitor) {
-        super(repository, remoteRepositoryUrl, monitor);
+    public ListRemoteBranchesCommand (Repository repository, GitClassFactory gitFactory, String remoteRepositoryUrl, ProgressMonitor monitor) {
+        super(repository, gitFactory, remoteRepositoryUrl, monitor);
         this.remoteUrl = remoteRepositoryUrl;
     }
 
     @Override
     protected void processRefs () {
         remoteBranches = new HashMap<String, GitBranch>();
-        remoteBranches.putAll(Utils.refsToBranches(getRefs(), Constants.R_HEADS));
+        remoteBranches.putAll(Utils.refsToBranches(getRefs(), Constants.R_HEADS, getClassFactory()));
     }
 
     @Override

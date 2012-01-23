@@ -75,7 +75,7 @@ public final class AggregateProgressHandle {
     private boolean finished;
     private Collection<ProgressContributor> contributors;
     private int current;
-    private String displayName;
+    final String displayName;
     
     /** Creates a new instance of AggregateProgressHandle */
     AggregateProgressHandle(String displayName, ProgressContributor[] contribs, Cancellable cancellable, Action listAction, boolean systemtask) {

@@ -43,6 +43,8 @@
 package org.netbeans.spi.actions;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import org.netbeans.api.actions.Savable;
 import org.netbeans.modules.openide.awt.SavableRegistry;
@@ -85,6 +87,8 @@ class MySavable extends AbstractSavable {
  * @since 7.33
  */
 public abstract class AbstractSavable implements Savable {
+    private static final Logger LOG = Logger.getLogger(Savable.class.getName());
+    
     /** Constructor for subclasses. 
      */
     protected AbstractSavable() {
@@ -105,6 +109,8 @@ public abstract class AbstractSavable implements Savable {
                 return;
             }
         }
+        LOG.log(Level.WARNING, "Savable {0} is not in Savable.REGISTRY! " // NOI18N
+                + "Have not you forgotten to call register() in constructor?", getClass()); // NOI18N
     }
     
     /** Finds suitable display name for the object this {@link Savable}

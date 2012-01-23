@@ -241,6 +241,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     private static final int ISI_VAL_DQUOT_ESC = 43;
     
     private static final int ISA_ARG_UNDERSCORE = 44; //after _ in attribute name
+    private static final int ISP_TAG_X_ERROR = 45; //error in tag content
 
     static final Set<String> EVENT_HANDLER_NAMES = new HashSet<String>();
     static {
@@ -605,13 +606,27 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             lexerState = ISA_ARG_UNDERSCORE;
                             break;
                         default:
-                            tag = null;
-                            lexerState = ISI_ERROR;
-                            input.backup(1);
+                            lexerState = ISP_TAG_X_ERROR;
                             break;
                     }
                     break;
 
+                case ISP_TAG_X_ERROR:
+                    if(isWS(actChar)) {
+                        lexerState = ISP_TAG_X;
+                        input.backup(1); //backup the WS
+                        return token(HTMLTokenId.ERROR);
+                    }
+                    switch(actChar) {
+                        case '/':
+                        case '>':
+                            lexerState = ISP_TAG_X;
+                            input.backup(1); //lets reread the token again
+                            return token(HTMLTokenId.ERROR);
+                    }
+                    //stay in error
+                    break;
+                    
                 case ISP_TAG_WS:        // DONE
                     if( isWS( actChar ) ) break;    // eat all WS
                     lexerState = ISP_TAG_X;
@@ -1110,6 +1125,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                 return token(HTMLTokenId.ARGUMENT);
 
             case ISI_ERROR:
+            case ISP_TAG_X_ERROR:
                 return token(HTMLTokenId.ERROR);
 
             case ISP_ARG_WS:
@@ -1282,6 +1298,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
 
     /** @param optimized - first sequence is lowercase, one call to Character.toLowerCase() */
     private static boolean equals(CharSequence text1, CharSequence text2, boolean ignoreCase, boolean optimized) {
+        assert text1 != null : "text1 arg is null";
+        assert text2 != null : "text2 arg is null";
         if (text1.length() != text2.length()) {
             return false;
         } else {

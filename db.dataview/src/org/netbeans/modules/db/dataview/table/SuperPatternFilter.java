@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -64,6 +64,7 @@ public class SuperPatternFilter extends Filter {
         LITERAL_FIND, REGEX_FIND, LITERAL_MATCH, REGEX_MATCH
     }
 
+    @SuppressWarnings("OverridableMethodCallInConstructor")
     public SuperPatternFilter(final int col) {
         super(col);
         setFilterStr(null, LITERAL_FIND);
@@ -89,7 +90,7 @@ public class SuperPatternFilter extends Filter {
                 if (filterStr == null || filterStr.length() == 0) {
                     filterStr2 = ".*";
                 } else {
-                    filterStr2 = Pattern.quote(filterStr);
+                    filterStr2 = filterStr;
                 }
                 pattern = Pattern.compile(filterStr2, 0);
                 break;

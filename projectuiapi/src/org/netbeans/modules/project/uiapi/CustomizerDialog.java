@@ -64,6 +64,8 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
@@ -103,7 +105,7 @@ public class CustomizerDialog {
     private static final String CUSTOMIZER_DIALOG_WIDTH = "CustomizerDialog.dialog.width";
     private static final String CUSTOMIZER_DIALOG_HEIGHT = "CustomizerDialog.dialog.height";
 
-    public static Dialog createDialog( ActionListener okOptionListener, ActionListener storeListener, final CustomizerPane innerPane,
+    public static Dialog createDialog(@NonNull ActionListener okOptionListener, @NullAllowed ActionListener storeListener, final CustomizerPane innerPane,
             HelpCtx helpCtx, final ProjectCustomizer.Category[] categories, 
            //#97998 related
             ProjectCustomizer.CategoryComponentProvider componentProvider ) {
@@ -241,12 +243,12 @@ public class CustomizerDialog {
     /** Listens to the actions on the Customizer's option buttons */
     private static class OptionListener implements ActionListener {
 
-        private ActionListener okOptionListener;
-        private ActionListener storeListener;
+        private @NonNull ActionListener okOptionListener;
+        private @NullAllowed ActionListener storeListener;
         private ProjectCustomizer.Category[] categories;
         private Lookup.Provider prov;
 
-        OptionListener( ActionListener okOptionListener, ActionListener storeListener, ProjectCustomizer.Category[] categs, 
+        OptionListener(@NonNull ActionListener okOptionListener, @NullAllowed ActionListener storeListener, ProjectCustomizer.Category[] categs,
                 ProjectCustomizer.CategoryComponentProvider componentProvider) {
             this.okOptionListener = okOptionListener;
             this.storeListener = storeListener;

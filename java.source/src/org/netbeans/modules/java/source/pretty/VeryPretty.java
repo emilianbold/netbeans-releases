@@ -1931,7 +1931,7 @@ public final class VeryPretty extends JCTree.Visitor {
         boolean hasImports = !imports.isEmpty();
         CodeStyle.ImportGroups importGroups = null;
         if (hasImports) {
-            blankLines(cs.getBlankLinesBeforeImports());
+            blankLines(Math.max(cs.getBlankLinesBeforeImports(), diffContext.origUnit.pid != null ? cs.getBlankLinesAfterPackage() : 0));
             if (cs.separateImportGroups())
                 importGroups = cs.getImportGroups();
         }

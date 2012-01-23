@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.indexer.api;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  *
@@ -69,7 +70,7 @@ public class NBArtifactInfo {
         return versionInfos.add(e);
     }
 
-    public List<NBVersionInfo> getVersionInfos() {
+    public @NonNull List<NBVersionInfo> getVersionInfos() {
         return new  ArrayList<NBVersionInfo>(versionInfos);
     }
 

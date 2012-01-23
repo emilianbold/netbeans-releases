@@ -41,18 +41,41 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.j2ee;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
@@ -61,6 +84,20 @@ import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibraryManager;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport.WLServerLibrary;
 import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  *
@@ -73,6 +110,8 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
     private static final String JSON = "json"; //NOI18N
     private static final String JETTISON = "jettison"; //NOI18N
     private static final String ROME = "rome"; //NOI18N
+    
+    private static final Logger LOG = Logger.getLogger( JaxRsStackSupportImpl.class.getCanonicalName());
 
     private final WLJ2eePlatformFactory.J2eePlatformImplImpl platformImpl;
 
@@ -82,6 +121,344 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
 
     @Override
     public boolean addJsr311Api(Project project) {
+        if ( hasJee6Profile() ){
+            /*
+             *  This method should not be called if JAX-RS API is already in CP, 
+             *  so let's add required jar if it had been called even with JEE6 profile
+             */
+            FileObject core = getJarFile("com.sun.jersey.core_");   // NOI18N
+            if ( core!= null ){
+                try {
+                    return addJars(project, Collections.singleton( core.getURL() ));
+                }
+                catch( FileStateInvalidException e ){
+                    Logger.getLogger(JaxRsStackSupportImpl.class.getName()).
+                        log(Level.WARNING, 
+                                "Exception during extending a project classpath", e); //NOI18N
+                    return false;
+                }
+            }
+        }
+        return addJsr311ServerLibraryApi(project);
+    }
+
+    @Override
+    public boolean extendsJerseyProjectClasspath(Project project) {
+        if ( hasJee6Profile() ){
+            /*try {
+                List<URL> urls = getJerseyJars();
+                return addJars(project,  urls );
+            }
+            catch( FileStateInvalidException e ){
+                Logger.getLogger(JaxRsStackSupportImpl.class.getName()).
+                log(Level.WARNING, 
+                        "Exception during extending a project classpath", e); //NOI18N
+                return false;
+            }*/
+            return true;
+        }
+        return extendsJerseyServerLibraries(project);
+    }
+
+    @Override
+    public void removeJaxRsLibraries(Project project) {
+        if ( hasJee6Profile() ){
+            try {
+                List<URL> urls = getJerseyJars();
+                FileObject core = getJarFile("com.sun.jersey.core_");   // NOI18N
+                if ( core!= null ){
+                    urls.add( core.getURL() );
+                }
+                removeLibraries(project,  urls );
+            }
+            catch( FileStateInvalidException e ){
+                Logger.getLogger(JaxRsStackSupportImpl.class.getName()).
+                log(Level.WARNING, 
+                        "Exception during extending a project classpath", e); //NOI18N
+            }
+            
+            J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+            if ( provider == null ){
+                return;
+            }
+            J2eeModule j2eeModule = provider.getJ2eeModule();
+            if ( j2eeModule == null ){
+                return;
+            }
+            File weblogicXml = j2eeModule.getDeploymentConfigurationFile(
+                    "WEB-INF/weblogic.xml"); // NOI18N
+            if ( weblogicXml == null ){
+                return;
+            }
+            FileObject config = FileUtil.toFileObject( FileUtil.
+                    normalizeFile( weblogicXml));
+            
+            /*
+             *  TODO : all subsequent code should be rewritten to use OM 
+             *  instead of direct file read and DOM modification.  
+             */
+            Document document = readDocument( config );
+            Element root = document.getDocumentElement();
+            
+            NodeList nodeList = document.getElementsByTagName( 
+                    "container-descriptor");     // NOI18N
+            if ( nodeList.getLength() == 0 ){
+                return;
+            }
+            Element containerDescriptor = (Element)nodeList.item(0);
+            nodeList = containerDescriptor.getElementsByTagName( 
+                "prefer-application-packages");        // NOI18N
+            
+            if ( nodeList.getLength() ==0  ){
+                return;
+            }
+            Element appPackages = (Element)nodeList.item(0);
+            containerDescriptor.removeChild( appPackages );
+        }
+    }
+    
+    @Override
+    public void configureCustomJersey( Project project ){
+        if ( hasJee6Profile() ){
+            J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+            if ( provider == null ){
+                return;
+            }
+            J2eeModule j2eeModule = provider.getJ2eeModule();
+            if ( j2eeModule == null ){
+                return;
+            }
+            File weblogicXml = j2eeModule.getDeploymentConfigurationFile(
+                    "WEB-INF/weblogic.xml"); // NOI18N
+            if ( weblogicXml == null ){
+                return;
+            }
+            FileObject config = FileUtil.toFileObject( FileUtil.
+                    normalizeFile( weblogicXml));
+            
+            /*
+             *  TODO : all subsequent code should be rewritten to use OM 
+             *  instead of direct file read and DOM modification.  
+             */
+            Document document = readDocument( config );
+            Element root = document.getDocumentElement();
+            
+            NodeList nodeList = document.getElementsByTagName( 
+                    "container-descriptor");     // NOI18N
+            Element containerDescriptor = null;
+            if ( nodeList.getLength() == 0 ){
+                containerDescriptor = document.createElement(
+                        "container-descriptor");     // NOI18N
+                root.appendChild( containerDescriptor );
+            }
+            else {
+                containerDescriptor = (Element)nodeList.item(0);
+            }
+            nodeList = containerDescriptor.getElementsByTagName( 
+                    "prefer-application-packages");        // NOI18N
+            Element appPackages = null;
+            if ( nodeList.getLength() == 0 ){
+                appPackages = document.createElement( 
+                        "prefer-application-packages");     // NOI18N
+                containerDescriptor.appendChild( appPackages );
+            }
+            else {
+                appPackages = (Element)nodeList.item(0);
+            }
+            addPackage(document, appPackages, "com.sun.jersey.*");  // NOI18N  
+            addPackage(document, appPackages, "com.sun.research.ws.wadl.*");  // NOI18N
+            addPackage(document, appPackages, "com.sun.ws.rs.ext.*");  // NOI18N  
+            addPackage(document, appPackages, "org.objectweb.asm.*");  // NOI18N 
+            addPackage(document, appPackages, "org.codehaus.jackson.*");  // NOI18N 
+            addPackage(document, appPackages, "org.codehaus.jettison.*");  // NOI18N 
+            addPackage(document, appPackages, "javax.ws.rs.*");  // NOI18N 
+            save(document, config);
+        }
+    }
+    
+//====REMOVE THIS ALONG WITH CHANGE CODE FOR DIRECT WEBLOGIC.XML MODIFICATION========
+
+    private void addPackage( Document document,
+            Element appPackages , String packageName )
+    {
+        Element packageElement = document.createElement( 
+                    "package-name");                                    // NOI18N
+        Text text = document.createTextNode( packageName );    
+        packageElement.appendChild(text);
+        appPackages.appendChild( packageElement );
+    }
+    
+    public void save( final Document document, final FileObject fileObject ) {
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            @Override
+            public void run() {
+                FileLock lock = null;
+                OutputStream os = null;
+
+                try {
+                    DocumentType docType = document.getDoctype();
+                    TransformerFactory factory = TransformerFactory.newInstance();
+                    Transformer transformer = factory.newTransformer();
+                    DOMSource source = new DOMSource(document);
+
+                    lock = fileObject.lock();
+                    os = fileObject.getOutputStream(lock);
+                    StreamResult result = new StreamResult(os);
+
+                    transformer.setOutputProperty(OutputKeys.INDENT, "yes");        //NOI18N
+
+                    transformer.setOutputProperty(OutputKeys.METHOD, "xml");        //NOI18N
+
+                    transformer.transform(source, result);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                } finally {
+                    if (os != null) {
+                        try {
+                            os.close();
+                        } 
+                        catch (IOException ex) {
+                            LOG.log(Level.WARNING, null, ex);  
+                        }
+                    }
+
+                    if (lock != null) {
+                        lock.releaseLock();
+                    }
+                }
+            }
+        });
+    }
+    
+    private Document readDocument( FileObject xml ){
+        DocumentBuilder builder = getDocumentBuilder();
+        Document document = null;
+        if (builder == null) {
+            LOG.log(Level.INFO, "Cannot get XML parser for "+xml);  // NOI18N
+            return null;
+        }
+        FileLock lock = null;
+        InputStream is = null;
+
+        try {
+            lock = xml.lock();
+            is = xml.getInputStream();
+            document = builder.parse(is);
+        } catch (SAXParseException ex) {
+            LOG.log(Level.INFO, "Cannot parse "+xml, ex);       // NOI18N
+        } catch (SAXException ex) {
+            LOG.log(Level.INFO, "Cannot parse "+xml, ex);       // NOI18N
+        } catch (IOException ex) {
+            LOG.log(Level.INFO, "Cannot parse "+xml, ex);       // NOI18N
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } 
+                catch (IOException ex) {
+                    LOG.log(Level.WARNING, null, ex);  
+                }
+            }
+
+            if (lock != null) {
+                lock.releaseLock();
+            }
+        }
+        return document;
+    }
+    
+    private DocumentBuilder getDocumentBuilder() {
+        DocumentBuilder builder = null;
+
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(false);
+        factory.setIgnoringComments(false);
+        factory.setIgnoringElementContentWhitespace(false);
+        factory.setCoalescing(false);
+        factory.setExpandEntityReferences(false);
+        factory.setValidating(false);
+
+        try {
+            builder = factory.newDocumentBuilder();
+        } catch (ParserConfigurationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return builder;
+    }
+    
+//=======================================================================================
+    
+    private boolean extendsJerseyServerLibraries( Project project ) {
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+        Collection<ServerLibrary> serverLibraries = getServerJerseyLibraries();
+        if (provider != null && serverLibraries.size() > 0) {
+            try {
+                for (ServerLibrary serverLibrary : serverLibraries) {
+                    provider.getConfigSupport().configureLibrary(ServerLibraryDependency.minimalVersion(serverLibrary.getName(), serverLibrary.getSpecificationVersion(), serverLibrary.getImplementationVersion()));
+                }
+                Preferences prefs = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
+                prefs.put(BrokenServerLibrarySupport.OFFER_LIBRARY_DEPLOYMENT, Boolean.TRUE.toString());
+                return true;
+            } catch (org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException ex) {
+                Logger.getLogger(JaxRsStackSupportImpl.class.getName()).log(Level.INFO, 
+                        "Exception during extending a project classpath", ex); //NOI18N
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    private boolean hasJee6Profile(){
+        Set<Profile> profiles = platformImpl.getSupportedProfiles();
+        return profiles.contains(Profile.JAVA_EE_6_FULL) || 
+                profiles.contains(Profile.JAVA_EE_6_WEB) ;
+    }
+    
+    private List<URL> getJerseyJars() throws FileStateInvalidException {
+        FileObject client = getJarFile("com.sun.jersey.client_");   // NOI18N
+        List<URL> urls = new LinkedList<URL>();
+        if ( client != null){
+            urls.add( client.getURL());
+        }
+        FileObject json = getJarFile("com.sun.jersey.json_");       // NOI18N
+        if ( json != null){
+            urls.add( json.getURL());
+        }
+        FileObject multipart = getJarFile("com.sun.jersey.multipart_");// NOI18N
+        if ( multipart != null){
+            urls.add( multipart.getURL());
+        }
+        FileObject server = getJarFile("com.sun.jersey.server_");       // NOI18N
+        if ( server != null){
+            urls.add( server.getURL());
+        }
+        FileObject asl = getJarFile("org.codehaus.jackson.core.asl_");  // NOI18N
+        if ( asl != null){
+            urls.add( asl.getURL());
+        }
+        FileObject jacksonJaxRs = getJarFile("org.codehaus.jackson.jaxrs_");// NOI18N
+        if ( jacksonJaxRs != null){
+            urls.add( jacksonJaxRs.getURL());
+        }
+        FileObject jacksonMapper = getJarFile("org.codehaus.jackson.mapper.asl_");// NOI18N
+        if ( jacksonMapper != null){
+            urls.add( jacksonMapper.getURL());
+        }
+        FileObject jacksonXc = getJarFile("org.codehaus.jackson.xc_");// NOI18N
+        if ( jacksonXc != null){
+            urls.add( jacksonXc.getURL());
+        }
+        FileObject jettison = getJarFile("org.codehaus.jettison_");// NOI18N
+        if ( jettison != null){
+            urls.add( jettison.getURL());
+        }
+        return urls;
+    }
+    
+    private boolean addJsr311ServerLibraryApi( Project project ) {
         /*
          *  WL has a deployable JSR311 war. But it will appear in the project's
          *  classpath only after specific user action. This is unacceptable
@@ -108,32 +485,6 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
             }
         }
         return false;
-    }
-
-    @Override
-    public boolean extendsJerseyProjectClasspath(Project project) {
-        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-        Collection<ServerLibrary> serverLibraries = getServerJerseyLibraries();
-        if (provider != null && serverLibraries.size() > 0) {
-            try {
-                for (ServerLibrary serverLibrary : serverLibraries) {
-                    provider.getConfigSupport().configureLibrary(ServerLibraryDependency.minimalVersion(serverLibrary.getName(), serverLibrary.getSpecificationVersion(), serverLibrary.getImplementationVersion()));
-                }
-                Preferences prefs = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
-                prefs.put(BrokenServerLibrarySupport.OFFER_LIBRARY_DEPLOYMENT, Boolean.TRUE.toString());
-                return true;
-            } catch (org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException ex) {
-                Logger.getLogger(JaxRsStackSupportImpl.class.getName()).log(Level.INFO, "Exception during extending an web project", ex); //NOI18N
-                return false;
-            }
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    public void removeJaxRsLibraries(Project project) {
-        // TODO: is it possible to remove ServerLibrary from project classpath ?
     }
 
     private Collection<ServerLibrary> getServerJerseyLibraries() {
@@ -166,6 +517,82 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
 
     private WLServerLibrarySupport getLibrarySupport() {
         return new WLServerLibrarySupport(platformImpl.getDeploymentManager());
+    }
+    
+    private FileObject getModulesFolder(){
+        File middlewareHome = platformImpl.getMiddlewareHome();
+        FileObject middlware = FileUtil.toFileObject( FileUtil.normalizeFile( middlewareHome));
+        if ( middlware == null ){
+            return null;
+        }
+        FileObject modules = middlware.getFileObject("modules");     // NOI18N
+        return modules;
+    }
+    
+    private FileObject getJarFile( String startName ){
+        FileObject modulesFolder = getModulesFolder();
+        if ( modulesFolder == null ){
+            return null;
+        }
+        FileObject[] children = modulesFolder.getChildren();
+        for (FileObject child : children) {
+            if ( child.getName().startsWith( startName) && child.hasExt( "jar")){    //  NOI18N
+                return child;
+            }
+        }
+        return null;
+    }
+    
+    private boolean addJars( Project project, Collection<URL> jars ){
+        List<URL> urls = new ArrayList<URL>();
+        for (URL url : jars) {
+            if ( FileUtil.isArchiveFile( url)){
+                urls.add(FileUtil.getArchiveRoot(url));
+            }
+        }
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
+            JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sourceGroups == null || sourceGroups.length < 1) {
+           return false;
+        }
+        FileObject sourceRoot = sourceGroups[0].getRootFolder();
+        try {
+            ProjectClassPathModifier.addRoots(urls.toArray( new URL[ urls.size()]), 
+                    sourceRoot, ClassPath.COMPILE);
+        } 
+        catch(UnsupportedOperationException ex) {
+            return false;
+        }
+        catch ( IOException e ){
+            return false;
+        }
+        return true;
+    }
+    
+    private void removeLibraries(Project project, Collection<URL> urls) {
+        if ( urls.size() >0 ){
+            SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
+            if (sourceGroups == null || sourceGroups.length < 1) {
+                return;
+            }
+            FileObject sourceRoot = sourceGroups[0].getRootFolder();
+            String[] classPathTypes = new String[]{ ClassPath.COMPILE , ClassPath.EXECUTE };
+            for (String type : classPathTypes) {
+                try {
+                    ProjectClassPathModifier.removeRoots(urls.toArray( 
+                        new URL[ urls.size()]), sourceRoot, type);
+                }    
+                catch(UnsupportedOperationException ex) {
+                    Logger.getLogger( JaxRsStackSupportImpl.class.getName() ).
+                            log (Level.INFO, null , ex );
+                }
+                catch( IOException e ){
+                    Logger.getLogger( JaxRsStackSupportImpl.class.getName() ).
+                            log(Level.INFO, null , e );
+                }
+            }     
+        }
     }
 
 }

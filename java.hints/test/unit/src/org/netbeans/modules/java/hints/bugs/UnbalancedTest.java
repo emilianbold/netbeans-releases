@@ -115,6 +115,20 @@ public class UnbalancedTest extends TestBase {
                             "}\n");
     }
 
+    public void testArrayNeg206855() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "  private final int aa[][] = new int[3][3];\n" +
+                            "  public Test() {\n" +
+                            "    aa[0][0] = 1;\n" +
+                            "  }\n" +
+                            "  public int get() {\n" +
+                            "    return aa[0][0];\n" +
+                            "  }\n" +
+                            "}\n");
+    }
+
     public void testCollectionWriteOnly1() throws Exception {
         performAnalysisTest("test/Test.java",
                             "package test;\n" +
@@ -211,5 +225,39 @@ public class UnbalancedTest extends TestBase {
                             "}\n");
     }
 
-    //XXX: test non-private
+    public void testCollectionNegAddTested() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    private java.util.List<String> coll = new java.util.ArrayList<String>();\n" +
+                            "    public void t1(String str) { if (coll.add(str)) System.err.println(\"\"); }\n" +
+                            "}\n");
+    }
+
+    public void testCollectionLocalVariable() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    private void t() { java.util.List<String> coll = new java.util.ArrayList<String>(); String str = coll.get(0); }\n" +
+                            "}\n",
+                            "2:46-2:50:verifier:ERR_UnbalancedCollectionREAD coll");
+    }
+
+    public void testCollectionNegNonPrivate() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    java.util.List<String> coll = new java.util.ArrayList<String>();\n" +
+                            "    public void t1(String str) { if (coll.add(str)) System.err.println(\"\"); }\n" +
+                            "}\n");
+    }
+
+    public void testCollectionNegEnhForLoop() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "import java.util.List;\n" +
+                            "public class Test {\n" +
+                            "    public int t1(List<List<String>> ll) { int total = 0; for (List<String> l : ll) total += l.size(); return total; }\n" +
+                            "}\n");
+    }
 }

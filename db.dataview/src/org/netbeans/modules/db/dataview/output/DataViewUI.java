@@ -74,7 +74,7 @@ import org.jdesktop.swingx.decorator.Filter;
 import org.jdesktop.swingx.decorator.FilterPipeline;
 import org.netbeans.modules.db.dataview.table.MultiColPatternFilter;
 import org.netbeans.modules.db.dataview.table.ResultSetJXTable;
-import static org.netbeans.modules.db.dataview.table.SuperPatternFilter.MODE.REGEX_FIND;
+import static org.netbeans.modules.db.dataview.table.SuperPatternFilter.MODE.LITERAL_FIND;
 import org.openide.util.NbBundle;
 
 /**
@@ -518,7 +518,7 @@ class DataViewUI extends JXPanel {
         }
         {
             MultiColPatternFilter filterP = new MultiColPatternFilter(rows);
-            filterP.setFilterStr(matchBoxField.getText(), REGEX_FIND);
+            filterP.setFilterStr(matchBoxField.getText(), LITERAL_FIND);
             table.setFilters(new FilterPipeline(new Filter[]{filterP}));
         }
     }

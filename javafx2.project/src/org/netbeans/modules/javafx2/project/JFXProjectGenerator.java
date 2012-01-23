@@ -60,9 +60,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.project.libraries.Library;
@@ -72,24 +72,17 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.modules.javafx2.project.JavaFXProjectWizardIterator.WizardType;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.ProjectGenerator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.netbeans.spi.project.support.ant.*;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
-import org.openide.ErrorManager;
-import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
-import org.openide.util.Parameters;
+import org.openide.util.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -117,7 +110,7 @@ public class JFXProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    static AntProjectHelper createProject(final File dir, final String name, final String mainClass,
+    public static AntProjectHelper createProject(final File dir, final String name, final String mainClass,
             final String manifestFile, final String librariesDefinition,
             final String platformName, final String preloader, final WizardType type) throws IOException {
         Parameters.notNull("dir", dir); //NOI18N
@@ -315,19 +308,19 @@ public class JFXProjectGenerator {
     private static void createJfxExtension(Project p, FileObject dirFO) throws IOException {
         //adding JavaFX buildscript extension
         FileObject templateFO = FileUtil.getConfigFile("Templates/JFX/jfx-impl.xml"); //NOI18N
-        FileObject platformFO = FileUtil.getConfigFile("Templates/JFX/jfx-impl-platform.xmlinc"); //NOI18N
-        FileObject parametersFO = FileUtil.getConfigFile("Templates/JFX/jfx-impl-parameters.xmlinc"); //NOI18N
-        FileObject callbacksFO = FileUtil.getConfigFile("Templates/JFX/jfx-impl-callbacks.xmlinc"); //NOI18N
-        if (templateFO != null && platformFO != null && parametersFO != null && callbacksFO != null) {
-            FileUtil.copyFile(platformFO, dirFO.getFileObject("nbproject"), "jfx-impl-platform"); // NOI18N
-            FileUtil.copyFile(parametersFO, dirFO.getFileObject("nbproject"), "jfx-impl-parameters"); // NOI18N
-            FileUtil.copyFile(callbacksFO, dirFO.getFileObject("nbproject"), "jfx-impl-callbacks"); // NOI18N
+        if (templateFO != null) {
             FileObject jfxBuildFile = FileUtil.copyFile(templateFO, dirFO.getFileObject("nbproject"), "jfx-impl"); // NOI18N
             AntBuildExtender extender = p.getLookup().lookup(AntBuildExtender.class);
             if (extender != null) {
                 assert jfxBuildFile != null;
                 if (extender.getExtension("jfx") == null) { // NOI18N
                     AntBuildExtender.Extension ext = extender.addExtension("jfx", jfxBuildFile); // NOI18N
+                    ext.addDependency("-init-check", "-check-javafx"); // NOI18N
+                    ext.addDependency("-init-check", "-javafx-check-error"); // NOI18N
+                    ext.addDependency("jar", "-jfx-copylibs"); // NOI18N
+                    ext.addDependency("jar", "-rebase-libs"); //NOI18N
+                    ext.addDependency("-post-jar", "-jfx-copylibs"); //NOI18N
+                    ext.addDependency("-post-jar", "-rebase-libs"); //NOI18N
                     ext.addDependency("-post-jar", "jfx-deployment"); //NOI18N 
                     ext.addDependency("run", "jar"); //NOI18N
                     ext.addDependency("debug", "jar");//NOI18N
@@ -382,15 +375,19 @@ public class JFXProjectGenerator {
         
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE_UNSUPPORTED_PREFIX + ".javafx", "true"); // NOI18N
-        ep.setProperty(JFXProjectProperties.JAVAFX_BINARY_ENCODE_CSS, "true"); // NOI18N
+        // JAVAFX_BINARY_ENCODE_CSS should remain "false" until JavaFX issue http://javafx-jira.kenai.com/browse/RT-18126 is resolved
+        ep.setProperty(JFXProjectProperties.JAVAFX_BINARY_ENCODE_CSS, "false"); // NOI18N
         ep.setProperty(JFXProjectProperties.JAVAFX_DEPLOY_INCLUDEDT, "true"); // NOI18N
+        ep.setProperty(JFXProjectProperties.JAVAFX_DEPLOY_EMBEDJNLP, "true"); // NOI18N
+        ep.setProperty(JFXProjectProperties.JAVAFX_REBASE_LIBS, "false"); // NOI18N
+        ep.setComment(JFXProjectProperties.JAVAFX_REBASE_LIBS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_rebase_libs")}, false); // NOI18N
         
         ep.setProperty(JFXProjectProperties.UPDATE_MODE_BACKGROUND, "true"); // NOI18N
         ep.setComment(JFXProjectProperties.UPDATE_MODE_BACKGROUND, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_updatemode")}, false); // NOI18N
         ep.setProperty(JFXProjectProperties.ALLOW_OFFLINE, "true"); // NOI18N
 
-        ep.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK, JavaFXPlatformUtils.getJavaFXSDKPath(platformName));
-        ep.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME, JavaFXPlatformUtils.getJavaFXRuntimePath(platformName));
+        ep.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK, JavaFXPlatformUtils.getJavaFXSDKPathReference(platformName));
+        ep.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME, JavaFXPlatformUtils.getJavaFXRuntimePathReference(platformName));
         ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, JavaFXPlatformUtils.getJavaFXClassPath()); // NOI18N
 
         ep.setProperty(JFXProjectProperties.RUN_APP_WIDTH, "800"); // NOI18N
@@ -402,6 +399,7 @@ public class JFXProjectGenerator {
             ep.setProperty(JFXProjectProperties.PRELOADER_ENABLED, "false"); // NOI18N
             ep.setComment(JFXProjectProperties.PRELOADER_ENABLED, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_prepreloader")}, false); // NOI18N
         } else {
+            // Disable J2SE JAR creation
             ep.setProperty("jar.archive.disabled", "true"); // NOI18N
             ep.setComment("jar.archive.disabled", new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_oldjar")}, false); // NOI18N
             ep.setProperty(ProjectProperties.MAIN_CLASS, "com.javafx.main.Main"); // NOI18N
@@ -413,18 +411,14 @@ public class JFXProjectGenerator {
             }
 
             if (preloader != null && preloader.length() > 0) { // this project uses preloader
-                String preloaderProj = FileUtil.toFile(dirFO).getParentFile().getAbsolutePath()
-                        + File.separatorChar + preloader; // NOI18N
-                //String preloaderJar = preloaderProj + "\\dist\\" + preloader + ".jar"; // NOI18N
-                String preloaderJarPath = preloaderProj + File.separatorChar + "dist" + File.separatorChar; // NOI18N
+                String preloaderProjRelative = "../" + preloader; // NOI18N
                 String preloaderJarFileName = preloader + ".jar"; // NOI18N
-                String copiedPreloaderJarPath = FileUtil.toFile(dirFO).getAbsolutePath() + File.separatorChar + "dist" + File.separatorChar + "lib" + File.separatorChar + preloaderJarFileName; // NOI18N
-                //String preloaderSrc = preloader + "\\src"; // NOI18N
+                String copiedPreloaderJarPath = "${dist.dir}/lib/${" + JFXProjectProperties.PRELOADER_JAR_FILENAME + "}"; // NOI18N
 
                 ep.setProperty(JFXProjectProperties.PRELOADER_ENABLED, "true"); // NOI18N
                 ep.setProperty(JFXProjectProperties.PRELOADER_TYPE, JFXProjectProperties.PreloaderSourceType.PROJECT.getString());
                 ep.setComment(JFXProjectProperties.PRELOADER_ENABLED, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_use_preloader")}, false); // NOI18N
-                ep.setProperty(JFXProjectProperties.PRELOADER_PROJECT, preloaderProj);
+                ep.setProperty(JFXProjectProperties.PRELOADER_PROJECT, preloaderProjRelative);
                 ep.setProperty(JFXProjectProperties.PRELOADER_CLASS, JavaFXProjectWizardIterator.generatePreloaderClassName(preloader)); // NOI18N
                 ep.setProperty(JFXProjectProperties.PRELOADER_JAR_PATH, copiedPreloaderJarPath);
                 ep.setProperty(JFXProjectProperties.PRELOADER_JAR_FILENAME, preloaderJarFileName);
@@ -768,13 +762,7 @@ public class JFXProjectGenerator {
         } else {
             JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
             SpecificationVersion v = defaultPlatform.getSpecification().getVersion();
-            if (v.equals(new SpecificationVersion("1.6")) || v.equals(new SpecificationVersion("1.7"))) { // NOI18N
-                // #89131: these levels are not actually distinct from 1.5. - xxx not true, but may be acceptable to have 1.5 as default
-                // since NB7.1 return 1.6 as default
-                return new SpecificationVersion("1.6"); // NOI18N
-            } else {
-                return v;
-            }
+            return v;
         }
     }
     private static final Pattern INVALID_NAME = Pattern.compile("[$/\\\\\\p{Cntrl}]");  //NOI18N

@@ -90,6 +90,15 @@ import org.netbeans.modules.profiler.stp.ui.HyperlinkTextArea;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "TaskPresenter_CreateCustomString=Create Custom...",
+    "TaskPresenter_RenameItemText=Rename",
+    "TaskPresenter_DuplicateItemText=Duplicate",
+    "TaskPresenter_DeleteItemText=Delete",
+    "TaskPresenter_MoveUpItemText=Move Up",
+    "TaskPresenter_MoveDownItemText=Move Down",
+    "TaskPresenter_CreateCustomToolTip=Create a custom profiling configuration with customizable advanced settings"
+})
 public class TaskPresenter implements TaskChooser.Item {
     //~ Inner Interfaces ---------------------------------------------------------------------------------------------------------
 
@@ -154,7 +163,7 @@ public class TaskPresenter implements TaskChooser.Item {
         private JScrollPane configurationsScrollPane;
         private TPHyperlinkTextArea createCustom;
         private int activeSettingsIndex = -1; // valid only when popup menu is opened!
-        private int selectedSettingsIndex = 0;
+        private int selectedSettingsIndex = -1;
 
         //~ Constructors ---------------------------------------------------------------------------------------------------------
 
@@ -168,6 +177,7 @@ public class TaskPresenter implements TaskChooser.Item {
         public void setProfilingSettings(ArrayList<ProfilingSettings> profilingSettings) {
             resetProfilingSettings();
             this.profilingSettings.addAll(profilingSettings);
+            selectedSettingsIndex = 0;
             updateItems();
         }
 
@@ -184,7 +194,7 @@ public class TaskPresenter implements TaskChooser.Item {
         }
 
         public void resetProfilingSettings() {
-            selectedSettingsIndex = 0;
+            selectedSettingsIndex = -1;
             profilingSettings.clear();
         }
 
@@ -294,9 +304,9 @@ public class TaskPresenter implements TaskChooser.Item {
             gridBagConstraints.insets = new Insets(0, 0, 10, 0);
             add(UIUtils.createFillerPanel(), gridBagConstraints);
 
-            createCustom = new TPHyperlinkTextArea(CREATE_CUSTOM_STRING);
-            createCustom.setToolTipText(CREATE_CUSTOM_TOOLTIP);
-            createCustom.setName(CREATE_CUSTOM_STRING);
+            createCustom = new TPHyperlinkTextArea(Bundle.TaskPresenter_CreateCustomString());
+            createCustom.setToolTipText(Bundle.TaskPresenter_CreateCustomToolTip());
+            createCustom.setName(Bundle.TaskPresenter_CreateCustomString());
             createCustom.addMouseListener(new MouseAdapter() {
                     public void mouseClicked(MouseEvent e) {
                         if (e.getButton() == MouseEvent.BUTTON1) {
@@ -313,7 +323,7 @@ public class TaskPresenter implements TaskChooser.Item {
                     }
                 });
 
-            renameItem = new JMenuItem(RENAME_ITEM_TEXT);
+            renameItem = new JMenuItem(Bundle.TaskPresenter_RenameItemText());
             renameItem.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         ProfilingSettings activeSettings = profilingSettings.get(activeSettingsIndex);
@@ -336,7 +346,7 @@ public class TaskPresenter implements TaskChooser.Item {
                     }
                 });
 
-            duplicateItem = new JMenuItem(DUPLICATE_ITEM_TEXT);
+            duplicateItem = new JMenuItem(Bundle.TaskPresenter_DuplicateItemText());
             duplicateItem.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         SelectProfilingTask.getDefault().synchronizeCurrentSettings();
@@ -356,7 +366,7 @@ public class TaskPresenter implements TaskChooser.Item {
                     }
                 });
 
-            deleteItem = new JMenuItem(DELETE_ITEM_TEXT);
+            deleteItem = new JMenuItem(Bundle.TaskPresenter_DeleteItemText());
             deleteItem.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         // TODO: show confirmation?
@@ -373,7 +383,7 @@ public class TaskPresenter implements TaskChooser.Item {
                     }
                 });
 
-            moveUpItem = new JMenuItem(MOVE_UP_ITEM_TEXT);
+            moveUpItem = new JMenuItem(Bundle.TaskPresenter_MoveUpItemText());
             moveUpItem.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         ProfilingSettings selectedSettings = profilingSettings.get(selectedSettingsIndex);
@@ -385,7 +395,7 @@ public class TaskPresenter implements TaskChooser.Item {
                     }
                 });
 
-            moveDownItem = new JMenuItem(MOVE_DOWN_ITEM_TEXT);
+            moveDownItem = new JMenuItem(Bundle.TaskPresenter_MoveDownItemText());
             moveDownItem.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         ProfilingSettings selectedSettings = profilingSettings.get(selectedSettingsIndex);
@@ -587,18 +597,6 @@ public class TaskPresenter implements TaskChooser.Item {
     }
 
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String CREATE_CUSTOM_STRING = NbBundle.getMessage(TaskPresenter.class, "TaskPresenter_CreateCustomString"); // NOI18N
-    private static final String RENAME_ITEM_TEXT = NbBundle.getMessage(TaskPresenter.class, "TaskPresenter_RenameItemText"); // NOI18N
-    private static final String DUPLICATE_ITEM_TEXT = NbBundle.getMessage(TaskPresenter.class, "TaskPresenter_DuplicateItemText"); // NOI18N
-    private static final String DELETE_ITEM_TEXT = NbBundle.getMessage(TaskPresenter.class, "TaskPresenter_DeleteItemText"); // NOI18N
-    private static final String MOVE_UP_ITEM_TEXT = NbBundle.getMessage(TaskPresenter.class, "TaskPresenter_MoveUpItemText"); // NOI18N
-    private static final String MOVE_DOWN_ITEM_TEXT = NbBundle.getMessage(TaskPresenter.class, "TaskPresenter_MoveDownItemText"); // NOI18N
-    private static final String CREATE_CUSTOM_TOOLTIP = NbBundle.getMessage(TaskPresenter.class,
-                                                                            "TaskPresenter_CreateCustomToolTip"); // NOI18N
-                                                                                                                  // -----
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 

@@ -170,7 +170,7 @@ public class UIDUtilities {
         return cachedUid;
     }
 
-    public static int getProjectID(CsmUID<CsmFile> uid) {
+    public static int getProjectID(CsmUID<?> uid) {
         if (uid instanceof KeyBasedUID<?>) {
             return KeyUtilities.getProjectIndex(((KeyBasedUID<?>) uid).getKey());
         }
@@ -302,7 +302,15 @@ public class UIDUtilities {
     public static int getEndOffset(CsmUID<?> uid) {
         if (uid instanceof KeyBasedUID<?>) {
             Key key = ((KeyBasedUID<?>) uid).getKey();
-            return KeyUtilities.getKeyEndOffset(key);
+            int out = KeyUtilities.getKeyEndOffset(key);
+            if (out == KeyUtilities.NON_INITIALIZED) {
+                Object object = uid.getObject();
+                if (CsmKindUtilities.isOffsetable(object)) {
+                    out = ((CsmOffsetable) object).getEndOffset();
+                    KeyUtilities.cacheKeyEndOffset(key, out);
+                }
+            }
+            return out;
         } else if (UIDProviderIml.isSelfUID(uid)) {
             Object object = uid.getObject();
             if (CsmKindUtilities.isOffsetable(object)) {

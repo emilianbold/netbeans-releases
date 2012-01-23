@@ -74,6 +74,7 @@ public abstract class APTTokenAndChildBasedNode extends APTTokenBasedNode
     }
 
 
+    @Override
     public APT getFirstChild() {
         return child;
     } 
@@ -81,6 +82,7 @@ public abstract class APTTokenAndChildBasedNode extends APTTokenBasedNode
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
     
+    @Override
     public final void setFirstChild(APT child) {
         assert (child != null) : "why added null child?"; // NOI18N
         assert (this.child == null) : "why do you change immutable APT?"; // NOI18N

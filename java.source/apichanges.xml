@@ -108,6 +108,30 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="TreePathHandle-getElementHandle">
+             <api name="general"/>
+             <summary>Added <code>TreePathHandle.getElementHandle</code>.</summary>
+             <version major="0" minor="93"/>
+             <date day="30" month="11" year="2011"/>
+             <author login="jbecicka"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>TreePathHandle.getElementHandle</code> that returns corresponding ElementHandle for given TreePathHandle.
+             </description>
+             <issue number="205719"/>
+        </change>
+        <change id="TreeUtilities-isCompileTimeConstantExpression">
+             <api name="general"/>
+             <summary>Added <code>TreeUtilities.isCompileTimeConstantExpression</code>.</summary>
+             <version major="0" minor="91"/>
+             <date day="7" month="11" year="2011"/>
+             <author login="jlahoda"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>TreeUtilities.isCompileTimeConstantExpression</code> that tests whether the given expression is a compile-time constant.
+             </description>
+             <issue number="204435"/>
+        </change>
         <change id="CompilationInfo-cache">
              <api name="general"/>
              <summary>Added <code>CompilationInfo.getCachedValue</code>, <code>CompilationInfo.putCachedValue</code> and <code>CompilationInfo.CacheClearPolicy</code>.</summary>

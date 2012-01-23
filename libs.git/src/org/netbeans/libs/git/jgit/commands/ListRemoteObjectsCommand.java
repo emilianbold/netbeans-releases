@@ -51,6 +51,7 @@ import org.eclipse.jgit.transport.FetchConnection;
 import org.eclipse.jgit.transport.Transport;
 import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
@@ -60,8 +61,8 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 abstract class ListRemoteObjectsCommand extends TransportCommand {
     private Collection<Ref> refs;
     
-    public ListRemoteObjectsCommand (Repository repository, String remoteRepositoryUrl, ProgressMonitor monitor) {
-        super(repository, remoteRepositoryUrl, monitor);
+    public ListRemoteObjectsCommand (Repository repository, GitClassFactory gitFactory, String remoteRepositoryUrl, ProgressMonitor monitor) {
+        super(repository, gitFactory, remoteRepositoryUrl, monitor);
     }
 
     @Override

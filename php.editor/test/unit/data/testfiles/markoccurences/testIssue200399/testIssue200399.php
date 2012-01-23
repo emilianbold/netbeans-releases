@@ -10,9 +10,9 @@ namespace Foo;
 class Bar {
     /**
      *
-     * @param Character\Manager $param
+     * @param \Character\Manager $param
      */
-    function functionName(Character\Manager $param) {
+    function functionName(\Character\Manager $param) {
 
     }
 }

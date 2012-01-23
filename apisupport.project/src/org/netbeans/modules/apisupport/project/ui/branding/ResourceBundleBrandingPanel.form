@@ -52,7 +52,6 @@
     <Component class="org.openide.explorer.view.BeanTreeView" name="view">
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new MyTree();"/>
-        <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="view.setUseSubstringInQuickSearch(true);"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="searchLabel">

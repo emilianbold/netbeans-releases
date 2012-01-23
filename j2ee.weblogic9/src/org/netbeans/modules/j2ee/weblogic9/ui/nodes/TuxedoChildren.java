@@ -111,7 +111,7 @@ class TuxedoChildren extends WLNodeChildren<ResourceNode> {
         protected boolean createKeys( final List<ResourceNode> keys ) {
             WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
 
-            WLConnectionSupport support = new WLConnectionSupport(manager);
+            WLConnectionSupport support = manager.getConnectionSupport();
             try {
             support.executeAction(new WLConnectionSupport.
                     JMXRuntimeAction<Void>()

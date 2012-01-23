@@ -50,19 +50,22 @@ import java.text.SimpleDateFormat;
 import java.text.DateFormat;
 import java.util.*;
 import java.io.File;
+import java.util.logging.Level;
+import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
 
 /**
  * Executes searches in Search History panel.
  * 
  * @author Maros Sandor
  */
-class SearchExecutor implements Runnable {
+class SearchExecutor extends HgProgressSupport {
 
     public static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");  // NOI18N
     
@@ -75,81 +78,76 @@ class SearchExecutor implements Runnable {
     };
     
     private final SearchHistoryPanel    master;
-    private Map<File, Set<File>>        workFiles;
+    private final File                  root;
+    private final Set<File>             files;
     private Map<String,File>            pathToRoot;
-    private final SearchCriteriaPanel   criteria;
     
-    private int                         completedSearches;
-    private boolean                     searchCanceled;
+    private final String fromRevision;
+    private final String toRevision;
+    private int limitRevisions;
+    private final String branchName;
+    static final int DEFAULT_LIMIT = 10;
+    private final boolean includeMerges;
+    private HgBranch[] branches;
 
     public SearchExecutor(SearchHistoryPanel master) {
         this.master = master;
-        criteria = master.getCriteria();
+        SearchCriteriaPanel criteria = master.getCriteria();
+        fromRevision = criteria.getFrom();
+        toRevision = criteria.getTo();
+        includeMerges = criteria.isIncludeMerges();
+        limitRevisions = criteria.getLimit();
+        if (limitRevisions <= 0) {
+            limitRevisions = DEFAULT_LIMIT;
+        }
+        branchName = criteria.getBranch();
         
         pathToRoot = new HashMap<String, File>(); 
-        workFiles = new HashMap<File, Set<File>>();
-        for (File file : master.getRoots()) {
-            File root = Mercurial.getInstance().getRepositoryRoot(file);
-
-            Set<File> set = workFiles.get(root);
-            if (set == null) {
-                set = new HashSet<File>(2);
-                workFiles.put(root, set);
-            }
-            set.add(file);
-        }
+        root = Mercurial.getInstance().getRepositoryRoot(master.getRoots()[0]);
+        files = new HashSet<File>(Arrays.asList(master.getRoots()));
 
     }    
         
     @Override
-    public void run() {
+    public void perform() {
+        OutputLogger logger = getLogger();
+        try {
+            this.branches = HgCommand.getBranches(root, OutputLogger.getLogger(null));
+        } catch (HgException ex) {
+            this.branches = new HgBranch[0];
+            Mercurial.LOG.log(Level.INFO, null, ex);
+        }
+        List<RepositoryRevision> results = search(fromRevision, toRevision, limitRevisions, branchName, this, logger);
+        if (!isCanceled()) {
+            checkFinished(results);
+        }
+    }
 
-        final String fromRevision = criteria.getFrom();
-        final String toRevision = criteria.getTo();
-        final int limitRevisions = criteria.getLimit();
-        final String branchName = criteria.getBranch();
+    public void start () {
         if (!HgBranch.DEFAULT_NAME.equals(branchName)) {
             // only for branches other than default
             HgModuleConfig.getDefault().setSearchOnBranchEnabled(master.getCurrentBranch(), !branchName.isEmpty());
         }
 
-        completedSearches = 0;
-        for (Map.Entry<File, Set<File>> entry : workFiles.entrySet()) {
-            final File root = entry.getKey();
-            final Set<File> files = entry.getValue();
-            RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
-            HgProgressSupport support = new HgProgressSupport() {
-                @Override
-                public void perform() {
-                    OutputLogger logger = getLogger();
-                    search(root, files, fromRevision, toRevision, limitRevisions, branchName, this, logger);
-                }
-            };
-            support.start(rp, root, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); // NOI18N
-        }
+        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
+        start(rp, root, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); //NOI18N
     }
 
-    private void search(File root, Set<File> files, String fromRevision,
-            String toRevision, int limitRevisions, String branchName, HgProgressSupport progressSupport, OutputLogger logger) {
+    private List<RepositoryRevision> search (String fromRevision, String toRevision, int limitRevisions, String branchName, HgProgressSupport progressSupport, OutputLogger logger) {
         if (progressSupport.isCanceled()) {
-            searchCanceled = true;
-            return;
+            return Collections.<RepositoryRevision>emptyList();
         }
         
         HgLogMessage[] messages;
         if (master.isIncomingSearch()) {
-            messages = HgCommand.getIncomingMessages(root, toRevision, master.isShowMerges(), logger);
-        }else if (master.isOutSearch()) {
-            messages = HgCommand.getOutMessages(root, toRevision, master.isShowMerges(), logger);
+            messages = HgCommand.getIncomingMessages(root, toRevision, includeMerges, false, includeMerges, limitRevisions, logger);
+        } else if (master.isOutSearch()) {
+            messages = HgCommand.getOutMessages(root, toRevision, includeMerges, limitRevisions, logger);
         } else {
             List<String> branchNames = branchName.isEmpty() ? Collections.<String>emptyList() : Collections.singletonList(branchName);
-            if(!master.isShowInfo()) {
-                messages = HgCommand.getLogMessagesNoFileInfo(root, files, fromRevision, toRevision, master.isShowMerges(), limitRevisions, branchNames, logger);
-            } else {
-                messages = HgCommand.getLogMessages(root, files, fromRevision, toRevision, master.isShowMerges(), true, limitRevisions, branchNames, logger, true);
-            }
+            messages = HgCommand.getLogMessages(root, files, fromRevision, toRevision, includeMerges, false, includeMerges, limitRevisions, branchNames, logger, true);
         }
-        appendResults(root, messages);
+        return appendResults(root, messages);
     }
   
     
@@ -159,62 +157,49 @@ class SearchExecutor implements Runnable {
      * @param root repository root
      * @param logMessages events in chronological order
      */ 
-    private synchronized void appendResults(File root, HgLogMessage[] logMessages) {
-        Map<File, Set<File>> renamedFiles = new HashMap<File, Set<File>>();
+    private List<RepositoryRevision> appendResults(File root, HgLogMessage[] logMessages) {
         List<RepositoryRevision> results = new ArrayList<RepositoryRevision>();
         // traverse in reverse chronological order
         for (int i = logMessages.length - 1; i >= 0; i--) {
             HgLogMessage logMessage = logMessages[i];
-            String username = criteria.getUsername();
-            if (username != null && logMessage.getAuthor().indexOf(username) == -1) continue;
-            String msg = criteria.getCommitMessage();
-            if (msg != null && logMessage.getMessage().indexOf(msg) == -1) continue;
-            RepositoryRevision rev = new RepositoryRevision(logMessage, root);
-            for (RepositoryRevision.Event event : rev.getEvents()) {
-                String filePath = event.getChangedPath().getPath();
-                File f = new File(root, filePath);
-                event.setFile(f);
-                event.setOriginalFile(f);
-                if (renamedFiles.containsKey(f)) {
-                    event.setRenames(renamedFiles.get(f));
-                }
-            }
-            for (RepositoryRevision.Event event : rev.getEvents()) {
-                if (event.getChangedPath().getAction() == HgLogMessage.HgCopyStatus && event.getChangedPath().getCopySrcPath() != null) {
-                    File originalFile = new File(root, event.getChangedPath().getCopySrcPath());
-                    event.setOriginalFile(originalFile);
-                    addRename(renamedFiles, originalFile, event.getFile());
-                }
-            }
+            RepositoryRevision rev = new RepositoryRevision(logMessage, root, master.getRoots(), master.isIncomingSearch(), getBranches(logMessage));
             results.add(rev);
-        }                
-        checkFinished(results);
+        }
+        return results;
     }
 
     private void checkFinished(final List<RepositoryRevision> results) {
-        completedSearches++;
-        if (workFiles.size() == completedSearches) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    if(results.isEmpty()) {
-                        master.setResults(null);
-                    } else {
-                        master.setResults(results);
-                    }
-
+        final Map<String, VCSKenaiAccessor.KenaiUser> kenaiUserMap = SearchHistoryPanel.createKenaiUsersMap(results);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if(results.isEmpty()) {
+                    master.setResults(null, kenaiUserMap, -1);
+                } else {
+                    master.setResults(results, kenaiUserMap, limitRevisions);
                 }
-            });
-        }
+
+            }
+        });
     }
 
-    private void addRename (Map<File, Set<File>> renamedFiles, File originalFile, File file) {
-        Set<File> renames = renamedFiles.get(originalFile);
-        if (renames == null) {
-            renames = new HashSet<File>(2);
-            renamedFiles.put(originalFile, renames);
+    List<RepositoryRevision> search (int count, HgProgressSupport supp) {
+        return search(fromRevision, toRevision, count, branchName, supp, supp.getLogger());
+    }
+
+    /**
+     * Returns set of branches the given log message is head of
+     * @param logMessage
+     * @return 
+     */
+    private Set<String> getBranches (HgLogMessage logMessage) {
+        Set<String> headOfBranches = new HashSet<String>(2);
+        for (HgBranch b : branches) {
+            if (b.getRevisionInfo().getCSetShortID().equals(logMessage.getCSetShortID())) {
+                headOfBranches.add(b.getName());
+            }
         }
-        renames.add(file);
+        return headOfBranches;
     }
   
 }

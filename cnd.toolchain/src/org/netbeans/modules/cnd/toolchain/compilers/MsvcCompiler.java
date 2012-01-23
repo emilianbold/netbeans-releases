@@ -42,13 +42,11 @@
 
 package org.netbeans.modules.cnd.toolchain.compilers;
 
-import java.util.List;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.PredefinedMacro;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -87,15 +85,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
    @Override
    protected Pair getFreshSystemIncludesAndDefines() {
         Pair res = new Pair();
-        List<PredefinedMacro> pm = getDescriptor().getPredefinedMacros();
-        if (pm != null) {
-            for (PredefinedMacro macro : pm) {
-                if (macro.getFlags() == null) {
-                    // TODO macro should be flag dependant
-                    res.systemPreprocessorSymbolsList.add(macro.getMacro());
-                }
-            }
-        }
+        completePredefinedMacros(res);
         String list = System.getenv("INCLUDE"); // NOI18N
         if (list != null) {
             StringTokenizer st = new StringTokenizer(list, ";"); // NOI18N

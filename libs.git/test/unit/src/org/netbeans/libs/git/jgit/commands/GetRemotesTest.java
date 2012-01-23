@@ -80,12 +80,12 @@ public class GetRemotesTest extends AbstractGitTestCase {
         StoredConfig cfg = repository.getConfig();
         RemoteConfig remoteConfig = new RemoteConfig(cfg, "origin");
         
-        Map<String, GitRemoteConfig> remotes = client.getRemotes(ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<String, GitRemoteConfig> remotes = client.getRemotes(NULL_PROGRESS_MONITOR);
         assertEquals(0, remotes.size());
         remoteConfig.update(cfg);
         cfg.save();
         
-        remotes = client.getRemotes(ProgressMonitor.NULL_PROGRESS_MONITOR);
+        remotes = client.getRemotes(NULL_PROGRESS_MONITOR);
         assertEquals(0, remotes.size());
         
         remoteConfig.addURI(new URIish("file:///home/repository"));
@@ -98,7 +98,7 @@ public class GetRemotesTest extends AbstractGitTestCase {
         remoteConfig.update(cfg);
         cfg.save();
         
-        remotes = client.getRemotes(ProgressMonitor.NULL_PROGRESS_MONITOR);
+        remotes = client.getRemotes(NULL_PROGRESS_MONITOR);
         assertEquals(1, remotes.size());
         assertEquals("origin", remotes.get("origin").getRemoteName());
         assertEquals(Arrays.asList(new String[] { "file:///home/repository", "file:///home/repository2" }), remotes.get("origin").getUris());
@@ -106,7 +106,7 @@ public class GetRemotesTest extends AbstractGitTestCase {
         assertEquals(Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*", "+refs/heads/master:refs/remotes/origin/my-master" }), remotes.get("origin").getFetchRefSpecs());
         assertEquals(Arrays.asList(new String[] { "refs/remotes/origin/*:refs/heads/*" }), remotes.get("origin").getPushRefSpecs());
         
-        GitRemoteConfig remote = client.getRemote("origin", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRemoteConfig remote = client.getRemote("origin", NULL_PROGRESS_MONITOR);
         assertEquals("origin", remote.getRemoteName());
         assertEquals(Arrays.asList(new String[] { "file:///home/repository", "file:///home/repository2" }), remote.getUris());
         assertEquals(Arrays.asList(new String[] { "file:///home/repository", "file:///home/repository3" }), remote.getPushUris());

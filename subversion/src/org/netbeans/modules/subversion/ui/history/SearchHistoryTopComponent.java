@@ -67,12 +67,12 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
     }
     
     public SearchHistoryTopComponent(Context context) {
-        this(context, null, null, null, null);
+        this(context, null, null);
     }
 
-    public SearchHistoryTopComponent(Context context, String commitMessage, String username, Date from, Date to) {
+    public SearchHistoryTopComponent(Context context, Date from, Date to) {
         this();
-        initComponents(context.getRootFiles(), commitMessage, username, from, to);
+        initComponents(context.getRootFiles(), from, to);
     }
 
     /**
@@ -82,10 +82,8 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
      */
     SearchHistoryTopComponent(File file, DiffResultsViewFactory fac) {
         this();
-        initComponents(new File[] {file}, null, null, null, null);
+        initComponents(new File[] {file}, null, null);
         shp.setDiffResultsViewFactory(fac);
-        // showing only one file - so disable the show all changepaths options
-        shp.disableFileChangesOption(false);
     }
 
     public SearchHistoryTopComponent(SVNUrl repositoryUrl, File localRoot, long revision) {
@@ -107,11 +105,9 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         add(shp);
     }
 
-    private void initComponents(File[] roots, String commitMessage, String username, Date from, Date to) {
+    private void initComponents(File[] roots, Date from, Date to) {
         setLayout(new BorderLayout());
         SearchCriteriaPanel scp = new SearchCriteriaPanel(roots);
-        scp.setCommitMessage(commitMessage);
-        scp.setUsername(username);
         if (from != null) scp.setFrom(SearchExecutor.simpleDateFormat.format(from));
         if (to != null) scp.setTo(SearchExecutor.simpleDateFormat.format(to));
         shp = new SearchHistoryPanel(roots, scp);
@@ -123,7 +119,7 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
     }
     
     protected void componentClosed() {
-//       ((DiffMainPanel) getComponent(0)).componentClosed();
+       shp.windowClosed();
        super.componentClosed();
     }
     

@@ -62,18 +62,13 @@ import org.netbeans.lib.profiler.ui.UIUtils;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "MonitorSettingsBasicPanel_EnableThreadsCheckboxText=&Enable threads monitoring",
+    "MonitorSettingsBasicPanel_EnableSamplingCheckboxText=&Sample threads states"
+})
 public class MonitorSettingsBasicPanel extends DefaultSettingsPanel implements HelpCtx.Provider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String ENABLE_THREADS_CHECKBOX_TEXT = NbBundle.getMessage(MonitorSettingsBasicPanel.class,
-                                                                                   "MonitorSettingsBasicPanel_EnableThreadsCheckboxText"); // NOI18N
-    private static final String ENABLE_SAMPLING_CHECKBOX_TEXT = NbBundle.getMessage(MonitorSettingsBasicPanel.class,
-                                                                                   "MonitorSettingsBasicPanel_EnableSamplingCheckboxText"); // NOI18N
-    private static final String STP_MONITOR_TOOLTIP = NbBundle.getMessage(MonitorSettingsBasicPanel.class, "StpMonitorTooltip"); // NOI18N
-    private static final String STP_SAMPLING_TOOLTIP = NbBundle.getMessage(MonitorSettingsBasicPanel.class, "StpSamplingTooltip"); // NOI18N
-                                                                                                                                 // -----
     private static final String HELP_CTX_KEY = "MonitorSettings.Basic.HelpCtx"; // NOI18N
     private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
 
@@ -153,8 +148,8 @@ public class MonitorSettingsBasicPanel extends DefaultSettingsPanel implements H
 
         // threadsMonitoringCheckbox
         threadsMonitoringCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(threadsMonitoringCheckbox, ENABLE_THREADS_CHECKBOX_TEXT);
-        threadsMonitoringCheckbox.setToolTipText(STP_MONITOR_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(threadsMonitoringCheckbox, Bundle.MonitorSettingsBasicPanel_EnableThreadsCheckboxText());
+        threadsMonitoringCheckbox.setToolTipText(Bundle.StpMonitorTooltip());
         threadsMonitoringCheckbox.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
@@ -171,8 +166,8 @@ public class MonitorSettingsBasicPanel extends DefaultSettingsPanel implements H
 
         // threadsSamplingCheckbox
         threadsSamplingCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(threadsSamplingCheckbox, ENABLE_SAMPLING_CHECKBOX_TEXT);
-        threadsSamplingCheckbox.setToolTipText(STP_SAMPLING_TOOLTIP);
+        org.openide.awt.Mnemonics.setLocalizedText(threadsSamplingCheckbox, Bundle.MonitorSettingsBasicPanel_EnableSamplingCheckboxText());
+        threadsSamplingCheckbox.setToolTipText(Bundle.StpSamplingTooltip());
         threadsSamplingCheckbox.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 0;

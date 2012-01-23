@@ -52,11 +52,15 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.CLIHandler;
 import org.netbeans.Module;
+import org.netbeans.core.startup.layers.ModuleLayeredFileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Handler for core.jar options.
@@ -95,13 +99,14 @@ public class CLICoreBridge extends CLIHandler {
             w.flush();
             return;
         }
-        
+
+        CLIOptions.fallbackToMemory();
         ModuleSystem moduleSystem;
         try {
             moduleSystem = new ModuleSystem(FileUtil.getConfigRoot().getFileSystem());
         } catch (IOException ioe) {
             // System will be screwed up.
-            throw (IllegalStateException) new IllegalStateException("Module system cannot be created").initCause(ioe); // NOI18N
+            throw new IllegalStateException("Module system cannot be created", ioe); // NOI18N
         }
 
 //        moduleSystem.loadBootModules();
@@ -122,6 +127,15 @@ public class CLICoreBridge extends CLIHandler {
         
         URLClassLoader loader = new URLClassLoader(urls.toArray(new URL[0]), getClass().getClassLoader());
         MainLookup.systemClassLoaderChanged(loader);
+        try {
+            final List<URL> layers = ModuleLayeredFileSystem.collectLayers(loader);
+            XMLFileSystem xfs = new XMLFileSystem();
+            xfs.setXmlUrls(layers.toArray(new URL[0]));
+            MainLookup.register(xfs);
+            MainLookup.modulesClassPathInitialized(Lookups.forPath("Services/OptionProcessors")); // NOI18N
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
         Lookup clis = Lookup.getDefault();
         Collection<? extends CLIHandler> handlers = clis.lookupAll(CLIHandler.class);
         showHelp(w, handlers, WHEN_EXTRA);

@@ -46,6 +46,7 @@ import java.io.IOException;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.index.CheckoutIndex;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -61,8 +62,8 @@ public class CheckoutIndexCommand extends GitCommand {
     private final ProgressMonitor monitor;
     private final boolean recursively;
 
-    public CheckoutIndexCommand (Repository repository, File[] roots, boolean recursively, ProgressMonitor monitor, FileListener listener) {
-        super(repository, monitor);
+    public CheckoutIndexCommand (Repository repository, GitClassFactory gitFactory, File[] roots, boolean recursively, ProgressMonitor monitor, FileListener listener) {
+        super(repository, gitFactory, monitor);
         this.roots = roots;
         this.listener = listener;
         this.monitor = monitor;

@@ -2604,8 +2604,12 @@ public class Reformatter implements ReformatTask {
             boolean containedNewLine = false;
             int after = 0;
             do {
-                if (tokens.offset() >= endPos)
+                if (tokens.offset() >= endPos) {
+                    if (lastWSToken != null) {
+                        tokens.movePrevious();
+                    }
                     return containedNewLine;
+                }
                 switch(tokens.token().id()) {
                     case WHITESPACE:
                         lastWSToken = tokens.token();
@@ -3303,12 +3307,14 @@ public class Reformatter implements ReformatTask {
                                // 4 - after throws tag, 5 - exception description, 6 - after pre tag, 7 - after other tag
                 int currWSOffset = -1;
                 int lastWSOffset = -1;
+                int identStart = -1;
                 boolean afterText = false;
                 boolean insideTag = false;
                 Pair<Integer, Integer> toAdd = null;
                 while (javadocTokens.moveNext()) {
                     switch (javadocTokens.token().id()) {
                         case TAG:
+                            toAdd = null;
                             String tokenText = javadocTokens.token().text().toString();
                             int newState;
                             if (JDOC_PARAM_TAG.equalsIgnoreCase(tokenText)) {
@@ -3332,7 +3338,7 @@ public class Reformatter implements ReformatTask {
                                     || JDOC_CODE_TAG.equalsIgnoreCase(tokenText)
                                     || JDOC_LITERAL_TAG.equalsIgnoreCase(tokenText)) {
                                 insideTag = true;
-                                marks.add(Pair.of(lastWSOffset >= 0 ? lastWSOffset : javadocTokens.offset() - offset, 5));
+                                marks.add(Pair.of(currWSOffset >= 0 ? currWSOffset : javadocTokens.offset() - offset, 5));
                                 lastWSOffset = currWSOffset = -1;
                                 break;
                             } else {
@@ -3355,21 +3361,8 @@ public class Reformatter implements ReformatTask {
                                 marks.add(toAdd);
                                 toAdd = null;
                             }
-                            if (state == 1) {
-                                int len = javadocTokens.token().length();
-                                if (len > maxParamNameLength)
-                                    maxParamNameLength = len;
-                                if (cs.alignJavadocParameterDescriptions())
-                                    toAdd = Pair.of(javadocTokens.offset() + len - offset, 2);
-                                state = 2;
-                            } else if (state == 4) {
-                                int len = javadocTokens.token().length();
-                                if (len > maxExcNameLength)
-                                    maxExcNameLength = len;
-                                if (cs.alignJavadocExceptionDescriptions())
-                                    toAdd = Pair.of(javadocTokens.offset() + len - offset, 4);
-                                state = 5;
-                            }
+                            if (identStart < 0 && (state == 1 || state == 4))
+                                identStart = javadocTokens.offset() - offset;
                             lastWSOffset = currWSOffset = -1;
                             afterText = true;
                             break;
@@ -3378,6 +3371,7 @@ public class Reformatter implements ReformatTask {
                             CharSequence cseq = javadocTokens.token().text();
                             int nlNum = 1;
                             int insideTagEndOffset = -1;
+                            boolean addNow = false;
                             for (int i = cseq.length(); i >= 0; i--) {
                                 if (i == 0) {
                                     if (lastWSOffset < 0)
@@ -3395,6 +3389,8 @@ public class Reformatter implements ReformatTask {
                                         if (toAdd != null) {
                                             marks.add(toAdd);
                                             toAdd = null;
+                                        } else {
+                                            addNow = true;
                                         }
                                         if (insideTag && c == '}') {
                                             insideTagEndOffset = javadocTokens.offset() + i - offset - 1;
@@ -3407,6 +3403,33 @@ public class Reformatter implements ReformatTask {
                                         afterText = true;
                                     }
                                 }
+                            }
+                            if (identStart >= 0) {
+                                int len = javadocTokens.offset() - offset - identStart;
+                                for (int i = 0; i <= cseq.length(); i++) {
+                                    if (i == cseq.length() || Character.isWhitespace(cseq.charAt(i))) {
+                                        len += i;
+                                        break;
+                                    }
+                                }
+                                if (state == 1) {
+                                    if (len > maxParamNameLength)
+                                        maxParamNameLength = len;
+                                    if (cs.alignJavadocParameterDescriptions())
+                                        toAdd = Pair.of(identStart + len, 2);
+                                    state = 2;
+                                } else if (state == 4) {
+                                    if (len > maxExcNameLength)
+                                        maxExcNameLength = len;
+                                    if (cs.alignJavadocExceptionDescriptions())
+                                        toAdd = Pair.of(identStart + len, 4);
+                                    state = 5;
+                                }
+                                if (addNow && toAdd != null) {
+                                    marks.add(toAdd);
+                                    toAdd = null;
+                                }
+                                identStart = -1;
                             }
                             if (insideTagEndOffset >= 0)
                                 marks.add(Pair.of(insideTagEndOffset, 6));
@@ -3522,6 +3545,7 @@ public class Reformatter implements ReformatTask {
                             }
                             preserveNewLines = true;
                             lastNewLinePos = i;
+                            align = -1;
                         } else {
                             lastNewLinePos = currWSPos >= 0 ? currWSPos : i;                            
                         }
@@ -3560,38 +3584,40 @@ public class Reformatter implements ReformatTask {
                                     align = -1;
                                     break;
                                 case 2:
-                                    int num = maxParamNameLength + lastNWSPos + 1 - i;
-                                    if (num > 0) {
-                                        addDiff(new Diff(offset + i, offset + i, getSpaces(num)));
-                                    } else if (num < 0) {
-                                        addDiff(new Diff(offset + i + num, offset + i, null));
-                                    }
                                     col += (maxParamNameLength + lastNWSPos- currWSPos);
                                     align = col;
                                     currWSPos = -1;
+                                    if (lastNewLinePos < 0) {
+                                        int num = maxParamNameLength + lastNWSPos + 1 - i;
+                                        if (num > 0) {
+                                            addDiff(new Diff(offset + i, offset + i, getSpaces(num)));
+                                        } else if (num < 0) {
+                                            addDiff(new Diff(offset + i + num, offset + i, null));
+                                        }
+                                    }
                                     break;
                                 case 3:
                                     align = col;
                                     break;
                                 case 4:
-                                    num = maxExcNameLength + lastNWSPos + 1 - i;
-                                    if (num > 0) {
-                                        addDiff(new Diff(offset + i, offset + i, getSpaces(num)));
-                                    } else if (num < 0) {
-                                        addDiff(new Diff(offset + i + num, offset + i, null));
-                                    }
                                     col += (maxExcNameLength + lastNWSPos- currWSPos);
                                     align = col;
                                     currWSPos = -1;
+                                    if (lastNewLinePos < 0) {
+                                        int num = maxExcNameLength + lastNWSPos + 1 - i;
+                                        if (num > 0) {
+                                            addDiff(new Diff(offset + i, offset + i, getSpaces(num)));
+                                        } else if (num < 0) {
+                                            addDiff(new Diff(offset + i + num, offset + i, null));
+                                        }
+                                    }
                                     break;
                                 case 5:
                                     noFormat = true;
-                                    align = -1;
                                     break;
                                 case 6:
                                     lastWSPos = -1;
                                     preserveNewLines = true;
-                                    align = -1;
                                     break;
                             }
                             if (it.hasNext()) {
@@ -3621,6 +3647,7 @@ public class Reformatter implements ReformatTask {
                                         pendingDiff.text = NEWLINE + blankLineString;
                                         preserveNewLines = true;
                                         lastNewLinePos = i;
+                                        align = -1;
                                         break;
                                     } else if (!Character.isWhitespace(c)) {
                                         break;
@@ -3677,6 +3704,7 @@ public class Reformatter implements ReformatTask {
                                             }
                                             currWSPos = -1;
                                             lastNewLinePos = i;
+                                            align = -1;
                                             break;
                                         } else if (Character.isWhitespace(c)) {
                                             if (currWSPos < 0) {
@@ -3710,14 +3738,15 @@ public class Reformatter implements ReformatTask {
                                                     col++;
                                                 }
                                                 String subs = text.substring(currWSPos, i);
-                                                if (!noFormat && !SPACE.equals(subs)) {
+                                                String s = getSpaces(align < 0 ? 1 : align - lineStartString.length() + 1);
+                                                if (!noFormat && !s.equals(subs)) {
                                                     if (pendingDiff != null) {
                                                         String sub = text.substring(pendingDiff.start - offset, pendingDiff.end - offset);
                                                         if (!sub.equals(pendingDiff.text)) {
                                                             addDiff(pendingDiff);
                                                         }
                                                     }
-                                                    pendingDiff = new Diff(offset + currWSPos, offset + i, SPACE);                                                    
+                                                    pendingDiff = new Diff(offset + currWSPos, offset + i, s);                                                    
                                                 }
                                             }
                                             lastNewLinePos = -1;
@@ -3727,12 +3756,23 @@ public class Reformatter implements ReformatTask {
                                     }
                                 } else {
                                     if (cs.addLeadingStarInComment()) {
+                                        int num = Math.max(align - col - 1, 1);
+                                        String s = getSpaces(num);
                                         if (pendingDiff != null) {
-                                            pendingDiff.text += (LEADING_STAR + SPACE);
+                                            pendingDiff.text += (LEADING_STAR + s);
                                         } else {
-                                            pendingDiff = new Diff(offset + i, offset + i, LEADING_STAR + SPACE);
+                                            pendingDiff = new Diff(offset + i, offset + i, LEADING_STAR + s);
                                         }
-                                        col += 2;
+                                        col += (num + 1);
+                                    } else if (align > col) {
+                                        int num = align - col;
+                                        String s = getSpaces(num);
+                                        if (pendingDiff != null) {
+                                            pendingDiff.text += s;
+                                        } else {
+                                            pendingDiff = new Diff(offset + i, offset + i, s);
+                                        }
+                                        col += num;                                        
                                     }
                                     lastNewLinePos = -1;
                                 }

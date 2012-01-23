@@ -102,10 +102,12 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
         }
     }
     
+    @Override
     public Map<CsmFile,Set<CsmFile>> getModel(){
         return map;
     }
 
+    @Override
     public boolean isDownDirection() {
         return !direction;
     }
@@ -170,14 +172,17 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
         }
     }
 
+    @Override
     public Action[] getDefaultActions() {
         return actions;
     }
 
+    @Override
     public Action getCloseWindowAction() {
         return close;
     }
 
+    @Override
     public void setCloseWindowAction(Action close) {
         this.close = close;
     }

@@ -46,6 +46,7 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -63,6 +64,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation;
@@ -88,6 +90,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.Line;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -108,6 +111,7 @@ public final class GitUtils {
     public static final String CURRENT = "CURRENT"; //NOI18N
     public static final String PREFIX_R_HEADS = "refs/heads/"; //NOI18N
     public static final String PREFIX_R_REMOTES = "refs/remotes/"; //NOI18N
+    public static final ProgressMonitor NULL_PROGRESS_MONITOR = new NullProgressMonitor();
 
     /**
      * Checks file location to see if it is part of git metadata
@@ -663,7 +667,7 @@ public final class GitUtils {
         return new File(getGitFolderForRoot(repository), "index.lock").exists(); //NOI18N
     }
 
-    public static void openInRevision (final File originalFile, final String revision, boolean showAnnotations, ProgressMonitor pm) throws IOException {
+    public static void openInRevision (final File originalFile, final int lineNumber, final String revision, boolean showAnnotations, ProgressMonitor pm) throws IOException {
         File file = VersionsCache.getInstance().getFileRevision(originalFile, revision, pm);
         if (pm.isCanceled()) {
             return;
@@ -694,12 +698,80 @@ public final class GitUtils {
                     public void run() {
                         javax.swing.JEditorPane[] panes = support.getOpenedPanes();
                         if (panes != null) {
+                            if (lineNumber >= 0 && lineNumber < support.getLineSet().getLines().size()) {
+                                support.getLineSet().getCurrent(lineNumber).show(Line.ShowOpenType.NONE, Line.ShowVisibilityType.FRONT);
+                            }
                             SystemAction.get(AnnotateAction.class).showAnnotations(panes[0], originalFile, revision);
                         }
                     }
                 });
             }
         }
+    }
+
+    public static Map<File, Set<File>> sortByRepository (Collection<File> files) {
+        Map<File, Set<File>> sorted = new HashMap<File, Set<File>>(5);
+        for (File f : files) {
+            File repository = Git.getInstance().getRepositoryRoot(f);
+            if (repository != null) {
+                Set<File> repoFiles = sorted.get(repository);
+                if (repoFiles == null) {
+                    repoFiles = new HashSet<File>();
+                    sorted.put(repository, repoFiles);
+                }
+                repoFiles.add(f);
+            }
+        }
+        return sorted;
+    }
+    
+    private static final String REF_SPEC_PATTERN = "+refs/heads/{0}:refs/remotes/{1}/{0}"; //NOI18N
+    private static final String REF_PUSHSPEC_PATTERN = "+refs/heads/{0}:refs/heads/{1}"; //NOI18N
+    private static final String REF_TAG_PUSHSPEC_PATTERN = "+refs/tags/{0}:refs/tags/{0}"; //NOI18N
+
+    public static String getRefSpec(GitBranch branch, String remoteName) {
+        return MessageFormat.format(REF_SPEC_PATTERN, branch.getName(), remoteName);
+    }
+
+    public static String getRefSpec (String branchName, String remoteName) {
+        return MessageFormat.format(REF_SPEC_PATTERN, branchName, remoteName);
+    }
+
+    public static String getPushRefSpec (String branchName, String remoteRepositoryBranchName) {
+        return MessageFormat.format(REF_PUSHSPEC_PATTERN, branchName, remoteRepositoryBranchName);
+    }
+
+    public static String getPushTagRefSpec (String tagName) {
+        return MessageFormat.format(REF_TAG_PUSHSPEC_PATTERN, tagName);
+    }
+
+    private static class NullProgressMonitor extends ProgressMonitor {
+
+        @Override
+        public boolean isCanceled () {
+            return false;
+        }
+
+        @Override
+        public void started (String command) {
+        }
+
+        @Override
+        public void finished () {
+        }
+
+        @Override
+        public void preparationsFailed (String message) {
+        }
+
+        @Override
+        public void notifyError (String message) {
+        }
+
+        @Override
+        public void notifyWarning (String message) {
+        }
+
     }
     
     private GitUtils() {

@@ -85,6 +85,7 @@ public class APTMacroExpandedStream extends APTExpandedStream {
             this.endOffsetToken = endOffsetToken;
         }
         
+        @Override
         public APTToken nextToken() {
             APTToken expandedTo = expandedMacros.nextToken();
             if (firstToken && APTUtils.isEOF(expandedTo)) {

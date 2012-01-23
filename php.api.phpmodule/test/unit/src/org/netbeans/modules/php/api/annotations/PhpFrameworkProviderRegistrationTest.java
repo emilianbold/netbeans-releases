@@ -42,9 +42,7 @@
 
 package org.netbeans.modules.php.api.annotations;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.junit.NbTestCase;
@@ -58,10 +56,13 @@ import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.test.AnnotationProcessorTestUtils;
 import org.openide.util.test.MockLookup;
 
 public class PhpFrameworkProviderRegistrationTest extends NbTestCase {
+
+    private static final String CONSTRUCTOR = "constructor";
+    private static final String FACTORY = "factory";
+
 
     public PhpFrameworkProviderRegistrationTest(String name) {
         super(name);
@@ -73,7 +74,7 @@ public class PhpFrameworkProviderRegistrationTest extends NbTestCase {
         clearWorkDir();
     }
 
-    public void testAnnotations() {
+    public void testRegistration() {
         MyFw.factoryCalls = 0;
         MockLookup.init();
         assertSame("No factory method should not be used yet", 0, MyFw.factoryCalls);
@@ -83,203 +84,17 @@ public class PhpFrameworkProviderRegistrationTest extends NbTestCase {
         //assertSame("One factory method should be used", 1, MyFw.factoryCalls);
 
         Iterator<? extends PhpFrameworkProvider> it = all.iterator();
-        assertEquals("constructor", it.next().getIdentifier());
-        assertEquals("factory", it.next().getIdentifier());
+        assertEquals(CONSTRUCTOR, it.next().getIdentifier());
+        assertEquals(FACTORY, it.next().getIdentifier());
     }
 
-    public void testPublicClass() throws Exception {
-        String myFw = ""
-                + getImports()
-                + "@PhpFrameworkProvider.Registration(position=100)"
-                + "class MyFw extends PhpFrameworkProvider {"
-                + "  public MyFw() {"
-                + "    super(\"MyFw\", null);"
-                + "  }"
-                + getEmptyBody()
-                + "}"
-                + "";
-        String output = compile(myFw);
-        assertTrue(output, output.contains("Class needs to be public"));
-    }
-
-    public void testAbstractClass() throws Exception {
-        String myFw = ""
-                + getImports()
-                + "@PhpFrameworkProvider.Registration(position=100)"
-                + "public abstract class MyFw extends PhpFrameworkProvider {"
-                + "  public MyFw() {"
-                + "    super(\"MyFw\", null);"
-                + "  }"
-                + getEmptyBody()
-                + "}"
-                + "";
-        String output = compile(myFw);
-        assertTrue(output, output.contains("Class cannot be abstract"));
-    }
-
-    public void testExtendsPhpFrameworkProvider() throws Exception {
-        String myFw = ""
-                + getImports()
-                + "@PhpFrameworkProvider.Registration(position=100)"
-                + "public class MyFw extends Object {"
-                + "  public MyFw() {"
-                + "    super(\"MyFw\", null);"
-                + "  }"
-                + getEmptyBody()
-                + "}"
-                + "";
-        String output = compile(myFw);
-        assertTrue(output, output.contains("Class needs to extend PhpFrameworkProvider"));
-    }
-
-    public void testPublicDefaultConstructor1() throws Exception {
-        String myFw = ""
-                + getImports()
-                + "@PhpFrameworkProvider.Registration(position=100)"
-                + "public class MyFw extends PhpFrameworkProvider {"
-                + "  MyFw() {"
-                + "    super(\"MyFw\", null);"
-                + "  }"
-                + getEmptyBody()
-                + "}"
-                + "";
-        String output = compile(myFw);
-        assertTrue(output, output.contains("There needs to be public default constructor"));
-    }
-
-    public void testPublicDefaultConstructor2() throws Exception {
-        String myFw = ""
-                + getImports()
-                + "@PhpFrameworkProvider.Registration(position=100)"
-                + "public class MyFw extends PhpFrameworkProvider {"
-                + "  private MyFw() {"
-                + "    super(\"MyFw\", null);"
-                + "  }"
-                + getEmptyBody()
-                + "}"
-                + "";
-        String output = compile(myFw);
-        assertTrue(output, output.contains("There needs to be public default constructor"));
-    }
-
-    public void testPublicDefaultConstructor3() throws Exception {
-        String myFw = ""
-                + getImports()
-                + "@PhpFrameworkProvider.Registration(position=100)"
-                + "public class MyFw extends PhpFrameworkProvider {"
-                + "  public MyFw(String name) {"
-                + "    super(name, null);"
-                + "  }"
-                + getEmptyBody()
-                + "}"
-                + "";
-        String output = compile(myFw);
-        assertTrue(output, output.contains("There needs to be public default constructor"));
-    }
-
-    public void testFactoryMethodinPublicClass() throws Exception {
-        String myFw = ""
-                + getImports()
-                + "class MyFw extends PhpFrameworkProvider {"
-                + "  private MyFw() {"
-                + "    super(\"myFw\", null);"
-                + "  }"
-                + "  @PhpFrameworkProvider.Registration(position=100)"
-                + "  public static MyFw create() {"
-                + "    return new MyFw();"
-                + "  }"
-                + getEmptyBody()
-                + "}"
-                + "";
-        String output = compile(myFw);
-        assertTrue(output, output.contains("Class needs to be public"));
-    }
-
-    public void testFactoryMethodIsPublic() throws Exception {
-        String myFw = ""
-                + getImports()
-                + "public class MyFw extends PhpFrameworkProvider {"
-                + "  private MyFw() {"
-                + "    super(\"myFw\", null);"
-                + "  }"
-                + "  @PhpFrameworkProvider.Registration(position=100)"
-                + "  static MyFw create() {"
-                + "    return new MyFw();"
-                + "  }"
-                + getEmptyBody()
-                + "}"
-                + "";
-        String output = compile(myFw);
-        assertTrue(output, output.contains("The method needs to be public, static and without arguments"));
-    }
-
-    public void testFactoryMethodIsStatic() throws Exception {
-        String myFw = ""
-                + getImports()
-                + "public class MyFw extends PhpFrameworkProvider {"
-                + "  private MyFw() {"
-                + "    super(\"myFw\", null);"
-                + "  }"
-                + "  @PhpFrameworkProvider.Registration(position=100)"
-                + "  public MyFw create() {"
-                + "    return new MyFw();"
-                + "  }"
-                + getEmptyBody()
-                + "}"
-                + "";
-        String output = compile(myFw);
-        assertTrue(output, output.contains("The method needs to be public, static and without arguments"));
-    }
-
-    public void testFactoryMethodIsWithoutParameters() throws Exception {
-        String myFw = ""
-                + getImports()
-                + "public class MyFw extends PhpFrameworkProvider {"
-                + "  private MyFw() {"
-                + "    super(\"myFw\", null);"
-                + "  }"
-                + "  @PhpFrameworkProvider.Registration(position=100)"
-                + "  public static MyFw create(String name) {"
-                + "    return new MyFw();"
-                + "  }"
-                + getEmptyBody()
-                + "}"
-                + "";
-        String output = compile(myFw);
-        assertTrue(output, output.contains("The method needs to be public, static and without arguments"));
-    }
-
-    public void testFactoryMethodReturnType() throws Exception {
-        String myFw = ""
-                + getImports()
-                + "public class MyFw extends PhpFrameworkProvider {"
-                + "  private MyFw() {"
-                + "    super(\"myFw\", null);"
-                + "  }"
-                + "  @PhpFrameworkProvider.Registration(position=100)"
-                + "  public static Object create() {"
-                + "    return new MyFw();"
-                + "  }"
-                + getEmptyBody()
-                + "}"
-                + "";
-        String output = compile(myFw);
-        assertTrue(output, output.contains("Method needs to return PhpFrameworkProvider"));
-    }
-
-    private String compile(String myFw) throws IOException {
-        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "x.MyFw", myFw);
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        boolean res = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, out);
-        assertFalse("Compilation should fail", res);
-        return out.toString();
-    }
+    //~ Inner classes
 
     public static final class MyFwFactory {
         @PhpFrameworkProvider.Registration(position=200)
         public static MyFw getInstance() {
             MyFw.factoryCalls++;
-            return new MyFw("factory");
+            return new MyFw(FACTORY);
         }
     }
 
@@ -288,7 +103,7 @@ public class PhpFrameworkProviderRegistrationTest extends NbTestCase {
         static int factoryCalls = 0;
 
         public MyFw() {
-            super("constructor", "constructor", null);
+            super(CONSTRUCTOR, CONSTRUCTOR, null);
         }
 
         MyFw(String name) {
@@ -329,26 +144,4 @@ public class PhpFrameworkProviderRegistrationTest extends NbTestCase {
         }
     }
 
-    private static String getImports() {
-        return new StringBuilder(500)
-                .append("import java.io.File;")
-                .append("import org.netbeans.modules.php.api.phpmodule.*;")
-                .append("import org.netbeans.modules.php.spi.commands.*;")
-                .append("import org.netbeans.modules.php.spi.editor.*;")
-                .append("import org.netbeans.modules.php.spi.phpmodule.*;")
-                .toString();
-    }
-
-    private static String getEmptyBody() {
-        return new StringBuilder(500)
-                .append("public boolean isInPhpModule(PhpModule phpModule) {return false;}")
-                .append("public File[] getConfigurationFiles(PhpModule phpModule) {return null;}")
-                .append("public PhpModuleExtender createPhpModuleExtender(PhpModule phpModule) {return null;}")
-                .append("public PhpModuleProperties getPhpModuleProperties(PhpModule phpModule) {return null;}")
-                .append("public PhpModuleActionsExtender getActionsExtender(PhpModule phpModule) {return null;}")
-                .append("public PhpModuleIgnoredFilesExtender getIgnoredFilesExtender(PhpModule phpModule) {return null;}")
-                .append("public FrameworkCommandSupport getFrameworkCommandSupport(PhpModule phpModule) {return null;}")
-                .append("public EditorExtender getEditorExtender(PhpModule phpModule) {return null;}")
-                .toString();
-    }
 }

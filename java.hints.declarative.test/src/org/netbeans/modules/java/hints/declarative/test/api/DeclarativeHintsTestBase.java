@@ -104,7 +104,7 @@ public class DeclarativeHintsTestBase extends NbTestCase {
             }
             
             //TODO:
-            URL testURL = DeclarativeHintsTestBase.class.getClassLoader().getResource(test);
+            URL testURL = clazz.getClassLoader().getResource(test);
             
             assertNotNull(testURL);
 
@@ -113,7 +113,7 @@ public class DeclarativeHintsTestBase extends NbTestCase {
             assertNotNull(testFO);
 
             String hint = test.substring(0, test.length() - ".test".length()) + ".hint";
-            URL hintURL = DeclarativeHintsTestBase.class.getClassLoader().getResource(hint);
+            URL hintURL = clazz.getClassLoader().getResource(hint);
 
             assertNotNull(hintURL);
             

@@ -61,6 +61,7 @@ public class CsmPreprocessorDirectiveCompletionProvider implements CompletionPro
 
     private final static boolean TRACE = Boolean.getBoolean("cnd.completion.preproc.trace");
 
+    @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         if (TRACE) {
             System.err.println("typed text " + typedText);
@@ -83,6 +84,7 @@ public class CsmPreprocessorDirectiveCompletionProvider implements CompletionPro
         return 0;
     }
 
+    @Override
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if (TRACE) {
             System.err.println("queryType = " + queryType); // NOI18N
@@ -153,6 +155,7 @@ public class CsmPreprocessorDirectiveCompletionProvider implements CompletionPro
             this.resultSetAnchorOffset = creationCaretOffset;
         }
 
+        @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             if (TRACE) {
                 System.err.println("query on " + caretOffset + " anchor " + queryAnchorOffset); // NOI18N

@@ -58,7 +58,7 @@ import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingConstants;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
+import org.netbeans.modules.php.project.api.PhpLanguageProperties.PhpVersion;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.Utils;
@@ -83,7 +83,7 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
         sourcesTextField.getDocument().addDocumentListener(this);
         projectNameTextField.getDocument().addDocumentListener(this);
 
-        phpVersionComboBox.setModel(new PhpVersionComboBoxModel(PhpVersion.PHP_5));
+        phpVersionComboBox.setModel(new PhpVersionComboBoxModel(PhpVersion.PHP_53));
 
         encodingComboBox.setModel(ProjectCustomizer.encodingModel(Charset.defaultCharset().name()));
         encodingComboBox.setRenderer(ProjectCustomizer.encodingRenderer());

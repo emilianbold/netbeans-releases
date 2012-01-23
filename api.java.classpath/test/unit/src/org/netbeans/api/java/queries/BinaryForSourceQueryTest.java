@@ -90,17 +90,17 @@ public class BinaryForSourceQueryTest extends NbTestCase {
         assertNotNull(binaryRoot2);       
         SFBQImpl.clear();
         CPProvider.clear();
-        SFBQImpl.register(srcRoot2.getURL(), binaryRoot2.getURL());
+        SFBQImpl.register(srcRoot2.toURL(), binaryRoot2.toURL());
         CPProvider.register(srcRoot2, ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {srcRoot2}));
         CPProvider.register(srcRoot2, ClassPath.EXECUTE, ClassPathSupport.createClassPath(new FileObject[] {binaryRoot2}));        
     }
     
     public void testQuery() throws Exception {
-        BinaryForSourceQuery.Result result = BinaryForSourceQuery.findBinaryRoots(srcRoot1.getURL());
+        BinaryForSourceQuery.Result result = BinaryForSourceQuery.findBinaryRoots(srcRoot1.toURL());
         assertEquals(0,result.getRoots().length);        
-        result = BinaryForSourceQuery.findBinaryRoots(srcRoot2.getURL());
+        result = BinaryForSourceQuery.findBinaryRoots(srcRoot2.toURL());
         assertEquals(1,result.getRoots().length);
-        assertEquals(binaryRoot2.getURL(), result.getRoots()[0]);
+        assertEquals(binaryRoot2.toURL(), result.getRoots()[0]);
     }
     
     public static class SFBQImpl implements SourceForBinaryQueryImplementation {        

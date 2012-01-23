@@ -45,7 +45,6 @@
 package org.netbeans.spi.project.support;
 
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -158,9 +157,9 @@ public class GenericSources {
             return opened ? icon : openedIcon;
         }
         
-        public boolean contains(FileObject file) throws IllegalArgumentException {
+        @Override public boolean contains(FileObject file) {
             if (file != rootFolder && !FileUtil.isParentOf(rootFolder, file)) {
-                throw new IllegalArgumentException(rootFolder + " [isValid=" + rootFolder.isValid() + "] is not parent of " + file + " [isValid=" + file.isValid() + "].");  //NOI18N
+                return false;
             }
             if (file.isFolder() && file != p.getProjectDirectory() && ProjectManager.getDefault().isProject(file)) {
                 // #67450: avoid actually loading the nested project.
@@ -169,14 +168,8 @@ public class GenericSources {
             if (FileOwnerQuery.getOwner(file) != p) {
                 return false;
             }
-            File f = FileUtil.toFile(file);
-            if (f != null) {
-                // MIXED, UNKNOWN, and SHARABLE -> include it
-                return SharabilityQuery.getSharability(f) != SharabilityQuery.NOT_SHARABLE;
-            } else {
-                // Not on disk, include it.
-                return true;
-            }
+            // MIXED, UNKNOWN, and SHARABLE -> include it
+            return SharabilityQuery.getSharability(file) != SharabilityQuery.Sharability.NOT_SHARABLE;
         }
         
         public void addPropertyChangeListener(PropertyChangeListener l) {

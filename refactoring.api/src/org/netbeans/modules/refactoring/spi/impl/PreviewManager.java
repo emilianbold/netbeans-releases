@@ -152,6 +152,7 @@ public class PreviewManager {
         OldDiffSource(SimpleRefactoringElementImplementation r) {
             this.file = r.getParentFile();
         }
+        @Override
         public String getName() {
             if (file.isFolder()) {
                 return NbBundle.getMessage(PreviewManager.class,"LBL_FileDoesNotExist");
@@ -159,6 +160,7 @@ public class PreviewManager {
             return file.getName();
         }
 
+        @Override
         public String getTitle() {
             if (file.isFolder()) {
                 return NbBundle.getMessage(PreviewManager.class,"LBL_FileDoesNotExist");
@@ -166,18 +168,22 @@ public class PreviewManager {
             return file.getNameExt();
         }
 
+        @Override
         public String getMIMEType() {
             return file.getMIMEType();
         }
 
+        @Override
         public Reader createReader() throws IOException {
             return null;
         }
 
+        @Override
         public Writer createWriter(Difference[] conflicts) throws IOException {
             return null;
         }
         
+        @Override
         public Lookup getLookup() {
             return Lookups.singleton(file);
         }
@@ -191,10 +197,12 @@ public class PreviewManager {
             this.element = refactElemImpl;
         }
 
+        @Override
         public String getName() {
             return NbBundle.getMessage(PreviewManager.class,"LBL_ProposedRefactoring");
         }
         
+        @Override
         public String getTitle() {
             if (element.getParentFile().isFolder()) {
                 return NbBundle.getMessage(PreviewManager.class,"LBL_NewFile");
@@ -202,6 +210,7 @@ public class PreviewManager {
             return  NbBundle.getMessage(PreviewManager.class,"LBL_Refactored",element.getParentFile().getNameExt());
         }
         
+        @Override
         public String getMIMEType() {
             if (element.getParentFile().isFolder()) {
                 //this is hack, all folders are text/x-java
@@ -210,10 +219,12 @@ public class PreviewManager {
             return element.getParentFile().getMIMEType();
         }
         
+        @Override
         public Reader createReader() throws IOException {
             return null;
         }
         
+        @Override
         public Writer createWriter(Difference[] conflicts) throws IOException {
             return null;
         }
@@ -226,6 +237,7 @@ public class PreviewManager {
             return internal;
         }
         
+        @Override
         public Lookup getLookup() {
             return Lookups.singleton(getDocument());
         }

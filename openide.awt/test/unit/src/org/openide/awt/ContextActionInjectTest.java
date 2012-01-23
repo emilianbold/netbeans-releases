@@ -127,8 +127,9 @@ public class ContextActionInjectTest extends NbTestCase {
         assertNotNull("File found", fo);
         Object obj = fo.getAttribute("instanceCreate");
         assertNotNull("Attribute present", obj);
-        assertTrue("It is context aware action", obj instanceof ContextAwareAction);
-        ContextAwareAction a = (ContextAwareAction)obj;
+        assertTrue("It is action", obj instanceof Action);
+        assertFalse("It is not context aware action: " + obj, obj instanceof ContextAwareAction);
+        Action a = (Action)obj;
 
         InstanceContent ic = contextI;
         ic.add(10);

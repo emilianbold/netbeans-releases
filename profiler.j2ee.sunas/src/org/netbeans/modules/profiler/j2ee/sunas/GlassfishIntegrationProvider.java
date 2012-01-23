@@ -50,18 +50,16 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav Bachorik
  */
+@NbBundle.Messages({
+    "SunAS8IntegrationProvider_SunAs9GlassFishString=GlassFish 2 / SailFin / Sun Java System Application Server 9.x",
+    "SunAS8IntegrationProvider_ProfiledSunAs9GlassFishConsoleString=Profiled GlassFish 2 / SJSAS 9.x Console"
+})
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.attach.spi.IntegrationProvider.class)
 public class GlassfishIntegrationProvider extends SunASAutoIntegrationProvider {
-    //~ Instance fields ----------------------------------------------------------------------------------------------------------
-
-    private final String APP_SERVER_CONSOLE_TITLE = NbBundle.getMessage(this.getClass(),
-                                                                        "SunAS8IntegrationProvider_ProfiledSunAs9GlassFishConsoleString"); // NOI18N
-    private final String APP_SERVER_TITLE = NbBundle.getMessage(this.getClass(), "SunAS8IntegrationProvider_SunAs9GlassFishString"); // NOI18N
-
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public String getTitle() {
-        return APP_SERVER_TITLE; // NOI18N
+        return Bundle.SunAS8IntegrationProvider_SunAs9GlassFishString();
     }
 
     protected int getAttachWizardPriority() {
@@ -73,11 +71,11 @@ public class GlassfishIntegrationProvider extends SunASAutoIntegrationProvider {
     }
 
     protected String getWinConsoleString() {
-        return APP_SERVER_CONSOLE_TITLE; // NOI18N
+        return Bundle.SunAS8IntegrationProvider_ProfiledSunAs9GlassFishConsoleString();
     }
 
     protected String getWinSpecificCommandLineArgs(String targetOS, boolean isRemote, int portNumber) {
-        return "\"-agentpath:" + IntegrationUtils.getNativeLibrariesPath(targetOS, getTargetJava(), isRemote)
+        return "\"-agentpath:" + IntegrationUtils.getNativeLibrariesPath(targetOS, getTargetJava(), isRemote) // NOI18N
                + IntegrationUtils.getDirectorySeparator(targetOS) + IntegrationUtils.getProfilerAgentLibraryFile(targetOS) + "=" //NOI18N
                + "\\\"" + IntegrationUtils.getLibsDir(targetOS, isRemote) + "\\\"" + "," + portNumber + "\""; //NOI18N
     }

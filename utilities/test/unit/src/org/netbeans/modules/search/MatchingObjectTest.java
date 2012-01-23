@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -48,6 +49,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -126,6 +128,10 @@ public class MatchingObjectTest extends NbTestCase {
 
         assertEquals("writing dATA",
                 replaceInFilePreserveCase("writing dTA", "dta", "data"));
+        assertEquals("writing\ndATA",
+                replaceInFilePreserveCase("writing\ndTA", "dta", "data"));
+        assertEquals("writing\r\ndATA",
+                replaceInFilePreserveCase("writing\r\ndTA", "dta", "data"));
     }
 
     /** Helper method - create file, write its content, find it, replace in it
@@ -224,6 +230,52 @@ public class MatchingObjectTest extends NbTestCase {
                 }
             };
         }
+    }
+
+    public void testCheckFileLines() throws IOException {
+
+        FileSystem fs = FileUtil.createMemoryFileSystem();
+        Charset chs = Charset.forName("UTF-8");
+        OutputStream os = fs.getRoot().createAndOpen("find.txt");
+        try {
+            OutputStreamWriter osw = new OutputStreamWriter(os,
+                    chs.newEncoder());
+            try {
+                osw.write("Text on line 1.");
+                osw.write("Line 1 has some more text included!\r\n");
+                osw.write("Not matching line.\r\n");
+                osw.write("Line 3 contains text\n");
+                osw.write("\n");
+                osw.write("Line 5 contains text\n");
+            } finally {
+                osw.flush();
+                osw.close();
+            }
+        } finally {
+            os.flush();
+            os.close();
+        }
+        BasicSearchCriteria bsc = new BasicSearchCriteria();
+        bsc.setFileNamePattern("*.*");
+        bsc.setTextPattern("text");
+        bsc.onOk();
+
+        FileObject fo = fs.getRoot().getFileObject("find.txt");
+        bsc.matches(fo);
+        List<TextDetail> matches = bsc.getTextDetails(fo);
+        assertEquals(4, matches.size());
+
+        assertEquals(1, matches.get(0).getLine());
+        assertEquals(1, matches.get(0).getColumn());
+        assertEquals(4, matches.get(0).getMarkLength());
+
+        assertEquals(1, matches.get(1).getLine());
+        assertEquals(37, matches.get(1).getColumn());
+
+        assertEquals(3, matches.get(2).getLine());
+        assertEquals(17, matches.get(2).getColumn());
+
+        assertEquals(5, matches.get(3).getLine());
     }
 
     /** Create an in-memory file with simple string content.

@@ -44,13 +44,11 @@
 
 package org.netbeans.modules.refactoring.java.spi;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
-import com.sun.source.util.Trees;
 import java.io.IOException;
-import javax.lang.model.element.*;
-import javax.lang.model.util.Types;
+import javax.lang.model.element.Element;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;

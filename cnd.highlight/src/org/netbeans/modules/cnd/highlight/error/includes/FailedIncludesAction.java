@@ -59,6 +59,7 @@ public class FailedIncludesAction extends NodeAction {
         return NbBundle.getMessage(FailedIncludesAction.class,id);
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
         List<NativeProject> projects = getNativeProjects(activatedNodes);
         Set<CsmUID<CsmFile>> set;
@@ -86,6 +87,7 @@ public class FailedIncludesAction extends NodeAction {
         ErrorIncludeDialog.showErrorIncludeDialog(list);
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         List<NativeProject> projects = getNativeProjects(activatedNodes);
         if( projects == null || projects.size() != 1) {
@@ -131,10 +133,12 @@ public class FailedIncludesAction extends NodeAction {
         return false;
     }
 
+    @Override
     public String getName() {
         return i18n("ErrorIncludeMenu_Title"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

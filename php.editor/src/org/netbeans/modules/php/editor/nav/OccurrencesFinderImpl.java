@@ -95,7 +95,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
     public void cancel() {
         cancelled = true;
     }
-    
+
     @Override
     public void run(Result result, SchedulerEvent event) {
         //remove the last occurrences - the CSL caches the last found occurences for us
@@ -105,7 +105,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
             cancelled = false;
             return ;
         }
-        
+
         Preferences node = MarkOccurencesSettings.getCurrentNode();
         Map<OffsetRange, ColoringAttributes> localRange2Attribs= new HashMap<OffsetRange, ColoringAttributes>();
         if (node.getBoolean(MarkOccurencesSettings.ON_OFF, true)) {
@@ -124,7 +124,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
             range2Attribs = localRange2Attribs;
         }
     }
-    
+
     static Collection<OffsetRange> compute(final ParserResult parameter, final int offset) {
         Set<OffsetRange> result = new TreeSet<OffsetRange>(new Comparator<OffsetRange>() {
             @Override

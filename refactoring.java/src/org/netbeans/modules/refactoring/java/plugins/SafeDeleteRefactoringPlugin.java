@@ -45,9 +45,6 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.AnnotationTree;
-import javax.lang.model.element.Element;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -55,22 +52,30 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.*;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
-import org.netbeans.modules.refactoring.spi.ui.UI;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
-import org.netbeans.modules.refactoring.spi.*;
-import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.ui.WhereUsedQueryUI;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGrip;
+import org.netbeans.modules.refactoring.spi.ProblemDetailsFactory;
+import org.netbeans.modules.refactoring.spi.ProblemDetailsImplementation;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
+import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.util.*;
+import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 
@@ -143,38 +148,39 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             if (files.contains(refacElem.getParentFile())) {
                 continue;
             }
-            
+
             if (!isPendingDelete(elem, refactoredObjects)) {
-                JavaSource src = JavaSource.forFileObject(elem.getFileObject());
                 final AtomicBoolean override = new AtomicBoolean(false);
-                try {
-                    src.runUserActionTask(new CancellableTask<CompilationController>() {
+                if (elem != null) {
+                    JavaSource src = JavaSource.forFileObject(elem.getFileObject());
+                    try {
+                        src.runUserActionTask(new CancellableTask<CompilationController>() {
 
-                        @Override
-                        public void cancel() {}
+                            @Override
+                            public void cancel() {}
 
-                        @Override
-                        public void run(CompilationController parameter) throws Exception {
-                            parameter.toPhase(JavaSource.Phase.PARSED);
-                            TreePath resolve = elem.getHandle().resolve(parameter);
-                            if(resolve.getLeaf().getKind() == Tree.Kind.METHOD) {
-                                MethodTree method = (MethodTree) resolve.getLeaf();
-                                List<? extends AnnotationTree> annotations = method.getModifiers().getAnnotations();
-                                boolean hasOverride = false;
-                                for (AnnotationTree annotationTree : annotations) {
-                                    if(annotationTree.toString().equals("@Override()")) { //NOI18N
-                                        hasOverride = true;
+                            @Override
+                            public void run(CompilationController parameter) throws Exception {
+                                parameter.toPhase(JavaSource.Phase.PARSED);
+                                TreePath resolve = elem.getHandle().resolve(parameter);
+                                if(resolve.getLeaf().getKind() == Tree.Kind.METHOD) {
+                                    MethodTree method = (MethodTree) resolve.getLeaf();
+                                    List<? extends AnnotationTree> annotations = method.getModifiers().getAnnotations();
+                                    boolean hasOverride = false;
+                                    for (AnnotationTree annotationTree : annotations) {
+                                        if(annotationTree.toString().equals("@Override()")) { //NOI18N
+                                            hasOverride = true;
+                                        }
+                                    }
+                                    if(!hasOverride) {
+                                        override.set(true);
                                     }
                                 }
-                                if(!hasOverride) {
-                                    override.set(true);
-                                }
                             }
-                        }
-                        
-                    }, true);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                        }, true);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
                 if(override.get()) {
                     problemImplemented = new Problem(false, getString("WRN_ImplementsFound"), ProblemDetailsFactory.createProblemDetails(new ProblemDetailsImplemen(new WhereUsedQueryUI(elem!=null?elem.getHandle():null, getWhereUsedItemNames(), refactoring), inner)));
@@ -255,11 +261,13 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             this.rs = rs;
         }
         
+        @Override
         public void showDetails(Action callback, Cancellable parent) {
             parent.cancel();
             UI.openRefactoringUI(ui, rs, callback);
         }
         
+        @Override
         public String getDetailsHint() {
             return getString("LBL_ShowUsages");
         }
@@ -285,7 +293,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
 //                return new Problem(true,errMsg);
 //            }
 //            
-//            if (!CheckUtils.isElementInOpenProject(refactoredObject)) {
+//            if (!CheckUtils.isInOpenProject(refactoredObject)) {
 //                return new Problem(true, NbBundle.getMessage(SafeDeleteRefactoringPlugin.class, "ERR_ProjectNotOpened"));
 //            }
 //        }
@@ -319,9 +327,11 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             }
             try {
                 source.runUserActionTask(new CancellableTask<CompilationController>() {
+                    @Override
                     public void cancel() {
                         
                     }
+                    @Override
                     public void run(CompilationController co) throws Exception {
                         co.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         CompilationUnitTree cut = co.getCompilationUnit();
@@ -398,7 +408,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             for (FileObject fileObject : lkp.lookupAll(FileObject.class)) {
                 if (fileObject.isFolder()) {
                     javaFileObjects.addAll(getJavaFileObjects(fileObject, true));
-                }else if (RetoucheUtils.isRefactorable(fileObject)) {
+                }else if (JavaRefactoringUtils.isRefactorable(fileObject)) {
                     javaFileObjects.add(fileObject);
                 }
             }
@@ -436,10 +446,12 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         try {
             javaSrc.runUserActionTask(new CancellableTask<CompilationController>(){
 
+                @Override
                 public void cancel() {
                     //No op
                 }
 
+                @Override
                 public void run(CompilationController compilationController) throws Exception {
                     ExecutableElement execElem = (ExecutableElement) methodHandle.resolveElement(compilationController);
                     TypeElement type = (TypeElement) execElem.getEnclosingElement();

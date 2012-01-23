@@ -85,14 +85,17 @@ class ErrorLabel extends JLabel {
         revalidateText();
         
         doc.addDocumentListener( new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent arg0) {
                 revalidateText();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent arg0) {
                 revalidateText();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent arg0) {
                 revalidateText();
             }

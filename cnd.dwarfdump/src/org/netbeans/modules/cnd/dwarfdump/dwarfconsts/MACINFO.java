@@ -55,6 +55,9 @@ public enum MACINFO {
     DW_MACINFO_undef(0x2),
     DW_MACINFO_start_file(0x3),
     DW_MACINFO_end_file(0x4),
+    DW_MACRO_define_indirect(0x05), // Extension for .debug_macro section
+    DW_MACRO_undef_indirect(0x06), // Extension for .debug_macro section
+    DW_MACRO_transparent_include(0x07), // Extension for .debug_macro section
     DW_MACINFO_vendor_ext(0xff);
 
     private static final HashMap<Integer, MACINFO> hashmap = new HashMap<Integer, MACINFO>();

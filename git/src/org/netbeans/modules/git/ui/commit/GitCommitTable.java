@@ -62,7 +62,7 @@ public class GitCommitTable extends VCSCommitTable<GitFileNode> {
     }
 
     public GitCommitTable (boolean editable) {
-        super(new VCSCommitTableModel(), editable);
+        super(new VCSCommitTableModel<GitFileNode>(), editable);
     }
 
     @Override

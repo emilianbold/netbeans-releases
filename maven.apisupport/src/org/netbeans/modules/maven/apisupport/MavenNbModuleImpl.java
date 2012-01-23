@@ -420,8 +420,10 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
         for (Artifact art : watch.getMavenProject().getArtifacts()) {
             if (art.getGroupId().startsWith("org.netbeans") && art.getArtifactId().equals(artifactId)) { //NOI18N
+                File jar = art.getFile();
+                if (jar.isFile()) {
                 ExamineManifest exa = new ExamineManifest();
-                exa.setJarFile(art.getFile());
+                exa.setJarFile(jar);
                 try {
                     exa.checkFile();
                 } catch (MojoExecutionException x) {
@@ -429,6 +431,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
                 }
                 if (exa.getSpecVersion() != null) {
                     return new SpecificationVersion(exa.getSpecVersion());
+                }
                 }
             }
         }
@@ -531,7 +534,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         for (Project p : OpenProjects.getDefault().getOpenProjects()) {
             NbMavenProject mp2 = p.getLookup().lookup(NbMavenProject.class);
             if (mp2 != null && NbMavenProject.TYPE_NBM_APPLICATION.equals(mp2.getPackagingType())) {
-                for (Dependency dep : mp2.getMavenProject().getDependencies()) {
+                for (Artifact dep : mp2.getMavenProject().getArtifacts()) {
                     if (dep.getGroupId().equals(groupId) && dep.getArtifactId().equals(artifactId)) {
                         if (candidate != null) {
                             // multiple candidates

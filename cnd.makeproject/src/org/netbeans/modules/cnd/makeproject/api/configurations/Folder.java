@@ -632,6 +632,14 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public void addFolder(Folder folder, boolean setModified) {
+        Folder aFolder = this;
+        while(aFolder != null) {
+            if (aFolder.equals(folder)) {
+                log.log(Level.INFO, "Folder {0} already was added.", folder.getDisplayName()); // NOI18N
+                return;
+            }
+            aFolder = aFolder.getParent();
+        }
         addElement(folder, setModified);
         if (isProjectFiles()) {
             // Add configuration to all configurations

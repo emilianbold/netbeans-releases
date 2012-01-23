@@ -45,24 +45,17 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
-import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.css.lib.api.CssTokenId;
-import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.NodeType;
-import org.netbeans.modules.css.lib.api.NodeUtil;
-import org.netbeans.modules.css.lib.api.NodeVisitor;
+import org.netbeans.modules.css.lib.api.*;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
  * @author marekfukala
  */
-public class Css3ParserTest extends CslTestBase {
+public class Css3ParserTest extends CssTestBase {
 
     public Css3ParserTest(String testName) {
         super(testName);
@@ -494,16 +487,18 @@ public class Css3ParserTest extends CslTestBase {
 
         Node error = NodeUtil.query(result.getParseTree(),
                 TestUtil.bodysetPath
-                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/error");
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/attrib/attrib_name/error");
         assertNotNull(error);
 
-        assertEquals(2, error.from());
-        assertEquals(9, error.to());
+        assertEquals(4, error.from());
+        assertEquals(6, error.to());
+        assertEquals("$@", error.image().toString());
 
     }
 
     public void testErrorCase8() throws ParseException, BadLocationException {
         String content = "h1[f { }";
+        //                01234567
 
         CssParserResult result = TestUtil.parse(content);
 //        TestUtil.dumpTokens(result);
@@ -511,23 +506,25 @@ public class Css3ParserTest extends CslTestBase {
 
         Node error = NodeUtil.query(result.getParseTree(),
                 TestUtil.bodysetPath
-                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/error");
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/attrib/error");
         assertNotNull(error);
-        assertEquals(2, error.from());
+        assertEquals(5, error.from());
         assertEquals(6, error.to());
+        assertEquals("{", error.image().toString());
 
         content = "h1[foo=] { }";
-
+        //         012345678
         result = TestUtil.parse(content);
 //        TestUtil.dumpTokens(result);
 //        TestUtil.dumpResult(result);
 
         error = NodeUtil.query(result.getParseTree(),
                 TestUtil.bodysetPath
-                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/error");
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/attrib/attrib_value/error");
         assertNotNull(error);
-        assertEquals(2, error.from());
-        assertEquals(9, error.to());
+        assertEquals(7, error.from());
+        assertEquals(8, error.to());
+        assertEquals("]", error.image().toString());
 
     }
 
@@ -542,7 +539,7 @@ public class Css3ParserTest extends CslTestBase {
                 TestUtil.bodysetPath
                 + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/error");
         assertNotNull(error);
-        assertEquals(2, error.from());
+        assertEquals(17, error.from());
         assertEquals(17, error.to());
 
         //premature end of file
@@ -947,43 +944,45 @@ public class Css3ParserTest extends CslTestBase {
         
     }
     
-    private CssParserResult assertResultOK(CssParserResult result) {
-        return assertResult(result, 0);
+    public void testParseWSAfterImportantSym() throws BadLocationException, ParseException {
+        CssParserResult result = TestUtil.parse(".green { "
+                + "    background-color : lime ! important "
+                + "}");
+        assertResultOK(result);
     }
-
-    private CssParserResult assertResult(CssParserResult result, int problems) {
-        assertNotNull(result);
-        assertNotNull(result.getParseTree());
-
-        if (problems != result.getDiagnostics().size()) {
-            TestUtil.dumpResult(result);
-        }
-        assertEquals(problems, result.getDiagnostics().size());
-
-        return result;
+    
+    public void testParse_nth_child() throws BadLocationException, ParseException {
+        assertResultOK(TestUtil.parse("table.t1 tr:nth-child(-n+4) { background-color : red }"));
+        assertResultOK(TestUtil.parse("table.t2 td:nth-child(3n+1) { background-color : red }"));
     }
-
-    private void assertNoTokenNodeLost(CssParserResult result) {
-        final StringBuilder sourceCopy = new StringBuilder(result.getSnapshot().getText());
-
-        NodeVisitor.visitChildren(result.getParseTree(), Collections.<NodeVisitor<Node>>singleton(new NodeVisitor<Node>() {
-
-            @Override
-            public boolean visit(Node node) {
-                if (node.type() == NodeType.token) {
-                    for (int i = node.from(); i < node.to(); i++) {
-                        sourceCopy.setCharAt(i, Character.MAX_VALUE);
-                    }
-                }
-
-                return false;
-            }
-        }));
-
-        for (int i = 0; i < sourceCopy.length(); i++) {
-            if (sourceCopy.charAt(i) != Character.MAX_VALUE) {
-                assertTrue(String.format("No token node found for char '%s' at offset %s of the parser source.", sourceCopy.charAt(i), i), false);
-            }
-        }
+    
+    public void testParseNotInPseudo() throws BadLocationException, ParseException {
+        assertResultOK(TestUtil.parse("a:not(a) {  }"));
     }
+    
+    public void testParseAsterixInPseudo() throws BadLocationException, ParseException {
+        assertResultOK(TestUtil.parse("a:not(*) { }"));
+    }
+    
+    public void testParseClassInPseudo() throws BadLocationException, ParseException {
+        assertResultOK(TestUtil.parse("a:not(.t2) {  }"));
+    }
+    
+    public void testParseAttribInPseudo() throws BadLocationException, ParseException {
+        assertResultOK(TestUtil.parse("div.stub *|*:not([test]) { }"));
+    }
+ 
+    public void testParsePseudoClassInPseudo() throws BadLocationException, ParseException {
+        assertResultOK(TestUtil.parse("p:not(:target) { }"));
+    }
+    
+    public void testParsePipeWithoutPrefixInSelector() throws BadLocationException, ParseException {
+        assertResultOK(TestUtil.parse("|testA {background-color : lime }"));
+    }
+    
+    public void testParseNsPrefixedElementInPseudo() throws BadLocationException, ParseException {
+        assertResultOK(TestUtil.parse("div.test *:not(a|p) {  }"));
+    }
+    
+    
 }

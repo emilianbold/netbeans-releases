@@ -66,6 +66,7 @@ public final class ListBasedTokenStream implements TokenStream, APTTokenStream {
         position = 0;
     }
 
+    @Override
     public APTToken nextToken() {
         if (position < size) {
             return tokens.get(position++);

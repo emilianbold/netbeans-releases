@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,15 +34,15 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 /**
- * Represents a static field access. 
+ * Represents a static field access.
  * <pre>e.g.<pre> MyClass::$a
  * MyClass::$$a[3]
  */
@@ -57,7 +57,7 @@ public class StaticFieldAccess extends StaticDispatch {
 
     /**
      * The field of this access
-     * 
+     *
      * @return field of this access
      */
     public Variable getField() {
@@ -67,9 +67,9 @@ public class StaticFieldAccess extends StaticDispatch {
     public ASTNode getMember() {
         return getField();
     }
-    
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
-    }            
+    }
 }

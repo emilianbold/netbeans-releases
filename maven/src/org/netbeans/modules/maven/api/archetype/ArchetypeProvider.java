@@ -45,31 +45,12 @@ package org.netbeans.modules.maven.api.archetype;
 import java.util.List;
 
 /**
- * For simple cases, use layer based registration instead:
- * 
-     <p>
-       "Projects/org-netbeans-modules-maven/Archetypes" folder contains fileobjects
-       that represent archetypes. The archetypes are defined by the following file attributes:
-     </p>
-       <table>
-           <tbody>
-               <tr><td>groupId</td><td>mandatory</td><td></td></tr>
-               <tr><td>artifactId</td><td>mandatory</td><td></td></tr>
-               <tr><td>version</td><td>mandatory</td><td></td></tr>
-               <tr><td>repository</td><td>optional</td><td>url of the archetype's repository</td></tr>
-               <tr><td>displayName</td><td>optional</td><td>localized name (use bundlevalue)</td></tr>
-               <tr><td>description</td><td>optional</td><td>localized description (use bundlevalue)</td></tr>
-           </tbody>
-       </table>
-     <p>
- *<strike>
  * Componentized provider of list of available archetypes.
  * It is used in New Maven project wizard to populate the list of available archetypes.
  * The providers are expected to be registered using {@link org.openide.util.lookup.ServiceProvider}.
  * There are 3 default implementations registered: One lists 1 basic archetype
  * (simple and the other lists all archetypes it find in local and remote repository indexes.
- * </strike>
- * </p>
+ * <p>For special archetypes to be visible in the UI, use {@link ArchetypeWizards#definedArchetype}.
  * @author mkleint
  */
 public interface ArchetypeProvider {

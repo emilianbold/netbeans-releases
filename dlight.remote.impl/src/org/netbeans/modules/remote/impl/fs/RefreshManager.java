@@ -56,6 +56,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -105,13 +106,32 @@ public class RefreshManager {
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
                 } catch (ExecutionException ex) {
-                    ex.printStackTrace(System.err);
+                    if (!permissionDenied(ex)) {
+                        System.err.println("Exception on file "+fo.getPath());
+                        ex.printStackTrace(System.err);
+                    }
                 }
             }
             time = System.currentTimeMillis() - time;
             RemoteLogger.getInstance().log(Level.FINE, "RefreshManager: refreshing {0} directories took {1} ms on {2}", new Object[] {cnt, time, env});
         }
     }
+    
+    private boolean permissionDenied(ExecutionException e) {
+        Throwable ex = e;
+        while (ex != null) {
+            if (ex instanceof FileInfoProvider.SftpIOException) {
+                switch(((FileInfoProvider.SftpIOException)ex).getId()) {
+                    case FileInfoProvider.SftpIOException.SSH_FX_PERMISSION_DENIED:
+                        return true;
+                }
+                break;
+            }
+            ex = ex.getCause();
+        }
+        return false;
+    }
+
 
     private void clear() {
         synchronized (queueLock) {

@@ -466,7 +466,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
     }
 
     @ActionID(id = "org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider$BrokenLinksActionFactory", category = "Project")
-    @ActionRegistration(displayName = "#LBL_Fix_Broken_Links_Action")
+    @ActionRegistration(displayName = "#LBL_Fix_Broken_Links_Action", lazy=false)
     @ActionReference(position = 2600, path = "Projects/org-netbeans-modules-java-j2seproject/Actions")
     public static final class BrokenLinksActionFactory extends AbstractAction implements ContextAwareAction {
 

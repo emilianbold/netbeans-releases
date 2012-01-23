@@ -47,11 +47,7 @@ package org.netbeans.modules.web.beans.wizard;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
@@ -65,7 +61,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
-import org.netbeans.modules.web.beans.UsageLogger;
+import org.netbeans.modules.web.beans.CdiUtil;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.spi.project.ui.templates.support.Templates.SimpleTargetChooserBuilder;
 import org.openide.WizardDescriptor;
@@ -106,7 +102,7 @@ public class BeansXmlIterator implements TemplateWizard.Iterator {
         if (fo != null) {
             Project project = Templates.getProject(wizard);
             if ( project != null ){
-                UsageLogger logger = project.getLookup().lookup( UsageLogger.class );
+                CdiUtil logger = project.getLookup().lookup( CdiUtil.class );
                 if (logger != null){
                     logger.log("USG_CDI_BEANS_WIZARD", BeansXmlIterator.class, 
                             new Object[]{project.getClass().getName()}, true);

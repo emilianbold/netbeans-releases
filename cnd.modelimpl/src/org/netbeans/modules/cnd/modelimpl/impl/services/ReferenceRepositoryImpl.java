@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -58,17 +59,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
-import org.netbeans.modules.cnd.api.model.CsmInstantiation;
-import org.netbeans.modules.cnd.api.model.CsmNamedElement;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
@@ -89,8 +80,10 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ReferencesIndex;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 
@@ -106,34 +99,50 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
     
     @Override
     public Collection<CsmReference> getReferences(CsmObject target, CsmProject project, Set<CsmReferenceKind> kinds, Interrupter interrupter) {
-        if (!(project instanceof ProjectBase)) {
-            return Collections.<CsmReference>emptyList();
-        }
-        ProjectBase basePrj = (ProjectBase)project;
-        boolean unboxInstantiation = true;
-        CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target, unboxInstantiation);
-        CsmObject decl = decDef[0];
-        CsmObject def = decDef[1];
-        
-        CsmScope scope = getDeclarationScope(decl);
-        CsmFile scopeFile = CsmKindUtilities.isOffsetable(scope) ? ((CsmOffsetable)scope).getContainingFile() : null;
-        List<CsmReference> out;
-        Collection<FileImpl> files;
-        if (scopeFile instanceof FileImpl) {
-            out = new ArrayList<CsmReference>(10);
-            CsmOffsetable offs = (CsmOffsetable)scope;
-            out.addAll(getReferences(decl, def, (FileImpl)scopeFile, kinds, unboxInstantiation, offs.getStartOffset(), offs.getEndOffset(), interrupter));
-        } else {
-            files = basePrj.getAllFileImpls();
-            out = new ArrayList<CsmReference>(files.size() * 10);
-            for (FileImpl file : files) {
-                if (interrupter != null && interrupter.cancelled()) {
-                    break;
-                }
-                out.addAll(getReferences(decl, def, file, kinds,unboxInstantiation, 0, Integer.MAX_VALUE, interrupter));
+        long time = System.currentTimeMillis();
+        try {
+            if (Boolean.getBoolean("cnd.model.index.enabled") && Boolean.getBoolean("cnd.model.global.index")) {
+                return ReferencesIndex.getAllReferences(UIDCsmConverter.objectToUID(target));
             }
-        }
-        return out;
+            boolean unboxInstantiation = true;
+            CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target, unboxInstantiation);
+            CsmObject decl = decDef[0];
+            CsmObject def = decDef[1];
+
+            CsmScope scope = getDeclarationScope(decl);
+            CsmFile scopeFile = CsmKindUtilities.isOffsetable(scope) ? ((CsmOffsetable)scope).getContainingFile() : null;
+            List<CsmReference> out;
+            Collection<FileImpl> files;
+            if (scopeFile instanceof FileImpl) {
+                out = new ArrayList<CsmReference>(10);
+                CsmOffsetable offs = (CsmOffsetable)scope;
+                out.addAll(getReferences(decl, def, (FileImpl)scopeFile, kinds, unboxInstantiation, offs.getStartOffset(), offs.getEndOffset(), interrupter));
+            } else {
+                if (Boolean.getBoolean("cnd.model.index.enabled")) {
+                    Collection<CsmUID<CsmFile>> allFiles = ReferencesIndex.getRelevantFiles(UIDCsmConverter.objectToUID(target));
+                    files = new ArrayList<FileImpl>(allFiles.size());
+                    for (CsmUID<CsmFile> csmUID : allFiles) {
+                        files.add((FileImpl)UIDCsmConverter.UIDtoFile(csmUID));
+                    }
+                } else {
+                    if (!(project instanceof ProjectBase)) {
+                        return Collections.<CsmReference>emptyList();
+                    }
+                    ProjectBase basePrj = (ProjectBase) project;
+                    files = basePrj.getAllFileImpls();
+                }
+                out = new ArrayList<CsmReference>(files.size() * 10);
+                for (FileImpl file : files) {
+                    if (interrupter != null && interrupter.cancelled()) {
+                        break;
+                    }
+                    out.addAll(getReferences(decl, def, file, kinds,unboxInstantiation, 0, Integer.MAX_VALUE, interrupter));
+                }
+            }
+            return out;
+        } finally {
+            System.err.println("getReferences took " + (System.currentTimeMillis() - time));
+        } 
     }
     
     @Override
@@ -196,6 +205,9 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
     
     private Collection<CsmReference> getReferences(final CsmObject targetDecl, final CsmObject targetDef, FileImpl file,
             final Set<CsmReferenceKind> kinds, final boolean unboxInstantiation, int startOffset, int endOffset, final Interrupter interrupter) {
+        if (Boolean.getBoolean("cnd.model.index.enabled")) {
+            return file.getReferences(targetDef == null ? Collections.singleton(targetDecl) : Arrays.asList(targetDecl, targetDef));
+        }
         assert targetDecl != null;
         assert file != null;
         CharSequence name = "";

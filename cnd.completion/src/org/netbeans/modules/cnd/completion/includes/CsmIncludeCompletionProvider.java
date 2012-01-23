@@ -59,6 +59,7 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
 
     private final static boolean TRACE = Boolean.getBoolean("cnd.completion.includes.trace");
 
+    @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         CompletionSupport sup = CompletionSupport.get(component);
         if (sup == null) {
@@ -86,6 +87,7 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
         return 0;
     }
 
+    @Override
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if (TRACE) {
             System.err.println("queryType = " + queryType); // NOI18N
@@ -160,6 +162,7 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
             Completion.get().hideCompletion();
         }
 
+        @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             if (TRACE) {
                 System.err.println("query on " + caretOffset + " anchor " + queryAnchorOffset); // NOI18N

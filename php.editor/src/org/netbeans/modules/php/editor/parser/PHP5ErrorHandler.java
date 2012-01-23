@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -64,12 +64,12 @@ import org.openide.util.NbBundle;
 public class PHP5ErrorHandler implements ParserErrorHandler {
 
     private static final Logger LOGGER = Logger.getLogger(PHP5ErrorHandler.class.getName());
-    
+
     public static class SyntaxError {
         private final short[] expectedTokens;
         private final Symbol currentToken;
         private final Symbol previousToken;
-        
+
         public SyntaxError(short[] expectedTokens, Symbol currentToken, Symbol previousToken) {
             this.expectedTokens = expectedTokens;
             this.currentToken = currentToken;
@@ -88,7 +88,7 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
             return expectedTokens;
         }
     }
-    
+
     private final List<SyntaxError> syntaxErrors;
 
     private final Context context;
@@ -165,8 +165,8 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
         }
         return errors;
     }
-    
-    // This is just defualt handling. We can do a logic, which will find metter 
+
+    // This is just defualt handling. We can do a logic, which will find metter
     private Error defaultSyntaxErrorHandling(SyntaxError syntaxError, ASTNode astError) {
         Error error = null;
         String unexpectedText = "";     //NOI18N
@@ -174,7 +174,7 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
         boolean isUnexpected = false;
         int start  = syntaxError.getCurrentToken().left;
         int end = syntaxError.getCurrentToken().right;
-        
+
         if (syntaxError.getCurrentToken().sym == ASTPHP5Symbols.EOF) {
             isUnexpected = true;
             unexpectedText = NbBundle.getMessage(PHP5ErrorHandler.class, "SE_EOF"); //NOI18N
@@ -193,7 +193,7 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
                 end = start + unexpectedText.length();
             }
         }
-        
+
         List<String> possibleTags = new ArrayList<String>();
         for (int i = 0; i < syntaxError.getExpectedTokens().length; i += 2) {
             String text = getTokenTextForm(syntaxError.getExpectedTokens()[i]);
@@ -202,7 +202,7 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
             }
         }
 
-        
+
         message.append(NbBundle.getMessage(PHP5ErrorHandler.class, "SE_Message"));  //NOI18N
         message.append(':'); //NOI18N
         if (isUnexpected) {
@@ -221,11 +221,11 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
                 else {
                     addOR = true;
                 }
-                
+
                 message.append(tag);
             }
         }
-        
+
         if (astError != null){
             start = astError.getStartOffset();
             end = astError.getEndOffset();

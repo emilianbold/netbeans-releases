@@ -51,7 +51,7 @@ import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.modules.maven.grammar.POMDataObject;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.model.pom.Build;
 import org.netbeans.modules.maven.model.pom.Configuration;
@@ -75,7 +75,7 @@ import org.openide.util.NbBundle;
  */
 public class PluginGenerator implements CodeGenerator {
 
-    @MimeRegistration(mimeType=POMDataObject.MIME_TYPE, service=CodeGenerator.Factory.class, position=200)
+    @MimeRegistration(mimeType=Constants.POM_MIME_TYPE, service=CodeGenerator.Factory.class, position=200)
     public static class Factory implements CodeGenerator.Factory {
         
         public List<? extends CodeGenerator> create(Lookup context) {

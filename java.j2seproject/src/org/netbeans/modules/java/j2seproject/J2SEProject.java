@@ -72,7 +72,6 @@ import javax.swing.event.ChangeListener;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -144,6 +143,7 @@ import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_MOD
 import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_OLD_PROJECT_XML;
 import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_OLD_STYLESHEET;
 import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_UNKNOWN;
+import org.netbeans.spi.whitelist.support.WhiteListQueryMergerSupport;
 /**
  * Represents one plain J2SE project.
  * @author Jesse Glick, et al.
@@ -372,7 +372,7 @@ public final class J2SEProject implements Project {
             QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createSourceLevelQuery2(evaluator()),
             QuerySupport.createSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots(), Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, J2SEProjectProperties.DIST_DIR)),
-            QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+            QuerySupport.createSharabilityQuery2(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             new CoSAwareFileBuiltQueryImpl(QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()), this),
             new RecommendedTemplatesImpl (this.updateHelper),
             ProjectClassPathModifier.extenderForModifier(cpMod),
@@ -393,7 +393,8 @@ public final class J2SEProject implements Project {
             LookupMergerSupport.createJFBLookupMerger(),
             QuerySupport.createBinaryForSourceQueryImplementation(this.sourceRoots, this.testRoots, this.helper, this.evaluator()), //Does not use APH to get/put properties/cfgdata
             QuerySupport.createAnnotationProcessingQuery(this.helper, this.evaluator(), ProjectProperties.ANNOTATION_PROCESSING_ENABLED, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS),
-            LookupProviderSupport.createActionProviderMerger()
+            LookupProviderSupport.createActionProviderMerger(),
+            WhiteListQueryMergerSupport.createWhiteListQueryMerger()
         );
         lookup = base; // in case LookupProvider's call Project.getLookup
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-java-j2seproject/Lookup"); //NOI18N
@@ -567,8 +568,13 @@ public final class J2SEProject implements Project {
 
             //register updater of main.class
             //the updater is active only on the opened projects
-	    mainClassUpdater = new MainClassUpdater (J2SEProject.this, evaluator(), updateHelper,
-                    cpProvider.getProjectClassPaths(ClassPath.SOURCE)[0], ProjectProperties.MAIN_CLASS);
+	    mainClassUpdater = new MainClassUpdater (
+                    J2SEProject.this,
+                    evaluator(),
+                    updateHelper,
+                    cpProvider.getProjectClassPaths(ClassPath.SOURCE)[0],
+                    ProjectProperties.MAIN_CLASS);
+            mainClassUpdater.start();
 
             // Make it easier to run headless builds on the same machine at least.
             try {
@@ -706,7 +712,7 @@ public final class J2SEProject implements Project {
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
             if (mainClassUpdater != null) {
-                mainClassUpdater.unregister ();
+                mainClassUpdater.stop();
                 mainClassUpdater = null;
             }
         }
@@ -777,7 +783,7 @@ public final class J2SEProject implements Project {
             // "web-types",         // NOI18N
             "junit",                // NOI18N
             // "MIDP",              // NOI18N
-            "simple-files"          // NOI18N
+            "simple-files"         // NOI18N
         };
 
         private static final String[] PRIVILEGED_NAMES = new String[] {

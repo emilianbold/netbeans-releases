@@ -47,6 +47,8 @@ package org.netbeans.spi.project.ui.support;
 import java.text.MessageFormat;
 import javax.swing.Action;
 import javax.swing.Icon;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.project.uiapi.Utilities;
 import org.netbeans.spi.project.ActionProvider;
 
@@ -77,8 +79,30 @@ public class FileSensitiveActions {
      * @param icon icon of the action (or null)
      * @return newly created file-sensitive action
      */    
-    public static Action fileCommandAction( String command, String namePattern, Icon icon ) {
+    public static Action fileCommandAction( @NonNull String command, @NonNull String namePattern, @NullAllowed Icon icon ) {
         return Utilities.getActionsFactory().fileCommandAction( command, namePattern, icon );
     }
     
+    /**
+     * Creates an action sensitive to the set of currently selected files.
+     * When performed the action will call {@link FileActionPerformer#perform}
+     * on the action performer supplied
+     * as a parameter. The action will only be enabled when exactly one 
+     * file is selected and {@link FileActionPerformer#enable}
+     * returns true.<BR>
+     * Note that it is not guaranteed that {@link FileActionPerformer#enable}
+     * will be called unless the file selection changes and someone is
+     * listening to the action or explicitly asks for some of the action's values.
+     * @param performer an action performer. 
+     * @param namePattern pattern which should be used for determining the action's
+     *        name (label). It takes two parameters a la {@link java.text.MessageFormat}: <code>{0}</code> - number of selected files;
+     *        <code>{1}</code> - name of the first file.
+     * @param icon icon of the action (or null)
+     * @return newly created file-sensitive action
+     * 
+     * @since 1.56.0
+     */    
+    public static Action fileSensitiveAction(@NonNull FileActionPerformer performer, @NonNull String namePattern, @NullAllowed Icon icon ) {
+        return Utilities.getActionsFactory().fileSensitiveAction( performer, namePattern, icon );
+    }
 }

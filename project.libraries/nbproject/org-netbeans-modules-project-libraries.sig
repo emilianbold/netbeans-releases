@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.29
+#Version 1.32
 
 CLSS public java.lang.Object
 cons public init()
@@ -71,7 +71,19 @@ fld public final static java.lang.String PROP_OPEN_LIBRARY_MANAGERS = "openManag
 meth public java.lang.String getDisplayName()
 meth public java.lang.String toString()
 meth public java.net.URL getLocation()
+meth public org.netbeans.api.project.libraries.Library createLibrary(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.util.Map<java.lang.String,java.util.List<java.net.URL>>) throws java.io.IOException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NullAllowed()
+ anno 4 org.netbeans.api.annotations.common.NullAllowed()
+ anno 5 org.netbeans.api.annotations.common.NonNull()
 meth public org.netbeans.api.project.libraries.Library createLibrary(java.lang.String,java.lang.String,java.util.Map<java.lang.String,java.util.List<java.net.URL>>) throws java.io.IOException
+meth public org.netbeans.api.project.libraries.Library createURILibrary(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.util.Map<java.lang.String,java.util.List<java.net.URI>>) throws java.io.IOException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NullAllowed()
+ anno 4 org.netbeans.api.annotations.common.NullAllowed()
+ anno 5 org.netbeans.api.annotations.common.NonNull()
 meth public org.netbeans.api.project.libraries.Library createURILibrary(java.lang.String,java.lang.String,java.util.Map<java.lang.String,java.util.List<java.net.URI>>) throws java.io.IOException
 meth public org.netbeans.api.project.libraries.Library getLibrary(java.lang.String)
 meth public org.netbeans.api.project.libraries.Library[] getLibraries()
@@ -154,9 +166,18 @@ meth public abstract org.netbeans.spi.project.libraries.LibraryImplementation cr
 meth public abstract void libraryCreated(org.netbeans.spi.project.libraries.LibraryImplementation)
 meth public abstract void libraryDeleted(org.netbeans.spi.project.libraries.LibraryImplementation)
 
+CLSS public abstract interface org.netbeans.spi.project.libraries.NamedLibraryImplementation
+fld public final static java.lang.String PROP_DISPLAY_NAME = "displayName"
+intf org.netbeans.spi.project.libraries.LibraryImplementation
+meth public abstract java.lang.String getDisplayName()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+meth public abstract void setDisplayName(java.lang.String)
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
+
 CLSS public final org.netbeans.spi.project.libraries.support.LibrariesSupport
 meth public static java.lang.String convertURIToFilePath(java.net.URI)
 meth public static java.net.URI convertFilePathToURI(java.lang.String)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static java.net.URI getArchiveFile(java.net.URI)
 meth public static java.net.URI getArchiveRoot(java.net.URI)
 meth public static java.net.URI resolveLibraryEntryURI(java.net.URL,java.net.URI)

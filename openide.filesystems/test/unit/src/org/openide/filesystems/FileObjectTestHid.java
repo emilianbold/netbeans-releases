@@ -385,6 +385,10 @@ public class FileObjectTestHid extends TestBaseHid {
                     assertNotNull("Child found", ch);
 
                     changed = ch.asText();
+                    long delta = fe.getTime() - ch.lastModified().getTime();
+                    if (delta > 0) {
+                        fail("File event should always have a lower time stamp than the created file. The diff: " + delta);
+                    }
                     notifyAll();
                 } catch (IOException ex) {
                     throw new IllegalStateException(ex);
@@ -417,6 +421,44 @@ public class FileObjectTestHid extends TestBaseHid {
         l.waitEvents();
         assertEquals("Right content when changed", "Ahoj", l.changed);
         assertEquals("Right content when created", "Ahoj", l.dataCreated);
+    }
+    
+    public void testLastModifiedAndEventGetTime() throws Exception {
+        checkSetUp();
+        FileObject f;
+        try {
+            f = getTestFolder1(root).createFolder("EventGetTime");
+        } catch (IOException iex) {
+            fsAssert("If read only FS, then OK to fail",
+            fs.isReadOnly());
+            return;
+        }
+        final FileObject fold = f;
+        
+        class L extends FileChangeAdapter {
+            Long time;
+            @Override
+            public void fileChanged(FileEvent fe) {
+                assertNull("Only one event expected", time);
+                time = fe.getTime();
+            }
+        }
+        
+        FileObject ch = fold.createData("child.txt");
+        L l = new L();
+        fold.addFileChangeListener(l);
+        assertEquals("One child", 1, fold.getChildren().length);
+        
+        OutputStream os = ch.getOutputStream();
+        os.write("Ahoj".getBytes());
+        os.close();
+        
+        assertNotNull("Event has been delivered", l.time);
+        long delta = ch.lastModified().getTime() - l.time;
+        
+        if (delta < 0) {
+            fail("Event creation time should be lower or equal than actual file time stamp: " + delta);
+        }
     }
     
     /** Test of copy method, of class org.openide.filesystems.FileObject. */
@@ -1655,7 +1697,7 @@ public class FileObjectTestHid extends TestBaseHid {
     }
 
 
-    public void testNbfsTransformation () throws FileStateInvalidException{
+    public void testNbfsTransformation () {
         checkSetUp();
         // additional check
         String sysName = fs.getSystemName();
@@ -1674,7 +1716,7 @@ public class FileObjectTestHid extends TestBaseHid {
         }
     }
 
-    public void testNbfsTransformation2() throws FileStateInvalidException, IOException, SAXException, ParserConfigurationException {
+    public void testNbfsTransformation2() throws IOException, SAXException, ParserConfigurationException {
         checkSetUp();
         // additional check
         if (fs.isReadOnly() || root.isReadOnly()) return;
@@ -1694,7 +1736,7 @@ public class FileObjectTestHid extends TestBaseHid {
             pFactory.setValidating (false);
             Parser p = pFactory.newSAXParser().getParser();
             p.setDocumentHandler(new HandlerBase());
-            URL u = f.getURL();
+            URL u = f.toURL();
             p.parse(u.toExternalForm());
             //
             byte[] b = new byte[10];
@@ -3044,15 +3086,15 @@ public class FileObjectTestHid extends TestBaseHid {
         }
     }
     
-    /** Test of getURL method, of class org.openide.filesystems.FileObject. */
-    public void  testGetURL() throws Exception {
+    public void testToURL() throws Exception {
         checkSetUp();
         
         FileObject fo1 = getTestFile1 (root);
         URL url = null;
-        url  = fo1.getURL();
+        url  = fo1.toURL();
         /** Only invalid files may fire FileStateInvalidException*/
-        fsAssert ("Expected valid url",url != null);                
+        fsAssert ("Expected valid url",url != null);
+        fsAssert("same URI", url.toURI().equals(fo1.toURI()));
         
         // #39613: check that it actually works!
         // Note that since getURL now produces a file: URL for files with File's,
@@ -3060,7 +3102,7 @@ public class FileObjectTestHid extends TestBaseHid {
         FileObject f2 = getTestFile1(root);
         FileObject f1 = f2.getParent();
         assertNotNull("had a parent of " + f2, f1);
-        URL u1 = f1.getURL();
+        URL u1 = f1.toURL();
         assertNotNull("had a URL for " + f1, u1);
         URI uri1 = new URI(u1.toExternalForm());
         String path1 = uri1.getPath();

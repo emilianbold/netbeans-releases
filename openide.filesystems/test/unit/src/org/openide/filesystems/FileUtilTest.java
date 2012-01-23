@@ -140,7 +140,7 @@ public class FileUtilTest extends NbTestCase {
         clearWorkDir();
         lfs.setRootDirectory(getWorkDir());
         MockLookup.setInstances(new URLMapper() {
-            String rootURL = lfs.getRoot().getURL().toString();
+            String rootURL = lfs.getRoot().toURL().toString();
             @Override
             public FileObject[] getFileObjects(URL url) {
                 String u = url.toString();
@@ -220,7 +220,7 @@ public class FileUtilTest extends NbTestCase {
         final File wd = getWorkDir();
         lfs.setRootDirectory(wd);
         MockLookup.setInstances(new URLMapper() {
-            String rootURL = lfs.getRoot().getURL().toString();
+            String rootURL = lfs.getRoot().toURL().toString();
             @Override
             public FileObject[] getFileObjects(URL url) {
                 String u = url.toString();

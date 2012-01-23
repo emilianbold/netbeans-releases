@@ -101,18 +101,18 @@ class MICommandManager {
     void finish(MICommand cmd) {
         pendingCommands.remove(cmd);
 	if (Log.MI.finish) {
-	    injector.log(String.format("## finished %d\n\r", cmd.getToken())); // NOI18N
-	    injector.log(String.format("## outstanding: ")); // NOI18N
+	    echo(String.format("## finished %d\n\r", cmd.getToken())); // NOI18N
+	    echo(String.format("## outstanding: ")); // NOI18N
             synchronized (pendingCommands) {
                 if (pendingCommands.isEmpty()) {
-                    injector.log(String.format("none")); // NOI18N
+                    echo(String.format("none")); // NOI18N
                 } else {
                     for (MICommand oc : pendingCommands) {
-                        injector.log(String.format(" %d", oc.getToken())); // NOI18N
+                        echo(String.format(" %d", oc.getToken())); // NOI18N
                     }
                 }
             }
-	    injector.log(String.format("\n\r")); // NOI18N
+	    echo(String.format("\n\r")); // NOI18N
 	}
     }
     
@@ -151,11 +151,11 @@ class MICommandManager {
             // an error happened somewhere
             // delete all unanswered commands
             cmd = pendingCommands.poll();
-            injector.log(String.format("No answer for: %s\n\r", cmd.toString())); // NOI18N
+            echo(String.format("No answer for: %s\n\r", cmd.toString())); // NOI18N
             cmd = pendingCommands.peek();
         }
 	if (cmd == null || cmd.getToken() != token) {
-	    injector.log(String.format("No command for record %s\n\r", record)); // NOI18N
+	    echo(String.format("No command for record %s\n\r", record)); // NOI18N
             streamMessages.clear();
             consoleMessages.clear();
 	    return;
@@ -168,7 +168,7 @@ class MICommandManager {
         consoleMessages.clear();
 
 	if (record.isError()) {
-	    injector.log(record.error() + "\n\r"); // NOI18N
+	    echo(record.error() + "\n\r"); // NOI18N
 	    finish(cmd);
 	    return;
 	}
@@ -222,6 +222,7 @@ class MICommandManager {
      */
     void echo(String data) {
 	injector.log(data);
+        gdbLogger.logMessage(data);
     }
 }
 

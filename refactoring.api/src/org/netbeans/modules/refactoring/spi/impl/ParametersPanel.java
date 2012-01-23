@@ -55,7 +55,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.javahelp.Help;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -72,6 +71,7 @@ import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.impl.APIAccessor;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.refactoring.spi.impl.ProblemComponent.CallbackAction;
+import org.openide.LifecycleManager;
 import org.openide.awt.Mnemonics;
 
 
@@ -344,8 +344,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
 }//GEN-LAST:event_preview
 
     private void helpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpActionPerformed
-        Help _help = (Help) Lookup.getDefault().lookup(Help.class);
-        _help.showHelp(getHelpCtx());
+        HelpCtx ctx = getHelpCtx();
+        if (ctx != null) {
+            ctx.display();
+        }
     }//GEN-LAST:event_helpActionPerformed
     
     private void backActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backActionPerformed
@@ -595,6 +597,9 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             @Override
             public void run() {
                 try {
+                    if (!rui.isQuery()) {
+                        LifecycleManager.getDefault().saveAll();                    
+                    }
                     problem = rui.getRefactoring().preCheck();
                 } catch (RuntimeException e) {
                     setVisibleLater(false);

@@ -137,7 +137,7 @@ class JdbcRetriever {
         data.set(null);
         WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
 
-        WLConnectionSupport support = new WLConnectionSupport(manager);
+        WLConnectionSupport support = manager.getConnectionSupport();
         List<JDBCDataBean> list = Collections.emptyList();
 
         try {
@@ -377,7 +377,7 @@ class JdbcRetriever {
             WLDeploymentManager manager = lookup
                     .lookup(WLDeploymentManager.class);
 
-            WLConnectionSupport support = new WLConnectionSupport(manager);
+            WLConnectionSupport support = manager.getConnectionSupport();
             try {
                 support.executeAction(new WLConnectionSupport.JMXEditAction<Void>() {
 
@@ -471,7 +471,7 @@ class JdbcRetriever {
             WLDeploymentManager manager = lookup
                     .lookup(WLDeploymentManager.class);
 
-            WLConnectionSupport support = new WLConnectionSupport(manager);
+            WLConnectionSupport support = manager.getConnectionSupport();
             try {
                 support.executeAction(new WLConnectionSupport.JMXEditAction<Void>() {
 

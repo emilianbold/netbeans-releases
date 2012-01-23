@@ -90,15 +90,11 @@ import org.openide.ErrorManager;
                 }
                 parseUserMacros(line, pair.systemPreprocessorSymbolsList);
             }
-            // Adding "__STDC__=0". It's missing from dryrun output
-            addUnique(pair.systemPreprocessorSymbolsList, "__STDC__=0"); // NOI18N
-            // Adding "__STDC_VERSION__=199409L". It's missing from dryrun output
-            addUnique(pair.systemPreprocessorSymbolsList, "__STDC_VERSION__=199409L"); // NOI18N
-
             reader.close();
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP
         }
+        completePredefinedMacros(pair);
     }
 
     @Override

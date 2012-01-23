@@ -53,6 +53,8 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.font.FontRenderContext;
@@ -68,13 +70,16 @@ import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import javax.swing.Action;
 import javax.swing.JViewport;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Keymap;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
@@ -147,7 +152,13 @@ public final class DocumentViewOp
     private static final int CUSTOM_BACKGROUND                  = 4096;
     
     private static final int NON_PRINTABLE_CHARACTERS_VISIBLE   = 8192;
-
+    
+    private static final int EXPECTED_FONT_NOTIFY               = 16384;
+    
+    private static final int EXPECTED_FOREGROUND_NOTIFY         = 32768;
+    
+    private static final int EXPECTED_BACKGROUND_NOTIFY         = 65536;
+    
     private final DocumentView docView;
 
     private int statusBits;
@@ -186,7 +197,11 @@ public final class DocumentViewOp
     private FontRenderContext fontRenderContext;
     
     private AttributeSet defaultColoring;
-    
+
+    /**
+     * Default font of the view hierarchy determined either from settings or by a custom
+     * textComponent.setFont(). It's propagated into textComponent.getFont().
+     */
     private Font defaultFont;
 
     /**
@@ -202,8 +217,16 @@ public final class DocumentViewOp
 
     private float defaultCharWidth;
 
+    /**
+     * Default foreground color of the view hierarchy determined either from settings or by a custom
+     * textComponent.setForeground(). It's propagated into textComponent.getForeground().
+     */
     private Color defaultForeground;
 
+    /**
+     * Default background color of the view hierarchy determined either from settings or by a custom
+     * textComponent.setBackground(). It's propagated into textComponent.getBackground().
+     */
     private Color defaultBackground;
 
     private Color textLimitLineColor;
@@ -458,7 +481,7 @@ public final class DocumentViewOp
             final int y1 = (int) Math.ceil(repaintY1);
             resetRepaintRegion();
             // Possibly post repaint into EDT since there was a deadlock in JDK related to this.
-            ViewUtils.runInEQ(new Runnable() {
+            ViewUtils.runInEDT(new Runnable() {
                 @Override
                 public void run() {
                     JTextComponent textComponent = docView.getTextComponent();
@@ -684,6 +707,9 @@ public final class DocumentViewOp
                                 public void run() {
                                     JTextComponent textComponent = docView.getTextComponent();
                                     if (textComponent != null) {
+                                        // Reset zoom since when changing font in tools->options the existing zoom
+                                        // would be still applied to the new font
+                                        textComponent.putClientProperty(DocumentView.TEXT_ZOOM_PROPERTY, null);
                                         updateFontColorSettings(result, true);
                                     }
                                 }
@@ -804,6 +830,9 @@ public final class DocumentViewOp
         // This should be called with mutex acquired
         // Called only with textComponent != null
         final JTextComponent textComponent = docView.getTextComponent();
+        if (textComponent == null) {
+            return;
+        }
         Font font = textComponent.getFont();
         Color foreColor = textComponent.getForeground();
         Color backColor = textComponent.getBackground();
@@ -826,27 +855,57 @@ public final class DocumentViewOp
             renderingHints = (Map<?, ?>) defaultColoring.getAttribute(EditorStyleConstants.RenderingHints);
         }
 
-        defaultFont = font;
-        defaultForeground = foreColor;
-        defaultBackground = backColor;
+        if (!isAnyStatusBit(CUSTOM_FONT)) {
+            if (font == null || !font.equals(defaultFont)) {
+                // Assign defaultFont immediately here since its propagation into textComponent.getFont()
+                // may be posted into EDT and in the meantime the views being built may already use defaultFont variable.
+                // Similarly for defaultForeground and defaultBackground.
+                defaultFont = font;
+                updateCharMetrics(); // Update metrics with just updated font
+                ViewUtils.runInEDT(new Runnable() {
+                    @Override
+                    public void run() {
+                        setStatusBits(EXPECTED_FONT_NOTIFY);
+                        try {
+                            textComponent.setFont(defaultFont);
+                        } finally {
+                            clearStatusBits(EXPECTED_FONT_NOTIFY);
+                        }
+                    }
+                });
+            }
+        } // Otherwise the font was set in propertyChange()
 
-        if (!isAnyStatusBit(CUSTOM_FONT) && textComponent != null) {
-            EventQueue.invokeLater(new Runnable() {
-                @Override public void run() {
-                    textComponent.setFont(defaultFont);
+        if (!isAnyStatusBit(CUSTOM_FOREGROUND)) {
+            defaultForeground = foreColor;
+            ViewUtils.runInEDT(new Runnable() {
+                @Override
+                public void run() {
+                    setStatusBits(EXPECTED_FOREGROUND_NOTIFY);
+                    try {
+                        textComponent.setForeground(defaultForeground);
+                    } finally {
+                        clearStatusBits(EXPECTED_FOREGROUND_NOTIFY);
+                    }
+                }
+            });
+        } // Otherwise it's already assigned from propertyChange()
+
+        if (!isAnyStatusBit(CUSTOM_BACKGROUND)) {
+            defaultBackground = backColor;
+            ViewUtils.runInEDT(new Runnable() {
+                @Override
+                public void run() {
+                    setStatusBits(EXPECTED_BACKGROUND_NOTIFY);
+                    try {
+                        textComponent.setBackground(defaultBackground);
+                    } finally {
+                        clearStatusBits(EXPECTED_BACKGROUND_NOTIFY);
+                    }
                 }
             });
         }
-        if (!isAnyStatusBit(CUSTOM_FOREGROUND) && textComponent != null) {
-            textComponent.setForeground(defaultForeground);
-        }
-        if (!isAnyStatusBit(CUSTOM_BACKGROUND) && textComponent != null) {
-            textComponent.setBackground(defaultBackground);
-        }
-        if (textComponent != null) {
-            updateCharMetrics(); // Update metrics with just updated font
-            releaseChildrenUnlocked();
-        }
+        releaseChildrenUnlocked();
         if (ViewHierarchyImpl.SETTINGS_LOG.isLoggable(Level.FINE)) {
             ViewHierarchyImpl.SETTINGS_LOG.fine(docView.getDumpId() + ": Updated DEFAULTS: font=" + defaultFont + // NOI18N
                     ", fg=" + ViewUtils.toString(defaultForeground) + // NOI18N
@@ -1136,6 +1195,9 @@ public final class DocumentViewOp
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         JTextComponent textComponent = docView.getTextComponent();
+        if (textComponent == null) {
+            return;
+        }
         boolean releaseChildren = false;
         boolean updateFonts = false;
         if (evt.getSource() instanceof Document) {
@@ -1162,30 +1224,30 @@ public final class DocumentViewOp
             } else if ("document".equals(propName)) { // NOI18N
                 
             } else if ("font".equals(propName)) { // NOI18N
-                boolean customFont = isAnyStatusBit(CUSTOM_FONT);
-                if (!customFont && defaultFont != null) {
-                    customFont = (textComponent != null) &&
-                            !defaultFont.equals(textComponent.getFont());
-                    updateStatusBits(CUSTOM_FONT, customFont);
-                }
-                if (customFont) {
+                if (!isAnyStatusBit(EXPECTED_FONT_NOTIFY)) {
+                    // New value should usually differ from defaultFont since defaultFont propagates into TC.getFont() in EDT
+                    defaultFont = textComponent.getFont();
+                    setStatusBits(CUSTOM_FONT);
+                    releaseChildren = true;
                     updateFonts = true;
                 }
-                releaseChildren = true;
             } else if ("foreground".equals(propName)) { //NOI18N
-                if (!isAnyStatusBit(CUSTOM_FOREGROUND) && defaultForeground != null) {
-                    updateStatusBits(CUSTOM_FOREGROUND,
-                            (textComponent != null) && !defaultForeground.equals(textComponent.getForeground()));
+                // New value should usually differ from defaultForeground
+                // since defaultForeground propagates into TC.getForeground() in EDT
+                if (!isAnyStatusBit(EXPECTED_FOREGROUND_NOTIFY)) {
+                    defaultForeground = textComponent.getForeground();
+                    setStatusBits(CUSTOM_FOREGROUND);
+                    releaseChildren = true; // Repaint should possibly suffice too
+                    
                 }
-                // Release children since TextLayoutPart caches foreground and background
-                releaseChildren = true;
             } else if ("background".equals(propName)) { //NOI18N
-                if (!isAnyStatusBit(CUSTOM_BACKGROUND) && defaultBackground != null) {
-                    updateStatusBits(CUSTOM_BACKGROUND,
-                            textComponent != null && !defaultBackground.equals(textComponent.getBackground()));
+                // New value should usually differ from defaultBackground
+                // since defaultBackground propagates into TC.getBackground() in EDT
+                if (!isAnyStatusBit(EXPECTED_BACKGROUND_NOTIFY)) {
+                    defaultBackground = textComponent.getBackground();
+                    setStatusBits(CUSTOM_BACKGROUND);
+                    releaseChildren = true; // Repaint should possibly suffice too
                 }
-                // Release children since TextLayoutPart caches foreground and background
-                releaseChildren = true;
             } else if (SimpleValueNames.TEXT_LINE_WRAP.equals(propName)) {
                 updateLineWrapType(); // can run without mutex
                 releaseChildren = true;
@@ -1215,21 +1277,42 @@ public final class DocumentViewOp
         // the code in DocumentView.setParent() removes BasicScrollPaneUI.Handler and stores it
         // in origMouseWheelListener and installs "this" as MouseWheelListener instead.
         // This method only calls origMouseWheelListener if Ctrl is not pressed (zooming in/out).
-        if (evt.isControlDown() && evt.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL) {
-            // Subtract rotation (instead of adding) in order to increase the font by rotating wheel up.
-            JTextComponent textComponent = docView.getTextComponent();
-            if (textComponent != null) {
-                Integer textZoom = ((Integer) textComponent.getClientProperty(DocumentView.TEXT_ZOOM_PROPERTY));
-                if (textZoom == null) {
-                    textZoom = 0;
-                }
-                textZoom -= evt.getWheelRotation();
-                textComponent.putClientProperty(DocumentView.TEXT_ZOOM_PROPERTY, textZoom);
-            }
-//            evt.consume(); // consuming the event has no effect
-        } else {
+        if (evt.getScrollType() != MouseWheelEvent.WHEEL_UNIT_SCROLL) {
             origMouseWheelListener.mouseWheelMoved(evt);
+//          evt.consume(); // consuming the event has no effect
+            return;
         }
+        
+        int modifiers = 0;
+        if (evt.isControlDown()) {
+            modifiers |= InputEvent.CTRL_DOWN_MASK;
+        }
+        if (evt.isAltDown()) {
+            modifiers |= InputEvent.ALT_DOWN_MASK;
+        }
+        if (evt.isShiftDown()) {
+            modifiers |= InputEvent.SHIFT_DOWN_MASK;
+        }
+        if (evt.isMetaDown()) {
+            modifiers |= InputEvent.META_DOWN_MASK;
+        }
+       
+        Keymap keymap = docView.getTextComponent().getKeymap();
+        if (evt.getWheelRotation() < 0) {
+            Action action = keymap.getAction(KeyStroke.getKeyStroke(0x290, modifiers)); //WHEEL_UP constant
+            if (action != null) {
+                action.actionPerformed(new ActionEvent(docView.getTextComponent(),0,""));
+                return;
+            }
+            origMouseWheelListener.mouseWheelMoved(evt);
+        } else {
+            Action action = keymap.getAction(KeyStroke.getKeyStroke(0x291, modifiers)); //WHEEL_DOWN constant
+            if (action != null) {
+                action.actionPerformed(new ActionEvent(docView.getTextComponent(),0,""));
+                return;
+            }
+            origMouseWheelListener.mouseWheelMoved(evt);
+        }   
     }
 
     StringBuilder appendInfo(StringBuilder sb) {

@@ -92,6 +92,11 @@ public final class CsmModelAccessor {
         }
 
         @Override
+        public CsmFile[] findFiles(FSPath absPath, boolean createIfPossible, boolean snapShot) {
+            return new CsmFile[0];
+        }
+        
+        @Override
         public CsmModelState getState() {
             return CsmModelState.OFF;
         }

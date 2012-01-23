@@ -67,11 +67,8 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -93,7 +90,6 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
@@ -126,7 +122,6 @@ import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
-import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -219,7 +214,6 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 FooPathRecognizer.class,
                 EmbPathRecognizer.class,
                 SFBQImpl.class,
-                OpenProject.class,
                 ClassPathProviderImpl.class,
                 Visibility.class,
                 IndexDownloaderImpl.class,
@@ -2757,63 +2751,6 @@ public class RepositoryUpdaterTest extends NbTestCase {
         @Override
         public Set<String> getMimeTypes() {
             return Collections.singleton(EMIME);
-        }
-
-    }
-
-    public static class OpenProject implements  OpenProjectsTrampoline {
-
-        public @Override Project[] getOpenProjectsAPI() {
-            return new Project[0];
-        }
-
-        public @Override void openAPI(Project[] projects, boolean openRequiredProjects, boolean showProgress) {
-
-        }
-
-        public @Override void closeAPI(Project[] projects) {
-
-        }
-
-        public void addPropertyChangeListenerAPI(PropertyChangeListener listener, Object source) {
-            
-        }
-
-        public Future<Project[]> openProjectsAPI() {
-            return new Future<Project[]>() {
-
-                public boolean cancel(boolean mayInterruptIfRunning) {
-                    return true;
-                }
-
-                public boolean isCancelled() {
-                    return false;
-                }
-
-                public boolean isDone() {
-                    return true;
-                }
-
-                public Project[] get() throws InterruptedException, ExecutionException {
-                    return new Project[0];
-                }
-
-                public Project[] get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                    return new Project[0];
-                }
-            };
-        }
-
-        public void removePropertyChangeListenerAPI(PropertyChangeListener listener) {
-            
-        }
-
-        public @Override Project getMainProject() {
-            return null;
-        }
-
-        public @Override void setMainProject(Project project) {
-            
         }
 
     }

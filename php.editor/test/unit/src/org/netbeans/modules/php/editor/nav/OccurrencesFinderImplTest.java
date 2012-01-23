@@ -362,7 +362,7 @@ public class OccurrencesFinderImplTest extends TestBase {
     }
 
     public void testIssue200399_01() throws Exception {
-        checkOccurrences(getTestPath(), "function functionName(Character\\Ma^nager", true);
+        checkOccurrences(getTestPath(), "function functionName(\\Character\\Ma^nager", true);
     }
 
     public void testIssue201671() throws Exception {
@@ -404,45 +404,85 @@ public class OccurrencesFinderImplTest extends TestBase {
     public void testIssue197283_06() throws Exception {
         checkOccurrences(getTestPath(), "$y = new $another^Obj();", true);
     }
-    
+
     public void testIssue203419_01() throws Exception {
         checkOccurrences(getTestPath(), "class MyClass20^3419", true);
     }
-    
+
     public void testIssue203419_02() throws Exception {
         checkOccurrences(getTestPath(), "* @var \\test\\sub\\MyClass203^419", true);
     }
-    
+
     public void testIssue203419_03() throws Exception {
         checkOccurrences(getTestPath(), "public function test2(MyClass^203419 $param) {", true);
     }
-    
+
     public void testIssue203419_04() throws Exception {
         checkOccurrences(getTestPath(), "$v1 = new \\test\\sub\\MyClass20^3419();", true);
     }
-    
+
     public void testIssue203419_05() throws Exception {
         checkOccurrences(getTestPath(), "$v2 = new MyClass203^419();", true);
     }
-    
+
     public void testIssue203419_06() throws Exception {
         checkOccurrences(getTestPath(), "$v3 = new sub\\MyClass20^3419();", true);
     }
-    
+
     public void testIssue203419_07() throws Exception {
         checkOccurrences(getTestPath(), "$v4 = new baf\\MyClass203^419();", true);
     }
-    
+
     public void testIssue204433_01() throws Exception {
         checkOccurrences(getTestPath(), "$form = new Edit^Form();", true);
     }
-    
+
     public void testIssue204433_02() throws Exception {
         checkOccurrences(getTestPath(), "$form = new E^F()", true);
     }
 
     public void testIssue204433_03() throws Exception {
         checkOccurrences(getTestPath(), "$fr = new Edit^Form();", true);
+    }
+
+    public void testArrayDereferencing_01() throws Exception {
+        checkOccurrences(getTestPath(), "$myCl^ass->field[0]->getArray()[][]->foo();", true);
+    }
+
+    public void testArrayDereferencing_02() throws Exception {
+        checkOccurrences(getTestPath(), "$myClass->fie^ld[0]->getArray()[][]->foo();", true);
+    }
+
+    public void testArrayDereferencing_03() throws Exception {
+        checkOccurrences(getTestPath(), "$myClass->field[0]->getA^rray()[][]->foo();", true);
+    }
+
+    public void testArrayDereferencing_04() throws Exception {
+        checkOccurrences(getTestPath(), "$myClass->field[0]->getArray()[][]->fo^o();", true);
+    }
+
+    public void testArrayDereferencing_05() throws Exception {
+        checkOccurrences(getTestPath(), "$myC^lass->getArray()[0][]->foo();", true);
+    }
+
+    public void testArrayDereferencing_06() throws Exception {
+        checkOccurrences(getTestPath(), "$myClass->getA^rray()[0][]->foo();", true);
+    }
+
+    public void testArrayDereferencing_07() throws Exception {
+        checkOccurrences(getTestPath(), "$myClass->getArray()[0][]->fo^o();", true);
+    }
+
+    public void testArrayDereferencing_08() throws Exception {
+        checkOccurrences(getTestPath(), "function^Name()[0]->foo();", true);
+    }
+
+    public void testArrayDereferencing_09() throws Exception {
+        checkOccurrences(getTestPath(), "functionName()[0]->fo^o();", true);
+    }
+
+    public void testVariableAsAClassName() throws Exception {
+        checkOccurrences(getTestPath(), "$static_clas^sname::$static_property;", true);
     }
 
     //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated

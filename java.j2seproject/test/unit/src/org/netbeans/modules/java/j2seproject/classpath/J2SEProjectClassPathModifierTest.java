@@ -117,20 +117,20 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         final FileObject rootFolder = this.scratch.createFolder("Root");
         final FileObject jarFile = TestFileUtils.writeZipFile(scratch, "archive.jar", "Test.properties:");
         final FileObject jarRoot = FileUtil.getArchiveRoot(jarFile);
-        ProjectClassPathModifier.addRoots (new URL[] {rootFolder.getURL()}, this.src, ClassPath.COMPILE);
+        ProjectClassPathModifier.addRoots (new URL[] {rootFolder.toURL()}, this.src, ClassPath.COMPILE);
         String cp = this.eval.getProperty("javac.classpath");
         assertNotNull (cp);
         String[] cpRoots = PropertyUtils.tokenizePath (cp);
         assertNotNull (cpRoots);
         assertEquals(1,cpRoots.length);
         assertEquals(rootFolder,this.helper.resolveFileObject(cpRoots[0]));
-        ProjectClassPathModifier.removeRoots (new URL[] {rootFolder.getURL()},this.src, ClassPath.COMPILE);
+        ProjectClassPathModifier.removeRoots (new URL[] {rootFolder.toURL()},this.src, ClassPath.COMPILE);
         cp = this.eval.getProperty("javac.classpath");
         assertNotNull (cp);
         cpRoots = PropertyUtils.tokenizePath (cp);
         assertNotNull (cpRoots);
         assertEquals(0,cpRoots.length);
-        ProjectClassPathModifier.addRoots(new URL[] {jarRoot.getURL()},this.test,ClassPath.EXECUTE);
+        ProjectClassPathModifier.addRoots(new URL[] {jarRoot.toURL()},this.test,ClassPath.EXECUTE);
         cp = this.eval.getProperty("run.test.classpath");
         assertNotNull (cp);
         cpRoots = PropertyUtils.tokenizePath (cp);
@@ -162,7 +162,7 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         String[] cpRoots = PropertyUtils.tokenizePath (cp);
         assertNotNull (cpRoots);
         assertEquals(1,cpRoots.length);
-        URI projectURI = URI.create(output.getProject().getProjectDirectory().getURL().toExternalForm());
+        URI projectURI = URI.create(output.getProject().getProjectDirectory().toURL().toExternalForm());
         URI expected = projectURI.resolve(output.getArtifactLocations()[0]);
         assertEquals(expected,this.helper.resolveFile(cpRoots[0]).toURI());
         ProjectClassPathModifier.removeAntArtifacts(new AntArtifact[] {output}, new URI[] {output.getArtifactLocations()[0]},this.src, ClassPath.COMPILE);
@@ -180,7 +180,7 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         assertNotNull (impls);
         assertEquals(1,impls.length);
         FileObject libRoot = this.scratch.createFolder("libRoot");
-        impls[0].setContent("classpath",Collections.singletonList(libRoot.getURL()));
+        impls[0].setContent("classpath",Collections.singletonList(libRoot.toURL()));
         Library[] libs =LibraryManager.getDefault().getLibraries();
         assertNotNull (libs);
         assertEquals(1,libs.length);
@@ -248,7 +248,7 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         final File jar = FileUtil.toFile(jarFile);
         assertNotNull(jar);
         final FileObject jarRoot = FileUtil.getArchiveRoot(jarFile);
-        final URL rootFolderURL = rootFolder.getURL();
+        final URL rootFolderURL = rootFolder.toURL();
         ProjectClassPathModifier.addRoots (new URL[] {rootFolderURL}, this.src, ClassPath.COMPILE);
         String cp = this.eval.getProperty("javac.classpath");
         assertNotNull (cp);
@@ -264,7 +264,7 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         cpRoots = PropertyUtils.tokenizePath (cp);
         assertNotNull (cpRoots);
         assertEquals(0,cpRoots.length);
-        final URL jarRootURL = jarRoot.getURL();
+        final URL jarRootURL = jarRoot.toURL();
         ProjectClassPathModifier.addRoots(new URL[] {jarRootURL},this.test,ClassPath.EXECUTE);
         cp = this.eval.getProperty("run.test.classpath");
         assertNotNull (cp);
@@ -303,7 +303,7 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         final ClassPath cp = ClassPath.getClassPath(srcGrp.getRootFolder(), JavaClassPathConstants.PROCESSOR_PATH);
         assertFalse(Arrays.asList(cp.getRoots()).contains(libRoot));
         ProjectClassPathModifier.addRoots(
-            new URI[] {libRoot.getURL().toURI()},
+            new URI[] {libRoot.toURI()},
             srcGrp.getRootFolder(),
             JavaClassPathConstants.PROCESSOR_PATH);
         assertTrue("No lib on processor path!", Arrays.asList(cp.getRoots()).contains(libRoot));    //NOI18N

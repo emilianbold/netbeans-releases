@@ -276,6 +276,7 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
         scheduleLabel = new javax.swing.JLabel();
         scheduleScrollPane = new javax.swing.JScrollPane();
         scheduleTextArea = new javax.swing.JTextArea();
+        exposeTimerMethod = new javax.swing.JCheckBox();
 
         jInternalFrame1.setVisible(true);
 
@@ -327,6 +328,10 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
         scheduleScrollPane.setViewportView(scheduleTextArea);
         scheduleTextArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_Schedule")); // NOI18N
 
+        exposeTimerMethod.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        exposeTimerMethod.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(exposeTimerMethod, org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_ExposeTimerMethod")); // NOI18N
+
         javax.swing.GroupLayout schedulePanelLayout = new javax.swing.GroupLayout(schedulePanel);
         schedulePanel.setLayout(schedulePanelLayout);
         schedulePanelLayout.setHorizontalGroup(
@@ -334,10 +339,13 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
             .addGroup(schedulePanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(schedulePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(scheduleScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
+                    .addGroup(schedulePanelLayout.createSequentialGroup()
+                        .addComponent(exposeTimerMethod)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(scheduleScrollPane)
                     .addGroup(schedulePanelLayout.createSequentialGroup()
                         .addComponent(scheduleLabel)
-                        .addContainerGap(206, Short.MAX_VALUE))))
+                        .addContainerGap())))
         );
         schedulePanelLayout.setVerticalGroup(
             schedulePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -345,6 +353,8 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
                 .addComponent(scheduleLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(scheduleScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(exposeTimerMethod)
                 .addContainerGap())
         );
 
@@ -355,25 +365,21 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(sessionTypeLabel)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(statelessButton))
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(statefulButton))
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(singletonButton))
             .addComponent(interfaceLabel)
+            .addComponent(schedulePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(remoteCheckBox)
-                    .addComponent(localCheckBox))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(inProjectCombo, 0, 244, Short.MAX_VALUE)
-                .addContainerGap())
-            .addComponent(schedulePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(statelessButton)
+                    .addComponent(statefulButton)
+                    .addComponent(singletonButton)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(remoteCheckBox)
+                            .addComponent(localCheckBox))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(inProjectCombo, 0, 244, Short.MAX_VALUE)
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -411,6 +417,7 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
                         
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox exposeTimerMethod;
     private javax.swing.JComboBox inProjectCombo;
     private javax.swing.JLabel interfaceLabel;
     private javax.swing.JInternalFrame jInternalFrame1;
@@ -454,6 +461,10 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
             timerOptions.setTimerOptions(scheduleTextArea.getText());            
             return timerOptions;
         }
+    }
+
+    public boolean exposeTimerMethod() {
+        return exposeTimerMethod.isSelected();
     }
     
     public String getTimerOptionsError() {

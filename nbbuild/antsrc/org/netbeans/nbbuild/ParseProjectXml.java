@@ -1070,7 +1070,7 @@ public final class ParseProjectXml extends Task {
             }
         }
         for (String nextModule : deps) {
-            log("  Added dep: " + nextModule, Project.MSG_DEBUG);
+            log("  Added dep " + nextModule + " due to " + cnb, Project.MSG_DEBUG);
             File depJar = computeClasspathModuleLocation(modules, nextModule, clusterPath, excludedModules, true);
             if (!additions.contains(depJar)) {
                 additions.add(depJar);
@@ -1088,6 +1088,13 @@ public final class ParseProjectXml extends Task {
     private File computeClasspathModuleLocation(ModuleListParser modules, String cnb,
             Set<File> clusterPath, Set<String> excludedModules, boolean runtime) throws BuildException {
         ModuleListParser.Entry module = modules.findByCodeNameBase(cnb);
+        if (module == null && cnb.contains("-")) {
+            final String alternativeCnb = cnb.replace('-', '_');
+            module = modules.findByCodeNameBase(alternativeCnb);
+            if (module != null) {
+                cnb = alternativeCnb;
+            }
+        }
         if (module == null) {
             throw new BuildException("No dependent module " + cnb, getLocation());
         }
@@ -1350,6 +1357,7 @@ public final class ParseProjectXml extends Task {
                    // cnbs can be null
                    if (cnbs != null) {
                        for (String c : cnbs) {
+                           log("adding " + c + " due to " + cnb, Project.MSG_DEBUG);
                            addRecursiveModules(c, entriesMap);
                        }
                    }

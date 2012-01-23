@@ -280,10 +280,7 @@ final class TaskListTopComponent extends TopComponent {
     }
     
     private void init() {
-        TaskScanningScope activeScope = Settings.getDefault().getActiveScanningScope();
-        
-        if( null == activeScope )
-            activeScope = ScanningScopeList.getDefault().getDefaultScope();
+        TaskScanningScope activeScope = getActiveScope();
         if( null == filters ) {
             try {
                 filters = FilterRepository.getDefault();
@@ -480,7 +477,9 @@ final class TaskListTopComponent extends TopComponent {
         //scope buttons
         List<TaskScanningScope> scopes = ScanningScopeList.getDefault().getTaskScanningScopes();
         for( TaskScanningScope scope : scopes ) {
-            toolbar.add( new ScopeButton( taskManager, scope ) );
+            final ScopeButton scopeButton = new ScopeButton( taskManager, scope );
+            scopeButton.setSelected(scope.equals(Settings.getDefault().getActiveScanningScope()));
+            toolbar.add(scopeButton);
         }
         toolbar.add( new JToolBar.Separator() );
         //filter
@@ -567,5 +566,12 @@ final class TaskListTopComponent extends TopComponent {
     @Override
     public HelpCtx getHelpCtx () {
         return new HelpCtx(TaskListTopComponent.class);
-    }  
+    }
+
+    private TaskScanningScope getActiveScope() {
+        TaskScanningScope activeScope = Settings.getDefault().getActiveScanningScope();
+        if( null == activeScope )
+            activeScope = ScanningScopeList.getDefault().getDefaultScope();
+        return activeScope;
+    }
 }

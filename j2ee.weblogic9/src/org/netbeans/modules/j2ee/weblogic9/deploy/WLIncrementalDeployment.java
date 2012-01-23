@@ -199,15 +199,15 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
                             NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeploying", module.getModuleID())));
-
-                    if (deployFastSwap(module)) {
-                        LOGGER.log(Level.FINE, "Fast swap sucessfull");
-                        progress.fireProgressEvent(null, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.REDEPLOY, StateType.COMPLETED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Completed")));
-                        return;
-                    }
-                    LOGGER.log(Level.FINE, "Fast swap failed doing incremental deploy");
+// DISABLED SINCE 7.1.1 see #206798
+//                    if (deployFastSwap(module)) {
+//                        LOGGER.log(Level.FINE, "Fast swap sucessfull");
+//                        progress.fireProgressEvent(null, new WLDeploymentStatus(
+//                                ActionType.EXECUTE, CommandType.REDEPLOY, StateType.COMPLETED,
+//                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Completed")));
+//                        return;
+//                    }
+//                    LOGGER.log(Level.FINE, "Fast swap failed doing incremental deploy");
                     progress.startListening(module, incrementalDeploy(module, desc));
                 }
             });
@@ -230,7 +230,8 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
         // is using weburl as moduleID for war in ear
         // and ejb jar name for ejb in ear, we need moduleURI
         final String id = module.getModuleID();
-        WLConnectionSupport support = new WLConnectionSupport(dm);
+        final String slashId = id.startsWith("/") ? id : "/" + id;
+        WLConnectionSupport support = dm.getConnectionSupport();
         String url = null;
         try {
             url = support.executeAction(new WLConnectionSupport.JMXRuntimeAction<String>() {
@@ -243,7 +244,8 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
                     Set<ObjectName> runtimes = con.queryNames(pattern, null);
                     for (ObjectName runtime : runtimes) {
                         String moduleId = (String) con.getAttribute(runtime, "ModuleId"); // NOI18N
-                        if (id.equals(moduleId)) {
+                        if (id.equals(moduleId)
+                                || slashId.equals(moduleId)) {
                             return (String) con.getAttribute(runtime, "ModuleURI"); // NOI18N
                         }
                     }
@@ -264,7 +266,7 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
         final String server = module.getTarget().getName();
         final String application = module.getModuleID();
 
-        WLConnectionSupport support = new WLConnectionSupport(dm);
+        WLConnectionSupport support = dm.getConnectionSupport();
         try {
             Boolean ret = support.executeAction(new WLConnectionSupport.JMXAction<Boolean>() {
 

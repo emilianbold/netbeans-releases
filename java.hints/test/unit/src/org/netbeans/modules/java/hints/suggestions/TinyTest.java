@@ -185,6 +185,70 @@ public class TinyTest extends TestBase {
                         "}\n").replaceAll("[\t\n ]+", " "));
     }
 
+    public void testSplitDeclaration1() throws Exception {
+        setSourceLevel("1.7");
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    {\n" +
+                       "        int I =| -1;\n" +
+                       "    }\n" +
+                       "}\n",
+                       "3:12-3:13:hint:ERR_splitDeclaration",
+                       "FIX_splitDeclaration",
+                       ("package test;\n" +
+                       "public class Test {\n" +
+                       "    {\n" +
+                       "        int I;\n" +
+                       "        I = -1;\n" +
+                       "    }\n" +
+                        "}\n").replaceAll("[\t\n ]+", " "));
+    }
+
+    public void testSplitDeclaration2() throws Exception {
+        setSourceLevel("1.7");
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    {\n" +
+                       "        final int I =| -1;\n" +
+                       "    }\n" +
+                       "}\n",
+                       "3:18-3:19:hint:ERR_splitDeclaration",
+                       "FIX_splitDeclaration",
+                       ("package test;\n" +
+                       "public class Test {\n" +
+                       "    {\n" +
+                       "        final int I;\n" +
+                       "        I = -1;\n" +
+                       "    }\n" +
+                        "}\n").replaceAll("[\t\n ]+", " "));
+    }
+
+    public void testSplitDeclaration3() throws Exception {
+        setSourceLevel("1.7");
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    {\n" +
+                       "        System.err.println(1);\n" +
+                       "        @SuppressWanings(\"dummy\") final int I =| -1;\n" +
+                       "        System.err.println(2);\n" +
+                       "    }\n" +
+                       "}\n",
+                       "4:44-4:45:hint:ERR_splitDeclaration",
+                       "FIX_splitDeclaration",
+                       ("package test;\n" +
+                       "public class Test {\n" +
+                       "    {\n" +
+                       "        System.err.println(1);\n" +
+                       "        @SuppressWanings(\"dummy\") final int I;" +
+                       "        I = -1;\n" +
+                       "        System.err.println(2);\n" +
+                       "    }\n" +
+                        "}\n").replaceAll("[\t\n ]+", " "));
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.getText();

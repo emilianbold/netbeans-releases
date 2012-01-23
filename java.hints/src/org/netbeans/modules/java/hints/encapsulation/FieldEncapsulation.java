@@ -53,7 +53,6 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
@@ -86,9 +85,8 @@ import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
-import org.openide.cookies.InstanceCookie;
+import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
@@ -99,7 +97,6 @@ import org.openide.util.NbBundle;
 public class FieldEncapsulation {
 
     private static final Logger LOG = Logger.getLogger(FieldEncapsulation.class.getName());
-    private static final String ACTION_PATH = "Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-EncapsulateFieldAction.instance";   //NOI18N
     private static final String KW_THIS = "this";
 
     static final String ALLOW_ENUMS_KEY = "allow.enums";
@@ -271,35 +268,20 @@ public class FieldEncapsulation {
          * Currently there is no API to invoke encapsulate field action.
          */
         private void invokeRefactoring(final JTextComponent component, final int position) {
-            final FileObject cfgRoot = FileUtil.getConfigRoot();
-            final FileObject actionFile = cfgRoot.getFileObject(ACTION_PATH);
-            if (actionFile == null) {
-                LOG.warning("Encapsulate Field action not found at: " + ACTION_PATH); //NOI18N
+            final Action a = Actions.forID("Refactoring", "org.netbeans.modules.refactoring.java.api.ui.EncapsulateFieldAction");
+            if (a == null) {
+                LOG.warning("Encapsulate Field action not found"); //NOI18N
                 return;
             }
-            try {
-                final DataObject dobj  = DataObject.find(actionFile);
-                final InstanceCookie ic = dobj.getLookup().lookup(InstanceCookie.class);
-                final Object instance = ic.instanceCreate();
-                if (!(instance instanceof Action)) {
-                    throw new IOException();
-                }
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         if (position != -1) {
                             component.setCaretPosition(position);
                         }
-                        ((Action)instance).actionPerformed(new ActionEvent(component, 0, null));
+                        a.actionPerformed(new ActionEvent(component, 0, null));
                     }
                 });
-            } catch (IOException ioe) {
-                LOG.warning("Encapsulate Field action is broken: " + ACTION_PATH); //NOI18N
-                return;
-            } catch (ClassNotFoundException cnf) {
-                LOG.warning("Encapsulate Field action is broken: " + ACTION_PATH); //NOI18N
-                return;
-            }
         }
     }
     

@@ -62,6 +62,8 @@ import org.openide.filesystems.FileObject;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.saas.codegen.spi.SaasClientCodeGenerationProvider.class)
 public class SoapClientPhpCodeGenerator extends SaasClientCodeGenerator {
 
+    private static final String FILE = "file://";        // NOI18N
+
     @Override
     public boolean canAccept(SaasMethod method, Document doc) {
         if (method instanceof WsdlSaasMethod && PhpUtil.isPhp(doc)) {
@@ -99,7 +101,11 @@ public class SoapClientPhpCodeGenerator extends SaasClientCodeGenerator {
         for (ParameterInfo parameter : parameters) {
             String parmName = parameter.getName();
             String parmTypeName = parameter.getTypeName();
-            String def = (String) parameter.getDefaultValue();
+            Object value = parameter.getDefaultValue();
+            String def = null;
+            if ( value != null ){
+                def= value.toString();
+            }
             if (def != null) {
                 params.append("'" + parmName + "'" + "=> \"" + def + "\", \n");
             } else {
@@ -119,6 +125,11 @@ public class SoapClientPhpCodeGenerator extends SaasClientCodeGenerator {
         if (infos.length > 0) {
             wsdlUrl = infos[0].getWsdlURL();
             methodName = infos[0].getOperationName();
+        }
+        if ( wsdlUrl.startsWith(FILE.substring(0, FILE.length() -1)) && 
+                !wsdlUrl.startsWith(FILE.substring(0, FILE.length())))
+        {             
+            wsdlUrl = FILE + wsdlUrl.substring( FILE.length()-1);
         }
         String paramDecl = "$params = array( " + "\n" + genPhpParms(bean) + ");";
 

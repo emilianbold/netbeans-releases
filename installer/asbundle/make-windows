@@ -1,6 +1,0 @@
-# $IS_HOME is location of Install Shield
-# $AS_INSTALLER_PATH is location of SJS AS installer
-ant \
--Dismp.home=$IS_HOME \
--Das.installer=$AS_INSTALLER_PATH/sjsas_pe-9_0_01-windows.exe \
-build-windows

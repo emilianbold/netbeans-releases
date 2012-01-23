@@ -58,8 +58,9 @@ import org.openide.filesystems.FileObject;
  */
 public class PersistenceScopeProviderImpl implements PersistenceScopeProvider 
 {
-    
-    private PersistenceScopeImplementation persistenceScopeImpl = null;
+
+    private final PersistenceLocationProvider locProvider;
+    private final Project project;
     private PersistenceScope persistenceScope = null;
 
     /**
@@ -70,9 +71,8 @@ public class PersistenceScopeProviderImpl implements PersistenceScopeProvider
     public PersistenceScopeProviderImpl(PersistenceLocationProvider locProvider,
             Project project)
     {
-        ProjectSourcesClassPathProvider classpath = project.getLookup().lookup(ProjectSourcesClassPathProvider.class);
-        persistenceScopeImpl = new PersistenceScopeImpl(locProvider, classpath);
-        persistenceScope = PersistenceScopeFactory.createPersistenceScope(persistenceScopeImpl);
+        this.locProvider = locProvider;
+        this.project = project;
     }
 
     /**
@@ -81,8 +81,13 @@ public class PersistenceScopeProviderImpl implements PersistenceScopeProvider
      * @param fileObject file to check for persistence scope, not used !
      * @return a valid PersistenceScope instance or null
      */
-    public PersistenceScope findPersistenceScope(FileObject fileObject)
+    @Override public synchronized PersistenceScope findPersistenceScope(FileObject fileObject)
     {
+        if (persistenceScope == null) {
+            ProjectSourcesClassPathProvider classpath = project.getLookup().lookup(ProjectSourcesClassPathProvider.class);
+            PersistenceScopeImplementation persistenceScopeImpl = new PersistenceScopeImpl(locProvider, classpath);
+            persistenceScope = PersistenceScopeFactory.createPersistenceScope(persistenceScopeImpl);
+        }
         FileObject persistenceXml = persistenceScope.getPersistenceXml();
         if (persistenceXml != null && persistenceXml.isValid()) {
             return persistenceScope;

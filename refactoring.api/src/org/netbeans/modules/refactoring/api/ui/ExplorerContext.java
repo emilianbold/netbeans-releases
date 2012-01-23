@@ -70,7 +70,7 @@ import org.openide.nodes.Node;
  *     {@link ExplorerContext#getTransferable()}.
  *   </li>
  *   <li>
- *     Nodes are deleted from Explorer. Use {@link ExplorerContext#isDelete()
+ *     Nodes are deleted from Explorer. Use {@link ExplorerContext#isDelete()}
  *   </li>
  * </ol>
  * 

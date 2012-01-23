@@ -69,6 +69,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.Document;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -79,6 +80,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -220,17 +222,17 @@ public final class JavaUtils {
         }
         return null;
     }
-    
+
+    @NbBundle.Messages("title.searching.method=Searching Method")
     public static ElementHandle<ExecutableElement> findMethod(FileObject fileObject, final String classBinName,
             final String methodName, int argCount, Public publicFlag, Static staticFlag) {
         JavaSource js = JavaUtils.getJavaSource(fileObject);
         if (js != null) {
-            try {
-                MethodFinder methodFinder = new MethodFinder(classBinName, methodName, argCount, publicFlag, staticFlag);
-                js.runUserActionTask(methodFinder, false);
+            MethodFinder methodFinder = new MethodFinder(js, classBinName, methodName, argCount, publicFlag, staticFlag);
+            if (!ScanDialog.runWhenScanFinished(methodFinder, Bundle.title_searching_method())) {
                 return methodFinder.getMethodHandle();
-            } catch (IOException ex) {
-                Logger.getLogger("global").log(Level.SEVERE, ex.getMessage(), ex);
+            } else {
+                return null;
             }
         }
 
@@ -304,12 +306,12 @@ public final class JavaUtils {
         if (eh != null) {
             try {
                 js.runUserActionTask(new Task<CompilationController>() {
-
+                    @Override
                     public void run(CompilationController cc) throws Exception {
                         ExecutableElement ee = eh.resolve(cc);
                         ElementOpen.open(js.getClasspathInfo(), ee);
                     }
-                }, false);
+                }, true);
             } catch (IOException ex) {
                 Logger.getLogger("global").log(Level.SEVERE, ex.getMessage(), ex);
             }
@@ -386,7 +388,7 @@ public final class JavaUtils {
         }
     }
     
-    private static final class MethodFinder implements Task<CompilationController> {
+    private static final class MethodFinder implements Runnable, CancellableTask<CompilationController> {
 
         private String classBinName;
         private String methodName;
@@ -394,15 +396,18 @@ public final class JavaUtils {
         private Public publicFlag;
         private Static staticFlag;
         private ElementHandle<ExecutableElement> methodHandle;
+        private JavaSource javaSource;
 
-        public MethodFinder(String classBinName, String methodName, int argCount, Public publicFlag, Static staticFlag) {
+        public MethodFinder(JavaSource javaSource, String classBinName, String methodName, int argCount, Public publicFlag, Static staticFlag) {
             this.classBinName = classBinName;
             this.methodName = methodName;
             this.argCount = argCount;
             this.publicFlag = publicFlag;
             this.staticFlag = staticFlag;
+            this.javaSource = javaSource;
         }
 
+        @Override
         public void run(CompilationController cc) throws Exception {
             cc.toPhase(Phase.ELEMENTS_RESOLVED);
             TypeElement element = findClassElementByBinaryName(classBinName, cc);
@@ -459,6 +464,19 @@ public final class JavaUtils {
 
         public ElementHandle<ExecutableElement> getMethodHandle() {
             return this.methodHandle;
+        }
+
+        @Override
+        public void run() {
+            try {
+                javaSource.runUserActionTask(this, true);
+            } catch (IOException ex) {
+                Logger.getLogger("global").log(Level.SEVERE, ex.getMessage(), ex); //NOI18N
+            }
+        }
+
+        @Override
+        public void cancel() {
         }
     }
     

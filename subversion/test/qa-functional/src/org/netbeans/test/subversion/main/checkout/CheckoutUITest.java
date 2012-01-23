@@ -55,6 +55,7 @@ package org.netbeans.test.subversion.main.checkout;
 import java.io.File;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
@@ -96,11 +97,11 @@ public class CheckoutUITest extends JellyTestCase{
     public static Test suite() {
          return NbModuleSuite.create(
                  NbModuleSuite.createConfiguration(CheckoutUITest.class).addTest(
-//                    "testInvokeClose",
-                    "testChangeAccessTypes"//,
-//                    "testIncorrentUrl",
-//                    "testAvailableFields",
-//                    "testRepositoryFolder"
+                   "testInvokeClose",
+                   "testChangeAccessTypes",
+                   "testIncorrentUrl",
+                   "testAvailableFields",
+                   "testRepositoryFolder"
                  )
                  .enableModules(".*")
                  .clusters(".*")
@@ -155,26 +156,33 @@ public class CheckoutUITest extends JellyTestCase{
         RepositoryStepOperator rso = new RepositoryStepOperator();
         //wrong file
         rso.setRepositoryURL("dfile:///");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url: dfile:///", rso.lblWarning().getText());
+        new EventTool().waitNoEvent(2000);
+        assertEquals("This should be wrong url string!!!", "<html>\n  <head>\n    \n  </head>\n  <body>\n    Invalid&#160;svn&#160;url:&#160;dfile:///\n  </body>\n</html>\n", rso.txtPaneWarning().getText());
         //wrong svn
+        new EventTool().waitNoEvent(2000);
         rso.setRepositoryURL("dsvn://");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url: dsvn://", rso.lblWarning().getText());
+        assertEquals("This should be wrong url string!!!", "<html>\n  <head>\n    \n  </head>\n  <body>\n    Invalid&#160;svn&#160;url:&#160;dsvn://\n  </body>\n</html>\n", rso.txtPaneWarning().getText());
         //space in file
+        new EventTool().waitNoEvent(2000);
         rso.setRepositoryURL("file :///");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url: file :///", rso.lblWarning().getText());
+        assertEquals("This should be wrong url string!!!", "<html>\n  <head>\n    \n  </head>\n  <body>\n    Invalid&#160;svn&#160;url:&#160;file&#160;:///\n  </body>\n</html>\n", rso.txtPaneWarning().getText());
         //space in svn
+        new EventTool().waitNoEvent(2000);
         rso.setRepositoryURL("svn ://");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url: svn ://", rso.lblWarning().getText());
+        assertEquals("This should be wrong url string!!!", "<html>\n  <head>\n    \n  </head>\n  <body>\n    Invalid&#160;svn&#160;url:&#160;svn&#160;://\n  </body>\n</html>\n", rso.txtPaneWarning().getText());
         //space in http
+        new EventTool().waitNoEvent(2000);
         rso.setRepositoryURL("http ://");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url: http ://", rso.lblWarning().getText());
+        assertEquals("This should be wrong url string!!!", "<html>\n  <head>\n    \n  </head>\n  <body>\n    Invalid&#160;svn&#160;url:&#160;http&#160;://\n  </body>\n</html>\n", rso.txtPaneWarning().getText());
         //space in https
+        new EventTool().waitNoEvent(2000);
         rso.setRepositoryURL("https ://");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url: https ://", rso.lblWarning().getText());
+        assertEquals("This should be wrong url string!!!", "<html>\n  <head>\n    \n  </head>\n  <body>\n    Invalid&#160;svn&#160;url:&#160;https&#160;://\n  </body>\n</html>\n", rso.txtPaneWarning().getText());
         //space in svn+ssh
+        new EventTool().waitNoEvent(2000);
         rso.setRepositoryURL("svn+ssh ://");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url: svn+ssh ://", rso.lblWarning().getText());
-        
+        assertEquals("This should be wrong url string!!!", "<html>\n  <head>\n    \n  </head>\n  <body>\n    Invalid&#160;svn&#160;url:&#160;svn+ssh&#160;://\n  </body>\n</html>\n", rso.txtPaneWarning().getText());
+        new EventTool().waitNoEvent(2000);
         co.btCancel().pushNoBlock();
     }
     
@@ -305,10 +313,10 @@ public class CheckoutUITest extends JellyTestCase{
         //svn+ssh
         rso = new RepositoryStepOperator();
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_SVNSSH);
-        rso.lblUseExternal();
-        rso.lblTunnelCommand();
-        JTextFieldOperator txt = rso.txtTunnelCommand();
-        txt.typeText("plink");
+        //rso.lblUseExternal();
+        ///rso.lblTunnelCommand();
+        //JTextFieldOperator txt = rso.txtTunnelCommand();
+        //txt.typeText("plink");
         Thread.sleep(2000);
 
         //file
@@ -359,23 +367,25 @@ public class CheckoutUITest extends JellyTestCase{
         RepositoryBrowserOperator rbo = wdso.browseRepository();
         rbo.verify();
         //Try to select folders
+        rbo.table().selectCell(2, 2);
 //        rbo.selectFolder("branches");
 //        rbo.selectFolder("tags");
 //        rbo.selectFolder("trunk");
 //        rbo.selectFolder("trunk|JavaApp|src|javaapp");
         rbo.ok();
         
-        assertEquals("Wrong folder selection!!!", "trunk/JavaApp/src/javaapp", wdso.getRepositoryFolder());
+        assertEquals("Wrong folder selection!!!", "tags", wdso.getRepositoryFolder());
         rbo = wdso.browseRepository();
+        rbo.table().selectCell(1, 2);
 //        rbo.selectFolder("trunk|JavaApp");
         rbo.ok();
-        assertEquals("Wrong folder selection!!!", "trunk/JavaApp", wdso.getRepositoryFolder());
-        wdso.setLocalFolder("/tmp");
-        JFileChooserOperator jfc = wdso.browseLocalFolder();
-        assertEquals("Directory set in wizard not propagated to file chooser:", true, jfc.getCurrentDirectory().getAbsolutePath().endsWith("tmp"));
-        jfc.cancel();
-        wdso.setRepositoryRevision("10");
-        wdso.checkCheckoutContentOnly(true);
+        assertEquals("Wrong folder selection!!!", "branches", wdso.getRepositoryFolder());
+        //wdso.setLocalFolder("/tmp");
+        //JFileChooserOperator jfc = wdso.browseLocalFolder();
+        //assertEquals("Directory set in wizard not propagated to file chooser:", true, jfc.getCurrentDirectory().getAbsolutePath().endsWith("tmp"));
+        //jfc.cancel();
+        //wdso.setRepositoryRevision("10");
+        //wdso.checkCheckoutContentOnly(true);
         co.btCancel().pushNoBlock();
     }
     
@@ -397,7 +407,7 @@ public class CheckoutUITest extends JellyTestCase{
         //next step
         rso.next();
         rso.btStop().push();
-        assertEquals("Warning message - process was cancelled by user", "Action canceled by user", rso.lblWarning().getText());
+        assertEquals("Warning message - process was cancelled by user", "Action canceled by user", rso.txtPaneWarning().getText());
         co.btCancel().pushNoBlock();
     }
 }

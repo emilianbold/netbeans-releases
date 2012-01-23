@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.project.ui.groups;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -58,8 +57,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
@@ -76,8 +73,8 @@ public class DirectoryGroup extends Group {
     /**
      * Create a new group derived from a directory.
      */
-    public static DirectoryGroup create(String name, FileObject dir) throws FileStateInvalidException {
-        String path = dir.getURL().toExternalForm();
+    public static DirectoryGroup create(String name, FileObject dir) {
+        String path = dir.toURL().toExternalForm();
         String id = sanitizeNameAndUniquifyForId(name);
         LOG.log(Level.FINE, "Creating: {0}", id);
         Preferences p = NODE.node(id);
@@ -139,11 +136,10 @@ public class DirectoryGroup extends Group {
         while (e.hasMoreElements()) {
             try {
                 FileObject em = e.nextElement();
-                File f = FileUtil.toFile(fo);
-                int share = SharabilityQuery.UNKNOWN;
+                SharabilityQuery.Sharability share = SharabilityQuery.Sharability.UNKNOWN;
                 if (checkShare) {
-                    share = SharabilityQuery.getSharability(f);
-                    if (share == SharabilityQuery.NOT_SHARABLE) {
+                    share = SharabilityQuery.getSharability(fo);
+                    if (share == SharabilityQuery.Sharability.NOT_SHARABLE) {
                         continue;
                     }
                 }
@@ -154,7 +150,7 @@ public class DirectoryGroup extends Group {
                         h.progress(progressMessage(p), Math.min(++counter.start, counter.end));
                     }
                 }
-                checkShare = share != SharabilityQuery.SHARABLE;
+                checkShare = share != SharabilityQuery.Sharability.SHARABLE;
                 // don't need to check the sharability if the current folder is marked as recursively sharable
                 
                 processFolderChildren(em, projects, h, counter, checkShare);

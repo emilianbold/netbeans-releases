@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.41.0
+#Version 1.53.0
 
 CLSS public abstract interface java.io.Serializable
 
@@ -67,7 +67,11 @@ CLSS public final org.netbeans.api.editor.EditorActionNames
 fld public final static java.lang.String gotoDeclaration = "goto-declaration"
 fld public final static java.lang.String toggleLineNumbers = "toggle-line-numbers"
 fld public final static java.lang.String toggleNonPrintableCharacters = "toggle-non-printable-characters"
+fld public final static java.lang.String toggleRectangularSelection = "toggle-rectangular-selection"
 fld public final static java.lang.String toggleToolbar = "toggle-toolbar"
+fld public final static java.lang.String transposeLetters = "transpose-letters"
+fld public final static java.lang.String zoomTextIn = "zoom-text-in"
+fld public final static java.lang.String zoomTextOut = "zoom-text-out"
 supr java.lang.Object
 
 CLSS public abstract interface !annotation org.netbeans.api.editor.EditorActionRegistration
@@ -77,6 +81,7 @@ intf java.lang.annotation.Annotation
 meth public abstract !hasdefault int menuPosition()
 meth public abstract !hasdefault int popupPosition()
 meth public abstract !hasdefault int toolBarPosition()
+meth public abstract !hasdefault int weight()
 meth public abstract !hasdefault java.lang.String iconResource()
 meth public abstract !hasdefault java.lang.String menuPath()
 meth public abstract !hasdefault java.lang.String menuText()
@@ -105,8 +110,8 @@ meth public static javax.swing.text.JTextComponent lastFocusedComponent()
 meth public static void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public static void removePropertyChangeListener(java.beans.PropertyChangeListener)
 supr java.lang.Object
-hfds LOG,ignoredAncestorClass,items,pcs
-hcls AncestorL,FocusL,Item,PackageAccessor,PropertyDocL
+hfds LOG,USED_BY_CLONEABLE_EDITOR_PROPERTY,ignoredAncestorClass,items,pcs
+hcls AncestorL,CloneableEditorUsageL,FocusL,Item,PackageAccessor,PropertyDocL
 
 CLSS public final org.netbeans.api.editor.EditorUtilities
 meth public static javax.swing.Action getAction(javax.swing.text.EditorKit,java.lang.String)

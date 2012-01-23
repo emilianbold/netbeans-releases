@@ -157,7 +157,11 @@ public class OpenProjectsTrampolineImplTest extends NbTestCase {
         
         List<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>();
         
+        @Override
         public void propertyChange( PropertyChangeEvent e ) {
+            if ("willOpenProjects".equals(e.getPropertyName())) {
+                return;
+            }
             events.add( e );
         }
         

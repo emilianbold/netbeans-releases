@@ -79,6 +79,7 @@ public abstract class APTIfdefConditionBaseNode extends APTTokenAndChildBasedNod
         super(token);
     }
 
+    @Override
     public boolean accept(APTFile curFile,APTToken token) {
         /** base implementation of #ifdef/#ifndef */        
         if (APTUtils.isID(token)) {

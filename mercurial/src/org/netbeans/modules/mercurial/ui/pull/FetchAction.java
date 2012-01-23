@@ -64,6 +64,7 @@ import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.DialogDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -136,11 +137,19 @@ public class FetchAction extends ContextAction {
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_TITLE")); // NOI18N
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_TITLE_SEP")); // NOI18N
             
-            final String pullSourceString = new HgConfigFiles(root).getDefaultPull(true);
+            HgConfigFiles config = new HgConfigFiles(root);
+            final String pullSourceString = config.getDefaultPull(true);
             // If the repository has no default pull path then inform user
             if (HgUtils.isNullOrEmpty(pullSourceString)) {
                 notifyDefaultPullUrlNotSpecified(logger);
                 return;
+            }
+            
+            boolean enableFetch = !config.containsProperty(HgConfigFiles.HG_EXTENSIONS, HgConfigFiles.HG_EXTENSIONS_FETCH);
+            if (enableFetch) {
+                HgConfigFiles sysConfig = HgConfigFiles.getSysInstance();
+                sysConfig.doReload();
+                enableFetch = !sysConfig.containsProperty(HgConfigFiles.HG_EXTENSIONS, HgConfigFiles.HG_EXTENSIONS_FETCH);
             }
 
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, 
@@ -148,12 +157,19 @@ public class FetchAction extends ContextAction {
             try {
                 pullSource = new HgURL(pullSourceString);
             } catch (URISyntaxException ex) {
-                Mercurial.LOG.log(Level.INFO, null, ex);
-                return;
+                File sourceRoot = new File(root, pullSourceString);
+                if (sourceRoot.isDirectory()) {
+                    pullSource = new HgURL(FileUtil.normalizeFile(sourceRoot));
+                } else {
+                    String msg = NbBundle.getMessage(FetchAction.class, "MSG_DEFAULT_PULL_INVALID", pullSourceString); //NOI18N
+                    DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(msg));
+                    Mercurial.LOG.log(Level.INFO, null, ex);
+                    return;
+                }
             }
 
             List<String> list;
-            list = HgCommand.doFetch(root, pullSource, logger);
+            list = HgCommand.doFetch(root, pullSource, enableFetch, logger);
 
             if (list != null && !list.isEmpty()) {
                 logger.output(HgUtils.replaceHttpPassword(list));
@@ -164,8 +180,7 @@ public class FetchAction extends ContextAction {
         } catch (HgException.HgCommandCanceledException ex) {
             // canceled by user, do nothing
         } catch (HgException ex) {
-            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-            DialogDisplayer.getDefault().notifyLater(e);
+            HgUtils.notifyException(ex);
         } finally {
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_DONE")); // NOI18N
             logger.output(""); // NOI18N

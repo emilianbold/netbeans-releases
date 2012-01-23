@@ -156,7 +156,7 @@ public class ReferenceHelperTest extends NbTestCase {
         super.setUp();
         ClassLoader l = ReferenceHelper.class.getClassLoader();
         MockLookup.setLookup(
-            Lookups.fixed(AntBasedTestUtil.testAntBasedProjectType(), AntBasedTestUtil.testCollocationQueryImplementation(getWorkDir())),
+            Lookups.fixed(AntBasedTestUtil.testAntBasedProjectType(), AntBasedTestUtil.testCollocationQueryImplementation(getWorkDir().toURI())),
             Lookups.singleton(l),
             Lookups.exclude(Lookups.metaInfServices(l), CollocationQueryImplementation.class));
         scratch = TestUtil.makeScratchDir(this);
@@ -171,7 +171,7 @@ public class ReferenceHelperTest extends NbTestCase {
         assertNotNull("found ref helper for " + p, r);
         sisterprojdir = FileUtil.createFolder(scratch, "proj2");
         assertTrue("projdir and sisterprojdir collocated",
-            CollocationQuery.areCollocated(FileUtil.toFile(projdir), FileUtil.toFile(sisterprojdir)));
+            CollocationQuery.areCollocated(projdir.toURI(), sisterprojdir.toURI()));
         sisterh = ProjectGenerator.createProject(sisterprojdir, "test");
         setCodeNameOfTestProject(sisterh, "proj2");
         EditableProperties props = sisterh.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -183,7 +183,7 @@ public class ReferenceHelperTest extends NbTestCase {
         
         sisterprojdir2 = FileUtil.createFolder(scratch, "proj2-copy");
         assertTrue("projdir and sisterprojdir2 collocated",
-            CollocationQuery.areCollocated(FileUtil.toFile(projdir), FileUtil.toFile(sisterprojdir2)));
+            CollocationQuery.areCollocated(projdir.toURI(), sisterprojdir2.toURI()));
         sisterh2 = ProjectGenerator.createProject(sisterprojdir2, "test");
         setCodeNameOfTestProject(sisterh2, "proj2");
         props = sisterh2.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -198,7 +198,7 @@ public class ReferenceHelperTest extends NbTestCase {
         // similarly as it is done for SampleCVSCollocationQueryImpl
         // in META-INF/services.
         assertFalse("" + projdir + " and " + sepprojdir + " cannot be collocated",
-            CollocationQuery.areCollocated(FileUtil.toFile(projdir), FileUtil.toFile(sepprojdir)));
+            CollocationQuery.areCollocated(projdir.toURI(), sepprojdir.toURI()));
         seph = ProjectGenerator.createProject(sepprojdir, "test");
         setCodeNameOfTestProject(seph, "proj3");
         props = seph.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);

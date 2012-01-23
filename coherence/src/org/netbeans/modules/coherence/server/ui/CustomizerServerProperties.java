@@ -65,16 +65,16 @@ import org.openide.util.NbBundle;
  */
 public class CustomizerServerProperties extends javax.swing.JPanel {
 
-    private InstanceProperties instanceProperties;
+    private CoherenceProperties coherenceProperties;
 
     /** Creates new form CustomizerServerProperties */
-    public CustomizerServerProperties(InstanceProperties instanceProperties) {
-        this.instanceProperties = instanceProperties;
+    public CustomizerServerProperties(CoherenceProperties coherenceProperties) {
+        this.coherenceProperties = coherenceProperties;
         initComponents();
 
         // Initialize and include property sheet
         PropertySheet ps = new PropertySheet();
-        ps.setNodes(new Node[]{new ServerPropertiesNode(instanceProperties)});
+        ps.setNodes(new Node[]{new ServerPropertiesNode(coherenceProperties)});
         PropertySheetView psv = new PropertySheetView();
         psv.add(ps);
         BorderLayout propertiesPanelLayout = new BorderLayout();
@@ -85,11 +85,11 @@ public class CustomizerServerProperties extends javax.swing.JPanel {
     /**
      * Performs reset all Coherence server properties to defaults.
      *
-     * @param instanceProperties properties for reseting
+     * @param coherenceProperties properties for reseting
      */
     private void resetProperties() {
         for (CoherenceServerProperty property : CoherenceProperties.SERVER_PROPERTIES) {
-            instanceProperties.removeKey(property.getPropertyName());
+            coherenceProperties.resetProperty(property.getPropertyName());
         }
     }
 
