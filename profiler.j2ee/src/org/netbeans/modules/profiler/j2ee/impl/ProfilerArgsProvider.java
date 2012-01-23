@@ -60,7 +60,7 @@ public class ProfilerArgsProvider implements StartupArgumentsProvider {
 
     @Override
     public List<String> getArguments(Lookup context, StartMode mode) {
-        if (mode == StartMode.PROFILE) {
+        if (mode == StartMode.PROFILE || mode == StartMode.TEST_PROFILE) {
             Profiler p = Lookup.getDefault().lookup(Profiler.class);
             InstanceProperties ip = context.lookup(InstanceProperties.class);
             if (ip != null) {

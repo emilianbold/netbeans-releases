@@ -142,7 +142,25 @@ public final class StartupArguments {
          * The profile startup mode.
          */
         @NbBundle.Messages("StartMode_Profile=Profile")
-        PROFILE(Bundle.StartMode_Profile());
+        PROFILE(Bundle.StartMode_Profile()),
+
+        /**
+         * The normal startup mode.
+         */
+        @NbBundle.Messages("StartMode_Test_Normal=Normal Test")
+        TEST_NORMAL(Bundle.StartMode_Test_Normal()),
+
+        /**
+         * The debug startup mode.
+         */
+        @NbBundle.Messages("StartMode_Test_Debug=Debug Test")
+        TEST_DEBUG(Bundle.StartMode_Test_Debug()),
+
+        /**
+         * The profile startup mode.
+         */
+        @NbBundle.Messages("StartMode_Test_Profile=Profile Test")
+        TEST_PROFILE(Bundle.StartMode_Test_Profile());
 
         private final String mode;
 
