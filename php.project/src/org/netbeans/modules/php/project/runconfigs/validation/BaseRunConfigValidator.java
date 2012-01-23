@@ -43,6 +43,7 @@ package org.netbeans.modules.php.project.runconfigs.validation;
 
 import java.io.File;
 import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -71,7 +72,7 @@ public final class BaseRunConfigValidator {
         } else if (Utilities.isWindows() && indexFile.contains(File.separator)) {
             error = true;
         } else {
-            File index = new File(rootDirectory, indexFile.replace('/', File.separatorChar)); // NOI18N
+            File index = PhpProjectUtils.resolveFile(rootDirectory, indexFile);
             if (!index.isFile()
                     || !index.equals(FileUtil.normalizeFile(index))) {
                 error = true;

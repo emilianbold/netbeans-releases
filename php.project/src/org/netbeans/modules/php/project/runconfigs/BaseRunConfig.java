@@ -42,7 +42,7 @@
 package org.netbeans.modules.php.project.runconfigs;
 
 import java.io.File;
-import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 
 /**
  * Base class for run configs with index file.
@@ -60,13 +60,7 @@ abstract class BaseRunConfig<T extends BaseRunConfig<?>> {
     //~ Methods
 
     public File getIndexFile() {
-        if (indexParentDir == null) {
-            throw new NullPointerException("Property 'indexParentDir' must be set");
-        }
-        if (StringUtils.hasText(indexRelativePath)) {
-            return new File(indexParentDir, indexRelativePath.replace('/', File.separatorChar)); // NOI18N
-        }
-        return indexParentDir;
+        return PhpProjectUtils.resolveFile(indexParentDir, indexRelativePath);
     }
 
     //~ Getters & setters
