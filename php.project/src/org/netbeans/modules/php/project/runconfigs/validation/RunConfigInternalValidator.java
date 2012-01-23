@@ -80,7 +80,7 @@ public final class RunConfigInternalValidator {
         if (validateRouter) {
             String routerRelativePath = config.getRouterRelativePath();
             if (StringUtils.hasText(routerRelativePath)) {
-                error = BaseRunConfigValidator.validateRelativeFile(config.getRouterParentDir(), routerRelativePath, Bundle.RunConfigInternalValidator_router_label());
+                error = BaseRunConfigValidator.validateRelativeFile(config.getDocumentRoot(), routerRelativePath, Bundle.RunConfigInternalValidator_router_label());
                 if (error != null) {
                     return error;
                 }

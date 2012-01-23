@@ -57,10 +57,10 @@ public final class RunConfigInternal {
 
     public static final int DEFAULT_PORT = 8888;
 
+    private File documentRoot;
     private String hostname;
     private String port;
-    protected File routerParentDir;
-    protected String routerRelativePath;
+    private String routerRelativePath;
 
 
     private RunConfigInternal() {
@@ -87,7 +87,7 @@ public final class RunConfigInternal {
                 return new RunConfigInternal()
                         .setHostname(ProjectPropertiesSupport.getPhpInterpreter(project))
                         .setPort(ProjectPropertiesSupport.getPort(project))
-                        .setRouterParentDir(FileUtil.toFile(ProjectPropertiesSupport.getWebRootDirectory(project)))
+                        .setDocumentRoot(FileUtil.toFile(ProjectPropertiesSupport.getWebRootDirectory(project)))
                         .setRouterRelativePath(ProjectPropertiesSupport.getInternalRouter(project));
             }
         });
@@ -95,8 +95,8 @@ public final class RunConfigInternal {
 
     //~ Methods
 
-    public File getRouterFile() {
-        return PhpProjectUtils.resolveFile(routerParentDir, routerRelativePath);
+    public String getServerUrl() {
+        return hostname + ":" + port; // NOI18N
     }
 
     //~ Getters & Setters
@@ -119,12 +119,12 @@ public final class RunConfigInternal {
         return this;
     }
 
-    public File getRouterParentDir() {
-        return routerParentDir;
+    public File getDocumentRoot() {
+        return documentRoot;
     }
 
-    public RunConfigInternal setRouterParentDir(File routerParentDir) {
-        this.routerParentDir = routerParentDir;
+    public RunConfigInternal setDocumentRoot(File documentRoot) {
+        this.documentRoot = documentRoot;
         return this;
     }
 
