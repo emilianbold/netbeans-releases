@@ -589,8 +589,13 @@ public abstract class BaseActionProvider implements ActionProvider {
                     mode = StartupArguments.StartMode.DEBUG;
                 } else if (command.equals("profile")) {
                     mode = StartupArguments.StartMode.PROFILE;
+                } else if (command.equals(COMMAND_TEST) || command.equals(COMMAND_TEST_SINGLE)) {
+                    mode = StartupArguments.StartMode.TEST_NORMAL;
+                } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
+                    mode = StartupArguments.StartMode.TEST_DEBUG;
+                } else if (command.equals("profile-test-single")) {
+                    mode = StartupArguments.StartMode.TEST_PROFILE;
                 } else {
-                    // XXX #206196 JG07 - COMMAND_TEST*
                     return Collections.emptyList();
                 }
                 List<String> args = new ArrayList<String>();
