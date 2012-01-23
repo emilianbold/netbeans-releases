@@ -120,6 +120,9 @@ public class MultiViewEditorDiscardTest extends NbTestCase {
         });
         
         StyledDocument doc = ces.getDocument();
+        
+        assertEquals("Is empty", 0, doc.getLength());
+        
         assertNotNull("Document is opened", doc);
         doc.insertString(0, "Ahoj", null);
         assertTrue("Is modified", ces.isModified());
@@ -137,6 +140,9 @@ public class MultiViewEditorDiscardTest extends NbTestCase {
         });
         
         assertFalse("Not modified", ces.isModified());
+        
+        StyledDocument newDoc = ces.openDocument();
+        assertEquals("The document is reverted to empty state", 0, newDoc.getLength());
     }
     
     private static CES createSupport(Lookup lkp, InstanceContent ic) {
