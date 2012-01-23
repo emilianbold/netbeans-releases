@@ -993,6 +993,35 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
         }
     }
 
+    /** Must be called between {@link #cleanBeforeResume()} and {@link #fireAfterResume()} only. */
+    public boolean reduceThreadSuspendCount() throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
+        boolean reduced = true;
+        try {
+            int count = ThreadReferenceWrapper.suspendCount (threadReference);
+            reduced = count == 1;
+            //if (!reduced) logger.severe("Reducing suspend count of existing "+getThreadStateLog());
+            while (count > 1) {
+                ThreadReferenceWrapper.resume (threadReference); count--;
+            }
+            reduced = true;
+        } catch (IllegalThreadStateExceptionWrapper ex) {
+            // Thrown when thread has exited
+        } catch (ObjectCollectedExceptionWrapper ex) {
+        } finally {
+            if (!reduced) {
+                // Do not fire PROP_SUSPENDED when not resumed!
+                for (PropertyChangeEvent pchEvt : resumeChangeEvents) {
+                    if (PROP_SUSPENDED.equals(pchEvt.getPropertyName())) {
+                        resumeChangeEvents = new ArrayList<PropertyChangeEvent>(resumeChangeEvents);
+                        resumeChangeEvents.remove(pchEvt);
+                        break;
+                    }
+                }
+            }
+        }
+        return reduced;
+    }
+
     public void setAsResumed(boolean reduceSuspendCountOnly) {
         if (reduceSuspendCountOnly) {
             suspendCount--;
@@ -1187,10 +1216,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
                 return null; // Something is gone
             }
             //System.err.println("notifySuspended("+getName()+") suspendCount = "+suspendCount+", var suspended = "+suspended);
+            suspendedNoFire = false;
             if ((!suspended || suspendedNoFire && doFire) && isThreadSuspended()) {
                 //System.err.println("  setting suspended = true");
                 suspended = true;
-                suspendedNoFire = false;
                 suspendedToFire = Boolean.TRUE;
                 if (doFire) {
                     try {
@@ -1311,6 +1340,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
             }
             watcherToDestroy = watcher;
             watcher = new SingleThreadWatcher(this);
+            //logger.severe("Before method invoke: "+getThreadStateLog());
         } finally {
             loggerS.fine("["+threadName+"]: unsuspendedStateWhenInvoking = "+unsuspendedStateWhenInvoking);
             accessLock.writeLock().unlock();
@@ -1366,6 +1396,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
             methodInvoking = false;
             wasUnsuspendedStateWhenInvoking = unsuspendedStateWhenInvoking;
             unsuspendedStateWhenInvoking = false;
+            //logger.severe("After method invoke: "+getThreadStateLog());
             synchronized (this) {
                 this.notifyAll();
             }
