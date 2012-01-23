@@ -37,10 +37,6 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="urlHintLabel" alignment="0" max="32767" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="remoteConnectionHintLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                  </Group>
                   <Component id="urlTextField" alignment="1" max="32767" attributes="1"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="indexFileTextField" max="32767" attributes="1"/>
@@ -48,7 +44,6 @@
                       <Component id="indexFileBrowseButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="argsTextField" alignment="1" max="32767" attributes="1"/>
-                  <Component id="uploadFilesHintLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="remoteConnectionComboBox" max="32767" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -58,19 +53,25 @@
                   <Component id="uploadFilesComboBox" alignment="0" max="32767" attributes="0"/>
                   <Component id="runAsComboBox" alignment="0" max="32767" attributes="1"/>
                   <Component id="advancedButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="remoteConnectionHintLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="uploadFilesHintLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
               </Group>
           </Group>
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="preservePermissionsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="21" pref="21" max="21" attributes="0"/>
-                      <Component id="preservePermissionsLabel" min="-2" max="-2" attributes="0"/>
-                  </Group>
                   <Component id="uploadDirectlyCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="21" pref="21" max="21" attributes="0"/>
-                      <Component id="uploadDirectlyLabel" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <EmptySpace min="21" pref="21" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="preservePermissionsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="uploadDirectlyLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>

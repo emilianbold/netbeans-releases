@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.php.project.ui.actions;
 
-import org.netbeans.modules.php.project.ui.actions.support.Displayable;
-import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import java.io.File;
 import java.util.Collections;
 import java.util.Set;
@@ -59,6 +57,9 @@ import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.connections.transfer.TransferInfo;
 import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooser;
+import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -112,7 +113,7 @@ public class UploadCommand extends RemoteCommand implements Displayable {
             return;
         }
 
-        InputOutput remoteLog = getRemoteLog(getRemoteConfiguration().getDisplayName());
+        InputOutput remoteLog = getRemoteLog(RunConfigRemote.forProject(getProject()).getRemoteConfiguration().getDisplayName());
         RemoteClient remoteClient = getRemoteClient(remoteLog);
 
         Set<TransferFile> forUpload = prepareUpload(sources, filesToUpload, preselectedFiles, remoteClient);

@@ -70,6 +70,8 @@ public final class RunConfigRemote extends RunConfigWeb<RunConfigRemote> {
     private RemoteConfiguration remoteConfiguration;
     private String uploadDirectory;
     private PhpProjectProperties.UploadFiles uploadFilesType;
+    private boolean permissionsPreserved;
+    private boolean uploadDirectly;
 
 
     private RunConfigRemote() {
@@ -100,7 +102,9 @@ public final class RunConfigRemote extends RunConfigWeb<RunConfigRemote> {
                         .setArguments(ProjectPropertiesSupport.getArguments(project))
                         .setRemoteConfiguration(RemoteConnections.get().remoteConfigurationForName(ProjectPropertiesSupport.getRemoteConnection(project)))
                         .setUploadDirectory(ProjectPropertiesSupport.getRemoteDirectory(project))
-                        .setUploadFilesType(ProjectPropertiesSupport.getRemoteUpload(project));
+                        .setUploadFilesType(ProjectPropertiesSupport.getRemoteUpload(project))
+                        .setPermissionsPreserved(ProjectPropertiesSupport.areRemotePermissionsPreserved(project))
+                        .setUploadDirectly(ProjectPropertiesSupport.isRemoteUploadDirectly(project));
             }
         });
     }
@@ -146,6 +150,24 @@ public final class RunConfigRemote extends RunConfigWeb<RunConfigRemote> {
 
     public RunConfigRemote setUploadDirectory(String uploadDirectory) {
         this.uploadDirectory = uploadDirectory;
+        return this;
+    }
+
+    public boolean arePermissionsPreserved() {
+        return permissionsPreserved;
+    }
+
+    public RunConfigRemote setPermissionsPreserved(boolean permissionsPreserved) {
+        this.permissionsPreserved = permissionsPreserved;
+        return this;
+    }
+
+    public boolean getUploadDirectly() {
+        return uploadDirectly;
+    }
+
+    public RunConfigRemote setUploadDirectly(boolean uploadDirectly) {
+        this.uploadDirectly = uploadDirectly;
         return this;
     }
 

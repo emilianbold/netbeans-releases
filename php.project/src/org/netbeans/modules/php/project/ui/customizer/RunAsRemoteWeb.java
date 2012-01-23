@@ -261,12 +261,6 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         category.setValid(true);
     }
 
-    private void validateCategory(String error) {
-        category.setErrorMessage(error);
-        // #148957 always allow to save customizer
-        category.setValid(true);
-    }
-
     RunConfigRemote createRunConfig() {
         return RunConfigRemote.create()
                 .setUrl(urlTextField.getText())
@@ -275,7 +269,9 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 .setArguments(argsTextField.getText())
                 .setRemoteConfiguration((RemoteConfiguration) remoteConnectionComboBox.getSelectedItem())
                 .setUploadDirectory(uploadDirectoryTextField.getText())
-                .setUploadFilesType((UploadFiles) uploadFilesComboBox.getSelectedItem());
+                .setUploadFilesType((UploadFiles) uploadFilesComboBox.getSelectedItem())
+                .setPermissionsPreserved(preservePermissionsCheckBox.isSelected())
+                .setUploadDirectly(uploadDirectlyCheckBox.isSelected());
     }
 
     private FileObject getWebRoot() {

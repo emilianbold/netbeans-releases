@@ -229,6 +229,7 @@ class ConfigActionLocal extends ConfigAction {
 
     URL getUrlToShow(final URL defaultRunUrl) throws MalformedURLException, StopDebuggingException {
         URL urlToShow = null;
+        // XXX run config
         DebugUrl debugUrl = ProjectPropertiesSupport.getDebugUrl(project);
         switch (debugUrl) {
             case DEFAULT_URL:
@@ -319,6 +320,7 @@ class ConfigActionLocal extends ConfigAction {
     private void startDebugger(final XDebugStarter dbgStarter, final Runnable initDebuggingCode, Cancellable cancellable,
             final FileObject debuggedFile) {
         Callable<Cancellable> initDebuggingCallable = Executors.callable(initDebuggingCode, cancellable);
+        // XXX run config
         XDebugStarter.Properties props = XDebugStarter.Properties.create(
                 debuggedFile,
                 false,

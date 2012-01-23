@@ -48,13 +48,13 @@ import java.nio.charset.Charset;
 import java.util.List;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.Pair;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
-import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.runconfigs.RunConfigScript;
 import org.netbeans.modules.php.project.runconfigs.validation.RunConfigScriptValidator;
 import org.openide.filesystems.FileObject;
@@ -194,11 +194,13 @@ class ConfigActionScript extends ConfigAction {
 
         @Override
         public List<Pair<String, String>> getDebugPathMapping() {
+            // XXX run config
             return ProjectPropertiesSupport.getDebugPathMapping(project);
         }
 
         @Override
         public Pair<String, Integer> getDebugProxy() {
+            // XXX run config
             return ProjectPropertiesSupport.getDebugProxy(project);
         }
     }
