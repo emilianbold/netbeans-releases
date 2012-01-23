@@ -136,7 +136,7 @@ public class JsCompletionItem implements CompletionProposal {
     
     public String getFileNameURL() {
         ElementHandle elem = getElement(); 
-        return elem.getFileObject().getPath();
+        return elem.getFileObject().getName();
      }
     
     public static class CompletionRequest {
