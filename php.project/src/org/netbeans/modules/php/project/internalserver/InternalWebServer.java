@@ -160,7 +160,7 @@ public final class InternalWebServer implements PropertyChangeListener {
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent evt) {
+    public synchronized void propertyChange(PropertyChangeEvent evt) {
         if (isRunning()) {
             restart();
         }
