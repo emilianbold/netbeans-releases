@@ -75,6 +75,14 @@ public final class RunConfigRemote extends RunConfigWeb<RunConfigRemote> {
     private RunConfigRemote() {
     }
 
+    public static PhpProjectProperties.RunAsType getRunAsType() {
+        return PhpProjectProperties.RunAsType.REMOTE;
+    }
+
+    public static String getDisplayName() {
+        return getRunAsType().getLabel();
+    }
+
     //~ Factories
 
     public static RunConfigRemote create() {

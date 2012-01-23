@@ -80,7 +80,6 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     private final JLabel[] labels;
     private final JTextField[] textFields;
     private final String[] propertyNames;
-    private final String displayName;
     final Category category;
 
 
@@ -89,7 +88,6 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         this.properties = properties;
         this.category = category;
         project = properties.getProject();
-        displayName = NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ConfigLocalWeb");
 
         initComponents();
         this.labels = new JLabel[] {
@@ -121,12 +119,12 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
 
     @Override
     protected RunAsType getRunAsType() {
-        return PhpProjectProperties.RunAsType.LOCAL;
+        return RunConfigLocal.getRunAsType();
     }
 
     @Override
     public String getDisplayName() {
-        return displayName;
+        return RunConfigLocal.getDisplayName();
     }
 
     @Override

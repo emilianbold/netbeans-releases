@@ -147,10 +147,25 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         DEBUG_PROXY_PORT,
     };
 
+    @NbBundle.Messages({
+        "RunAsType.local.label=Local Web Site (running on local web server)",
+        "RunAsType.script.label=Script (run in command line)",
+        "RunAsType.remote.label=Remote Web Site (FTP, SFTP)"
+    })
     public static enum RunAsType {
-        LOCAL,
-        SCRIPT,
-        REMOTE
+        LOCAL(Bundle.RunAsType_local_label()),
+        SCRIPT(Bundle.RunAsType_script_label()),
+        REMOTE(Bundle.RunAsType_remote_label());
+
+        private final String label;
+
+        private RunAsType(String label) {
+            this.label = label;
+        }
+
+        public String getLabel() {
+            return label;
+        }
     }
 
     public static enum UploadFiles {

@@ -45,6 +45,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 
@@ -60,6 +61,14 @@ public final class RunConfigScript extends RunConfig<RunConfigScript> {
 
 
     private RunConfigScript() {
+    }
+
+    public static PhpProjectProperties.RunAsType getRunAsType() {
+        return PhpProjectProperties.RunAsType.SCRIPT;
+    }
+
+    public static String getDisplayName() {
+        return getRunAsType().getLabel();
     }
 
     //~ Factories

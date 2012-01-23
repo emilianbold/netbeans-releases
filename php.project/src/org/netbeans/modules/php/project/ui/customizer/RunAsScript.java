@@ -85,20 +85,14 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
     private final JLabel[] labels;
     private final JTextField[] textFields;
     private final String[] propertyNames;
-    private final String displayName;
     private final PropertyChangeListener phpInterpreterListener;
     final Category category;
 
 
     public RunAsScript(PhpProject project, ConfigManager manager, Category category) {
-        this(project, manager, category, NbBundle.getMessage(RunAsScript.class, "LBL_ConfigScript"));
-    }
-
-    private RunAsScript(PhpProject project, ConfigManager manager, Category category, String displayName) {
         super(manager);
         this.project = project;
         this.category = category;
-        this.displayName = displayName;
 
         initComponents();
         this.labels = new JLabel[] {
@@ -186,12 +180,12 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
 
     @Override
     protected RunAsType getRunAsType() {
-        return PhpProjectProperties.RunAsType.SCRIPT;
+        return RunConfigScript.getRunAsType();
     }
 
     @Override
     public String getDisplayName() {
-        return displayName;
+        return RunConfigScript.getDisplayName();
     }
 
     @Override

@@ -44,6 +44,7 @@ package org.netbeans.modules.php.project.runconfigs;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 
@@ -53,6 +54,14 @@ import org.openide.util.Mutex;
 public final class RunConfigLocal extends RunConfigWeb<RunConfigLocal> {
 
     private RunConfigLocal() {
+    }
+
+    public static PhpProjectProperties.RunAsType getRunAsType() {
+        return PhpProjectProperties.RunAsType.LOCAL;
+    }
+
+    public static String getDisplayName() {
+        return getRunAsType().getLabel();
     }
 
     //~ Factories

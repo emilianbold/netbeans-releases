@@ -103,7 +103,6 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private final JLabel[] labels;
     private final JTextField[] textFields;
     private final String[] propertyNames;
-    private final String displayName;
 
 
     public RunAsRemoteWeb(final PhpProjectProperties properties, ConfigManager manager, Category category) {
@@ -111,7 +110,6 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         this.properties = properties;
         this.category = category;
         project = properties.getProject();
-        displayName = NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_ConfigRemoteWeb");
 
         initComponents();
 
@@ -210,12 +208,12 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
     @Override
     protected RunAsType getRunAsType() {
-        return RunAsType.REMOTE;
+        return RunConfigRemote.getRunAsType();
     }
 
     @Override
     protected String getDisplayName() {
-        return displayName;
+        return RunConfigRemote.getDisplayName();
     }
 
     @Override

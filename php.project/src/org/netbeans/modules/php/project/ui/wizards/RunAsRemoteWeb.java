@@ -91,17 +91,11 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private final JLabel[] labels;
     private final JTextField[] textFields;
     private final String[] propertyNames;
-    private final String displayName;
     private final SourcesFolderProvider sourcesFolderProvider;
 
 
     public RunAsRemoteWeb(ConfigManager manager, SourcesFolderProvider sourcesFolderProvider) {
-        this(manager, sourcesFolderProvider, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_ConfigRemoteWeb"));
-    }
-
-    public RunAsRemoteWeb(ConfigManager manager, SourcesFolderProvider sourcesFolderProvider, String displayName) {
         super(manager);
-        this.displayName = displayName;
         this.sourcesFolderProvider = sourcesFolderProvider;
 
         initComponents();
@@ -196,12 +190,12 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
     @Override
     protected RunAsType getRunAsType() {
-        return RunAsType.REMOTE;
+        return RunConfigRemote.getRunAsType();
     }
 
     @Override
     protected String getDisplayName() {
-        return displayName;
+        return RunConfigRemote.getDisplayName();
     }
 
     @Override

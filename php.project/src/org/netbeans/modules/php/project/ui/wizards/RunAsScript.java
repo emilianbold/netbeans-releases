@@ -76,7 +76,6 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = 8423354564321210L;
 
     final ChangeSupport changeSupport = new ChangeSupport(this);
-    private final String displayName;
     private final JLabel[] labels;
     private final JTextField[] textFields;
     private final String[] propertyNames;
@@ -84,12 +83,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
 
 
     public RunAsScript(ConfigManager manager, SourcesFolderProvider sourcesFolderProvider) {
-        this(manager, sourcesFolderProvider, NbBundle.getMessage(RunAsScript.class, "LBL_ConfigScript"));
-    }
-
-    private RunAsScript(ConfigManager manager, SourcesFolderProvider sourcesFolderProvider, String displayName) {
         super(manager);
-        this.displayName = displayName;
         this.sourcesFolderProvider = sourcesFolderProvider;
 
         initComponents();
@@ -144,12 +138,12 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
 
     @Override
     protected RunAsType getRunAsType() {
-        return PhpProjectProperties.RunAsType.SCRIPT;
+        return RunConfigScript.getRunAsType();
     }
 
     @Override
     public String getDisplayName() {
-        return displayName;
+        return RunConfigScript.getDisplayName();
     }
 
     @Override
