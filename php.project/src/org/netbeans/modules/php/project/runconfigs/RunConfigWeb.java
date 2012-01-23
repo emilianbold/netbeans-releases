@@ -77,7 +77,7 @@ public abstract class RunConfigWeb<T extends RunConfigWeb<?>> extends RunConfig<
 
     }
 
-    public String getHint() {
+    public String getUrlHint() {
         try {
             URL fullUrl = getFullUrl();
             if (fullUrl != null) {

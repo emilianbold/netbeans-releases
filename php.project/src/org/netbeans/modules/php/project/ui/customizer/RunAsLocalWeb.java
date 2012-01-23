@@ -179,7 +179,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         @Override
         protected void processUpdate() {
             super.processUpdate();
-            hintLabel.setText(createRunConfig().getHint());
+            hintLabel.setText(createRunConfig().getUrlHint());
         }
     }
 

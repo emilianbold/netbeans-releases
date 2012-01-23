@@ -42,14 +42,20 @@
 
 package org.netbeans.modules.php.project.connections.common;
 
+import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
+import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.util.NbBundle;
 
 /**
- * @author Tomas Mysik
+ * Validator for remote properties like port, uypload directory etc.
  */
 public final class RemoteValidator {
+
     public static final int MINIMUM_PORT = 0;
     public static final int MAXIMUM_PORT = 65535;
+    public static final String INVALID_SEPARATOR = "\\"; // NOI18N
+
 
     private RemoteValidator() {
     }
@@ -94,6 +100,18 @@ public final class RemoteValidator {
     public static String validateKeepAliveInterval(String keepAliveInterval) {
         return validatePositiveNumber(keepAliveInterval, "MSG_KeepAliveNotPositive", "MSG_KeepAliveNotNumeric"); // NOI18N
     }
+
+    public static String validateUploadDirectory(String uploadDirectory) {
+        if (!StringUtils.hasText(uploadDirectory)) {
+            return NbBundle.getMessage(RunAsValidator.class, "MSG_MissingUploadDirectory");
+        } else if (!uploadDirectory.startsWith(TransferFile.REMOTE_PATH_SEPARATOR)) {
+            return NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUploadDirectoryStart", TransferFile.REMOTE_PATH_SEPARATOR);
+        } else if (uploadDirectory.contains(INVALID_SEPARATOR)) {
+            return NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUploadDirectoryContent", INVALID_SEPARATOR);
+        }
+        return null;
+    }
+
 
     /**
      * Validate input as a positive number.

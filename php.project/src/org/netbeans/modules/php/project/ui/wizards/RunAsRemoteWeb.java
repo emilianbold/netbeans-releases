@@ -41,30 +41,31 @@
  */
 package org.netbeans.modules.php.project.ui.wizards;
 
-import java.util.List;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.SwingConstants;
-import org.netbeans.modules.php.project.connections.ConfigManager;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
-import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
+import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
+import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
+import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
 import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
@@ -76,14 +77,14 @@ import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
-import static org.netbeans.modules.php.project.ui.customizer.RunAsRemoteWeb.NO_CONFIG;
-import static org.netbeans.modules.php.project.ui.customizer.RunAsRemoteWeb.NO_REMOTE_CONFIGURATION;
 
 /**
  * @author Tomas Mysik
  */
 public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
-    private static final long serialVersionUID = -5592669886554191271L;
+
+    private static final long serialVersionUID = 857876755153456465L;
+
     private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
 
     final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -92,6 +93,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private final String[] propertyNames;
     private final String displayName;
     private final SourcesFolderProvider sourcesFolderProvider;
+
 
     public RunAsRemoteWeb(ConfigManager manager, SourcesFolderProvider sourcesFolderProvider) {
         this(manager, sourcesFolderProvider, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_ConfigRemoteWeb"));
@@ -251,7 +253,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         List<RemoteConfiguration> connections = RemoteConnections.get().getRemoteConfigurations();
         if (connections.isEmpty()) {
             // no connections defined
-            connections = Arrays.asList(NO_REMOTE_CONFIGURATION);
+            connections = Arrays.asList(RunConfigRemote.NO_REMOTE_CONFIGURATION);
         }
         DefaultComboBoxModel model = new DefaultComboBoxModel(new Vector<RemoteConfiguration>(connections));
         remoteConnectionComboBox.setModel(model);
@@ -262,15 +264,15 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         // #141849 - can be null if one adds remote config for the first time for a project but already has some remote connection
         DefaultComboBoxModel model = (DefaultComboBoxModel) remoteConnectionComboBox.getModel();
         if (remoteConnection == null
-                && model.getIndexOf(NO_REMOTE_CONFIGURATION) != -1) {
-            remoteConnectionComboBox.setSelectedItem(NO_REMOTE_CONFIGURATION);
+                && model.getIndexOf(RunConfigRemote.NO_REMOTE_CONFIGURATION) != -1) {
+            remoteConnectionComboBox.setSelectedItem(RunConfigRemote.NO_REMOTE_CONFIGURATION);
             return;
         }
         int size = remoteConnectionComboBox.getModel().getSize();
         for (int i = 0; i < size; ++i) {
             RemoteConfiguration rc = (RemoteConfiguration) remoteConnectionComboBox.getItemAt(i);
             if (remoteConnection == null
-                    || NO_CONFIG.equals(remoteConnection)
+                    || RunConfigRemote.NO_CONFIG_NAME.equals(remoteConnection)
                     || remoteConnection.equals(rc.getName())) {
                 // select existing or
                 // if no configuration formerly existed and now some were created => so select the first one
@@ -279,46 +281,36 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             }
         }
         // #165549
-        if (model.getIndexOf(NO_REMOTE_CONFIGURATION) == -1) {
-            model.addElement(NO_REMOTE_CONFIGURATION);
+        if (model.getIndexOf(RunConfigRemote.NO_REMOTE_CONFIGURATION) == -1) {
+            model.addElement(RunConfigRemote.NO_REMOTE_CONFIGURATION);
         }
-        remoteConnectionComboBox.setSelectedItem(NO_REMOTE_CONFIGURATION);
+        remoteConnectionComboBox.setSelectedItem(RunConfigRemote.NO_REMOTE_CONFIGURATION);
     }
 
-    public String getUrl() {
-        return urlTextField.getText().trim();
+    public RunConfigRemote createRunConfig() {
+        return RunConfigRemote.create()
+                .setUrl(urlTextField.getText().trim())
+                .setIndexParentDir(sourcesFolderProvider.getSourcesFolder())
+                .setIndexRelativePath(indexFileTextField.getText())
+                .setRemoteConfiguration((RemoteConfiguration) remoteConnectionComboBox.getSelectedItem())
+                .setUploadDirectory(uploadDirectoryTextField.getText().trim())
+                .setUploadFilesType((UploadFiles) uploadFilesComboBox.getSelectedItem());
     }
 
     public void setUrl(String url) {
         urlTextField.setText(url);
     }
 
-    public RemoteConfiguration getRemoteConfiguration() {
-        return (RemoteConfiguration) remoteConnectionComboBox.getSelectedItem();
-    }
-
     public void setRemoteConfiguration(RemoteConfiguration remoteConfiguration) {
         remoteConnectionComboBox.setSelectedItem(remoteConfiguration);
-    }
-
-    public String getUploadDirectory() {
-        return uploadDirectoryTextField.getText().trim();
     }
 
     public void setUploadDirectory(String uploadDirectory) {
         uploadDirectoryTextField.setText(uploadDirectory);
     }
 
-    public UploadFiles getUploadFiles() {
-        return (UploadFiles) uploadFilesComboBox.getSelectedItem();
-    }
-
     public void setUploadFiles(UploadFiles uploadFiles) {
         uploadFilesComboBox.setSelectedItem(uploadFiles);
-    }
-
-    public String getIndexFile() {
-        return indexFileTextField.getText().trim();
     }
 
     public void setIndexFile(String indexFile) {
@@ -343,12 +335,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     }
 
     void updateRemoteConnectionHint() {
-        RemoteConfiguration configuration = (RemoteConfiguration) remoteConnectionComboBox.getSelectedItem();
-        if (configuration == NO_REMOTE_CONFIGURATION) {
-            remoteConnectionHintLabel.setText(" "); // NOI18N
-            return;
-        }
-        remoteConnectionHintLabel.setText(configuration.getUrl(RunAsValidator.sanitizeUploadDirectory(uploadDirectoryTextField.getText(), true)));
+        remoteConnectionHintLabel.setText(createRunConfig().getRemoteConnectionHint());
     }
 
     /** This method is called from within the constructor to

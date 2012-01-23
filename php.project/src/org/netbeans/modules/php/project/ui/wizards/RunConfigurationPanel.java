@@ -57,11 +57,13 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.connections.ConfigManager;
-import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.environment.PhpEnvironment.DocumentRoot;
 import org.netbeans.modules.php.project.runconfigs.RunConfigLocal;
+import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
 import org.netbeans.modules.php.project.runconfigs.validation.RunConfigLocalValidator;
+import org.netbeans.modules.php.project.runconfigs.validation.RunConfigRemoteValidator;
 import org.netbeans.modules.php.project.runconfigs.validation.RunConfigScriptValidator;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServer.ComboBoxModel;
@@ -78,7 +80,6 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
-import static org.netbeans.modules.php.project.ui.customizer.RunAsRemoteWeb.NO_REMOTE_CONFIGURATION;
 import org.netbeans.modules.php.project.ui.wizards.NewPhpProjectWizardIterator.WizardType;
 
 /**
@@ -343,15 +344,16 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     private void storeRunAsLocalWeb(WizardDescriptor settings) {
         RunConfigLocal config = runAsLocalWeb.createRunConfig();
         settings.putProperty(URL, config.getUrl());
-        settings.putProperty(INDEX_FILE, config.getIndexFile());
+        settings.putProperty(INDEX_FILE, config.getIndexRelativePath());
     }
 
     private void storeRunAsRemoteWeb(WizardDescriptor settings) {
-        settings.putProperty(URL, runAsRemoteWeb.getUrl());
-        settings.putProperty(INDEX_FILE, runAsRemoteWeb.getIndexFile());
-        settings.putProperty(REMOTE_CONNECTION, runAsRemoteWeb.getRemoteConfiguration());
-        settings.putProperty(REMOTE_DIRECTORY, RunAsValidator.sanitizeUploadDirectory(runAsRemoteWeb.getUploadDirectory(), true));
-        settings.putProperty(REMOTE_UPLOAD, runAsRemoteWeb.getUploadFiles());
+        RunConfigRemote config = runAsRemoteWeb.createRunConfig();
+        settings.putProperty(URL, config.getUrl());
+        settings.putProperty(INDEX_FILE, config.getIndexRelativePath());
+        settings.putProperty(REMOTE_CONNECTION, config.getRemoteConfiguration());
+        settings.putProperty(REMOTE_DIRECTORY, config.getSanitizedUploadDirectory());
+        settings.putProperty(REMOTE_UPLOAD, config.getUploadFilesType());
     }
 
     private void storeRunAsScript(WizardDescriptor settings) {
@@ -375,7 +377,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                 break;
             case REMOTE:
                 error = validateRunAsRemoteWeb();
-                indexFile = runAsRemoteWeb.getIndexFile();
+                indexFile = runAsRemoteWeb.createRunConfig().getIndexRelativePath();
                 break;
             case SCRIPT:
                 error = validateRunAsScript();
@@ -468,23 +470,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private String validateRunAsRemoteWeb() {
-        String error = RunAsValidator.validateWebFields(runAsRemoteWeb.getUrl(), sourcesFolderProvider.getSourcesFolder(), null, null);
-        if (error != null) {
-            return error;
-        }
-
-        RemoteConfiguration selected = runAsRemoteWeb.getRemoteConfiguration();
-        assert selected != null;
-        if (selected == NO_REMOTE_CONFIGURATION) {
-            return NbBundle.getMessage(RunAsRemoteWeb.class, "MSG_NoConfigurationSelected");
-        }
-
-        error = RunAsValidator.validateUploadDirectory(runAsRemoteWeb.getUploadDirectory(), true);
-        if (error != null) {
-            return error;
-        }
-
-        return null;
+        return RunConfigRemoteValidator.validateNewProject(runAsRemoteWeb.createRunConfig());
     }
 
     private String validateRunAsScript() {
@@ -535,13 +521,14 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         String indexFile = null;
         switch (getRunAsType()) {
             case LOCAL:
-                RunConfigLocal config = runAsLocalWeb.createRunConfig();
-                url = config.getUrl();
-                indexFile = config.getIndexRelativePath();
+                RunConfigLocal configLocal = runAsLocalWeb.createRunConfig();
+                url = configLocal.getUrl();
+                indexFile = configLocal.getIndexRelativePath();
                 break;
             case REMOTE:
-                url = runAsRemoteWeb.getUrl();
-                indexFile = runAsRemoteWeb.getIndexFile();
+                RunConfigRemote configRemote = runAsRemoteWeb.createRunConfig();
+                url = configRemote.getUrl();
+                indexFile = configRemote.getIndexRelativePath();
                 break;
             case SCRIPT:
                 // do not validate anything
@@ -662,12 +649,12 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private void adjustUploadDirectory(String originalProjectName, String newProjectName) {
-        String uploadDirectory = runAsRemoteWeb.getUploadDirectory();
-        if (!uploadDirectory.equals("/" + originalProjectName)) { // NOI18N
+        String uploadDirectory = runAsRemoteWeb.createRunConfig().getUploadDirectory();
+        if (!uploadDirectory.equals(TransferFile.REMOTE_PATH_SEPARATOR + originalProjectName)) {
             // already disconnected
             return;
         }
-        runAsRemoteWeb.setUploadDirectory("/" + newProjectName); // NOI18N
+        runAsRemoteWeb.setUploadDirectory(TransferFile.REMOTE_PATH_SEPARATOR + newProjectName);
     }
 
     private void adjustCopyFiles(String originalProjectName, String projectName) {

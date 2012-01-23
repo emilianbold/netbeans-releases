@@ -52,6 +52,9 @@ import org.openide.util.Mutex;
  */
 public final class RunConfigLocal extends RunConfigWeb<RunConfigLocal> {
 
+    private RunConfigLocal() {
+    }
+
     //~ Factories
 
     public static RunConfigLocal create() {
