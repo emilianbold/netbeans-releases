@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.javascript2.editor;
 
+import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.javascript2.editor.JsLanguage;
@@ -88,11 +89,12 @@ public abstract class JsTestBase extends CslTestBase {
 //        JsTestBase.assertNull(JsParser.runtimeException != null ? JsParser.runtimeException.toString() : "", JsParser.runtimeException);
 //    }
 //
-//    @Override
-//    protected void setUp() throws Exception {
-//        JsIndexer.setClusterUrl("file:/bogus"); // No translation
-//        super.setUp();
-//    }
+    @Override
+    protected void setUp() throws Exception {
+        //JsIndexer.setClusterUrl("file:/bogus"); // No translation
+        super.setUp();
+        TestLanguageProvider.register(getPreferredLanguage().getLexerLanguage());
+    }
     
 //    @Override
 //    public Formatter getFormatter(IndentPrefs preferences) {
