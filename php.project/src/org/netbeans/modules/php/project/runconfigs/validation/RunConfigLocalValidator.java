@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,53 +34,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.ui.actions;
+package org.netbeans.modules.php.project.runconfigs.validation;
 
-
-import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
-import org.netbeans.modules.php.project.ui.actions.support.Displayable;
-import org.netbeans.spi.project.ActionProvider;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.project.runconfigs.RunConfigLocal;
 
 /**
- * @author Radek Matous, Tomas Mysik
+ * Validator for {@link RunConfigLocal}.
  */
-public class RunProjectCommand extends Command implements Displayable {
-    public static final String ID = ActionProvider.COMMAND_RUN;
-    public static final String DISPLAY_NAME = NbBundle.getMessage(RunProjectCommand.class, "LBL_RunProject");
+public final class RunConfigLocalValidator {
 
-    /**
-     * @param project
-     */
-    public RunProjectCommand(PhpProject project) {
-        super(project);
+    private RunConfigLocalValidator() {
     }
 
-    @Override
-    public void invokeAction(Lookup context) {
-        ConfigAction configAction = getConfigAction();
-        if (!configAction.isProjectValid()) {
-            // property not set yet
-            return;
+    public static String validateNewProject(RunConfigLocal config) {
+        String error;
+        error = RunConfigWebValidator.validateUrl(config.getUrl());
+        if (error != null) {
+            return error;
         }
-        configAction.runProject();
+        return null;
     }
 
-    @Override
-    public boolean isActionEnabled(Lookup context) {
-        return getConfigAction().isRunProjectEnabled();
+    public static String validateCustomizer(RunConfigLocal config) {
+        return validate(config, true);
     }
 
-    @Override
-    public String getCommandId() {
-        return ID;
+    public static String validateConfigAction(RunConfigLocal config, boolean validateIndex) {
+        return validate(config, validateIndex);
     }
 
-    @Override
-    public String getDisplayName() {
-        return DISPLAY_NAME;
+    private static String validate(RunConfigLocal config, boolean validateIndex) {
+        String error;
+        error = RunConfigWebValidator.validateUrl(config.getUrl());
+        if (error != null) {
+            return error;
+        }
+        if (validateIndex) {
+            String indexRelativePath = config.getIndexRelativePath();
+            if (StringUtils.hasText(indexRelativePath)) {
+                error = RunConfigValidator.validateIndexFile(config.getIndexParentDir(), indexRelativePath);
+                if (error != null) {
+                    return error;
+                }
+            }
+        }
+        return null;
     }
+
 }
