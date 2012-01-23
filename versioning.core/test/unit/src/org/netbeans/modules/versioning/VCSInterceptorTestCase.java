@@ -289,6 +289,7 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
     }
 
     public void testFileCreatedLockedRenamedDeleted() throws IOException {
+        inteceptor.moveHandler = moveHandler;
         FileObject fo = getVersionedFolder();
         logHandler.clear();
         
@@ -323,6 +324,7 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
     }
 
     public void testFileCopied() throws IOException {
+        inteceptor.copyHandler = copyHandler;
         FileObject fo = getVersionedFolder();
         fo = fo.createData("copyme.txt");
         logHandler.clear();
@@ -347,6 +349,7 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
     }
     
     public void testFolderTreeCopied() throws IOException {
+        inteceptor.copyHandler = copyHandler;
         FileObject fo = getVersionedFolder();
         FileObject fromFolder = fo.createFolder("fromFolder");
         FileObject movedChild = fromFolder.createData("copiedChild");
@@ -372,6 +375,7 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
     }
 
     public void testFileMoved() throws IOException {
+        inteceptor.moveHandler = moveHandler;
         FileObject fo = getVersionedFolder();
         FileObject fromFile = fo.createData("move.txt");
         FileObject toFolder = fo.createFolder("toFolder");
@@ -399,6 +403,7 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
     }
     
     public void testFolderTreeMoved() throws IOException {
+        inteceptor.moveHandler = moveHandler;
         FileObject fo = getVersionedFolder();
         FileObject fromFolder = fo.createFolder("fromFolder");
         FileObject movedChild = fromFolder.createData("movedChild");
@@ -613,6 +618,20 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         @Override
         public void delete(VCSFileProxy proxy) throws IOException {
             VCSFilesystemTestFactory.getInstance(VCSInterceptorTestCase.this).delete(getRelativePath(proxy));
+        }
+    };
+    
+    private TestVCSInterceptor.MoveHandler moveHandler = new TestVCSInterceptor.MoveHandler() {
+        @Override
+        public void move(VCSFileProxy from, VCSFileProxy to) throws IOException {
+            VCSFilesystemTestFactory.getInstance(VCSInterceptorTestCase.this).move(getRelativePath(from), getRelativePath(to));
+        }
+    };
+    
+    private TestVCSInterceptor.CopyHandler copyHandler = new TestVCSInterceptor.CopyHandler() {
+        @Override
+        public void copy(VCSFileProxy from, VCSFileProxy to) throws IOException {
+            VCSFilesystemTestFactory.getInstance(VCSInterceptorTestCase.this).copy(getRelativePath(from), getRelativePath(to));
         }
     };
     
