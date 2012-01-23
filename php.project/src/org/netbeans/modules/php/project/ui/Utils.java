@@ -95,6 +95,7 @@ public final class Utils {
         return ImageUtilities.mergeImages(UiUtils.getTreeFolderIcon(opened), badge, 8, 8);
     }
 
+    // XXX move it (with its test) to RunConfigWebValidator
     /**
      * Return <code>true</code> if the URL is valid, <code>false</code> otherwise (as well as for <code>null</code>).
      * @param url URL, can be <code>null</code>.

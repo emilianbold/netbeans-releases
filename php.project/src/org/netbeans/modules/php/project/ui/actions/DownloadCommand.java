@@ -43,8 +43,6 @@
 package org.netbeans.modules.php.project.ui.actions;
 
 import java.util.Collections;
-import org.netbeans.modules.php.project.ui.actions.support.Displayable;
-import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.api.progress.ProgressHandle;
@@ -58,6 +56,9 @@ import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.connections.transfer.TransferInfo;
 import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooser;
+import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -104,7 +105,7 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
             return;
         }
 
-        InputOutput remoteLog = getRemoteLog(getRemoteConfiguration().getDisplayName());
+        InputOutput remoteLog = getRemoteLog(RunConfigRemote.forProject(getProject()).getRemoteConfiguration().getDisplayName());
         RemoteClient remoteClient = getRemoteClient(remoteLog);
         String projectName = getProject().getName();
         download(remoteClient, remoteLog, projectName, true, sources, selectedFiles, null, getProject());
