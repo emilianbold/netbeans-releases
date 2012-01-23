@@ -63,6 +63,8 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpSources;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
+import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -301,6 +303,13 @@ public final class PhpProjectUtils {
             return new File(parentDir, relativeFilePath.replace('/', File.separatorChar)); // NOI18N
         }
         return parentDir;
+    }
+
+    /**
+     * Open project customizer, Run Configuration category.
+     */
+    public static void openCustomizerRun(Project project) {
+        project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.RUN);
     }
 
     // http://wiki.netbeans.org/UsageLoggingSpecification

@@ -44,9 +44,8 @@ package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.util.logging.Logger;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
-import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.util.Lookup;
 
 /**
@@ -137,7 +136,7 @@ public abstract class ConfigAction {
     public abstract void debugFile(Lookup context);
 
     protected void showCustomizer() {
-        project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.RUN);
+        PhpProjectUtils.openCustomizerRun(project);
     }
 
 }
