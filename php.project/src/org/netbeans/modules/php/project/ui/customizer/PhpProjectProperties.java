@@ -102,6 +102,9 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     public static final String PHP_ARGS = "php.arguments"; // NOI18N
     public static final String WORK_DIR = "work.dir"; // NOI18N
     public static final String INTERPRETER = "interpreter"; // NOI18N
+    public static final String HOSTNAME = "hostname"; // NOI18N
+    public static final String PORT = "port"; // NOI18N
+    public static final String ROUTER = "router"; // NOI18N
     public static final String RUN_AS = "run.as"; // NOI18N
     public static final String REMOTE_CONNECTION = "remote.connection"; // NOI18N
     public static final String REMOTE_DIRECTORY = "remote.directory"; // NOI18N
@@ -134,6 +137,9 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         PHP_ARGS,
         WORK_DIR,
         INTERPRETER,
+        HOSTNAME,
+        PORT,
+        ROUTER,
         RUN_AS,
         REMOTE_CONNECTION,
         REMOTE_DIRECTORY,
@@ -150,12 +156,14 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     @NbBundle.Messages({
         "RunAsType.local.label=Local Web Site (running on local web server)",
         "RunAsType.script.label=Script (run in command line)",
-        "RunAsType.remote.label=Remote Web Site (FTP, SFTP)"
+        "RunAsType.remote.label=Remote Web Site (FTP, SFTP)",
+        "RunAsType.internal.label=Built-in Web Server (running on built-in web server)"
     })
     public static enum RunAsType {
         LOCAL(Bundle.RunAsType_local_label()),
         SCRIPT(Bundle.RunAsType_script_label()),
-        REMOTE(Bundle.RunAsType_remote_label());
+        REMOTE(Bundle.RunAsType_remote_label()),
+        INTERNAL(Bundle.RunAsType_internal_label());
 
         private final String label;
 
