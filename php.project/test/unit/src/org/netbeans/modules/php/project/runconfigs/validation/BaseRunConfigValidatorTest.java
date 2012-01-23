@@ -41,21 +41,21 @@
  */
 package org.netbeans.modules.php.project.runconfigs.validation;
 
-public class RunConfigValidatorTest extends TestBase {
+public class BaseRunConfigValidatorTest extends TestBase {
 
-    public RunConfigValidatorTest(String name) {
+    public BaseRunConfigValidatorTest(String name) {
         super(name);
     }
 
-    public void testValidateIndexFile() throws Exception {
-        assertNull(BaseRunConfigValidator.validateIndexFile(getWorkDir(), INDEX_NAME));
+    public void testValidateRelativeFile() throws Exception {
+        assertNull(BaseRunConfigValidator.validateRelativeFile(getWorkDir(), INDEX_NAME, "Index.php"));
         // errors
-        assertNotNull(BaseRunConfigValidator.validateIndexFile(getWorkDir(), null));
-        assertNotNull(BaseRunConfigValidator.validateIndexFile(getWorkDir(), "abc.php"));
-        assertNotNull(BaseRunConfigValidator.validateIndexFile(getWorkDir(), "/abc.php"));
-        assertNotNull(BaseRunConfigValidator.validateIndexFile(getWorkDir(), "\\abc.php"));
-        assertNotNull(BaseRunConfigValidator.validateIndexFile(getWorkDir(), "../" + getWorkDir().getName() + "/" + INDEX_NAME));
-        assertNotNull(BaseRunConfigValidator.validateIndexFile(getWorkDir(), "a/../" + INDEX_NAME));
+        assertNotNull(BaseRunConfigValidator.validateRelativeFile(getWorkDir(), null, "myfile"));
+        assertNotNull(BaseRunConfigValidator.validateRelativeFile(getWorkDir(), "abc.php", "myfile"));
+        assertNotNull(BaseRunConfigValidator.validateRelativeFile(getWorkDir(), "/abc.php", "myfile"));
+        assertNotNull(BaseRunConfigValidator.validateRelativeFile(getWorkDir(), "\\abc.php", "myfile"));
+        assertNotNull(BaseRunConfigValidator.validateRelativeFile(getWorkDir(), "../" + getWorkDir().getName() + "/" + INDEX_NAME, "myfile"));
+        assertNotNull(BaseRunConfigValidator.validateRelativeFile(getWorkDir(), "a/../" + INDEX_NAME, "myfile"));
     }
 
 }
