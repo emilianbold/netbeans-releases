@@ -41,12 +41,11 @@
  */
 package org.netbeans.modules.php.project.runconfigs.validation;
 
-import java.io.File;
 import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.runconfigs.RunConfigScript;
-import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.util.NbBundle;
 
 /**
@@ -115,20 +114,15 @@ public final class RunConfigScriptValidator {
         return null;
     }
 
+    @NbBundle.Messages("RunConfigScriptValidator.workDir.prefix=Working Directory: {0}")
     static String validateWorkDir(String workDir, boolean allowEmptyString) {
         boolean hasText = StringUtils.hasText(workDir);
         if (allowEmptyString && !hasText) {
             return null;
         }
-        if (!hasText) {
-            return NbBundle.getMessage(RunAsValidator.class, "MSG_FolderEmpty");
-        }
-        File workDirFile = new File(workDir);
-        if (!workDirFile.isAbsolute()) {
-            return NbBundle.getMessage(RunAsValidator.class, "MSG_WorkDirNotAbsolute");
-        }
-        if (!workDirFile.isDirectory()) {
-            return NbBundle.getMessage(RunAsValidator.class, "MSG_WorkDirDirectory");
+        String error = FileUtils.validateDirectory(workDir, false);
+        if (error != null) {
+            return Bundle.RunConfigScriptValidator_workDir_prefix(error);
         }
         return null;
     }

@@ -43,7 +43,6 @@ package org.netbeans.modules.php.project.runconfigs.validation;
 
 import java.io.File;
 import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -56,10 +55,14 @@ public final class RunConfigValidator {
     private RunConfigValidator() {
     }
 
+    @NbBundle.Messages({
+        "RunConfigValidator.error.index.missing=Index File must be specified in order to run or debug project in command line.",
+        "RunConfigValidator.error.index.invalid=Index File must be a valid relative URL."
+    })
     public static String validateIndexFile(File rootDirectory, String indexFile) {
         assert rootDirectory != null;
         if (!StringUtils.hasText(indexFile)) {
-            return NbBundle.getMessage(RunAsValidator.class, "MSG_NoIndexFile");
+            return Bundle.RunConfigValidator_error_index_missing();
         }
         boolean error = false;
         if (indexFile.startsWith("/") // NOI18N
@@ -75,7 +78,7 @@ public final class RunConfigValidator {
             }
         }
         if (error) {
-            return NbBundle.getMessage(RunAsValidator.class, "MSG_IndexFileInvalid");
+            return Bundle.RunConfigValidator_error_index_invalid();
         }
         return null;
     }

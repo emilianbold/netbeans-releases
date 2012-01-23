@@ -44,7 +44,6 @@ package org.netbeans.modules.php.project.connections.common;
 
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
-import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.util.NbBundle;
 
 /**
@@ -108,13 +107,18 @@ public final class RemoteValidator {
         return validatePositiveNumber(keepAliveInterval, Bundle.MSG_KeepAliveNotPositive(), Bundle.MSG_KeepAliveNotNumeric());
     }
 
+    @NbBundle.Messages({
+        "RemoteValidator.error.uploadDirectory.missing=Upload directory must be specified.",
+        "RemoteValidator.error.uploadDirectory.start=Upload directory must start with \"{0}\".",
+        "RemoteValidator.error.uploadDirectory.content=Upload directory cannot contain \"{0}\"."
+    })
     public static String validateUploadDirectory(String uploadDirectory) {
         if (!StringUtils.hasText(uploadDirectory)) {
-            return NbBundle.getMessage(RunAsValidator.class, "MSG_MissingUploadDirectory");
+            return Bundle.RemoteValidator_error_uploadDirectory_missing();
         } else if (!uploadDirectory.startsWith(TransferFile.REMOTE_PATH_SEPARATOR)) {
-            return NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUploadDirectoryStart", TransferFile.REMOTE_PATH_SEPARATOR);
+            return Bundle.RemoteValidator_error_uploadDirectory_start(TransferFile.REMOTE_PATH_SEPARATOR);
         } else if (uploadDirectory.contains(INVALID_SEPARATOR)) {
-            return NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUploadDirectoryContent", INVALID_SEPARATOR);
+            return Bundle.RemoteValidator_error_uploadDirectory_content(INVALID_SEPARATOR);
         }
         return null;
     }

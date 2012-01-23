@@ -42,7 +42,6 @@
 package org.netbeans.modules.php.project.connections.common;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 
 public class RemoteValidatorTest extends NbTestCase {
 

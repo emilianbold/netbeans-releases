@@ -42,7 +42,6 @@
 package org.netbeans.modules.php.project.runconfigs.validation;
 
 import org.netbeans.modules.php.project.ui.Utils;
-import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.util.NbBundle;
 
 /**
@@ -53,9 +52,10 @@ final class RunConfigWebValidator {
     private RunConfigWebValidator() {
     }
 
+    @NbBundle.Messages("RunConfigWebValidator.error.url.invalid=Project URL is not valid.")
     static String validateUrl(String url) {
         if (!Utils.isValidUrl(url)) {
-            return NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUrl");
+            return Bundle.RunConfigWebValidator_error_url_invalid();
         }
         return null;
     }
