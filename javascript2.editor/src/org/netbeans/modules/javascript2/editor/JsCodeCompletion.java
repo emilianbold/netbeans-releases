@@ -183,8 +183,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
         if (token != null && token.id() != JsTokenId.EOL) {
             TokenId id = token.id();
-            prefix = token.text().toString();
-            prefix = prefix.substring(0, caretOffset - ts.offset());
+            if (id != JsTokenId.OPERATOR_DOT) {
+                prefix = token.text().toString();
+                prefix = prefix.substring(0, caretOffset - ts.offset());
+            }
         }
         LOGGER.log(Level.FINE, String.format("Prefix for cc: %s", prefix));
         return prefix;
@@ -229,8 +231,60 @@ class JsCodeCompletion implements CodeCompletionHandler {
         }
 
         ts.move(request.anchor);
-        if (ts.movePrevious()) {
-        
+        if (ts.movePrevious() && ts.moveNext()) {
+            if (ts.token().id() != JsTokenId.OPERATOR_DOT) {
+                ts.movePrevious();
+            }
+            List<List<Token<? extends JsTokenId>>> expression = new ArrayList<List<Token<? extends JsTokenId>>>();
+            List<Token<? extends JsTokenId>> part = null;
+            Token<? extends JsTokenId> token = ts.token();
+            while (token.id() != JsTokenId.WHITESPACE && token.id() != JsTokenId.OPERATOR_SEMICOLON) {
+                
+                if (token.id() != JsTokenId.EOL) {
+                    if (token.id() == JsTokenId.OPERATOR_DOT) {
+                        expression.add(part = new ArrayList<Token<? extends JsTokenId>>());
+                    } else {
+                        part.add(ts.token());
+                    }
+                }
+                if (!ts.movePrevious()) {
+                    break;
+                }
+                token = ts.token();
+                
+            }
+            
+            JsObject type = null;
+            // resolving the first part in the chain
+            part = expression.get(expression.size() - 1);
+            if (part.size() == 1) {
+                for(JsObject object : request.result.getModel().getVariables(request.anchor)) {
+                    if (object.getName().equals(part.get(0).text().toString())) {
+                        type = object;
+                        break;
+                    }
+                }
+            }
+            
+            for (int i = expression.size() - 2; i > -1 && type != null; i--) {
+                part = expression.get(i);
+                if (part.size() == 1) {
+                    for (JsObject object : type.getProperties().values()) {
+                        if (object.getName().equals(part.get(0).text().toString())) {
+                            type = object;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (type != null) {
+                for (JsObject object : type.getProperties().values()) {
+                    if (!(object instanceof JsFunction && ((JsFunction) object).isAnonymous())
+                            && startsWith(object.getName(), request.prefix)) {
+                        resultList.add(new JsCompletionItem(object, request));
+                    }
+                }
+            }
         }
     }
     

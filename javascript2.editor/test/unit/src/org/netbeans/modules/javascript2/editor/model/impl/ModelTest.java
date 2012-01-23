@@ -326,21 +326,21 @@ public class ModelTest extends JsTestBase {
         assertNotNull(model);
         
         JsObject  object = model.getGlobalObject();
-        assertEquals(1, object.getProperties().size());
+        assertEquals(3, object.getProperties().size());
         
-        object = object.getProperty("jQuery");
-        assertEquals(false, object.isDeclared());
+        object = object.getProperty("$function").getProperty("jQuery");
+        assertEquals(true, object.isDeclared());
         assertEquals(1, object.getProperties().size());
         assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
         
         object = object.getProperty("event");
         assertEquals(true, object.isDeclared());
-        assertEquals(1, object.getProperties().size());
+        assertEquals(2, object.getProperties().size());
         assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
         
         object = object.getProperty("customEvent");
         assertEquals(true, object.isDeclared());
-        assertEquals(4, object.getProperties().size());
+        assertEquals(7, object.getProperties().size());
         assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
         
         object = object.getProperty("getData");
