@@ -56,6 +56,7 @@ public class CompletionContextFinder {
     
     public static enum CompletionContext {
         NONE,       // There shouldn't be any code completion
+        EXPRESSION, // usually, we will offer everything what we know in the context
         GLOBAL
     } 
     
@@ -79,9 +80,7 @@ public class CompletionContextFinder {
         JsTokenId tokenId =token.id();
         int tokenOffset = ts.offset();
         
-        if(tokenId == JsTokenId.EOL) {
-            return CompletionContext.GLOBAL;
-        }
-        return CompletionContext.NONE;
+        
+        return CompletionContext.EXPRESSION;
     }
 }

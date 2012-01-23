@@ -49,11 +49,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.CompletionContextFinder.CompletionContext;
+import org.netbeans.modules.javascript2.editor.JsCompletionItem.CompletionRequest;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -65,6 +72,8 @@ import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 class JsCodeCompletion implements CodeCompletionHandler {
     private static final Logger LOGGER = Logger.getLogger(JsCodeCompletion.class.getName());
 
+    private boolean caseSensitive;
+    
     public JsCodeCompletion() {
     }
 
@@ -78,6 +87,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
             return CodeCompletionResult.NONE;
         }
 
+        this.caseSensitive = ccContext.isCaseSensitive();
+        
         ParserResult info = ccContext.getParserResult();
         int caretOffset = ccContext.getCaretOffset();
         JsParserResult jsParserResult = (JsParserResult)info;
@@ -109,6 +120,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         resultList.add(new JsCompletionItem(object, request));
                 }
                 break;
+            case EXPRESSION:
+                completeExpression(request, resultList);
+                break;
             default:
                 result = CodeCompletionResult.NONE;
         }
@@ -134,8 +148,42 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
     @Override
     public String getPrefix(ParserResult info, int caretOffset, boolean upToOffset) {
-        // TODO needs to be implemented
-        return "";
+        String prefix = "";
+        BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
+        if (doc == null) {
+            return null;
+        }
+
+
+        TokenHierarchy<Document> th = TokenHierarchy.get((Document) doc);
+
+
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, caretOffset);
+
+        if (ts == null) {
+            return null;
+        }
+
+        ts.move(caretOffset);
+
+        if (!ts.moveNext() && !ts.movePrevious()) {
+            return null;
+        }
+        
+        if (ts.offset() == caretOffset) {
+            // We're looking at the offset to the RIGHT of the caret
+            // and here I care about what's on the left
+            ts.movePrevious();
+        }
+
+        Token<? extends JsTokenId> token = ts.token();
+
+        if (token != null && token.id() != JsTokenId.EOL) {
+            TokenId id = token.id();
+            prefix = token.text().toString();
+            prefix = prefix.substring(0, caretOffset - ts.offset());
+        }
+        return prefix;
     }
 
     @Override
@@ -157,6 +205,23 @@ class JsCodeCompletion implements CodeCompletionHandler {
     public ParameterInfo parameters(ParserResult info, int caretOffset, CompletionProposal proposal) {
         // TODO needs to be implemented.
         return null;
+    }
+
+    private void completeExpression(CompletionRequest request, List<CompletionProposal> resultList) {
+        for(JsObject object : request.result.getModel().getVariables(request.anchor)) {
+                    if (!(object instanceof JsFunction && ((JsFunction)object).isAnonymous())
+                            && startsWith(object.getName(), request.prefix))
+                        resultList.add(new JsCompletionItem(object, request));
+                }
+    }
+    
+    private boolean startsWith(String theString, String prefix) {
+        if (prefix.length() == 0) {
+            return true;
+        }
+
+        return caseSensitive ? theString.startsWith(prefix)
+                : theString.toLowerCase().startsWith(prefix.toLowerCase());
     }
     
 }
