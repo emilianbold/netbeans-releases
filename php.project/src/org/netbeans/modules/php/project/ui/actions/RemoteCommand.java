@@ -64,6 +64,9 @@ import org.netbeans.modules.php.project.connections.RemoteClient.Operation;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.connections.transfer.TransferInfo;
 import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
+import org.netbeans.modules.php.project.runconfigs.validation.RunConfigRemoteValidator;
+import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
+import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -113,8 +116,9 @@ public abstract class RemoteCommand extends Command {
 
     @Override
     public final void invokeAction(Lookup context) {
-        if (!getConfigAction().isFileValid()) {
-            // property not set yet
+        assert getConfigAction().getClass().getSimpleName().equals("ConfigActionRemote") : "Remote config action expected but found: " + getConfigAction().getClass().getSimpleName();
+        if (RunConfigRemoteValidator.validateRemoteTransfer(RunConfigRemote.forProject(getProject())) != null) {
+            showCustomizer();
             return;
         }
         RUNNABLES.add(getContextRunnable(context));
@@ -341,6 +345,11 @@ public abstract class RemoteCommand extends Command {
         return true;
     }
 
+    private void showCustomizer() {
+        getProject().getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.RUN);
+    }
+
+    //~ Inner classes
 
     /**
      * Default operation monitor for file upload and download.

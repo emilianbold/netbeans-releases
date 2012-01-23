@@ -65,7 +65,7 @@ public final class RunConfigRemoteValidator {
         return validate(config, true);
     }
 
-    public static String validateCopyOnSave(RunConfigRemote config) {
+    public static String validateRemoteTransfer(RunConfigRemote config) {
         String error;
         error = validateRemoteConfiguration(config.getRemoteConfiguration());
         if (error != null) {

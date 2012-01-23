@@ -205,7 +205,7 @@ final class RemoteOperationFactory extends FileOperationFactory {
             LOGGER.log(Level.WARNING, "REMOTE copying disabled for project {0}. Reason: source root is null", project.getName());
             return false;
         }
-        String error = RunConfigRemoteValidator.validateCopyOnSave(RunConfigRemote.forProject(project));
+        String error = RunConfigRemoteValidator.validateRemoteTransfer(RunConfigRemote.forProject(project));
         if (error != null) {
             LOGGER.log(Level.INFO, "REMOTE copying disabled for project {0}. Reason: {1}", new Object[] {project.getName(), error});
             if (askUser(Bundle.RemoteOperationFactory_error(project.getName(), error))) {
