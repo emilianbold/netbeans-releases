@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,53 +34,72 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.ui.actions;
+package org.netbeans.modules.php.project.runconfigs;
 
-
-import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
-import org.netbeans.modules.php.project.ui.actions.support.Displayable;
-import org.netbeans.spi.project.ActionProvider;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import java.io.File;
+import org.netbeans.modules.php.api.util.StringUtils;
 
 /**
- * @author Radek Matous, Tomas Mysik
+ * Base class for all run configs.
  */
-public class RunProjectCommand extends Command implements Displayable {
-    public static final String ID = ActionProvider.COMMAND_RUN;
-    public static final String DISPLAY_NAME = NbBundle.getMessage(RunProjectCommand.class, "LBL_RunProject");
+public abstract class RunConfig<T extends RunConfig<?>> {
 
-    /**
-     * @param project
-     */
-    public RunProjectCommand(PhpProject project) {
-        super(project);
+    protected File indexParentDir;
+    protected String indexRelativePath;
+    protected String arguments;
+
+
+    RunConfig() {
     }
 
-    @Override
-    public void invokeAction(Lookup context) {
-        ConfigAction configAction = getConfigAction();
-        if (!configAction.isProjectValid()) {
-            // property not set yet
-            return;
+    //~ Methods
+
+    public File getIndexFile() {
+        if (indexParentDir == null) {
+            throw new NullPointerException("Property 'indexParentDir' must be set");
         }
-        configAction.runProject();
+        if (StringUtils.hasText(indexRelativePath)) {
+            return new File(indexParentDir, indexRelativePath.replace('/', File.separatorChar)); // NOI18N
+        }
+        return indexParentDir;
     }
 
-    @Override
-    public boolean isActionEnabled(Lookup context) {
-        return getConfigAction().isRunProjectEnabled();
+    //~ Getters & setters
+
+    public String getArguments() {
+        return arguments;
     }
 
-    @Override
-    public String getCommandId() {
-        return ID;
+    // XXX is there a better way?
+    @SuppressWarnings("unchecked")
+    public T setArguments(String arguments) {
+        this.arguments = arguments;
+        return (T) this;
     }
 
-    @Override
-    public String getDisplayName() {
-        return DISPLAY_NAME;
+    public File getIndexParentDir() {
+        return indexParentDir;
     }
+
+    @SuppressWarnings("unchecked")
+    public T setIndexParentDir(File indexParentDir) {
+        this.indexParentDir = indexParentDir;
+        return (T) this;
+    }
+
+    public String getIndexRelativePath() {
+        return indexRelativePath;
+    }
+
+    @SuppressWarnings("unchecked")
+    public T setIndexRelativePath(String indexRelativePath) {
+        this.indexRelativePath = indexRelativePath;
+        return (T) this;
+    }
+
 }

@@ -48,14 +48,15 @@ import java.nio.charset.Charset;
 import java.util.List;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.Pair;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
-import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.project.runconfigs.RunConfigScript;
+import org.netbeans.modules.php.project.runconfigs.validation.RunConfigScriptValidator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -76,25 +77,16 @@ class ConfigActionScript extends ConfigAction {
     }
 
     @Override
-    public boolean isValid(boolean indexFileNeeded) {
-        boolean valid = true;
-        if (indexFileNeeded && !isIndexFileValid(sourceRoot)) {
-            valid = false;
-        } else {
-            try {
-                if (RunAsValidator.validateScriptFields(
-                        ProjectPropertiesSupport.getPhpInterpreter(project).getProgram(),
-                        FileUtil.toFile(sourceRoot),
-                        null,
-                        ProjectPropertiesSupport.getArguments(project),
-                        ProjectPropertiesSupport.getWorkDir(project),
-                        ProjectPropertiesSupport.getPhpArguments(project)) != null) {
-                    valid = false;
-                }
-            } catch (PhpProgram.InvalidPhpProgramException ex) {
-                valid = false;
-            }
-        }
+    public boolean isProjectValid() {
+        return isValid(RunConfigScriptValidator.validateConfigAction(RunConfigScript.forProject(project), true) == null);
+    }
+
+    @Override
+    public boolean isFileValid() {
+        return isValid(RunConfigScriptValidator.validateConfigAction(RunConfigScript.forProject(project), false) == null);
+    }
+
+    private boolean isValid(boolean valid) {
         if (!valid) {
             showCustomizer();
         }
@@ -136,9 +128,9 @@ class ConfigActionScript extends ConfigAction {
     }
 
     private File getStartFile(Lookup context) {
-        FileObject file = null;
+        FileObject file;
         if (context == null) {
-            file = CommandUtils.fileForProject(project, sourceRoot);
+            file = FileUtil.toFileObject(RunConfigScript.forProject(project).getIndexFile());
         } else {
             file = CommandUtils.fileForContextOrSelectedNodes(context, sourceRoot);
         }
@@ -173,23 +165,24 @@ class ConfigActionScript extends ConfigAction {
         @Override
         public ExternalProcessBuilder getProcessBuilder() {
             assert file != null;
+            RunConfigScript runConfig = RunConfigScript.forProject(project);
             ExternalProcessBuilder builder = program.getProcessBuilder();
-            String phpArgs = ProjectPropertiesSupport.getPhpArguments(project);
+            String phpArgs = runConfig.getOptions();
             if (StringUtils.hasText(phpArgs)) {
                 for (String phpArg : Utilities.parseParameters(phpArgs)) {
                     builder = builder.addArgument(phpArg);
                 }
             }
             builder = builder.addArgument(file.getAbsolutePath());
-            String args = ProjectPropertiesSupport.getArguments(project);
+            String args = runConfig.getArguments();
             if (StringUtils.hasText(args)) {
                 for (String arg : Utilities.parseParameters(args)) {
                     builder = builder.addArgument(arg);
                 }
             }
 
-            String workDir = ProjectPropertiesSupport.getWorkDir(project);
-            if (RunAsValidator.validateWorkDir(workDir, false) == null) {
+            String workDir = runConfig.getWorkDir();
+            if (StringUtils.hasText(workDir)) {
                 builder = builder.workingDirectory(new File(workDir));
             } else {
                 builder = builder.workingDirectory(file.getParentFile());
@@ -204,16 +197,18 @@ class ConfigActionScript extends ConfigAction {
 
         @Override
         protected PhpProgram getPhpProgram() throws InvalidPhpProgramException {
-            return ProjectPropertiesSupport.getPhpInterpreter(project);
+            return ProjectPropertiesSupport.getValidPhpInterpreter(project);
         }
 
         @Override
         public List<Pair<String, String>> getDebugPathMapping() {
+            // XXX run config
             return ProjectPropertiesSupport.getDebugPathMapping(project);
         }
 
         @Override
         public Pair<String, Integer> getDebugProxy() {
+            // XXX run config
             return ProjectPropertiesSupport.getDebugProxy(project);
         }
     }

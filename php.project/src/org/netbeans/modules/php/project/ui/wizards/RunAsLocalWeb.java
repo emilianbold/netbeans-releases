@@ -47,22 +47,22 @@ import java.awt.event.ActionListener;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.event.ChangeEvent;
-import org.netbeans.modules.php.project.connections.ConfigManager;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.MutableComboBoxModel;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
+import org.netbeans.modules.php.project.connections.ConfigManager;
+import org.netbeans.modules.php.project.runconfigs.RunConfigLocal;
 import org.netbeans.modules.php.project.ui.CopyFilesVisual;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
 import org.netbeans.modules.php.project.ui.Utils;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
 import org.openide.awt.Mnemonics;
@@ -73,22 +73,19 @@ import org.openide.util.NbBundle;
  * @author  Radek Matous, Tomas Mysik
  */
 public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
-    private static final long serialVersionUID = -53487456454387871L;
+
+    private static final long serialVersionUID = -4154687891321321147L;
+
     final ChangeSupport changeSupport = new ChangeSupport(this);
     private final JLabel[] labels;
     private final JTextField[] textFields;
     private final String[] propertyNames;
-    private final String displayName;
     private final SourcesFolderProvider sourcesFolderProvider;
     private final CopyFilesVisual copyFilesVisual;
 
-    public RunAsLocalWeb(ConfigManager manager, SourcesFolderProvider sourcesFolderProvider) {
-        this(manager, sourcesFolderProvider, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ConfigLocalWeb"));
-    }
 
-    private RunAsLocalWeb(ConfigManager manager, SourcesFolderProvider sourcesFolderProvider, String displayName) {
+    public RunAsLocalWeb(ConfigManager manager, SourcesFolderProvider sourcesFolderProvider) {
         super(manager);
-        this.displayName = displayName;
         this.sourcesFolderProvider = sourcesFolderProvider;
         initComponents();
         copyFilesVisual = new CopyFilesVisual(sourcesFolderProvider);
@@ -132,12 +129,12 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
 
     @Override
     protected RunAsType getRunAsType() {
-        return PhpProjectProperties.RunAsType.LOCAL;
+        return RunConfigLocal.getRunAsType();
     }
 
     @Override
     public String getDisplayName() {
-        return displayName;
+        return RunConfigLocal.getDisplayName();
     }
 
     @Override
@@ -183,8 +180,11 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         }
     }
 
-    public String getUrl() {
-        return urlTextField.getText().trim();
+    public RunConfigLocal createRunConfig() {
+        return RunConfigLocal.create()
+                .setUrl(urlTextField.getText().trim())
+                .setIndexParentDir(sourcesFolderProvider.getSourcesFolder())
+                .setIndexRelativePath(indexFileTextField.getText().trim());
     }
 
     public void setUrl(String url) {
@@ -213,10 +213,6 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
 
     public void selectLocalServer(LocalServer localServer) {
         copyFilesVisual.selectLocalServer(localServer);
-    }
-
-    public String getIndexFile() {
-        return indexFileTextField.getText().trim();
     }
 
     public void setIndexFile(String indexFile) {
