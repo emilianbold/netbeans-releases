@@ -60,6 +60,7 @@ import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.environment.PhpEnvironment.DocumentRoot;
+import org.netbeans.modules.php.project.runconfigs.validation.RunConfigScriptValidator;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServer.ComboBoxModel;
 import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
@@ -351,7 +352,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private void storeRunAsScript(WizardDescriptor settings) {
-        settings.putProperty(INDEX_FILE, runAsScript.getIndexFile());
+        settings.putProperty(INDEX_FILE, runAsScript.getRunConfig().getIndexRelativePath());
     }
 
     @Override
@@ -375,7 +376,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                 break;
             case SCRIPT:
                 error = validateRunAsScript();
-                indexFile = runAsScript.getIndexFile();
+                indexFile = runAsScript.getRunConfig().getIndexRelativePath();
                 break;
             default:
                 assert false : "Unhandled RunAsType type: " + getRunAsType();
@@ -484,7 +485,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private String validateRunAsScript() {
-        return RunAsValidator.validateScriptFields(runAsScript.getPhpInterpreter(), sourcesFolderProvider.getSourcesFolder(), null, null, null, null);
+        return RunConfigScriptValidator.validateNewProject(runAsScript.getRunConfig());
     }
 
     private String validateServerLocation() {

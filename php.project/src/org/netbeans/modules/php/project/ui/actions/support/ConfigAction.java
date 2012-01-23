@@ -141,6 +141,7 @@ public abstract class ConfigAction {
         project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.RUN);
     }
 
+    // XXX remove, use *RunConfigValidator
     protected boolean isIndexFileValid(FileObject baseDirectory) {
         assert baseDirectory != null;
         String indexFile = ProjectPropertiesSupport.getIndexFile(project);

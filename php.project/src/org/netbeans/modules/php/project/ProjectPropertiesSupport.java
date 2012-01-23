@@ -56,6 +56,7 @@ import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.netbeans.modules.php.project.ui.BrowseTestSources;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.api.util.Pair;
+import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -182,12 +183,20 @@ public final class ProjectPropertiesSupport {
         return sources;
     }
 
-    public static PhpInterpreter getPhpInterpreter(PhpProject project) throws InvalidPhpProgramException {
+    public static PhpInterpreter getValidPhpInterpreter(PhpProject project) throws InvalidPhpProgramException {
         String interpreter = project.getEvaluator().getProperty(PhpProjectProperties.INTERPRETER);
         if (StringUtils.hasText(interpreter)) {
             return PhpInterpreter.getCustom(interpreter);
         }
         return PhpInterpreter.getDefault();
+    }
+
+    public static String getPhpInterpreter(PhpProject project) {
+        String interpreter = project.getEvaluator().getProperty(PhpProjectProperties.INTERPRETER);
+        if (StringUtils.hasText(interpreter)) {
+            return interpreter;
+        }
+        return PhpOptions.getInstance().getPhpInterpreter();
     }
 
     public static boolean isCopySourcesEnabled(PhpProject project) {

@@ -47,8 +47,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.ui.Utils;
@@ -93,29 +91,6 @@ public final class RunAsValidator {
             err = validateIndexFile(webRoot, indexFile, arguments);
         }
         return err;
-    }
-
-    /**
-     * Validate given parameters and return an error message or <code>null</code> if everything is OK.
-     * @param phpInterpreter PHP interpreter path to validate.
-     * @param projectDirectory parent directory of the indexFile.
-     * @param indexFile file name or even relative file path (probably to sources) to validate, can be <code>null</code>.
-     * @param arguments script arguments to validate, can be <code>null</code>.
-     * @param workDir working directory, can be {@code null}
-     * @param arguments PHP arguments to validate, can be <code>null</code>.
-     * @return an error message or <code>null</code> if everything is OK.
-     */
-    public static String validateScriptFields(String phpInterpreter, File projectDirectory, String indexFile, String arguments, String workDir, String phpArgs) {
-        try {
-            PhpInterpreter.getCustom(phpInterpreter);
-        } catch (InvalidPhpProgramException ex) {
-            return ex.getLocalizedMessage();
-        }
-        String err = validateWorkDir(workDir, true);
-        if (err != null) {
-            return err;
-        }
-        return validateIndexFile(projectDirectory, indexFile, arguments);
     }
 
     /**

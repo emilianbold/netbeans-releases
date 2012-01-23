@@ -42,8 +42,6 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -66,6 +64,8 @@ import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpOptions;
+import org.netbeans.modules.php.project.runconfigs.RunConfigScript;
+import org.netbeans.modules.php.project.runconfigs.validation.RunConfigScriptValidator;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -78,7 +78,9 @@ import org.openide.util.WeakListeners;
  * @author  Radek Matous, Tomas Mysik
  */
 public final class RunAsScript extends RunAsPanel.InsidePanel {
-    private static final long serialVersionUID = -559447897914071L;
+
+    private static final long serialVersionUID = 5468731321321L;
+
     private final PhpProject project;
     private final JLabel[] labels;
     private final JTextField[] textFields;
@@ -86,6 +88,7 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
     private final String displayName;
     private final PropertyChangeListener phpInterpreterListener;
     final Category category;
+
 
     public RunAsScript(PhpProject project, ConfigManager manager, Category category) {
         this(project, manager, category, NbBundle.getMessage(RunAsScript.class, "LBL_ConfigScript"));
@@ -214,47 +217,24 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
 
     @Override
     protected void validateFields() {
-        String err = RunAsValidator.validateScriptFields(getInterpreter(),
-                FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project)), getIndexFile(), getArgs(),
-                getWorkDir(), getPhpOptions());
-        category.setErrorMessage(err);
+        category.setErrorMessage(RunConfigScriptValidator.validateCustomizer(createConfig()));
         // #148957 always allow to save customizer
         category.setValid(true);
     }
 
-    private String getInterpreter() {
-        return interpreterTextField.getText().trim();
-    }
-
-    private String getIndexFile() {
-        return indexFileTextField.getText().trim();
-    }
-
-    private String getArgs() {
-        return argsTextField.getText().trim();
-    }
-
-    private String getWorkDir() {
-        return workDirTextField.getText().trim();
-    }
-
-    private String getPhpOptions() {
-        return phpOptionsTextField.getText().trim();
+    private RunConfigScript createConfig() {
+        return RunConfigScript.create()
+                .setUseDefaultInterpreter(defaultInterpreterCheckBox.isSelected())
+                .setInterpreter(interpreterTextField.getText().trim())
+                .setOptions(phpOptionsTextField.getText().trim())
+                .setIndexParentDir(FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project)))
+                .setIndexRelativePath(indexFileTextField.getText().trim())
+                .setArguments(argsTextField.getText().trim())
+                .setWorkDir(workDirTextField.getText().trim());
     }
 
     void composeHint() {
-        StringBuilder sb = new StringBuilder(100);
-        sb.append(getInterpreter());
-        String phpOptions = getPhpOptions();
-        if (StringUtils.hasText(phpOptions)) {
-            sb.append(" "); // NOI18N
-            sb.append(phpOptions);
-        }
-        sb.append(" "); // NOI18N
-        sb.append(getIndexFile());
-        sb.append(" "); // NOI18N
-        sb.append(getArgs());
-        hintLabel.setText(sb.toString().trim());
+        hintLabel.setText(createConfig().getHint());
     }
 
     private class FieldUpdater extends TextFieldUpdater {
@@ -488,7 +468,7 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
         chooser.setDialogTitle(NbBundle.getMessage(RunAsScript.class, "LBL_SelectWorkingDirectory"));
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         File curDir = null;
-        String workDir = getWorkDir();
+        String workDir = createConfig().getWorkDir();
         if (StringUtils.hasText(workDir)) {
             curDir = new File(workDir);
         } else {
