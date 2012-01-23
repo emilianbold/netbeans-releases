@@ -48,14 +48,14 @@ public class RunConfigValidatorTest extends TestBase {
     }
 
     public void testValidateIndexFile() throws Exception {
-        assertNull(RunConfigValidator.validateIndexFile(getWorkDir(), INDEX_NAME));
+        assertNull(BaseRunConfigValidator.validateIndexFile(getWorkDir(), INDEX_NAME));
         // errors
-        assertNotNull(RunConfigValidator.validateIndexFile(getWorkDir(), null));
-        assertNotNull(RunConfigValidator.validateIndexFile(getWorkDir(), "abc.php"));
-        assertNotNull(RunConfigValidator.validateIndexFile(getWorkDir(), "/abc.php"));
-        assertNotNull(RunConfigValidator.validateIndexFile(getWorkDir(), "\\abc.php"));
-        assertNotNull(RunConfigValidator.validateIndexFile(getWorkDir(), "../" + getWorkDir().getName() + "/" + INDEX_NAME));
-        assertNotNull(RunConfigValidator.validateIndexFile(getWorkDir(), "a/../" + INDEX_NAME));
+        assertNotNull(BaseRunConfigValidator.validateIndexFile(getWorkDir(), null));
+        assertNotNull(BaseRunConfigValidator.validateIndexFile(getWorkDir(), "abc.php"));
+        assertNotNull(BaseRunConfigValidator.validateIndexFile(getWorkDir(), "/abc.php"));
+        assertNotNull(BaseRunConfigValidator.validateIndexFile(getWorkDir(), "\\abc.php"));
+        assertNotNull(BaseRunConfigValidator.validateIndexFile(getWorkDir(), "../" + getWorkDir().getName() + "/" + INDEX_NAME));
+        assertNotNull(BaseRunConfigValidator.validateIndexFile(getWorkDir(), "a/../" + INDEX_NAME));
     }
 
 }

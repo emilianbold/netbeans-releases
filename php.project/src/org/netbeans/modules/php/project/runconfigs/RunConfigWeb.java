@@ -50,7 +50,7 @@ import org.netbeans.modules.php.api.util.StringUtils;
 /**
  * Base class for all run configs.
  */
-public abstract class RunConfigWeb<T extends RunConfigWeb<?>> extends RunConfig<T> {
+public abstract class RunConfigWeb<T extends RunConfigWeb<?>> extends BaseRunConfig<T> {
 
     protected String url;
 

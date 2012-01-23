@@ -39,67 +39,48 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.runconfigs;
+package org.netbeans.modules.php.project.runconfigs.validation;
 
 import java.io.File;
 import org.netbeans.modules.php.api.util.StringUtils;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
- * Base class for all run configs.
+ * Validator for {@link org.netbeans.modules.php.project.runconfigs.BaseRunConfig}.
  */
-public abstract class RunConfig<T extends RunConfig<?>> {
+public final class BaseRunConfigValidator {
 
-    protected File indexParentDir;
-    protected String indexRelativePath;
-    protected String arguments;
-
-
-    RunConfig() {
+    private BaseRunConfigValidator() {
     }
 
-    //~ Methods
-
-    public File getIndexFile() {
-        if (indexParentDir == null) {
-            throw new NullPointerException("Property 'indexParentDir' must be set");
+    @NbBundle.Messages({
+        "BaseRunConfigValidator.error.index.missing=Index File must be specified in order to run or debug project in command line.",
+        "BaseRunConfigValidator.error.index.invalid=Index File must be a valid relative URL."
+    })
+    public static String validateIndexFile(File rootDirectory, String indexFile) {
+        assert rootDirectory != null;
+        if (!StringUtils.hasText(indexFile)) {
+            return Bundle.BaseRunConfigValidator_error_index_missing();
         }
-        if (StringUtils.hasText(indexRelativePath)) {
-            return new File(indexParentDir, indexRelativePath.replace('/', File.separatorChar)); // NOI18N
+        boolean error = false;
+        if (indexFile.startsWith("/") // NOI18N
+                || indexFile.startsWith("\\")) { // NOI18N
+            error = true;
+        } else if (Utilities.isWindows() && indexFile.contains(File.separator)) {
+            error = true;
+        } else {
+            File index = new File(rootDirectory, indexFile.replace('/', File.separatorChar)); // NOI18N
+            if (!index.isFile()
+                    || !index.equals(FileUtil.normalizeFile(index))) {
+                error = true;
+            }
         }
-        return indexParentDir;
-    }
-
-    //~ Getters & setters
-
-    public String getArguments() {
-        return arguments;
-    }
-
-    // XXX is there a better way?
-    @SuppressWarnings("unchecked")
-    public T setArguments(String arguments) {
-        this.arguments = arguments;
-        return (T) this;
-    }
-
-    public File getIndexParentDir() {
-        return indexParentDir;
-    }
-
-    @SuppressWarnings("unchecked")
-    public T setIndexParentDir(File indexParentDir) {
-        this.indexParentDir = indexParentDir;
-        return (T) this;
-    }
-
-    public String getIndexRelativePath() {
-        return indexRelativePath;
-    }
-
-    @SuppressWarnings("unchecked")
-    public T setIndexRelativePath(String indexRelativePath) {
-        this.indexRelativePath = indexRelativePath;
-        return (T) this;
+        if (error) {
+            return Bundle.BaseRunConfigValidator_error_index_invalid();
+        }
+        return null;
     }
 
 }

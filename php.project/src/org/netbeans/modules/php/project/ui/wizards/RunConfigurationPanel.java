@@ -65,7 +65,7 @@ import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
 import org.netbeans.modules.php.project.runconfigs.validation.RunConfigLocalValidator;
 import org.netbeans.modules.php.project.runconfigs.validation.RunConfigRemoteValidator;
 import org.netbeans.modules.php.project.runconfigs.validation.RunConfigScriptValidator;
-import org.netbeans.modules.php.project.runconfigs.validation.RunConfigValidator;
+import org.netbeans.modules.php.project.runconfigs.validation.BaseRunConfigValidator;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServer.ComboBoxModel;
 import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
@@ -393,7 +393,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             return false;
         }
         // index file is just warning
-        String warning = RunConfigValidator.validateIndexFile(sourcesFolderProvider.getSourcesFolder(), indexFile);
+        String warning = BaseRunConfigValidator.validateIndexFile(sourcesFolderProvider.getSourcesFolder(), indexFile);
         if (wizardType == WizardType.EXISTING
                 && warning != null) {
             descriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, warning);
