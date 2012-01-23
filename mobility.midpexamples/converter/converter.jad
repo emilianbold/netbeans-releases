@@ -2,5 +2,5 @@ MicroEdition-Profile: MIDP-1.0
 MicroEdition-Configuration: CLDC-1.0
 MIDlet-Version: 1.0
 MIDlet-Name: converter
-MIDlet-Vendor: Sun Microsystems, Inc.
+MIDlet-Vendor: Oracle
 MIDlet-1: Currency Converter, , converter.ConverterMIDlet
