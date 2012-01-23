@@ -43,6 +43,7 @@ package org.netbeans.modules.php.project.connections.common;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.openide.DialogDisplayer;
@@ -105,6 +106,28 @@ public final class RemoteUtils {
             directoryPath = directoryPath.substring(0, directoryPath.length() - TransferFile.REMOTE_PATH_SEPARATOR.length());
         }
         return directoryPath;
+    }
+
+    /**
+     * Sanitize upload directory, see issue #169793 for more information.
+     * @param uploadDirectory upload directory to sanitize
+     * @param allowEmpty <code>true</code> if the string can be empty
+     * @return sanitized upload directory
+     */
+    public static String sanitizeUploadDirectory(String uploadDirectory, boolean allowEmpty) {
+        if (StringUtils.hasText(uploadDirectory)) {
+            while (uploadDirectory.length() > 1
+                    && uploadDirectory.endsWith(TransferFile.REMOTE_PATH_SEPARATOR)) {
+                uploadDirectory = uploadDirectory.substring(0, uploadDirectory.length() - 1);
+            }
+        } else if (!allowEmpty) {
+            uploadDirectory = TransferFile.REMOTE_PATH_SEPARATOR;
+        }
+        if (allowEmpty
+                && (uploadDirectory == null || TransferFile.REMOTE_PATH_SEPARATOR.equals(uploadDirectory))) {
+            uploadDirectory = ""; // NOI18N
+        }
+        return uploadDirectory;
     }
 
 }

@@ -44,15 +44,11 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.io.File;
-import java.util.EnumSet;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.project.connections.ConfigManager;
-import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
-import org.netbeans.modules.php.project.ui.PathUiSupport;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -62,11 +58,19 @@ import javax.swing.DefaultListModel;
 import javax.swing.ListCellRenderer;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ProjectSettings;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
+import org.netbeans.modules.php.project.connections.ConfigManager;
+import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
+import org.netbeans.modules.php.project.runconfigs.RunConfig;
+import org.netbeans.modules.php.project.runconfigs.RunConfigLocal;
+import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
+import org.netbeans.modules.php.project.runconfigs.RunConfigScript;
+import org.netbeans.modules.php.project.ui.PathUiSupport;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -147,10 +151,43 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         DEBUG_PROXY_PORT,
     };
 
+    @NbBundle.Messages({
+        "RunAsType.local.label=Local Web Site (running on local web server)",
+        "RunAsType.script.label=Script (run in command line)",
+        "RunAsType.remote.label=Remote Web Site (FTP, SFTP)"
+    })
     public static enum RunAsType {
-        LOCAL,
-        SCRIPT,
-        REMOTE
+        LOCAL(Bundle.RunAsType_local_label()) {
+            @Override
+            public RunConfigLocal getRunConfig(PhpProject project) {
+                return RunConfigLocal.forProject(project);
+            }
+        },
+        SCRIPT(Bundle.RunAsType_script_label()) {
+            @Override
+            public RunConfigScript getRunConfig(PhpProject project) {
+                return RunConfigScript.forProject(project);
+            }
+        },
+        REMOTE(Bundle.RunAsType_remote_label()) {
+            @Override
+            public RunConfigRemote getRunConfig(PhpProject project) {
+                return RunConfigRemote.forProject(project);
+            }
+        };
+
+        private final String label;
+
+        private RunAsType(String label) {
+            this.label = label;
+        }
+
+        public abstract RunConfig<?> getRunConfig(PhpProject project);
+
+        public String getLabel() {
+            return label;
+        }
+
     }
 
     public static enum UploadFiles {
