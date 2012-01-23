@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,27 +42,14 @@ package org.netbeans.installer.utils.applications;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.installer.utils.ErrorManager;
-import org.netbeans.installer.utils.FileUtils;
-import org.netbeans.installer.utils.LogManager;
-import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.StringUtils;
-import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.*;
 import org.netbeans.installer.utils.XMLUtils;
 import org.netbeans.installer.utils.exceptions.XMLException;
-import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.ErrorLevel;
+import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.wizard.components.panels.netbeans.NbWelcomePanel;
 import org.netbeans.installer.wizard.components.panels.netbeans.NbWelcomePanel.BundleType;
 import org.w3c.dom.Document;
@@ -203,6 +190,7 @@ public class NetBeansUtils {
         }
         LogManager.log("Update update_tracking files for cluster directory " + clusterDir);
         File[] files = new File(clusterDir,UPDATE_TRACKING_DIR).listFiles(new FileFilter() {
+            @Override
             public boolean accept(File pathname) {
                 return pathname.getName().endsWith(".xml");
             }
@@ -245,19 +233,13 @@ public class NetBeansUtils {
             }
         } catch (XMLException e) {
             LogManager.log(e);
-            IOException ex = new IOException("Can`t update CRC in update_tracking files");
-            ex.initCause(e);
-            throw ex;
+            throw new IOException("Can`t update CRC in update_tracking files", e);
         } catch (NumberFormatException e) {
             LogManager.log(e);
-            IOException ex = new IOException("Can`t update CRC in update_tracking files");
-            ex.initCause(e);
-            throw ex;
+            throw new IOException("Can`t update CRC in update_tracking files", e);
         } catch (IOException e) {
             LogManager.log(e);
-            IOException ex = new IOException("Can`t update CRC in update_tracking files");
-            ex.initCause(e);
-            throw ex;
+            throw new IOException("Can`t update CRC in update_tracking files", e);
         }
     }
 
@@ -750,7 +732,7 @@ public class NetBeansUtils {
             "-cp", classpath,
             UPDATER_FRAMENAME, "--nosplash"});
     }
-    public static final boolean setModuleStatus(File nbLocation, String clusterName, String moduleName, boolean enable) {        
+    public static boolean setModuleStatus(File nbLocation, String clusterName, String moduleName, boolean enable) {        
         LogManager.log(ErrorLevel.DEBUG,
                 ((enable) ? "... enabling" : "disabling") +
                 " module " + moduleName + 
@@ -791,7 +773,7 @@ public class NetBeansUtils {
         return false;
     }
     
-    public static final Boolean getModuleStatus(File nbLocation, String clusterName, String moduleName) {        
+    public static Boolean getModuleStatus(File nbLocation, String clusterName, String moduleName) {        
         LogManager.log(ErrorLevel.DEBUG, 
                 "... getting status of module " + moduleName + 
                 " in cluster " + clusterName + 
@@ -808,7 +790,7 @@ public class NetBeansUtils {
             if (doc != null) {
                 for (Element element : XMLUtils.getChildren(doc.getDocumentElement(), "param")) {
                     if (element.getAttribute("name").equals("enabled")) {
-                         return new Boolean(element.getTextContent());
+                         return Boolean.valueOf(element.getTextContent());
                 }
                 }
             }
