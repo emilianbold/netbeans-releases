@@ -108,6 +108,7 @@ public class MemoryFSTestHid extends TestBaseHid {
         assertEquals(null, URLMapper.findURL(file, URLMapper.NETWORK));
         assertEquals(u, new URL(file.getParent().toURL(), file.getNameExt()));
         assertEquals(testedFS.getRoot(), URLMapper.findFileObject(testedFS.getRoot().toURI().toURL()));
+        assertEquals(file.getParent(), URLMapper.findFileObject(file.getParent().toURI().toURL()));
     }
 
 }
