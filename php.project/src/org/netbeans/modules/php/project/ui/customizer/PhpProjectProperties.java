@@ -66,10 +66,6 @@ import org.netbeans.modules.php.project.ProjectSettings;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
-import org.netbeans.modules.php.project.runconfigs.RunConfig;
-import org.netbeans.modules.php.project.runconfigs.RunConfigLocal;
-import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
-import org.netbeans.modules.php.project.runconfigs.RunConfigScript;
 import org.netbeans.modules.php.project.ui.PathUiSupport;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender;
@@ -157,32 +153,15 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         "RunAsType.remote.label=Remote Web Site (FTP, SFTP)"
     })
     public static enum RunAsType {
-        LOCAL(Bundle.RunAsType_local_label()) {
-            @Override
-            public RunConfigLocal getRunConfig(PhpProject project) {
-                return RunConfigLocal.forProject(project);
-            }
-        },
-        SCRIPT(Bundle.RunAsType_script_label()) {
-            @Override
-            public RunConfigScript getRunConfig(PhpProject project) {
-                return RunConfigScript.forProject(project);
-            }
-        },
-        REMOTE(Bundle.RunAsType_remote_label()) {
-            @Override
-            public RunConfigRemote getRunConfig(PhpProject project) {
-                return RunConfigRemote.forProject(project);
-            }
-        };
+        LOCAL(Bundle.RunAsType_local_label()),
+        SCRIPT(Bundle.RunAsType_script_label()),
+        REMOTE(Bundle.RunAsType_remote_label());
 
         private final String label;
 
         private RunAsType(String label) {
             this.label = label;
         }
-
-        public abstract RunConfig<?> getRunConfig(PhpProject project);
 
         public String getLabel() {
             return label;
