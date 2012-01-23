@@ -100,13 +100,17 @@ public class ScanSeveralProjects2PerfTest extends NbTestCase {
         nb_all_root = System.getProperty("nb_all.root");
         System.err.println(nb_all_root);
         String[][] files = {
-                { "http://spbweb.russia.sun.com/~ok153203/jEdit41.zip",
+                { "http://hg.netbeans.org/binaries/BBD005CDF8785223376257BD3E211C7C51A821E7-jEdit41.zip",
                             "jEdit41.zip",
-                            "jEdit41"
+                            "jEdit"
                 },
-                { "http://wiki.netbeans.org/attach/FitnessViaSamples/mediawiki-1.14.0-nbproject.zip",
+                { "http://netbeans.org/projects/performance/downloads/download/Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
                         "mediawiki.zip",
                         "mediawiki-1.14.0"
+                },
+                { "http://hg.netbeans.org/binaries/70CE8459CA39C3A49A2722C449117CE5DCFBA56A-tomcat6.zip",
+                            "tomcat6.zip",
+                            "tomcat6"
                 },
                 { null, null, "openide.filesystems" },
                 { null, null, "editor.lib" },
@@ -186,9 +190,9 @@ public class ScanSeveralProjects2PerfTest extends NbTestCase {
 
     public static Test suite() throws InterruptedException {
         return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().
-                addTest(ScanSeveralProjects2PerfTest.class).
+                addTest(ScanSeveralProjectsPerfTest.class).
                 clusters(".*").gui(true).
-                enableModules("php.*", ".*"));
+                enableModules(".*", ".*"));
     }
 
     public PerformanceData[] getPerformanceData() {

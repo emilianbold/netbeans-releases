@@ -88,10 +88,10 @@ public class JavaNavigatorPerfTest extends NbTestCase {
     }
 
     public void testEditorPaneSwitch() throws IOException, ExecutionException, InterruptedException, InvocationTargetException {
-        String zipPath = Utilities.projectOpen("http://spbweb.russia.sun.com/~ok153203/jEdit41.zip", "jEdit41.zip");
+        String zipPath = Utilities.projectOpen("http://hg.netbeans.org/binaries/BBD005CDF8785223376257BD3E211C7C51A821E7-jEdit41.zip", "jEdit41.zip");
         File zipFile = FileUtil.normalizeFile(new File(zipPath));
         Utilities.unzip(zipFile, getWorkDirPath());
-        final FileObject projectDir = Utilities.openProject("jEdit41", getWorkDir());
+        final FileObject projectDir = Utilities.openProject("jEdit", getWorkDir());
 
         Logger navigatorUpdater = Logger.getLogger("org.netbeans.modules.java.navigation.ClassMemberPanelUI.perf");
         navigatorUpdater.setLevel(Level.FINE);
