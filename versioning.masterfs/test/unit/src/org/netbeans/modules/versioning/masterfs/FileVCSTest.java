@@ -42,7 +42,11 @@
 package org.netbeans.modules.versioning.masterfs;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.versioning.*;
@@ -108,6 +112,37 @@ public class FileVCSTest extends VCSFilesystemTestFactory {
         f.delete();
     }
 
+    public void move(String from, String to) throws IOException {
+        File fromFile = new File(workDirPath, from);
+        File toFile = new File(workDirPath, to);
+        if(!fromFile.renameTo(toFile)) throw new IOException("wasn't able to move " + fromFile + " to " + toFile);
+    }
+    
+    public void copy(String from, String to) throws IOException {
+        File fromFile = new File(workDirPath, from);
+        File toFile = new File(workDirPath, to);        
+        copy(fromFile, toFile);
+    }
+    
+    private void copy(File fromFile, File toFile) throws IOException {
+        if(fromFile.isFile()) {
+            InputStream is = new FileInputStream (fromFile);
+            OutputStream os = new FileOutputStream(toFile);
+            FileUtil.copy(is, os);
+            is.close();
+            os.close();
+        } else {
+            toFile.mkdirs();
+            File[] files = fromFile.listFiles();
+            if( files == null || files.length == 0) {
+                return;
+            }
+            for(File f : files) {
+                copy(f, new File(toFile, f.getName()));
+            }
+        }
+    }
+    
     public static void main(String args[]) {
         junit.textui.TestRunner.run(suite());
     }

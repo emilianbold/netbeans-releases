@@ -57,9 +57,19 @@ public class TestVCSInterceptor extends VCSInterceptor {
     private final TestVCSInterceptor instance;
     
     public DeleteHandler deleteHandler;
+    public MoveHandler moveHandler;
+    public CopyHandler copyHandler;
     
     public static interface DeleteHandler {
         void delete(VCSFileProxy proxy) throws IOException;
+    }
+    
+    public static interface MoveHandler {
+        void move(VCSFileProxy from, VCSFileProxy to) throws IOException;
+    }
+    
+    public static interface CopyHandler {
+        void copy(VCSFileProxy from, VCSFileProxy to) throws IOException;
     }
     
     private final List<VCSFileProxy>    beforeCreateFiles = new ArrayList<VCSFileProxy>();
@@ -136,7 +146,10 @@ public class TestVCSInterceptor extends VCSInterceptor {
     public void doDelete(VCSFileProxy file) throws IOException {
         doDeleteFiles.add(file);
         if (file.getName().endsWith("do-not-delete")) return;
-        deleteRecursively(file);
+        if(deleteHandler == null) {
+            deleteHandler = new DefaultDeleteHandler();
+        }
+        deleteHandler.delete(file);
     }
 
     public void afterDelete(VCSFileProxy file) {
@@ -152,7 +165,10 @@ public class TestVCSInterceptor extends VCSInterceptor {
     public void doMove(VCSFileProxy from, VCSFileProxy to) throws IOException {
         doMoveFiles.add(from);
         doMoveFiles.add(to);
-        from.toFile().renameTo(to.toFile());
+        if(moveHandler == null) {
+            moveHandler = new DefaultMoveHandler();
+        }
+        moveHandler.move(from, to); 
     }
 
     public void afterMove(VCSFileProxy from, VCSFileProxy to) {
@@ -169,20 +185,10 @@ public class TestVCSInterceptor extends VCSInterceptor {
     public void doCopy(VCSFileProxy from, VCSFileProxy to) throws IOException {
         doCopyFiles.add(from);
         doCopyFiles.add(to);
-        if(from.isFile()) {
-            InputStream is = new FileInputStream (from.toFile());
-            OutputStream os = new FileOutputStream(to.toFile());
-            FileUtil.copy(is, os);
-            is.close();
-            os.close();
-        } else {
-            to.toFile().mkdirs();
-            for(File f : from.toFile().listFiles()) {
-                InputStream is = new FileInputStream (f);
-                OutputStream os = new FileOutputStream(new File(to.toFile(), f.getName()));
-                FileUtil.copy(is, os);
-            }
+        if(copyHandler == null) {
+            copyHandler = new DefaultCopyHandler();
         }
+        copyHandler.copy(from, to);
     }
 
     public void afterCopy(VCSFileProxy from, VCSFileProxy to) {
@@ -285,26 +291,55 @@ public class TestVCSInterceptor extends VCSInterceptor {
         afterChangeFiles.clear();
         isMutableFiles.clear();
     }
-
-    private void deleteRecursively(VCSFileProxy proxy) throws IOException {
-        if(deleteHandler != null) {
-            deleteHandler.delete(proxy);
+    
+    private class DefaultDeleteHandler implements DeleteHandler {
+        @Override
+        public void delete(VCSFileProxy proxy) throws IOException {
+            deleteRecursively(proxy);
         }
-        if(proxy.isFile()) delete(proxy);
-        VCSFileProxy[] files = proxy.listFiles();
-        if(files != null) {
-            for (VCSFileProxy f : files) {
-                deleteRecursively(f);
-            }
-        } 
-        delete(proxy);
+        private void deleteRecursively(VCSFileProxy proxy) throws IOException {
+            if(proxy.isFile()) proxy.toFile().delete();;
+            VCSFileProxy[] files = proxy.listFiles();
+            if(files != null) {
+                for (VCSFileProxy f : files) {
+                    deleteRecursively(f);
+                }
+            } 
+        }
     }
     
-    private void delete(VCSFileProxy proxy) throws IOException {
-        if(deleteHandler != null) {
-            deleteHandler.delete(proxy);
-        } else {
-            proxy.toFile().delete();
+    private class DefaultMoveHandler implements MoveHandler {
+        @Override
+        public void move(VCSFileProxy from, VCSFileProxy to) throws IOException {
+            if(!from.toFile().renameTo(to.toFile())) {
+                throw new IOException("wasn't able t rename " + from + " to " + to);
+            }
+        }
+    }
+    
+    private class DefaultCopyHandler implements CopyHandler {
+        @Override
+        public void copy(VCSFileProxy from, VCSFileProxy to) throws IOException {
+            copy(from.toFile(), to.toFile());
+        }
+        
+        private void copy(File fromFile, File toFile) throws IOException {
+            if(fromFile.isFile()) {
+                InputStream is = new FileInputStream (fromFile);
+                OutputStream os = new FileOutputStream(toFile);
+                FileUtil.copy(is, os);
+                is.close();
+                os.close();
+            } else {
+                toFile.mkdirs();
+                File[] files = fromFile.listFiles();
+                if( files == null || files.length == 0) {
+                    return;
+                }
+                for(File f : files) {
+                    copy(f, new File(toFile, f.getName()));
+                }
+            }
         }
     }
 }
