@@ -110,6 +110,13 @@ public class ScanProjectPerfTest extends NbTestCase {
                 );
     }
     
+    public void testWebProject() throws IOException, ExecutionException, InterruptedException {
+        scanProject("http://jupiter.cz.oracle.com/wiki/pub/NbQE/TestingProjects/BigWebProject.zip",
+                    "BigWebProject.zip",
+                    "FrankioskiProject"
+                );
+    }
+    
     public void testTomcat() throws IOException, ExecutionException, InterruptedException {
         scanProject("http://hg.netbeans.org/binaries/70CE8459CA39C3A49A2722C449117CE5DCFBA56A-tomcat6.zip",
                     "tomcat6.zip",
@@ -187,7 +194,7 @@ public class ScanProjectPerfTest extends NbTestCase {
         return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().
                 addTest(ScanProjectPerfTest.class).
                 clusters(".*").gui(false).
-                enableModules("php.*", ".*"));
+                enableModules(".*", ".*"));
     }
 
     public PerformanceData[] getPerformanceData() {

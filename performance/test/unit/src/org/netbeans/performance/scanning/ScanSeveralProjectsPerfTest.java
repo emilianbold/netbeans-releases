@@ -112,6 +112,10 @@ public class ScanSeveralProjectsPerfTest extends NbTestCase {
                 { "http://hg.netbeans.org/binaries/70CE8459CA39C3A49A2722C449117CE5DCFBA56A-tomcat6.zip",
                             "tomcat6.zip",
                             "tomcat6"
+                },
+                { "http://jupiter.cz.oracle.com/wiki/pub/NbQE/TestingProjects/BigWebProject.zip",
+                            "BigWebProject.zip",
+                            "FrankioskiProject"
                 }
 //                { "http://beetle.czech.sun.com/~pf124312/openjdk-7-ea-src-b63-02_jul_2009.zip",
 //                        "openjdk.zip",
