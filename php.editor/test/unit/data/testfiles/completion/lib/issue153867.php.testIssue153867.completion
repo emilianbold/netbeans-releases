@@ -15,6 +15,7 @@ PACKAGE    Foo                             [PUBLIC]   null
 PACKAGE    MC                              [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
 PACKAGE    MySpaceThrow                    [PUBLIC]   null
+PACKAGE    Nette                           [PUBLIC]   null
 PACKAGE    Package1                        [PUBLIC]   null
 PACKAGE    Package2                        [PUBLIC]   null
 PACKAGE    Shit                            [PUBLIC]   null
@@ -37,12 +38,14 @@ PACKAGE    Test204925_08_C                 [PUBLIC]   null
 PACKAGE    Test204925_08_P                 [PUBLIC]   null
 PACKAGE    XUser                           [PUBLIC]   null
 ------------------------------------
+PACKAGE    Application                     [PUBLIC]   Nette
 PACKAGE    BNS                             [PUBLIC]   ANS
 PACKAGE    Base                            [PUBLIC]   Brite
 PACKAGE    Controller                      [PUBLIC]   Brite
 PACKAGE    Data                            [PUBLIC]   Shit
 PACKAGE    NNS                             [PUBLIC]   CNS
 PACKAGE    Test                            [PUBLIC]   App
+PACKAGE    UI                              [PUBLIC]   Nette\Application
 PACKAGE    User                            [PUBLIC]   Package2
 PACKAGE    a                               [PUBLIC]   Test204925_06_P
 PACKAGE    a                               [PUBLIC]   Test204925_07_P
@@ -97,6 +100,7 @@ CLASS      ClsDeclarationTest              [PUBLIC]   clsDeclaration02.php
 CLASS      ClsFromFactory                  [PUBLIC]   issue144830.php
 CLASS      ClsFromFactory                  [PUBLIC]   issue144840_01.php
 CLASS      ComplexObject                   [PUBLIC]   issue159970.php
+CLASS      Control                         [PUBLIC]   Nette\Application\UI
 CLASS      Controller                      [PUBLIC]   Brite\Controller
 CLASS      DatabaseRecord                  [PUBLIC]   DatabaseRecord.php
 CLASS      EmptyClass                      [PUBLIC]   issue194875.php
@@ -161,6 +165,8 @@ CLASS      ParentInterface                 [PUBLIC]   interfaces.php
 CLASS      Person148213                    [PUBLIC]   issue148213.php
 CLASS      PhpDoc01Magazine                [PUBLIC]   typeInPHPDoc01.php
 CLASS      PhpDoc01News                    [PUBLIC]   typeInPHPDoc01.php
+CLASS      Presenter                       [PUBLIC]   Nette\Application\UI
+CLASS      PresenterComponent              [PUBLIC]   Nette\Application\UI
 CLASS      Request                         [PUBLIC]   Brite\Base
 CLASS      SimpleObject                    [PUBLIC,   issue159970.php
 CLASS      SmartCompletion                 [PUBLIC]   issue201032.php
@@ -168,6 +174,7 @@ CLASS      SubClass157534                  [PUBLIC]   issue157534.php
 CLASS      SuperClass157534                [PUBLIC]   issue157534.php
 CLASS      SuperUser                       [PUBLIC]   XUser
 CLASS      System147427                    [PUBLIC]   issue147427.php
+CLASS      TaskList                        [PUBLIC]   TaskList.php
 CLASS      Test                            [PUBLIC]   issue142024.php
 CLASS      Test141999                      [PUBLIC]   issue141999.php
 CLASS      Test142234                      [PUBLIC]   issue142234.php

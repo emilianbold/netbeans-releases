@@ -101,7 +101,8 @@ class ModelElementFactory {
 
     static FieldElementImpl create(SingleFieldDeclarationInfo nodeInfo, ModelBuilder context) {
         String returnType = VariousUtils.getFieldTypeFromPHPDoc(context.getProgram(),nodeInfo.getOriginalNode());
-        FieldElementImpl fei = new FieldElementImpl(context.getCurrentScope(), returnType, nodeInfo);
+        String returnFQType = VariousUtils.qualifyTypeNames(returnType, nodeInfo.getRange().getStart(), context.getCurrentScope());
+        FieldElementImpl fei = new FieldElementImpl(context.getCurrentScope(), returnType, returnFQType, nodeInfo);
         return fei;
     }
 

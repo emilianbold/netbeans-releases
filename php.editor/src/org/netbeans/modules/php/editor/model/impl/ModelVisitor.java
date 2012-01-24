@@ -769,7 +769,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                         declaredFields = ElementFilter.forName(NameKind.exact(name)).filter(declaredFields);
                         if (declaredFields.isEmpty()) {
                             String typeName = VariousUtils.extractVariableTypeFromExpression(rightHandSide, new HashMap<String, AssignmentImpl>());
-                            new FieldElementImpl(classScope, typeName, fieldAccessInfo);
+                            String typeFQName = VariousUtils.qualifyTypeNames(typeName, fieldAccess.getStartOffset(), scope);
+                            new FieldElementImpl(classScope, typeName, typeFQName, fieldAccessInfo);
                         }
                     }
                 }
@@ -1022,14 +1023,20 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             PhpDocTypeTagInfo phpDocTypeTagInfo = it.next();
             if (phpDocTypeTagInfo.getKind().equals(Kind.FIELD)) {
                 String typeName = phpDocTypeTagInfo.getTypeName();
+                StringBuilder fqNames = new StringBuilder();
                 if (typeName != null) {
                     if (sb.length() > 0) {
                         sb.append("|");//NOI18N
                     }
+                    if (fqNames.length() > 0) {
+                        fqNames.append("|"); //NOI18N
+                    }
+                    String qualifiedTypeNames = VariousUtils.qualifyTypeNames(typeName, node.getStartOffset(), currentScope);
+                    fqNames.append(qualifiedTypeNames);
                     sb.append(typeName);
                 }
                 if (currentScope instanceof ClassScope && !it.hasNext()) {
-                    new FieldElementImpl(currentScope, sb.length() > 0 ? sb.toString() : null, phpDocTypeTagInfo);
+                    new FieldElementImpl(currentScope, sb.length() > 0 ? sb.toString() : null, fqNames.length() > 0 ? fqNames.toString() : null, phpDocTypeTagInfo);
                 }
             } else if (node.getKind().equals(PHPDocTag.Type.GLOBAL) && phpDocTypeTagInfo.getKind().equals(Kind.VARIABLE)) {
                 final String typeName = phpDocTypeTagInfo.getTypeName();
