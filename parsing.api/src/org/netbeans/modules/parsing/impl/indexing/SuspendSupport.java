@@ -56,6 +56,7 @@ import org.openide.util.RequestProcessor;
 final class SuspendSupport implements SuspendStatus {
 
     private static final Logger LOG = Logger.getLogger(SuspendSupport.class.getName());
+    private static final boolean NO_SUSPEND = Boolean.getBoolean("SuspendSupport.disabled");    //NOI18N
 
     private final RequestProcessor worker;
     private final Object lock = new Object();
@@ -68,6 +69,9 @@ final class SuspendSupport implements SuspendStatus {
     }
 
     public void suspend() {
+        if (NO_SUSPEND) {
+            return;
+        }
         if (worker.isRequestProcessorThread()) {
             return;
         }
