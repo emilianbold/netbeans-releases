@@ -49,7 +49,7 @@ import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
-import org.netbeans.spi.queries.CollocationQueryImplementation;
+import org.netbeans.spi.queries.CollocationQueryImplementation2;
 
 /**
  * Warning: VCS internal use only. Not to be implemented by clients.
@@ -103,7 +103,7 @@ public abstract class VCSSystemProvider {
 
         public void getOriginalFile(VCSFileProxy workingCopy, VCSFileProxy originalFile);
 
-        public CollocationQueryImplementation getCollocationQueryImplementation();
+        public CollocationQueryImplementation2 getCollocationQueryImplementation();
 
         public VCSVisibilityQuery getVisibility();
 

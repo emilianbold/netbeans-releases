@@ -60,7 +60,7 @@ import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.core.spi.VersioningSystem;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
-import org.netbeans.spi.queries.CollocationQueryImplementation;
+import org.netbeans.spi.queries.CollocationQueryImplementation2;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -137,7 +137,7 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
     }
 
     @Override
-    public CollocationQueryImplementation getCollocationQueryImplementation() {
+    public CollocationQueryImplementation2 getCollocationQueryImplementation() {
         return getDelegate().getCollocationQueryImplementation();
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,40 +34,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.versioning.spi.testvcs;
 
-package org.netbeans.modules.websvc.core;
-
-import java.io.IOException;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.modules.websvc.api.support.java.SourceUtils;
-import org.openide.filesystems.FileObject;
+import java.io.File;
+import org.netbeans.spi.queries.CollocationQueryImplementation;
 
 /**
  *
- * @author Martin Adamek
+ * @author tomas
  */
-public final class _RetoucheUtil {
-    
-    private _RetoucheUtil() {}
-    
-    /** never call this from javac task */
-    public static String getMainClassName(final FileObject classFO) throws IOException {
-        JavaSource javaSource = JavaSource.forFileObject(classFO);
-        final String[] result = new String[1];
-        javaSource.runUserActionTask(new Task<CompilationController>() {
-            public void run(CompilationController controller) throws IOException {
-                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                TypeElement classEl = SourceUtils.getPublicTopLevelElement(controller);
-                if (classEl != null) {
-                    result[0] = classEl.getQualifiedName().toString();
-                }
-            }
-        }, true);
-        return result[0];
+public class TestVCSCollocationQuery implements CollocationQueryImplementation {
+
+    public static String COLLOCATED_FILENAME_SUFFIX = "_iscollocated";
+    @Override
+    public boolean areCollocated(File file1, File file2) {
+        String name1 = file1.getName();
+        String name2 = file2.getName();
+        
+        return name1.endsWith(COLLOCATED_FILENAME_SUFFIX) && name2.endsWith(COLLOCATED_FILENAME_SUFFIX);
     }
 
+    @Override
+    public File findRoot(File file) {
+        return TestVCS.getInstance().getTopmostManagedAncestor(file);
+    }
+    
 }

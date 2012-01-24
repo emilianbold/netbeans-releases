@@ -67,11 +67,11 @@ import org.openide.util.Lookup;
  *
  * @author Petr Pisl
  */
-public class PHPFormatterTestTemplate extends PHPTestBase {
+public class PHPFormatterTemplateTest extends PHPTestBase {
     private String FORMAT_START_MARK = "/*FORMAT_START*/"; //NOI18N
     private String FORMAT_END_MARK = "/*FORMAT_END*/"; //NOI18N
 
-    public PHPFormatterTestTemplate(String testName) {
+    public PHPFormatterTemplateTest(String testName) {
         super(testName);
     }
 
@@ -248,7 +248,7 @@ public class PHPFormatterTestTemplate extends PHPTestBase {
         reformatFileContents("testfiles/formatting/issue185353_06.php", options, true);
     }
 
-    // The test file containscharacters that are converted by default setting of netbeans. 
+    // The test file containscharacters that are converted by default setting of netbeans.
     // Don't edit the test file in NetBeans!!!
     public void testIssue185435_01() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
@@ -318,7 +318,7 @@ public class PHPFormatterTestTemplate extends PHPTestBase {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/templates/firstLineInHTML_01.php", options, true);
     }
-    
+
     public void testIssue187665_01() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/templates/issue187665_01.php", options, true);
@@ -409,7 +409,7 @@ public class PHPFormatterTestTemplate extends PHPTestBase {
         options.put(FmtOptions.spacesPerTab, 4);
         reformatFileContents("testfiles/formatting/templates/issue188656_09.php", options, true);
     }
-    
+
     public void testIssue191565_01() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.tabSize, 4);
@@ -418,12 +418,12 @@ public class PHPFormatterTestTemplate extends PHPTestBase {
         options.put(FmtOptions.spacesPerTab, 4);
         reformatFileContents("testfiles/formatting/templates/issue191565_01.php", options, true);
     }
-    
+
     public void testIssue192220() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/templates/issue192220.php", options, true);
     }
-    
+
     public void testIssue198616() throws Exception {
 	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
@@ -465,7 +465,7 @@ public class PHPFormatterTestTemplate extends PHPTestBase {
             }
             text = text.substring(0, carretPosition) + text.substring(carretPosition + 1);
         }
-        
+
         TokenFormatter.unitTestCarretPosition = carretPosition;
         BaseDocument doc = getDocument(fo);
         doc.remove(0, doc.getLength());
@@ -474,9 +474,9 @@ public class PHPFormatterTestTemplate extends PHPTestBase {
         if (isTemplate) {
             doc.putProperty(TokenFormatter.TEMPLATE_HANDLER_PROPERTY, new Object());
         }
-        
+
         assertNotNull(doc);
-        
+
 
         IndentPrefs preferences = new IndentPrefs(4, 4);
         Formatter formatter = getFormatter(preferences);

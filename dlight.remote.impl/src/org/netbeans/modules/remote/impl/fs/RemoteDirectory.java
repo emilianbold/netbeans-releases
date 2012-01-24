@@ -986,6 +986,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             Set<DirEntry> keepCacheNames = new HashSet<DirEntry>();
             List<DirEntry> entriesToFireChanged = new ArrayList<DirEntry>();
             List<DirEntry> entriesToFireCreated = new ArrayList<DirEntry>();
+            DirEntry expectedCreated = null;
             List<FileObject> filesToFireDeleted = new ArrayList<FileObject>();
             for (DirEntry newEntry : newEntries.values()) {
                 if (newEntry.isValid()) {
@@ -996,6 +997,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         cacheName = RemoteFileSystemUtils.escapeFileName(newEntry.getName());
                         if (fromMemOrDiskCache || newEntry.getName().equals(expectedName) || getFlag(CONNECTION_ISSUES)) {
                             entriesToFireCreated.add(newEntry);
+                            expectedCreated = newEntry;
                         }
                     } else {
                         if (oldEntry.isSameType(newEntry)) {
@@ -1118,7 +1120,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 }
                 for (DirEntry entry : entriesToFireCreated) {
                     RemoteFileObjectBase fo = createFileObject(entry);
-                    if (interceptor != null) {
+                    if (interceptor != null && !expectedCreated.equals(entry)) {
                         interceptor.createdExternally(FilesystemInterceptorProvider.toFileProxy(fo));
                     }
                     fireRemoteFileObjectCreated(fo);

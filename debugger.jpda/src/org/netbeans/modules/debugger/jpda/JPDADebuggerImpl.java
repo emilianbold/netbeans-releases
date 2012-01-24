@@ -1507,6 +1507,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * Used by ContinueActionProvider & StepActionProvider.
      */
     public void resume () {
+        try {
+            getOperator().waitForParallelEventsToProcess();
+        } catch (InterruptedException iex) {
+            return;
+        }
         accessLock.readLock().lock();
         try {
             if (!doContinue) {
@@ -1525,7 +1530,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
         if (vm != null) {
             logger.fine("VM resume");
-            List<JPDAThread> allThreads = getAllThreads();
+            List<JPDAThread> allThreads = getAllThreads(true);
             accessLock.writeLock().lock();
             logger.finer("Debugger WRITE lock taken.");
             stateChangeEvent = setStateNoFire(STATE_RUNNING);
@@ -1758,11 +1763,32 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     List<JPDAThread> getAllThreads() {
+        return getAllThreads(false);
+    }
+    
+    List<JPDAThread> getAllThreads(boolean findNewBornThreads) {
         ThreadsCache tc = getThreadsCache();
         if (tc == null) {
             return Collections.emptyList();
         }
         List<ThreadReference> threadList = tc.getAllThreads();
+        if (findNewBornThreads) {
+            Set<Long> threadIDs = new HashSet<Long>(threadList.size());
+            for (ThreadReference t : threadList) {
+                threadIDs.add(t.uniqueID());
+            }
+            List<ThreadReference> allThreads = VirtualMachineWrapper.allThreads0(virtualMachine);
+            boolean added = false;
+            for (ThreadReference t : allThreads) {
+                if (!threadIDs.contains(t.uniqueID())) {
+                    if (!added) {
+                        threadList = new ArrayList<ThreadReference>(threadList);
+                        added = true;
+                    }
+                    threadList.add(t);
+                }
+            }
+        }
         int n = threadList.size();
         List<JPDAThread> threads = new ArrayList<JPDAThread>(n);
         for (int i = 0; i < n; i++) {
