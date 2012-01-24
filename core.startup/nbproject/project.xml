@@ -151,6 +151,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.modulemanager</friend>
                 <friend>org.netbeans.modules.options.api</friend>
                 <friend>org.netbeans.modules.settings</friend>
+                <friend>com.oracle.jdeveloper.extcache</friend>
                 <package>org.netbeans.core.startup</package>
                 <package>org.netbeans.core.startup.layers</package>
             </friend-packages>
