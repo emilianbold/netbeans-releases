@@ -97,6 +97,7 @@ import org.netbeans.modules.php.editor.api.elements.AliasedType;
 import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.UseElement;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -1321,7 +1322,13 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     private LinkedHashSet<TypeElement> getDirectInheritedTypes(final TypeElement typeElement, final boolean includeClasses, final boolean includeIfaces) {
         final LinkedHashSet<TypeElement> directTypes = new LinkedHashSet<TypeElement>();
         if (includeClasses && (typeElement instanceof ClassElement)) {
-            QualifiedName superClassName = ((ClassElement) typeElement).getSuperClassName();
+            QualifiedName superClassName = null;
+            Collection<QualifiedName> possibleFQSuperClassNames = ((ClassElement) typeElement).getPossibleFQSuperClassNames();
+            if (possibleFQSuperClassNames.size() == 1) {
+                superClassName = possibleFQSuperClassNames.iterator().next();
+            } else {
+                superClassName = ((ClassElement) typeElement).getSuperClassName();
+            }
             if (superClassName != null) {
                 directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getClassesImpl(NameKind.exact(superClassName))));
             }
