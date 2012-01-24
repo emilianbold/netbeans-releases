@@ -42,42 +42,39 @@
 package org.netbeans.modules.javafx2.scenebuilder;
 
 import java.io.File;
-import org.netbeans.modules.javafx2.scenebuilder.utils.WinRegistry;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Properties;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 /**
- *
- * @author jbachorik
+ * Locates and validates a SceneBuilder installation
+ * @author Jaroslav Bachorik
  */
 public class SBHomeLocator {
+    private static final String VER_CURRENT = "1.0"; // NOI18N
+    private static final String PROPERTIES_FILE = "scenebuilder.properties"; // NOI18N
+    
     private static final HomeLocator WINDOWS_HOME_LOCATOR = new HomeLocator() {
-        final private static String wellKnownPath = "C:\\Program Files\\Oracle\\Scene Builder";
+        final private static String WKIP = "C:\\Program Files\\Oracle\\JavaFX Scene Builder " + VER_CURRENT; // NOI18N
+        final private static String WKIP_MIX = "C:\\Program Files (x86)\\Oracle\\JavaFX Scene Builder " + VER_CURRENT; // NOI18N
         
         @Override
         public Home locateHome() {
-            // 1. get current version
-            String version = WinRegistry.getString("\"HKLM\\SOFTWARE\\JavaSoft\\JavaFX Scene Builder\" /v SBVersion");
-            if (version == null) {
-                version = "1.0";
+            Home h = getHomeForPath(WKIP);
+            if (h == null) {
+                h = getHomeForPath(WKIP_MIX);
             }
-            // 1. registry
-            String home = WinRegistry.getString("\"HKLM\\SOFTWARE\\Oracle\\JavaFX Scene Builder\\" + version + "\" /v Path");
-            if (home == null) {
-                // 2. well known location
-                File h = new File(wellKnownPath);
-                if (h.exists() && h.isDirectory()) {
-                    home = wellKnownPath;
-                }
-            }
-            
-            return new Home(home, version);
+            return h;
         }
     };
     private static final HomeLocator MAC_HOME_LOCATOR = new HomeLocator() {
-
+        final private static String WKIP = "Applications/JavaFX Scene Builder/JavaFX Scene Builder 1.0.app/Contents/MacOS/Resources/SceneBuilder"; // NOI18N
         @Override
         public Home locateHome() {
-            throw new UnsupportedOperationException();
+            return getHomeForPath(WKIP);
         }
     };
     private static final HomeLocator UX_HOME_LOCATOR = new HomeLocator() {
@@ -96,5 +93,23 @@ public class SBHomeLocator {
         } else {
             return UX_HOME_LOCATOR;
         }
+    }
+    
+    private static Home getHomeForPath(String path) {
+        File installDir = new File(path);
+        if (installDir != null && installDir.exists() && installDir.isDirectory()) {
+            FileObject installDirFO = FileUtil.toFileObject(installDir);
+
+            FileObject propertiesFO = installDirFO.getFileObject("bin/" + PROPERTIES_FILE); // NOI18N
+            if (propertiesFO != null && propertiesFO.isValid() && propertiesFO.isData()) {
+                try {
+                    Properties props = new Properties();
+                    props.load(new FileReader(FileUtil.toFile(propertiesFO)));
+                    return new Home(path, props.getProperty("version", "1.0")); // NOI18N
+                } catch (IOException e) {
+                }
+            }
+        }
+        return null;
     }
 }

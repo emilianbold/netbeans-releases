@@ -68,7 +68,7 @@ public final class SBOptionsPanelController extends OptionsPanelController {
     
     @Override
     public void update() {
-        settings = new Settings();
+        settings = Settings.getInstance();
         panel.load();
         
         changed = false;

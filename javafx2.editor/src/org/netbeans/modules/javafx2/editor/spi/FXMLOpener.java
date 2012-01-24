@@ -45,6 +45,7 @@ import org.openide.util.Lookup;
 
 /**
  * A friend SPI for providing custom FXML open action
+ * Currently the only implementation is the SceneBuilder integraion module
  * @author Jaroslav Bachorik
  * 
  * @since 1.3.1

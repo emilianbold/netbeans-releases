@@ -67,12 +67,20 @@ final public class Settings {
     private static Preferences getPreferences() {
         return NbPreferences.forModule(Settings.class);
     }
-        
-    public Settings() {
+
+    private static class Singleton {
+        final private static Settings INSTANCE = new Settings();
+    }
+    
+    static public Settings getInstance() {
+        return Singleton.INSTANCE;
+    }
+    
+    private Settings() {
         String homeDef = getPreferences().get(SELECTED_HOME, null);
         predefinedHome = SBHomeLocator.getLocator().locateHome();
         
-        boolean isDefault = (homeDef != null && homeDef.equals(predefinedHome.getPath()));
+        boolean isDefault = (homeDef != null && predefinedHome != null && homeDef.equals(predefinedHome.getPath()));
         
         if (isDefault || selectedHome == null) {
             selectedHome = predefinedHome;

@@ -59,12 +59,15 @@ import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=FXMLOpener.class)
+/**
+ * Opens an FXML file in SceneBuilder instance if available.
+ */
 public final class SceneBuilderFXMLOpener extends FXMLOpener {
     final private static Logger LOG = Logger.getLogger(SceneBuilderFXMLOpener.class.getName());
     
     final private ExecutionDescriptor descriptor = new ExecutionDescriptor().frontWindow(true).controllable(true);
     
-    private Settings settings = new Settings();
+    private Settings settings = Settings.getInstance();
  
     @Override
     public boolean isEnabled(Lookup context) {
