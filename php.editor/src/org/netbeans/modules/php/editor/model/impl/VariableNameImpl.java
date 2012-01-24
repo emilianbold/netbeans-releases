@@ -427,6 +427,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         }*/
         sb.append(";");//NOI18N
         sb.append(getOffset()).append(";");//NOI18N
+        sb.append(";");//NOI18N
         return sb.toString();
     }
 
