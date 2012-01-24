@@ -270,7 +270,7 @@ public class JavaBinaryIndexer extends BinaryIndexer {
                 return IndexManager.writeAccess(new IndexManager.Action<Boolean>() {
                     @Override
                     public Boolean run() throws IOException, InterruptedException {
-                        final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
+                        final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), false);
                         if (uq == null) {
                             //Closing...
                             return true;
