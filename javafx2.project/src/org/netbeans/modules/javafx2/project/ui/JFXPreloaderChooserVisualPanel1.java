@@ -43,6 +43,7 @@ package org.netbeans.modules.javafx2.project.ui;
 
 import javax.swing.JPanel;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
+import org.openide.util.NbBundle;
 
 public final class JFXPreloaderChooserVisualPanel1 extends JPanel {
 
@@ -53,7 +54,7 @@ public final class JFXPreloaderChooserVisualPanel1 extends JPanel {
 
     @Override
     public String getName() {
-        return "Choose source type";
+        return NbBundle.getMessage(JFXPreloaderChooserVisualPanel1.class, "JFXPreloaderChooserVisualPanel1.name"); // NOI18N
     }
 
     public JFXProjectProperties.PreloaderSourceType getSelectedType() {
