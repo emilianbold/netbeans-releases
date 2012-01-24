@@ -192,6 +192,9 @@ public class DeadlockDetectorImpl extends DeadlockDetector implements PropertyCh
     private void buildGraph(Collection<JPDAThread> threads) {
         monitorToNode = new HashMap<Long, Node>();
         for (JPDAThread thread : threads) {
+            if (thread.getState() == JPDAThread.STATE_ZOMBIE) {
+                continue;
+            }
             ObjectVariable contendedMonitor = thread.getContendedMonitor();
             ObjectVariable[] ownedMonitors = thread.getOwnedMonitors();
             if (contendedMonitor == null || ownedMonitors.length == 0) {

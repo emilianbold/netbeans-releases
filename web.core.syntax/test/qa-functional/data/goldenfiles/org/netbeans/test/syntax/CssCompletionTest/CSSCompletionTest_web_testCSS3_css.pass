@@ -1,0 +1,785 @@
+[@|, @namespace, @namespace, 36]
+@charset
+@font-face
+@import
+@media
+@namespace
+@page
+End cursor position = 47
+[.a2[class^="start"]:|, active, .a2[class^="start"]:active, 102]
+active
+after
+before
+checked
+default
+disabled
+empty
+enabled
+first-child
+first-letter
+first-line
+first-of-type
+focus
+hover
+in-range
+indeterminate
+invalid
+lang
+last-child
+last-of-type
+link
+nth-child
+nth-last-child
+nth-last-of-type
+nth-of-type
+only-child
+only-of-type
+optional
+out-of-range
+read-only
+read-write
+required
+root
+target
+valid
+visited
+End cursor position = 129
+[.a2[class^="start"]::|, after, .a2[class^="start"]::after, 169]
+after
+before
+choices
+first-letter
+first-line
+marker
+repeat-index
+repeat-item
+selection
+value
+End cursor position = 196
+[a + |, div, a + div, 197]
+*
+a
+abbr
+abs
+address
+and
+animate
+animateColor
+animateMotion
+animateTransform
+animation
+annotation
+annotation-xml
+apply
+approx
+arccos
+arccosh
+arccot
+arccoth
+arccsc
+arccsch
+arcsec
+arcsech
+arcsin
+arcsinh
+arctan
+arctanh
+area
+arg
+article
+aside
+audio
+b
+base
+bdo
+blockquote
+body
+br
+button
+bvar
+canvas
+caption
+card
+cartesianproduct
+ceiling
+ci
+circle
+cite
+cn
+code
+codomain
+col
+colgroup
+command
+complexes
+compose
+condition
+conjugate
+cos
+cosh
+cot
+coth
+csc
+csch
+csymbol
+curl
+datalist
+dd
+declare
+defs
+degree
+del
+desc
+details
+determinant
+dfn
+diff
+discard
+div
+divergence
+divide
+dl
+domain
+domainofapplication
+dt
+ellipse
+em
+embed
+emptyset
+encoding
+eq
+equivalent
+eulergamma
+exists
+exp
+exponentiale
+factorial
+factorof
+false
+fieldset
+figcaption
+figure
+floor
+fn
+font
+font-face
+font-face-src
+font-face-uri
+footer
+forall
+foreignObject
+form
+function
+g
+gcd
+geq
+glyph
+grad
+gt
+h1
+h2
+h3
+h4
+h5
+h6
+handler
+head
+header
+hgroup
+hkern
+hr
+html
+i
+ident
+iframe
+image
+imaginary
+imaginaryi
+img
+implies
+in
+infinity
+input
+ins
+int
+integers
+intersect
+interval
+inverse
+kbd
+keygen
+label
+lambda
+laplacian
+lcm
+legend
+leq
+li
+limit
+line
+linearGradient
+link
+list
+listener
+ln
+log
+logbase
+lowlimit
+lt
+maction
+malign
+maligngroup
+malignmark
+malignscope
+map
+mark
+math
+matrix
+matrixrow
+max
+mean
+median
+menclose
+menu
+merror
+meta
+metadata
+meter
+mfenced
+mfrac
+mfraction
+mglyph
+mi
+min
+minus
+missing-glyph
+mlabeledtr
+mmultiscripts
+mn
+mo
+mode
+moment
+momentabout
+mover
+mpadded
+mpath
+mphantom
+mprescripts
+mroot
+mrow
+ms
+mspace
+msqrt
+mstyle
+msub
+msubsup
+msup
+mtable
+mtd
+mtext
+mtr
+munder
+munderover
+naturalnumbers
+nav
+neq
+none
+noscript
+not
+notanumber
+notin
+notprsubset
+notsubset
+object
+ol
+optgroup
+option
+or
+otherwise
+outerproduct
+output
+p
+param
+partialdiff
+partialdiff
+path
+path
+pi
+pi
+piece
+piece
+piecewice
+piecewice
+piecewise
+piecewise
+plus
+polygon
+polyline
+power
+pre
+prefetch
+primes
+product
+progress
+prsubset
+q
+quotient
+radialGradient
+rationals
+real
+reals
+rect
+reln
+rem
+root
+rp
+rt
+ruby
+samp
+scalarproduct
+script
+sdev
+sec
+sech
+section
+select
+selector
+semantics
+sep
+set
+setdiff
+sin
+sinh
+small
+solidColor
+source
+span
+stop
+strong
+style
+sub
+subset
+sum
+summary
+sup
+svg
+switch
+table
+tan
+tanh
+tbody
+tbreak
+td
+tendsto
+text
+textArea
+textarea
+tfoot
+th
+thead
+time
+times
+title
+tr
+track
+transpose
+true
+tspan
+ul
+union
+uplimit
+use
+var
+variance
+vector
+vectorproduct
+video
+wbr
+xor
+End cursor position = 205
+[display: |, display none, display: none, 264]
+display anything
+display block
+display compact
+display inherit
+display inline
+display inline-block
+display inline-table
+display list-item
+display none
+display ruby
+display ruby-base
+display ruby-base-group
+display ruby-text
+display ruby-text-group
+display run-in
+display table
+display table-caption
+display table-cell
+display table-column
+display table-column-group
+display table-footer-group
+display table-header-group
+display table-row
+display table-row-group
+End cursor position = 278
+[color: |, color navy, color: navy, 330]
+color color chooser
+color activeborder
+color activecaption
+color aliceblue
+color antiquewhite
+color appworkspace
+color aqua
+color aquamarine
+color azure
+color background
+color beige
+color bisque
+color black
+color blanchedalmond
+color blue
+color blueviolet
+color brown
+color burlywood
+color buttonface
+color buttonhighlight
+color buttonshadow
+color buttontext
+color cadetblue
+color captiontext
+color chartreuse
+color chocolate
+color coral
+color cornflowerblue
+color cornsilk
+color crimson
+color currentColor
+color cyan
+color darkblue
+color darkcyan
+color darkgoldenrod
+color darkgray
+color darkgreen
+color darkgrey
+color darkkhaki
+color darkmagenta
+color darkolivegreen
+color darkorange
+color darkorchid
+color darkred
+color darksalmon
+color darkseagreen
+color darkslateblue
+color darkslategray
+color darkslategrey
+color darkturquoise
+color darkviolet
+color deeppink
+color deepskyblue
+color dimgray
+color dimgrey
+color dodgerblue
+color firebrick
+color floralwhite
+color forestgreen
+color fuchsia
+color gainsboro
+color ghostwhite
+color gold
+color goldenrod
+color gray
+color graytext
+color green
+color greenyellow
+color grey
+color hash_color_code
+color highlight
+color highlighttext
+color honeydew
+color hotpink
+color hsl
+color hsla
+color inactiveborder
+color inactivecaption
+color inactivecaptiontext
+color indianred
+color indigo
+color infobackground
+color infotext
+color ivory
+color khaki
+color lavender
+color lavenderblush
+color lawngreen
+color lemonchiffon
+color lightblue
+color lightcoral
+color lightcyan
+color lightgoldenrodyellow
+color lightgray
+color lightgreen
+color lightgrey
+color lightpink
+color lightsalmon
+color lightseagreen
+color lightskyblue
+color lightslategray
+color lightslategrey
+color lightsteelblue
+color lightyellow
+color lime
+color limegreen
+color linen
+color magenta
+color maroon
+color mediumaquamarine
+color mediumblue
+color mediumorchid
+color mediumpurple
+color mediumseagreen
+color mediumslateblue
+color mediumspringgreen
+color mediumturquoise
+color mediumvioletred
+color menu
+color menutext
+color midnightblue
+color mintcream
+color mistyrose
+color moccasin
+color navajowhite
+color navy
+color oldlace
+color olive
+color olivedrab
+color orange
+color orangered
+color orchid
+color palegoldenrod
+color palegreen
+color paleturquoise
+color palevioletred
+color papayawhip
+color peachpuff
+color peru
+color pink
+color plum
+color powderblue
+color purple
+color red
+color rgb
+color rgba
+color rosybrown
+color royalblue
+color saddlebrown
+color salmon
+color sandybrown
+color scrollbar
+color seagreen
+color seashell
+color sienna
+color silver
+color skyblue
+color slateblue
+color slategray
+color slategrey
+color snow
+color springgreen
+color steelblue
+color tan
+color teal
+color thistle
+color threeddarkshadow
+color threedface
+color threedhighlight
+color threedlightshadow
+color threedshadow
+color tomato
+color transparent
+color turquoise
+color violet
+color wheat
+color white
+color whitesmoke
+color window
+color windowframe
+color windowtext
+color yellow
+color yellowgreen
+End cursor position = 342
+[-web|, -webkit-animation, -webkit-animation: , 394]
+-webkit-animation
+-webkit-animation-delay
+-webkit-animation-direction
+-webkit-animation-duration
+-webkit-animation-fill-mode
+-webkit-animation-iteration-co
+-webkit-animation-name
+-webkit-animation-play-state
+-webkit-animation-timing-funct
+-webkit-appearance
+-webkit-backface-visibility
+-webkit-background-clip
+-webkit-background-composite
+-webkit-background-origin
+-webkit-background-size
+-webkit-border-bottom-left-rad
+-webkit-border-bottom-right-ra
+-webkit-border-horizontal-spac
+-webkit-border-image
+-webkit-border-radius
+-webkit-border-top-left-radius
+-webkit-border-top-right-radiu
+-webkit-border-vertical-spacin
+-webkit-box-align
+-webkit-box-direction
+-webkit-box-flex
+-webkit-box-flex-group
+-webkit-box-lines
+-webkit-box-ordinal-group
+-webkit-box-orient
+-webkit-box-pack
+-webkit-box-reflect
+-webkit-box-shadow
+-webkit-box-sizing
+-webkit-column-break-after
+-webkit-column-break-before
+-webkit-column-break-inside
+-webkit-column-count
+-webkit-column-gap
+-webkit-column-rule
+-webkit-column-rule-color
+-webkit-column-rule-style
+-webkit-column-rule-width
+-webkit-column-width
+-webkit-columns
+-webkit-dashboard-region
+-webkit-line-break
+-webkit-margin-bottom-collapse
+-webkit-margin-collapse
+-webkit-margin-start
+-webkit-margin-top-collapse
+-webkit-marquee
+-webkit-marquee-direction
+-webkit-marquee-increment
+-webkit-marquee-repetition
+-webkit-marquee-speed
+-webkit-marquee-style
+-webkit-mask
+-webkit-mask-attachment
+-webkit-mask-box-image
+-webkit-mask-clip
+-webkit-mask-composite
+-webkit-mask-image
+-webkit-mask-origin
+-webkit-mask-position
+-webkit-mask-position-x
+-webkit-mask-position-y
+-webkit-mask-repeat
+-webkit-mask-size
+-webkit-nbsp-mode
+-webkit-padding-start
+-webkit-perspective
+-webkit-perspective-origin
+-webkit-rtl-ordering
+-webkit-tap-highlight-color
+-webkit-text-fill-color
+-webkit-text-security
+-webkit-text-size-adjust
+-webkit-text-stroke
+-webkit-text-stroke-color
+-webkit-text-stroke-width
+-webkit-touch-callout
+-webkit-transform
+-webkit-transform-origin
+-webkit-transform-origin-x
+-webkit-transform-origin-y
+-webkit-transform-origin-z
+-webkit-transform-style
+-webkit-transition
+-webkit-transition-delay
+-webkit-transition-duration
+-webkit-transition-property
+-webkit-transition-timing-func
+-webkit-user-drag
+-webkit-user-modify
+-webkit-user-select
+End cursor position = 413
+[box-|, box-shadow, box-shadow: , 434]
+box-decoration-break
+box-shadow
+box-sizing
+End cursor position = 446
+[border-|, border-radius, border-radius: , 483]
+border-bottom
+border-bottom-color
+border-bottom-left-radius
+border-bottom-right-radius
+border-bottom-style
+border-bottom-width
+border-collapse
+border-color
+border-image
+border-image-outset
+border-image-repeat
+border-image-slice
+border-image-source
+border-image-width
+border-left
+border-left-color
+border-left-style
+border-left-width
+border-radius
+border-right
+border-right-color
+border-right-style
+border-right-width
+border-spacing
+border-style
+border-top
+border-top-color
+border-top-left-radius
+border-top-right-radius
+border-top-style
+border-top-width
+border-width
+End cursor position = 498
+[div:not(:|){}, hover, div:not(:hover){}, 534]
+active
+after
+before
+checked
+default
+disabled
+empty
+enabled
+first-child
+first-letter
+first-line
+first-of-type
+focus
+hover
+in-range
+indeterminate
+invalid
+lang
+last-child
+last-of-type
+link
+nth-child
+nth-last-child
+nth-last-of-type
+nth-of-type
+only-child
+only-of-type
+optional
+out-of-range
+read-only
+read-write
+required
+root
+target
+valid
+visited
+End cursor position = 549
