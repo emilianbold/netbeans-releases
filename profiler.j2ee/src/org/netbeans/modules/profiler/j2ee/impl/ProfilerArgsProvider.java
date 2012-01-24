@@ -60,12 +60,10 @@ public class ProfilerArgsProvider implements StartupArgumentsProvider {
 
     @Override
     public List<String> getArguments(Lookup context, StartMode mode) {
-        if (mode == StartMode.PROFILE || mode == StartMode.TEST_PROFILE) {
-            Profiler p = Lookup.getDefault().lookup(Profiler.class);
-            InstanceProperties ip = context.lookup(InstanceProperties.class);
-            if (ip != null) {
-                return Arrays.asList(p.getSettings(ip.getProperty("url"), false).getJvmArgs()); //NOI18N
-            }
+        Profiler p = Lookup.getDefault().lookup(Profiler.class);
+        InstanceProperties ip = context.lookup(InstanceProperties.class);
+        if (ip != null) {
+            return Arrays.asList(p.getSettings(ip.getProperty("url"), false).getJvmArgs()); //NOI18N
         }
         return Collections.EMPTY_LIST;
     }
