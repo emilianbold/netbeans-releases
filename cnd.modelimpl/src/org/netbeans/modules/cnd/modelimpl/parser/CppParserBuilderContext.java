@@ -83,5 +83,14 @@ public class CppParserBuilderContext {
         NamespaceBuilder nsBuilder = (NamespaceBuilder)builder;        
         return nsBuilder;
     }
+
+    public NamespaceBuilder getNamespaceBuilderIfExist() {
+        CsmObjectBuilder builder = top();
+        if(builder instanceof NamespaceBuilder) {
+            NamespaceBuilder nsBuilder = (NamespaceBuilder)builder;        
+            return nsBuilder;
+        }
+        return null;
+    }
     
 }
