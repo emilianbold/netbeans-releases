@@ -127,6 +127,7 @@ public class Operator {
     private RequestProcessor  eventHandler;
     private Map<ThreadReference, HandlerTask> eventHandlers = new HashMap<ThreadReference, HandlerTask>();
     private final List<EventSet> parallelEvents = new LinkedList<EventSet>();
+    private boolean           haveParallelEventsToProcess = false;
     private final Map<EventSet, Set<ThreadReference>> threadsResumedForEvents = new WeakHashMap<EventSet, Set<ThreadReference>>();
     private final LoopControl loopControl;
 
@@ -189,6 +190,9 @@ public class Operator {
                                          logger.log(Level.FINE, "HAVE EVENT(s) in the parallel queue with something collected:", ocex);
                                      }
                                  }
+                             } else {
+                                 haveParallelEventsToProcess = false;
+                                 parallelEvents.notifyAll();
                              }
                          }
                          if (!haveParallelEvents) {
@@ -248,6 +252,13 @@ public class Operator {
                  //} catch (InterruptedException e) {
                  } catch (Exception e) {
                      ErrorManager.getDefault().notify(e);
+                 } finally {
+                     synchronized (parallelEvents) {
+                         if (haveParallelEventsToProcess && parallelEvents.isEmpty()) {
+                             haveParallelEventsToProcess = false;
+                             parallelEvents.notifyAll();
+                         }
+                     }
                  }
              }// for
              if (finalizer != null) finalizer.run ();
@@ -298,6 +309,7 @@ public class Operator {
         if (ignoredThreads != null) {
             synchronized (parallelEvents) {
                 parallelEvents.add(eventSet);
+                haveParallelEventsToProcess = true;
                 if (logger.isLoggable(Level.FINE)) {
                     try {
                         logger.fine("  the event(s) in the Queue are stored as parallelEvents = "+parallelEvents);
@@ -632,6 +644,14 @@ public class Operator {
         return true;
     }
     
+    public void waitForParallelEventsToProcess() throws InterruptedException {
+        synchronized (parallelEvents) {
+            while (haveParallelEventsToProcess) {
+                parallelEvents.wait();
+            }
+        }
+    }
+    
     public static void dumpThreadsStatus(VirtualMachine vm, Level l) {
         logger.log(l, "DUMP of threads:\n");
         List<ThreadReference> allThreads = vm.allThreads();
@@ -769,6 +789,7 @@ public class Operator {
                         } else if (ignoredThreads != null) {
                             synchronized (parallelEvents) {
                                 parallelEvents.add(eventSet);
+                                haveParallelEventsToProcess = true;
                                 if (logger.isLoggable(Level.FINE)) {
                                     try {
                                         logger.fine("  the event(s) in the Queue for "+tr+" are stored as parallelEvents = "+parallelEvents);

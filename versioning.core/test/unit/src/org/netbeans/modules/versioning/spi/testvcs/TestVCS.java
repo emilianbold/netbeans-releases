@@ -46,11 +46,13 @@ package org.netbeans.modules.versioning.spi.testvcs;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import org.netbeans.modules.versioning.core.VcsCollocationQueryImplementation;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.core.spi.VersioningSystem;
+import org.netbeans.spi.queries.CollocationQueryImplementation2;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -79,6 +81,7 @@ public class TestVCS extends VersioningSystem {
     private VCSInterceptor interceptor;
     private VCSAnnotator annotator;
     private VCSVisibilityQuery vq;
+    private TestVCSCollocationQuery vcq;
 
     public static final String TEST_VCS_METADATA = ".testvcs";
     public static final String VERSIONED_FOLDER_SUFFIX = "-test-versioned";
@@ -96,6 +99,7 @@ public class TestVCS extends VersioningSystem {
         interceptor = new TestVCSInterceptor();
         annotator = new TestVCSAnnotator();
         vq = new TestVCSVisibilityQuery();
+        vcq = new TestVCSCollocationQuery();
     }
 
     public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file) {
@@ -119,6 +123,11 @@ public class TestVCS extends VersioningSystem {
     @Override
     public VCSVisibilityQuery getVisibilityQuery() {
         return vq;
+    }
+
+    @Override
+    public CollocationQueryImplementation2 getCollocationQueryImplementation() {
+        return vcq;
     }
 
     public void fire() {
