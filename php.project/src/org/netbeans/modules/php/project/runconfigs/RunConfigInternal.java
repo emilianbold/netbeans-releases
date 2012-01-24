@@ -42,11 +42,12 @@
 package org.netbeans.modules.php.project.runconfigs;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 
@@ -95,8 +96,22 @@ public final class RunConfigInternal {
 
     //~ Methods
 
-    public String getServerUrl() {
+    public String getServer() {
         return hostname + ":" + port; // NOI18N
+    }
+
+    // XXX use this for url validation as well?
+    public URL getUrl() throws MalformedURLException {
+        return new URL("http://" + getServer() + "/"); // NOI18N
+    }
+
+    public String getUrlHint() {
+        try {
+            return getUrl().toExternalForm();
+        } catch (MalformedURLException ex) {
+            // ignored
+        }
+        return null;
     }
 
     //~ Getters & Setters

@@ -59,6 +59,7 @@ public abstract class ConfigAction {
         LOCAL,
         REMOTE,
         SCRIPT,
+        INTERNAL,
         TEST,
         SELENIUM,
     }
@@ -83,6 +84,9 @@ public abstract class ConfigAction {
             case SCRIPT:
                 type = Type.SCRIPT;
                 break;
+            case INTERNAL:
+                type = Type.INTERNAL;
+                break;
             default:
                 throw new IllegalArgumentException("Unknown type: " + runAsType);
         }
@@ -101,6 +105,9 @@ public abstract class ConfigAction {
                 break;
             case SCRIPT:
                 action = new ConfigActionScript(project);
+                break;
+            case INTERNAL:
+                action = new ConfigActionInternal(project);
                 break;
             case TEST:
                 action = new ConfigActionTest(project);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,74 +37,74 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.project.ui.actions.support;
 
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
-import org.netbeans.modules.php.project.runconfigs.validation.RunConfigRemoteValidator;
-import org.netbeans.modules.php.project.ui.actions.UploadCommand;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.php.project.internalserver.InternalWebServer;
+import org.netbeans.modules.php.project.runconfigs.RunConfigInternal;
+import org.netbeans.modules.php.project.runconfigs.validation.RunConfigInternalValidator;
 import org.openide.util.Lookup;
 
-/**
- * Action implementation for REMOTE configuration.
- * It means uploading, running and debugging web pages on a remote web server.
- * @author Tomas Mysik
- */
-class ConfigActionRemote extends ConfigActionLocal {
+class ConfigActionInternal extends ConfigActionLocal {
 
-    protected ConfigActionRemote(PhpProject project) {
+    ConfigActionInternal(PhpProject project) {
         super(project);
     }
 
     @Override
     public boolean isProjectValid() {
-        return isValid(RunConfigRemoteValidator.validateConfigAction(RunConfigRemote.forProject(project), true) == null);
+        return isValid();
     }
 
     @Override
     public boolean isFileValid() {
-        return isValid(RunConfigRemoteValidator.validateConfigAction(RunConfigRemote.forProject(project), false) == null);
+        return isValid();
+    }
+
+    private boolean isValid() {
+        boolean valid = RunConfigInternalValidator.validateConfigAction(RunConfigInternal.forProject(project)) == null;
+        if (!valid) {
+            showCustomizer();
+        }
+        return valid;
     }
 
     @Override
-    public void runProject() {
-        eventuallyUploadFiles();
-        super.runProject();
+    public void debugFile(Lookup context) {
+        if (!startInternalServer()) {
+            return;
+        }
+        super.debugFile(context);
     }
 
     @Override
     public void debugProject() {
-        eventuallyUploadFiles();
+        if (!startInternalServer()) {
+            return;
+        }
         super.debugProject();
     }
 
     @Override
-    protected void preShowUrl(Lookup context) {
-        eventuallyUploadFiles(CommandUtils.filesForContextOrSelectedNodes(context));
-    }
-
-    private void eventuallyUploadFiles() {
-        eventuallyUploadFiles((FileObject[]) null);
-    }
-
-    private void eventuallyUploadFiles(FileObject... preselectedFiles) {
-        UploadCommand uploadCommand = (UploadCommand) CommandUtils.getCommand(project, UploadCommand.ID);
-        if (!uploadCommand.isActionEnabled(null)) {
+    public void runFile(Lookup context) {
+        if (!startInternalServer()) {
             return;
         }
+        super.runFile(context);
+    }
 
-        PhpProjectProperties.UploadFiles uploadFiles = RunConfigRemote.forProject(project).getUploadFilesType();
-        assert uploadFiles != null;
-
-        if (PhpProjectProperties.UploadFiles.ON_RUN.equals(uploadFiles)) {
-            uploadCommand.uploadFiles(new FileObject[] {ProjectPropertiesSupport.getSourcesDirectory(project)}, preselectedFiles);
+    @Override
+    public void runProject() {
+        if (!startInternalServer()) {
+            return;
         }
+        super.runProject();
+    }
+
+    private boolean startInternalServer() {
+        return project.getLookup().lookup(InternalWebServer.class).start();
     }
 
 }

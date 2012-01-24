@@ -57,7 +57,7 @@ public abstract class RunConfigWeb<T extends RunConfigWeb<?>> extends BaseRunCon
 
     //~ Methods
 
-    // use this for url validation as well?
+    // XXX use this for url validation as well?
     public URL getFullUrl() throws MalformedURLException, URISyntaxException {
         URL retval = null;
         if (StringUtils.hasText(url)) {

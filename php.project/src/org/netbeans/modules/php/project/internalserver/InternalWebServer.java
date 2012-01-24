@@ -91,12 +91,13 @@ public final class InternalWebServer implements PropertyChangeListener {
         return process != null && !process.isDone();
     }
 
-    public synchronized void start() {
+    public synchronized boolean start() {
         if (isRunning()) {
             LOGGER.log(Level.INFO, "Internal web server already running for project {0}", project.getName());
-            return;
+            return true;
         }
         process = createProcess();
+        return isRunning();
     }
 
     @NbBundle.Messages({
@@ -145,7 +146,7 @@ public final class InternalWebServer implements PropertyChangeListener {
         ExternalProcessBuilder externalProcessBuilder = phpInterpreter.getProcessBuilder()
                 .workingDirectory(runConfig.getDocumentRoot())
                 .addArgument(WEB_SERVER_PARAM)
-                .addArgument(runConfig.getServerUrl());
+                .addArgument(runConfig.getServer());
         String routerRelativePath = runConfig.getRouterRelativePath();
         if (StringUtils.hasText(routerRelativePath)) {
             externalProcessBuilder = externalProcessBuilder
