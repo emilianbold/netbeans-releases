@@ -266,6 +266,24 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return UIDCsmConverter.UIDtoDeclaration(out);
     }
 
+    @Override
+    public CsmOffsetableDeclaration findExistingDeclaration(int start, CharSequence name, CsmDeclaration.Kind kind) {
+        CsmUID<? extends CsmOffsetableDeclaration> out = null;
+        if(kind != CsmDeclaration.Kind.CLASS_FRIEND_DECLARATION &&
+            kind != CsmDeclaration.Kind.FUNCTION_FRIEND &&
+            kind != CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) {
+            synchronized (members) {
+                out = UIDUtilities.findExistingUIDInList(members, start, name, kind);
+            }
+        } else {
+            // check friends
+            synchronized (friends) {
+                out = UIDUtilities.findExistingUIDInList(friends, start, name, kind);
+            }
+        }
+        return UIDCsmConverter.UIDtoDeclaration(out);
+    }
+
     protected void addMember(CsmMember member, boolean global) {
         if (global) {
             RepositoryUtils.put(member);
