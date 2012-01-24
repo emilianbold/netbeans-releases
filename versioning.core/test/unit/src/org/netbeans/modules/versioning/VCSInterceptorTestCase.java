@@ -57,6 +57,7 @@ import org.netbeans.modules.versioning.core.DelegatingVCS;
 import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
+import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
 
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -180,7 +181,7 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         logHandler.assertEvent(createdFormat, proxy);
     }
     
-    public void testIsMutable() throws IOException {
+    public void testIsMuttable() throws IOException {
         FileObject fo = getVersionedFolder();
         fo = fo.createData("checkme.txt");
         VCSFileProxy proxy = VCSFileProxy.createFileProxy(fo);
@@ -188,13 +189,31 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         
         assertTrue(fo.canWrite());
         assertEquals(0, logHandler.messages.size());
-        
         assertFalse(inteceptor.getIsMutableFiles().contains(proxy));
-        
+    }
+    
+    public void testVCSDoesntOverrideReadOnly() throws IOException {
+        FileObject fo = getVersionedFolder();
+        fo = fo.createData("checkme.txt");
+        VCSFileProxy proxy = VCSFileProxy.createFileProxy(fo);
         VCSFilesystemTestFactory.getInstance(this).setReadOnly(getRelativePath(proxy));
+        logHandler.clear();
+        
         assertFalse(fo.canWrite());
         assertTrue(inteceptor.getIsMutableFiles().contains(proxy));
+        assertEquals(1, logHandler.messages.size());
+        logHandler.assertEvent(canWriteFormat, proxy);
+    }
+    
+    public void testVCSOverridesReadOnly() throws IOException {
+        FileObject fo = getVersionedFolder();
+        fo = fo.createData(TestVCS.ALWAYS_WRITABLE_PREFIX);
+        VCSFileProxy proxy = VCSFileProxy.createFileProxy(fo);
+        VCSFilesystemTestFactory.getInstance(this).setReadOnly(getRelativePath(proxy));
+        logHandler.clear();
         
+        assertTrue(fo.canWrite());
+        assertTrue(inteceptor.getIsMutableFiles().contains(proxy));
         assertEquals(1, logHandler.messages.size());
         logHandler.assertEvent(canWriteFormat, proxy);
     }
@@ -327,7 +346,7 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         inteceptor.copyHandler = copyHandler;
         FileObject fo = getVersionedFolder();
         fo = fo.createData("copyme.txt");
-        logHandler.clear();
+        logHandler.clear();  
         
         FileObject fto = fo.copy(fo.getParent(), "copymeto", "txt");
         VCSFileProxy fromProxy = VCSFileProxy.createFileProxy(fo);
@@ -340,6 +359,7 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         assertTrue(inteceptor.getAfterCopyFiles().contains(fromProxy));
         assertTrue(inteceptor.getAfterCopyFiles().contains(toProxy));
         
+        logHandler.ignoredMessages.add(createdExternalyFormat); // XXX 
         assertEquals(3, logHandler.messages.size());
 //        logHandler.assertEvent(fileLockedFormat, fromProxy); // XXX no lock before copy ???
         logHandler.assertEvent(beforeCopyFormat, fromProxy, toProxy);
@@ -367,7 +387,7 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         assertTrue(inteceptor.getAfterCopyFiles().contains(fromProxy));
         assertTrue(inteceptor.getAfterCopyFiles().contains(toProxy));
         
-        logHandler.ignoredMessages.add(createdExternalyFormat);
+        logHandler.ignoredMessages.add(createdExternalyFormat); // XXX 
         assertEquals(3, logHandler.messages.size());
         logHandler.assertEvent(beforeCopyFormat, fromProxy, toProxy);
         logHandler.assertEvent(copyHandleFormat, fromProxy, toProxy);

@@ -76,7 +76,6 @@ import org.openide.awt.ActionRegistration;
 public class TestVCS extends VersioningSystem {
 
     private static TestVCS instance;
-
     
     private VCSInterceptor interceptor;
     private VCSAnnotator annotator;
@@ -85,6 +84,7 @@ public class TestVCS extends VersioningSystem {
 
     public static final String TEST_VCS_METADATA = ".testvcs";
     public static final String VERSIONED_FOLDER_SUFFIX = "-test-versioned";
+    public static String ALWAYS_WRITABLE_PREFIX = "alwayswritable-";
 
     public static TestVCS getInstance() {
         return instance;
