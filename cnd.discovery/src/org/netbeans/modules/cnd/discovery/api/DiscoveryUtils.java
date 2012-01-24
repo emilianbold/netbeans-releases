@@ -322,7 +322,11 @@ public class DiscoveryUtils {
                            (value.charAt(0) == '\\' && value.charAt(1) == '"' &&  // NOI18N
                             value.charAt(value.length()-2) == '\\' && value.charAt(value.length()-1) == '"' )) { // NOI18N
                             value = value.substring(1,value.length()-2)+"\"";  // NOI18N
-                        }
+                        } else if (!isScriptOutput && value.length() >= 2 &&
+                                    (value.charAt(0) == '\'' && value.charAt(value.length()-1) == '\'' || // NOI18N
+                                     value.charAt(0) == '"' && value.charAt(value.length()-1) == '"' )) { // NOI18N
+                            value = value.substring(1,value.length()-1);
+                        }                            
                     }
                     userMacros.put(macro.substring(0,i), value);
                 } else {
