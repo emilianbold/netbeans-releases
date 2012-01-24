@@ -47,12 +47,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.IndexingAwareTestCase;
 import org.netbeans.modules.parsing.api.MyScheduler;
@@ -84,10 +85,17 @@ public class FileModificationTest extends IndexingAwareTestCase {
         super (testName);
     }
 
+    @Override
+    protected Level logLevel() {
+        return Level.INFO;
+    }
+
     /**
      * @throws java.lang.Exception
      */
     public void testFileModification () throws Exception {
+        
+        Logger.getLogger("FileModificationTest.logger").setLevel(Level.INFO);
 
         // 1) register tasks and parsers
         MockServices.setServices (MockMimeLookup.class, MyScheduler.class);
@@ -185,6 +193,11 @@ public class FileModificationTest extends IndexingAwareTestCase {
                             }
 
                             public void cancel () {
+                            }
+                            
+                            @Override
+                            public String toString () {
+                                return "BooEmbedingProvider " + i;
                             }
                         },
                         new ParserResultTask () {
@@ -311,6 +324,7 @@ public class FileModificationTest extends IndexingAwareTestCase {
         test.check ("2 - change file\n");
 
         // 4) change file
+        Logger.getLogger("FileModificationTest.logger").info("FILE CHANGE");    //NOI18N
         outputStream = testFile.getOutputStream ();
         writer = new OutputStreamWriter (outputStream);
         writer.append ("Toto je testovaci file (druha verze), na kterem se budou delat hnusne pokusy!!!");

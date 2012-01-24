@@ -497,6 +497,7 @@ public class TaskProcessor {
         }
         //Issue #102073 - removed running task which is readded is not performed
         synchronized (INTERNAL_LOCK) {
+            Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "Adding tasks: {0} from: {1}", new Object[]{requests, java.util.Arrays.toString(Thread.currentThread().getStackTrace())});  //NOI18N
             TaskProcessor.requests.addAll (requests);
         }
         return true;
@@ -719,6 +720,7 @@ public class TaskProcessor {
                                                                             ((IndexingAwareParserResultTask)r.task).getIndexingMode() == TaskIndexingMode.ALLOWED_DURING_SCAN;
                                                                     final boolean compatMode = "true".equals(System.getProperty(COMPAT_MODE));  //NOI18N
                                                                     final boolean shouldCall = !sourceInvalid && (!scanInProgress || canRunDuringScan || compatMode);
+                                                                    Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "Performaing task: {0} shouldCall: {1}", new Object[]{r, shouldCall});  //NOI18N
                                                                     if (shouldCall) {
                                                                         try {
                                                                             final long startTime = System.currentTimeMillis();

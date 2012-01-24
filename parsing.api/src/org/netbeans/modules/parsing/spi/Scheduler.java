@@ -44,6 +44,8 @@ package org.netbeans.modules.parsing.spi;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.CurrentDocumentScheduler;
@@ -138,6 +140,7 @@ public abstract class Scheduler {
     protected final synchronized void schedule (
         final Source        source,
         final SchedulerEvent event) {
+        Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "Schedule {0} from: {1}", new Object[]{source, java.util.Arrays.toString(Thread.currentThread().getStackTrace())}); //NOI18N
         if (task != null) {
             task.cancel ();
         }
