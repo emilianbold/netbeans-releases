@@ -219,7 +219,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
     }
 
     public void setUseProfilingPoints(boolean use) {
-        profilingPointsCheckbox.setSelected(use);
+        profilingPointsCheckbox.setSelected(use && profilingPointsCheckbox.isEnabled());
         updateEnabling();
     }
 
