@@ -426,7 +426,7 @@ public final class ScanUtils {
         assert s != null;
         assert info != null;
         assert handle != null;
-        assert info.getJavaSource() == null : info.getJavaSource() == s;
+        assert info.getJavaSource() == null || info.getJavaSource() == s;
         checkRetryContext();
         T e = (T) handle.resolve(info);
         if (e != null) {
