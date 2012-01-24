@@ -46,6 +46,9 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.javafx2.editor.spi.FXMLOpener;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.cookies.OpenCookie;
 import org.openide.loaders.DataObject;
@@ -59,6 +62,9 @@ import org.openide.util.*;
  * @author Jaroslav Bachorik
  */
 @NbBundle.Messages("CTL_OpenAction=Open")
+@ActionID(category="Edit", id="org.netbeans.modules.javafx2.editor.fxml.FXMLOpenAction")
+@ActionReference(path="Loaders/text/x-fxml+xml/Actions", position=300)
+@ActionRegistration(displayName="#CTL_OpenAction", lazy=false)
 public class FXMLOpenAction extends AbstractAction implements ContextAwareAction, LookupListener {
     private final Lookup context;
     private Lookup.Result<DataObject> lkpInfo;
