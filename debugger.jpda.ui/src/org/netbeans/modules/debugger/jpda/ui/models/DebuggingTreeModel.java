@@ -124,11 +124,10 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     private final DebuggingMonitorModel.Children monitorChildrenFilter;
     private final TreeModel childrenModelImpl;
 
-    private RequestProcessor RP;
+    private final RequestProcessor RP = new RequestProcessor("Debugging Tree View Refresh", 1); // NOI18N
     
     public DebuggingTreeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
-        RP = lookupProvider.lookupFirst(null, RequestProcessor.class);
         debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, debuggerListener);
         if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
             debugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, debuggerListener);
