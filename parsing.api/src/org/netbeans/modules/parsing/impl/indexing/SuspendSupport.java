@@ -87,6 +87,9 @@ final class SuspendSupport implements SuspendStatus {
     }
 
     public void resume() {
+        if (NO_SUSPEND) {
+            return;
+        }
         if (worker.isRequestProcessorThread()) {
             return;
         }
