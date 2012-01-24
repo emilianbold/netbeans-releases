@@ -909,7 +909,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             ces.firePropertyChange(EditorCookie.Observable.PROP_OPENED_PANES, null, null);
         }
         if (ces.getAnyEditor() == null) {
-            ces.callNotifyUnmodified();
+            ces.close(false);
         }
     }
 
