@@ -52,6 +52,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -70,7 +71,7 @@ import org.openide.util.test.MockLookup;
  */
 public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
 
-    private static final boolean ALLOW_TCK = false;
+    private static final boolean ALLOW_TCK = true;
     private ExecutionEnvironment execEnv = null;
     private String tmpDir;
     private FileObject root;
@@ -190,12 +191,16 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
 
     @Override
     public void move(String from, String to) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        ExitStatus status = ProcessUtils.executeInDir(getRootPath(), execEnv, "mv", from, to);
+        if (status.isOK()) {
+        }
     }
 
     @Override
     public void copy(String from, String to) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        ExitStatus status = ProcessUtils.executeInDir(getRootPath(), execEnv, "mv", from, to);
+        if (status.isOK()) {
+        }
     }
 
 }

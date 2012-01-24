@@ -75,6 +75,7 @@ public class FieldElementImpl extends PhpElementImpl implements FieldElement {
     private final PhpModifiers modifiers;
     private final TypeElement enclosingType;
     private final Set<TypeResolver> instanceTypes;
+    private final Set<TypeResolver> instanceFQTypes;
 
     private FieldElementImpl(
             final TypeElement enclosingType,
@@ -83,11 +84,13 @@ public class FieldElementImpl extends PhpElementImpl implements FieldElement {
             final int flags,
             final String fileUrl,
             final ElementQuery elementQuery,
-            final Set<TypeResolver> instanceTypes) {
+            final Set<TypeResolver> instanceTypes,
+            final Set<TypeResolver> instanceFQTypes) {
         super(FieldElementImpl.getName(fieldName, true), enclosingType.getName(), fileUrl, offset, elementQuery);
         this.modifiers = PhpModifiers.fromBitMask(flags);
         this.enclosingType = enclosingType;
         this.instanceTypes = instanceTypes;
+        this.instanceFQTypes = instanceFQTypes;
     }
 
     public static Set<FieldElement> fromSignature(final TypeElement type,
@@ -118,7 +121,7 @@ public class FieldElementImpl extends PhpElementImpl implements FieldElement {
         if (matchesQuery(query, signParser)) {
             retval = new FieldElementImpl(type, signParser.getFieldName(),
                     signParser.getOffset(), signParser.getFlags(), indexResult.getUrl().toString(),
-                    indexScopeQuery, signParser.getTypes());
+                    indexScopeQuery, signParser.getTypes(), signParser.getFQTypes());
 
         }
         return retval;
@@ -132,9 +135,10 @@ public class FieldElementImpl extends PhpElementImpl implements FieldElement {
         final Set<FieldElement> retval = new HashSet<FieldElement>();
         for (SingleFieldDeclarationInfo info : fields) {
             final String returnType = VariousUtils.getFieldTypeFromPHPDoc(fileQuery.getResult().getProgram(),info.getOriginalNode());
+            Set<TypeResolver> types = returnType != null ? TypeResolverImpl.parseTypes(returnType) : null;
             retval.add(new FieldElementImpl(type, info.getName(), info.getRange().getStart(),
                     info.getAccessModifiers().toFlags(), fileQuery.getURL().toString(), fileQuery,
-                    returnType != null ? TypeResolverImpl.parseTypes(returnType):null));
+                    types, types));
         }
         return retval;
     }
@@ -147,7 +151,7 @@ public class FieldElementImpl extends PhpElementImpl implements FieldElement {
         Parameters.notNull("fileQuery", fileQuery);
         final ASTNodeInfo<FieldAccess> info = ASTNodeInfo.create(node);
         return new FieldElementImpl(type, info.getName(), info.getRange().getStart(),
-                    PhpModifiers.PUBLIC, fileQuery.getURL().toString(), fileQuery,resolvers);
+                    PhpModifiers.PUBLIC, fileQuery.getURL().toString(), fileQuery,resolvers, resolvers);
     }
 
     static FieldElement fromFrameworks(final TypeElement type, final Field field, final ElementQuery elementQuery) {
@@ -158,7 +162,7 @@ public class FieldElementImpl extends PhpElementImpl implements FieldElement {
                 ? Collections.<TypeResolver>singleton(new TypeResolverImpl(fldType.getFullyQualifiedName()))
                 : Collections.<TypeResolver>emptySet();
         FieldElementImpl retval = new FieldElementImpl(type, field.getName(), field.getOffset(),
-                PhpModifiers.NO_FLAGS, null, elementQuery, typeResolvers);
+                PhpModifiers.NO_FLAGS, null, elementQuery, typeResolvers, typeResolvers);
         retval.fileObject = field.getFile();
         return retval;
     }
@@ -207,6 +211,11 @@ public class FieldElementImpl extends PhpElementImpl implements FieldElement {
         return instanceTypes;
     }
 
+    @Override
+    public final Set<TypeResolver> getInstanceFQTypes() {
+        return instanceFQTypes;
+    }
+
     private void checkSignature(StringBuilder sb) {
         boolean checkEnabled = false;
         assert checkEnabled = true;
@@ -217,6 +226,7 @@ public class FieldElementImpl extends PhpElementImpl implements FieldElement {
             assert getOffset() == parser.getOffset();
             assert getPhpModifiers().toFlags() == parser.getFlags();
             assert getInstanceTypes().size() == parser.getTypes().size();
+            assert getInstanceFQTypes().size() == parser.getFQTypes().size();
         }
     }
 
@@ -285,6 +295,10 @@ public class FieldElementImpl extends PhpElementImpl implements FieldElement {
 
         Set<TypeResolver> getTypes() {
             return TypeResolverImpl.parseTypes(signature.string(4));
+        }
+
+        Set<TypeResolver> getFQTypes() {
+            return TypeResolverImpl.parseTypes(signature.string(5));
         }
     }
 }

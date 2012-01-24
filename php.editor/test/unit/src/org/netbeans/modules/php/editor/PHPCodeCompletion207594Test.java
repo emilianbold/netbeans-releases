@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,40 +34,44 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor;
 
-package org.netbeans.modules.websvc.core;
-
-import java.io.IOException;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.modules.websvc.api.support.java.SourceUtils;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Martin Adamek
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public final class _RetoucheUtil {
-    
-    private _RetoucheUtil() {}
-    
-    /** never call this from javac task */
-    public static String getMainClassName(final FileObject classFO) throws IOException {
-        JavaSource javaSource = JavaSource.forFileObject(classFO);
-        final String[] result = new String[1];
-        javaSource.runUserActionTask(new Task<CompilationController>() {
-            public void run(CompilationController controller) throws IOException {
-                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                TypeElement classEl = SourceUtils.getPublicTopLevelElement(controller);
-                if (classEl != null) {
-                    result[0] = classEl.getQualifiedName().toString();
-                }
-            }
-        }, true);
-        return result[0];
+public class PHPCodeCompletion207594Test extends PHPTestBase {
+
+    public PHPCodeCompletion207594Test(String testName) {
+        super(testName);
+    }
+
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test207594/issue207594.php", "throw new Nette\\Application\\^ForbiddenRequestException();", false);
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test207594/"))
+            })
+        );
     }
 
 }
