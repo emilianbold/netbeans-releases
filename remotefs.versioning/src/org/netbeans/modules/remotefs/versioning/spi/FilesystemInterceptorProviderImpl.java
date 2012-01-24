@@ -218,7 +218,7 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
 
         @Override
         public void afterMove(FileProxyI from, FileProxyI to) {
-            VCSFilesystemInterceptor.afterMove(toVCSFileProxy(from), toVCSFileProxy(from));
+            VCSFilesystemInterceptor.afterMove(toVCSFileProxy(from), toVCSFileProxy(to));
         }
 
         @Override
