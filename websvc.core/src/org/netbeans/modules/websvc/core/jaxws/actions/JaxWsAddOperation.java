@@ -44,19 +44,24 @@
 
 package org.netbeans.modules.websvc.core.jaxws.actions;
 
-import org.netbeans.modules.websvc.core._RetoucheUtil;
 import org.netbeans.modules.websvc.core.AddWsOperationHelper;
 import org.netbeans.modules.websvc.api.support.AddOperationCookie;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
+import javax.lang.model.element.TypeElement;
+
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -91,10 +96,11 @@ public class JaxWsAddOperation implements AddOperationCookie {
         final AddWsOperationHelper strategy = new AddWsOperationHelper(
                 NbBundle.getMessage(JaxWsAddOperation.class, "TITLE_OperationAction"));  //NOI18N
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     FileObject primaryFile = dataObject.getPrimaryFile();
-                    String className = _RetoucheUtil.getMainClassName(primaryFile);
+                    String className = getMainClassName(primaryFile);
                     if (className != null) {
                         strategy.addMethod(primaryFile, className);
                     }
@@ -163,6 +169,22 @@ public class JaxWsAddOperation implements AddOperationCookie {
             }
         }
         return null;
+    }
+    
+    public static String getMainClassName(final FileObject classFO) throws IOException {
+        JavaSource javaSource = JavaSource.forFileObject(classFO);
+        final String[] result = new String[1];
+        javaSource.runUserActionTask(new Task<CompilationController>() {
+            @Override
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                TypeElement classEl = SourceUtils.getPublicTopLevelElement(controller);
+                if (classEl != null) {
+                    result[0] = classEl.getQualifiedName().toString();
+                }
+            }
+        }, true);
+        return result[0];
     }
     
 }

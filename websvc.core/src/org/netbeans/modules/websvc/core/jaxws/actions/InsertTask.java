@@ -88,10 +88,11 @@ class InsertTask implements CancellableTask<WorkingCopy> {
         if ( containsWsRefInjection ) {
             return javaClass;
         }
-        TypeElement wsRefElement = workingCopy.getElements().getTypeElement("javax.xml.ws.WebServiceRef"); //NOI18N
+        //TypeElement wsRefElement = workingCopy.getElements().getTypeElement("javax.xml.ws.WebServiceRef"); //NOI18N
         AnnotationTree wsRefAnnotation = make.Annotation(
-                make.QualIdent(wsRefElement),
-                Collections.<ExpressionTree>singletonList(make.Assignment(make.Identifier("wsdlLocation"), make.Literal(wsdlUrl)))); //NOI18N
+                make.QualIdent("javax.xml.ws.WebServiceRef"),
+                Collections.<ExpressionTree>singletonList(make.Assignment(make.
+                        Identifier("wsdlLocation"), make.Literal(wsdlUrl)))); //NOI18N
         // create field modifier: private(static) with @WebServiceRef annotation
         FileObject targetFo = workingCopy.getFileObject();
         Set<Modifier> modifiers = new HashSet<Modifier>();
@@ -106,10 +107,12 @@ class InsertTask implements CancellableTask<WorkingCopy> {
         VariableTree serviceRefInjection = make.Variable(
             methodModifiers,
             serviceFName,
-            (typeElement != null ? make.Type(typeElement.asType()) : make.Identifier(serviceJavaName)),
+            (typeElement != null ? make.Type(typeElement.asType()) : 
+                make.Identifier(serviceJavaName)),
             null);
         
-        ClassTree modifiedClass = make.insertClassMember(javaClass, 0, serviceRefInjection);
+        ClassTree modifiedClass = make.insertClassMember(javaClass, 0, 
+                serviceRefInjection);
         return modifiedClass;
     }
     
