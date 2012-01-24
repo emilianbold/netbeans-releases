@@ -45,9 +45,11 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 
@@ -56,8 +58,10 @@ import org.openide.util.Mutex;
  */
 public final class RunConfigInternal {
 
+    public static final String DEFAULT_HOSTNAME = "localhost"; // NOI18N
     public static final int DEFAULT_PORT = 8888;
 
+    private File workDir;
     private File documentRoot;
     private String hostname;
     private String port;
@@ -88,6 +92,7 @@ public final class RunConfigInternal {
                 return new RunConfigInternal()
                         .setHostname(ProjectPropertiesSupport.getPhpInterpreter(project))
                         .setPort(ProjectPropertiesSupport.getPort(project))
+                        .setWorkDir(FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project)))
                         .setDocumentRoot(FileUtil.toFile(ProjectPropertiesSupport.getWebRootDirectory(project)))
                         .setRouterRelativePath(ProjectPropertiesSupport.getInternalRouter(project));
             }
@@ -114,7 +119,24 @@ public final class RunConfigInternal {
         return null;
     }
 
+    public String getRelativeDocumentRoot() {
+        FileObject workDirFo = FileUtil.toFileObject(workDir);
+        FileObject documentRootFo = FileUtil.toFileObject(documentRoot);
+        String relativePath = FileUtil.getRelativePath(workDirFo, documentRootFo);
+        assert relativePath != null : "Document root " + documentRoot + " must be underneath workdir " + workDir;
+        return StringUtils.hasText(relativePath) ? relativePath : null;
+    }
+
     //~ Getters & Setters
+
+    public File getWorkDir() {
+        return workDir;
+    }
+
+    public RunConfigInternal setWorkDir(File workDir) {
+        this.workDir = workDir;
+        return this;
+    }
 
     public String getHostname() {
         return hostname;

@@ -70,6 +70,7 @@ public final class InternalWebServer implements PropertyChangeListener {
     private static final Logger LOGGER = Logger.getLogger(InternalWebServer.class.getName());
 
     private static final String WEB_SERVER_PARAM = "-S"; // NOI18N
+    private static final String DOCUMENT_ROOT_PARAM = "-t"; // NOI18N
 
     private final PhpProject project;
 
@@ -144,9 +145,15 @@ public final class InternalWebServer implements PropertyChangeListener {
         }
         // run
         ExternalProcessBuilder externalProcessBuilder = phpInterpreter.getProcessBuilder()
-                .workingDirectory(runConfig.getDocumentRoot())
+                .workingDirectory(runConfig.getWorkDir())
                 .addArgument(WEB_SERVER_PARAM)
                 .addArgument(runConfig.getServer());
+        String relativeDocumentRoot = runConfig.getRelativeDocumentRoot();
+        if (relativeDocumentRoot != null) {
+            externalProcessBuilder = externalProcessBuilder
+                .addArgument(DOCUMENT_ROOT_PARAM)
+                .addArgument(relativeDocumentRoot);
+        }
         String routerRelativePath = runConfig.getRouterRelativePath();
         if (StringUtils.hasText(routerRelativePath)) {
             externalProcessBuilder = externalProcessBuilder
