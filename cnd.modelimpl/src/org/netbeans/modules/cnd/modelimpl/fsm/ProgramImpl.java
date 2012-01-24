@@ -253,6 +253,15 @@ public final class ProgramImpl<T> extends OffsetableDeclarationBase<T>
     }
 
     @Override
+    public CsmOffsetableDeclaration findExistingDeclaration(int start, CharSequence name, CsmDeclaration.Kind kind) {
+        CsmUID<CsmOffsetableDeclaration> out = null;
+        synchronized (declarations) {
+            out = UIDUtilities.findExistingUIDInList(declarations, start, name, kind);
+        }
+        return UIDCsmConverter.UIDtoDeclaration(out);
+    }
+    
+    @Override
     public void dispose() {
         super.dispose();
         //NB: we're copying declarations, because dispose can invoke this.removeDeclaration

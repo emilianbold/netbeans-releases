@@ -148,7 +148,7 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
             if (section.equals("remote.platforms")) {
                 Collection<String> keys = rcFile.getKeys(section);
                 for(String key : keys) {
-                    if (key.equals("intel-S2")) {
+                    if (key.equals("intel-Linux")) {
                         String get = rcFile.get(section, key, null);
                         if (get == null) {
                             mspec = key;
@@ -186,6 +186,16 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
         ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "mktemp", mkTempArgs);
         assertEquals("mktemp failed: " + res.error, 0, res.exitCode);
         return res.output;
+    }
+
+    @Override
+    public void move(String from, String to) throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void copy(String from, String to) throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

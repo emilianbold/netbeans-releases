@@ -684,8 +684,13 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
                 JPDAThreadImpl jtr = debugger.getThread(thread);
                 jtr.accessLock.writeLock().lock();
                 try {
-                    CallStackFrame csf = jtr.getCallStack(0, 1)[0];
-                    success = evaluateConditionIn (condition, csf, contextVar);
+                    CallStackFrame[] csfs = jtr.getCallStack(0, 1);
+                    if (csfs.length > 0) {
+                        success = evaluateConditionIn (condition, csfs[0], contextVar);
+                    } else {
+                        // Can not evaluate any condition without the top stack frame.
+                        success = true;
+                    }
                 } finally {
                     jtr.accessLock.writeLock().unlock();
                 }
