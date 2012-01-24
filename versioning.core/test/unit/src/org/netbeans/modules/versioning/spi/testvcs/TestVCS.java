@@ -47,10 +47,7 @@ package org.netbeans.modules.versioning.spi.testvcs;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
-import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
-import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
-import org.netbeans.modules.versioning.core.spi.VersioningSystem;
+import org.netbeans.modules.versioning.core.spi.*;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -78,6 +75,7 @@ public class TestVCS extends VersioningSystem {
     
     private VCSInterceptor interceptor;
     private VCSAnnotator annotator;
+    private VCSHistoryProvider historyProvider;
     private VCSVisibilityQuery vq;
 
     public static final String TEST_VCS_METADATA = ".testvcs";
@@ -95,6 +93,7 @@ public class TestVCS extends VersioningSystem {
         instance = this;
         interceptor = new TestVCSInterceptor();
         annotator = new TestVCSAnnotator();
+        historyProvider = new TestVCSHistoryProvider();
         vq = new TestVCSVisibilityQuery();
     }
 
@@ -140,5 +139,11 @@ public class TestVCS extends VersioningSystem {
     public static class GlobalAction implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) { }
+        
+    }
+    
+    @Override
+    public VCSHistoryProvider getVCSHistoryProvider() {
+        return historyProvider;
     }    
 }

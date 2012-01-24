@@ -1218,7 +1218,8 @@ public class HgCommand {
         } catch (HgException.HgCommandCanceledException ex) {
             // do not take any action
         } catch (HgException ex) {
-            HgUtils.notifyException(ex);
+            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
+            DialogDisplayer.getDefault().notifyLater(e);
         } finally {
             logger.closeLog();
         }
@@ -1235,7 +1236,8 @@ public class HgCommand {
         } catch (HgException.HgCommandCanceledException ex) {
             // do not take any action
         } catch (HgException ex) {
-            HgUtils.notifyException(ex);
+            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
+            DialogDisplayer.getDefault().notifyLater(e);
         } finally {
             logger.closeLog();
         }
@@ -1271,9 +1273,12 @@ public class HgCommand {
         } catch (HgException.HgCommandCanceledException ex) {
             // do not take any action
         } catch (HgException ex) {
-            HgUtils.notifyException(ex);
+            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
+            DialogDisplayer.getDefault().notifyLater(e);
         } finally {
-            logger.closeLog();
+             if(logger != null) {
+                logger.closeLog();
+            }
         }
 
         return messages.toArray(new HgLogMessage[0]);
@@ -2022,14 +2027,7 @@ public class HgCommand {
             command.add(url);
             command.add(target); // target must be the last argument
 
-            String proxy = getGlobalProxyIfNeeded(url.toUrlStringWithoutUserInfo(), true, logger);
-            if (proxy != null) {
-                List<String> env = new ArrayList<String>();
-                env.add(HG_PROXY_ENV + proxy);
-                list = execEnv(command, env);
-            } else {
-                list = exec(command);
-            }
+            list = exec(command);
             try {
                 if (!list.isEmpty()) {
                     if (isErrorNoRepository(list.get(0))) {
@@ -3594,7 +3592,7 @@ public class HgCommand {
             } else {
                 Mercurial.LOG.log(Level.FINE, "execEnv(): {0}", command); // NOI18N
             }
-        }
+            }
     }
 
     private static List<String> exec (List<? extends Object> command, ProcessBuilder pb) throws HgException {
@@ -3769,7 +3767,6 @@ public class HgCommand {
         return result;
     }
 
-    @SuppressWarnings("unchecked")
     private static List<String> toCommandList(List<? extends Object> cmdLine, File styleFile) {
         if (cmdLine.isEmpty()) {
             return (List<String>) cmdLine;

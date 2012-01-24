@@ -51,7 +51,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.JTree;
 import javax.swing.tree.TreeNode;
-import org.netbeans.modules.localhistory.ui.view.ShowLocalHistoryAction;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -192,8 +191,9 @@ public class RevertDeletedAction extends NodeAction {
         return NbBundle.getMessage(this.getClass(), "CTL_ShowRevertDeleted");   // NOI18N      
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ShowLocalHistoryAction.class);
+        return new HelpCtx(RevertDeletedAction.class);
     }
 
     private static void revert(StoreEntry se) {        
