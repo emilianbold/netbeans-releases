@@ -3,5 +3,5 @@ MicroEdition-Configuration: CLDC-1.0
 MIDlet-Version: 1.0.0
 MIDlet-Name: Game Builder Demo
 MIDlet-Description: Sample MIDP game created with Game Builder
-MIDlet-Vendor: Sun Microsystems, Inc.
+MIDlet-Vendor: Oracle
 MicroEdition-Profile: MIDP-2.0
