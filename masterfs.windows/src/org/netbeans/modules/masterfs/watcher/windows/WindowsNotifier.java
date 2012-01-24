@@ -297,12 +297,27 @@ public final class WindowsNotifier extends Notifier<Void> {
     private final BlockingQueue<String> events = new LinkedBlockingQueue<String>();
 
     public @Override Void addWatch(String path) throws IOException {
+        String root = null;
 
-        if (path.length() < 3 ) throw new IOException("wrong path: " + path);
-
-        String root = path.substring(0, 3).replace('/', '\\');
-        if (root.charAt(1) != ':' || root.charAt(2) != '\\') {
-            throw new IOException("wrong path: " + path);
+        if (path.charAt(1) == ':') { // classic drive letter (e.g. C:\)
+            root = path.substring(0, 3).replace('/', '\\');
+            if (root.charAt(2) != '\\') {
+                throw new IOException("wrong path: " + path);
+            }
+        } else { // check if it is unc path
+            String normedPath = path.replace('/', '\\');
+            if (normedPath.startsWith("\\\\")) {
+                int thirdBackslash = normedPath.indexOf('\\', 3);
+                if (thirdBackslash != -1) {
+                    int endOfRoot = normedPath.indexOf('\\', thirdBackslash + 1);
+                    if (endOfRoot == -1) {
+                        endOfRoot = normedPath.length();
+                    }
+                    root = normedPath.substring(0, endOfRoot);
+                } else {
+                    throw new IOException("wrong path: " + path);
+                }
+            }
         }
 
         if (rootMap.containsKey(root)) return null; // already listening
