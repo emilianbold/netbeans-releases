@@ -43,11 +43,13 @@
 package org.netbeans.modules.remote.ui;
 
 import java.awt.Image;
+import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -55,6 +57,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -131,17 +134,25 @@ public class FileSystemRootNode extends AbstractNode {
 
         @Override
         protected Node createNodeForKey(Kind key) {
-            FileObject fo;
+            FileObject fo = null;
             switch (key) {
                 case DISCONNECTED:
                     return new NotConnectedNode(env);
                 case HOME:
-                    String homeDir = RemoteUtil.getHomeDirectory(env);
-                    fo = rootFileObject.getFileObject(homeDir);
+                    try {
+                        String homeDir = HostInfoUtils.getHostInfo(env).getUserDir();
+                        fo = rootFileObject.getFileObject(homeDir);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    } catch (CancellationException ex) {
+                        // don't report CancellationException
+                    }
                     break;
                 case MIRROR:
                     String mirror = RemotePathMap.getRemoteSyncRoot(env);
-                    fo = rootFileObject.getFileObject(mirror);
+                    if (mirror!= null) {
+                        fo = rootFileObject.getFileObject(mirror);
+                    }
                     break;
                 case ROOT:
                     fo = rootFileObject;
@@ -153,7 +164,7 @@ public class FileSystemRootNode extends AbstractNode {
             if (fo != null) {
                 return new FileSystemNode(env, fo);
             }
-            return null; // TODO: error processing
+        return null; // TODO: error processing
         }
     }
 }

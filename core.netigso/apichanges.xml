@@ -52,6 +52,19 @@ made subject to such option by the copyright holder.
     <apidef name="general">OSGi Related Behavior</apidef>
 </apidefs>
 <changes>
+    <change id="is.archive.active">
+      <api name="spi"/>
+      <summary>Is archive active?</summary>
+      <version major="1" minor="14"/>
+      <date day="10" month="1" year="2012"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"/>
+      <description>
+          One can check whether the access to resource archive is safe or not
+          by calling <code>isActive()</code> method.
+     </description>
+      <class package="org.netbeans.core.netigso.spi" name="NetigsoArchive"/>
+    </change>
     <change id="no.friends">
       <api name="general"/>
       <summary>Friend API is no longer accessible</summary>

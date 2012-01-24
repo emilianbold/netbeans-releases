@@ -210,6 +210,7 @@ public class Notificator {
 
         idFileMaker = new IdMaker<CsmFile, CharSequence>() {
 
+            @Override
             public CharSequence id(CsmFile o) {
                 return (o).getAbsolutePath();
             }
@@ -218,6 +219,7 @@ public class Notificator {
 
         IdMaker<CsmOffsetableDeclaration, PersistentKey> idDeclMaker = new IdMaker<CsmOffsetableDeclaration, PersistentKey>() {
 
+            @Override
             public PersistentKey id(CsmOffsetableDeclaration o) {
                 return PersistentKey.createKey(o);
             }

@@ -73,7 +73,8 @@ import org.openide.windows.TopComponent;
  * @author Jesse Glick
  */
 @ActionID(category="Help", id="org.netbeans.modules.javahelp.HelpAction")
-@ActionRegistration(displayName="#LBL_HelpAction", iconBase="org/netbeans/modules/javahelp/resources/show-help.gif")
+@ActionRegistration(displayName="#LBL_HelpAction", iconBase="org/netbeans/modules/javahelp/resources/show-help.gif",
+        /* OpenIDE-Transmodal-Action must be present from the start (#206089) */ lazy=false)
 @ActionReference(path="Shortcuts", name="F1")
 public class HelpAction extends AbstractAction {
 

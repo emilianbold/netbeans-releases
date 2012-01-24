@@ -855,7 +855,7 @@ public class SvnClientExceptionHandler {
 
     public static boolean isNodeNotFound (String message) {
         message = message.toLowerCase();
-        return message.contains("svn: the node") && message.contains("not found"); //NOI18N
+        return (message.contains(": the node") && message.contains("not found")); //NOI18N
     }
     
     public static boolean isPartOf17OrGreater (String message) {

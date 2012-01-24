@@ -41,11 +41,7 @@ package org.netbeans.jellytools.nodes;
 
 import java.awt.Toolkit;
 import java.io.IOException;
-import org.netbeans.jellytools.FilesTabOperator;
-import org.netbeans.jellytools.FindInFilesOperator;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
+import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.testutils.JavaNodeUtils;
 
 /**
@@ -111,11 +107,11 @@ public class FolderNodeTest extends JellyTestCase {
     /** Test paste. */
     public void testPaste() {
         FolderNode sample1Node = new FolderNode(new FilesTabOperator().getProjectNode("SampleProject"), "src|sample1"); // NOI18N
-        FolderNode sample2Node = new FolderNode(sample1Node, "sample2"); // NOI18N
-        sample2Node.copy();
+        FolderNode propertiesNode = new FolderNode(sample1Node, "properties.properties"); // NOI18N
+        propertiesNode.copy();
         sample1Node.paste();
-        FolderNode sample21Node = new FolderNode(sample1Node, "sample2_1");  // NOI18N
-        JavaNodeUtils.performSafeDelete(sample21Node);
+        FolderNode properties1Node = new FolderNode(sample1Node, "properties_1.properties");  // NOI18N
+        JavaNodeUtils.performSafeDelete(properties1Node);
     }
 
     /** Test cut. */

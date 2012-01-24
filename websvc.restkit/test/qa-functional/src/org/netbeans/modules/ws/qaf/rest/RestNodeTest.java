@@ -51,7 +51,7 @@ import org.netbeans.junit.NbModuleSuite;
 /**
  * Tests REST node in project logical view
  *
- * Duration of this test suite: aprox. 2min
+ * Duration of this test suite: approx. 2min
  *
  * @author lukas
  */
@@ -65,7 +65,7 @@ public class RestNodeTest extends RestTestBase {
             "    }\n"; //NOI18N
 
     public RestNodeTest(String name) {
-        super(name);
+        super(name, Server.GLASSFISH);
     }
 
     public RestNodeTest(String name, Server server) {
@@ -82,7 +82,7 @@ public class RestNodeTest extends RestTestBase {
      * view after opening a project
      */
     public void testNodesAfterOpen() {
-        assertEquals("Some node not shown", 3, getRestNode().getChildren().length); //NOI18N
+        assertEquals("Some node not shown", 5, getRestNode().getChildren().length); //NOI18N
         assertEquals("Some method not shown for " + services[0], 3, //NOI18N
                 getMethodsNode(services[0]).getChildren().length); //NOI18N
         assertEquals("Some method not shown for " + services[1], 1, //NOI18N

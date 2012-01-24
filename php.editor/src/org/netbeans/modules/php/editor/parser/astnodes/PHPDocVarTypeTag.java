@@ -68,15 +68,33 @@ public class PHPDocVarTypeTag extends PHPDocTypeTag {
     @Override
     public String getDocumentation() {
         if (documentation == null) {
-            int index = getValue().indexOf(variable.getValue());
+            int index = getValue().trim().indexOf(variable.getValue());
             if (index > -1) {
-                documentation = getValue().substring(index + variable.getValue().length()).trim();
+                if (index == 0) {
+                    // first space after type
+                    String trimmedValue = getValue().trim();
+                    int firstSpace = trimmedValue.indexOf(" "); //NOI18N
+                    int firstTab = trimmedValue.indexOf("\t"); //NOI18N
+                    int delimiterIndex = -1;
+                    if (firstSpace > 0 && (firstSpace < firstTab || firstTab == -1)) {
+                        delimiterIndex = firstSpace;
+                    } else if (firstTab > 0 && (firstTab < firstSpace || firstSpace == -1)) {
+                        delimiterIndex = firstTab;
+                    }
+                    if (delimiterIndex != -1) {
+                        documentation = trimmedValue.substring(delimiterIndex).trim();
+                    } else {
+                        documentation = ""; //NOI18N
+                    }
+                } else {
+                    documentation = getValue().trim().substring(index + variable.getValue().length()).trim();
+                }
             }
         }
         return documentation;
     }
-    
-    
+
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);

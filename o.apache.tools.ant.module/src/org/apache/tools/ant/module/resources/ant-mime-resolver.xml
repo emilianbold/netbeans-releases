@@ -43,7 +43,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE MIME-resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN" "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
+<!DOCTYPE MIME-resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.1//EN" "http://www.netbeans.org/dtds/mime-resolver-1_1.dtd">
 
 <!-- See #9582. -->
 
@@ -82,6 +82,11 @@ made subject to such option by the copyright holder.
 
     <file>
         <ext name="ant"/> <!-- #88430 -->
+        <resolver mime="text/x-ant+xml"/>
+    </file>
+
+    <file>
+        <name name="build.xml"/> <!-- #199927 -->
         <resolver mime="text/x-ant+xml"/>
     </file>
 

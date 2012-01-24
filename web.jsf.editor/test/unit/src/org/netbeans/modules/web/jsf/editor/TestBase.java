@@ -46,7 +46,6 @@ package org.netbeans.modules.web.jsf.editor;
 import java.net.URL;
 import java.util.Collections;
 import java.util.StringTokenizer;
-import java.util.concurrent.Future;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
@@ -87,15 +86,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean.Scope;
 import org.netbeans.modules.web.jsf.api.metamodel.ManagedProperty;
@@ -524,68 +519,6 @@ public class TestBase extends CslTestBase {
                     return new InputSource(new StringReader(""));
                 }
             };
-        }
-    }
-
-    protected static class OpenProject implements OpenProjectsTrampoline {
-
-        public
-        @Override
-        Project[] getOpenProjectsAPI() {
-            return new Project[0];
-        }
-
-        public
-        @Override
-        void openAPI(Project[] projects, boolean openRequiredProjects, boolean showProgress) {
-        }
-
-        public
-        @Override
-        void closeAPI(Project[] projects) {
-        }
-
-        public void addPropertyChangeListenerAPI(PropertyChangeListener listener, Object source) {
-        }
-
-        public Future<Project[]> openProjectsAPI() {
-            return new Future<Project[]>() {
-
-                public boolean cancel(boolean mayInterruptIfRunning) {
-                    return true;
-                }
-
-                public boolean isCancelled() {
-                    return false;
-                }
-
-                public boolean isDone() {
-                    return true;
-                }
-
-                public Project[] get() throws InterruptedException, ExecutionException {
-                    return new Project[0];
-                }
-
-                public Project[] get(long timeout, TimeUnit unit)
-                        throws InterruptedException, ExecutionException, TimeoutException {
-                    return new Project[0];
-                }
-            };
-        }
-
-        public void removePropertyChangeListenerAPI(PropertyChangeListener listener) {
-        }
-
-        public
-        @Override
-        Project getMainProject() {
-            return null;
-        }
-
-        public
-        @Override
-        void setMainProject(Project project) {
         }
     }
 

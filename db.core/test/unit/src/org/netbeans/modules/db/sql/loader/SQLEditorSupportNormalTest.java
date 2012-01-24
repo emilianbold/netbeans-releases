@@ -246,14 +246,8 @@ public class SQLEditorSupportNormalTest extends NbTestCase {
         
         @Override
         public CloneableEditor createCloneableEditor() {
-            return new MySQLCloneableEditor(this);
+            return new SQLCloneableEditor(Lookups.singleton(this));
         }
         
-        private static final class MySQLCloneableEditor extends SQLCloneableEditor {
-            
-            public MySQLCloneableEditor(MySQLEditorSupport support) {
-                super(Lookups.singleton(support));
-            }
-            }
-        }
     }
+}

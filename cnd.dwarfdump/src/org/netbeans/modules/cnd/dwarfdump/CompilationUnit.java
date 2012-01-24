@@ -139,7 +139,7 @@ public class CompilationUnit {
     }
     
     public String getSourceFileAbsolutePath() throws IOException {
-        String result = null;
+        String result;
         
         String dir = getCompilationDir();
         String name = getSourceFileName();
@@ -545,13 +545,19 @@ public class CompilationUnit {
     }
     
     private void initMacrosTable() throws IOException {
-        DwarfMacroInfoSection macroInfoSection = (DwarfMacroInfoSection)reader.getSection(SECTIONS.DEBUG_MACINFO); // NOI18N
+        Integer macroInfoOffset;
+        DwarfMacroInfoSection macroInfoSection = (DwarfMacroInfoSection)reader.getSection(SECTIONS.DEBUG_MACINFO);
         
         if (macroInfoSection == null) {
-            return;
+            macroInfoSection = (DwarfMacroInfoSection)reader.getSection(SECTIONS.DEBUG_MACRO);
+            if (macroInfoSection == null) {
+                return;
+            } else {
+                macroInfoOffset = (Integer)root.getAttributeValue(ATTR.DW_AT_GNU_macros);
+            }
+        } else {
+            macroInfoOffset = (Integer)root.getAttributeValue(ATTR.DW_AT_macro_info);
         }
-        
-        Integer macroInfoOffset = (Integer)root.getAttributeValue(ATTR.DW_AT_macro_info);
         
         if (macroInfoOffset == null) {
             return;

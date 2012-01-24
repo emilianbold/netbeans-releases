@@ -53,6 +53,7 @@ import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -63,8 +64,12 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.ModelBase;
+import org.apache.maven.model.Parent;
+import org.apache.maven.model.Profile;
 import org.apache.maven.model.Repository;
-import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
+import org.apache.maven.model.io.ModelReader;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -72,12 +77,15 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.cos.CopyResourcesOnSave;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.modules.maven.problems.BatchProblemNotifier;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -86,9 +94,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
-import org.openide.xml.XMLUtil;
-import org.w3c.dom.Element;
-import org.xml.sax.InputSource;
 
 /**
  * openhook implementation, register global classpath and also
@@ -97,12 +102,13 @@ import org.xml.sax.InputSource;
  * @author  Milos Kleint
  */
 @SuppressWarnings("ClassWithMultipleLoggers")
-class ProjectOpenedHookImpl extends ProjectOpenedHook {
+@ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-maven")
+public class ProjectOpenedHookImpl extends ProjectOpenedHook {
     private static final String PROP_BINARIES_CHECKED = "binariesChecked";
     private static final String PROP_JAVADOC_CHECKED = "javadocChecked";
     private static final String PROP_SOURCE_CHECKED = "sourceChecked";
    
-    private final NbMavenProjectImpl project;
+    private final Project proj;
     private List<URI> uriReferences = new ArrayList<URI>();
 
     // ui logging
@@ -115,8 +121,8 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
     private static final Logger LOGGER = Logger.getLogger(ProjectOpenedHookImpl.class.getName());
     private static final AtomicBoolean checkedIndices = new AtomicBoolean();
     
-    ProjectOpenedHookImpl(NbMavenProjectImpl proj) {
-        project = proj;
+    public ProjectOpenedHookImpl(Project proj) {
+        this.proj = proj;
     }
 
     @Messages("UI_MAVEN_PROJECT_OPENED=A Maven project was opened. Appending the project's packaging type.")
@@ -124,8 +130,9 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
         checkBinaryDownloads();
         checkSourceDownloads();
         checkJavadocDownloads();
+        NbMavenProjectImpl project = proj.getLookup().lookup(NbMavenProjectImpl.class);
         project.attachUpdater();
-        registerWithSubmodules(FileUtil.toFile(project.getProjectDirectory()), new HashSet<File>());
+        registerWithSubmodules(FileUtil.toFile(proj.getProjectDirectory()), new HashSet<File>());
         Set<URI> uris = new HashSet<URI>();
         uris.addAll(Arrays.asList(project.getSourceRoots(false)));
         uris.addAll(Arrays.asList(project.getSourceRoots(true)));
@@ -137,7 +144,7 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
         File rootDir = new File(rootUri);
         for (URI uri : uris) {
             if (FileUtilities.getRelativePath(rootDir, new File(uri)) == null) {
-                FileOwnerQuery.markExternalOwner(uri, project, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+                FileOwnerQuery.markExternalOwner(uri, proj, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
                 //TODO we do not handle properly the case when someone changes a
                 // ../../src path to ../../src2 path in the lifetime of the project.
                 uriReferences.add(uri);
@@ -145,7 +152,7 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
         }
         
         // register project's classpaths to GlobalPathRegistry
-        ClassPathProviderImpl cpProvider = project.getLookup().lookup(org.netbeans.modules.maven.classpath.ClassPathProviderImpl.class);
+        ProjectSourcesClassPathProvider cpProvider = proj.getLookup().lookup(ProjectSourcesClassPathProvider.class);
         GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
         GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
         GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
@@ -167,10 +174,10 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
 
         MavenProject mp = project.getOriginalMavenProject();
         for (ArtifactRepository repo : mp.getRemoteArtifactRepositories()) {
-            register(repo, mp.getModel().getRepositories());
+            register(repo, mp.getRepositories());
         }
         for (ArtifactRepository repo : mp.getPluginArtifactRepositories()) {
-            register(repo, mp./* MNG-5163 */getModel().getPluginRepositories());
+            register(repo, mp.getPluginRepositories());
         }
 
         CopyResourcesOnSave.opened();
@@ -243,9 +250,10 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
 
     protected @Override void projectClosed() {
         uriReferences.clear();
+        NbMavenProjectImpl project = proj.getLookup().lookup(NbMavenProjectImpl.class);
         project.detachUpdater();
         // unregister project's classpaths to GlobalPathRegistry
-        ClassPathProviderImpl cpProvider = project.getLookup().lookup(org.netbeans.modules.maven.classpath.ClassPathProviderImpl.class);
+        ProjectSourcesClassPathProvider cpProvider = proj.getLookup().lookup(ProjectSourcesClassPathProvider.class);
         GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
         GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
         GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
@@ -261,8 +269,8 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
            return;
        }
 
-       NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
-       Preferences prefs = ProjectUtils.getPreferences(project, NbMavenProject.class, false);
+       NbMavenProject watcher = proj.getLookup().lookup(NbMavenProject.class);
+       Preferences prefs = ProjectUtils.getPreferences(proj, NbMavenProject.class, false);
        if (ds.equals(MavenSettings.DownloadStrategy.EVERY_OPEN)) {
             watcher.synchronousDependencyDownload();
             prefs.putBoolean(PROP_BINARIES_CHECKED, true);
@@ -291,8 +299,8 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
            return;
        }
 
-       NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
-       Preferences prefs = ProjectUtils.getPreferences(project, NbMavenProject.class, false);
+       NbMavenProject watcher = proj.getLookup().lookup(NbMavenProject.class);
+       Preferences prefs = ProjectUtils.getPreferences(proj, NbMavenProject.class, false);
        if (ds.equals(MavenSettings.DownloadStrategy.EVERY_OPEN)) {
             watcher.triggerSourceJavadocDownload(true);
             prefs.putBoolean(PROP_JAVADOC_CHECKED, true);
@@ -321,8 +329,8 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
            return;
        }
 
-       NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
-       Preferences prefs = ProjectUtils.getPreferences(project, NbMavenProject.class, false);
+       NbMavenProject watcher = proj.getLookup().lookup(NbMavenProject.class);
+       Preferences prefs = ProjectUtils.getPreferences(proj, NbMavenProject.class, false);
        if (ds.equals(MavenSettings.DownloadStrategy.EVERY_OPEN)) {
             watcher.triggerSourceJavadocDownload(false);
             prefs.putBoolean(PROP_SOURCE_CHECKED, true);
@@ -354,32 +362,31 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
         if (!pom.isFile()) {
             return;
         }
-        Element project;
+        ModelReader reader = EmbedderFactory.getProjectEmbedder().lookupComponent(ModelReader.class);
+        Model model;
         try {
-            project = XMLUtil.parse(new InputSource(pom.toURI().toString()), false, false, XMLUtil.defaultErrorHandler(), null).getDocumentElement();
-        } catch (Exception x) {
+            model = reader.read(pom, Collections.singletonMap(ModelReader.IS_STRICT, false));
+        } catch (IOException x) {
             LOGGER.log(Level.FINE, "could not parse " + pom, x);
             return;
         }
-        Element parent = XMLUtil.findElement(project, "parent", null);
-        Element groupIdE = XMLUtil.findElement(project, "groupId", null);
-        if (groupIdE == null) {
-            groupIdE = XMLUtil.findElement(parent, "groupId", null);
-            if (groupIdE == null) {
-                LOGGER.log(Level.WARNING, "no groupId in {0}", pom);
-                return;
-            }
+        Parent parent = model.getParent();
+        String groupId = model.getGroupId();
+        if (groupId == null && parent != null) {
+            groupId = parent.getGroupId();
         }
-        String groupId = XMLUtil.findText(groupIdE);
-        Element artifactIdE = XMLUtil.findElement(project, "artifactId", null);
-        if (artifactIdE == null) {
-            artifactIdE = XMLUtil.findElement(parent, "artifactId", null);
-            if (artifactIdE == null) {
-                LOGGER.log(Level.WARNING, "no artifactId in {0}", pom);
-                return;
-            }
+        if (groupId == null) {
+            LOGGER.log(Level.WARNING, "no groupId in {0}", pom);
+            return;
         }
-        String artifactId = XMLUtil.findText(artifactIdE);
+        String artifactId = model.getArtifactId();
+        if (artifactId == null && parent != null) {
+            artifactId = parent.getArtifactId();
+        }
+        if (artifactId == null) {
+            LOGGER.log(Level.WARNING, "no artifactId in {0}", pom);
+            return;
+        }
         if (groupId.contains("${") || artifactId.contains("${")) {
             LOGGER.log(Level.FINE, "Unevaluated groupId/artifactId in {0}", basedir);
             FileObject basedirFO = FileUtil.toFileObject(basedir);
@@ -409,24 +416,15 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
                 LOGGER.log(Level.FINE, null, x);
             }
         }
-        scanForSubmodulesIn(project, basedir, registered);
-        Element profiles = XMLUtil.findElement(project, "profiles", null);
-        if (profiles != null) {
-            for (Element profile : XMLUtil.findSubElements(profiles)) {
-                if (profile.getTagName().equals("profile")) {
-                    scanForSubmodulesIn(profile, basedir, registered);
-                }
-            }
+        scanForSubmodulesIn(model, basedir, registered);
+        model.getProfiles();
+        for (Profile profile : model.getProfiles()) {
+            scanForSubmodulesIn(profile, basedir, registered);
         }
     }
-    private static void scanForSubmodulesIn(Element projectOrProfile, File basedir, Set<File> registered) throws IllegalArgumentException {
-        Element modules = XMLUtil.findElement(projectOrProfile, "modules", null);
-        if (modules != null) {
-            for (Element module : XMLUtil.findSubElements(modules)) {
-                if (module.getTagName().equals("module")) {
-                    registerWithSubmodules(FileUtilities.resolveFilePath(basedir, XMLUtil.findText(module)), registered);
-                }
-            }
+    private static void scanForSubmodulesIn(ModelBase projectOrProfile, File basedir, Set<File> registered) throws IllegalArgumentException {
+        for (String module : projectOrProfile.getModules()) {
+            registerWithSubmodules(FileUtilities.resolveFilePath(basedir, module), registered);
         }
     }
 

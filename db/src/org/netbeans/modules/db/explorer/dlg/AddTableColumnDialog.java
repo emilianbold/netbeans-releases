@@ -62,13 +62,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
@@ -505,7 +499,12 @@ public class AddTableColumnDialog extends JPanel {
             colsizefield.setEnabled(true);
             colscalefield.setEnabled(! disableScale);
             if (disableScale) {
-                colscalefield.setText(null);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        colscalefield.setText(null);
+                    }
+                });
             }
         }
 

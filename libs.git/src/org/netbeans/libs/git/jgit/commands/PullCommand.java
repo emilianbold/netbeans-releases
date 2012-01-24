@@ -54,6 +54,7 @@ import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.RefSpec;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitPullResult;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
@@ -70,8 +71,8 @@ public class PullCommand extends TransportCommand {
     private final String branchToMerge;
     private GitMergeResult mergeResult;
 
-    public PullCommand (Repository repository, String remote, List<String> fetchRefSpecifications, String branchToMerge, ProgressMonitor monitor) {
-        super(repository, remote, monitor);
+    public PullCommand (Repository repository, GitClassFactory gitFactory, String remote, List<String> fetchRefSpecifications, String branchToMerge, ProgressMonitor monitor) {
+        super(repository, gitFactory, remote, monitor);
         this.monitor = monitor;
         this.remote = remote;
         this.refSpecs = fetchRefSpecifications;
@@ -80,11 +81,11 @@ public class PullCommand extends TransportCommand {
 
     @Override
     protected void run () throws GitException.AuthorizationException, GitException {
-        FetchCommand fetch = new FetchCommand(getRepository(), remote, refSpecs, monitor);
+        FetchCommand fetch = new FetchCommand(getRepository(), getClassFactory(), remote, refSpecs, monitor);
         fetch.setCredentialsProvider(getCredentialsProvider());
         fetch.run();
         this.updates = fetch.getUpdates();
-        MergeCommand merge = new MergeCommand(getRepository(), branchToMerge, monitor);
+        MergeCommand merge = new MergeCommand(getRepository(), getClassFactory(), branchToMerge, monitor);
         merge.setCommitMessage("branch \'" + findRemoteBranchName() + "\' of " + fetch.getResult().getURI().setUser(null).setPass(null).toString());
         merge.run();
         this.mergeResult = merge.getResult();
@@ -100,7 +101,7 @@ public class PullCommand extends TransportCommand {
     }
 
     public GitPullResult getResult () {
-        return new GitPullResult(updates, mergeResult);
+        return getClassFactory().createPullResult(updates, mergeResult);
     }
 
     private String findRemoteBranchName () throws GitException {

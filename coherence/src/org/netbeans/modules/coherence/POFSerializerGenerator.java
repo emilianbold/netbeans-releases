@@ -41,22 +41,9 @@
  */
 package org.netbeans.modules.coherence;
 
-import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.ArrayTypeTree;
-import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.ReturnTree;
-import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.TypeParameterTree;
-import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
+import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -69,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -79,73 +67,76 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.swing.JOptionPane;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.Comment;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.coherence.generators.CodegenUtils;
+import org.netbeans.modules.coherence.project.CoherenceProjectUtils;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
-import org.netbeans.spi.editor.codegen.CodeGeneratorContextProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
+@NbBundle.Messages({
+    "name.pof.serializer.inner.action=Coherence POF Serializer Inner Class",
+    "msg.overwrite.pof.serializer=POF Serializer Code already exists. Overwrite?",
+    "msg.cannot.resolve.class=Cannot resolve class!"
+})
 public class POFSerializerGenerator implements CodeGenerator {
 
-    private static final Logger logger = Logger.getLogger(POFSerializerGenerator.class.getCanonicalName());
-    public final static String NEW_CLASS = "\treturn new {CLASS}(\n";
-    private static final String INSTANCE_VAR_NAME = "instance";
-    private static final String REMAINDER_VAR_NAME = "_remainder";
-    private static final String SERIALIZER_CLASS_NAME = "Serializer";
-    private static final String VARIABLE_COMMENT = "Required to store the Remainder portion for the Serialize / Deserialize functionality in case of Upgrades";
-    private static final String CONSTRUCTOR_COMMENT = "Auto generated constructor that will be used by the " + SERIALIZER_CLASS_NAME + " to create new instances of {CLASS}.";
-    private static final String INNER_CLASS_COMMENT = "POF Serializer which can be used instead of implementing PortableObject.\n"
-            + "The following example XML can be used to reference the Serializer within \n"
-            + "your <pof-config> although you will need to generate a TYPEID > 1000.\n\n"
-            + "<user-type>\n"
-            + "\t<type-id>{TYPEID}</type-id>\n"
-            + "\t<class-name>{CLASS}</class-name>\n"
-            + "\t<serializer>\n"
-            + "\t\t<class-name>{CLASS}$Serializer</class-name>\n"
-            + "\t</serializer>\n"
-            + "</user-type>\n";
-    public final static String SERIALIZE_JAVADOC = "Handles POF Write Serialization\n@param writer POF Writer\n@param obj Object to be Serialized\n@throws IOException if an I/O error occurs\n";
-    public final static String DESERIALIZE_JAVADOC = "Handles POF Read De-serialization\n@param reader POF Reader\n@throws IOException if an I/O error occurs\n";
-    public final static String CONSTANTS_JAVADOC = "Index Constants used to access the variables in the Serialize / Deserialize methods";
-    JTextComponent textComp;
+    private static final Logger LOGGER = Logger.getLogger(POFSerializerGenerator.class.getCanonicalName());
+
+    private static final String NEW_CLASS = "\treturn new {CLASS}(\n"; //NOI18N
+    private static final String INSTANCE_VAR_NAME = "instance"; //NOI18N
+    private static final String REMAINDER_VAR_NAME = "_remainder"; //NOI18N
+    private static final String SERIALIZER_CLASS_NAME = "Serializer"; //NOI18N
+    private static final String VARIABLE_COMMENT = "Required to store the Remainder portion for the Serialize / Deserialize functionality in case of Upgrades"; //NOI18N
+    private static final String CONSTRUCTOR_COMMENT = "Auto generated constructor that will be used by the " + SERIALIZER_CLASS_NAME + " to create new instances of {CLASS}."; //NOI18N
+    private static final String INNER_CLASS_COMMENT = "POF Serializer which can be used instead of implementing PortableObject.\n" //NOI18N
+            + "The following example XML can be used to reference the Serializer within \n" //NOI18N
+            + "your <pof-config> although you will need to generate a TYPEID > 1000.\n\n" //NOI18N
+            + "<user-type>\n" //NOI18N
+            + "\t<type-id>{TYPEID}</type-id>\n" //NOI18N
+            + "\t<class-name>{CLASS}</class-name>\n" //NOI18N
+            + "\t<serializer>\n" //NOI18N
+            + "\t\t<class-name>{CLASS}$Serializer</class-name>\n" //NOI18N
+            + "\t</serializer>\n" //NOI18N
+            + "</user-type>\n"; //NOI18N
+    private final static String SERIALIZE_JAVADOC = "Handles POF Write Serialization\n@param writer POF Writer\n@param obj Object to be Serialized\n@throws IOException if an I/O error occurs\n"; //NOI18N
+    private final static String DESERIALIZE_JAVADOC = "Handles POF Read De-serialization\n@param reader POF Reader\n@throws IOException if an I/O error occurs\n"; //NOI18N
+    private final static String CONSTANTS_JAVADOC = "Index Constants used to access the variables in the Serialize / Deserialize methods"; //NOI18N
+
+    private final JTextComponent textComp;
 
     /**
-     * 
-     * @param context containing JTextComponent and possibly other items registered by {@link CodeGeneratorContextProvider}
+     * Created new POF serializer generator.
+     *
+     * @param textComp {@code JTextComponent) of the related file
      */
-    private POFSerializerGenerator(Lookup context) { // Good practice is not to save Lookup outside ctor
-        textComp = context.lookup(JTextComponent.class);
+    private POFSerializerGenerator(JTextComponent textComp) { // Good practice is not to save Lookup outside ctor
+        this.textComp = textComp;
     }
 
-    public static class Factory implements CodeGenerator.Factory {
-
-        public List<? extends CodeGenerator> create(Lookup context) {
-            return Collections.singletonList(new POFSerializerGenerator(context));
-        }
-    }
-
-    /**
-     * The name which will be inserted inside Insert Code dialog
-     */
     @Override
     public String getDisplayName() {
-        return "Coherence POF Serializer Inner Class";
+        return Bundle.name_pof_serializer_inner_action();
     }
 
-    /**
-     * This will be invoked when user chooses this Generator from Insert Code
-     * dialog
-     */
     @Override
     public void invoke() {
         try {
@@ -162,10 +153,11 @@ public class POFSerializerGenerator implements CodeGenerator {
             Exceptions.printStackTrace(e);
         }
     }
-    // Build Variables
-    boolean insertOverwriteCode = true;
 
     protected boolean isOkToModify(JavaSource javaSource) throws IOException {
+
+        final AtomicBoolean insertOverwriteCode = new AtomicBoolean(true);
+
         // Create a working Task to check the code
         CancellableTask task = new CancellableTask<WorkingCopy>() {
 
@@ -182,8 +174,9 @@ public class POFSerializerGenerator implements CodeGenerator {
                         ClassTree clazz = (ClassTree) typeDecl;
                         Element el = workingCopy.getTrees().getElement(workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), clazz));
                         if (isConstructorPresent(el) || isInnerClassPresent(el) || isRemainderFieldPresent(el)) {
-                            int option = JOptionPane.showConfirmDialog(null, "POF Serializer Code already exists. Overwrite ?");
-                            insertOverwriteCode = (option == 0);
+                            NotifyDescriptor desc = new NotifyDescriptor.Confirmation(Bundle.msg_overwrite_pof_serializer());
+                            Object ret = DialogDisplayer.getDefault().notify(desc);
+                            insertOverwriteCode.set(ret == NotifyDescriptor.YES_OPTION);
                         }
                         break;
                     }
@@ -192,7 +185,7 @@ public class POFSerializerGenerator implements CodeGenerator {
         };
         ModificationResult result = javaSource.runModificationTask(task);
 
-        return insertOverwriteCode;
+        return insertOverwriteCode.get();
     }
 
     protected void modifyJava(JavaSource javaSource) throws IOException {
@@ -277,22 +270,19 @@ public class POFSerializerGenerator implements CodeGenerator {
                     if (Tree.Kind.CLASS == typeDecl.getKind()) {
                         ClassTree clazz = (ClassTree) typeDecl;
                         ClassTree modifiedClazz = clazz;
-                        VariableTree parameter = null;
-                        MethodTree newConstructor = null;
-                        ClassTree innerClass = null;
 
                         // Create _remainder variable
-                        parameter = createRemainderField(workingCopy);
+                        VariableTree parameter = createRemainderField(workingCopy);
                         // Modify the working copy
                         modifiedClazz = make.addClassMember(modifiedClazz, parameter);
 
                         // Create Constructor
-                        newConstructor = createConstructor(workingCopy, clazz);
+                        MethodTree newConstructor = createConstructor(workingCopy, clazz);
                         // Modify the working copy
                         modifiedClazz = make.addClassMember(modifiedClazz, newConstructor);
 
                         // Create Inner Serializer Class
-                        innerClass = createInnerClass(workingCopy, clazz);
+                        ClassTree innerClass = createInnerClass(workingCopy, clazz);
                         // Write Inner Class to Class
                         modifiedClazz = make.addClassMember(modifiedClazz, innerClass);
 
@@ -336,7 +326,7 @@ public class POFSerializerGenerator implements CodeGenerator {
                 }
             }
         } else {
-            StatusDisplayer.getDefault().setStatusText("Cannot resolve class!");
+            StatusDisplayer.getDefault().setStatusText(Bundle.msg_cannot_resolve_class());
         }
 
         return remainderField;
@@ -366,7 +356,7 @@ public class POFSerializerGenerator implements CodeGenerator {
                 }
             }
         } else {
-            StatusDisplayer.getDefault().setStatusText("Cannot resolve class!");
+            StatusDisplayer.getDefault().setStatusText(Bundle.msg_cannot_resolve_class());
         }
 
         return innerClass;
@@ -390,7 +380,7 @@ public class POFSerializerGenerator implements CodeGenerator {
                 }
             }
         } else {
-            StatusDisplayer.getDefault().setStatusText("Cannot resolve class!");
+            StatusDisplayer.getDefault().setStatusText(Bundle.msg_cannot_resolve_class());
         }
 
         return constructor;
@@ -655,7 +645,7 @@ public class POFSerializerGenerator implements CodeGenerator {
         AssignmentTree assignment = null;
 
         if (el == null) {
-            StatusDisplayer.getDefault().setStatusText("Cannot resolve class!");
+            StatusDisplayer.getDefault().setStatusText(Bundle.msg_cannot_resolve_class());
         } else {
             TypeElement te = (TypeElement) el;
             List enclosedElements = te.getEnclosedElements();
@@ -699,7 +689,7 @@ public class POFSerializerGenerator implements CodeGenerator {
         TypeElement element = null;
 
         if (classElement == null) {
-            StatusDisplayer.getDefault().setStatusText("Cannot resolve class!");
+            StatusDisplayer.getDefault().setStatusText(Bundle.msg_cannot_resolve_class());
         } else {
             TypeElement te = (TypeElement) classElement;
             List enclosedElements = te.getEnclosedElements();
@@ -775,7 +765,7 @@ public class POFSerializerGenerator implements CodeGenerator {
                                     // We can't find the Class in the Classpath so we will treat it as an object
                                     methodName = "readObject";
                                     typeCast = ((VariableTree) workingCopy.getTrees().getTree(enclosedElement)).getType();
-                                    logger.log(Level.WARNING, "*** APH-I1 : generateReadExternalBody() " + ex.getMessage());
+                                    LOGGER.log(Level.WARNING, "*** APH-I1 : generateReadExternalBody() " + ex.getMessage());
                                 }
 
                             }
@@ -821,7 +811,7 @@ public class POFSerializerGenerator implements CodeGenerator {
                 Collections.<ExpressionTree>emptyList(),
                 make.MemberSelect(make.Identifier("reader"), "readRemainder"),
                 Collections.<ExpressionTree>emptyList());
-        
+
         element = workingCopy.getElements().getTypeElement("com.tangosol.util.Binary");
         parameter = make.Variable(
                 paramModifiers,
@@ -849,7 +839,6 @@ public class POFSerializerGenerator implements CodeGenerator {
     protected BlockTree generateSerializerBodyStatements(WorkingCopy workingCopy, ClassTree clazz) {
         TreeMaker make = workingCopy.getTreeMaker();
         Element classElement = workingCopy.getTrees().getElement(workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), clazz));
-        AssignmentTree assignment = null;
         List<StatementTree> statements = new ArrayList<StatementTree>();
         String methodName = null;
         Tree typeCast = null;
@@ -860,7 +849,7 @@ public class POFSerializerGenerator implements CodeGenerator {
         ModifiersTree paramModifiers = null;
 
         if (classElement == null) {
-            StatusDisplayer.getDefault().setStatusText("Cannot resolve class!");
+            StatusDisplayer.getDefault().setStatusText(Bundle.msg_cannot_resolve_class());
         } else {
             TypeElement te = (TypeElement) classElement;
             List enclosedElements = te.getEnclosedElements();
@@ -986,8 +975,8 @@ public class POFSerializerGenerator implements CodeGenerator {
         Element classElement = workingCopy.getTrees().getElement(workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), clazz));
 
         if (classElement == null) {
-            StatusDisplayer.getDefault().setStatusText("Cannot resolve class!");
-            logger.log(Level.WARNING, "*** APH-I1 : generateIdxConstants() Cannot resolve class!");
+            StatusDisplayer.getDefault().setStatusText(Bundle.msg_cannot_resolve_class());
+            LOGGER.log(Level.WARNING, "*** APH-I1 : generateIdxConstants() Cannot resolve class!");
         } else {
             Set<Modifier> modifiers = new TreeSet<Modifier>();
             modifiers.add(Modifier.PUBLIC);
@@ -1001,7 +990,7 @@ public class POFSerializerGenerator implements CodeGenerator {
             String constantName = null;
             for (int i = 0; i < enclosedElements.size(); i++) {
                 Element enclosedElement = (Element) enclosedElements.get(i);
-                logger.log(Level.FINE, "*** APH-I2 : generateIdxConstants() Element ".concat(
+                LOGGER.log(Level.FINE, "*** APH-I2 : generateIdxConstants() Element ".concat(
                         enclosedElement.getSimpleName().toString().concat(
                         " Type ".concat(
                         enclosedElement.getKind().toString()))));
@@ -1021,13 +1010,13 @@ public class POFSerializerGenerator implements CodeGenerator {
                         idxConstants.add(parameter);
 
                         idx++;
-                        logger.log(Level.FINE, "*** APH-I3 : generateIdxConstants() Adding Parameter ".concat(parameter.toString()));
+                        LOGGER.log(Level.FINE, "*** APH-I3 : generateIdxConstants() Adding Parameter ".concat(parameter.toString()));
                     }
                 }
             }
         }
 
-        logger.log(Level.FINE, "*** APH-I1 : generateIdxConstants() Returning ".concat("" + idxConstants.size()).concat(" Constants ").concat(idxConstants.toString()));
+        LOGGER.log(Level.FINE, "*** APH-I1 : generateIdxConstants() Returning ".concat("" + idxConstants.size()).concat(" Constants ").concat(idxConstants.toString()));
         return idxConstants;
     }
 
@@ -1254,7 +1243,7 @@ public class POFSerializerGenerator implements CodeGenerator {
         Element classElement = workingCopy.getTrees().getElement(workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), clazz));
 
         if (classElement == null) {
-            StatusDisplayer.getDefault().setStatusText("Cannot resolve class!");
+            StatusDisplayer.getDefault().setStatusText(Bundle.msg_cannot_resolve_class());
         } else {
             TypeElement te = (TypeElement) classElement;
             List enclosedElements = te.getEnclosedElements();
@@ -1336,6 +1325,42 @@ public class POFSerializerGenerator implements CodeGenerator {
             return s;
         } else {
             return s.trim().toUpperCase() + "_IDX";
+        }
+    }
+
+    public static class Factory implements CodeGenerator.Factory {
+
+        @Override
+        public List<? extends CodeGenerator> create(Lookup context) {
+            List<CodeGenerator> ret = new ArrayList<CodeGenerator>();
+            JTextComponent component = context.lookup(JTextComponent.class);
+            CompilationController controller = context.lookup(CompilationController.class);
+            TreePath path = context.lookup(TreePath.class);
+
+            path = path != null ? CodegenUtils.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path) : null;
+            if (component == null || controller == null || path == null) {
+                return ret;
+            }
+
+            // check class
+            TypeElement typeElement = (TypeElement) controller.getTrees().getElement(path);
+            if (typeElement == null || !typeElement.getKind().isClass()) {
+                return ret;
+            }
+
+            // check that the class contains at least one field
+            Elements elements = controller.getElements();
+            List<VariableElement> fields = ElementFilter.fieldsIn(elements.getAllMembers(typeElement));
+            if (fields.isEmpty()) {
+                return ret;
+            }
+
+            // check Coherence library availability
+            Project owner = FileOwnerQuery.getOwner(controller.getFileObject());
+            if (CoherenceProjectUtils.isCoherenceProject(owner)) {
+                ret.add(new POFSerializerGenerator(component));
+            }
+            return ret;
         }
     }
 }

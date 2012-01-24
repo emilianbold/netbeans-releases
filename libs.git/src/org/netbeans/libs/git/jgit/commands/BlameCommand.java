@@ -48,7 +48,7 @@ import org.eclipse.jgit.blame.BlameResult;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitBlameResult;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.jgit.JGitBlameResult;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -63,8 +63,8 @@ public class BlameCommand extends GitCommand {
     private final ProgressMonitor monitor;
     private GitBlameResult result;
 
-    public BlameCommand (Repository repository, File file, String revision, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public BlameCommand (Repository repository, GitClassFactory gitFactory, File file, String revision, ProgressMonitor monitor) {
+        super(repository, gitFactory, monitor);
         this.file = file;
         this.revision = revision;
         this.monitor = monitor;
@@ -81,7 +81,7 @@ public class BlameCommand extends GitCommand {
         cmd.setFollowFileRenames(true);
         BlameResult cmdResult = cmd.call();
         if (cmdResult != null) {
-            result = new JGitBlameResult(cmdResult, repository);
+            result = getClassFactory().createBlameResult(cmdResult, repository);
         }
     }
 

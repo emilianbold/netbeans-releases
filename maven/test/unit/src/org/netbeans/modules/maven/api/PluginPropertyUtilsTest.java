@@ -73,6 +73,17 @@ public class PluginPropertyUtilsTest extends NbTestCase {
         assertEquals(new File(getWorkDir(), "build/maven/a/target/site/stuff"), new File(PluginPropertyUtils.getPluginProperty(ProjectManager.getDefault().findProject(d), "g", "p", "key", null)));
     }
 
+    public void testGetPluginPropertyNotString() throws Exception { // #207098
+        TestFileUtils.writeFile(d, "pom.xml",
+                "<project><modelVersion>4.0.0</modelVersion><groupId>g</groupId><artifactId>a</artifactId><version>0</version>" +
+                "<build><directory>${project.basedir}/build/maven/${project.artifactId}/target</directory>" +
+                "<plugins>" +
+                "<plugin><groupId>g</groupId><artifactId>p</artifactId><version>0</version><configuration><key/></configuration></plugin>" +
+                "</plugins></build>" +
+                "</project>");
+        assertNull(null, PluginPropertyUtils.getPluginProperty(ProjectManager.getDefault().findProject(d), "g", "p", "key", null));
+    }
+
     public void testGetReportPluginVersionM2() throws Exception {
         TestFileUtils.writeFile(d, "pom.xml",
                 "<project><modelVersion>4.0.0</modelVersion><groupId>g</groupId><artifactId>a</artifactId><version>0</version>" +

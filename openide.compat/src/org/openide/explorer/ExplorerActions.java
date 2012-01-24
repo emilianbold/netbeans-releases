@@ -62,8 +62,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 
 import java.util.HashMap;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -732,16 +734,13 @@ public class ExplorerActions {
                 return true;
             }
 
+            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.openide.explorer.Bundle");
             if (sel.length == 1) {
-                message = NbBundle.getMessage(
-                        ExplorerActions.class, "MSG_ConfirmDeleteObject", sel[0].getDisplayName()
-                    );
-                title = NbBundle.getMessage(ExplorerActions.class, "MSG_ConfirmDeleteObjectTitle");
+                message = MessageFormat.format(bundle.getString("MSG_ConfirmDeleteObject"), sel[0].getDisplayName());
+                title = bundle.getString("MSG_ConfirmDeleteObjectTitle");
             } else {
-                message = NbBundle.getMessage(
-                        ExplorerActions.class, "MSG_ConfirmDeleteObjects", new Integer(sel.length)
-                    );
-                title = NbBundle.getMessage(ExplorerActions.class, "MSG_ConfirmDeleteObjectsTitle");
+                message = MessageFormat.format(bundle.getString("MSG_ConfirmDeleteObjects"), sel.length);
+                title = bundle.getString("MSG_ConfirmDeleteObjectsTitle");
             }
 
             NotifyDescriptor desc = new NotifyDescriptor.Confirmation(message, title, NotifyDescriptor.YES_NO_OPTION);

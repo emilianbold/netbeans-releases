@@ -52,6 +52,7 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -68,13 +69,13 @@ class SelectJavadocPanel extends javax.swing.JPanel implements ItemListener {
 
     private final String fileName;
     private final Callable<List<? extends String>> browseCall;
-    private final Function<String,URI> convertor;
+    private final Function<String,Collection<? extends URI>> convertor;
 
     /** Creates new form SelectJavadocPanel */
     SelectJavadocPanel(
             @NonNull final String displayName,
             @NonNull final Callable<List<? extends String>> browseCall,
-            @NonNull final Function<String,URI> convertor) {
+            @NonNull final Function<String,Collection<? extends URI>> convertor) {
         assert displayName != null;
         assert  browseCall != null;
         assert convertor != null;
@@ -99,7 +100,7 @@ class SelectJavadocPanel extends javax.swing.JPanel implements ItemListener {
             for (String pathElement : str.split(File.pathSeparator)) {
                 pathElement = pathElement.trim();
                 if (pathElement.length() > 0) {
-                    paths.add(convertor.call(pathElement));
+                    paths.addAll(convertor.call(pathElement));
                 }
             }
             return paths;

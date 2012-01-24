@@ -114,8 +114,8 @@ public class CommitParametersTest extends NbTestCase {
         
     }
 
-    public void testPrefilledParameters() {
-        GitUser user = GitTestKit.creategGitUser();
+    public void testPrefilledParameters() throws Exception {
+        GitUser user = GitTestKit.createGitUser();
         String  message = "msg";
         GitCommitParameters parameters = new GitCommitParameters(GitModuleConfig.getDefault().getPreferences(), message, user);
         CommitPanel panel = parameters.getPanel();

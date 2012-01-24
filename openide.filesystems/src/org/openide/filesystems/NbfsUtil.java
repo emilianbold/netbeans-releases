@@ -65,10 +65,14 @@ final class NbfsUtil {
      * Gets URL with nbfs protocol for passes fo
      * @param fo
      * @return url with nbfs protocol
-     * @throws FileStateInvalidException if FileObject somehow corrupted
      */
-    static URL getURL(FileObject fo) throws FileStateInvalidException {
-        final String fsPart = encodeFsPart(fo);
+    static URL getURL(FileObject fo) {
+        String fsPart;
+        try {
+            fsPart = encodeFsPart(fo);
+        } catch (FileStateInvalidException x) {
+            fsPart = "invalid";
+        }
         final String foPart = encodeFoPart(fo);
 
         final String host = "nbhost"; //NOI18N

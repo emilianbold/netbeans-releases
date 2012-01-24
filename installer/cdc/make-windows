@@ -1,1 +1,0 @@
-ant -Dismp.home=$IS_HOME -Dcluster.dir=$SONYERICSSON_CDC_PATH build-win32 $*

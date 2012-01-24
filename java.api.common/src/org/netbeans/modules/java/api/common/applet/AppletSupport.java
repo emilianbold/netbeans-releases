@@ -164,7 +164,7 @@ public class AppletSupport {
             path = path.substring(0, path.length()-5);
             String codebase = FileUtil.getRelativePath(buildDir, classesDir);
             if (codebase == null) {
-                codebase = classesDir.getURL().toString();
+                codebase = classesDir.toURL().toString();
             }
             fillInFile(writer, path + "." + CLASS_EXT, "codebase=\"" + codebase + "\""); // NOI18N
         } finally {
@@ -205,7 +205,7 @@ public class AppletSupport {
     /**
     * @return URL of the html file with the same name as sibling
     */
-    public static URL generateHtmlFileURL(FileObject appletFile, FileObject buildDir, FileObject classesDir, String activePlatform) throws FileStateInvalidException {
+    public static URL generateHtmlFileURL(FileObject appletFile, FileObject buildDir, FileObject classesDir, String activePlatform) {
         FileObject html = null;
         IOException ex = null;
         if ((appletFile == null) || (buildDir == null) || (classesDir == null)) {
@@ -252,11 +252,7 @@ public class AppletSupport {
             }
         }
         else {
-            try {
-                url = htmlFile.getURL();
-            } catch (FileStateInvalidException f) {
-                ErrorManager.getDefault().notify(f);
-            }
+            url = htmlFile.toURL();
         }
         return url;
     }

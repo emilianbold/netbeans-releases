@@ -42,9 +42,13 @@
 package org.netbeans.modules.java.hints.introduce;
 
 import com.sun.source.util.TreePath;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher.OccurrenceDescription;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Pattern;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -54,6 +58,12 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=CopyFinderService.class)
 public class CopyFinderService {
     public static Set<TreePath> computeDuplicates(CompilationInfo info, TreePath searchingFor, TreePath scope, AtomicBoolean cancel) {
-        return CopyFinder.computeDuplicates(info, searchingFor, scope, cancel, null).keySet();
+        Set<TreePath> result = new HashSet<TreePath>();
+        
+        for (OccurrenceDescription od : Matcher.create(info, cancel).setSearchRoot(scope).match(Pattern.createSimplePattern(searchingFor))) {
+            result.add(od.getOccurrenceRoot());
+        }
+
+        return result;
     }
 }

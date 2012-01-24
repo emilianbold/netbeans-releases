@@ -75,8 +75,8 @@ public class OptionsPanelControllerProcessorTest extends NbTestCase {
                 "    public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {}",
                 "}");
         ByteArrayOutputStream err = new ByteArrayOutputStream();
-        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
-        assertTrue(err.toString(), err.toString().contains("no/such/icon"));
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err) ^ AnnotationProcessorTestUtils.searchClasspathBroken());
+        assertTrue(err.toString(), err.toString().contains("no/such/icon") ^ AnnotationProcessorTestUtils.searchClasspathBroken());
         TestFileUtils.writeFile(new File(src, "no/such/icon"), "whatever");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
     }

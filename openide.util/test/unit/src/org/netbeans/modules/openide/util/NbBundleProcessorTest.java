@@ -96,6 +96,17 @@ public class NbBundleProcessorTest extends NbTestCase {
         assertEquals("&Build 2 Projects", LBL_BuildMainProjectAction_Name(2, "whatever"));
     }
 
+    public void testFieldUsage() throws Exception {
+        AnnotationProcessorTestUtils.makeSource(src, "p.C",
+                "public class C {",
+                "@org.openide.util.NbBundle.Messages(\"k=v\")",
+                "public static final Object X = new Object() {public String toString() {return Bundle.k();}};",
+                "}");
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
+        ClassLoader l = new URLClassLoader(new URL[] {dest.toURI().toURL()});
+        assertEquals("v", l.loadClass("p.C").getField("X").get(null).toString());
+    }
+
     @Messages({
         "s1=Don't worry",
         "s2=Don''t worry about {0}",
@@ -251,6 +262,19 @@ public class NbBundleProcessorTest extends NbTestCase {
         l = new URLClassLoader(new URL[] {dest.toURI().toURL()});
         assertEquals("v3", l.loadClass("p.C1").newInstance().toString());
         assertEquals("v2", l.loadClass("p.C2").newInstance().toString());
+    }
+
+    public void testIncrementalCompilationWithPackageInfo() throws Exception {
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@org.openide.util.NbBundle.Messages(\"k1=v1\")", "public class C {public @Override String toString() {return Bundle.k1() + Bundle.k2();}}");
+        AnnotationProcessorTestUtils.makeSource(src, "p.package-info", "@org.openide.util.NbBundle.Messages(\"k2=v2\")", "package p;");
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
+        ClassLoader l = new URLClassLoader(new URL[] {dest.toURI().toURL()});
+        assertEquals("v1v2", l.loadClass("p.C").newInstance().toString());
+        assertTrue(new File(dest, "p/C.class").delete());
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, "C.java", dest, null, null));
+        l = new URLClassLoader(new URL[] {dest.toURI().toURL()});
+        assertEquals("v1v2", l.loadClass("p.C").newInstance().toString());
     }
 
     public void testComments() throws Exception {

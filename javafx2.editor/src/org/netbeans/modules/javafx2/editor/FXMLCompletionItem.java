@@ -164,4 +164,10 @@ public class FXMLCompletionItem implements CompletionItem {
     public CharSequence getInsertPrefix() {
         return getText();
     }
+
+    @Override
+    public String toString() {
+        return word + "|" + substituteOffset; // NOI18N
+    }
+    
 }

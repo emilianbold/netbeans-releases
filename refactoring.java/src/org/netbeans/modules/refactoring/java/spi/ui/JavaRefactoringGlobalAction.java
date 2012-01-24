@@ -90,6 +90,7 @@ final class JavaRefactoringGlobalAction extends NodeAction {
         this.delegate = delegate;
     }
 
+    @Override
     public final String getName() {
         return (String) getValue(Action.NAME);
     }
@@ -102,6 +103,7 @@ final class JavaRefactoringGlobalAction extends NodeAction {
         putValue(Action.MNEMONIC_KEY, new Integer(m));
     }
 
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
@@ -150,10 +152,12 @@ final class JavaRefactoringGlobalAction extends NodeAction {
         return ck;
     }
 
+    @Override
     public final void performAction(final Node[] activatedNodes) {
         performAction(getLookup(activatedNodes));
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         return enable(getLookup(activatedNodes));
     }
@@ -176,33 +180,41 @@ final class JavaRefactoringGlobalAction extends NodeAction {
             this.context=context;
         }
 
+        @Override
         public Object getValue(String arg0) {
             return JavaRefactoringGlobalAction.this.getValue(arg0);
         }
 
+        @Override
         public void putValue(String arg0, Object arg1) {
             JavaRefactoringGlobalAction.this.putValue(arg0, arg1);
         }
 
+        @Override
         public void setEnabled(boolean arg0) {
             JavaRefactoringGlobalAction.this.setEnabled(arg0);
         }
 
+        @Override
         public boolean isEnabled() {
             return enable(context);
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener arg0) {
             JavaRefactoringGlobalAction.this.addPropertyChangeListener(arg0);
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener arg0) {
             JavaRefactoringGlobalAction.this.removePropertyChangeListener(arg0);
         }
 
+        @Override
         public void actionPerformed(ActionEvent arg0) {
             JavaRefactoringGlobalAction.this.performAction(context);
         }
+        @Override
         public JMenuItem getMenuPresenter() {
             if (isMethodOverridden(JavaRefactoringGlobalAction.this, "getMenuPresenter")) { // NOI18N
 
@@ -212,6 +224,7 @@ final class JavaRefactoringGlobalAction extends NodeAction {
             }
         }
 
+        @Override
         public JMenuItem getPopupPresenter() {
             if (isMethodOverridden(JavaRefactoringGlobalAction.this, "getPopupPresenter")) { // NOI18N
 
@@ -221,6 +234,7 @@ final class JavaRefactoringGlobalAction extends NodeAction {
             }
         }
 
+        @Override
         public Component getToolbarPresenter() {
             if (isMethodOverridden(JavaRefactoringGlobalAction.this, "getToolbarPresenter")) { // NOI18N
 
@@ -263,6 +277,7 @@ final class JavaRefactoringGlobalAction extends NodeAction {
             assert end != -1;
         }
 
+        @Override
         public final void run() {
             try {
                 JavaSource source = JavaSource.forDocument(textC.getDocument());
@@ -281,10 +296,12 @@ final class JavaRefactoringGlobalAction extends NodeAction {
             }
         }
 
+        @Override
         public void cancel() {
             //do nothing
         }
 
+        @Override
         public void run(CompilationController cc) throws Exception {
             TreePath selectedElement = null;
             cc.toPhase(Phase.RESOLVED);

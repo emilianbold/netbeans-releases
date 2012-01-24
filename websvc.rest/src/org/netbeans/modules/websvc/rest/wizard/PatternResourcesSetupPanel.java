@@ -115,7 +115,7 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
     }
     
     public HelpCtx getHelp() {
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx(PatternResourcesSetupPanel.class.getCanonicalName() + "." + this.currentPattern);
     }
     
 }

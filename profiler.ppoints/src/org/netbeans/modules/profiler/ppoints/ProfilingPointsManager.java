@@ -83,7 +83,6 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -102,13 +101,12 @@ import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.lib.profiler.ProfilerLogger;
 import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.lib.profiler.TargetAppRunner;
+import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.project.ProjectStorage;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
@@ -120,6 +118,12 @@ import org.openide.windows.WindowManager;
  * @author Tomas Hurka
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "ProfilingPointsManager_AnotherPpEditedMsg=Another Profiling Point is currently being edited!",
+    "ProfilingPointsManager_PpCustomizerCaption=Customize Profiling Point",
+    "ProfilingPointsManager_CannotStorePpMsg=Cannot store {0} Profiling Points to {1}",
+    "ProfilingPointsManager_OkButtonText=OK"
+})
 @ServiceProvider(service=ProfilingPointsProcessor.class)
 public final class ProfilingPointsManager extends ProfilingPointsProcessor 
                                           implements ChangeListener,
@@ -171,7 +175,7 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
         //~ Constructors ---------------------------------------------------------------------------------------------------------
 
         public CustomizerButton() {
-            super(OK_BUTTON_TEXT);
+            super(Bundle.ProfilingPointsManager_OkButtonText());
         }
 
         //~ Methods --------------------------------------------------------------------------------------------------------------
@@ -299,17 +303,6 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
 
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String ANOTHER_PP_EDITED_MSG = NbBundle.getMessage(ProfilingPointsManager.class,
-                                                                            "ProfilingPointsManager_AnotherPpEditedMsg"); // NOI18N
-    private static final String PP_CUSTOMIZER_CAPTION = NbBundle.getMessage(ProfilingPointsManager.class,
-                                                                            "ProfilingPointsManager_PpCustomizerCaption"); // NOI18N
-    private static final String CANNOT_STORE_PP_MSG = NbBundle.getMessage(ProfilingPointsManager.class,
-                                                                          "ProfilingPointsManager_CannotStorePpMsg"); // NOI18N
-    private static final String OK_BUTTON_TEXT = NbBundle.getMessage(ProfilingPointsManager.class,
-                                                                     "ProfilingPointsManager_OkButtonText"); // NOI18N
-                                                                                                             // -----
     public static final String PROPERTY_PROJECTS_CHANGED = "p_projects_changed"; // NOI18N
     public static final String PROPERTY_PROFILING_POINTS_CHANGED = "p_profiling_points_changed"; // NOI18N
     public static final int SORT_BY_PROJECT = 1;
@@ -808,8 +801,8 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
         ValidityAwarePanel showingCustomizer = getShowingCustomizer();
 
         if (showingCustomizer != null) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    ANOTHER_PP_EDITED_MSG, NotifyDescriptor.WARNING_MESSAGE));
+            ProfilerDialogs.displayWarning(
+                    Bundle.ProfilingPointsManager_AnotherPpEditedMsg());
             SwingUtilities.getWindowAncestor(showingCustomizer).requestFocus();
             showingCustomizer.requestFocusInWindow();
         } else {
@@ -830,7 +823,7 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
                 helpCtx = ((HelpCtx.Provider) customizer).getHelpCtx();
             }
 
-            DialogDescriptor dd = new DialogDescriptor(customizerContainer, PP_CUSTOMIZER_CAPTION, false,
+            DialogDescriptor dd = new DialogDescriptor(customizerContainer, Bundle.ProfilingPointsManager_PpCustomizerCaption(), false,
                                                        new Object[] { cb, DialogDescriptor.CANCEL_OPTION },
                                                        cb, 0, helpCtx, null);
             final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
@@ -1219,12 +1212,9 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
                 try {
                     factory.saveProfilingPoints(project);
                 } catch (IOException ex) {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                            MessageFormat.format(CANNOT_STORE_PP_MSG,
-                               new Object[] {
-                                   factory.getType(),
-                                   ProjectUtilities.getDisplayName(project)
-                               }), NotifyDescriptor.ERROR_MESSAGE));
+                    ProfilerDialogs.displayError(
+                            Bundle.ProfilingPointsManager_CannotStorePpMsg(
+                                factory.getType(), ProjectUtilities.getDisplayName(project)));
                 }
             }
         }

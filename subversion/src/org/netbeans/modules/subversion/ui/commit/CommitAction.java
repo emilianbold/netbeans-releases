@@ -814,7 +814,7 @@ public class CommitAction extends ContextAction {
         private void commitFiles (List<File> commitFiles, boolean recursive) throws SVNClientException {
             File[] files = commitFiles.toArray(new File[commitFiles.size()]);
             long revision = client.commit(files, message, recursive);
-            if (files.length > 0 && !supp.isCanceled()) {
+            if (files.length > 0 && !supp.isCanceled() && revision > -1) {
                 ISVNLogMessage revisionLog = getLogMessage (files, revision);
                 if (revisionLog != null) {
                     Subversion.getInstance().getLogger(getRepositoryRootUrl(files[0])).logMessage(NbBundle.getMessage(CommitAction.class, "MSG_OutputCommitMessage",

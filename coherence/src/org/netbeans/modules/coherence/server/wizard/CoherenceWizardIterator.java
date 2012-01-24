@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.coherence.server.wizard;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
@@ -48,9 +49,10 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.api.server.properties.InstancePropertiesManager;
+import org.netbeans.modules.coherence.library.LibraryUtils;
 import org.netbeans.modules.coherence.server.CoherenceInstance;
 import org.netbeans.modules.coherence.server.CoherenceInstanceProvider;
-import org.netbeans.modules.coherence.server.CoherenceProperties;
+import org.netbeans.modules.coherence.server.CoherenceModuleProperties;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.util.NbBundle;
@@ -73,6 +75,7 @@ public class CoherenceWizardIterator implements WizardDescriptor.InstantiatingIt
     private ServerLocationPanel basePropertiesPanel;
     private String coherenceClasspath;
     private String coherenceLocation;
+    private boolean createCoherenceLibrary;
 
     /**
      * Initialize panels representing individual wizard's steps and sets
@@ -92,7 +95,7 @@ public class CoherenceWizardIterator implements WizardDescriptor.InstantiatingIt
     protected WizardDescriptor.Panel[] createPanels() {
         basePropertiesPanel = new ServerLocationPanel(this);
 
-        return new WizardDescriptor.Panel[] { basePropertiesPanel };
+        return new WizardDescriptor.Panel[] {basePropertiesPanel};
     }
 
     @Override
@@ -102,12 +105,16 @@ public class CoherenceWizardIterator implements WizardDescriptor.InstantiatingIt
         // create and store new properties
         InstanceProperties instanceProperties = InstancePropertiesManager.getInstance().
                 createProperties(CoherenceInstanceProvider.COHERENCE_INSTANCES_NS);
-        instanceProperties.putString(CoherenceProperties.PROP_DISPLAY_NAME, displayName);
-        instanceProperties.putString(CoherenceProperties.PROP_COHERENCE_LOCATION, getCoherenceLocation());
-        instanceProperties.putString(CoherenceProperties.PROP_COHERENCE_CLASSPATH, getCoherenceClasspath());
+        instanceProperties.putString(CoherenceModuleProperties.PROP_DISPLAY_NAME, displayName);
+        instanceProperties.putString(CoherenceModuleProperties.PROP_LOCATION, getCoherenceLocation());
+        instanceProperties.putString(CoherenceModuleProperties.PROP_CLASSPATH, getCoherenceClasspath());
 
         // create new persistent server instance
         CoherenceInstance instance = CoherenceInstance.createPersistent(instanceProperties);
+
+        if (getCreateCoherenceLibrary()) {
+            LibraryUtils.createCoherenceLibrary(new File(getCoherenceLocation()));
+        }
 
         return Collections.singleton(instance.getServerInstance());
     }
@@ -116,16 +123,13 @@ public class CoherenceWizardIterator implements WizardDescriptor.InstantiatingIt
     public void initialize(WizardDescriptor wizardDescriptor) {
         this.wizardDescriptor = wizardDescriptor;
 
-        for (int i = 0; i < this.getPanels().length; i++)
-        {
+        for (int i = 0; i < this.getPanels().length; i++) {
             Object c = panels[i].getComponent();
 
-            if (c instanceof JComponent)
-            {
+            if (c instanceof JComponent) {
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty(
-                    WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i)); // NOI18N
 
                 // Step name (actually the whole list for reference).
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
@@ -151,6 +155,14 @@ public class CoherenceWizardIterator implements WizardDescriptor.InstantiatingIt
 
     public void setCoherenceLocation(String coherenceLocation) {
         this.coherenceLocation = coherenceLocation;
+    }
+
+    public boolean getCreateCoherenceLibrary() {
+        return createCoherenceLibrary;
+    }
+
+    public void setCreateCoherenceLibrary(boolean createCoherenceLibrary) {
+        this.createCoherenceLibrary = createCoherenceLibrary;
     }
 
     @Override

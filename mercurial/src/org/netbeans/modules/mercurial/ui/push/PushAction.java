@@ -76,6 +76,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import static org.netbeans.modules.mercurial.util.HgUtils.isNullOrEmpty;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Push action for mercurial:
@@ -151,8 +152,13 @@ public class PushAction extends ContextAction {
         try {
             pushTarget = new HgURL(tmpPushPath);
         } catch (URISyntaxException ex) {
-            notifyDefaultPushUrlInvalid(tmpPushPath, ex.getReason(), logger);
-            return;
+            File sourceRoot = new File(root, tmpPushPath);
+            if (sourceRoot.isDirectory()) {
+                pushTarget = new HgURL(FileUtil.normalizeFile(sourceRoot));
+            } else {
+                notifyDefaultPushUrlInvalid(tmpPushPath, ex.getReason(), logger);
+                return;
+            }
         }
 
         final String fromPrjName = HgProjectUtils.getProjectName(root);
@@ -394,8 +400,7 @@ public class PushAction extends ContextAction {
         } catch (HgException.HgCommandCanceledException ex) {
             // canceled by user, do nothing
         } catch (HgException ex) {
-            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-            DialogDisplayer.getDefault().notifyLater(e);
+            HgUtils.notifyException(ex);
         } finally {
             logger.outputInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_DONE")); // NOI18N
             logger.output(""); // NOI18N

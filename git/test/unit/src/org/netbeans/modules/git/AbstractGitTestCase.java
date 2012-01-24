@@ -59,7 +59,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitClientFactory;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -70,6 +70,8 @@ import org.openide.filesystems.FileUtil;
 public abstract class AbstractGitTestCase extends NbTestCase {
 
     protected File repositoryLocation;
+    
+    protected static final String NULL_OBJECT_ID = "0000000000000000000000000000000000000000";
 
     public AbstractGitTestCase (String name) {
         super(name);
@@ -83,7 +85,7 @@ public abstract class AbstractGitTestCase extends NbTestCase {
         super.setUp();
         repositoryLocation = new File(getWorkDir(), "work");
         clearWorkDir();
-        getClient(repositoryLocation).init(ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(repositoryLocation).init(GitUtils.NULL_PROGRESS_MONITOR);
         File repositoryMetadata = new File(repositoryLocation, ".git");
         assertTrue(repositoryMetadata.exists());
     }
@@ -151,24 +153,24 @@ public abstract class AbstractGitTestCase extends NbTestCase {
     }
 
     protected GitClient getClient (File repositoryLocation) throws GitException {
-        return GitClientFactory.getInstance(null).getClient(repositoryLocation);
+        return GitClientFactory.getInstance().getClient(repositoryLocation);
     }
 
     protected void add (File... files) throws GitException {
-        getClient(repositoryLocation).add(files == null ? new File[0] : files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(repositoryLocation).add(files == null ? new File[0] : files, GitUtils.NULL_PROGRESS_MONITOR);
     }
 
     protected void commit (File... files) throws GitException {
-        getClient(repositoryLocation).commit(files == null ? new File[0] : files, "blablabla", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(repositoryLocation).commit(files == null ? new File[0] : files, "blablabla", null, null, GitUtils.NULL_PROGRESS_MONITOR);
     }
 
     protected void delete (boolean cached, File... files) throws GitException {
-        getClient(repositoryLocation).remove(files == null ? new File[0] : files, cached, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(repositoryLocation).remove(files == null ? new File[0] : files, cached, GitUtils.NULL_PROGRESS_MONITOR);
     }
 
     protected File initSecondRepository () throws GitException {
         File secondRepositoryFolder = new File(repositoryLocation.getParentFile(), "work_2"); //NOI18N
-        getClient(secondRepositoryFolder).init(ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(secondRepositoryFolder).init(GitUtils.NULL_PROGRESS_MONITOR);
         assertTrue(secondRepositoryFolder.isDirectory());
         return secondRepositoryFolder;
     }

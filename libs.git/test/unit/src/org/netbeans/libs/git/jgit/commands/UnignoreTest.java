@@ -75,17 +75,17 @@ public class UnignoreTest extends AbstractGitTestCase {
         File f = new File(workDir, "file");
         f.createNewFile();
         File gitIgnore = new File(workDir, Constants.DOT_GIT_IGNORE);
-        File[] ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        File[] ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertFalse(gitIgnore.exists());
         assertEquals(0, ignores.length);
         
         write(gitIgnore, "/file");
-        ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertEquals("", read(gitIgnore));
         assertEquals(Arrays.asList(gitIgnore), Arrays.asList(ignores));
         
         write(gitIgnore, "f\nf2\n/file\nf3\nf4");
-        ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertEquals("f\nf2\nf3\nf4", read(gitIgnore));
         assertEquals(Arrays.asList(gitIgnore), Arrays.asList(ignores));
     }
@@ -94,11 +94,11 @@ public class UnignoreTest extends AbstractGitTestCase {
         File f = new File(workDir, "fi*le");
         f.createNewFile();
         File gitIgnore = new File(workDir, Constants.DOT_GIT_IGNORE);
-        File[] ignores = getClient(workDir).ignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        File[] ignores = getClient(workDir).ignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertEquals("/fi[*]le", read(gitIgnore));
         assertEquals(Arrays.asList(gitIgnore), Arrays.asList(ignores));
         
-        ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertEquals("", read(gitIgnore));
         assertEquals(Arrays.asList(gitIgnore), Arrays.asList(ignores));
     }
@@ -107,10 +107,10 @@ public class UnignoreTest extends AbstractGitTestCase {
         File f = new File(workDir, "fi?le");
         f.createNewFile();
         File gitIgnore = new File(workDir, Constants.DOT_GIT_IGNORE);
-        File[] ignores = getClient(workDir).ignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        File[] ignores = getClient(workDir).ignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertEquals("/fi[?]le", read(gitIgnore));
         
-        ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertEquals("", read(gitIgnore));
         assertEquals(Arrays.asList(gitIgnore), Arrays.asList(ignores));
     }
@@ -119,11 +119,11 @@ public class UnignoreTest extends AbstractGitTestCase {
         File f = new File(workDir, "fi[le");
         f.createNewFile();
         File gitIgnore = new File(workDir, Constants.DOT_GIT_IGNORE);
-        File[] ignores = getClient(workDir).ignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        File[] ignores = getClient(workDir).ignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertEquals("/fi[[]le", read(gitIgnore));
         assertEquals(Arrays.asList(gitIgnore), Arrays.asList(ignores));
         
-        ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertEquals("", read(gitIgnore));
     }
 
@@ -131,17 +131,17 @@ public class UnignoreTest extends AbstractGitTestCase {
         File f = new File(workDir, "folder");
         f.mkdirs();
         File gitIgnore = new File(workDir, Constants.DOT_GIT_IGNORE);
-        File[] ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        File[] ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertFalse(gitIgnore.exists());
         assertEquals(0, ignores.length);
         
         write(gitIgnore, "/folder/");
-        ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertEquals("", read(gitIgnore));
         assertEquals(Arrays.asList(gitIgnore), Arrays.asList(ignores));
         
         write(gitIgnore, "/folder");
-        ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertEquals("/folder\n!/folder/", read(gitIgnore));
         assertEquals(Arrays.asList(gitIgnore), Arrays.asList(ignores));
     }
@@ -151,17 +151,17 @@ public class UnignoreTest extends AbstractGitTestCase {
         f.getParentFile().mkdirs();
         f.createNewFile();
         File gitIgnore = new File(workDir, Constants.DOT_GIT_IGNORE);
-        File[] ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        File[] ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertFalse(gitIgnore.exists());
         assertEquals(0, ignores.length);
         
         write(gitIgnore, "/sf1/sf2/file");
-        ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertEquals("", read(gitIgnore));
         assertEquals(Arrays.asList(gitIgnore), Arrays.asList(ignores));
         
         write(gitIgnore, "/sf1/sf2/file/");
-        ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertEquals("/sf1/sf2/file/", read(gitIgnore));
         assertEquals(0, ignores.length);
     }
@@ -170,17 +170,17 @@ public class UnignoreTest extends AbstractGitTestCase {
         File f = new File(new File(new File(workDir, "sf1"), "sf2"), "folder");
         f.mkdirs();
         File gitIgnore = new File(workDir, Constants.DOT_GIT_IGNORE);
-        File[] ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        File[] ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertFalse(gitIgnore.exists());
         assertEquals(0, ignores.length);
         
         write(gitIgnore, "sf1/sf2/folder/");
-        ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertEquals("", read(gitIgnore));
         assertEquals(Arrays.asList(gitIgnore), Arrays.asList(ignores));
         
         write(gitIgnore, "/sf1/sf2/folder");
-        ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertEquals("/sf1/sf2/folder\n!/sf1/sf2/folder/", read(gitIgnore));
         assertEquals(Arrays.asList(gitIgnore), Arrays.asList(ignores));
     }
@@ -191,25 +191,25 @@ public class UnignoreTest extends AbstractGitTestCase {
         f.createNewFile();
         File gitIgnore = new File(workDir, Constants.DOT_GIT_IGNORE);
         write(gitIgnore, "!/sf1/sf2/file");
-        File[] ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        File[] ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertTrue(gitIgnore.exists());
         assertEquals("!/sf1/sf2/file", read(gitIgnore));
         assertEquals(0, ignores.length);
         
         write(gitIgnore, "/sf1/sf2/file\n!/sf1/sf2/file");
-        ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertTrue(gitIgnore.exists());
         assertEquals("!/sf1/sf2/file", read(gitIgnore));
         assertEquals(Arrays.asList(gitIgnore), Arrays.asList(ignores));
         
         write(gitIgnore, "!/sf1/sf2/file\n/sf1/sf2/file");
-        ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertTrue(gitIgnore.exists());
         assertEquals("!/sf1/sf2/file", read(gitIgnore));
         assertEquals(Arrays.asList(gitIgnore), Arrays.asList(ignores));
         
         write(gitIgnore, "file");
-        ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertTrue(gitIgnore.exists());
         assertEquals("file\n!/sf1/sf2/file", read(gitIgnore));
         assertEquals(Arrays.asList(gitIgnore), Arrays.asList(ignores));
@@ -219,7 +219,7 @@ public class UnignoreTest extends AbstractGitTestCase {
         write(gitIgnoreNested, "/file");
         write(gitIgnoreNested2, "/sf2/file");
         write(gitIgnore, "/sf1/sf2/file");
-        ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertEquals("", read(gitIgnore));
         assertEquals("", read(gitIgnoreNested));
         assertEquals("", read(gitIgnoreNested2));
@@ -231,19 +231,19 @@ public class UnignoreTest extends AbstractGitTestCase {
         f.mkdirs();
         File gitIgnore = new File(workDir, Constants.DOT_GIT_IGNORE);
         write(gitIgnore, "/sf1/sf2/folder/\n!/sf1/sf2/folder/");
-        File[] ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        File[] ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertTrue(gitIgnore.exists());
         assertEquals("!/sf1/sf2/folder/", read(gitIgnore));
         assertEquals(Arrays.asList(gitIgnore), Arrays.asList(ignores));
         
         write(gitIgnore, "/sf1/sf2/folder\n!/sf1/sf2/folder/");
-        ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertTrue(gitIgnore.exists());
         assertEquals("/sf1/sf2/folder\n!/sf1/sf2/folder/", read(gitIgnore));
         assertEquals(0, ignores.length);
         
         write(gitIgnore, "!/sf1/sf2/folder/\n/sf1/sf2/folder/");
-        ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertTrue(gitIgnore.exists());
         assertEquals("!/sf1/sf2/folder/", read(gitIgnore));
         assertEquals(Arrays.asList(gitIgnore), Arrays.asList(ignores));
@@ -256,19 +256,19 @@ public class UnignoreTest extends AbstractGitTestCase {
         File excludeFile = new File(workDir, ".git/info/exclude");
         excludeFile.getParentFile().mkdirs();
         write(excludeFile, "/sf1/sf2/file");
-        File[] ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        File[] ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertTrue(excludeFile.exists());
         assertEquals("", read(excludeFile));
         assertEquals(Arrays.asList(excludeFile), Arrays.asList(ignores));
         
         write(excludeFile, "file");
-        ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertTrue(excludeFile.exists());
         assertEquals("file\n!/sf1/sf2/file", read(excludeFile));
         assertEquals(Arrays.asList(excludeFile), Arrays.asList(ignores));
         
         write(excludeFile, "");
-        ignores = getClient(workDir).unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        ignores = getClient(workDir).unignore(new File[] { f }, NULL_PROGRESS_MONITOR);
         assertTrue(excludeFile.exists());
         assertEquals("", read(excludeFile));
         assertEquals(0, ignores.length);
@@ -285,12 +285,12 @@ public class UnignoreTest extends AbstractGitTestCase {
         cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_EXCLUDESFILE, ignoreFile.getAbsolutePath());
         cfg.save();
         GitClient client = getClient(workDir);
-        assertEquals(Status.STATUS_IGNORED, client.getStatus(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR).get(f).getStatusIndexWC());
+        assertEquals(Status.STATUS_IGNORED, client.getStatus(new File[] { f }, NULL_PROGRESS_MONITOR).get(f).getStatusIndexWC());
         
-        assertEquals(new File(workDir, Constants.GITIGNORE_FILENAME), client.unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR)[0]);
+        assertEquals(new File(workDir, Constants.GITIGNORE_FILENAME), client.unignore(new File[] { f }, NULL_PROGRESS_MONITOR)[0]);
         
         write(new File(workDir, Constants.GITIGNORE_FILENAME), "/nbproject/file");
-        assertEquals(new File(workDir, Constants.GITIGNORE_FILENAME), client.unignore(new File[] { f }, ProgressMonitor.NULL_PROGRESS_MONITOR)[0]);
+        assertEquals(new File(workDir, Constants.GITIGNORE_FILENAME), client.unignore(new File[] { f }, NULL_PROGRESS_MONITOR)[0]);
         assertEquals("!/nbproject/file", read(new File(workDir, Constants.GITIGNORE_FILENAME)));
     }
 }

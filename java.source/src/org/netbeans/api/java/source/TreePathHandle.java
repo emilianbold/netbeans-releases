@@ -190,7 +190,18 @@ public final class TreePathHandle {
             Logger.getLogger(TreePathHandle.class.getName()).info("Cannot resolve: "+toString());
         }
         return result;
-    }                                                                                                                                                                                                                          
+    }
+    
+    /**
+     * returns {@link ElemntHandle} corresponding to this {@link TreePathHandle}
+     * @return {@link ElementHandle} or null if this {@link TreePathHandle} does
+     * not represent any {@link Element}
+     * @since 0.93
+     */
+    @CheckForNull
+    public ElementHandle getElementHandle() {
+        return this.delegate.getElementHandle();
+    }
                                                                                                                                                                                                                                
     /**                                                                                                                                                                                                                        
      * Returns the {@link Tree.Kind} of this TreePathHandle,                                                                                                                                                                   
@@ -356,6 +367,8 @@ public final class TreePathHandle {
         public Element resolveElement(final CompilationInfo info);
 
         public Tree.Kind getKind();
+
+        public ElementHandle getElementHandle();
     }
 
     private static final class TreeDelegate implements Delegate {
@@ -618,6 +631,14 @@ public final class TreePathHandle {
             return this.getClass().getSimpleName()+"[kind:" + kind + ", enclosingElement:" + enclosingElement +", file:" + file + "]";
         }
 
+        @Override
+        public ElementHandle getElementHandle() {
+            if (enclElIsCorrespondingEl) {
+                return enclosingElement;
+            }
+            return null;
+        }
+
         static class KindPath {
             private ArrayList<Tree.Kind> kindPath = new ArrayList();
 
@@ -764,6 +785,11 @@ public final class TreePathHandle {
         public String toString() {
             return this.getClass().getSimpleName()+"[elementHandle:"+el+", url:"+source+"]";
         }
+
+        @Override
+        public ElementHandle getElementHandle() {
+            return el;
+        }
     }
 
     private static final class EmptyDelegate implements Delegate {
@@ -794,6 +820,11 @@ public final class TreePathHandle {
 
         public Kind getKind() {
             return kind;
+        }
+
+        @Override
+        public ElementHandle getElementHandle() {
+            return null;
         }
         
     }
@@ -842,6 +873,11 @@ public final class TreePathHandle {
 
         public Kind getKind() {
             return kind;
+        }
+
+        @Override
+        public ElementHandle getElementHandle() {
+            return parent.getElementHandle();
         }
 
     }

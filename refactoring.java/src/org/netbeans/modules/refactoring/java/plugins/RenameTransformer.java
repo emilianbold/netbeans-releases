@@ -44,43 +44,25 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import javax.lang.model.element.Modifier;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.ImportTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Scope;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.TypeParameterTree;
-import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import static org.netbeans.api.java.lexer.JavaTokenId.*;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
-
-import static org.netbeans.api.java.lexer.JavaTokenId.LINE_COMMENT;
-import static org.netbeans.api.java.lexer.JavaTokenId.BLOCK_COMMENT;
-import static org.netbeans.api.java.lexer.JavaTokenId.JAVADOC_COMMENT;
-import static org.netbeans.api.java.lexer.JavaTokenId.WHITESPACE;
 
 /**
  *

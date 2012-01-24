@@ -183,7 +183,6 @@ public class J2MEAntLoggerTest extends NbTestCase {
         
         TestUtil.setLookup( new Object[] {
             TestUtil.testProjectFactory(),
-            TestUtil.testProjectChooserFactory()
         }, J2MEAntLoggerTest.class.getClassLoader());
  
         synchronized(J2MEAntLoggerTest.syncObj) {
@@ -348,6 +347,10 @@ public class J2MEAntLoggerTest extends NbTestCase {
         
         public int getVerbosity() {
             return verbosity;
+        }
+
+        @Override public Map<String,String> getProperties() {
+            return Collections.emptyMap();
         }
         
         public String[] getOriginatingTargets() {

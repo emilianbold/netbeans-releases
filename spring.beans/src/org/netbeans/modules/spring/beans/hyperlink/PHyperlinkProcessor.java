@@ -45,12 +45,13 @@
 package org.netbeans.modules.spring.beans.hyperlink;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.java.JavaUtils;
@@ -58,6 +59,7 @@ import org.netbeans.modules.spring.java.MatchType;
 import org.netbeans.modules.spring.java.Property;
 import org.netbeans.modules.spring.java.PropertyFinder;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Hyperlink Processor for p-namespace stuff. Delegates to beanref processor
@@ -70,66 +72,98 @@ public class PHyperlinkProcessor extends HyperlinkProcessor {
     private BeansRefHyperlinkProcessor beansRefHyperlinkProcessor
             = new BeansRefHyperlinkProcessor(true);
 
-    public PHyperlinkProcessor() {
-    }
-
+    @NbBundle.Messages("title.attribute.searching=Searching Attribute")
+    @Override
     public void process(HyperlinkEnv env) {
         String attribName = env.getAttribName();
-        if(env.getType().isValueHyperlink()) {
-            if(attribName.endsWith("-ref")) { // NOI18N
+        if (env.getType().isValueHyperlink()) {
+            if (attribName.endsWith("-ref")) { //NOI18N
                 beansRefHyperlinkProcessor.process(env);
             }
-        } else if(env.getType().isAttributeHyperlink()) {
-            String temp = ContextUtilities.getLocalNameFromTag(attribName);
-            if(temp.endsWith("-ref")) { // NOI18N
-                temp = temp.substring(0, temp.indexOf("-ref")); // NOI18N
+        } else if (env.getType().isAttributeHyperlink()) {
+            String propName = ContextUtilities.getLocalNameFromTag(attribName);
+            if (propName.endsWith("-ref")) { //NOI18N
+                propName = propName.substring(0, propName.indexOf("-ref")); //NOI18N
             }
 
-            final String className = new BeanClassFinder(env.getBeanAttributes(), 
-                    env.getFileObject()).findImplementationClass();
-            if(className == null) {
+            String className = new BeanClassFinder(env.getBeanAttributes(),
+                    env.getFileObject()).findImplementationClass(false);
+            if (className == null) {
                 return;
             }
-            
+
             JavaSource js = JavaUtils.getJavaSource(env.getFileObject());
-            if(js == null) {
+            if (js == null) {
                 return;
             }
-            final String propName = temp;
-            try {
-                js.runUserActionTask(new Task<CompilationController>() {
 
-                    public void run(CompilationController cc) throws Exception {
-                        ElementUtilities eu = cc.getElementUtilities();
-                        if (className == null) {
-                            return;
-                        }
-                        TypeElement type = JavaUtils.findClassElementByBinaryName(className, cc);
-                        Property[] props = new PropertyFinder(type.asType(), propName, eu, MatchType.PREFIX).findProperties();
-                        if(props.length > 0 && props[0].getSetter() != null) {
-                            ElementOpen.open(cc.getClasspathInfo(), props[0].getSetter());
-                        }
-                    }
-                }, true);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-            
+            ClassSeeker classSeeker = new ClassSeeker(js, className, propName);
+//            runClassSeekerAsUserTask(js, classSeeker);
+//            if (!classSeeker.wasClassFound()) {
+                ScanDialog.runWhenScanFinished(classSeeker, Bundle.title_attribute_searching());
+//            }
         }
     }
 
     @Override
     public int[] getSpan(HyperlinkEnv env) {
-        if(env.getType().isValueHyperlink()) {
+        if (env.getType().isValueHyperlink()) {
             return super.getSpan(env);
         }
-        
-        if(env.getType().isAttributeHyperlink()) {
-            return new int[] { env.getTokenStartOffset(), env.getTokenEndOffset() };
+
+        if (env.getType().isAttributeHyperlink()) {
+            return new int[] {env.getTokenStartOffset(), env.getTokenEndOffset()};
         }
-        
+
         return null;
     }
-    
-    
+
+    private void runClassSeekerAsUserTask(JavaSource javaSource, ClassSeeker classSeeker) {
+        try {
+            javaSource.runUserActionTask(classSeeker, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private class ClassSeeker implements Runnable, CancellableTask<CompilationController> {
+
+        private final AtomicBoolean wasClassFound = new AtomicBoolean(false);
+        private final JavaSource javaSource;
+        private final String className;
+        private final String propName;
+
+        public ClassSeeker(JavaSource javaSource, String className, String propName) {
+            this.javaSource = javaSource;
+            this.className = className;
+            this.propName = propName;
+        }
+
+        public boolean wasClassFound() {
+            return wasClassFound.get();
+        }
+
+        @Override
+        public void run() {
+            runClassSeekerAsUserTask(javaSource, this);
+        }
+
+        @Override
+        public void cancel() {
+        }
+
+        @Override
+        public void run(CompilationController cc) throws Exception {
+            TypeElement type = JavaUtils.findClassElementByBinaryName(className, cc);
+            if (type == null) {
+                return;
+            }
+            wasClassFound.set(true);
+            Property[] props = new PropertyFinder(
+                    type.asType(), propName, cc.getElementUtilities(), MatchType.PREFIX).findProperties();
+            if (props.length > 0 && props[0].getSetter() != null) {
+                ElementOpen.open(cc.getClasspathInfo(), props[0].getSetter());
+            }
+        }
+    }
 }

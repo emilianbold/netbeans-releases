@@ -148,6 +148,14 @@ public final class AnnotationUtil {
     
     public static final String CONVERSATION = "javax.enterprise.context.Conversation";// NOI18N
     
+    public static final String ALTERNATVE = "javax.enterprise.inject.Alternative";   // NOI18N
+    
+    public static final String TYPED = "javax.enterprise.inject.Typed";              // NOI18N
+    
+    public static final String NON_BINDING = "javax.enterprise.util.Nonbinding";    // NOI18N
+    
+    public static final String PASSIVATING = "passivating";                         // NOI18N
+    
     private AnnotationUtil(){
     }
     
@@ -187,7 +195,7 @@ public final class AnnotationUtil {
         return null;
     }
     
-    public static boolean isSessionBean(TypeElement element , 
+    public static boolean isSessionBean(Element element , 
             CompilationInfo compInfo )
     {
         return getAnnotationMirror(element, compInfo, STATEFUL, STATELESS, 

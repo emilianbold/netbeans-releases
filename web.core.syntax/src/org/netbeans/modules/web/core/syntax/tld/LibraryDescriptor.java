@@ -74,6 +74,7 @@ public abstract class LibraryDescriptor {
     protected String uri;
     protected String displayName;
     protected Map<String, Tag> tags = new HashMap<String, Tag>();
+    protected Map<String, Function> functions = new HashMap<String, Function>();
 
     protected LibraryDescriptor() {
     }
@@ -104,6 +105,10 @@ public abstract class LibraryDescriptor {
 
     public Map<String, Tag> getTags() {
         return tags;
+    }
+
+    public Map<String, Function> getFunctions() {
+        return functions;
     }
 
     protected void parseLibrary() throws LibraryDescriptorException {
@@ -230,6 +235,17 @@ public abstract class LibraryDescriptor {
         public Attribute getAttribute(String name);
     }
 
+    public static interface Function {
+
+        public String getName();
+
+        public String getSignature();
+
+        public String getDescription();
+
+        public String getExample();
+    }
+
     public static class TagImpl implements Tag {
 
         private static final String ID_ATTR_NAME = "id"; //NOI18N
@@ -307,6 +323,46 @@ public abstract class LibraryDescriptor {
         @Override
         public String toString() {
             return "Attribute[name=" + getName() + /*", description=" + getDescription() + */ ", required=" + isRequired() + "]"; //NOI18N
+        }
+    }
+
+    public static class FunctionImpl implements Function {
+
+        private String name;
+        private String signature;
+        private String desc;
+        private String example;
+
+        public FunctionImpl(String name, String signature, String desc, String example) {
+            this.name = name;
+            this.signature = signature;
+            this.desc = desc;
+            this.example = example;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getSignature() {
+            return signature;
+        }
+
+        @Override
+        public String getDescription() {
+            return desc;
+        }
+
+        @Override
+        public String getExample() {
+            return example;
+        }
+
+        @Override
+        public String toString() {
+            return "Function[name=" + getName() + ", signature" + getSignature() + "]";
         }
     }
 }

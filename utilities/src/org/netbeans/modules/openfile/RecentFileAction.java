@@ -85,7 +85,7 @@ import org.openide.util.actions.Presenter;
  *
  * @author Dafe Simonek
  */
-@ActionRegistration(
+@ActionRegistration(lazy=false,
     displayName="#LBL_RecentFileAction_Name"
 )
 @ActionID(category="System", id="org.netbeans.modules.openfile.RecentFileAction")

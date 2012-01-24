@@ -88,7 +88,7 @@ import org.openide.util.Utilities;
  * @author Dmitry Lipin <dlipin@netbeans.org>
  */
 @ActionID(id = "org.netbeans.modules.apisupport.installer.maven.actions.BuildInstallersAction", category = "Project")
-@ActionRegistration(displayName = "#CTL_BuildInstallers")
+@ActionRegistration(displayName = "#CTL_BuildInstallers", lazy=false)
 @ActionReference(position = 1290, path = "Projects/org-netbeans-modules-maven/Actions")
 public final class BuildInstallersAction extends AbstractAction implements ContextAwareAction {
 

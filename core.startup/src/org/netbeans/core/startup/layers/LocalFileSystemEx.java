@@ -222,13 +222,13 @@ public final class LocalFileSystemEx extends LocalFileSystem {
         }
     }
 
-    private class WritableRemover implements Callable {
+    private class WritableRemover implements Callable<Void> {
         private String name;
         public WritableRemover( String name ) {
             this.name = name;
         }
         
-        public Object call() throws Exception {
+        @Override public Void call() throws IOException {
             FileObject fo = findResource( name );
             if( null != fo ) {
                 fo.delete();

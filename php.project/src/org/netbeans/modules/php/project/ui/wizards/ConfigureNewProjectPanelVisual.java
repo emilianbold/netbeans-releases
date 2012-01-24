@@ -57,7 +57,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
+import org.netbeans.modules.php.project.api.PhpLanguageProperties.PhpVersion;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServerController;
@@ -85,7 +85,7 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
         projectNameTextField.getDocument().addDocumentListener(this);
         localServerComponent.addChangeListener(this);
 
-        phpVersionComboBox.setModel(new PhpVersionComboBoxModel(wizardType.equals(NewPhpProjectWizardIterator.WizardType.NEW) ? PhpVersion.PHP_53 : PhpVersion.PHP_5));
+        phpVersionComboBox.setModel(new PhpVersionComboBoxModel(wizardType.equals(NewPhpProjectWizardIterator.WizardType.NEW) ? PhpVersion.PHP_54 : PhpVersion.PHP_53));
 
         encodingComboBox.setModel(ProjectCustomizer.encodingModel(Charset.defaultCharset().name()));
         encodingComboBox.setRenderer(ProjectCustomizer.encodingRenderer());

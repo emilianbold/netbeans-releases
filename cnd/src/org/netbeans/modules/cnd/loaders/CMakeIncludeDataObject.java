@@ -60,7 +60,7 @@ public class CMakeIncludeDataObject extends MultiDataObject {
     }
 
     @MultiViewElement.Registration(displayName = "#Source",
-    iconBase = "org/netbeans/modules/cnd/loaders/cmake.gif", //NOI18N
+    iconBase = "org/netbeans/modules/cnd/loaders/cmake.png", //NOI18N
     persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
     mimeType = CMAKE_INCLUDE_MIME_TYPE,
     preferredID = "cmakeincludefile.source", //NOI18N

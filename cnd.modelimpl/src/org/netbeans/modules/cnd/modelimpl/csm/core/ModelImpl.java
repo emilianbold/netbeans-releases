@@ -378,6 +378,41 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     }
 
     @Override
+    public CsmFile[] findFiles(FSPath absPath, boolean createIfPossible, boolean snapShot) {
+        CndUtils.assertAbsolutePathInConsole(absPath.getPath());
+        Collection<CsmProject> projects = projects();
+        Set<CsmFile> ret = new HashSet<CsmFile>();
+        for (CsmProject curPrj : projects) {
+            if (curPrj instanceof ProjectBase) { // file system check is inside ProjectBase.findFileProject(FSPath..)
+                ProjectBase ownerPrj = ((ProjectBase) curPrj).findFileProject(absPath, createIfPossible);
+                if (ownerPrj != null) {
+                    CsmFile csmFile = ownerPrj.findFile(absPath, createIfPossible, snapShot);
+                    if (csmFile != null) {
+                        ret.add(csmFile);
+                    }
+                }
+            }
+        }
+        // try the same with canonical path
+        FSPath canonical = null;
+        try {
+            FileObject fo = absPath.getFileObject();
+            if (fo != null) {
+                canonical = FSPath.toFSPath(CndFileUtils.getCanonicalFileObject(fo));
+            }
+        } catch (IOException ex) {
+            canonical = null;
+        }
+        if (canonical != null && !canonical.equals(absPath)) {
+            CsmFile[] out = findFiles(canonical, createIfPossible, snapShot);
+            if (out != null) {
+                ret.addAll(Arrays.asList(out));
+            }
+        }
+        return ret.toArray(new CsmFile[ret.size()]);
+    }
+    
+    @Override
     public CsmFile findFile(FSPath absPath, boolean createIfPossible, boolean snapShot) {
         CndUtils.assertAbsolutePathInConsole(absPath.getPath());
         Collection<CsmProject> projects = projects();
@@ -407,7 +442,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
             canonical = null;
         }
         if (canonical != null && !canonical.equals(absPath)) {
-            CsmFile out = findFile(canonical, true, snapShot);
+            CsmFile out = findFile(canonical, createIfPossible, snapShot);
             if (out != null) {
                 ret = out;
             }
@@ -483,7 +518,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         cleanCaches();
 
         setState(CsmModelState.OFF);
-
+        ReferencesIndex.shutdown();
         RepositoryUtils.shutdown();
 
         ModelSupport.instance().setModel(null);

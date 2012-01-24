@@ -101,18 +101,22 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
         return new CsmExpandedTokenProcessor(doc, file, tp, offset, macros);
     }
 
+    @Override
     public void start(int startOffset, int firstTokenOffset, int lastOffset) {
         tp.start(startOffset, firstTokenOffset, lastOffset);
     }
 
+    @Override
     public void end(int offset, int lastTokenOffset) {
         tp.end(offset, lastTokenOffset);
     }
 
+    @Override
     public boolean isStopped() {
         return tp.isStopped();
     }
 
+    @Override
     public boolean isMacroExpansion() {
         return inMacro;
     }
@@ -121,6 +125,7 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
         return CndLexerUtilities.isCppIdentifierStart(token.text().charAt(0)) && ReferencesSupport.findMacro(macros, tokenOffset) != null;
     }
 
+    @Override
     public boolean token(Token<TokenId> token, int tokenOffset) {
         // Additional logic only for macros
         if (skipTill <= tokenOffset) {

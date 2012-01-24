@@ -48,6 +48,7 @@ import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
@@ -57,8 +58,8 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 public class RemoveRemoteCommand extends GitCommand {
     private final String remote;
 
-    public RemoveRemoteCommand (Repository repository, String remote, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public RemoveRemoteCommand (Repository repository, GitClassFactory gitFactory, String remote, ProgressMonitor monitor) {
+        super(repository, gitFactory, monitor);
         this.remote = remote;
     }
 

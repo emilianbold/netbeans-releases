@@ -63,7 +63,7 @@ import javax.swing.Icon;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.project.ProjectStorage;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
-import org.netbeans.modules.profiler.ppoints.ui.icons.ProfilingPointsIcons;
+import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointsIcons;
 import org.openide.util.Lookup;
 
 
@@ -214,7 +214,7 @@ public abstract class ProfilingPointFactory {
         }
 
         String profilingPointClassNameFull = getProfilingPointsClass().getName();
-        String profilingPointClassName = profilingPointClassNameFull.substring(profilingPointClassNameFull.lastIndexOf(".") + 1); // NOI18N
+        String profilingPointClassName = profilingPointClassNameFull.substring(profilingPointClassNameFull.lastIndexOf('.') + 1); // NOI18N
         FileObject profilingPointsStorage = projectSettingsFolder.getFileObject(profilingPointClassName,
                                                                                 PROFILING_POINT_STORAGE_EXT);
 
@@ -225,7 +225,7 @@ public abstract class ProfilingPointFactory {
                                              throws IOException {
         FileObject projectSettingsFolder = ProjectStorage.getSettingsFolder(project, true);
         String profilingPointClassNameFull = getProfilingPointsClass().getName();
-        String profilingPointClassName = profilingPointClassNameFull.substring(profilingPointClassNameFull.lastIndexOf(".") + 1); // NOI18N
+        String profilingPointClassName = profilingPointClassNameFull.substring(profilingPointClassNameFull.lastIndexOf('.') + 1); // NOI18N
         FileObject profilingPointsStorage = projectSettingsFolder.createData(profilingPointClassName, PROFILING_POINT_STORAGE_EXT);
 
         return profilingPointsStorage;

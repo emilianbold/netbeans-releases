@@ -57,8 +57,12 @@ import org.netbeans.api.sendopts.CommandException;
  * on the command line and are consistent, this processor's {@link #process}
  * method is going to be called to handle their values and invoke an action.
  * <p>
+ * Looking forward: consider using {@link Arg declarative annotations} for 
+ * registering your options more effectively.
+ * <p>
  * The usual pattern for writing a subclass of processor is:
  * <pre>
+ * {@code @}{@link org.openide.util.lookup.ServiceProvider}(service=OptionProcessor.class)
  * public class MyProcessor extends OptionProcessor {
  *   private Option option1 = ...;
  *   private Option option2 = ...;

@@ -106,7 +106,7 @@ public class FormGenerateCodeTest extends ExtJellyTestCase {
 
     public void testSimpleComponentInsertingIntoForm() {
         p("testSimpleComponentInsertingIntoForm - start"); // NOI18N
-        String frameName = createJFrameFile();
+        String frameName = createJFrameFile()+".java";
         FormDesignerOperator designer = new FormDesignerOperator(frameName);
         ComponentPaletteOperator palette = new ComponentPaletteOperator();
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
@@ -126,13 +126,13 @@ public class FormGenerateCodeTest extends ExtJellyTestCase {
         findInCode("jPanel1.setBackground(new java.awt.Color(0, 255, 0));", designer); // NOI18N
         findInCode("jLabel1 = new javax.swing.JLabel();", designer); // NOI18N
 
-        removeFile(frameName);
+        //removeFile(frameName);
     }
 
     public void testLayouts() {
         p("testLayouts - start"); // NOI18N
          // NOI18N
-        String name = createJFrameFile();
+        String name = createJFrameFile()+".java";
 
         FormDesignerOperator designer = new FormDesignerOperator(name);
         ComponentPaletteOperator palette = new ComponentPaletteOperator();
@@ -173,13 +173,13 @@ public class FormGenerateCodeTest extends ExtJellyTestCase {
                 missInCode(entry.getValue(), designer);
             }
         }
-        removeFile(name);
+        //removeFile(name);
     }
 
     public void testAWTAndSwingComponentsTogether() {
         p("testAWTAndSwingComponentsTogether - start"); // NOI18N
 
-        String name = createJFrameFile();
+        String name = createJFrameFile()+".java";
 
 
         FormDesignerOperator designer = new FormDesignerOperator(name);
@@ -203,12 +203,12 @@ public class FormGenerateCodeTest extends ExtJellyTestCase {
         findInCode("jLabel1 = new javax.swing.JLabel();", designer); // NOI18N
         findInCode("label1 = new java.awt.Label()", designer); // NOI18N
 
-        removeFile(name);
+       // removeFile(name);
     }
 
     public void testAddComponentsIntoContainersSwing() {
         p("testAddComponentsIntoContainersSwing - start"); // NOI18N
-        frameName = createJFrameFile();
+        frameName = createJFrameFile()+".java";
         FormDesignerOperator designer = new FormDesignerOperator(frameName);
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
 
@@ -350,7 +350,7 @@ public class FormGenerateCodeTest extends ExtJellyTestCase {
         designer = new FormDesignerOperator(frameName);
         findInCode("jDesktopPane1.add(jInternalFrame2, javax.swing.JLayeredPane.DEFAULT_LAYER);", designer); // NOI18N
 
-        removeFile(frameName);
+        //removeFile(frameName);
     }
 
     public void testAddComponentsIntoContainersAwt() {
@@ -409,7 +409,7 @@ public class FormGenerateCodeTest extends ExtJellyTestCase {
         designer = new FormDesignerOperator(frameName);
         findInCode("panel1.add(canvas1);", designer); // NOI18N
 
-        removeFile(frameName);
+        //removeFile(frameName);
     }
 
     public void testInPlaceEditing() {
@@ -461,12 +461,12 @@ public class FormGenerateCodeTest extends ExtJellyTestCase {
             assertEquals("Text property of component " + name + " was not set correctly.", prop.getValue(), testText); // NOI18N
         }
 
-        removeFile(dialogName);
+        //removeFile(dialogName);
     }
 
     public void testBorderSettings() {
         p("testBorderSettings - start"); // NOI18N
-        String dialogName = createJFrameFile();
+        String dialogName = createJFrameFile()+".java";
 
         HashMap<String, Class> components = new HashMap<String, Class>();
         components.put("Button", JButton.class); // NOI18N
@@ -511,6 +511,6 @@ public class FormGenerateCodeTest extends ExtJellyTestCase {
         lines.add("jButton1.setBorder(javax.swing.BorderFactory.");
         findInCode(lines, designer);
 
-        removeFile(dialogName);
+        //removeFile(dialogName);
     }
 }

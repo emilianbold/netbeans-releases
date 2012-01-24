@@ -207,7 +207,7 @@ public final class WhereUsedSupport {
                             @Override
                             public void run(ResultIterator resultIterator) throws Exception {
                                 Result parserResult = resultIterator.getParserResult();
-                                if (parserResult instanceof PHPParseResult) {
+                                if (parserResult != null && parserResult instanceof PHPParseResult) {
                                     Model modelForDeclaration = ModelFactory.getModel((PHPParseResult)parserResult);
                                     declarations.add(modelForDeclaration.findDeclaration(declarationElement));
                                 }
@@ -229,7 +229,7 @@ public final class WhereUsedSupport {
     }
 
     public static WhereUsedSupport getInstance(final Set<ModelElement> declarations, final Index indexQuery, final FileObject fileObject, final int offset) {
-        final ModelElement declaration = ModelUtils.getFirst(declarations);        
+        final ModelElement declaration = ModelUtils.getFirst(declarations);
         return (declaration != null && declarations.size() > 0) ? new WhereUsedSupport(indexQuery, declarations, offset, fileObject) : null;
     }
 
@@ -307,7 +307,7 @@ public final class WhereUsedSupport {
                 return retval;
             }
         });
-        
+
         Map<FileObject, WarningFileElement> warningElements = new HashMap<FileObject, WarningFileElement>();
 
         private Results() {
@@ -340,7 +340,7 @@ public final class WhereUsedSupport {
         public Collection<WhereUsedElement> getResultElements() {
             return elements;
         }
-        
+
         public Collection<WarningFileElement> getWarningElements() {
             return warningElements.values();
         }

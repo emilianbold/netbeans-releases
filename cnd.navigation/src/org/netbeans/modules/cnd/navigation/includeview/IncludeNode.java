@@ -87,6 +87,7 @@ public class IncludeNode extends AbstractCsmNode {
         object = element;
     }
     
+    @Override
     public CsmObject getCsmObject() {
         return object;
     }

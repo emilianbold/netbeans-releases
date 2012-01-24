@@ -96,7 +96,7 @@ class VariableBaseType {
         return new VariableBaseType(Union2.<String, TypeScopeImpl>createFirst(
                 extractVariableTypeFromAssignment(assignment, new HashMap<String, VariableNameImpl>())));
     }
-    
+
     private static VariableBaseType createImpl(VariableBase varBase) {
         return new VariableBaseType(Union2.<String, TypeScopeImpl>createFirst(
                 extractTypeFroVariableBase(varBase, new HashMap<String, VariableNameImpl>())));
@@ -120,7 +120,7 @@ class VariableBaseType {
                 typeName += tmpType;
             }
         }
-        return typeName; 
+        return typeName;
     }
 
     private static void createVariableBaseChain(VariableBase node, Stack<VariableBase> stack) {

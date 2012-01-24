@@ -411,6 +411,7 @@ public abstract class CsmPaintComponent extends JPanel {
             this.displayFullNamespacePath = displayFullNamespacePath;
         }
         
+        @Override
         protected void draw(Graphics g) {
             // IMPORTANT:
             // when updated => have to update toString!
@@ -426,6 +427,7 @@ public abstract class CsmPaintComponent extends JPanel {
          * returns string representation of paint item
          * IMPORTANT: have to be in sync with draw() method
          */
+        @Override
         public String toString() {
             return pkgName;
         }
@@ -444,6 +446,7 @@ public abstract class CsmPaintComponent extends JPanel {
             this.aliasName = aliasName;
         }
         
+        @Override
         protected void draw(Graphics g) {
             // IMPORTANT:
             // when updated => have to update toString!
@@ -455,6 +458,7 @@ public abstract class CsmPaintComponent extends JPanel {
          * returns string representation of paint item
          * IMPORTANT: have to be in sync with draw() method
          */
+        @Override
         public String toString() {
             return aliasName;
         }
@@ -474,6 +478,7 @@ public abstract class CsmPaintComponent extends JPanel {
             return ENUM_COLOR;
         }
         
+        @Override
         protected void draw(Graphics g){
             // IMPORTANT:
             // when updated => have to update toString!
@@ -490,6 +495,7 @@ public abstract class CsmPaintComponent extends JPanel {
          * returns string representation of paint item
          * IMPORTANT: have to be in sync with draw() method
          */
+        @Override
         public String toString() {
             return formatEnumName;
         }
@@ -509,6 +515,7 @@ public abstract class CsmPaintComponent extends JPanel {
             return ENUMERATOR_COLOR;
         }
         
+        @Override
         protected void draw(Graphics g){
             // IMPORTANT:
             // when updated => have to update toString!
@@ -526,6 +533,7 @@ public abstract class CsmPaintComponent extends JPanel {
          * returns string representation of paint item
          * IMPORTANT: have to be in sync with draw() method
          */
+        @Override
         public String toString() {
             return formatEnumeratorName;
         }
@@ -545,6 +553,7 @@ public abstract class CsmPaintComponent extends JPanel {
             return CLASS_COLOR;
         }
         
+        @Override
         protected void draw(Graphics g){
             // IMPORTANT:
             // when updated => have to update toString!
@@ -557,6 +566,7 @@ public abstract class CsmPaintComponent extends JPanel {
          * returns string representation of paint item
          * IMPORTANT: have to be in sync with draw() method
          */
+        @Override
         public String toString() {
             return formatClassName;
         }        
@@ -578,6 +588,7 @@ public abstract class CsmPaintComponent extends JPanel {
             return TYPEDEF_COLOR;
         }
         
+        @Override
         protected void draw(Graphics g){
             // IMPORTANT:
             // when updated => have to update toString!
@@ -590,6 +601,7 @@ public abstract class CsmPaintComponent extends JPanel {
          * returns string representation of paint item
          * IMPORTANT: have to be in sync with draw() method
          */
+        @Override
         public String toString() {
             return formatTypedefName;
         }        
@@ -664,6 +676,7 @@ public abstract class CsmPaintComponent extends JPanel {
             this.drawTypeAsPrefix = asPrefix;
         }
         
+        @Override
         protected void draw(Graphics g){
             // IMPORTANT:
             // when updated => have to update toString!
@@ -690,6 +703,7 @@ public abstract class CsmPaintComponent extends JPanel {
          * returns string representation of paint item
          * IMPORTANT: have to be in sync with draw() method
          */
+        @Override
         public String toString() {
             StringBuilder buf = new StringBuilder();
             if (drawTypeAsPrefix) {
@@ -778,6 +792,7 @@ public abstract class CsmPaintComponent extends JPanel {
             return params;
         }
 
+        @Override
         protected void draw(Graphics g){
             // IMPORTANT:
             // when updated => have to update toString!
@@ -821,6 +836,7 @@ public abstract class CsmPaintComponent extends JPanel {
          * returns string representation of paint item
          * IMPORTANT: have to be in sync with draw() method
          */
+        @Override
         public String toString() {
             StringBuilder buf = new StringBuilder();
             //macro name
@@ -858,6 +874,7 @@ public abstract class CsmPaintComponent extends JPanel {
             return params;
         }
 
+        @Override
         protected void draw(Graphics g){
             // IMPORTANT:
             // when updated => have to update toString!
@@ -870,6 +887,7 @@ public abstract class CsmPaintComponent extends JPanel {
          * returns string representation of paint item
          * IMPORTANT: have to be in sync with draw() method
          */
+        @Override
         public String toString() {
             StringBuilder buf = new StringBuilder();
             //macro name
@@ -905,6 +923,7 @@ public abstract class CsmPaintComponent extends JPanel {
             return params;
         }
 
+        @Override
         protected void draw(Graphics g){
             // IMPORTANT:
             // when updated => have to update toString!
@@ -917,6 +936,7 @@ public abstract class CsmPaintComponent extends JPanel {
          * returns string representation of paint item
          * IMPORTANT: have to be in sync with draw() method
          */
+        @Override
         public String toString() {
             StringBuilder buf = new StringBuilder();
             //macro name
@@ -1012,6 +1032,7 @@ public abstract class CsmPaintComponent extends JPanel {
             }
         }
         
+        @Override
         protected void draw(Graphics g){
             // IMPORTANT:
             // when updated => have to update toString!
@@ -1027,6 +1048,7 @@ public abstract class CsmPaintComponent extends JPanel {
          * returns string representation of paint item
          * IMPORTANT: have to be in sync with draw() method
          */
+        @Override
         public String toString() {
             StringBuilder buf = new StringBuilder();
             //constructor name
@@ -1206,6 +1228,7 @@ public abstract class CsmPaintComponent extends JPanel {
             this.comp = comp;
         }
 
+        @Override
         protected void draw(Graphics g) {
             if (comp != null) {
                 if (drawTypeAsPrefix) {
@@ -1235,6 +1258,7 @@ public abstract class CsmPaintComponent extends JPanel {
             }
         }
         
+        @Override
         public String toString() {
             if (comp != null) {
                 return comp.toString();
@@ -1251,11 +1275,13 @@ public abstract class CsmPaintComponent extends JPanel {
             this.str = str;            
         }
         
+        @Override
         protected void draw(Graphics g){
             drawIcon(g, null);
             drawString(g, str, TYPE_COLOR);
         }
 
+        @Override
         public String toString() {
             return str;
         }

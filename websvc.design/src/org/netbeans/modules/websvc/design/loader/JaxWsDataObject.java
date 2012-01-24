@@ -80,7 +80,7 @@ import org.openide.windows.CloneableOpenSupport;
 
 public final class JaxWsDataObject extends MultiDataObject {
     
-    public static final String CLASS_GIF = "org/netbeans/modules/java/resources/class.gif";
+    public static final String CLASS_GIF = "org/netbeans/modules/websvc/design/resources/class.gif";
     
     private static final String BUILD_IMPL_XML_PATH = "nbproject/build-impl.xml"; // NOI18N
     private transient JaxWsJavaEditorSupport jes;    

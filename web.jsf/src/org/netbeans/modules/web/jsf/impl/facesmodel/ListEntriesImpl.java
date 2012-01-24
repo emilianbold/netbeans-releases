@@ -62,12 +62,13 @@ class ListEntriesImpl extends IdentifiableComponentImpl implements ListEntries {
         super(model, createElementNS(model, JSFConfigQNames.LIST_ENTRIES));
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.facesmodel.ListEntries#getValueClass()
+    /**
+     * Gets value-class of the faces-config-list-entriesType.
+     * @return trimmed value-class if any, {@code null} otherwise
      */
     public String getValueClass() {
-        return getChildElementText(
-                JSFConfigQNames.VALUE_CLASS.getQName(getNamespaceURI()));
+        String valueClass = getChildElementText(JSFConfigQNames.VALUE_CLASS.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickFacesConfigValueClassType(valueClass);
     }
 
     /* (non-Javadoc)

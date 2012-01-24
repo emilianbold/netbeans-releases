@@ -68,7 +68,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.text.MessageFormat;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -82,8 +81,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import org.netbeans.modules.profiler.api.EditorSupport;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
@@ -92,13 +90,22 @@ import org.openide.util.Utilities;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "ToggleProfilingPointAction_ActionName=Toggle Profiling Point",
+    "ToggleProfilingPointAction_ActionDescr=Toggles Profiling Point",
+    "ToggleProfilingPointAction_ProfilingProgressMsg=Cannot create new Profiling Point during profiling session.",
+    "ToggleProfilingPointAction_BadSourceMsg=Profiling Points cannot be created in this source file.",
+    "ToggleProfilingPointAction_CancelString=Cancel",
+    "ToggleProfilingPointAction_SwitcherWindowCaption=New Profiling Point",
+    "ToggleProfilingPointAction_InvalidShortcutMsg=<html><b>Invalid shortcut assigned to {0} action.</b><br><br>Make sure that exactly one shortcut is assigned to the action<br>and at least one modifier key is used in the shortcut.</html>"
+})
 public class ToggleProfilingPointAction extends AbstractAction implements AWTEventListener {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
     private static class ProfilingPointsSwitcher extends JFrame {
         //~ Static fields/initializers -------------------------------------------------------------------------------------------
 
-        private static final String NO_ACTION_NAME = CANCEL_STRING;
+        private static final String NO_ACTION_NAME = Bundle.ToggleProfilingPointAction_CancelString();
         private static final Icon NO_ACTION_ICON = null;
 
         //~ Instance fields ------------------------------------------------------------------------------------------------------
@@ -111,7 +118,7 @@ public class ToggleProfilingPointAction extends AbstractAction implements AWTEve
         //~ Constructors ---------------------------------------------------------------------------------------------------------
 
         public ProfilingPointsSwitcher() {
-            super(SWITCHER_WINDOW_CAPTION);
+            super(Bundle.ToggleProfilingPointAction_SwitcherWindowCaption());
             initProperties();
             initComponents();
             setProfilingPointFactory(null, -1);
@@ -221,24 +228,6 @@ public class ToggleProfilingPointAction extends AbstractAction implements AWTEve
     }
 
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String ACTION_NAME = NbBundle.getMessage(ToggleProfilingPointAction.class,
-                                                                  "ToggleProfilingPointAction_ActionName"); // NOI18N
-    private static final String ACTION_DESCR = NbBundle.getMessage(ToggleProfilingPointAction.class,
-                                                                   "ToggleProfilingPointAction_ActionDescr"); // NOI18N
-    private static final String PROFILING_PROGRESS_MSG = NbBundle.getMessage(ToggleProfilingPointAction.class,
-                                                                             "ToggleProfilingPointAction_ProfilingProgressMsg"); // NOI18N
-    private static final String BAD_SOURCE_MSG = NbBundle.getMessage(ToggleProfilingPointAction.class,
-                                                                     "ToggleProfilingPointAction_BadSourceMsg"); // NOI18N
-    private static final String CANCEL_STRING = NbBundle.getMessage(ToggleProfilingPointAction.class,
-                                                                    "ToggleProfilingPointAction_CancelString"); // NOI18N
-    private static final String SWITCHER_WINDOW_CAPTION = NbBundle.getMessage(ToggleProfilingPointAction.class,
-                                                                              "ToggleProfilingPointAction_SwitcherWindowCaption"); // NOI18N
-    private static final String INVALID_SHORTCUT_MSG = NbBundle.getMessage(ToggleProfilingPointAction.class,
-                                                                              "ToggleProfilingPointAction_InvalidShortcutMsg"); // NOI18N
-                                                                                                                                   // -----
     
     private static ToggleProfilingPointAction instance;
 
@@ -254,8 +243,8 @@ public class ToggleProfilingPointAction extends AbstractAction implements AWTEve
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     public ToggleProfilingPointAction() {
-        putValue(Action.NAME, ACTION_NAME);
-        putValue(Action.SHORT_DESCRIPTION, ACTION_DESCR);
+        putValue(Action.NAME, Bundle.ToggleProfilingPointAction_ActionName());
+        putValue(Action.SHORT_DESCRIPTION, Bundle.ToggleProfilingPointAction_ActionDescr());
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
@@ -276,9 +265,9 @@ public class ToggleProfilingPointAction extends AbstractAction implements AWTEve
     public void actionPerformed(final ActionEvent e) {
         acceleratorKeyStroke = Utilities.stringToKey(e.getActionCommand());
         if (acceleratorKeyStroke == null || acceleratorKeyStroke.getModifiers() == 0) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    MessageFormat.format(INVALID_SHORTCUT_MSG, new Object[] { ACTION_NAME }),
-                                    NotifyDescriptor.ERROR_MESSAGE));
+            ProfilerDialogs.displayError(
+                    Bundle.ToggleProfilingPointAction_InvalidShortcutMsg(
+                    Bundle.ToggleProfilingPointAction_ActionName()));
             return;
         }
         
@@ -288,9 +277,8 @@ public class ToggleProfilingPointAction extends AbstractAction implements AWTEve
 
         if (ProfilingPointsManager.getDefault().isProfilingSessionInProgress()) {
             warningDialogOpened = true;
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    PROFILING_PROGRESS_MSG,
-                                    NotifyDescriptor.WARNING_MESSAGE));
+            ProfilerDialogs.displayWarning(
+                    Bundle.ToggleProfilingPointAction_ProfilingProgressMsg());
             warningDialogOpened = false;
 
             return;
@@ -298,9 +286,8 @@ public class ToggleProfilingPointAction extends AbstractAction implements AWTEve
 
         if (Utils.getCurrentLocation(0).equals(CodeProfilingPoint.Location.EMPTY)) {
             warningDialogOpened = true;
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    BAD_SOURCE_MSG,
-                                    NotifyDescriptor.WARNING_MESSAGE));
+            ProfilerDialogs.displayWarning(
+                    Bundle.ToggleProfilingPointAction_BadSourceMsg());
             warningDialogOpened = false;
 
             return;

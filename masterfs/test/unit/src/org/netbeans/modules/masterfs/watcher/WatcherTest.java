@@ -41,11 +41,13 @@
  */
 package org.netbeans.modules.masterfs.watcher;
 
+import org.netbeans.modules.masterfs.providers.Notifier;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileObject;
@@ -68,10 +70,11 @@ public class WatcherTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         clearWorkDir();
+        MockServices.setServices(TestNotifier.class);
         listener = new L();
         watcher = Lookup.getDefault().lookup(Watcher.class);
-        notify = new TestNotifier();
-        watcher.installNotifier(notify);
+        notify = Lookup.getDefault().lookup(TestNotifier.class);
+        notify.start();
     }
 
     @Override
@@ -158,7 +161,7 @@ public class WatcherTest extends NbTestCase {
     private static final class L extends FileChangeAdapter {
     }
     
-    private static final class TestNotifier extends Notifier<Integer> {
+    public static final class TestNotifier extends Notifier<Integer> {
         final List<String> registered = new LinkedList<String>();
 
         @Override
@@ -189,6 +192,10 @@ public class WatcherTest extends NbTestCase {
                 assertEquals(i + ". " + msg, expected[i], registered.get(i));
             }
         }
-        
+
+        @Override
+        protected void start() throws IOException {
+            registered.clear();
+        }
     }
 }

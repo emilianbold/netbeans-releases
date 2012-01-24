@@ -72,13 +72,16 @@ class HighlightVisitor implements DependencyNodeVisitor {
         return rectangle;
     }
 
-
-    public boolean visit(DependencyNode node) {
+    @Override public boolean visit(DependencyNode node) {
         if (root == null) {
             root = node;
         }
         if (node.getState() == DependencyNode.INCLUDED) {
+            path.push(node);
             ArtifactGraphNode grNode = scene.getGraphNodeRepresentant(node);
+            if (grNode == null) {
+                return false;
+            }
             ArtifactWidget aw = (ArtifactWidget) scene.findWidget(grNode);
             Collection<ArtifactGraphEdge> edges = scene.findNodeEdges(grNode, true, true);
             aw.setReadable(false);
@@ -99,14 +102,13 @@ class HighlightVisitor implements DependencyNodeVisitor {
                     ew.setState(EdgeWidget.REGULAR);
                 }
             }
-            path.push(node);
             return true;
         } else {
             return false;
         }
     }
 
-    public boolean endVisit(DependencyNode node) {
+    @Override public boolean endVisit(DependencyNode node) {
         if (node.getState() == DependencyNode.INCLUDED) {
             path.pop();
         }

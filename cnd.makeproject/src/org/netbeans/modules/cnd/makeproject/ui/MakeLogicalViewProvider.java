@@ -89,6 +89,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     static final Image brokenIncludeBadge = loadToolTipImage(brokenIncludeImgPath, "BrokenIncludeTxt"); // NOI18N
 
     static final String SUBTYPE = "x-org-netbeans-modules-cnd-makeproject-uidnd"; // NOI18N
+    static final String SUBTYPE_FOLDER = "x-org-netbeans-modules-cnd-makeproject-uidnd-folder"; // NOI18N
     static final String MASK = "mask"; // NOI18N
     final static RequestProcessor ANNOTATION_RP = new RequestProcessor("MakeLogicalViewProvider.AnnotationUpdater", 10); // NOI18N
 

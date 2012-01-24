@@ -49,6 +49,35 @@ made subject to such option by the copyright holder.
         <apidef name="keyring">Keyring API</apidef>
     </apidefs>
     <changes>
+        <change id="edt">
+            <api name="keyring"/>
+            <summary>Keyring API usable from any thread</summary>
+            <version major="1" minor="10"/>
+            <date day="6" month="1" year="2012"/>
+            <author login="phejl"/>
+            <compatibility>
+                <p>
+                    Existing callers should use the Keyring directly from
+                    any thread and should not try to avoid EDT anymore.
+                </p>
+                <p>
+                    SPI implementors should not be changed and they may
+                    continue to assume that they will not be called directly
+                    from EDT.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    It hasn't been allowed to call the Keyring from EDT.
+                    This change removes the limitation as the need to read
+                    password from the UI is not so rare. To resolve this people
+                    had to code custom threading solution to prevent possible
+                    deadlock on fallback implementation of the keyring API.
+                </p>
+            </description>
+            <class package="org.netbeans.api.keyring" name="Keyring"/>
+            <issue number="206475"/>
+        </change>
         <change id="initial">
             <api name="keyring"/>
             <summary>Keyring API created</summary>

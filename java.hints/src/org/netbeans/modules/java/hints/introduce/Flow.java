@@ -744,6 +744,12 @@ public class Flow {
 
         public Boolean visitContinue(ContinueTree node, Void p) {
             StatementTree loop = info.getTreeUtilities().getBreakContinueTarget(getCurrentPath());
+
+            if (loop == null) {
+                super.visitContinue(node, p);
+                return null;
+            }
+
             Tree resumePoint;
 
             if (loop.getKind() == Kind.LABELED_STATEMENT) {
@@ -756,6 +762,9 @@ public class Flow {
                     break;
                 case FOR_LOOP:
                     resumePoint = ((ForLoopTree) loop).getCondition();
+                    if (resumePoint == null) {
+                        resumePoint = ((ForLoopTree) loop).getStatement();
+                    }
                     break;
                 case DO_WHILE_LOOP:
                     resumePoint = ((DoWhileLoopTree) loop).getCondition();
@@ -780,6 +789,10 @@ public class Flow {
 
             super.visitContinue(node, p);
             return null;
+        }
+
+        public Boolean visitParenthesized(ParenthesizedTree node, Void p) {
+            return super.visitParenthesized(node, p);
         }
 
         private void resumeAfter(Tree target, Map<VariableElement, State> state) {
@@ -845,11 +858,6 @@ public class Flow {
 
         public Boolean visitPrimitiveType(PrimitiveTypeTree node, Void p) {
             super.visitPrimitiveType(node, p);
-            return null;
-        }
-
-        public Boolean visitParenthesized(ParenthesizedTree node, Void p) {
-            super.visitParenthesized(node, p);
             return null;
         }
 

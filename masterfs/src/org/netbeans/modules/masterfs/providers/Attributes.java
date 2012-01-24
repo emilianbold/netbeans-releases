@@ -56,6 +56,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
+import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 
 /**
@@ -69,7 +70,6 @@ import org.openide.util.Exceptions;
  */
 public class Attributes extends DefaultAttributes {
     public static String ATTRNAME = "attributes.xml";
-    private static final String USERDIR = "netbeans.user";//NOI18N
     private static final String LOCATION = "var";//NOI18N
 
     private static DefaultAttributes sharedUserAttributes;
@@ -101,7 +101,7 @@ public class Attributes extends DefaultAttributes {
     public static File getRootForAttributes() {
         synchronized (ExLocalFileSystem.class) {
             if (rootForAttributes == null) {
-                String userDir = System.getProperty(USERDIR);
+                File userDir = Places.getUserDirectory();
                                  
                 if (userDir != null) {
                     rootForAttributes = new File(userDir, LOCATION);

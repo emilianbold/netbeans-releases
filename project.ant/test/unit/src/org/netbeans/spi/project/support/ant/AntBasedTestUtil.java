@@ -79,7 +79,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
-import org.netbeans.spi.queries.CollocationQueryImplementation;
+import org.netbeans.spi.queries.CollocationQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
@@ -189,7 +189,7 @@ public class AntBasedTestUtil {
                 genFilesHelper,
                 aux,
                 helper.createCacheDirectoryProvider(),
-                helper.createSharabilityQuery(helper.getStandardPropertyEvaluator(), new String[0], new String[0]),
+                helper.createSharabilityQuery2(helper.getStandardPropertyEvaluator(), new String[0], new String[0]),
                 refHelper.createSubprojectProvider(),
                 new TestAntArtifactProvider(),
                 new ProjectXmlSavedHook() {
@@ -442,28 +442,24 @@ public class AntBasedTestUtil {
      * And the subdirectory <samp>transient</samp> (if it exists) does not form a root,
      * but any files in there are not considered collocated with anything.
      */
-    public static CollocationQueryImplementation testCollocationQueryImplementation(File root) {
+    public static CollocationQueryImplementation2 testCollocationQueryImplementation(URI root) {
         return new TestCollocationQueryImplementation(root);
     }
     
-    private static final class TestCollocationQueryImplementation implements CollocationQueryImplementation {
+    private static final class TestCollocationQueryImplementation implements CollocationQueryImplementation2 {
         
-        private final File root;
         private final String rootPath;
-        private final File separate;
         private final String separatePath;
         private final String transientPath;
         
-        TestCollocationQueryImplementation(File root) {
-            this.root = root;
-            rootPath = root.getAbsolutePath();
-            separate = new File(root, "separate");
-            separatePath = separate.getAbsolutePath();
-            transientPath = new File(root, "transient").getAbsolutePath();
+        TestCollocationQueryImplementation(URI root) {
+            rootPath = root.toString();
+            separatePath = rootPath + "separate/";
+            transientPath = rootPath + "transient/";
         }
         
-        public boolean areCollocated(File file1, File file2) {
-            File root1 = findRoot(file1);
+        @Override public boolean areCollocated(URI file1, URI file2) {
+            URI root1 = findRoot(file1);
             if (root1 == null) {
                 return false;
             } else {
@@ -471,23 +467,23 @@ public class AntBasedTestUtil {
             }
         }
         
-        public File findRoot(File file) {
-            String path = file.getAbsolutePath();
+        @Override public URI findRoot(URI file) {
+            String path = file.toString();
             if (!path.startsWith(rootPath)) {
                 return null;
             }
             if (path.startsWith(separatePath)) {
-                return separate;
+                return URI.create(separatePath);
             }
             if (path.startsWith(transientPath)) {
                 return null;
             }
-            return root;
+            return URI.create(rootPath);
         }
 
         @Override
         public String toString() {
-            return "TestCollocationQueryImplementation[" + root + "]";
+            return "TestCollocationQueryImplementation[" + rootPath + "]";
         }
         
     }

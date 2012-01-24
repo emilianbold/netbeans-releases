@@ -41,49 +41,33 @@
  */
 package org.netbeans.modules.javafx2.project;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.text.MessageFormat;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
+import org.netbeans.api.java.source.*;
+import org.netbeans.api.project.*;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
+import org.openide.cookies.CloseCookie;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
+import org.openide.loaders.DataObject;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
 
 /**
  * Utility class for JavaFX 2.0 Project
@@ -94,6 +78,11 @@ public final class JFXProjectUtils {
 
     private static Set<SearchKind> kinds = new HashSet<SearchKind>(Arrays.asList(SearchKind.IMPLEMENTORS));
     private static Set<SearchScope> scopes = new HashSet<SearchScope>(Arrays.asList(SearchScope.SOURCE));
+    
+    private static final String JFX_BUILD_TEMPLATE = "Templates/JFX/jfx-impl.xml"; //NOI18N
+    private static volatile String currentJfxImplCRCCache;
+
+    private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
     
     /**
      * Returns list of JavaFX 2.0 JavaScript callback entries.
@@ -272,5 +261,260 @@ public final class JFXProjectUtils {
         }
         return ep.evaluator().getProperty(JFXProjectProperties.RUN_AS);
     }
-    
+
+    /**
+     * Finds the relative path to targetFO from sourceFO. 
+     * Unlike FileUtil.getRelativePath() does not require targetFO to be within sourceFO sub-tree
+     * Returns null if there is no shared parent directory except root.
+     * 
+     * @param sourceFO file/dir to which the relative path will be related
+     * @param targetFO file whose location will be determined with respect to sourceFO
+     * @return string relative path leading from sourceFO to targetFO
+     */
+    public static String getRelativePath(@NonNull final FileObject sourceFO, @NonNull final FileObject targetFO) {
+        String path = ""; //NOI18N
+        FileObject src = sourceFO;
+        FileObject tgt = targetFO;
+        String targetName = null;
+        if(!src.isFolder()) {
+            src = src.getParent();
+        }
+        if(!tgt.isFolder()) {
+            targetName = tgt.getNameExt();
+            tgt = tgt.getParent();
+        }
+        LinkedList<String> srcSplit = new LinkedList<String>();
+        LinkedList<String> tgtSplit = new LinkedList<String>();
+        while(!src.isRoot()) {
+            srcSplit.addFirst(src.getName());
+            src = src.getParent();
+        }
+        while(!tgt.isRoot()) {
+            tgtSplit.addFirst(tgt.getName());
+            tgt = tgt.getParent();
+        }
+        boolean share = false;
+        while(!srcSplit.isEmpty() && !tgtSplit.isEmpty()) {
+            if(srcSplit.getFirst().equals(tgtSplit.getFirst())) {
+                srcSplit.removeFirst();
+                tgtSplit.removeFirst();
+                share = true;
+            } else {
+                break;
+            }
+        }
+        if(!share) {
+            return null;
+        }
+        for(int left = 0; left < srcSplit.size(); left++) {
+            if(left == 0) {
+                path += ".."; //NOI18N
+            } else {
+                path += "/.."; //NOI18N
+            }
+        }
+        while(!tgtSplit.isEmpty()) {
+            if(path.isEmpty()) {
+                path += tgtSplit.getFirst();
+            } else {
+                path += "/" + tgtSplit.getFirst(); //NOI18N
+            }
+            tgtSplit.removeFirst();
+        }
+        if(targetName != null) {
+            if(!path.isEmpty()) {
+                path += "/" + targetName; //NOI18N
+            } else {
+                path += targetName;
+            }
+        }
+        return path;
+    }
+
+    /**
+     * Finds the file/dir represented by relPath with respect to sourceDir. 
+     * Returns null if the file does not exist.
+     * 
+     * @param sourceDir file/dir to which the relative path is related
+     * @param relPath relative path related to sourceDir
+     * @return FileObject or null
+     */
+    public static FileObject getFileObject(@NonNull final FileObject sourceDir, @NonNull final String relPath) {
+        String split[] = relPath.split("[\\\\/]+"); //NOI18N
+        FileObject src = sourceDir;
+        String path = ""; //NOI18N
+        boolean back = true;
+        if(split[0].equals("..")) {
+            for(int i = 0; i < split.length; i++) {
+                if(back && split[i].equals("..")) { //NOI18N
+                    src = src.getParent();
+                    if(src == null) {
+                        return null;
+                    }
+                } else {
+                    if(back) {
+                        back = false;
+                        path = src.getPath();
+                    }
+                    path += "/" + split[i]; //NOI18N
+                }
+            }
+        } else {
+            path = relPath;
+        }
+        File f = new File(path);
+        if(f.exists()) {
+            return FileUtil.toFileObject(f);
+        }
+        return null;
+    }
+
+    /**
+     * Checks whether file nbproject/jfx-impl.xml equals current template. 
+     * If not, the file is backed up and regenerated to the current state
+     * and textual commentary is generated to UPDATED.TXT.
+     * 
+     * @param prj the project to check
+     * @return FileObject pointing at generated UPDATED.TXT or null
+     */
+    static FileObject updateJfxImpl(final @NonNull Project proj) throws IOException {
+        FileObject returnFO = null;
+        boolean isJfxCurrent = true;
+        FileObject projDir = proj.getProjectDirectory();
+        FileObject jfxBuildFile = projDir.getFileObject("nbproject/jfx-impl.xml"); // NOI18N
+        if (jfxBuildFile != null) {
+            final InputStream in = jfxBuildFile.getInputStream();
+            if(in != null) {
+                try {
+                    isJfxCurrent = isJfxImplCurrentVer(computeCrc32( in ));
+                } finally {
+                    in.close();
+                }
+            }
+        }
+        if (!isJfxCurrent) {
+            // try to close the file just in case the file is already opened in editor
+            DataObject dobj = DataObject.find(jfxBuildFile);
+            CloseCookie closeCookie = dobj.getLookup().lookup(CloseCookie.class);
+            if (closeCookie != null) {
+                closeCookie.close();
+            }
+            final FileObject nbproject = projDir.getFileObject("nbproject"); //NOI18N
+            final String backupName = FileUtil.findFreeFileName(nbproject, "jfx-impl_backup", "xml"); //NOI18N
+            FileUtil.moveFile(jfxBuildFile, nbproject, backupName);
+            LOGGER.log(Level.INFO, "Old build script file jfx-impl.xml has been renamed to: {0}.xml", backupName); // NOI18N
+            jfxBuildFile = null;
+
+            try {
+                final File readme = new File (FileUtil.toFile(nbproject), NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_README_FILE_NAME")); //NOI18N
+                if (!readme.exists()) {
+                    readme.createNewFile();
+                }
+                final FileObject readmeFO = FileUtil.toFileObject(readme);
+                returnFO = readmeFO;
+                try {
+                    ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                        @Override
+                        public Void run() throws Exception {
+                            OutputStream os = null;
+                            FileLock lock = null;
+                            try {
+                                lock = readmeFO.lock();
+                                os = readmeFO.getOutputStream(lock);
+                                final PrintWriter out = new PrintWriter ( os );
+                                try {
+                                    final String headerTemplate = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_README_FILE_CONTENT_HEADER"); //NOI18N
+                                    final String header = MessageFormat.format(headerTemplate, new Object[] {ProjectUtils.getInformation(proj).getDisplayName()});
+                                    char[] underline = new char[header.length()];
+                                    Arrays.fill(underline, '='); // NOI18N
+                                    final String content = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_README_FILE_CONTENT"); //NOI18N
+                                    out.println(underline);
+                                    out.println(header);
+                                    out.println(underline);
+                                    out.println (MessageFormat.format(content, new Object[] {backupName + ".xml"})); //NOI18N
+                                } finally {
+                                    if(out != null) {
+                                        out.close ();
+                                    }
+                                }
+                            } finally {
+                                if (lock != null) {
+                                    lock.releaseLock();
+                                }
+                                if (os != null) {
+                                    os.close();
+                                }
+                            }
+                            return null;
+                        }
+                    });
+                } catch (MutexException mux) {
+                    throw (IOException) mux.getException();
+                }
+                
+            } catch (IOException ioe) {
+                LOGGER.log(Level.INFO, "Cannot create file readme file. ", ioe); // NOI18N
+            }        
+        }
+        if (jfxBuildFile == null) {
+            FileObject templateFO = FileUtil.getConfigFile(JFX_BUILD_TEMPLATE);
+            if (templateFO != null) {
+                FileUtil.copyFile(templateFO, projDir.getFileObject("nbproject"), "jfx-impl"); // NOI18N
+                LOGGER.log(Level.INFO, "Build script jfx-impl.xml has been updated to the latest version supported by this NetBeans installation."); // NOI18N
+            }
+        }
+        return returnFO;
+    }
+
+    /**
+     * Computes CRC code of data from InputStream
+     * 
+     * @param is InputStream to read data from
+     * @return CRC code
+     */
+    static String computeCrc32(InputStream is) throws IOException {
+        Checksum crc = new CRC32();
+        int last = -1;
+        int curr;
+        while ((curr = is.read()) != -1) {
+            if (curr != '\n' && last == '\r') {
+                crc.update('\n');
+            }
+            if (curr != '\r') {
+                crc.update(curr);
+            }
+            last = curr;
+        }
+        if (last == '\r') {
+            crc.update('\n');
+        }
+        int val = (int)crc.getValue();
+        String hex = Integer.toHexString(val);
+        while (hex.length() < 8) {
+            hex = "0" + hex; // NOI18N
+        }
+        return hex;
+    }
+
+    /**
+     * Checks whether crc is the CRC code of current jfx-impl.xml template.
+     * 
+     * @param crc code to be compared against
+     * @return true if crc is the CRC code of current jfx-impl.xml template.
+     */
+    static boolean isJfxImplCurrentVer(String crc) throws IOException {
+        String _currentJfxImplCRC = currentJfxImplCRCCache;
+        if (_currentJfxImplCRC == null) {
+            final FileObject template = FileUtil.getConfigFile(JFX_BUILD_TEMPLATE);
+            final InputStream in = template.getInputStream();
+            if(in != null) {
+                try {
+                    currentJfxImplCRCCache = _currentJfxImplCRC = computeCrc32(in);
+                } finally {
+                    in.close();
+                }
+            }
+        }
+        return _currentJfxImplCRC.equals(crc);
+    }
 }

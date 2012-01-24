@@ -60,6 +60,7 @@ public final class EncapsulateFieldsAction extends CsmRefactoringGlobalAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
+    @Override
     public final void performAction(Lookup context) {
         CsmActionsImplementationFactory.doEncapsulateFields(context);
     }
@@ -74,6 +75,7 @@ public final class EncapsulateFieldsAction extends CsmRefactoringGlobalAction {
         return false;
     }
 
+    @Override
     protected boolean applicable(Lookup context) {
         return CsmActionsImplementationFactory.canEncapsulateFields(context);
     }

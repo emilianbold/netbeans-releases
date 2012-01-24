@@ -39,7 +39,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.css.editor.api;
 
 import java.util.ArrayList;
@@ -61,14 +60,13 @@ import org.netbeans.modules.parsing.api.Snapshot;
 public class CssCslParserResult extends ParserResult {
 
     private CssParserResult wrappedCssParserResult;
-    
     private final List<Error> errors = new ArrayList<Error>();
     private AtomicBoolean analyzerErrorsComputed = new AtomicBoolean(false);
 
     public CssCslParserResult(Snapshot snapshot) {
         super(snapshot);
     }
-    
+
     public CssCslParserResult(CssParserResult cssParserResult) {
         super(null);
         this.wrappedCssParserResult = cssParserResult;
@@ -77,40 +75,38 @@ public class CssCslParserResult extends ParserResult {
     public CssParserResult getWrappedCssParserResult() {
         return wrappedCssParserResult;
     }
-    
+
     @Override
     public Snapshot getSnapshot() {
         return wrappedCssParserResult.getSnapshot();
     }
-    
+
     public Node getParseTree() {
         return wrappedCssParserResult.getParseTree();
     }
-    
+
     @Override
     protected void invalidate() {
         //XXX the result invalidation must be disabled since some CSL features uses the result outside 
         //the parsing task! This should be fixed in CSL
     }
-    
+
     @Override
     public List<? extends Error> getDiagnostics() {
 
-        if(!analyzerErrorsComputed.getAndSet(true)) {
+        if (!analyzerErrorsComputed.getAndSet(true)) {
             List<ProblemDescription> diagnostics = wrappedCssParserResult.getDiagnostics();
-            
-            
+
+
             errors.addAll(Css3Utils.getCslErrorForCss3ProblemDescription(
-                        wrappedCssParserResult.getSnapshot().getSource().getFileObject(), diagnostics));
-            
+                    wrappedCssParserResult.getSnapshot().getSource().getFileObject(), diagnostics));
+
             errors.addAll(CssAnalyser.checkForErrors(getSnapshot(), getParseTree()));
         }
-        
+
         return errors;
     }
-    
-    
-    
+
 //    
 //     private Error createError(ProblemDescription pe) {
 //         

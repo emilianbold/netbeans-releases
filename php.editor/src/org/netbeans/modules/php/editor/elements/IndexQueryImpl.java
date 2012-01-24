@@ -94,6 +94,8 @@ import org.netbeans.modules.php.editor.api.elements.AliasedFunction;
 import org.netbeans.modules.php.editor.api.elements.AliasedInterface;
 import org.netbeans.modules.php.editor.api.elements.AliasedNamespace;
 import org.netbeans.modules.php.editor.api.elements.AliasedType;
+import org.netbeans.modules.php.editor.api.elements.TraitElement;
+import org.netbeans.modules.php.editor.api.elements.TraitedElement;
 import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.Model;
@@ -228,6 +230,19 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return Collections.unmodifiableSet(ifaces);
     }
 
+    private Set<TraitElement> getTraitsImpl(final NameKind query) {
+        final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
+        final Set<TraitElement> ifaces = new HashSet<TraitElement>();
+        final Collection<? extends IndexResult> result = results(TraitElementImpl.IDX_FIELD, query);
+        for (final IndexResult indexResult : result) {
+            ifaces.addAll(TraitElementImpl.fromSignature(query, this, indexResult));
+        }
+        if (LOG.isLoggable(Level.FINE)) {
+            logQueryTime("Set<TraitElement> getTraits", query, start);//NOI18N
+        }
+        return Collections.unmodifiableSet(ifaces);
+    }
+
     private static Set<NameKind> queriesForAlias(final NameKind query, final AliasedName aliasedName, final PhpElementKind elementKind) {
         final Set<NameKind> aliasQueries = new HashSet<NameKind>();
         final boolean fullyQualified = query.getQuery().getKind().isFullyQualified();
@@ -235,7 +250,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         final LinkedList<String> segments = query.getQuery().getSegments();
         for (int i = 0; i < segments.size(); i++) {
             final String nextSegment = segments.get(i);
-            if ((i == 0 || (i == segments.size() - 1)) && (!nextSegment.isEmpty() || segments.size() == 1)
+            if (!nextSegment.isEmpty() && (i == 0 || (i == segments.size() - 1)) && (!nextSegment.isEmpty() || segments.size() == 1)
                     && NameKind.create(nextSegment, queryKind).matchesName(elementKind, aliasedName.getAliasName())) {
                 final LinkedList<String> nSegments = new LinkedList<String>();
                 nSegments.addAll(segments.subList(0, i));
@@ -253,6 +268,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         final Set<TypeElement> types = new HashSet<TypeElement>();
         types.addAll(getClassesImpl(query));
         types.addAll(getInterfacesImpl(query));
+        types.addAll(getTraitsImpl(query));
         return types;
     }
 
@@ -338,7 +354,8 @@ public final class IndexQueryImpl implements ElementQuery.Index {
             PHPIndexer.FIELD_CONST,
             PHPIndexer.FIELD_CLASS,
             PHPIndexer.FIELD_IFACE,
-            PHPIndexer.FIELD_NAMESPACE
+            PHPIndexer.FIELD_NAMESPACE,
+            PHPIndexer.FIELD_TRAIT
         };
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         final Set<PhpElement> elements = new HashSet<PhpElement>();
@@ -351,6 +368,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                 elements.addAll(InterfaceElementImpl.fromSignature(query, this, indexResult));
                 elements.addAll(FunctionElementImpl.fromSignature(query, this, indexResult));
                 elements.addAll(ConstantElementImpl.fromSignature(query, this, indexResult));
+                elements.addAll(TraitElementImpl.fromSignature(query, this, indexResult));
             }
         }
         if (isVariable) {
@@ -445,11 +463,12 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         final Set<MethodElement> methods = new HashSet<MethodElement>();
         final Collection<? extends IndexResult> methResults = results(MethodElementImpl.IDX_FIELD, methodQuery,
-                new String[]{ClassElementImpl.IDX_FIELD, InterfaceElementImpl.IDX_FIELD, MethodElementImpl.IDX_FIELD});
+                new String[]{ClassElementImpl.IDX_FIELD, InterfaceElementImpl.IDX_FIELD, TraitElementImpl.IDX_FIELD, MethodElementImpl.IDX_FIELD});
         for (final IndexResult indexResult : methResults) {
             final Set<TypeElement> types = new HashSet<TypeElement>();
             types.addAll(ClassElementImpl.fromSignature(this, indexResult));
             types.addAll(InterfaceElementImpl.fromSignature(this, indexResult));
+            types.addAll(TraitElementImpl.fromSignature(this, indexResult));
             for (final TypeElement typeElement : types) {
                 methods.addAll(MethodElementImpl.fromSignature(typeElement, methodQuery, this, indexResult));
             }
@@ -502,6 +521,20 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                     }
                 }
                 break;
+            case TRAIT:
+                final Collection<? extends IndexResult> traitResults = results(TraitElementImpl.IDX_FIELD, typeQuery,
+                        new String[]{
+                            TraitElementImpl.IDX_FIELD,
+                            FieldElementImpl.IDX_FIELD,
+                            MethodElementImpl.IDX_FIELD
+                        });
+                for (final IndexResult indexResult : traitResults) {
+                    for (final TypeElement traitElement : TraitElementImpl.fromSignature(typeQuery, this, indexResult)) {
+                        members.addAll(MethodElementImpl.fromSignature(traitElement, memberQuery, this, indexResult));
+                        members.addAll(FieldElementImpl.fromSignature(traitElement, memberQuery, this, indexResult));
+                    }
+                }
+                break;
         }
         if (LOG.isLoggable(Level.FINE)) {
             logQueryTime("Set<PhpElement> getTypeMembers", typeQuery, memberQuery, start);//NOI18N
@@ -550,6 +583,15 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                     }
                 }
                 break;
+            case TRAIT:
+                final Collection<? extends IndexResult> traitResults = results(TraitElementImpl.IDX_FIELD, typeQuery,
+                        new String[]{TraitElementImpl.IDX_FIELD, MethodElementImpl.IDX_FIELD});
+                for (final IndexResult indexResult : traitResults) {
+                    for (final TypeElement traitElement : TraitElementImpl.fromSignature(typeQuery, this, indexResult)) {
+                        methods.addAll(MethodElementImpl.fromSignature(traitElement, methodQuery, this, indexResult));
+                    }
+                }
+                break;
         }
         if (LOG.isLoggable(Level.FINE)) {
             logQueryTime("Set<MethodElement> getMethods", typeQuery, methodQuery, start);//NOI18N
@@ -589,6 +631,18 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                 members.addAll(TypeConstantElementImpl.fromSignature(typeElement, memberQuery, this, indexResult));
             }
         }
+        final Collection<? extends IndexResult> traitResults = results(TraitElementImpl.IDX_FIELD, typeQuery,
+                new String[] {
+                    TraitElementImpl.IDX_FIELD,
+                    MethodElementImpl.IDX_FIELD,
+                    FieldElementImpl.IDX_FIELD
+                });
+        for (IndexResult indexResult : traitResults) {
+            for (final TypeElement typeElement : TraitElementImpl.fromSignature(typeQuery, this, indexResult)) {
+                members.addAll(MethodElementImpl.fromSignature(typeElement, memberQuery, this, indexResult));
+                members.addAll(FieldElementImpl.fromSignature(typeElement, memberQuery, this, indexResult));
+            }
+        }
         if (LOG.isLoggable(Level.FINE)) {
             logQueryTime("Set<PhpElement> getTypeMembers", typeQuery, memberQuery, start);//NOI18N
         }
@@ -597,7 +651,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
 
     @Override
     public final Set<MethodElement> getMethods(final NameKind.Exact typeQuery, final NameKind methodQuery) {
-        return getMethodsImpl(typeQuery, methodQuery, EnumSet.of(PhpElementKind.CLASS,PhpElementKind.IFACE));
+        return getMethodsImpl(typeQuery, methodQuery, EnumSet.of(PhpElementKind.CLASS,PhpElementKind.IFACE, PhpElementKind.TRAIT));
     }
 
     private final Set<MethodElement> getMethodsImpl(final NameKind.Exact typeQuery, final NameKind methodQuery, EnumSet<PhpElementKind> typeKinds) {
@@ -618,6 +672,15 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                     new String[]{InterfaceElementImpl.IDX_FIELD, MethodElementImpl.IDX_FIELD});
             for (final IndexResult indexResult : ifaceResults) {
                 for (final TypeElement typeElement : InterfaceElementImpl.fromSignature(typeQuery, this, indexResult)) {
+                    methods.addAll(MethodElementImpl.fromSignature(typeElement, methodQuery, this, indexResult));
+                }
+            }
+        }
+        if (typeKinds.contains(PhpElementKind.TRAIT)) {
+            final Collection<? extends IndexResult> traitResults = results(TraitElementImpl.IDX_FIELD, typeQuery,
+                    new String[]{TraitElementImpl.IDX_FIELD, MethodElementImpl.IDX_FIELD});
+            for (final IndexResult indexResult : traitResults) {
+                for (final TypeElement typeElement : TraitElementImpl.fromSignature(typeQuery, this, indexResult)) {
                     methods.addAll(MethodElementImpl.fromSignature(typeElement, methodQuery, this, indexResult));
                 }
             }
@@ -657,10 +720,10 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     }
 
     @Override
-    public Set<FieldElement> getDeclaredFields(TypeElement classElement) {
+    public Set<FieldElement> getDeclaredFields(TypeElement typeElement) {
         final Set<FieldElement> retval = new HashSet<FieldElement>();
-        final Exact typeNameQuery = NameKind.exact(classElement.getFullyQualifiedName());
-        retval.addAll(ElementFilter.forFiles(classElement.getFileObject())
+        final Exact typeNameQuery = NameKind.exact(typeElement.getFullyQualifiedName());
+        retval.addAll(ElementFilter.forFiles(typeElement.getFileObject())
                 .filter(getFields(typeNameQuery,NameKind.empty())));
         retval.addAll(extendedQuery.getFields(typeNameQuery, NameKind.empty()));
         return retval;
@@ -670,10 +733,17 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     public final Set<FieldElement> getFields(final NameKind fieldQuery) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         final Set<FieldElement> fields = new HashSet<FieldElement>();
-        final Collection<? extends IndexResult> fieldResults = results(FieldElementImpl.IDX_FIELD, fieldQuery,
+        final Collection<? extends IndexResult> classFieldResults = results(FieldElementImpl.IDX_FIELD, fieldQuery,
                 new String[]{ClassElementImpl.IDX_FIELD, FieldElementImpl.IDX_FIELD});
-        for (final IndexResult indexResult : fieldResults) {
+        for (final IndexResult indexResult : classFieldResults) {
             for (final TypeElement typeElement : ClassElementImpl.fromSignature(this, indexResult)) {
+                fields.addAll(FieldElementImpl.fromSignature(typeElement, fieldQuery, this, indexResult));
+            }
+        }
+        final Collection<? extends IndexResult> traitFieldResults = results(FieldElementImpl.IDX_FIELD, fieldQuery,
+                new String[]{TraitElementImpl.IDX_FIELD, FieldElementImpl.IDX_FIELD});
+        for (final IndexResult indexResult : traitFieldResults) {
+            for (final TypeElement typeElement : TraitElementImpl.fromSignature(this, indexResult)) {
                 fields.addAll(FieldElementImpl.fromSignature(typeElement, fieldQuery, this, indexResult));
             }
         }
@@ -692,6 +762,13 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                 new String[]{ClassElementImpl.IDX_FIELD, FieldElementImpl.IDX_FIELD});
         for (final IndexResult indexResult : clzResults) {
             for (final TypeElement typeElement : ClassElementImpl.fromSignature(classQuery, this, indexResult)) {
+                fields.addAll(FieldElementImpl.fromSignature(typeElement, fieldQuery, this, indexResult));
+            }
+        }
+        final Collection<? extends IndexResult> traitResults = results(TraitElementImpl.IDX_FIELD, classQuery,
+                new String[]{TraitElementImpl.IDX_FIELD, FieldElementImpl.IDX_FIELD});
+        for (final IndexResult indexResult : traitResults) {
+            for (final TypeElement typeElement : TraitElementImpl.fromSignature(classQuery, this, indexResult)) {
                 fields.addAll(FieldElementImpl.fromSignature(typeElement, fieldQuery, this, indexResult));
             }
         }
@@ -892,7 +969,13 @@ public final class IndexQueryImpl implements ElementQuery.Index {
             EnumSet<PhpElementKind> typeKinds, EnumSet<PhpElementKind> memberKinds) {
         final LinkedHashSet<TypeMemberElement> directTypes = new LinkedHashSet<TypeMemberElement>();
         if (typeKinds.contains(PhpElementKind.CLASS) && (typeElement instanceof ClassElement)) {
-            QualifiedName superClassName = ((ClassElement) typeElement).getSuperClassName();
+            QualifiedName superClassName = null;
+            Collection<QualifiedName> possibleFQSuperClassNames = ((ClassElement) typeElement).getPossibleFQSuperClassNames();
+            if (possibleFQSuperClassNames.size() == 1) {
+                superClassName = possibleFQSuperClassNames.iterator().next();
+            } else {
+                superClassName = ((ClassElement) typeElement).getSuperClassName();
+            }
             if (superClassName != null) {
                 directTypes.addAll(extendedQuery.getFields(NameKind.exact(superClassName), NameKind.empty()));
                 directTypes.addAll(extendedQuery.getMethods(NameKind.exact(superClassName), NameKind.empty()));
@@ -917,7 +1000,14 @@ public final class IndexQueryImpl implements ElementQuery.Index {
             }
         }
         if (typeKinds.contains(PhpElementKind.IFACE)) {
-            for (QualifiedName iface : typeElement.getSuperInterfaces()) {
+            Collection<QualifiedName> interfaceNames = null;
+            Collection<QualifiedName> fQSuperInterfaceNames = typeElement.getFQSuperInterfaceNames();
+            if (!fQSuperInterfaceNames.isEmpty()) {
+                interfaceNames = fQSuperInterfaceNames;
+            } else {
+                interfaceNames = typeElement.getSuperInterfaces();
+            }
+            for (QualifiedName iface : interfaceNames) {
                 directTypes.addAll(extendedQuery.getFields(NameKind.exact(iface), NameKind.empty()));
                 directTypes.addAll(extendedQuery.getMethods(NameKind.exact(iface), NameKind.empty()));
                 directTypes.addAll(extendedQuery.getTypeConstants(NameKind.exact(iface), NameKind.empty()));
@@ -932,6 +1022,25 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                         case TYPE_CONSTANT:
                             directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeConstantsImpl(NameKind.exact(iface), NameKind.empty(),
                                     EnumSet.of(PhpElementKind.IFACE))));
+                            break;
+                    }
+                }
+            }
+        }
+        if (typeKinds.contains(PhpElementKind.TRAIT) && (typeElement instanceof TraitedElement)) {
+            TraitedElement traitedElement = (TraitedElement) typeElement;
+            Collection<QualifiedName> usedTraits = traitedElement.getUsedTraits();
+            for (QualifiedName trait : usedTraits) {
+                if (memberKinds.size() != 1) {
+                    directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeMembers(NameKind.exact(trait), NameKind.empty())));
+                } else {
+                    switch(memberKinds.iterator().next()) {
+                        case METHOD:
+                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getMethodsImpl(NameKind.exact(trait), NameKind.empty(),
+                                    EnumSet.of(PhpElementKind.TRAIT))));
+                            break;
+                        case FIELD:
+                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getFields(NameKind.exact(trait), NameKind.empty())));
                             break;
                     }
                 }
@@ -1024,7 +1133,8 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     public Set<TypeMemberElement> getAllTypeMembers(TypeElement typeElement) {
         final EnumSet<PhpElementKind> typeKinds = EnumSet.of(
                 PhpElementKind.CLASS,
-                PhpElementKind.IFACE
+                PhpElementKind.IFACE,
+                PhpElementKind.TRAIT
                 );
         final EnumSet<PhpElementKind> memberKinds = EnumSet.of(
                 PhpElementKind.METHOD,
@@ -1088,6 +1198,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         Set<TypeElement> types = new HashSet<TypeElement>();
         types.addAll(getClassesImpl(typeQuery));
         types.addAll(getInterfacesImpl(typeQuery));
+        types.addAll(getTraitsImpl(typeQuery));
         for (TypeElement typeElement : types) {
             retval.addAll(ElementFilter.forName(methodQuery).filter(getAllMethods(typeElement)));
         }
@@ -1671,6 +1782,17 @@ public final class IndexQueryImpl implements ElementQuery.Index {
             }
         }
         retval.addAll(getInterfacesImpl(query));
+        return retval;
+    }
+
+    public Set<TraitElement> getTraits() {
+        return getTraits(NameKind.empty());
+    }
+
+    @Override
+    public Set<TraitElement> getTraits(final NameKind query) {
+        final Set<TraitElement> retval = new HashSet<TraitElement>();
+        retval.addAll(getTraitsImpl(query));
         return retval;
     }
 

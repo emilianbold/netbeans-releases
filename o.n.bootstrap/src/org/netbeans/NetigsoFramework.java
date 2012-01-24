@@ -44,13 +44,10 @@ package org.netbeans;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.net.URL;
+import java.util.*;
 import org.openide.modules.ModuleInfo;
+import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -60,7 +57,6 @@ import org.openide.util.lookup.Lookups;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public abstract class NetigsoFramework {
-
     protected NetigsoFramework() {
         if (!getClass().getName().equals("org.netbeans.core.netigso.Netigso")) { // NOI18N
             throw new IllegalStateException();
@@ -99,6 +95,19 @@ public abstract class NetigsoFramework {
         ModuleInfo m, ProxyClassLoader pcl, File jar
     ) throws IOException;
 
+    /**
+     * Find given resource inside provide module representing an OSGi bundle.
+     * The search should happen without resolving the bundle, if possible. E.g.
+     * by using <code>Bundle.getEntry</code>.
+     * @param resName  name of the resource to seek for
+     * @return empty enumeration or enumeration with one element.
+     * @since 2.49
+     */
+    protected Enumeration<URL> findResources(Module module, String resName) {
+        return Enumerations.empty();
+    }
+
+    
     /** Reloads one module
      * @since 2.27
      */
@@ -116,6 +125,15 @@ public abstract class NetigsoFramework {
         return getClass().getClassLoader();
     }
 
+    /** Default start level for all bundles that don't specify any own.
+     * 
+     * @since 2.44.2
+     * @return 
+     */
+    protected int defaultStartLevel() {
+        return 0;
+    }
+    
     //
     // Access to Archive
     //

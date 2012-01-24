@@ -53,12 +53,12 @@ import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.ui.repository.RevisionDialogController;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -170,7 +170,7 @@ public class CreateBranch implements DocumentListener {
             final String branchName = CreateBranch.this.branchName;
             try {
                 GitClient client = Git.getInstance().getClient(repository);
-                final Map<String, GitBranch> branches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                final Map<String, GitBranch> branches = client.getBranches(false, GitUtils.NULL_PROGRESS_MONITOR);
                 EventQueue.invokeLater(new Runnable () {
                     @Override
                     public void run () {

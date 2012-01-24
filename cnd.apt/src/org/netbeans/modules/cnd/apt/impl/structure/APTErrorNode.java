@@ -75,10 +75,12 @@ public class APTErrorNode extends APTStreamBaseNode
         super(token);
     }
     
+    @Override
     public final int getType() {
         return APT.Type.ERROR;
     }
     
+    @Override
     protected boolean validToken(APTToken t) {
         assert (t != null);
         int ttype = t.getType();

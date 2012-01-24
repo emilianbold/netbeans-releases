@@ -230,6 +230,7 @@ public class CloneAction extends ContextAction {
                     }
                     HgConfigFiles hgConfigFiles = new HgConfigFiles(target);
                     if (hgConfigFiles.getException() == null) {
+                        Utils.logVCSExternalRepository("HG", source.toHgCommandUrlStringWithoutUserInfo()); //NOI18N
                         if (source.isKenaiURL()) {
                             initializeDefaultPullPushUrlForKenai(hgConfigFiles);
                             String kenaiUserName = getKenaiUserName();
@@ -246,8 +247,7 @@ public class CloneAction extends ContextAction {
                 } catch (HgException.HgCommandCanceledException ex) {
                     // canceled by user, do nothing
                 } catch (HgException ex) {
-                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                    DialogDisplayer.getDefault().notifyLater(e);
+                    HgUtils.notifyException(ex);
                 }finally {    
                     if(!isLocalClone){
                         logger.outputInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
@@ -362,8 +362,7 @@ public class CloneAction extends ContextAction {
                                 logger.outputInRed(NbBundle.getMessage(CloneAction.class, "MSG_EXTERNAL_CLONE_PRJ_NOT_FOUND_CANT_SETASMAIN")); // NOI18N
                             }
                         } catch (java.lang.Exception ex) {
-                            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(new HgException(ex.toString()));
-                            DialogDisplayer.getDefault().notifyLater(e);
+                            HgUtils.notifyException(ex);
                         } finally {
                             logger.outputInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
                             logger.output(""); // NOI18N

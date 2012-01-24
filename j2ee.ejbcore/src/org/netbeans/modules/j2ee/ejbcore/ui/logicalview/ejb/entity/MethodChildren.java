@@ -89,7 +89,7 @@ public class MethodChildren extends ComponentMethodModel {
     private final FileObject ddFile;
     private final Entity entity;
     
-    public MethodChildren(ClasspathInfo cpInfo, EntityMethodController smc, Entity model, Collection interfaces, boolean local, FileObject ddFile) {
+    public MethodChildren(ClasspathInfo cpInfo, EntityMethodController smc, Entity model, Collection<String> interfaces, boolean local, FileObject ddFile) {
         super(cpInfo, smc.getBeanClass(), interfaces, local ? smc.getLocalHome() : smc.getHome());
         controller = smc;
         this.local = local;

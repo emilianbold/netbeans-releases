@@ -576,6 +576,67 @@ public class FlowTest extends NbTestCase {
                     "null");
     }
 
+    public void testContinue204845() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t() {\n" +
+                    "        String tp = \"\";\n" +
+                    "        if (t`p.length() == 0) {\n" +
+                    "            continue ;\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n",
+                    true,
+                    "\"\"");
+    }
+
+    public void test205347a() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    public void reallyUsed() {\n" +
+                    "        boolean again = true;\n" +
+                    "        for (;;) {\n" +
+                    "            if (ag`ain) {\n" +
+                    "                again = false;\n" +
+                    "                continue;\n" +
+                    "            }\n" +
+                    "            break;\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n",
+                    "true",
+                    "false");
+    }
+
+    public void test205347b() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    public void reallyUsed() {\n" +
+                    "        int ii = 0;\n" +
+                    "        for (;; ii++) {\n" +
+                    "            if (i`i < 100) {\n" +
+                    "                continue;\n" +
+                    "            }\n" +
+                    "            break;\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n",
+                    "0",
+                    "ii++");
+    }
+
+    public void testDeadBranch207514() throws Exception {
+        performDeadBranchTest("package test;\n" +
+                              "public class Test {\n" +
+                              "    public void i() {\n" +
+                              "        if (false) |{\n" +
+                              "            System.err.println(\"\");\n" +
+                              "        }|\n" +
+                              "    }\n" +
+                              "    private final java.util.concurrent.atomic.AtomicBoolean i = new java.util.concurrent.atomic.AtomicBoolean();\n" +
+                              "}\n");
+    }
+    
     private void prepareTest(String code, boolean allowErrors) throws Exception {
         clearWorkDir();
 

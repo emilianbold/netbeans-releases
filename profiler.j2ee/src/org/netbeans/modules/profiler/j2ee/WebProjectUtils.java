@@ -83,21 +83,16 @@ import org.openide.util.Lookup;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "WebProjectUtils_CannotFindServletMsg=Cannot resolve servlet class generated from {0}. It will not be included into root methods.",
+    "WebProjectUtils_CannotFindServletClassMsg=Cannot find servlet class {0} defined in deployment descriptor. Its methods will not be included into root methods.",
+    "WebProjectUtils_CannotFindFilterClassMsg=Cannot find filter class {0} defined in deployment descriptor. Its methods will not be included into root methods.",
+    "WebProjectUtils_CannotFindListenerClassMsg=Cannot find listener class {0} defined in deployment descriptor. Its methods will not be included into root methods."
+})
 public class WebProjectUtils {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
     final private static Logger LOGGER = Logger.getLogger(WebProjectUtils.class.getName());
     
-    // -----
-    // I18N String constants
-    private static final String CANNOT_FIND_SERVLET_MSG = NbBundle.getMessage(WebProjectUtils.class,
-                                                                              "WebProjectUtils_CannotFindServletMsg"); // NOI18N
-    private static final String CANNOT_FIND_SERVLET_CLASS_MSG = NbBundle.getMessage(WebProjectUtils.class,
-                                                                                    "WebProjectUtils_CannotFindServletClassMsg"); // NOI18N
-    private static final String CANNOT_FIND_FILTER_CLASS_MSG = NbBundle.getMessage(WebProjectUtils.class,
-                                                                                   "WebProjectUtils_CannotFindFilterClassMsg"); // NOI18N
-    private static final String CANNOT_FIND_LISTENER_CLASS_MSG = NbBundle.getMessage(WebProjectUtils.class,
-                                                                                     "WebProjectUtils_CannotFindListenerClassMsg"); // NOI18N
-                                                                                                                                    // -----
     private static final Map<ClientUtils.SourceCodeSelection, String> jspClass2NameMap = new HashMap<ClientUtils.SourceCodeSelection, String>();
     private static final String[][] jspServletMethods = new String[][] {
                                                             {
@@ -269,7 +264,7 @@ public class WebProjectUtils {
         String jspPseudoServletClass = getJSPPseudoServletClass(project, jspFile);
 
         if (jspPseudoServletClass == null) {
-            LOGGER.log(Level.WARNING, CANNOT_FIND_SERVLET_MSG, FileUtil.toFile(jspFile).getPath());
+            LOGGER.log(Level.WARNING, Bundle.WebProjectUtils_CannotFindServletMsg(FileUtil.toFile(jspFile).getPath()));
             return null; // According to Issue 62519, jsp file is not resolved/found due odd project layout
         }
 

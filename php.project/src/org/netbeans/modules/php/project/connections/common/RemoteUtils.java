@@ -41,7 +41,11 @@
  */
 package org.netbeans.modules.php.project.connections.common;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.RemoteException;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -50,6 +54,9 @@ import org.openide.util.NbBundle;
  * Utility methods for remote connections.
  */
 public final class RemoteUtils {
+
+    private static final Logger LOGGER = Logger.getLogger(RemoteUtils.class.getName());
+
 
     private RemoteUtils() {
     }
@@ -81,6 +88,46 @@ public final class RemoteUtils {
                 new Object[] {NotifyDescriptor.OK_OPTION},
                 NotifyDescriptor.OK_OPTION);
         DialogDisplayer.getDefault().notifyLater(notifyDescriptor);
+    }
+
+    /**
+     * Remote trailing {@value TransferFile#REMOTE_PATH_SEPARATOR} from the given
+     * directory path.
+     * <p>
+     * If the path is <i>root</i> (it equals just {@value TransferFile#REMOTE_PATH_SEPARATOR}),
+     * no sanitation is done.
+     * @param directoryPath directory to be sanitized
+     * @return sanitized directory path
+     */
+    public static String sanitizeDirectoryPath(String directoryPath) {
+        while (!directoryPath.equals(TransferFile.REMOTE_PATH_SEPARATOR)
+                && directoryPath.endsWith(TransferFile.REMOTE_PATH_SEPARATOR)) {
+            LOGGER.log(Level.FINE, "Removing ending slash from directory {0}", directoryPath);
+            directoryPath = directoryPath.substring(0, directoryPath.length() - TransferFile.REMOTE_PATH_SEPARATOR.length());
+        }
+        return directoryPath;
+    }
+
+    /**
+     * Sanitize upload directory, see issue #169793 for more information.
+     * @param uploadDirectory upload directory to sanitize
+     * @param allowEmpty <code>true</code> if the string can be empty
+     * @return sanitized upload directory
+     */
+    public static String sanitizeUploadDirectory(String uploadDirectory, boolean allowEmpty) {
+        if (StringUtils.hasText(uploadDirectory)) {
+            while (uploadDirectory.length() > 1
+                    && uploadDirectory.endsWith(TransferFile.REMOTE_PATH_SEPARATOR)) {
+                uploadDirectory = uploadDirectory.substring(0, uploadDirectory.length() - 1);
+            }
+        } else if (!allowEmpty) {
+            uploadDirectory = TransferFile.REMOTE_PATH_SEPARATOR;
+        }
+        if (allowEmpty
+                && (uploadDirectory == null || TransferFile.REMOTE_PATH_SEPARATOR.equals(uploadDirectory))) {
+            uploadDirectory = ""; // NOI18N
+        }
+        return uploadDirectory;
     }
 
 }

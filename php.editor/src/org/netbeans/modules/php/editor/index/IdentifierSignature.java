@@ -230,7 +230,7 @@ public class IdentifierSignature {
         String typeName = ((mask & DECLARATION) != 0) ? sign.string(2) : null;
         return new IdentifierSignature(name, typeName, mask);
     }
-    
+
     public static IdentifierSignature createInvocation(Signature sign) {
         String name = sign.string(0);
         return new IdentifierSignature(name);

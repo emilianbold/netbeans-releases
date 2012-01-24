@@ -122,7 +122,7 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
         this.type = type;
     }    
     
-    @TemplateRegistration(folder = FOLDER, id="Package", position = 1100, displayName = "#packageWizard", iconBase = "org/netbeans/spi/java/project/support/ui/package.gif", description = "resources/Package.html", category = {"java-classes", "java-classes-basic"})
+    @TemplateRegistration(folder = FOLDER, id="Package", position = 1100, displayName = "#packageWizard", iconBase = PackageDisplayUtils.PACKAGE, description = "resources/Package.html", category = {"java-classes", "java-classes-basic"})
     @Messages("packageWizard=Java Package")
     public static NewJavaFileWizardIterator packageWizard() {
         return new NewJavaFileWizardIterator(Type.PACKAGE);

@@ -79,7 +79,8 @@ public class JBossIntegrationPanel extends AttachWizardPanel {
 
                 if (!settings.isDirect()) {
                     if (settings.isDynamic16()) {
-                        if (!jvm.equals(TargetPlatformEnum.JDK6) && !jvm.equals(TargetPlatformEnum.JDK7)) {
+                        if (!jvm.equals(TargetPlatformEnum.JDK6) && !jvm.equals(TargetPlatformEnum.JDK7) 
+                                && !jvm.equals(TargetPlatformEnum.JDK8)) {
                             return false;
                         }
                     } else {

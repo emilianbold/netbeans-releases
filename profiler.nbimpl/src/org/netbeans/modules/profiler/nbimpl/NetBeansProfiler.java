@@ -111,7 +111,7 @@ public class NetBeansProfiler extends org.netbeans.modules.profiler.NetBeansProf
     @Override
     public String getLibsDir() {
         final File dir = InstalledFileLocator.getDefault()
-                                             .locate(ProfilerModule.LIBS_DIR + "/jfluid-server.jar",
+                                             .locate(ProfilerModule.LIBS_DIR + "/jfluid-server.jar", //NOI18N
                                                      "org.netbeans.lib.profiler", false); //NOI18N
 
         if (dir == null) {
@@ -181,7 +181,8 @@ public class NetBeansProfiler extends org.netbeans.modules.profiler.NetBeansProf
             LoadGenPlugin plugin = Lookup.getDefault().lookup(LoadGenPlugin.class);
 
             if (plugin != null) {
-                String scriptPath = profilingProperties.getProperty("profiler.loadgen.path"); // TODO factor out the "profiler.loadgen.path" constant; also used ing J2EEProjectTypeProfiler
+                // TODO factor out the "profiler.loadgen.path" constant; also used ing J2EEProjectTypeProfiler
+                String scriptPath = profilingProperties.getProperty("profiler.loadgen.path"); // NOI18N
 
                 if (scriptPath != null) {
                     plugin.stop(scriptPath);

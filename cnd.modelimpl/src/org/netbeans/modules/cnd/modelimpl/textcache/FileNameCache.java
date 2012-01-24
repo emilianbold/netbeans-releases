@@ -59,6 +59,7 @@ public class FileNameCache extends APTStringManager {
     private FileNameCache() {
     }
     
+    @Override
     public CharSequence getString(CharSequence text) {
         if (text == null){
             return text;
@@ -67,6 +68,7 @@ public class FileNameCache extends APTStringManager {
         return instance.getString(text);
     }
     
+    @Override
     public void dispose() {
         instance.dispose();
     }

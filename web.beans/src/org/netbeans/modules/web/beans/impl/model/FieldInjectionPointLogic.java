@@ -149,7 +149,7 @@ abstract class FieldInjectionPointLogic {
             if ( isDeclaredType ){
                 parent = (DeclaredType)type.asType();
             }
-            if ( !isDeclaredType) {
+            else  {
                 throw new DefinitionError( type );
             }
         }
@@ -190,11 +190,13 @@ abstract class FieldInjectionPointLogic {
             AnnotationMirror annotationMirror = quilifierAnnotations.get( 0 );
             DeclaredType type = annotationMirror.getAnnotationType();
             TypeElement annotationElement = (TypeElement)type.asElement();
-            annotationName = annotationElement.getQualifiedName().toString();
-            defaultQualifier = annotationElement.getQualifiedName().contentEquals( 
+            if ( annotationElement != null ){
+                annotationName = annotationElement.getQualifiedName().toString();
+                defaultQualifier = annotationElement.getQualifiedName().contentEquals( 
                     DEFAULT_QUALIFIER_ANNOTATION);
-            newQualifier = annotationElement.getQualifiedName().contentEquals( 
+                newQualifier = annotationElement.getQualifiedName().contentEquals( 
                     NEW_QUALIFIER_ANNOTATION );
+            }
         }
         if ( (quilifierAnnotations.size() == 0 && anyQualifier) ||
                 defaultQualifier )
@@ -305,6 +307,9 @@ abstract class FieldInjectionPointLogic {
         for (AnnotationMirror annotationMirror : annotations) {
             DeclaredType type = annotationMirror.getAnnotationType();
             TypeElement annotationElement = (TypeElement)type.asElement();
+            if ( annotationElement == null ){
+                continue;
+            }
             if ( ANY_QUALIFIER_ANNOTATION.equals( 
                     annotationElement.getQualifiedName().toString()))
             {
@@ -462,8 +467,8 @@ abstract class FieldInjectionPointLogic {
         return result;
     }
     
-    private DependencyInjectionResult createResult( VariableElement element, TypeMirror elementType, 
-            Set<TypeElement> types, Set<Element> productions )
+    private DependencyInjectionResult createResult( VariableElement element, 
+            TypeMirror elementType, Set<TypeElement> types, Set<Element> productions )
     {
         return new ResultImpl(element, elementType, types, productions, 
                 getModel().getHelper() );
@@ -662,6 +667,9 @@ abstract class FieldInjectionPointLogic {
         for (AnnotationMirror annotationMirror : qualifierAnnotations) {
             DeclaredType type = annotationMirror.getAnnotationType();
             TypeElement annotationElement = (TypeElement)type.asElement();
+            if ( annotationElement == null ){
+                continue;
+            }
             String annotationFQN = annotationElement.getQualifiedName().toString();
             findAnnotation( bindingCollections, annotationFQN , hasDefault,
                     currentBindings );
@@ -756,6 +764,9 @@ abstract class FieldInjectionPointLogic {
         for (AnnotationMirror annotationMirror : qualifierAnnotations) {
             DeclaredType type = annotationMirror.getAnnotationType();
             TypeElement annotationElement = (TypeElement) type.asElement();
+            if ( annotationElement == null ){
+                continue;
+            }
             String annotationFQN = annotationElement.getQualifiedName()
                     .toString();
             PersistentObjectManager<BindingQualifier> manager = getModel()

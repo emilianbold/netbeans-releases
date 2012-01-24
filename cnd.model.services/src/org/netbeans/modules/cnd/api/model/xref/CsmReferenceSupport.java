@@ -55,11 +55,7 @@
 
 package org.netbeans.modules.cnd.api.model.xref;
 
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
+import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
@@ -120,6 +116,10 @@ public final class CsmReferenceSupport {
                         return true;
                     }
                 } else {
+                    if (((CsmQualifiedNamedElement) checkDecl).getName().equals(fqnCheck)) {
+                        // if this is just simple name of local declarations => check of such 'fqn' is not enough
+                        return false;
+                    }
                     return true;
                 }
             }            

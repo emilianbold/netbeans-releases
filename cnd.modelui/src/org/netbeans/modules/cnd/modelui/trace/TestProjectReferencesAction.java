@@ -184,6 +184,7 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
         this.numThreads = (reportUnresolved == Boolean.FALSE) ? Runtime.getRuntime().availableProcessors() : 1;
     }
 
+    @Override
     public String getName() {
         String nameKey;
         if (analyzeStatistics) {
@@ -196,6 +197,7 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
         return NbBundle.getMessage(getClass(), nameKey); // NOI18N
     }
 
+    @Override
     protected void performAction(Collection<CsmProject> projects) {
         if (reportUnresolved == Boolean.FALSE) {
             boolean hasSlowInfo = false;
@@ -232,6 +234,7 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
         io.select();
         final AtomicBoolean canceled = new AtomicBoolean(false);        
         final ProgressHandle handle = ProgressHandleFactory.createHandle(task, new Cancellable() {
+            @Override
             public boolean cancel() {
                 canceled.set(true);
                 return true;

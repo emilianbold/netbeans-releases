@@ -109,40 +109,6 @@ public class SearchHistoryAction extends ContextAction {
     }
 
     /**
-     * Opens the Seach History panel with given pre-filled values. The search is executed in default context
-     * (all open projects). 
-     * 
-     * @param title title of the search
-     * @param commitMessage commit message to search for
-     * @param username user name to search for
-     * @param date date of the change in question
-     */ 
-    public static void openSearch(String title, String commitMessage, String username, Date date) {
-        openSearch(getDefaultContext(), title, commitMessage, username, date);
-    }
-
-    public static void openSearch(Context context, String title, String commitMessage, String username, Date date) {
-        Calendar c = Calendar.getInstance();
-        c.setTime(date);
-        // annotations do not include time information, we must search whole day
-        c.add(Calendar.DATE, 1);
-        Date to = c.getTime();
-        c.setTime(date);
-        c.add(Calendar.DATE, -1);
-        Date from = c.getTime();
-
-        if (commitMessage != null && commitMessage.indexOf('\n') != -1) {
-            commitMessage = commitMessage.substring(0, commitMessage.indexOf('\n'));
-        }
-        SearchHistoryTopComponent tc = new SearchHistoryTopComponent(context, commitMessage, username, from, to);
-        String tcTitle = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", title); // NOI18N
-        tc.setDisplayName(tcTitle);
-        tc.open();
-        tc.requestActive();
-        tc.search();
-    }
-
-    /**
      * Opens search panel with a diff view fixed on a line
      * @param file file to search history for
      * @param lineNumber number of a line to fix on

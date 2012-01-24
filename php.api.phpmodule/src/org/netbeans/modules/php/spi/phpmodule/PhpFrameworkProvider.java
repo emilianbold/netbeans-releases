@@ -189,11 +189,15 @@ public abstract class PhpFrameworkProvider {
      * Creates a {@link PhpModuleCustomizerExtender PHP module customizer extender} for this framework
      * and the given PHP module.
      * <p>
+     * <b>WARNING:</b> This method is always called so {@link PhpModuleCustomizerExtender} can be returned
+     * also for {@link PhpModule PHP modules} where this framework is not present (this is usually useful
+     * for adding framework to such {@link PhpModule PHP module}).
+     * <p>
      * The default implementation returns {@code null}.
      *
      * @param  phpModule the PHP module which properties are to be extended
      * @return a new PHP module customizer extender; can be {@code null} if the framework doesn't need
-     *         to store/read any PHP module specific properties
+     *         to store/read any PHP module specific properties (or does not need to be added to PHP module)
      * @since 1.26
      */
     public PhpModuleCustomizerExtender createPhpModuleCustomizerExtender(PhpModule phpModule) {

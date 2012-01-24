@@ -83,6 +83,7 @@ import org.netbeans.api.extexecution.input.LineProcessors;
 import org.openide.util.Cancellable;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
@@ -127,7 +128,7 @@ public final class ExecutionService {
 
     private static final int EXECUTOR_SHUTDOWN_SLICE = 1000;
 
-    private static final ExecutorService EXECUTOR_SERVICE = Executors.newCachedThreadPool();
+    private static final ExecutorService EXECUTOR_SERVICE = new RequestProcessor(ExecutionService.class.getName(), Integer.MAX_VALUE);
 
     static {
         // rerun accessor
@@ -316,7 +317,7 @@ public final class ExecutionService {
                             }
 
                             try {
-                                return process.exitValue();
+                                ret = process.exitValue();
                             } catch (IllegalThreadStateException ex) {
                                 LOGGER.log(Level.FINE, "Process not yet exited", ex);
                             }
@@ -327,7 +328,8 @@ public final class ExecutionService {
                     } finally {
                         try {
                             cleanup(tasks, executor, handle, ioData,
-                                    ioData.getInputOutput() != descriptor.getInputOutput());
+                                    ioData.getInputOutput() != descriptor.getInputOutput(),
+                                    descriptor.isFrontWindowOnError() && ret != null && ret.intValue() != 0);
 
                             final Runnable post = descriptor.getPostExecution();
                             if (post != null) {
@@ -352,7 +354,8 @@ public final class ExecutionService {
             public boolean cancel(boolean mayInterruptIfRunning) {
                 boolean ret = super.cancel(mayInterruptIfRunning);
                 if (!executed.executed) {
-                    cleanup(handle, ioData);
+                    // not executed at all - passing false to show
+                    cleanup(handle, ioData, false);
 
                     synchronized (InputOutputManager.class) {
                         if (ioData.getInputOutput() != descriptor.getInputOutput()) {
@@ -415,7 +418,7 @@ public final class ExecutionService {
     }
 
     /**
-     * Retrives or creates the output window usable for the current run.
+     * Retrieves or creates the output window usable for the current run.
      *
      * @param required output window required by rerun or <code>null</code>
      * @return the output window usable for the current run
@@ -506,7 +509,7 @@ public final class ExecutionService {
 
     private void cleanup(final List<InputReaderTask> tasks, final ExecutorService processingExecutor,
             final ProgressHandle progressHandle, final InputOutputManager.InputOutputData inputOutputData,
-            final boolean managed) {
+            final boolean managed, final boolean show) {
 
         boolean interrupted = false;
         if (processingExecutor != null) {
@@ -528,7 +531,7 @@ public final class ExecutionService {
             }
         }
 
-        cleanup(progressHandle, inputOutputData);
+        cleanup(progressHandle, inputOutputData, show);
 
         synchronized (InputOutputManager.class) {
             if (managed) {
@@ -541,9 +544,15 @@ public final class ExecutionService {
         }
     }
 
-    private void cleanup(final ProgressHandle progressHandle, final InputOutputManager.InputOutputData inputOutputData) {
+    private void cleanup(final ProgressHandle progressHandle,
+            final InputOutputManager.InputOutputData inputOutputData, final boolean show) {
+
         Runnable ui = new Runnable() {
+            @Override
             public void run() {
+                if (show) {
+                    inputOutputData.getInputOutput().select();
+                }
                 if (inputOutputData.getStopAction() != null) {
                     inputOutputData.getStopAction().setEnabled(false);
                 }

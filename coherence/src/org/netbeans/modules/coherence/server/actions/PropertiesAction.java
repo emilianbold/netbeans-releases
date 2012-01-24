@@ -44,7 +44,6 @@ package org.netbeans.modules.coherence.server.actions;
 import org.netbeans.api.server.CommonServerUIs;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.coherence.server.CoherenceInstanceProvider;
-import org.netbeans.modules.coherence.server.CoherenceProperties;
 import org.netbeans.modules.coherence.server.CoherenceServer;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -96,7 +95,7 @@ public class PropertiesAction extends NodeAction {
         ServerInstance serverInstance = null;
         CoherenceServer coherenceServer = node.getLookup().lookup(CoherenceServer.class);
         if (coherenceServer != null) {
-            int serverId = coherenceServer.getInstanceProperties().getInt(CoherenceProperties.PROP_COHERENCE_ID, 0);
+            int serverId = coherenceServer.getCoherenceProperties().getServerId();
             assert serverId != 0;
             CoherenceInstanceProvider cip = CoherenceInstanceProvider.getCoherenceProvider();
             serverInstance = cip.getInstance(serverId);

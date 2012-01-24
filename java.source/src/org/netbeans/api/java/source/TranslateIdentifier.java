@@ -334,10 +334,9 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
             // solve the imports only when declared type!!!
             if (element.getKind().isClass() || element.getKind().isInterface()
                     || (element.getKind().isField() && ((Symbol) element).isStatic())) {
-                TreePath elmPath = info.getTrees().getPath(element);
                 boolean en = p == Boolean.TRUE && element.getKind() == ElementKind.ENUM_CONSTANT;
                 if ((path == null && element == rootElement)
-                        || (path != null && elmPath != null && path.getCompilationUnit().getSourceFile() == elmPath.getCompilationUnit().getSourceFile())
+                        || (path != null && path.getCompilationUnit().getSourceFile() == ((Symbol) element).outermostClass().sourcefile)
                         || en) {
                     return make.Identifier(element.getSimpleName());
                 } else {

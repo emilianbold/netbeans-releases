@@ -42,6 +42,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.modules.refactoring.api.CopyRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
@@ -79,6 +80,20 @@ public class CopyClassTest extends RefactoringTestBase {
                 new File("copypkgdst/CopyClass.java", "package copypkgdst; import copypkg.*; public class CopyClass { public CopyClass() { } }"),
                 new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } }"));
     }
+    
+    public void testCopyMultipleClass() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("copypkgdst/package-info.java", "package copypkgdst;"),
+                new File("copypkg/CopyClass1.java", "package copypkg; public class CopyClass1 { public CopyClass1() { } class Nested { public Nested() { } } }"),
+                new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } }"));
+        performCopyClasses(new FileObject[] {src.getFileObject("copypkg/CopyClass.java"), src.getFileObject("copypkg/CopyClass1.java")}, new URL(src.getURL(), "copypkgdst/"));
+        verifyContent(src,
+                new File("copypkgdst/package-info.java", "package copypkgdst;"),
+                new File("copypkgdst/CopyClass1.java", "package copypkgdst; import copypkg.*; public class CopyClass1 { public CopyClass1() { } class Nested { public Nested() { } } }"),
+                new File("copypkgdst/CopyClass.java", "package copypkgdst; import copypkg.*; public class CopyClass { public CopyClass() { } }"),
+                new File("copypkg/CopyClass1.java", "package copypkg; public class CopyClass1 { public CopyClass1() { } class Nested { public Nested() { } } }"),
+                new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } }"));
+    }
 
     public void testCopyClassToSamePackage() throws Exception {
         writeFilesAndWaitForScan(src,
@@ -101,8 +116,8 @@ public class CopyClassTest extends RefactoringTestBase {
                 new File("copypkgdst/CopyClassRen.java", "package copypkgdst; import copypkg.*; public class CopyClassRen { public CopyClassRen() { } }"),
                 new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } }"));
     }
-    
-    public void testCopyToDefault() throws Exception{
+
+    public void testCopyToDefault() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("copypkgdst/package-info.java", "package copypkgdst;"),
                 new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } }"));
@@ -112,8 +127,22 @@ public class CopyClassTest extends RefactoringTestBase {
                 new File("CopyClass.java", " import copypkg.*; public class CopyClass { public CopyClass() { } }"),
                 new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } }"));
     }
-    
-    public void testCopyInvalid1() throws Exception{
+
+    public void testCopyMultipleToDefault() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("copypkgdst/package-info.java", "package copypkgdst;"),
+                new File("copypkg/CopyClass1.java", "package copypkg; public class CopyClass1 { public CopyClass1() { } class Nested { public Nested() { } } }"),
+                new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } }"));
+        performCopyClasses(new FileObject[] {src.getFileObject("copypkg/CopyClass.java"), src.getFileObject("copypkg/CopyClass1.java")}, src.getURL());
+        verifyContent(src,
+                new File("copypkgdst/package-info.java", "package copypkgdst;"),
+                new File("CopyClass1.java", " import copypkg.*; public class CopyClass1 { public CopyClass1() { } class Nested { public Nested() { } } }"),
+                new File("CopyClass.java", " import copypkg.*; public class CopyClass { public CopyClass() { } }"),
+                new File("copypkg/CopyClass1.java", "package copypkg; public class CopyClass1 { public CopyClass1() { } class Nested { public Nested() { } } }"),
+                new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } }"));
+    }
+
+    public void testCopyInvalid1() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("copypkgdst/package-info.java", "package copypkgdst;"),
                 new File("copypkg/CopyClass1.java", "package copypkg; public class CopyClass1 { public CopyClass1() { } }"),
@@ -124,8 +153,8 @@ public class CopyClassTest extends RefactoringTestBase {
                 new File("copypkg/CopyClass1.java", "package copypkg; public class CopyClass1 { public CopyClass1() { } }"),
                 new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } }"));
     }
-    
-    public void testCopyInvalid2() throws Exception{
+
+    public void testCopyInvalid2() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("copypkgdst/package-info.java", "package copypkgdst;"),
                 new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } }"));
@@ -141,6 +170,22 @@ public class CopyClassTest extends RefactoringTestBase {
         r[0] = new SingleCopyRefactoring(Lookups.singleton(source));
         r[0].setTarget(Lookups.singleton(target));
         r[0].setNewName(newname);
+
+        RefactoringSession rs = RefactoringSession.create("Session");
+        List<Problem> problems = new LinkedList<Problem>();
+
+        addAllProblems(problems, r[0].preCheck());
+        addAllProblems(problems, r[0].prepare(rs));
+        addAllProblems(problems, rs.doRefactoring(true));
+
+        assertProblems(Arrays.asList(expectedProblems), problems);
+    }
+
+    private void performCopyClasses(FileObject[] source, URL target, Problem... expectedProblems) throws Exception {
+        final CopyRefactoring[] r = new CopyRefactoring[1];
+
+        r[0] = new CopyRefactoring(Lookups.fixed((Object[]) source));
+        r[0].setTarget(Lookups.singleton(target));
 
         RefactoringSession rs = RefactoringSession.create("Session");
         List<Problem> problems = new LinkedList<Problem>();

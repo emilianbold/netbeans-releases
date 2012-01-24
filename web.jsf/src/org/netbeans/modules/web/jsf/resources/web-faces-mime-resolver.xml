@@ -64,8 +64,8 @@ made subject to such option by the copyright holder.
             <xml-rule>
                 <doctype public-id="-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.1//EN"/>
             </xml-rule>
-        </resolver>       
-    </file>    
+        </resolver>
+    </file>
     <file>
         <ext name="xml"/>
             <resolver mime="text/x-jsf+xml">
@@ -74,8 +74,8 @@ made subject to such option by the copyright holder.
                     <attr name="version" text="1.2"/>
                 </element>
             </xml-rule>
-        </resolver>       
-    </file>    
+        </resolver>
+    </file>
     <file>
         <ext name="xml"/>
             <resolver mime="text/x-jsf+xml">
@@ -86,5 +86,15 @@ made subject to such option by the copyright holder.
             </xml-rule>
         </resolver>
     </file>
-        
+    <file>
+        <ext name="xml"/>
+            <resolver mime="text/x-jsf+xml">
+            <xml-rule>
+            	<element name="faces-config" ns="http://java.sun.com/xml/ns/javaee">
+                    <attr name="version" text="2.1"/>
+                </element>
+            </xml-rule>
+        </resolver>
+    </file>
+
 </MIME-resolver>

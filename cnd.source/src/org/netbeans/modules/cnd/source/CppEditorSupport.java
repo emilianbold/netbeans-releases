@@ -153,6 +153,12 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
     }
 
     @Override
+    protected void notifyClosed() {
+        super.notifyClosed();
+        CppEditorSupportProvider.notifyClosed(getDataObject());
+    }
+
+    @Override
     protected boolean asynchronousOpen() {
         return true;
     }
@@ -232,7 +238,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
                 writer.close();
             }
         } else {
-            kit.write(stream, doc, 0, doc.getLength());
+            super.saveFromKitToStream(doc, kit, stream);
         }
     }
 

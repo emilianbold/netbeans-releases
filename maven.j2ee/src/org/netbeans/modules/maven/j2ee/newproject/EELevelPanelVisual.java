@@ -62,14 +62,14 @@ class EELevelPanelVisual extends JPanel {
     }
 
     void readSettings(WizardDescriptor d) {
-        Profile eeLevel = (Profile) d.getProperty(BasicEEWizardIterator.PROP_EE_LEVEL);
+        Profile eeLevel = (Profile) d.getProperty(EEWizardIterator.PROP_EE_LEVEL);
         if (eeLevel != null) {
             j2eeVersion.setSelectedItem(eeLevel);
         }
     }
 
     void storeSettings(WizardDescriptor d) {
-        d.putProperty(BasicEEWizardIterator.PROP_EE_LEVEL, j2eeVersion.getSelectedItem());
+        d.putProperty(EEWizardIterator.PROP_EE_LEVEL, j2eeVersion.getSelectedItem());
         helper.storeServerSettings(d);
     }
     
@@ -100,18 +100,16 @@ class EELevelPanelVisual extends JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addComponent(lblEEVersion, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jLabel1)
+                .addGap(74, 74, 74)
+                .addComponent(serverModel, 0, 0, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(serverModel, 0, 173, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(addButton))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(j2eeVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())))
+                .addComponent(addButton))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(lblEEVersion)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(j2eeVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(158, 158, 158))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -122,8 +120,8 @@ class EELevelPanelVisual extends JPanel {
                     .addComponent(addButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(j2eeVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblEEVersion))
+                    .addComponent(lblEEVersion)
+                    .addComponent(j2eeVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(246, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents

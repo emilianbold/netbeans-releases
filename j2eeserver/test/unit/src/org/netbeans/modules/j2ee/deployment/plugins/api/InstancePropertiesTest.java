@@ -200,13 +200,13 @@ public class InstancePropertiesTest extends ServerRegistryTestBase {
 
     public void testPasswordInKeyring() throws Exception {
         // the instance from test layer
-        assertEquals("Adminpasswd", getPasswordFromKeyring("j2eeserver:fooservice"));
+        assertEquals("Adminpasswd", new String(Keyring.read("j2eeserver:fooservice")));
 
         // new instance
         String url = TEST_URL_PREFIX + "passwordInKeyring";
         InstanceProperties.createInstanceProperties(
                 url, TEST_USERNAME, TEST_PASSWORD, TEST_DISPLAY_NAME);
-        assertEquals(TEST_PASSWORD, getPasswordFromKeyring("j2eeserver:" + url));
+        assertEquals(TEST_PASSWORD, new String(Keyring.read("j2eeserver:" + url)));
 
         // all password attributes are converted to keyring
         FileObject fo = FileUtil.getConfigFile("J2EE/InstalledServers");
@@ -219,31 +219,10 @@ public class InstancePropertiesTest extends ServerRegistryTestBase {
         String url = TEST_URL_PREFIX + "keyringCleanup";
         InstanceProperties.createInstanceProperties(
                 url, TEST_USERNAME, TEST_PASSWORD, TEST_DISPLAY_NAME);
-        assertEquals(TEST_PASSWORD, getPasswordFromKeyring("j2eeserver:" + url));
+        assertEquals(TEST_PASSWORD, new String(Keyring.read("j2eeserver:" + url)));
 
         ServerRegistry.getInstance().removeServerInstance(url);
-        assertNull(getPasswordFromKeyring("j2eeserver:" + url));
-    }
-
-    private static String getPasswordFromKeyring(final String key) throws Exception {
-        Future<String> ret = getKeyringAccess().submit(new Callable<String>() {
-
-            @Override
-            public String call() throws Exception {
-                char[] passwd = Keyring.read(key);
-                if (passwd != null) {
-                    return String.valueOf(passwd);
-                }
-                return null;
-            }
-        });
-        return ret.get(5, TimeUnit.SECONDS);
-    }
-
-    private static RequestProcessor getKeyringAccess() throws Exception {
-        Field field = ServerRegistry.class.getDeclaredField("KEYRING_ACCESS");
-        field.setAccessible(true);
-        return (RequestProcessor) field.get(null);
+        assertNull(Keyring.read("j2eeserver:" + url));
     }
 
     private static void assertPropertiesEquals(Map<String, String> expected, InstanceProperties props) {

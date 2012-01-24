@@ -435,6 +435,7 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
     private javax.swing.JButton prevMacro;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("MacroExpansionView"); // NOI18N
     }

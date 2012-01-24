@@ -54,6 +54,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
+import org.netbeans.modules.project.ui.ProjectsRootNode;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -74,10 +75,10 @@ import static org.netbeans.modules.project.ui.groups.Bundle.*;
  * @author Jesse Glick
  */
 @ActionID(id = "org.netbeans.modules.project.ui.groups.GroupsMenu", category = "Project")
-@ActionRegistration(displayName = "#GroupsMenu.label")
+@ActionRegistration(displayName = "#GroupsMenu.label", lazy=false)
 @ActionReferences({
     @ActionReference(path = "Menu/File", position = 1100),
-    @ActionReference(path = "ProjectsTabActions", position = 600, separatorAfter = 700)
+    @ActionReference(path = ProjectsRootNode.ACTIONS_FOLDER, position = 600, separatorAfter = 700)
 })
 @Messages("GroupsMenu.label=Project Gro&up")
 public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presenter.Popup {

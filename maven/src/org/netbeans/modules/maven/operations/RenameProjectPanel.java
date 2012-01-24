@@ -62,12 +62,14 @@ import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.validation.api.AbstractValidator;
 import org.netbeans.validation.api.Problems;
 import org.netbeans.validation.api.Severity;
 import org.netbeans.validation.api.Validator;
-import org.netbeans.validation.api.builtin.Validators;
-import org.netbeans.validation.api.ui.ValidationListener;
+import org.netbeans.validation.api.ValidatorUtils;
+import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
 import org.netbeans.validation.api.ui.ValidationGroup;
+import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
 import org.openide.DialogDescriptor;
 import org.openide.LifecycleManager;
 import org.openide.NotificationLineSupport;
@@ -89,8 +91,8 @@ public class RenameProjectPanel extends javax.swing.JPanel {
 
     RenameProjectPanel(NbMavenProjectImpl prj) {
         initComponents();
-        txtFolder.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(RenameProjectPanel.class, "NAME_Folder"));
-        txtArtifactId.putClientProperty(ValidationListener.CLIENT_PROP_NAME, NbBundle.getMessage(RenameProjectPanel.class, "NAME_Artifact"));
+        SwingValidationGroup.setComponentName(txtFolder, NbBundle.getMessage(RenameProjectPanel.class, "NAME_Folder"));
+        SwingValidationGroup.setComponentName(txtArtifactId, NbBundle.getMessage(RenameProjectPanel.class, "NAME_Artifact"));
         this.project = prj;
         final String folder = project.getProjectDirectory().getNameExt();
         txtFolder.setText(folder);
@@ -113,18 +115,17 @@ public class RenameProjectPanel extends javax.swing.JPanel {
         });
     }
 
-    @SuppressWarnings("unchecked")
     void createValidations(DialogDescriptor dd) {
         nls = dd.createNotificationLineSupport();
         vg = ValidationGroup.create(new NotificationLineSupportAdapter(nls), new DialogDescriptorAdapter(dd));
         vg.add(txtFolder,
                 new OptionalValidator(cbFolder,
-                    Validators.merge(true,
-                        Validators.REQUIRE_NON_EMPTY_STRING,
-                        Validators.REQUIRE_VALID_FILENAME,
+                    ValidatorUtils.merge(
+                        StringValidators.REQUIRE_NON_EMPTY_STRING,
+                        ValidatorUtils.merge(StringValidators.REQUIRE_VALID_FILENAME,
                         new FileNameExists(FileUtil.toFile(project.getProjectDirectory().getParent()))
                     )
-                ));
+                )));
         vg.add(txtArtifactId,
                 new OptionalValidator(cbArtifactId,
                         MavenValidators.createArtifactIdValidators()
@@ -223,17 +224,17 @@ public class RenameProjectPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbDisplayNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbDisplayNameActionPerformed
-        vg.validateAll();
+        vg.performValidation();
         checkEnablement();
     }//GEN-LAST:event_cbDisplayNameActionPerformed
 
     private void cbArtifactIdActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbArtifactIdActionPerformed
-        vg.validateAll();
+        vg.performValidation();
         checkEnablement();
     }//GEN-LAST:event_cbArtifactIdActionPerformed
 
     private void cbFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbFolderActionPerformed
-        vg.validateAll();
+        vg.performValidation();
         checkEnablement();
     }//GEN-LAST:event_cbFolderActionPerformed
 
@@ -433,40 +434,39 @@ public class RenameProjectPanel extends javax.swing.JPanel {
         }
     }
 
-    private static class OptionalValidator implements Validator<String> {
+    private static class OptionalValidator extends AbstractValidator<String> {
         private final JCheckBox checkbox;
         private final Validator<String> delegate;
 
-        public OptionalValidator(JCheckBox cb, Validator<String> validator) {
+        OptionalValidator(JCheckBox cb, Validator<String> validator) {
+            super(String.class);
             checkbox = cb;
             delegate = validator;
         }
         
         @Override
-        public boolean validate(Problems problems, String compName, String model) {
+        public void validate(Problems problems, String compName, String model) {
             if (checkbox.isSelected()) {
-                return delegate.validate(problems, compName, model);
+                delegate.validate(problems, compName, model);
             }
-            return true;
         }
     }
 
-    private static class FileNameExists implements Validator<String> {
+    private static class FileNameExists extends AbstractValidator<String> {
         private final File parent;
 
-        public FileNameExists(File parent) {
+        FileNameExists(File parent) {
+            super(String.class);
             assert parent.isDirectory() && parent.exists();
             this.parent = parent;
 }
 
         @Override
-        public boolean validate(Problems problems, String compName, String model) {
+        public void validate(Problems problems, String compName, String model) {
             File newDir = new File(parent, model);
             if (newDir.exists()) {
                 problems.add("Folder with name '" + model + "' already exists.", Severity.FATAL);
-                return false;
             }
-            return true;
         }
     }
 }

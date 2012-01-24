@@ -139,6 +139,7 @@ class PushWizard  implements ChangeListener {
         private UpdateBranchReferencesStep updateBranchReferencesStep;
 
         @Override
+        @SuppressWarnings("unchecked")
         protected Panel<WizardDescriptor>[] initializePanels () {
             selectUriStep = new SelectUriStep(repository, remotes, SelectUriStep.Mode.PUSH);
             selectUriStep.addChangeListener(PushWizard.this);

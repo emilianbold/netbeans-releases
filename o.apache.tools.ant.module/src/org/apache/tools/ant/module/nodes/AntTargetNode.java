@@ -44,11 +44,7 @@
 
 package org.apache.tools.ant.module.nodes;
 
-
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.io.IOException;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -59,12 +55,9 @@ import javax.xml.parsers.SAXParserFactory;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.support.TargetLister;
-import org.apache.tools.ant.module.run.TargetExecutor;
-import org.apache.tools.ant.module.wizards.shortcut.ShortcutWizard;
 import org.apache.tools.ant.module.xml.AntProjectSupport;
 import org.openide.ErrorManager;
 import org.openide.actions.OpenAction;
-import org.openide.actions.PropertiesAction;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
@@ -77,8 +70,10 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.text.Line;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -98,7 +93,7 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
      * @param allTargets all other targets in the main project
      */
     public AntTargetNode(AntProjectCookie project, TargetLister.Target target) {
-        super(Children.LEAF);
+        super(Children.LEAF, Lookups.fixed(target, new TargetOpenCookie(target)));
         this.project = project;
         assert !target.isOverridden() : "Cannot include overridden targets";
         this.target = target;
@@ -113,7 +108,6 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
         } else {
             setIconBaseWithExtension("org/apache/tools/ant/module/resources/TargetIcon.gif");
         }
-        getCookieSet().add(new TargetOpenCookie(target));
     }
     
     private static String internalTargetColor = null;
@@ -178,80 +172,17 @@ final class AntTargetNode extends AbstractNode implements ChangeListener {
         return false;
     }
     
-    private final Action EXECUTE = new ExecuteAction();
-    private final Action CREATE_SHORTCUT = new CreateShortcutAction();
-    private final Action REMOVE_SHORTCUT = new RemoveShortcutAction();
-
-    @Override
-    public Action[] getActions(boolean context) {
-        if (!target.isInternal()) {
-            return new Action[] {
-                SystemAction.get(OpenAction.class),
-                null,
-                EXECUTE,
-                CREATE_SHORTCUT,
-                REMOVE_SHORTCUT,
-                null,
-                SystemAction.get(PropertiesAction.class),
-            };
-        } else {
-            return new Action[] {
-                SystemAction.get(OpenAction.class),
-                null,
-                SystemAction.get(PropertiesAction.class),
-            };
-        }
+    @Override public Action[] getActions(boolean context) {
+        // XXX consider defining this path as an API
+        return Utilities.actionsForPath("org-apache-tools-ant-module/target-actions").toArray(new Action[0]);
     }
 
     @Override
     public Action getPreferredAction() {
         return SystemAction.get(OpenAction.class);
     }
-    
-    private final class ExecuteAction extends AbstractAction {
-        
-        ExecuteAction() {
-            super(NbBundle.getMessage(AntTargetNode.class, "LBL_execute_target"));
-        }
-        
-        public void actionPerformed(ActionEvent e) {
-            try {
-                TargetExecutor te = new TargetExecutor(project, new String[] {target.getName()});
-                te.execute();
-            } catch (IOException ioe) {
-                AntModule.err.notify(ioe);
-            }
-        }
-        
-    }
-    
-    /**
-     * Action to invoke the target shortcut wizard.
-     * Used to be a "template", but this is more natural.
-     * @see "issue #37374"
-     */
-    private final class CreateShortcutAction extends AbstractAction {
-        
-        CreateShortcutAction() {
-            super(NbBundle.getMessage(AntTargetNode.class, "LBL_create_shortcut"));
-        }
-        
-        public void actionPerformed(ActionEvent e) {
-            ShortcutWizard.show(project, target.getElement());
-        }
-        
-    }
 
-    private final class RemoveShortcutAction extends AbstractAction {
-        RemoveShortcutAction() {
-            super(NbBundle.getMessage(AntTargetNode.class, "LBL_remove_shortcut"));
-        }
-        public void actionPerformed(ActionEvent e) {
-            ShortcutWizard.remove(project, target.getElement());
-        }
-    }
-
-    @Override
+     @Override
     protected Sheet createSheet() {
         Sheet sheet = super.createSheet ();
         Sheet.Set props = sheet.get (Sheet.PROPERTIES);

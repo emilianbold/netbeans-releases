@@ -93,7 +93,7 @@ public class MemoryFSTestHid extends TestBaseHid {
         os.write("hello".getBytes());
         os.close();
         file.setAttribute("mimeType", "text/x-hello");
-        URL u = file.getURL();
+        URL u = file.toURL();
         assertEquals("/folder/file", u.getPath());
         URLConnection conn = u.openConnection();
         conn.connect();
@@ -106,7 +106,9 @@ public class MemoryFSTestHid extends TestBaseHid {
         assertEquals(file, URLMapper.findFileObject(u));
         assertEquals(null, URLMapper.findURL(file, URLMapper.EXTERNAL));
         assertEquals(null, URLMapper.findURL(file, URLMapper.NETWORK));
-        assertEquals(u, new URL(file.getParent().getURL(), file.getNameExt()));
+        assertEquals(u, new URL(file.getParent().toURL(), file.getNameExt()));
+        assertEquals(testedFS.getRoot(), URLMapper.findFileObject(testedFS.getRoot().toURI().toURL()));
+        assertEquals(file.getParent(), URLMapper.findFileObject(file.getParent().toURI().toURL()));
     }
 
 }

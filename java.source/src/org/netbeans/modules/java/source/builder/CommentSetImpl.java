@@ -138,7 +138,6 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
             commentsMap.put(positioning, comments);
         }
         comments.add(c);
-        commentsMapped();
     }
 
     public void addComments(RelativePosition positioning, Iterable<? extends Comment> comments) {

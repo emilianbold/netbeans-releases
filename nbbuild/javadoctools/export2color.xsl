@@ -51,30 +51,30 @@ made subject to such option by the copyright holder.
             <xsl:when test="descendant::api[@category='stable' and @group='java' and @type='export']"><![CDATA[
 stability.color=#ffffff
 stability.title=Stable
-stability.definition.url=http://openide.netbeans.org/tutorial/api-design.html#category-stable
+stability.definition.url=http://wiki.netbeans.org/API_Stability#Stable
 ]]></xsl:when>
             <xsl:when test="descendant::api[@category='official' and @group='java' and @type='export']"><![CDATA[
 stability.color=#ffffff
 stability.title=Official
-stability.definition.url=http://openide.netbeans.org/tutorial/api-design.html#category-official
+stability.definition.url=http://wiki.netbeans.org/API_Stability#Official
 ]]></xsl:when>
             <xsl:when test="descendant::api[@category='devel' and @group='java' and @type='export']"><![CDATA[
 stability.color=#ddcc80
 stability.image=resources/stability-devel.png
 stability.title=Under Development
-stability.definition.url=http://openide.netbeans.org/tutorial/api-design.html#category-devel
+stability.definition.url=http://wiki.netbeans.org/API_Stability#Devel
 ]]></xsl:when>
             <xsl:when test="descendant::api[@category='deprecated' and @group='java' and @type='export']"><![CDATA[
 stability.color=#afafaf
 stability.image=resources/stability-deprecated.png
 stability.title=Deprecated
-stability.definition.url=http://openide.netbeans.org/tutorial/api-design.html#category-deprecated
+stability.definition.url=http://wiki.netbeans.org/API_Stability#Deprecated
 ]]></xsl:when>
             <xsl:otherwise><![CDATA[
 stability.color=#e0a0a0
 stability.image=resources/stability-friend.png
 stability.title=Friend, Private or Third Party
-stability.definition.url=http://openide.netbeans.org/tutorial/api-design.html#category-friend
+stability.definition.url=http://wiki.netbeans.org/API_Stability#Friend
 ]]></xsl:otherwise>
         </xsl:choose>
     </xsl:template>

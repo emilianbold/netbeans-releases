@@ -193,7 +193,7 @@ public class QualifiedName {
         return new QualifiedName(false, Collections.singletonList(name));
     }
     public static QualifiedName createFullyQualified(String name, String namespaceName) {
-        List<String> list = new ArrayList<String>();        
+        List<String> list = new ArrayList<String>();
         if (name.startsWith("\\") || name.endsWith("\\")) {//NOI18N
             throw new IllegalArgumentException();
         }
@@ -280,7 +280,7 @@ public class QualifiedName {
         return append(createUnqualifiedName(name));
     }
     public QualifiedName append(QualifiedName qualifiedName) {
-        return append(qualifiedName, false);
+        return append(qualifiedName, getKind().isFullyQualified());
     }
     private  QualifiedName append(QualifiedName qualifiedName, boolean isFullyQualified) {
         LinkedList<String> list = isDefaultNamespace() ? new LinkedList<String>() : new LinkedList<String>(getSegments());

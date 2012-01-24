@@ -196,6 +196,18 @@ public class TargetLister {
         public AntProjectCookie getScript() {
             return script.getScript();
         }
+
+        /**
+         * Gets the Ant script originally scanned for targets.
+         * This would be pointless if you called {@link #getTargets} yourself,
+         * but is useful in case someone else did and is providing a {@code Target}
+         * in some action context.
+         * @return the script originally passed to {@link #getTargets}
+         * @since 3.53
+         */
+        public AntProjectCookie getOriginatingScript() {
+            return script.getMainScript().getScript();
+        }
         
         /**
          * Tests whether this target has a description.

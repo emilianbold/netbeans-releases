@@ -42,10 +42,17 @@
 
 package org.netbeans.modules.php.symfony.ui.customizer;
 
+import java.awt.Cursor;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.symfony.SymfonyScript;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -74,27 +81,58 @@ public class SymfonyCustomizerPanel extends JPanel {
     private void initComponents() {
 
         ignoreCacheDirectoryCheckBox = new JCheckBox();
-        Mnemonics.setLocalizedText(ignoreCacheDirectoryCheckBox, NbBundle.getMessage(SymfonyCustomizerPanel.class, "SymfonyCustomizerPanel.ignoreCacheDirectoryCheckBox.text"));
+        infoLabel = new JLabel();
+        optionsLabel = new JLabel();
+        Mnemonics.setLocalizedText(ignoreCacheDirectoryCheckBox, NbBundle.getMessage(SymfonyCustomizerPanel.class, "SymfonyCustomizerPanel.ignoreCacheDirectoryCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(infoLabel, NbBundle.getMessage(SymfonyCustomizerPanel.class, "SymfonyCustomizerPanel.infoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(optionsLabel, NbBundle.getMessage(SymfonyCustomizerPanel.class, "SymfonyCustomizerPanel.optionsLabel.text")); // NOI18N
+        optionsLabel.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
+                optionsLabelMouseEntered(evt);
+            }
+            public void mousePressed(MouseEvent evt) {
+                optionsLabelMousePressed(evt);
+            }
+        });
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(ignoreCacheDirectoryCheckBox)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(ignoreCacheDirectoryCheckBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addComponent(infoLabel)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(optionsLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(ignoreCacheDirectoryCheckBox)
+                .addComponent(ignoreCacheDirectoryCheckBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(infoLabel)
+                    .addComponent(optionsLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void optionsLabelMouseEntered(MouseEvent evt) {//GEN-FIRST:event_optionsLabelMouseEntered
+        evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_optionsLabelMouseEntered
+
+    private void optionsLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_optionsLabelMousePressed
+        UiUtils.showOptions(SymfonyScript.OPTIONS_SUB_PATH);
+    }//GEN-LAST:event_optionsLabelMousePressed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JCheckBox ignoreCacheDirectoryCheckBox;
+    private JLabel infoLabel;
+    private JLabel optionsLabel;
     // End of variables declaration//GEN-END:variables
 
 }

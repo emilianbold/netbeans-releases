@@ -256,13 +256,13 @@ public class AddTest extends AbstractGitTestCase {
         config.save();
         // add should not set executable bit in index
         add(roots);
-        Map<File, GitStatus> statuses = client.getStatus(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(roots, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, f, true, Status.STATUS_ADDED, Status.STATUS_NORMAL, Status.STATUS_ADDED, false);
         
         // index should differ from wt
         config.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE, true);
         config.save();
-        statuses = client.getStatus(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(roots, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, f, true, Status.STATUS_ADDED, Status.STATUS_MODIFIED, Status.STATUS_ADDED, false);
     }
     
@@ -280,13 +280,13 @@ public class AddTest extends AbstractGitTestCase {
         write(f, "hi, i am executable");
         // add should not set executable bit in index
         add(roots);
-        Map<File, GitStatus> statuses = client.getStatus(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(roots, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, f, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false);
         
         // index should differ from wt
         config.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE, true);
         config.save();
-        statuses = client.getStatus(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(roots, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, f, true, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false);
     }
 
@@ -319,6 +319,32 @@ public class AddTest extends AbstractGitTestCase {
         assertTrue(m.isCanceled());
         assertEquals(1, m.count);
         assertEquals(null, exs[0]);
+    }
+    
+    // must not return status for nested repositories
+    public void testAddNested () throws Exception {
+        File f = new File(workDir, "f");
+        write(f, "file");
+        
+        GitClient client = getClient(workDir);
+        client.add(new File[] { f }, NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { f }, "init commit", null, null, NULL_PROGRESS_MONITOR);
+        
+        File nested = new File(workDir, "nested");
+        nested.mkdirs();
+        File f2 = new File(nested, "f");
+        write(f2, "file");
+        GitClient clientNested = getClient(nested);
+        clientNested.init(NULL_PROGRESS_MONITOR);
+        
+        client.add(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+        
+        statuses = clientNested.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, nested, f2, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false);
     }
 
     private void assertDirCacheEntry (Collection<File> files) throws IOException {

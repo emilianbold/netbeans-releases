@@ -53,29 +53,54 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
 
 /**
  *
  * @author sp153251
  */
 public class Constructor implements IConstructor{
-    private final ExecutableElement constructor;
+    private final ExecutableElement nbConstructor;
+    private final java.lang.reflect.Constructor <?> jConstructor;
     private final IType owner;
+    private ITypeDeclaration[] parameterTypes;
 
     public Constructor(IType owner, ExecutableElement constructor){
         assert constructor.getKind() == ElementKind.CONSTRUCTOR;
-        this.constructor = constructor;
+        this.nbConstructor = constructor;
         this.owner = owner;
+        this.jConstructor = null;
+    }
+    
+    public Constructor(IType owner, java.lang.reflect.Constructor<?> constructor) {
+        this.owner = owner;
+        this.jConstructor = constructor;
+        this.nbConstructor = null;
     }
     
     @Override
     public ITypeDeclaration[] getParameterTypes() {
-        ArrayList<ITypeDeclaration> ret = new ArrayList<ITypeDeclaration>();
-        List<? extends VariableElement> params = constructor.getParameters();
-        for(VariableElement param:params){
-            ret.add(typeToTypeDeclaration(param.asType()));
+        if(parameterTypes == null){
+            if(nbConstructor != null){
+                List<? extends VariableElement> params = nbConstructor.getParameters();
+                parameterTypes = new ITypeDeclaration[params.size()];
+                for(int i=0; i<params.size(); i++){
+                    VariableElement param = params.get(i);
+                    parameterTypes[i] = typeToTypeDeclaration(param.asType());
+                }
+            } else {
+                Class<?>[] types = jConstructor.getParameterTypes();
+                java.lang.reflect.Type[] genericTypes = jConstructor.getGenericParameterTypes();
+                parameterTypes = new ITypeDeclaration[types.length];
+                ITypeRepository typeRepository = ((Type)owner).getTypeRepository();
+
+                for (int index = 0, count = types.length; index < count; index++) {
+                    IType type = typeRepository.getType(types[index]);
+                    parameterTypes[index] = new TypeDeclaration(typeRepository, type, genericTypes[index], types[index].isArray());
+                }
+            }
         }
-        return ret.toArray(new ITypeDeclaration[]{});
+        return parameterTypes;
     }
  
     private TypeDeclaration typeToTypeDeclaration(TypeMirror tMirror){

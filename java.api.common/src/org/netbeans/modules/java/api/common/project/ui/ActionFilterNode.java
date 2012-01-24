@@ -59,7 +59,6 @@ import org.netbeans.api.project.libraries.Library;
 
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -360,16 +359,16 @@ final class ActionFilterNode extends FilterNode {
         @Override
         protected Node[] createNodes(Node n) {
             if (mode.isFolder()) {
-                final DataObject dobj = n.getCookie(DataObject.class);
-                if (dobj == null) {
-                    assert false : "DataNode without DataObject in Lookup";  //NOI18N
+                final FileObject fobj = n.getLookup().lookup(FileObject.class);
+                if (fobj == null) {
+                    assert false : "DataNode without FileObject in Lookup";  //NOI18N
                     return new Node[0];
                 }
-                else if (dobj.getPrimaryFile().isFolder()) {
-                    return new Node[] {new ActionFilterNode (n, Mode.PACKAGE,cpRoot,dobj.getPrimaryFile())};
+                else if (fobj.isFolder()) {
+                    return new Node[] {new ActionFilterNode (n, Mode.PACKAGE, cpRoot, fobj)};
                 }
                 else {
-                    return new Node[] {new ActionFilterNode (n, Mode.FILE,cpRoot,dobj.getPrimaryFile())};
+                    return new Node[] {new ActionFilterNode (n, Mode.FILE, cpRoot, fobj)};
                 }
             } else {
                 return new Node[] {new ActionFilterNode (n, Mode.FILE_CONTENT)};
@@ -391,11 +390,7 @@ final class ActionFilterNode extends FilterNode {
                 RP.execute(new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            JavadocForBinaryQuery.findJavadoc(cpRoot.getURL());
-                        } catch (FileStateInvalidException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
+                        JavadocForBinaryQuery.findJavadoc(cpRoot.toURL());
                     }
                 });
             }
@@ -403,18 +398,13 @@ final class ActionFilterNode extends FilterNode {
 
         @Override
         public boolean hasJavadoc() {
-            try {
-                return resource != null && JavadocForBinaryQuery.findJavadoc(cpRoot.getURL()).getRoots().length>0;
-            } catch (FileStateInvalidException fsi) {
-                return false;
-            }
+            return resource != null && JavadocForBinaryQuery.findJavadoc(cpRoot.toURL()).getRoots().length>0;
         }
 
         @Override
         public void showJavadoc() {
-            try {
                 String relativeName = FileUtil.getRelativePath(cpRoot,resource);
-                URL[] urls = JavadocForBinaryQuery.findJavadoc(cpRoot.getURL()).getRoots();
+                URL[] urls = JavadocForBinaryQuery.findJavadoc(cpRoot.toURL()).getRoots();
                 URL pageURL;
                 if (relativeName.length()==0) {
                     pageURL = ShowJavadocAction.findJavadoc ("overview-summary.html",urls); //NOI18N
@@ -431,9 +421,6 @@ final class ActionFilterNode extends FilterNode {
                     pageURL = ShowJavadocAction.findJavadoc (javadocFileName,urls);
                 }
                 ShowJavadocAction.showJavaDoc(pageURL,relativeName.replace('/','.'));  //NOI18N
-            } catch (FileStateInvalidException fsi) {
-                Exceptions.printStackTrace(fsi);
-            }
         }
     }
 

@@ -43,15 +43,11 @@
  */
 package org.netbeans.jellytools;
 
-import javax.swing.JDialog;
+import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.actions.NewFileAction;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.jemmy.Waitable;
-import org.netbeans.jemmy.Waiter;
+import org.netbeans.jemmy.*;
 import org.netbeans.jemmy.operators.*;
-import javax.swing.tree.TreePath;
 
 /**
  * Handle NetBeans New File wizard.
@@ -146,25 +142,48 @@ public class NewFileWizardOperator extends WizardOperator {
         // is shown before tree is initialized. Then we can change selection.
         try {
             new Waiter(new Waitable() {
+
+                @Override
                 public Object actionProduced(Object param) {
-                    return treeCategories().isSelectionEmpty() ? null: Boolean.TRUE;
+                    return treeCategories().isSelectionEmpty() ? null : Boolean.TRUE;
                 }
+
+                @Override
                 public String getDescription() {
-                    return("Wait node is selected");
+                    return ("Wait node is selected");
                 }
             }).waitAction(null);
         } catch (InterruptedException e) {
             throw new JemmyException("Interrupted.", e);
-        } catch(TimeoutExpiredException tee) {
+        } catch (TimeoutExpiredException tee) {
             // ignore it because sometimes can happen that no category is selected by default
         }
+        // wait for UI is refreshed to prevent wrong selection
+        new EventTool().waitNoEvent(500);
         new Node(treeCategories(), category).select();
     }
     
     /** Selects given file type
      * @param filetype name of file type to select (exact name - not substring)
      */
-    public void selectFileType(String filetype) {
+    public void selectFileType(final String filetype) {
+        // need to wait for item before selecting it
+        try {
+            new Waiter(new Waitable() {
+
+                @Override
+                public Object actionProduced(Object param) {
+                    return lstFileTypes().findItemIndex(filetype) != -1 ? Boolean.TRUE : null;
+                }
+
+                @Override
+                public String getDescription() {
+                    return ("Wait item available");
+                }
+            }).waitAction(null);
+        } catch (InterruptedException e) {
+            throw new JemmyException("Interrupted.", e);
+        }
         lstFileTypes().selectItem(filetype);
     }
     
@@ -290,6 +309,7 @@ public class NewFileWizardOperator extends WizardOperator {
 
     /** Performs verification of NewFileWizardOperator by accessing all its components.
      */
+    @Override
     public void verify() {
         lblCategories();
         lblFileTypes();

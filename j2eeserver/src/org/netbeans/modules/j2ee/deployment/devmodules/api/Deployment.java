@@ -216,9 +216,14 @@ public final class Deployment {
             // The thrower is expected to provide a useful message. If the throwing
             // code provides a cause, this will forward it to the next level and
             // the ant output.
-            //
-            String msg = NbBundle.getMessage (Deployment.class, "MSG_DeployFailed", ex.getLocalizedMessage ());
-            java.util.logging.Logger.getLogger("global").log(Level.INFO, null, ex);
+            String locMessage = ex.getLocalizedMessage();
+            String msg = null;
+            if (locMessage != null) {
+                msg = NbBundle.getMessage(Deployment.class, "MSG_DeployFailed", locMessage);
+            } else {
+                msg = NbBundle.getMessage(Deployment.class, "MSG_DeployFailedNoMessage");
+            }
+            LOGGER.log(Level.INFO, null, ex);
             if (null != ex.getCause()) {
                 throw new DeploymentException(msg, ex);
             } else {
@@ -229,7 +234,13 @@ public final class Deployment {
         } catch (Exception ex) {
             // Don't know where this came from, so we send as much info as possible
             // to the ant output.
-            String msg = NbBundle.getMessage (Deployment.class, "MSG_DeployFailed", ex.getLocalizedMessage ());
+            String locMessage = ex.getLocalizedMessage();
+            String msg = null;
+            if (locMessage != null) {
+                msg = NbBundle.getMessage(Deployment.class, "MSG_DeployFailed", locMessage);
+            } else {
+                msg = NbBundle.getMessage(Deployment.class, "MSG_DeployFailedNoMessage");
+            }
             LOGGER.log(Level.INFO, null, ex);
             throw new DeploymentException(msg, ex);
         } finally {
@@ -283,7 +294,13 @@ public final class Deployment {
                 throw new DeploymentException(msg);
             }
         } catch (Exception ex) {
-            String msg = NbBundle.getMessage (Deployment.class, "MSG_UndeployFailed", ex.getLocalizedMessage ());
+            String msg = null;
+            String localizedMessage = ex.getLocalizedMessage();
+            if (localizedMessage != null) {
+                msg = NbBundle.getMessage (Deployment.class, "MSG_UndeployFailed", localizedMessage);
+            } else {
+                msg = NbBundle.getMessage (Deployment.class, "MSG_UndeployFailedNoMessage");
+            }
             LOGGER.log(Level.INFO, null, ex);
             throw new DeploymentException(msg, ex);
         } finally {

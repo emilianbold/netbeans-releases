@@ -42,22 +42,112 @@
 
 package org.netbeans.libs.git;
 
+import java.util.Map;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.transport.RemoteRefUpdate;
+import org.eclipse.jgit.transport.TrackingRefUpdate;
+import org.eclipse.jgit.transport.URIish;
+
 /**
  *
  * @author ondra
  */
-public interface GitTransportUpdate {
+public final class GitTransportUpdate {
+
+    private final String localName;
+    private final String remoteName;
+    private final String oldObjectId;
+    private final String newObjectId;
+    private final GitRefUpdateResult result;
+    private final String uri;
+    private final Type type;
 
     public enum Type {
         BRANCH,
         TAG
     }
+
+    GitTransportUpdate (URIish uri, TrackingRefUpdate update) {
+        this.localName = stripRefs(update.getLocalName());
+        this.remoteName = stripRefs(update.getRemoteName());
+        this.oldObjectId = update.getOldObjectId() == null || ObjectId.zeroId().equals(update.getOldObjectId()) ? null : update.getOldObjectId().getName();
+        this.newObjectId = update.getNewObjectId() == null || ObjectId.zeroId().equals(update.getNewObjectId()) ? null : update.getNewObjectId().getName();
+        this.result = GitRefUpdateResult.valueOf(update.getResult().name());
+        this.uri = uri.toString();
+        this.type = getType(update.getLocalName());
+    }
+
+    GitTransportUpdate (URIish uri, RemoteRefUpdate update, Map<String, GitBranch> remoteBranches) {
+        this.localName = stripRefs(update.getSrcRef());
+        this.remoteName = stripRefs(update.getRemoteName());
+        this.oldObjectId = getOldRevisionId(remoteBranches.get(remoteName));
+        this.newObjectId = update.getNewObjectId() == null || ObjectId.zeroId().equals(update.getNewObjectId()) ? null : update.getNewObjectId().getName();
+        this.result = GitRefUpdateResult.valueOf(update.getStatus().name());
+        this.uri = uri.toString();
+        this.type = getType(update.getRemoteName());
+    }
     
-    String getRemoteUri ();
-    String getLocalName ();
-    String getRemoteName ();
-    String getOldObjectId ();
-    String getNewObjectId ();
-    GitRefUpdateResult getResult ();
-    Type getType ();
+    public String getRemoteUri () {
+        return uri;
+    }
+
+    public String getLocalName () {
+        return localName;
+    }
+
+    public String getRemoteName () {
+        return remoteName;
+    }
+
+    public String getOldObjectId () {
+        return oldObjectId;
+    }
+
+    public String getNewObjectId () {
+        return newObjectId;
+    }
+
+    public GitRefUpdateResult getResult () {
+        return result;
+    }
+
+    public Type getType () {
+        return type;
+    }
+
+    private static String stripRefs (String refName) {
+        if (refName == null) {
+            
+        } else if (refName.startsWith(Constants.R_HEADS)) {
+            refName = refName.substring(Constants.R_HEADS.length());
+        } else if (refName.startsWith(Constants.R_TAGS)) {
+            refName = refName.substring(Constants.R_TAGS.length());
+        } else if (refName.startsWith(Constants.R_REMOTES)) {
+            refName = refName.substring(Constants.R_REMOTES.length());
+        } else if (refName.startsWith(Constants.R_REFS)) {
+            refName = refName.substring(Constants.R_REFS.length());
+        } else {
+            throw new IllegalArgumentException("Unknown refName: " + refName);
+        }
+        return refName;
+    }
+
+    private Type getType (String refName) {
+        Type retval;
+        if (refName.startsWith(Constants.R_TAGS)) {
+            retval = Type.TAG;
+        } else if (refName.startsWith(Constants.R_REMOTES)) {
+            retval = Type.BRANCH;
+        } else if (refName.startsWith(Constants.R_HEADS)) {
+            retval = Type.BRANCH;
+        } else {
+            throw new IllegalArgumentException("Unknown type for: " + refName);
+        }
+        return retval;
+    }
+
+    private String getOldRevisionId (GitBranch branch) {
+        return branch == null ? null : branch.getId();
+    }
 }

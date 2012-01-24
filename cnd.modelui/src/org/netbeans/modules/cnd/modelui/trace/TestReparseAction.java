@@ -139,6 +139,7 @@ public class TestReparseAction extends TestProjectActionBase {
             }
         }
         fileImpl.getErrors(new FileImpl.ErrorListener() {
+            @Override
             public void error(String text, int line, int column) {
                 printError(out, fileImpl, line, column, text);
             }
@@ -165,11 +166,14 @@ public class TestReparseAction extends TestProjectActionBase {
             this.info = info;
         }
         
+        @Override
         public void outputLineAction(OutputEvent ev) {
             CsmUtilities.openSource(file, info.line, info.column);
         }
         
+        @Override
         public void outputLineSelected(OutputEvent ev) {}
+        @Override
         public void outputLineCleared(OutputEvent ev) {}
     }
     

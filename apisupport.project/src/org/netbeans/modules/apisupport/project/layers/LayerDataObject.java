@@ -49,6 +49,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
+import org.netbeans.modules.apisupport.project.spi.LayerUtil;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 import org.openide.filesystems.FileObject;
@@ -106,7 +107,7 @@ public class LayerDataObject extends MultiDataObject {
     @Messages("Source=&Source")
     @MultiViewElement.Registration(
         displayName = "#Source",
-        iconBase = "org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif",
+        iconBase = LayerUtil.LAYER_ICON,
         mimeType = "text/x-netbeans-layer+xml",
         persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID = "source",

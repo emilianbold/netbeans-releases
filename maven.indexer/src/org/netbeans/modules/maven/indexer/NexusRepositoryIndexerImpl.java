@@ -533,6 +533,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     try {
                         initIndexer();
                         //need to delete the index and recreate? the scan(update) parameter doesn't work?
+                        assert indexer != null;
+                        assert indexer.getIndexingContexts() != null;
                         IndexingContext cntx = indexer.getIndexingContexts().get(repo.getId());
                         if (cntx != null) {
                             indexer.removeIndexingContext(cntx, true);
@@ -597,6 +599,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 //                            System.out.println("ac pom=" + ac.getPom());
 //                            System.out.println("ac art=" + ac.getArtifact());
 //                            System.out.println("ac info=" + ac.getArtifactInfo());
+                            assert indexingContext.getIndexSearcher() != null;
                             indexer.addArtifactToIndex(ac, indexingContext);
                         }
 
@@ -606,6 +609,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             });
         } catch (MutexException ex) {
             Exceptions.printStackTrace(ex);
+        } catch (NullPointerException x) {
+            LOGGER.log(Level.INFO, "#201057", x);
         }
         fireChangeIndex(repo);
     }
@@ -882,7 +887,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 // XXX also consider using NexusArchetypeDataSource
                 bq.add(new BooleanClause(new TermQuery(new Term(ArtifactInfo.PACKAGING, "maven-archetype")), BooleanClause.Occur.MUST)); //NOI18N
                 FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
+                /* There are >512 archetypes in Central, and we want them all in ChooseArchetypePanel
                 fsr.setCount(MAX_RESULT_COUNT);
+                */
                 FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[] {repo}), false);
                 if (response != null) {
                     List<NBVersionInfo> results = convertToNBVersionInfo(response.getResults());

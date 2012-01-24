@@ -56,7 +56,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -203,6 +202,7 @@ final class CallNode extends AbstractNode {
             return new Node[] {node};
         }
 
+        @Override
         public void run() {
             if (state.incrementAndGet() == 1) {
                 Children.MUTEX.writeAccess(this);
@@ -238,6 +238,7 @@ final class CallNode extends AbstractNode {
             this.desc = desc;
         }
         
+        @Override
         public void actionPerformed(ActionEvent e) {
             desc.open();
         }

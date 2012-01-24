@@ -50,41 +50,16 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.Vector;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.swing.BorderFactory;
-import javax.swing.DefaultCellEditor;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.UIManager;
+import java.util.*;
+import javax.lang.model.element.*;
+import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
@@ -102,41 +77,28 @@ import org.openide.util.NbBundle;
  * @author  Jan Pokorsky
  */
 public final class EncapsulateFieldPanel extends javax.swing.JPanel implements CustomRefactoringPanel {
+    private static final String ENCAPSULATE_FIELDS_USE_ACCESSORS_PREF = "ENCAPSULATE_FIELDS_USEACCESSORS"; // true
+    private static final String ENCAPSULATE_FIELDS_FIELD_ACCESS_PREF = "ENCAPSULATE_FIELDS_ACCESS"; // 3
+    private static final String ENCAPSULATE_FIELDS_METHOD_ACCESS_PREF = "ENCAPSULATE_FIELDS_METHOD_ACCESS"; // 0
+    private static final String ENCAPSULATE_FIELDS_JAVADOC_PREF = "ENCAPSULATE_FIELDS_JAVADOC";
+    private static final String ENCAPSULATE_FIELDS_SORT_PREF = "ENCAPSULATE_FIELDS_SORT";
+    private static final String PROPERTY_SUPPORT_PREF = "PROPERTY_SUPPORT_PREF";
+    private static final String VETOABLE_SUPPORT_PREF = "VETOABLE_SUPPORT_PREF";
+    private static final int DEFAULT_ROW_HEIGHT = 18;
     
     private DefaultTableModel model;
     private TreePathHandle selectedObjects;
     private Collection<TreePathHandle> fields;
     private ChangeListener parent;
     private String classname;
-    private static boolean ALWAYS_USE_ACCESSORS = true;
-    private static int FIELD_ACCESS_INDEX = 3;
-    private static int METHOD_ACCESS_INDEX = 0;
-
-    private static final String ENCAPSULATE_FIELDS_JAVADOC_PREF = "ENCAPSULATE_FIELDS_JAVADOC";
-    private static final String ENCAPSULATE_FIELDS_SORT_PREF = "ENCAPSULATE_FIELDS_SORT";
-    
-    private static final String modifierNames[] = {
-        "public", // NOI18N
-        "protected", // NOI18N
-        "<default>", // NOI18N
-        "private" // NOI18N
-    };
-    
-    private static final String[] columnNames = {
+    private static final String[] COLUMN_NAMES = {
         getString("LBL_ColField"),  // NOI18N
         "    ", // NOI18N 
         getString("LBL_ColGetter"), // NOI18N
         "    ", // NOI18N 
         getString("LBL_ColSetter")  // NOI18N
     };
-    
-    // modifier items in combo - indexes
-    private static final int MOD_PUBLIC_INDEX = 0;
-    private static final int MOD_PROTECTED_INDEX = 1;
-    private static final int MOD_DEFAULT_INDEX = 2;
-    private static final int MOD_PRIVATE_INDEX = 3;
-
-    private static final Class[] columnTypes = new Class[] {
+    private static final Class[] COLUMN_TYPES = new Class[] {
         MemberInfo.class, java.lang.Boolean.class, AccessorInfo.class, java.lang.Boolean.class, AccessorInfo.class
     };
     
@@ -151,12 +113,9 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         this.selectedObjects = selectedObject;
         this.parent = parent;
         this.fields = fields;
-        model = new TabM(columnNames, 0);
+        model = new TabM(COLUMN_NAMES, 0);
         initComponents();
         setName(title);
-        jCheckAccess.setSelected(ALWAYS_USE_ACCESSORS);
-        jComboAccess.setSelectedIndex(METHOD_ACCESS_INDEX);
-        jComboField.setSelectedIndex(FIELD_ACCESS_INDEX);
         // *** initialize table
         // set renderer for the column "Field" to display name of the feature (with icon)
         jTableFields.setDefaultRenderer(MemberInfo.class, new EncapsulateMemberInfoTableCellRenderer());
@@ -167,32 +126,41 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         // of the table
         jScrollField.setBackground(jTableFields.getBackground());
         jScrollField.getViewport().setBackground(jTableFields.getBackground());
-        // set default row height
-        jTableFields.setRowHeight(18);
+        jTableFields.setRowHeight(DEFAULT_ROW_HEIGHT);
         jTableFields.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
         // set grid color to be consistent with other netbeans tables
         if (UIManager.getColor("control") != null) { // NOI18N
             jTableFields.setGridColor(UIManager.getColor("control")); // NOI18N
         }
 
+        initEnumCombo(jComboAccess, ModifierName.values()[RefactoringModule.getOption(ENCAPSULATE_FIELDS_METHOD_ACCESS_PREF, ModifierName.PUBLIC.ordinal())]);
+        initEnumCombo(jComboField, ModifierName.values()[RefactoringModule.getOption(ENCAPSULATE_FIELDS_FIELD_ACCESS_PREF, ModifierName.PRIVATE.ordinal())]);
         initEnumCombo(jComboSort, SortBy.values()[RefactoringModule.getOption(ENCAPSULATE_FIELDS_SORT_PREF, SortBy.PAIRS.ordinal())]);
         initEnumCombo(jComboJavadoc, Javadoc.values()[RefactoringModule.getOption(ENCAPSULATE_FIELDS_JAVADOC_PREF, Javadoc.DEFAULT.ordinal())]);
+        
+        jCheckAccess.setSelected(RefactoringModule.getOption(ENCAPSULATE_FIELDS_USE_ACCESSORS_PREF, true));
+        boundCheckBox.setSelected(RefactoringModule.getOption(PROPERTY_SUPPORT_PREF, false));
+        vetoableCheckBox.setSelected(RefactoringModule.getOption(VETOABLE_SUPPORT_PREF, false));
     }
 
+    @Override
     public Component getComponent() {
         return this;
     }
     
     private boolean initialized = false;
+    @Override
     public void initialize() {
-        if (initialized)
-            return ;
+        if (initialized) {
+            return;
+        }
         
         JavaSource js = JavaSource.forFileObject(selectedObjects.getFileObject());
         try {
             js.runUserActionTask(new Task<CompilationController>() {
 
-                public void run(CompilationController javac) throws Exception {
+                @Override
+                public void run(CompilationController javac) throws IOException {
                     javac.toPhase(JavaSource.Phase.RESOLVED);
                     initialize(javac);
                 }
@@ -226,8 +194,10 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         }
         
         packRows(jTableFields);
-        
-        setColumnWidth(1);
+
+        int checkboxColumnIndex = 1;
+        setColumnWidth(checkboxColumnIndex);
+        checkboxColumnIndex = 3;
         setColumnWidth(3);
         
         jTableFields.changeSelection(tableSelection, 0, false, false);
@@ -235,7 +205,8 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         jTableFields.invalidate();
         jTableFields.repaint();
         model.addTableModelListener(new TableModelListener() {
-            boolean isUpdating = false;
+            private boolean isUpdating = false;
+            @Override
             public void tableChanged(TableModelEvent e) {
                 if (isUpdating) {
                     return;
@@ -276,8 +247,8 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         initialized = true;
     }
     
-    private void setColumnWidth(int a) {
-        TableColumn col = jTableFields.getColumnModel().getColumn(a);
+    private void setColumnWidth(int columnIndex) {
+        TableColumn col = jTableFields.getColumnModel().getColumn(columnIndex);
         JCheckBox box = new JCheckBox();
         int width = (int) box.getPreferredSize().getWidth();
         col.setPreferredWidth(width);
@@ -303,20 +274,12 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         int h;
         for (int r=0; r<table.getRowCount(); r++) {
             h = getMinimumRowHeight(table, r);
-            if (h>max)
+            if (h>max) {
                 max=h;
+            }
         }
         table.setRowHeight(max);
         table.getTableHeader().setPreferredSize(new Dimension(table.getTableHeader().getPreferredSize().width, max));
-    }
-    
-    /**
-     * Returns table model with data provided by user.
-     *
-     * @return  data provided in table by user
-     */
-    protected DefaultTableModel getTableModel() {
-        return model;
     }
     
     /** This method is called from within the constructor to
@@ -346,6 +309,10 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         jCheckAccess = new javax.swing.JCheckBox();
         jScrollField = new javax.swing.JScrollPane();
         jTableFields = new javax.swing.JTable();
+        boundCheckBox = new javax.swing.JCheckBox();
+        vetoableCheckBox = new javax.swing.JCheckBox();
+
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 5, 0));
 
         jLblTitle.setLabelFor(jTableFields);
         org.openide.awt.Mnemonics.setLocalizedText(jLblTitle, org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "LBL_FieldList")); // NOI18N
@@ -390,12 +357,8 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         jLblFieldVis.setLabelFor(jComboField);
         org.openide.awt.Mnemonics.setLocalizedText(jLblFieldVis, org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "LBL_FieldVis")); // NOI18N
 
-        jComboField.setModel(new javax.swing.DefaultComboBoxModel(modifierNames));
-
         jLblAccessVis.setLabelFor(jComboAccess);
         org.openide.awt.Mnemonics.setLocalizedText(jLblAccessVis, org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "LBL_AccessVis")); // NOI18N
-
-        jComboAccess.setModel(new javax.swing.DefaultComboBoxModel(modifierNames));
 
         jCheckAccess.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(jCheckAccess, org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "LBL_AccessorsEven")); // NOI18N
@@ -407,6 +370,16 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         jScrollField.setViewportView(jTableFields);
         jTableFields.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "ACSD_jTableFields")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(boundCheckBox, org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "EncapsulateFieldPanel.boundCheckBox.text")); // NOI18N
+        boundCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                boundCheckBoxActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(vetoableCheckBox, org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "EncapsulateFieldPanel.vetoableCheckBox.text")); // NOI18N
+        vetoableCheckBox.setEnabled(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -414,24 +387,35 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jCheckAccess)
-                    .addComponent(jLblTitle)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLblAccessVis)
-                            .addComponent(jLblFieldVis)
-                            .addComponent(jLblInsertPoint)
-                            .addComponent(jLblSort)
-                            .addComponent(jLblJavadoc))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jComboInsertPoint, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jComboSort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jComboJavadoc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jComboField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jComboAccess, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(jLblTitle)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(29, 29, 29)
+                                        .addComponent(vetoableCheckBox))
+                                    .addComponent(boundCheckBox)
+                                    .addComponent(jCheckAccess))))
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jScrollField, javax.swing.GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLblAccessVis)
+                                    .addComponent(jLblFieldVis)
+                                    .addComponent(jLblInsertPoint)
+                                    .addComponent(jLblSort)
+                                    .addComponent(jLblJavadoc))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(jComboField, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jComboJavadoc, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jComboSort, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jComboAccess, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jComboInsertPoint, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addComponent(jScrollField))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jButtonSelectSetters)
@@ -442,6 +426,8 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jButtonSelectAll, jButtonSelectGetters, jButtonSelectNone, jButtonSelectSetters});
+
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jLblAccessVis, jLblFieldVis, jLblInsertPoint, jLblJavadoc, jLblSort});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -481,6 +467,10 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
                     .addComponent(jComboAccess, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jCheckAccess)
+                .addGap(11, 11, 11)
+                .addComponent(boundCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(vetoableCheckBox)
                 .addContainerGap())
         );
 
@@ -512,8 +502,13 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     makeSelection(true, 3);
 }//GEN-LAST:event_jButtonSelectSettersActionPerformed
 
+    private void boundCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_boundCheckBoxActionPerformed
+        vetoableCheckBox.setEnabled(boundCheckBox.isSelected());
+    }//GEN-LAST:event_boundCheckBoxActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox boundCheckBox;
     private javax.swing.JButton jButtonSelectAll;
     private javax.swing.JButton jButtonSelectGetters;
     private javax.swing.JButton jButtonSelectNone;
@@ -532,6 +527,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     private javax.swing.JLabel jLblTitle;
     private javax.swing.JScrollPane jScrollField;
     private javax.swing.JTable jTableFields;
+    private javax.swing.JCheckBox vetoableCheckBox;
     // End of variables declaration//GEN-END:variables
 
     private static String getString(String key) {
@@ -539,7 +535,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     }
     
     private static <E extends Enum<E> & Comparator<E>> void initEnumCombo(JComboBox combo, E defValue) {
-        Vector<E> enumList = new Vector<E>(EnumSet.allOf(defValue.getClass()));
+        Vector<E> enumList = new Vector<E>(EnumSet.allOf(defValue.getDeclaringClass()));
         Collections.sort(enumList, defValue);
         combo.setModel(new DefaultComboBoxModel(enumList));
         combo.setSelectedItem(defValue);
@@ -647,13 +643,24 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     }
     
     public boolean isCheckAccess() {
-        ALWAYS_USE_ACCESSORS = jCheckAccess.isSelected();
-        return ALWAYS_USE_ACCESSORS;
+        RefactoringModule.setOption(ENCAPSULATE_FIELDS_USE_ACCESSORS_PREF, jCheckAccess.isSelected());
+        return jCheckAccess.isSelected();
+    }
+    
+    public boolean isBound() {
+        RefactoringModule.setOption(ENCAPSULATE_FIELDS_SORT_PREF, boundCheckBox.isSelected());
+        return boundCheckBox.isSelected();
+    }
+    
+    public boolean isVetoable() {
+        RefactoringModule.setOption(ENCAPSULATE_FIELDS_SORT_PREF, vetoableCheckBox.isSelected());
+        return vetoableCheckBox.isSelected();
     }
     
     public Set<Modifier> getFieldModifiers() {
-        FIELD_ACCESS_INDEX = jComboField.getSelectedIndex();
-        Modifier mod = getModifier(FIELD_ACCESS_INDEX);
+        ModifierName n = (ModifierName) jComboField.getSelectedItem();
+        RefactoringModule.setOption(ENCAPSULATE_FIELDS_FIELD_ACCESS_PREF, n.ordinal());
+        Modifier mod = getModifier(n);
         if (mod == null) {
             return Collections.emptySet();
         } else {
@@ -662,8 +669,9 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     }
     
     public Set<Modifier> getMethodModifiers() {
-        METHOD_ACCESS_INDEX = jComboAccess.getSelectedIndex();
-        Modifier mod = getModifier(METHOD_ACCESS_INDEX); 
+        ModifierName n = (ModifierName) jComboAccess.getSelectedItem();
+        RefactoringModule.setOption(ENCAPSULATE_FIELDS_METHOD_ACCESS_PREF, n.ordinal());
+        Modifier mod = getModifier(n); 
         if (mod == null) {
             return Collections.emptySet();
         } else {
@@ -671,18 +679,18 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         }
     }
 
-    private Modifier getModifier(int index) {
-        switch (index) {
-            case MOD_PRIVATE_INDEX: 
+    private Modifier getModifier(ModifierName modName) {
+        switch (modName) {
+            case PRIVATE: 
                 return Modifier.PRIVATE;
-            case MOD_DEFAULT_INDEX: 
+            case DEFAULT: 
                 return null; /* no modifier */
-            case MOD_PROTECTED_INDEX: 
+            case PROTECTED: 
                 return Modifier.PROTECTED;
-            case MOD_PUBLIC_INDEX:
+            case PUBLIC:
                 return Modifier.PUBLIC;
         }
-        throw new IllegalStateException("unknown index: " + index); // NOI18N
+        throw new IllegalStateException("unknown ModifierName: " + modName); // NOI18N
     }
     
     public InsertPoint getInsertPoint() {
@@ -729,7 +737,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
          */
         @Override
         public Class getColumnClass(int columnIndex) {
-            return columnTypes[columnIndex];
+            return COLUMN_TYPES[columnIndex];
         }
 
         /**
@@ -743,21 +751,23 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
          */
         @Override
         public boolean isCellEditable(int row, int column) {
-            if (column == 0)
+            if (column == 0) {
                 return false;
-            if (column == 1 || column == 3)
+            }
+            if (column == 1 || column == 3) {
                 return true;
+            }
             return ((Boolean) getValueAt(row, column-1)).booleanValue();
         }
     }
     
     private static final class AccessorInfo {
-        String defaultName;
-        MemberInfo<ElementHandle<ExecutableElement>> defaultAccessor;
-        String name;
-        String accessorToolTip;
-        String defaultAccessorToolTip;
-        MemberInfo<ElementHandle<ExecutableElement>> accessor;
+        private String defaultName;
+        private MemberInfo<ElementHandle<ExecutableElement>> defaultAccessor;
+        private String name;
+        private String accessorToolTip;
+        private String defaultAccessorToolTip;
+        private MemberInfo<ElementHandle<ExecutableElement>> accessor;
         private ElementHandle<VariableElement> fieldHandle;
         private boolean isGetter;
 
@@ -795,8 +805,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         public void setName(CompilationInfo javac, String s) {
             name = s;
             VariableElement field = fieldHandle.resolve(javac);
-            ExecutableElement method = null;
-            method = isGetter
+            ExecutableElement method = isGetter
                     ? EncapsulateFieldRefactoringPlugin.findMethod(javac, (TypeElement) field.getEnclosingElement(), s, Collections.<VariableElement>emptyList(), true)
                     : EncapsulateFieldRefactoringPlugin.findMethod(javac, (TypeElement) field.getEnclosingElement(), s, Collections.singletonList(field), true);
             accessor = method != null ? MemberInfo.create(method, javac) : null;
@@ -826,6 +835,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
             return displayName;
         }
 
+        @Override
         public int compare(SortBy o1, SortBy o2) {
             if (o1 == o2) {
                 return 0;
@@ -839,6 +849,39 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
             return o1.toString().compareTo(o2.toString());
         }
         
+    }
+    
+        
+    private enum ModifierName implements Comparator<ModifierName> {
+        PUBLIC("public"), // NOI18N
+        PROTECTED("protected"), // NOI18N
+        DEFAULT("<default>"), // NOI18N
+        PRIVATE("private"); // NOI18N
+        
+        private final String displayName;
+
+        ModifierName(final String displayName) {
+            this.displayName = displayName;
+        }
+
+        @Override
+        public String toString() {
+            return displayName;
+        }
+
+        @Override
+        public int compare(ModifierName o1, ModifierName o2) {
+            if (o1 == o2) {
+                return 0;
+            }
+            if (o1 == null) {
+                return -1;
+            }
+            if (o2 == null) {
+                return 1;
+            }
+            return o1.toString().compareTo(o2.toString());
+        }
     }
     
     public enum Javadoc implements Comparator<Javadoc> {
@@ -858,6 +901,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
             return displayName;
         }
 
+        @Override
         public int compare(Javadoc o1, Javadoc o2) {
             if (o1 == o2) {
                 return 0;
@@ -944,7 +988,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         private AccessorInfo ai;
         private JavaSource js;
         
-        public AccessorInfoTableEditor(JavaSource js) {
+        AccessorInfoTableEditor(JavaSource js) {
             super(new JTextField());
             this.js = js;
         }
@@ -984,6 +1028,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
             }
         }
 
+        @Override
         public void run(CompilationController javac) throws Exception {
             AccessorInfo desc = ai;
             if (desc == null) {

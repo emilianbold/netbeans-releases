@@ -17,5 +17,15 @@ class ImplementingClass implements InterfaceName {
 
 }
 
+class ImplementA {
+    function foo() {}
+}
+interface ImplementB {
+    function foo();
+}
+class ImplementC extends ImplementA implements ImplementB {
+
+}
+
 //END
 ?>

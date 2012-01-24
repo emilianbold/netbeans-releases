@@ -104,7 +104,7 @@ public class StatusAction extends GitAction {
                         t = System.currentTimeMillis();
                         Git.STATUS_LOG.log(Level.FINE, "StatusAction.scanStatus(): started for {0}", toRefresh.keySet()); //NOI18N
                     }
-                    Git.getInstance().getFileStatusCache().refreshAllRoots(toRefresh, this);
+                    Git.getInstance().getFileStatusCache().refreshAllRoots(toRefresh, getProgressMonitor());
                     if (Git.STATUS_LOG.isLoggable(Level.FINE)) {
                         Git.STATUS_LOG.log(Level.FINE, "StatusAction.scanStatus(): lasted {0}", System.currentTimeMillis() - t); //NOI18N
                     }

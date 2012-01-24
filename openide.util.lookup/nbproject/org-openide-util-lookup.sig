@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 8.8
+#Version 8.11
 
 CLSS public abstract interface java.io.Serializable
 
@@ -262,7 +262,9 @@ hcls Impl
 
 CLSS public abstract org.openide.util.lookup.implspi.NamedServicesProvider
 cons protected init()
+meth protected <%0 extends java.lang.Object> {%%0} lookupObject(java.lang.String,java.lang.Class<{%%0}>)
 meth protected abstract org.openide.util.Lookup create(java.lang.String)
+meth public static <%0 extends java.lang.Object> {%%0} getConfigObject(java.lang.String,java.lang.Class<{%%0}>)
 meth public static org.openide.util.Lookup forPath(java.lang.String)
 supr java.lang.Object
 hfds namedServicesProviders

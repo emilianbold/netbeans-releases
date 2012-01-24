@@ -107,7 +107,7 @@ public final class InjectablesActionStrategy implements ModelActionStrategy {
     {
         final VariableElement var = WebBeansActionHelper.findVariable(model, 
                 subject);
-        DependencyInjectionResult result = model.lookupInjectables(var, null);
+        DependencyInjectionResult result = var== null? null: model.lookupInjectables(var, null);
         if (result == null) {
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(GoToInjectableAtCaretAction.class,

@@ -104,12 +104,16 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
                 fileBaseName += "-" + binAndMethodNames[1];
             }
             for (String type : mvr.mimeType()) {
-                LayerBuilder.File f = layer(e).file("Editors/" + (type.equals("") ? "" : type + '/') + "MultiView/" + fileBaseName + ".instance");
+                final LayerBuilder builder = layer(e);
+                LayerBuilder.File f = builder.file("Editors/" + (type.equals("") ? "" : type + '/') + "MultiView/" + fileBaseName + ".instance");
                 f.methodvalue("instanceCreate", MultiViewFactory.class.getName(), "createMultiViewDescription");
                 f.stringvalue("instanceClass", ContextAwareDescription.class.getName());
                 f.stringvalue("class", binAndMethodNames[0]);
                 f.bundlevalue("displayName", mvr.displayName(), mvr, "displayName");
-                f.stringvalue("iconBase", mvr.iconBase());
+                if (!mvr.iconBase().isEmpty()) {
+                    builder.validateResource(mvr.iconBase(), e, mvr, "iconBase", true);
+                    f.stringvalue("iconBase", mvr.iconBase());
+                }
                 f.stringvalue("preferredID", mvr.preferredID());
                 f.intvalue("persistenceType", mvr.persistenceType());
                 f.position(mvr.position());
@@ -126,7 +130,8 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
     }
 
     private String[] findDefinition(Element e, TypeMirror[] type, MultiViewElement.Registration mvr) throws LayerGenerationException {
-        final TypeMirror lkp = processingEnv.getElementUtils().getTypeElement(Lookup.class.getCanonicalName()).asType();
+        final TypeElement lkpElem = processingEnv.getElementUtils().getTypeElement(Lookup.class.getCanonicalName());
+        final TypeMirror lkp = lkpElem == null ? null : lkpElem.asType();
         final TypeMirror mve = processingEnv.getElementUtils().getTypeElement(MultiViewElement.class.getName()).asType();
         if (e.getKind() == ElementKind.CLASS) {
             TypeElement clazz = (TypeElement) e;
@@ -170,7 +175,7 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
             }
             for (VariableElement param : params) {
                 if (!param.asType().equals(lkp)) {
-                    throw new LayerGenerationException("Method parameters may be either Lookup or Project", e, processingEnv, mvr);
+                    throw new LayerGenerationException("Method parameter may only be Lookup", e, processingEnv, mvr);
                 }
             }
             if (!meth.getEnclosingElement().getModifiers().contains(Modifier.PUBLIC)) {

@@ -48,7 +48,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import static org.netbeans.modules.project.ui.groups.Bundle.*;
 import org.openide.NotificationLineSupport;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Interface used by the various group editing panels.
@@ -68,27 +70,25 @@ public abstract class GroupEditPanel extends JPanel {
         return supp;
     }
 
+    @Messages("WARN_GroupExists=Another group with the same name exists.")
     void startPerformingNameChecks(final JTextField field, final String initial) {
         field.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
+            @Override public void insertUpdate(DocumentEvent e) {
                 doCheck();
             }
-
-            public void removeUpdate(DocumentEvent e) {
+            @Override public void removeUpdate(DocumentEvent e) {
                 doCheck();
             }
-
-            public void changedUpdate(DocumentEvent e) {
+            @Override public void changedUpdate(DocumentEvent e) {
                 doCheck();
             }
-
             private void doCheck() {
                 getNotificationLineSupport().clearMessages();
                 String newText = field.getText();
                 if (!newText.equals(initial)) {
                     for (Group g : Group.allGroups()) {
                         if (newText.equals(g.getNameOrNull())) {
-                            getNotificationLineSupport().setWarningMessage(org.openide.util.NbBundle.getBundle(GroupEditPanel.class).getString("WARN_GroupExists"));
+                            getNotificationLineSupport().setWarningMessage(WARN_GroupExists());
                         }
                     }
                 }

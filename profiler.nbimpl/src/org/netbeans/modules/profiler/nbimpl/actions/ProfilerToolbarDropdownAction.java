@@ -45,7 +45,6 @@ package org.netbeans.modules.profiler.nbimpl.actions;
 
 import org.openide.awt.Actions;
 import org.openide.awt.DropDownButtonFactory;
-import org.openide.filesystems.FileObject;
 import org.openide.util.actions.Presenter;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -58,7 +57,6 @@ import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import org.netbeans.modules.profiler.actions.AttachAction;
-import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -90,16 +88,9 @@ public class ProfilerToolbarDropdownAction implements Action, Presenter.Toolbar 
     // --- Presenter.Toolbar implementation --------------------------------------
     public Component getToolbarPresenter() {
         if (toolbarPresenter == null) {
-            final FileObject fo = FileUtil.getConfigFile(
-                "Actions/Profile/org-netbeans-modules-profiler-actions-AttachAction.instance" // NOI18N
-            );
-            // the fo shall always be non-null, unless there is some bug in
-            // filesystems (which there apparently is):
-            assert fo != null;
             // gets the real action registered in the menu from layer
-            final Action attachAction = fo != null ? 
-                (Action)fo.getAttribute("instanceCreate") : // NOI18N
-                getAttachAction();
+            Action a = Actions.forID("Profile", "org.netbeans.modules.profiler.actions.AttachAction");
+            final Action attachAction = a != null ? a : /* XXX should be impossible */AttachAction.getDefault();
 
             final JMenuItem dropdownItem1 = createDropdownItem(defaultAction);
             final JMenuItem dropdownItem2 = createDropdownItem(attachAction);
@@ -157,9 +148,5 @@ public class ProfilerToolbarDropdownAction implements Action, Presenter.Toolbar 
             });
 
         return item;
-    }
-
-    private static Action getAttachAction() {
-        return AttachAction.getDefault();
     }
 }

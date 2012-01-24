@@ -159,7 +159,8 @@ public class TabListPopupAction extends AbstractAction {
                     name,
                     htmlName,
                     tab.getIcon(),
-                    tab == selectedTab);
+                    tab == selectedTab,
+                    tab.getTooltip());
         }
         return items;
     }

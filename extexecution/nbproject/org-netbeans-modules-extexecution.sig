@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.25
+#Version 1.27
 
 CLSS public abstract interface java.io.Closeable
 meth public abstract void close() throws java.io.IOException
@@ -155,7 +155,7 @@ meth public org.netbeans.api.extexecution.ExternalProcessBuilder workingDirector
  anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
-hfds LOGGER,PROXY_AUTHENTICATION_PASSWORD,PROXY_AUTHENTICATION_USERNAME,USE_PROXY_AUTHENTICATION,arguments,envVariables,executable,paths,redirectErrorStream,workingDirectory
+hfds ESCAPED_PATTERN,LOGGER,PROXY_AUTHENTICATION_PASSWORD,PROXY_AUTHENTICATION_USERNAME,USE_PROXY_AUTHENTICATION,arguments,envVariables,executable,paths,redirectErrorStream,workingDirectory
 hcls BuilderData
 
 CLSS public final org.netbeans.api.extexecution.ExternalProcessSupport

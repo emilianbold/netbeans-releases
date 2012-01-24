@@ -43,7 +43,6 @@
 package org.netbeans.libs.git.jgit.commands;
 
 import java.io.IOException;
-import org.netbeans.libs.git.jgit.JGitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -65,6 +64,7 @@ import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitPushResult;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -80,8 +80,8 @@ public class PushCommand extends TransportCommand {
     private GitPushResult result;
     private final List<String> fetchRefSpecs;
 
-    public PushCommand (Repository repository, String remote, List<String> pushRefSpecifications, List<String> fetchRefSpecifications, ProgressMonitor monitor) {
-        super(repository, remote, monitor);
+    public PushCommand (Repository repository, GitClassFactory gitFactory, String remote, List<String> pushRefSpecifications, List<String> fetchRefSpecifications, ProgressMonitor monitor) {
+        super(repository, gitFactory, remote, monitor);
         this.monitor = monitor;
         this.remote = remote;
         this.pushRefSpecs = pushRefSpecifications;
@@ -109,7 +109,7 @@ public class PushCommand extends TransportCommand {
             transport.setRemoveDeletedRefs(true);
             transport.setTagOpt(TagOpt.AUTO_FOLLOW);
             PushResult pushResult = transport.push(new DelegatingProgressMonitor(monitor), fetchSpecs.isEmpty() ? transport.findRemoteRefUpdatesFor(specs) : Transport.findRemoteRefUpdatesFor(getRepository(), specs, fetchSpecs));
-            Map<String, GitBranch> remoteBranches = Utils.refsToBranches(pushResult.getAdvertisedRefs(), Constants.R_HEADS);
+            Map<String, GitBranch> remoteBranches = Utils.refsToBranches(pushResult.getAdvertisedRefs(), Constants.R_HEADS, getClassFactory());
             for (String msg : pushResult.getMessages().split("\n")) { //NOI18N
                 if (!msg.isEmpty()) {
                     // these are not warnings, i guess, just plain informational messages
@@ -118,12 +118,12 @@ public class PushCommand extends TransportCommand {
             }
             Map<String, GitTransportUpdate> remoteRepositoryUpdates = new HashMap<String, GitTransportUpdate>(pushResult.getRemoteUpdates().size());
             for (RemoteRefUpdate update : pushResult.getRemoteUpdates()) {
-                GitTransportUpdate upd = new JGitTransportUpdate(transport.getURI(), update, remoteBranches);
+                GitTransportUpdate upd = getClassFactory().createTransportUpdate(transport.getURI(), update, remoteBranches);
                 remoteRepositoryUpdates.put(upd.getRemoteName(), upd);
             }
             Map<String, GitTransportUpdate> localRepositoryUpdates = new HashMap<String, GitTransportUpdate>(pushResult.getTrackingRefUpdates().size());
             for (TrackingRefUpdate update : pushResult.getTrackingRefUpdates()) {
-                GitTransportUpdate upd = new JGitTransportUpdate(transport.getURI(), update);
+                GitTransportUpdate upd = getClassFactory().createTransportUpdate(transport.getURI(), update);
                 localRepositoryUpdates.put(upd.getRemoteName(), upd);
             }
             result = new GitPushResult(remoteRepositoryUpdates, localRepositoryUpdates);

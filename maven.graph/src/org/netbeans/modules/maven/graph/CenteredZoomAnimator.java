@@ -59,9 +59,8 @@ class CenteredZoomAnimator extends Animator {
     private double sourceZoom;
     private double targetZoom;
     private Point center;
-    private Point sceneCenter;
 
-    public CenteredZoomAnimator (SceneAnimator sceneAnimator) {
+    CenteredZoomAnimator(SceneAnimator sceneAnimator) {
         super (sceneAnimator);
     }
 
@@ -75,8 +74,6 @@ class CenteredZoomAnimator extends Animator {
         sourceZoom = getScene ().getZoomFactor ();
         targetZoom = zoomFactor;
         this.center = center;
-        Rectangle sceneB = getScene().getBounds();
-        sceneCenter = new Point((int)sceneB.getCenterX(), (int)sceneB.getCenterY());
         start ();
     }
 
@@ -88,7 +85,7 @@ class CenteredZoomAnimator extends Animator {
         return center;
     }
 
-    public void tick (double progress) {
+    @Override public void tick(double progress) {
         double nextZoom = progress >= 1.0 ? targetZoom :
             (sourceZoom + progress * (targetZoom - sourceZoom));
 

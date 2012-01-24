@@ -91,6 +91,7 @@ public class OccurrencesMarkProvider extends MarkProvider {
         joint = Collections.emptyList();
     }
     
+    @Override
     public synchronized List<Mark> getMarks() {
         return joint;
     }
@@ -136,6 +137,7 @@ public class OccurrencesMarkProvider extends MarkProvider {
         final List<Mark> result = new LinkedList<Mark>();
         
         doc.render(new Runnable() {
+            @Override
             public void run() {
                 for (CsmReference ref : list) {
                     try {
@@ -171,28 +173,34 @@ public class OccurrencesMarkProvider extends MarkProvider {
             this.tooltip = tooltip;
         }
 
+        @Override
         public int getType() {
             return TYPE_ERROR_LIKE;
         }
 
+        @Override
         public Status getStatus() {
             return Status.STATUS_OK;
         }
 
+        @Override
         public int getPriority() {
             return PRIORITY_DEFAULT;
         }
 
+        @Override
         public Color getEnhancedColor() {
             return color;
         }
 
+        @Override
         public int[] getAssignedLines() {
             int line = NbDocument.findLineNumber((StyledDocument) doc, startOffset.getOffset());
             
             return new int[] {line, line};
         }
 
+        @Override
         public String getShortDescription() {
             return tooltip;
         }

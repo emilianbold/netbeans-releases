@@ -54,7 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.GitRevisionInfo;
@@ -104,11 +104,11 @@ public class MergeRevisionAction extends SingleRepositoryAction {
                         revision = mergeRevision.getRevision();
                         LOG.log(Level.FINE, "Merging revision {0} into HEAD", revision); //NOI18N
                         boolean cont;
-                        MergeResultProcessor mrp = new MergeResultProcessor(client, repository, revision, getLogger(), this);
+                        MergeResultProcessor mrp = new MergeResultProcessor(client, repository, revision, getLogger(), getProgressMonitor());
                         do {
                             cont = false;
                             try {
-                                GitMergeResult result = client.merge(revision, this);
+                                GitMergeResult result = client.merge(revision, getProgressMonitor());
                                 mrp.processResult(result);
                             } catch (GitException.CheckoutConflictException ex) {
                                 if (LOG.isLoggable(Level.FINE)) {
@@ -148,7 +148,7 @@ public class MergeRevisionAction extends SingleRepositoryAction {
             GitRevisionInfo info = null;
             if (result.getNewHead() != null) {
                 try {
-                    info = client.log(result.getNewHead(), ProgressMonitor.NULL_PROGRESS_MONITOR);
+                    info = client.log(result.getNewHead(), GitUtils.NULL_PROGRESS_MONITOR);
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);
                 }

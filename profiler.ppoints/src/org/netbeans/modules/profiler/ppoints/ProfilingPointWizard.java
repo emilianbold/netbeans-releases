@@ -58,8 +58,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.openide.util.Lookup;
 
 
@@ -67,6 +66,13 @@ import org.openide.util.Lookup;
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "ProfilingPointWizard_AnotherPpEditedMsg=Another Profiling Point is currently being edited!",
+    "ProfilingPointWizard_NoPpsFoundMsg=No registered Profiling Points found!",
+    "ProfilingPointWizard_WizardTitle=New Profiling Point",
+    "ProfilingPointWizard_WizardStep1Caption=Choose Type & Project",
+    "ProfilingPointWizard_WizardStep2Caption=Customize Properties"
+})
 public class ProfilingPointWizard implements WizardDescriptor.Iterator {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
@@ -90,7 +96,7 @@ public class ProfilingPointWizard implements WizardDescriptor.Iterator {
         }
 
         public String getName() {
-            return WIZARD_STEP1_CAPTION;
+            return Bundle.ProfilingPointWizard_WizardStep1Caption();
         }
 
         public Component createComponent() {
@@ -146,7 +152,7 @@ public class ProfilingPointWizard implements WizardDescriptor.Iterator {
         }
 
         public String getName() {
-            return WIZARD_STEP2_CAPTION;
+            return Bundle.ProfilingPointWizard_WizardStep2Caption();
         }
 
         public Component createComponent() {
@@ -301,18 +307,6 @@ public class ProfilingPointWizard implements WizardDescriptor.Iterator {
 
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String ANOTHER_PP_EDITED_MSG = NbBundle.getMessage(ProfilingPointWizard.class,
-                                                                            "ProfilingPointWizard_AnotherPpEditedMsg"); // NOI18N
-    private static final String NO_PPS_FOUND_MSG = NbBundle.getMessage(ProfilingPointWizard.class,
-                                                                       "ProfilingPointWizard_NoPpsFoundMsg"); // NOI18N
-    private static final String WIZARD_TITLE = NbBundle.getMessage(ProfilingPointWizard.class, "ProfilingPointWizard_WizardTitle"); // NOI18N
-    private static final String WIZARD_STEP1_CAPTION = NbBundle.getMessage(ProfilingPointWizard.class,
-                                                                           "ProfilingPointWizard_WizardStep1Caption"); // NOI18N
-    private static final String WIZARD_STEP2_CAPTION = NbBundle.getMessage(ProfilingPointWizard.class,
-                                                                           "ProfilingPointWizard_WizardStep2Caption"); // NOI18N
-                                                                                                                       // -----
     private static ProfilingPointWizard defaultInstance;
     private static final Dimension DEFAULT_PREFERRED_PANEL_SIZE = new Dimension(440, 330);
 
@@ -354,8 +348,8 @@ public class ProfilingPointWizard implements WizardDescriptor.Iterator {
         ValidityAwarePanel showingCustomizer = ProfilingPointsManager.getDefault().getShowingCustomizer();
 
         if (showingCustomizer != null) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    ANOTHER_PP_EDITED_MSG, NotifyDescriptor.WARNING_MESSAGE));
+            ProfilerDialogs.displayWarning(
+                    Bundle.ProfilingPointWizard_AnotherPpEditedMsg());
             SwingUtilities.getWindowAncestor(showingCustomizer).requestFocus();
             showingCustomizer.requestFocusInWindow();
 
@@ -374,8 +368,8 @@ public class ProfilingPointWizard implements WizardDescriptor.Iterator {
 
                 return wizardDescriptor;
             } else {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NO_PPS_FOUND_MSG, NotifyDescriptor.ERROR_MESSAGE));
+                ProfilerDialogs.displayError(
+                        Bundle.ProfilingPointWizard_NoPpsFoundMsg());
 
                 return null;
             }
@@ -439,7 +433,7 @@ public class ProfilingPointWizard implements WizardDescriptor.Iterator {
 
     private void initWizardDescriptor() {
         wizardDescriptor = new WizardDescriptor(this);
-        wizardDescriptor.setTitle(WIZARD_TITLE);
+        wizardDescriptor.setTitle(Bundle.ProfilingPointWizard_WizardTitle());
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
 
         wizardDescriptor.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N

@@ -110,19 +110,12 @@ public class EntityBeansNode extends ContainerNode {
         }
     }
 
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String ENTITY_BEANS_STRING = NbBundle.getMessage(EntityBeansNode.class,
-                                                                          "EntityBeansNode_EntityBeansString"); // NOI18N
-                                                                                                                // -----
-
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     /** Creates a new instance of SessionBeansNode */
+    @NbBundle.Messages("EntityBeansNode_EntityBeansString=Entity Beans")
     public EntityBeansNode(final ContainerNode parent) {
-        super(ENTITY_BEANS_STRING, Icons.getIcon(JavaEEIcons.PACKAGE), parent);
+        super(Bundle.EntityBeansNode_EntityBeansString(), Icons.getIcon(JavaEEIcons.PACKAGE), parent);
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------

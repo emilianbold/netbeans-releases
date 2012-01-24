@@ -62,10 +62,13 @@ public class NewQtFormPanel extends CndPanel {
         super(project, folders, null);
     }
 
+    @Override
     public Component getComponent() {
-        if (gui == null) {
-            gui = new NewQtFormPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), FORM_TYPES);
-            gui.addChangeListener(this);
+        synchronized (guiLock) {
+            if (gui == null) {
+                gui = new NewQtFormPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), FORM_TYPES);
+                gui.addChangeListener(this);
+            }
         }
         return gui;
     }

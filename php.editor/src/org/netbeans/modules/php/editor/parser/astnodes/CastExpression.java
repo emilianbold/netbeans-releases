@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
@@ -57,7 +57,7 @@ public class CastExpression extends Expression {
     	BOOL, // 'bool'
     	UNSET// 'unset'
     }
-    
+
     private Expression expression;
     private CastExpression.Type castingType;
 
@@ -72,10 +72,10 @@ public class CastExpression extends Expression {
 //        expr.setParent(this);
     }
 
-    
+
     /**
      * Returns the type of this cast expression.
-     * 
+     *
      * @return the cast type
      */
     public CastExpression.Type getCastingType() {
@@ -84,13 +84,13 @@ public class CastExpression extends Expression {
 
     /**
      * Returns the left hand side of this assignment expression.
-     * 
+     *
      * @return the left hand side node
      */
     public Expression getExpression() {
         return this.expression;
     }
-    
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);

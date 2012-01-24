@@ -98,8 +98,9 @@ public class testInsertDatabase extends insert
     EditorOperator eoPHP = new EditorOperator( "index.php" );
     // Locate comment
     eoPHP.setCaretPosition( "// put your code here\n", false );
-    eoPHP.insert( "\nclass name\n{\n\n}" );
-    eoPHP.setCaretPosition( "{\n", false );
+    eoPHP.insert( "\nclass name\n{\n\n}\n" );
+    eoPHP.setCaretPosition( "}", false );
+    TypeCode(eoPHP, " ");
     Sleep( 1000 );
     InvokeInsert( eoPHP );
     Sleep( 1000 );
@@ -107,7 +108,7 @@ public class testInsertDatabase extends insert
     JDialogOperator jdInsetter = new JDialogOperator( );
     JListOperator jlList = new JListOperator( jdInsetter );
 
-    ClickListItemNoBlock( jlList, 1, 1 );
+    ClickListItemNoBlock( jlList, 0, 1 );
 
     JDialogOperator jdGenerator = new JDialogOperator( "Select Database Connection" );
 
@@ -124,7 +125,8 @@ public class testInsertDatabase extends insert
 
     // Get editor
     EditorOperator eoPHP = new EditorOperator( "index.php" );
-    eoPHP.setCaretPosition( "{\n", false );
+    eoPHP.setCaretPosition( "}", false );
+    TypeCode(eoPHP, " ");
     Sleep( 1000 );
     InvokeInsert( eoPHP );
     Sleep( 1000 );
@@ -132,7 +134,7 @@ public class testInsertDatabase extends insert
     JDialogOperator jdInsetter = new JDialogOperator( );
     JListOperator jlList = new JListOperator( jdInsetter );
 
-    ClickListItemNoBlock( jlList, 2, 1 );
+    ClickListItemNoBlock( jlList, 1, 1 );
 
     JDialogOperator jdGenerator = new JDialogOperator( "Select Table and Columns" );
 

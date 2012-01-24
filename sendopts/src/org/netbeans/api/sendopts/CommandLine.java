@@ -48,14 +48,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
+import org.netbeans.modules.sendopts.DefaultProcessor;
 import org.netbeans.modules.sendopts.OptionImpl;
 import org.netbeans.spi.sendopts.Env;
 import org.netbeans.spi.sendopts.Option;
@@ -65,16 +59,20 @@ import org.openide.util.NbBundle;
 
 /**
  * A class for clients that have an array of strings and want to process
- * it - e.g. parse it and also invoke registered {@link OptionProcessor}s.
+ * it - e.g. parse it and also invoke associated {@link OptionProcessor}s
+ * and {@link org.netbeans.spi.sendopts.Arg declarative options}.
  *
  * @author Jaroslav Tulach
  */
 public final class CommandLine {
     /** internal errors of CommandLine start here and end here + 100 */
     private static final int ERROR_BASE = 50345;
-    
+    /** associated options providers */
+    private final Collection<? extends OptionProcessor> processors;
+
     /** Use factory methods to create the line. */
-    CommandLine() {
+    CommandLine(Collection<? extends OptionProcessor> p) {
+        this.processors = p;
     }
     
     /** Getter for the default command line processor in the system. List
@@ -82,8 +80,27 @@ public final class CommandLine {
      * {@link Lookup#getDefault() }.
      */
     public static CommandLine getDefault() {
-        return new CommandLine();
+        return new CommandLine(null);
     }
+
+    /** Creates new command line processor based on options defined in
+     * the provided <code>classes</code>. These classes are scanned for
+     * fields annotated with {@code @}{@link org.netbeans.spi.sendopts.Arg} 
+     * annotation.
+     * 
+     * @param classes classes that declare the options
+     * @return new command line object that contains options declared in the
+     *   provided classes
+     * @since 2.20
+     */
+    public static CommandLine create(Class<?>... classes) {
+        List<OptionProcessor> arr = new ArrayList<OptionProcessor>();
+        for (Class<?> c : classes) {
+            arr.add(DefaultProcessor.create(c));
+        }
+        return new CommandLine(arr);
+    }
+    
     
     /** Process the array of arguments and invoke associated {@link OptionProcessor}s.
      * 
@@ -317,7 +334,7 @@ public final class CommandLine {
         int max = 25;
         String[] prefixes = new String[arr.length];
         for (int i = 0; i < arr.length; i++) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             
             String ownDisplay = OptionImpl.Trampoline.DEFAULT.getDisplayName(arr[i].getOption(), Locale.getDefault());
             if (ownDisplay != null) {
@@ -384,7 +401,17 @@ public final class CommandLine {
     private OptionImpl[] getOptions() {
         ArrayList<OptionImpl> arr = new ArrayList<OptionImpl>();
         
-        for (OptionProcessor p : Lookup.getDefault().lookupAll(OptionProcessor.class)) {
+        Iterable<? extends OptionProcessor> proc = processors;
+        if (proc == null) {
+            try {
+                proc = lookupOptionProcessors();
+            } catch (LinkageError ex) {
+                // OK, running in standalone mode without Lookup
+                proc = ServiceLoader.load(OptionProcessor.class);
+            }
+        }
+        
+        for (OptionProcessor p : proc) {
             org.netbeans.spi.sendopts.Option[] all = OptionImpl.Trampoline.DEFAULT.getOptions(p);
             for (int i = 0; i < all.length; i++) {
                 arr.add(OptionImpl.cloneImpl(OptionImpl.find(all[i]), all[i], p));
@@ -392,6 +419,10 @@ public final class CommandLine {
         }
         
         return arr.toArray(new OptionImpl[0]);
+    }
+
+    private Collection<? extends OptionProcessor> lookupOptionProcessors() {
+        return Lookup.getDefault().lookupAll(OptionProcessor.class);
     }
     
     private OptionImpl findByLongName(String lng, OptionImpl[] arr) {

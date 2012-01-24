@@ -47,10 +47,8 @@ package org.netbeans.modules.java.api.common.project.ui;
 import java.beans.PropertyChangeListener;
 import javax.swing.Icon;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.SourceGroup;
-import org.openide.util.Exceptions;
 
 
 /**
@@ -96,12 +94,7 @@ final class LibrariesSourceGroup implements SourceGroup {
     }
 
     public String getName() {
-        try {        
-            return root.getURL().toExternalForm();
-        } catch (FileStateInvalidException fsi) { 
-            Exceptions.printStackTrace(fsi);
-            return root.toString();
-        }
+        return root.toURL().toExternalForm();
     }
 
     public String getDisplayName() {
@@ -112,7 +105,7 @@ final class LibrariesSourceGroup implements SourceGroup {
         return opened ? openIcon : icon;
     }
 
-    public boolean contains(FileObject file) throws IllegalArgumentException {
+    @Override public boolean contains(FileObject file) {
         return root.equals(file) || FileUtil.isParentOf(root,file);
     }
 

@@ -42,10 +42,12 @@
 
 package org.netbeans.libs.git.jgit.commands;
 
+import java.text.MessageFormat;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.GitClassFactory;
+import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -54,10 +56,12 @@ import org.openide.util.NbBundle;
 public abstract class GitCommand {
     private final Repository repository;
     private final ProgressMonitor monitor;
-    protected static final String EMPTY_ROOTS = NbBundle.getMessage(GitCommand.class, "MSG_Error_NoFiles"); //NOI18N
+    protected static final String EMPTY_ROOTS = Utils.getBundle(GitCommand.class).getString("MSG_Error_NoFiles"); //NOI18N
+    private final GitClassFactory gitFactory;
 
-    protected GitCommand (Repository repository, ProgressMonitor monitor) {
+    protected GitCommand (Repository repository, GitClassFactory gitFactory, ProgressMonitor monitor) {
         this.repository = repository;
+        this.gitFactory = gitFactory;
         this.monitor = monitor;
     }
 
@@ -77,7 +81,7 @@ public abstract class GitCommand {
     protected boolean prepareCommand () throws GitException {
         boolean repositoryExists = repository.getDirectory().exists();
         if (!repositoryExists) {
-            String message = NbBundle.getMessage(GitCommand.class, "MSG_Error_RepositoryDoesNotExist", repository.getWorkTree()); //NOI18N
+            String message = MessageFormat.format(Utils.getBundle(GitCommand.class).getString("MSG_Error_RepositoryDoesNotExist"), repository.getWorkTree()); //NOI18N
             monitor.preparationsFailed(message);
             throw new GitException(message);
         }
@@ -89,5 +93,8 @@ public abstract class GitCommand {
     }
 
     protected abstract String getCommandDescription ();
-    
+
+    protected final GitClassFactory getClassFactory () {
+        return gitFactory;
+    }
 }

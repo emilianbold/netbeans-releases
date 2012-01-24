@@ -177,8 +177,8 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
 		}
 		addIndentLevel(ts.offset() + ts.token().length(), -1 * indentSize);
 	    }
-	    
-	    
+
+
 	}
     }
 
@@ -337,7 +337,7 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
 
                     do {
                         ts.movePrevious();
-                        
+
                     } while (indentContinuationWithinStatement_skipToken(ts.token()));
 
                     end = ts.offset() + ts.token().length();
@@ -428,7 +428,7 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
         try {
             int v = Utilities.getFirstNonWhiteBwd(doc, offset);
             int rs = Utilities.getRowStart(doc, offset);
-            
+
             if (v >= 0){
                 r = v;
             }

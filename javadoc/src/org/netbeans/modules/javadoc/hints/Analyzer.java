@@ -487,6 +487,7 @@ final class Analyzer {
         }
 
         TypeMirror rtException = javac.getElements().getTypeElement("java.lang.RuntimeException").asType(); // NOI18N
+        TypeMirror error = javac.getElements().getTypeElement("java.lang.Error").asType(); // NOI18N
 
         // resolve leftovers
         for (ThrowsTag throwsTag : tagNames.values()) {
@@ -498,9 +499,9 @@ final class Analyzer {
             }
             if (throwClassDoc != null) {
                 Element throwEl = javac.getElementUtilities().elementFor(throwClassDoc);
-                if (throwEl != null && javac.getTypes().isSubtype(throwEl.asType(), rtException)) {
-                    // ignore RuntimeExceptions
-                    break;
+                if (throwEl != null && (javac.getTypes().isSubtype(throwEl.asType(), rtException) || javac.getTypes().isSubtype(throwEl.asType(), error))) {
+                    // ignore RuntimeExceptions and Errors
+                    continue;
                 }
             }
             addRemoveTagFix(throwsTag,

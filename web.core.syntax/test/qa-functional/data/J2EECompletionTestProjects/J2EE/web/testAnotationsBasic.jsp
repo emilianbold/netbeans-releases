@@ -32,13 +32,6 @@ boolean optional = true
 <% @ManyToOne(optional=
 --%>
 
-<%-- Completion for reduced J2EE annotation attributes --%>
-<%--CC
-<% @Inheritance(stra|
-InheritanceType strategy = javax.persistence 
-<% @Inheritance(strategy=
---%>
-
 <%-- Completion for all J2EE annotation values --%>
 <%--CC
 <% @Basic(fetch=FetchType.|

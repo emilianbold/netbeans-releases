@@ -143,7 +143,7 @@ public class DelegateFieldAnalizer implements FieldAnalyzer {
             directSupertypes(type);
         for (TypeMirror superType : directSupertypes) {
             Element element = info.getTypes().asElement(superType);
-            if( element.equals( serializable)  )
+            if( element == null || element.equals( serializable)  )
             {
                 continue;
             }

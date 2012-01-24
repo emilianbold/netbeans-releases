@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 2.28
+#Version 2.30
 
 CLSS public abstract interface java.io.Serializable
 
@@ -720,7 +720,7 @@ meth public void animatePreferredBounds(org.netbeans.api.visual.widget.Widget,ja
 meth public void animatePreferredLocation(org.netbeans.api.visual.widget.Widget,java.awt.Point)
 meth public void animateZoomFactor(double)
 supr java.lang.Object
-hfds SLEEP,TIME_PERIOD,animators,cache,colorAnimator,preferredBoundsAnimator,preferredLocationAnimator,scene,task,taskAlive,zoomAnimator
+hfds RP,SLEEP,TIME_PERIOD,animators,cache,colorAnimator,preferredBoundsAnimator,preferredLocationAnimator,scene,task,taskAlive,zoomAnimator
 hcls UpdateTask
 
 CLSS public abstract interface org.netbeans.api.visual.border.Border
@@ -1635,8 +1635,11 @@ meth public final java.awt.Point convertSceneToLocal(java.awt.Point)
 meth public final java.awt.Point getLocation()
 meth public final java.awt.Point getPreferredLocation()
 meth public final java.awt.Rectangle convertLocalToScene(java.awt.Rectangle)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public final java.awt.Rectangle convertSceneToLocal(java.awt.Rectangle)
 meth public final java.awt.Rectangle getBounds()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
 meth public final java.awt.Rectangle getClientArea()
 meth public final java.awt.Rectangle getPreferredBounds()
 meth public final java.lang.Object getChildConstraint(org.netbeans.api.visual.widget.Widget)

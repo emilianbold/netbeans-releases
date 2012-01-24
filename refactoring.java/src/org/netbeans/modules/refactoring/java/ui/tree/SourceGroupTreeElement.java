@@ -51,7 +51,8 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.refactoring.spi.ui.*;
+import org.netbeans.modules.refactoring.spi.ui.TreeElement;
+import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -86,18 +87,22 @@ public class SourceGroupTreeElement implements TreeElement {
         displayName = sg.getDisplayName();
     }
 
+    @Override
     public TreeElement getParent(boolean isLogical) {
         return TreeElementFactory.getTreeElement(FileOwnerQuery.getOwner(dir));
     }
 
+    @Override
     public Icon getIcon() {
         return icon;
     }
 
+    @Override
     public String getText(boolean isLogical) {
         return displayName;
     }
 
+    @Override
     public Object getUserObject() {
         SourceGroup s = sg.get();
         if (s==null) {

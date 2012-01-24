@@ -820,10 +820,10 @@ public class NbBundle extends Object {
      * # {0} - file path
      * dialog.message=The file {0} was invalid.
      * </pre>
-     * @since org.openide.util 8.10
+     * @since org.openide.util 8.10 (available also on fields since 8.22)
      */
     @Retention(RetentionPolicy.SOURCE)
-    @Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.FIELD})
     public @interface Messages {
         /**
          * List of key/value pairs.

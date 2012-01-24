@@ -138,14 +138,14 @@ public class J2SESourcesTest extends NbTestCase {
     }
 
     public void testSourceRoots () throws Exception {        
-        FileObject[] roots = SourceForBinaryQuery.findSourceRoots(classes.getURL()).getRoots();
+        FileObject[] roots = SourceForBinaryQuery.findSourceRoots(classes.toURL()).getRoots();
         assertNotNull (roots);        
         assertEquals("There should be 1 src root",1,roots.length);
         assertTrue ("The source root is not valid", sources.isValid());
         assertEquals("Invalid src root", sources, roots[0]);               
         FileObject src2 = projdir.createFolder("src2");        
         addSourceRoot (helper, src2, "src2");        
-        roots = SourceForBinaryQuery.findSourceRoots(classes.getURL()).getRoots();
+        roots = SourceForBinaryQuery.findSourceRoots(classes.toURL()).getRoots();
         assertNotNull (roots);
         assertEquals("There should be 2 src roots", 2, roots.length);
         assertTrue ("The source root is not valid", sources.isValid());
@@ -199,7 +199,7 @@ public class J2SESourcesTest extends NbTestCase {
         //test: adding of src root should fire once
         URL[] newRootUrls = new URL[oldRootUrls.length+1];
         System.arraycopy(oldRootUrls, 0, newRootUrls, 0, oldRootUrls.length);
-        newRootUrls[newRootUrls.length-1] = newRoot.getURL();
+        newRootUrls[newRootUrls.length-1] = newRoot.toURL();
         String[] newRootLabels = new String[oldRootLabels.length+1];
         for (int i=0; i< oldRootLabels.length; i++) {
             newRootLabels[i] = roots.getRootDisplayName(oldRootLabels[i], oldRootProps[i]);

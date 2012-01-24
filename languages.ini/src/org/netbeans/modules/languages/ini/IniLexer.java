@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,325 +34,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.languages.ini;
 
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
+import org.netbeans.spi.lexer.TokenFactory;
 
-class IniLexer implements Lexer<IniTokenId> {
+/**
+ * Lexer for INI files.
+ */
+public class IniLexer implements Lexer<IniTokenId> {
 
-    private enum State {
-        START,
-        COMMENT,
-        NAME,
-        EQUALS,
-        VALUE,
-        ERROR, // non-comment after section
+    private final IniColoringLexer scanner;
+    private final TokenFactory<IniTokenId> tokenFactory;
 
-        WHITESPACE,
-        WHITESPACE_AFTER_NAME,
-        WHITESPACE_AFTER_EQUALS,
+    public IniLexer(LexerRestartInfo<IniTokenId> info) {
+        scanner = new IniColoringLexer(info);
+        tokenFactory = info.tokenFactory();
     }
 
-    // common
-    private static final char ESCAPE = '\\'; // NOI18N
-    private static final char SPACE = ' '; // NOI18N
-    private static final char TAB = '\t'; // NOI18N
-    private static final char LF = '\n'; // NOI18N
-    private static final char CR = '\r'; // NOI18N
-
-    // ini specific
-    private static final char COMMENT = ';'; // NOI18N
-    private static final char SECTION_START = '['; // NOI18N
-    private static final char SECTION_END = ']'; // NOI18N
-    private static final char EQUALS = '='; // NOI18N
-    private static final char LONG_STRING_DOUBLE = '"'; // NOI18N
-    private static final char LONG_STRING_SINGLE = '\''; // NOI18N
-
-    private final LexerRestartInfo<IniTokenId> info;
-    private State state = State.START;
-
-    IniLexer(LexerRestartInfo<IniTokenId> info) {
-        this.info = info;
-        State startState = (State) info.state();
-        if (startState != null) {
-            state = startState;
+    @Override
+    public Token<IniTokenId> nextToken() {
+        try {
+            IniTokenId tokenId = scanner.nextToken();
+            Token<IniTokenId> token = null;
+            if (tokenId != null) {
+                token = tokenFactory.createToken(tokenId);
+            }
+            return token;
+        } catch (IOException ex) {
+            Logger.getLogger(IniLexer.class.getName()).log(Level.SEVERE, null, ex);
         }
+        return null;
     }
 
     @Override
     public Object state() {
-        return state;
+        return scanner.getState();
     }
 
     @Override
     public void release() {
     }
 
-    @Override
-    public Token<IniTokenId> nextToken() {
-        LexerInput input = info.input();
-        int ch = input.read();
-        if (ch == LexerInput.EOF) {
-            return null;
-        }
-        input.backup(1);
-
-        if (state.equals(State.START)) {
-            if (ch == COMMENT) {
-                state = State.COMMENT;
-            } else if (isWhiteSpace(ch)) {
-                state = State.WHITESPACE;
-            } else {
-                // NAME = VALUE
-                state = State.NAME;
-            }
-        }
-
-        switch (state) {
-            case WHITESPACE:
-            case WHITESPACE_AFTER_NAME:
-            case WHITESPACE_AFTER_EQUALS:
-                boolean newLine = readWhitespace(input);
-
-                if (newLine) {
-                    state = State.START;
-                } else {
-                    switch (state) {
-                        case WHITESPACE:
-                            state = State.START;
-                            break;
-                        case WHITESPACE_AFTER_NAME:
-                            state = State.EQUALS;
-                            break;
-                        case WHITESPACE_AFTER_EQUALS:
-                            state = State.VALUE;
-                            break;
-                        default:
-                            assert false : "Unhandled state: " + state;
-                            break;
-                    }
-                }
-                return info.tokenFactory().createToken(IniTokenId.WHITESPACE);
-
-            case COMMENT:
-                readTillEndLine(input, false);
-                state = State.WHITESPACE;
-                return info.tokenFactory().createToken(IniTokenId.COMMENT);
-
-            case NAME:
-                // could be also SECTION
-                if (ch == SECTION_START) {
-                    ch = readTillEndLine(input, SECTION_END, COMMENT);
-
-                    // possible comment is processed below (yes, i know, for the second time)
-                    if (ch == SECTION_END) {
-                        input.read(); // read ']' itself
-                        state = State.START;
-
-                        // possible error? any non-comment text on the same line?
-                        final int read = input.readLength();
-                        readTillEndLine(input, COMMENT);
-                        int readNext = input.readLength();
-                        int diff = readNext - read;
-                        if (diff > 0) {
-                            String error = input.readText(0, readNext).toString().substring(read).trim();
-                            if (!error.isEmpty()) {
-                                state = State.ERROR;
-                            }
-                            input.backup(diff);
-                        }
-
-                        return info.tokenFactory().createToken(IniTokenId.SECTION);
-                    }
-                }
-
-                // not SECTION but NAME
-                input.backup(input.readLength());
-
-                ch = readTillEndLine(input, EQUALS, COMMENT);
-                if (ch == COMMENT) {
-                    processComment(input);
-
-                } else if (ch == EQUALS) {
-                    if (input.readLength() > 0) {
-                        // any trailing whitespaces?
-                        String name = input.readText(0, input.readLength()).toString();
-                        String trimmed = name.replaceAll("\\s+$", ""); // NOI18N
-                        int backup = name.length() - trimmed.length();
-                        if (backup > 0) {
-                            state = State.WHITESPACE_AFTER_NAME;
-                            input.backup(backup);
-                        } else {
-                            // no whitespace, just '=' or error
-                            state = State.EQUALS;
-                        }
-                    } else {
-                        readTillEndLine(input);
-                        input.readText(0, input.readLength());
-                        state = State.START;
-                        return info.tokenFactory().createToken(IniTokenId.ERROR);
-                    }
-
-                } else {
-                    // whole line is NAME
-                    state = State.START;
-                }
-                return info.tokenFactory().createToken(IniTokenId.NAME);
-
-            case EQUALS:
-                assert ch == EQUALS : "Unexpected char: " + (char) ch;
-                ch = input.read(); // read '=' itself
-                assert ch == EQUALS : "Unexpected char: " + (char) ch;
-
-                ch = input.read();
-                if (isWhiteSpace(ch)) {
-                    state = State.WHITESPACE_AFTER_EQUALS;
-                } else if (ch == COMMENT) {
-                    state = State.COMMENT;
-                } else {
-                    state = State.VALUE;
-                }
-                input.backup(1);
-                return info.tokenFactory().createToken(IniTokenId.EQUALS);
-
-            case VALUE:
-                ch = readTillEndLine(input, COMMENT);
-
-                if (ch == COMMENT) {
-                    processComment(input);
-                } else {
-                    state = State.WHITESPACE;
-                }
-
-                return info.tokenFactory().createToken(IniTokenId.VALUE);
-
-            case ERROR:
-                // [...] ANY TEXT HERE IS ERROR
-                ch = readTillEndLine(input, COMMENT);
-                if (ch == COMMENT) {
-                    processComment(input);
-                } else {
-                    state = State.START;
-                }
-                return info.tokenFactory().createToken(IniTokenId.ERROR);
-
-            default:
-                assert false : "Unknown state: " + state;
-                break;
-        }
-        assert false : "Should not get here";
-        return null;
-    }
-
-    private void processComment(LexerInput input) {
-        // any trailing whitespaces?
-        String read = input.readText(0, input.readLength()).toString();
-        String trimmed = read.replaceAll("\\s+$", ""); // NOI18N
-        int backup = read.length() - trimmed.length();
-        if (backup > 0) {
-            state = State.WHITESPACE;
-            input.backup(backup);
-        } else {
-            // no whitespace (perhaps not so common)
-            state = State.COMMENT;
-        }
-    }
-
-    private boolean readWhitespace(LexerInput input) {
-        boolean newLine = false;
-        int ch;
-        do {
-            ch = input.read();
-            if (!newLine && isEndLine(ch)) {
-                newLine = true;
-            }
-        } while (isWhiteSpace(ch) && ch != LexerInput.EOF);
-        input.backup(1);
-        return newLine;
-    }
-
-    private int readTillEndLine(LexerInput input) {
-        return readTillEndLine(input, null);
-    }
-
-    private int readTillEndLine(LexerInput input, boolean handleLongStrings) {
-        return readTillEndLine(input, handleLongStrings, null);
-    }
-
-    private int readTillEndLine(LexerInput input, char... stoppers) {
-        return readTillEndLine(input, true, stoppers);
-    }
-
-    // #195503 - correct values are:
-    //  "lorem ' ipsum"
-    //  "lorem ' ipsum ' lorem"
-    //  "lorem \" ipsum"
-    //  "lorem \" ipsum \" lorem"
-    // and similarly for apostrophes and with quote(s) inside
-    private int readTillEndLine(LexerInput input, boolean handleLongStrings, char... stoppers) {
-        int ch = -1;
-        int previous = -1;
-        int firstChar = -1;
-        boolean stop = false;
-        do {
-            if (previous == ESCAPE && ch == ESCAPE) {
-                // '\\'
-                previous = -1;
-            } else if (ch != -1) {
-                previous = ch;
-            }
-
-            ch = input.read();
-            if (ch == LexerInput.EOF) {
-                // prevent infinite loop
-                break;
-            }
-
-            if (handleLongStrings && firstChar == -1) {
-                firstChar = ch;
-            }
-
-            // stop?
-            if (handleLongStrings && isLongString((char) firstChar)) {
-                if (ch == firstChar && previous != -1 && previous != ESCAPE) {
-                    // hard to say what to do with line like:
-                    //  key = "lorem \" ipsum \" lorem" some more text
-                    // perhaps simply read till the end of line or stopper
-                    handleLongStrings = false;
-                }
-            } else {
-                stop = isEndLine(ch) || isStopper(stoppers, ch, previous);
-            }
-        } while (!stop);
-        input.backup(1);
-        return ch;
-    }
-
-    private boolean isLongString(char ch) {
-        return ch == LONG_STRING_DOUBLE || ch == LONG_STRING_SINGLE;
-    }
-
-    private boolean isStopper(char[] stoppers, int ch, int previous) {
-        if (stoppers == null || previous == ESCAPE) {
-            return false;
-        }
-        for (char stopper : stoppers) {
-            if (stopper == ch) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean isWhiteSpace(int ch) {
-        return ch == SPACE || ch == TAB || isEndLine(ch);
-    }
-
-    private static boolean isEndLine(int ch) {
-        return ch == LF || ch == CR || ch == LexerInput.EOF;
-    }
 }

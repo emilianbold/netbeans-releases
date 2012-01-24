@@ -54,14 +54,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenuItem;
 import javax.swing.UIManager;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -83,7 +79,6 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -91,29 +86,27 @@ import org.openide.util.lookup.Lookups;
  * @author  Milos Kleint
  */
 public class DependenciesNode extends AbstractNode {
-    static final int TYPE_COMPILE = 0;
-    static final int TYPE_TEST = 1;
-    static final int TYPE_RUNTIME = 2;
-    private static final String SHOW_NONCLASSPATH_DEPENDENCIES = "show.nonclasspath.dependencies"; //NOI18N
+    enum Type {COMPILE, TEST, RUNTIME, /** any scope */NONCP}
     public static final String PREF_DEPENDENCIES_UI = "org/netbeans/modules/maven/dependencies/ui"; //NOI18N
     
     private NbMavenProjectImpl project;
-    private int type;
+    private Type type;
 
     @Messages({
         "LBL_Libraries=Dependencies",
         "LBL_Test_Libraries=Test Dependencies",
-        "LBL_Runtime_Libraries=Runtime Dependencies"
+        "LBL_Runtime_Libraries=Runtime Dependencies",
+        "LBL_non_cp_libraries=Non-classpath Dependencies"
     })
-    DependenciesNode(DependenciesChildren childs, NbMavenProjectImpl mavproject, int type) {
+    DependenciesNode(DependenciesChildren childs, NbMavenProjectImpl mavproject, Type type) {
         super(childs, Lookups.fixed(mavproject));
         setName("Dependencies" + type); //NOI18N
         this.type = type;
         switch (type) {
-            case TYPE_COMPILE : setDisplayName(LBL_Libraries()); break;
-            case TYPE_TEST : setDisplayName(LBL_Test_Libraries()); break;
-            case TYPE_RUNTIME : setDisplayName(LBL_Runtime_Libraries()); break;
-            default : setDisplayName(LBL_Libraries()); break;
+            case COMPILE : setDisplayName(LBL_Libraries()); break;
+            case TEST : setDisplayName(LBL_Test_Libraries()); break;
+            case RUNTIME : setDisplayName(LBL_Runtime_Libraries()); break;
+            default : setDisplayName(LBL_non_cp_libraries()); break;
         }
         project = mavproject;
         setIconBaseWithExtension("org/netbeans/modules/maven/defaultFolder.gif"); //NOI18N
@@ -145,35 +138,22 @@ public class DependenciesNode extends AbstractNode {
         toRet.add(new DownloadJavadocSrcAction(false));
         toRet.addAll(Utilities.actionsForPath("Projects/org-netbeans-modules-maven/DependenciesActions")); //NOI18N
         toRet.add(null);
-        toRet.add(new ShowClasspathDepsAction());
         toRet.add(new DependencyNode.ShowManagedStateAction());
         return toRet.toArray(new Action[toRet.size()]);
     }
     
-    static class DependenciesChildren extends Children.Keys<DependencyWrapper> implements PropertyChangeListener, PreferenceChangeListener {
+    static class DependenciesChildren extends Children.Keys<DependencyWrapper> implements PropertyChangeListener {
         private NbMavenProjectImpl project;
-        private int type;
-        boolean showNonCP = false;
-        private int nonCPcount;
+        final Type type;
 
 
-        public DependenciesChildren(NbMavenProjectImpl proj, int type) {
+        public DependenciesChildren(NbMavenProjectImpl proj, Type type) {
             super();
             project = proj;
             this.type = type;
         }
         
-        public void showNonCP() {
-            showNonCP = true;
-            regenerateKeys();
-            refresh();
-            refreshKey(NULL);
-        }
-        
         protected Node[] createNodes(DependencyWrapper wr) {
-            if (wr == NULL) {
-                return new Node[] {new NonCPNode(nonCPcount, this)};
-            }
             Artifact art = wr.getArtifact();
             if (art.getFile() == null) { // #140253
                 Node n = new AbstractNode(Children.LEAF);
@@ -192,69 +172,46 @@ public class DependenciesNode extends AbstractNode {
                 //was refreshed by the NodeList already..
                 regenerateKeys();
                 refresh();
-                refreshKey(NULL);
             }
         }
         
         @Override
         protected void addNotify() {
             NbMavenProject.addPropertyChangeListener(project, this);
-            prefs().addPreferenceChangeListener(this);
         }
         
         @Override
         protected void removeNotify() {
             setKeys(Collections.<DependencyWrapper>emptyList());
             NbMavenProject.removePropertyChangeListener(project, this);
-            prefs().removePreferenceChangeListener(this);
         }
         
         int regenerateKeys() {
             TreeSet<DependencyWrapper> lst = new TreeSet<DependencyWrapper>(new DependenciesComparator());
             MavenProject mp = project.getOriginalMavenProject();
             Set<Artifact> arts = mp.getArtifacts();
-            if (type == TYPE_COMPILE) {
-                Tuple t = create(arts, Artifact.SCOPE_COMPILE, Artifact.SCOPE_PROVIDED, Artifact.SCOPE_SYSTEM);
-                lst.addAll(t.wrappers);
-                nonCPcount = t.nonCpCount;
-                if (t.nonCpCount > 0) {
-                    lst.add(NULL);
-                }
-            }
-            if (type == TYPE_TEST) {
-                Tuple t = create(arts, Artifact.SCOPE_TEST);
-                lst.addAll(t.wrappers);
-                nonCPcount = t.nonCpCount;
-                if (t.nonCpCount <= 0) {
-                    lst.remove(NULL);
-                } else {
-                    lst.add(NULL);
-                }
-            }
-            if (type == TYPE_RUNTIME) {
-                Tuple t = create(arts, Artifact.SCOPE_RUNTIME);
-                lst.addAll(t.wrappers);
-                nonCPcount = t.nonCpCount;
-                if (t.nonCpCount <= 0) {
-                    lst.remove(NULL);
-                } else {
-                    lst.add(NULL);
+            switch (type) {
+            case COMPILE:
+                create(lst, arts, Artifact.SCOPE_COMPILE, Artifact.SCOPE_PROVIDED, Artifact.SCOPE_SYSTEM);
+                break;
+            case TEST:
+                create(lst, arts, Artifact.SCOPE_TEST);
+                break;
+            case RUNTIME:
+                create(lst, arts, Artifact.SCOPE_RUNTIME);
+                break;
+            default:
+                for (Artifact a : arts) {
+                    fixFile(a);
+                    if (!a.getArtifactHandler().isAddedToClasspath()) {
+                        lst.add(new DependencyWrapper(a));
+                    }
                 }
             }
             setKeys(lst);
             return lst.size();
         }
         
-        private class Tuple {
-            Set<DependencyWrapper> wrappers;
-            int nonCpCount;
-
-            private Tuple(TreeSet<DependencyWrapper> lst, int nonCPCount) {
-                wrappers = lst;
-                nonCpCount = nonCPCount;
-            }
-        }
-
         private void fixFile(Artifact a) {
             if (a.getFile() == null) {
                 ArtifactRepository local = project.getEmbedder().getLocalRepository();
@@ -268,32 +225,19 @@ public class DependenciesNode extends AbstractNode {
             }
         }
 
-        private Tuple create(Collection<Artifact> arts, String... scopes) {
-            boolean nonCP = showNonClasspath() || showNonCP;
-            int nonCPCount = 0;
-            TreeSet<DependencyWrapper> lst = new TreeSet<DependencyWrapper>(new DependenciesComparator());
+        private void create(Set<DependencyWrapper> lst, Collection<Artifact> arts, String... scopes) {
             for (Artifact a : arts) {
                 if (!Arrays.asList(scopes).contains(a.getScope())) {
                     continue;
                 }
                 fixFile(a); // will be null if *any* dependency artifacts are missing, for some reason
-                if (nonCP || a.getArtifactHandler().isAddedToClasspath()) {
+                if (a.getArtifactHandler().isAddedToClasspath()) {
                     lst.add(new DependencyWrapper(a));
-                } else {
-                    nonCPCount = nonCPCount + 1;
                 }
             }
-            return new Tuple(lst, nonCPCount);
         }
 
-        public void preferenceChange(PreferenceChangeEvent evt) {
-            if (SHOW_NONCLASSPATH_DEPENDENCIES.equals(evt.getKey())) {
-                regenerateKeys();
-            }
-        }
     }
-    
-    private static final DependencyWrapper NULL = new DependencyWrapper(null);
     
     private static class DependencyWrapper {
 
@@ -309,12 +253,6 @@ public class DependenciesNode extends AbstractNode {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == NULL && obj == NULL) {
-                return true;
-            }
-            if (this == NULL || obj == NULL) {
-                return false;
-            }
             if (obj == null) {
                 return false;
             }
@@ -334,9 +272,6 @@ public class DependenciesNode extends AbstractNode {
         @Override
         public int hashCode() {
             int hash = 7;
-            if (this == NULL) {
-                return hash;
-            }
             hash = 23 * hash + artifact.hashCode() + artifact.getDependencyTrail().hashCode();
             return hash;
         }
@@ -352,7 +287,7 @@ public class DependenciesNode extends AbstractNode {
         }
 
         @Override public void actionPerformed(ActionEvent event) {
-            String typeString = type == TYPE_RUNTIME ? "runtime" : (type == TYPE_TEST ? "test" : "compile"); //NOI18N
+            String typeString = type == Type.RUNTIME ? "runtime" : (type == Type.TEST ? "test" : "compile"); //NOI18N
             String[] data = AddDependencyPanel.show(project, true, typeString);
             if (data != null) {
                 ModelUtils.addDependency(project.getProjectDirectory().getFileObject("pom.xml")/*NOI18N*/,
@@ -435,43 +370,9 @@ public class DependenciesNode extends AbstractNode {
         }
     }
     
-    private static boolean showNonClasspath() {
-        return prefs().getBoolean(SHOW_NONCLASSPATH_DEPENDENCIES, false);
-    }
-
-    @SuppressWarnings("serial")
-    private static class ShowClasspathDepsAction extends AbstractAction implements Presenter.Popup {
-
-        @Messages("LBL_ShowNonClasspath=Always show non-classpath dependencies")
-        ShowClasspathDepsAction() {
-            String s = LBL_ShowNonClasspath();
-            putValue(Action.NAME, s);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            prefs().putBoolean(SHOW_NONCLASSPATH_DEPENDENCIES, !showNonClasspath());
-        }
-
-        public JMenuItem getPopupPresenter() {
-            JCheckBoxMenuItem mi = new JCheckBoxMenuItem(this);
-            mi.setSelected(showNonClasspath());
-            return mi;
-        }
-        
-    }
-
     private static class DependenciesComparator implements Comparator<DependencyWrapper> {
 
         public int compare(DependencyWrapper art1, DependencyWrapper art2) {
-            if (art1 == NULL && art2 == NULL) {
-                return 0;
-            }
-            if (art1 == NULL) {
-                return -1;
-            }
-            if (art2 == NULL) {
-                return 1;
-            }
             boolean transitive1 = art1.getArtifact().getDependencyTrail().size() > 2;
             boolean transitive2 = art2.getArtifact().getDependencyTrail().size() > 2;
             if (transitive1 && !transitive2) {
@@ -487,52 +388,6 @@ public class DependenciesNode extends AbstractNode {
             return art1.getArtifact().compareTo(art2.getArtifact());
         }
         
-    }
-    
-    private static class NonCPNode extends AbstractNode {
-        private DependenciesChildren parent;
-        
-        @Messages({
-            "LBL_NonCPCount1=There is 1 non-classpath dependency.",
-            "LBL_NonCPCount2=There are {0} non-classpath dependencies."
-        })
-        NonCPNode(int count, DependenciesChildren parent) {
-            super(Children.LEAF);
-            this.parent = parent;
-            if (count == 1) {
-                setDisplayName(LBL_NonCPCount1());
-            } else {
-                setDisplayName(LBL_NonCPCount2(count));
-            }
-        }
-
-        @Override
-        public Action getPreferredAction() {
-            return new ExpandAction(parent);
-        }
-
-        @Override
-        public Action[] getActions(boolean context) {
-            return new Action[] {
-                new ExpandAction(parent)
-            };
-        }
-    }
-
-    @SuppressWarnings("serial")
-    private static class ExpandAction extends AbstractAction {
-        private DependenciesChildren parent;
-
-        @Messages("LBL_Expand=Expand dependencies")
-        ExpandAction(DependenciesChildren parent) {
-            this.parent = parent;
-            putValue(Action.NAME, LBL_Expand());
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            parent.showNonCP();
-        }
-
     }
     
     private static final String ICON_KEY_UIMANAGER = "Tree.closedIcon"; // NOI18N

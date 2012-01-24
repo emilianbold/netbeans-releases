@@ -73,6 +73,7 @@ public final class APTElifNode extends APTIfConditionBaseNode
         super(token);
     }
     
+    @Override
     public final int getType() {
         return APT.Type.ELIF;
     }

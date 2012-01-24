@@ -255,11 +255,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
     public static final String BOLD_END = "</b>"; //NOI18N
 
     protected int substitutionOffset;
-    
+
     protected JavaCompletionItem(int substitutionOffset) {
         this.substitutionOffset = substitutionOffset;
     }
-    
+
     public void defaultAction(JTextComponent component) {
         if (component != null) {
             Completion.get().hideDocumentation();
@@ -1651,9 +1651,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             if (length > 0)
                                 doc.remove(pos.getOffset(), length);
                             doc.insertString(pos.getOffset(), getInsertPrefix().toString(), null);
+                            int caretPos = pos.getOffset();
                             if (semiPosition != null) {
                                 doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
-                                c.setCaretPosition(pos.getOffset());
+                                c.setCaretPosition(caretPos);
                             }
                         } catch (BadLocationException e) {
                             // Can't update

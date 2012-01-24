@@ -58,30 +58,25 @@ import org.openide.util.Exceptions;
  */
 final class SelfProfile {
     private static final Logger LOG = Logger.getLogger(SelfProfile.class.getName());
-    
-    /*test*/ static volatile ActionListener mockProfiler;
 
-    private final Object profiler;    
+    private final Object profiler;
     private final long time;
     private volatile boolean profiling;
 
     SelfProfile (long when) {
         time = when;
         Object p = null;
-        if (mockProfiler != null) {
-            p = mockProfiler;
-        } else {
-            final FileObject fo = FileUtil.getConfigFile("Actions/Profile/org-netbeans-modules-profiler-actions-SelfSamplerAction.instance"); // NOI18N
-            if (fo != null) {
-                final Action a = (Action) fo.getAttribute("delegate"); // NOI18N
-                if (a != null) {
-                    p = a.getValue("logger-taskcancel"); // NOI18N
-                }
+        final FileObject fo = FileUtil.getConfigFile("Actions/Profile/org-netbeans-modules-profiler-actions-SelfSamplerAction.instance"); // NOI18N
+        if (fo != null) {
+            final Action a = (Action) fo.getAttribute("delegate"); // NOI18N
+            if (a != null) {
+                p = a.getValue("logger-taskcancel"); // NOI18N
             }
         }
         this.profiler = p;
         this.profiling = true;
 
+        LOG.finest("STARTED");  //NOI18N
         if (profiler instanceof Runnable) {
             final Runnable r = (Runnable) profiler;
             r.run();
@@ -109,18 +104,20 @@ final class SelfProfile {
         ActionListener ss = (ActionListener) profiler;
         int report = Integer.getInteger("org.netbeans.modules.parsing.api.taskcancel.slowness.report", 1000); // NOI18N
         if (delta < report) {
-            LOG.log(Level.FINE, "Cancel profiling of {0}. Profiling {1}. Time {2} ms.", new Object[] { ss, profiling, delta });
+            LOG.finest("CANCEL");  //NOI18N
             if (ss != null) {
                 ss.actionPerformed(new ActionEvent(this, 0, "cancel"));
+                LOG.log(Level.FINE, "Cancel profiling of {0}. Profiling {1}. Time {2} ms.", new Object[] { ss, profiling, delta });
             }
             return;
         }
         try {
-            LOG.log(Level.FINE, "Obtaining snapshot for {0} ms.", delta);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(out);
+            LOG.finest("LOGGED");  //NOI18N
             if (ss != null) {
                 ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
+                LOG.log(Level.FINE, "Obtaining snapshot for {0} ms.", delta);   //NOI18N
             }
             dos.close();
             if (dos.size() > 0) {

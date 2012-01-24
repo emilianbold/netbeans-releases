@@ -47,37 +47,21 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
-import javax.swing.AbstractListModel;
-import javax.swing.ComboBoxModel;
-import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ui.ElementHeaders;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
@@ -124,6 +108,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
         initComponents();
         setPreferredSize(new Dimension(420, 380));
         membersTable.getModel().addTableModelListener(new TableModelListener() {
+            @Override
             public void tableChanged(TableModelEvent e) {
                 parent.stateChanged(null);
             }
@@ -132,10 +117,12 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
 
     /** Initialization of the panel (called by the parent window).
      */
+    @Override
     public void initialize() {
         // XXX hot fix: this should be rewritten to first initialize model in RP and later update UI in EDT
         EventQueue.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 initializeInEDT();
             }
@@ -148,16 +135,18 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
         JavaSource source = JavaSource.forFileObject(handle.getFileObject());
         try {
             source.runUserActionTask(new CancellableTask<CompilationController>() {
+                @Override
                 public void cancel() {
                 }
                 
+                @Override
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(JavaSource.Phase.RESOLVED);
                     // retrieve supertypes (will be used in the combo)
-                    Collection<TypeElement> supertypes = RetoucheUtils.getSuperTypes((TypeElement)handle.resolveElement(controller), controller, true);
+                    Collection<TypeElement> supertypes = JavaRefactoringUtils.getSuperTypes((TypeElement)handle.resolveElement(controller), controller, true);
                     List<MemberInfo> minfo = new LinkedList<MemberInfo>();
-                    for (Element e: supertypes) {
-                        MemberInfo<ElementHandle<Element>> memberInfo = MemberInfo.create(e, controller);
+                    for (TypeElement e: supertypes) {
+                        MemberInfo<ElementHandle<TypeElement>> memberInfo = MemberInfo.create(e, controller);
                         if(memberInfo.getElementHandle().resolve(controller) != null) { // #200200 - Error in pulling up to a interface with cyclic inheritance error
                             minfo.add(memberInfo);
                         }
@@ -177,6 +166,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                         // override the extractText method to add "implements " prefix to the text
                         // in case the value is instance of MultipartId (i.e. it represents an interface
                         // name from implements clause)
+                        @Override
                         protected String extractText(Object value) {
                             String displayValue = super.extractText(value);
                             if (value instanceof MemberInfo && (((MemberInfo)value).getGroup()==MemberInfo.Group.IMPLEMENTS)) {
@@ -191,6 +181,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                     // 3. be disabled and checked for methods if the target type is an interface
                     // 4. be disabled and check for abstract methods
                     membersTable.getColumnModel().getColumn(2).setCellRenderer(new UIUtilities.BooleanTableCellRenderer(membersTable) {
+                        @Override
                         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                             // make the checkbox checked (even if "Make Abstract" is not set)
                             // for non-static methods if the target type is an interface
@@ -226,7 +217,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                 }
             }, true);
         } catch (IOException ioe) {
-            throw (RuntimeException) new RuntimeException().initCause(ioe);
+            throw new RuntimeException(ioe);
         }
         initialized = true;
     }
@@ -250,9 +241,11 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
         JavaSource source = JavaSource.forFileObject(handle.getFileObject());
         try {
             source.runUserActionTask(new CancellableTask<CompilationController>() {
+                @Override
                 public void cancel() {
                 }
                 
+                @Override
                 public void run(CompilationController parameter) throws Exception {
                     
                     // remeber if the target type is an interface (will be used in the loop)
@@ -272,7 +265,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                 }
             }, true);
         } catch (IOException ioe) {
-            throw (RuntimeException) new RuntimeException().initCause(ioe);
+            throw new RuntimeException(ioe);
         }
         // return the array of selected members
         return (MemberInfo[]) list.toArray(new MemberInfo[list.size()]);
@@ -335,6 +328,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
     private javax.swing.JPanel supertypePanel;
     // End of variables declaration//GEN-END:variables
     
+    @Override
     public Component getComponent() {
         return this;
     }
@@ -344,31 +338,38 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
     /** Model for the members table.
      */
     private class TableModel extends AbstractTableModel {
+        @Override
         public int getColumnCount() {
             return COLUMN_NAMES.length;
         }
 
+        @Override
         public String getColumnName(int column) {
             return UIUtilities.getColumnName(NbBundle.getMessage(PullUpPanel.class, COLUMN_NAMES[column]));
         }
 
+        @Override
         public Class getColumnClass(int columnIndex) {
             return COLUMN_CLASSES[columnIndex];
         }
 
+        @Override
         public int getRowCount() {
             return members.length;
         }
 
+        @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             return members[rowIndex][columnIndex];
         }
 
+        @Override
         public void setValueAt(Object value, int rowIndex, int columnIndex) {
             members[rowIndex][columnIndex] = value;
             parent.stateChanged(null);
         }
 
+        @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             if (columnIndex == 2) {
                 // column 2 is editable only in case of non-static methods
@@ -398,14 +399,16 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
             JavaSource source = JavaSource.forFileObject(refactoring.getSourceType().getFileObject());
             try {
             source.runUserActionTask(new CancellableTask<CompilationController>() {
+                    @Override
                 public void cancel() {
                 }
                 
+                    @Override
                 public void run(CompilationController info) {
                     try {
                         info.toPhase(JavaSource.Phase.RESOLVED);
                     } catch (IOException ioe) {
-                        throw (RuntimeException) new RuntimeException().initCause(ioe);
+                        throw new RuntimeException(ioe);
                     }
                     Map map = new HashMap();
                     // go through the passed classes, collect all members from them and
@@ -414,7 +417,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                     for (int i = 0; i < classes.length; i++) {
                         // collect interface names
                         for (TypeMirror tm: ((TypeElement) (classes[i].getElementHandle().resolve(info))).getInterfaces()) {
-                            MemberInfo ifcName = MemberInfo.create(RetoucheUtils.typeToElement(tm, info), info, MemberInfo.Group.IMPLEMENTS);
+                            MemberInfo ifcName = MemberInfo.create(RefactoringUtils.typeToElement(tm, info), info, MemberInfo.Group.IMPLEMENTS);
                             map.put(ifcName, new Object[] {Boolean.FALSE, ifcName, null});
                         }
                         // collect fields, methods and inner classes
@@ -462,6 +465,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                     // the members are collected
                     // now, create a tree map (to sort them) and create the table data
                     TreeMap treeMap = new TreeMap(new Comparator() {
+                            @Override
                         public int compare(Object o1, Object o2) {
                             return ((MemberInfo) o1).getHtmlText().compareTo(((MemberInfo) o2).getHtmlText());
                             
@@ -490,7 +494,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                 }
             }, true);
             } catch (IOException ioe) {
-                throw (RuntimeException) new RuntimeException().initCause(ioe);
+                throw new RuntimeException(ioe);
             }
             // fire event to repaint the table
             this.fireTableDataChanged();
@@ -518,18 +522,21 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
          * update the table content with changed set of members.
          * @param anItem Class selected to be the target.
          */
+        @Override
         public void setSelectedItem(final Object anItem) {
             JavaSource source = JavaSource.forFileObject(refactoring.getSourceType().getFileObject());
             try {
                 source.runUserActionTask(new CancellableTask<CompilationController>() {
+                    @Override
                     public void cancel() {
                     }
                     
+                    @Override
                     public void run(CompilationController info) {
                         try {
                             info.toPhase(JavaSource.Phase.RESOLVED);
                         } catch (IOException ioe) {
-                            throw (RuntimeException) new RuntimeException().initCause(ioe);
+                            throw new RuntimeException(ioe);
                         }
                         if (targetType != anItem) {
                             targetType = ((MemberInfo) anItem);
@@ -556,18 +563,21 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                     }
                 }, true);
             } catch (IOException ioe) {
-                throw (RuntimeException) new RuntimeException().initCause(ioe);
+                throw new RuntimeException(ioe);
             }
         }
 
+        @Override
         public Object getSelectedItem() {
             return targetType;
         }
 
+        @Override
         public Object getElementAt(int index) {
             return supertypes[index];
         }
 
+        @Override
         public int getSize() {
             return supertypes.length;
         }

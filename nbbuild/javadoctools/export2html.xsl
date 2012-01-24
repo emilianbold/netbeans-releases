@@ -79,15 +79,15 @@ made subject to such option by the copyright holder.
 
         This document provides a list of <em>NetBeans APIs</em> with a short description
         of what they are used for, and a table describing different types of interfaces
-        (see <a href="http://openide.netbeans.org/tutorial/api-design.html#api">What is
+        (see <a href="http://wiki.netbeans.org/API_Design">What is
         an API?</a> to understand why we list DTDs, file formats, etc.) and with
         a stability category (<span style="background:#ffffff">stable and official</span>,
         <span style="background:#ddcc80">under development</span>,
         <span style="background:#afafaf;text-decoration:line-through">deprecated</span>,
         <span style="background:#e0c0c0">friend or private</span>;
         see <a
-        href="http://openide.netbeans.org/tutorial/api-design.html#life">API
-        life-cycle</a> for more info).
+        href="http://wiki.netbeans.org/API_Stability">API
+        stability</a> for more info).
         The aim is to provide as detailed a definition of NetBeans module 
         external interfaces as possible and give other developers a chance to decide
         whether they want to depend on a particular API or not.
@@ -108,6 +108,7 @@ made subject to such option by the copyright holder.
         a list of APIs for a particular version, you may want to go to:
         </p>
         <ul>
+            <li><a href="http://bits.netbeans.org/7.1/javadoc/" target="_top">7.1</a> - Javadoc as released for NetBeans IDE 7.1</li>
             <li><a href="http://bits.netbeans.org/7.0.1/javadoc/" target="_top">7.0.1</a> - Javadoc as released for NetBeans IDE 7.0.1</li>
             <li><a href="http://bits.netbeans.org/7.0/javadoc/" target="_top">7.0</a> - Javadoc as released for NetBeans IDE 7.0</li>
             <li><a href="http://bits.netbeans.org/6.9.1/javadoc/" target="_top">6.9.1</a> - Javadoc as released for NetBeans IDE 6.9.1</li>
@@ -124,7 +125,7 @@ made subject to such option by the copyright holder.
         <p/>
         To get the API of your module listed here, see the documentation for the 
         Javadoc building
-        <a href="http://openide.netbeans.org/tutorial/api.html">infrastructure</a>.
+        <a href="http://wiki.netbeans.org/APIDevelopment">infrastructure</a>.
         
         <h4>Additional Sources of Information</h4>
         
@@ -142,7 +143,7 @@ made subject to such option by the copyright holder.
         <p>Can't find what you're looking for? Try the <a
         href="http://wiki.netbeans.org/wiki/view/NetBeansDeveloperFAQ" target="_top">FAQ</a>
         and then <a
-        href="http://www.netbeans.org/community/lists/top.html" target="_top">dev@openide.netbeans.org</a>.</p>
+        href="http://www.netbeans.org/community/lists/top.html" target="_top">dev@platform.netbeans.org</a>.</p>
 
         <hr/>
         <xsl:call-template name="list-modules" />
@@ -207,7 +208,7 @@ made subject to such option by the copyright holder.
                             <xsl:variable name="where" select="substring-before(@target, '/')"/>
                             <b><a href="{$where}/overview-summary.html"><xsl:value-of select="$where"/></a></b>
                             - no API description provided
-                            (see <a href="http://openide.netbeans.org/tutorial/api.html">how to do it</a>)
+                            (see <a href="http://wiki.netbeans.org/APIDevelopment">how to do it</a>)
                         </li>
                     </xsl:otherwise>
                 </xsl:choose>
@@ -346,14 +347,14 @@ made subject to such option by the copyright holder.
             <td> <!-- stability category -->
                 <a>
                     <xsl:attribute name="href">
-                        <xsl:text>http://openide.netbeans.org/tutorial/api-design.html#category-</xsl:text>
+                        <xsl:text>http://wiki.netbeans.org/API_Stability#</xsl:text>
                         <xsl:value-of select="$category" />
                     </xsl:attribute>
                     <xsl:choose>
                         <xsl:when test="$category='official'">Official</xsl:when>
                         <xsl:when test="$category='stable'">Stable</xsl:when>
-                        <xsl:when test="$category='devel'">Under Development</xsl:when>
-                        <xsl:when test="$category='third'">Third party</xsl:when>
+                        <xsl:when test="$category='devel'">Devel</xsl:when>
+                        <xsl:when test="$category='third'">Third_Party</xsl:when>
                         <xsl:when test="$category='standard'">Standard</xsl:when>
                         <xsl:when test="$category='friend'">Friend</xsl:when>
                         <xsl:when test="$category='private'">Private</xsl:when>

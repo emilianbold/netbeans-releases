@@ -84,6 +84,31 @@ public class ImplementAllAbstractMethodsTest extends ErrorHintsTestBase {
                        "IAAM");
     }
 
+    public void test204252a() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public cl|ass Test implements Runnable {\n" +
+                       "}\n",
+                       "MA:Test",
+                       ("package test;\n" +
+                       "public abstract class Test implements Runnable {\n" +
+                       "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
+    public void test204252b() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public cl|ass Test implements Runnable {\n" +
+                       "}\n",
+                       "IAAM",
+                       ("package test;\n" +
+                       "public class Test implements Runnable {\n" +
+                       "     public void run() {\n" +
+                       "         throw new UnsupportedOperationException(\"Not supported yet.\");\n" +
+                       "     }\n" +
+                       "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
         return new ImplementAllAbstractMethods().run(info, null, pos, path, null);

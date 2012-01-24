@@ -49,8 +49,8 @@ import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.GitMergeResult.MergeStatus;
 import org.netbeans.libs.git.progress.FileListener;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.AbstractGitTestCase;
+import org.netbeans.modules.git.utils.GitUtils;
 
 /**
  *
@@ -75,15 +75,15 @@ public class MergeTest extends AbstractGitTestCase {
         f.createNewFile();
         GitClient client = getClient(repositoryLocation);
         File[] roots = { f };
-        client.add(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        client.commit(roots, "initial", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(roots, GitUtils.NULL_PROGRESS_MONITOR);
+        client.commit(roots, "initial", null, null, GitUtils.NULL_PROGRESS_MONITOR);
         String branchName = "nova";
-        assertEquals(branchName, client.createBranch(branchName, "master", ProgressMonitor.NULL_PROGRESS_MONITOR).getName());
-        client.checkoutRevision(branchName, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(branchName, client.createBranch(branchName, "master", GitUtils.NULL_PROGRESS_MONITOR).getName());
+        client.checkoutRevision(branchName, true, GitUtils.NULL_PROGRESS_MONITOR);
         write(f, "blablabla");
-        client.add(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        client.commit(roots, branchName, null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        client.checkoutRevision("master", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(roots, GitUtils.NULL_PROGRESS_MONITOR);
+        client.commit(roots, branchName, null, null, GitUtils.NULL_PROGRESS_MONITOR);
+        client.checkoutRevision("master", true, GitUtils.NULL_PROGRESS_MONITOR);
         assertEquals("", read(f));
         
         final Set<File> notifiedFiles = new HashSet<File>();
@@ -93,7 +93,7 @@ public class MergeTest extends AbstractGitTestCase {
                 notifiedFiles.add(file);
             }
         });
-        GitMergeResult result = client.merge(branchName, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitMergeResult result = client.merge(branchName, GitUtils.NULL_PROGRESS_MONITOR);
         assertEquals(MergeStatus.FAST_FORWARD, result.getMergeStatus());
         assertEquals("blablabla", read(f));
         

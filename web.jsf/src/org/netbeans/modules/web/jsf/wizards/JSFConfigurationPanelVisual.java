@@ -175,7 +175,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         jsfComponentsTableModel.addTableModelListener(new JsfComponentsTableModelListener());
         initJsfComponentTableVisualProperties(jsfComponentsTable);
 
-        
+
         panel.addChangeListener(new ChangeListener() {
 
             @Override
@@ -229,8 +229,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                         if (!"j2se".equals(library.getType())) { // NOI18N
                             continue;
                         }
-                        if (library.getName().startsWith("facelets-") && !library.getName().endsWith("el-api")    //NOI18N
-                        && !library.getName().endsWith("jsf-ri") && !library.getName().endsWith("myfaces")){                                            //NOI18N
+                        if (library.getName().startsWith("facelets-") && !library.getName().endsWith("el-api") //NOI18N
+                        && !library.getName().endsWith("jsf-ri") && !library.getName().endsWith("myfaces")) { //NOI18N
                             String displayName = library.getDisplayName();
                             registeredItems.add(displayName);
                             //TODO XX Add correct version
@@ -243,10 +243,13 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                                 registeredItems.add(library.getDisplayName());
                                 boolean isJSF12 = Util.containsClass(content, JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
                                 boolean isJSF20 = Util.containsClass(content, JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
-                                if (isJSF12 && !isJSF20) {
-                                    jsfLibraries.add(new LibraryItem(library, JSFVersion.JSF_1_2));
-                                } else if (isJSF20){
+                                boolean isJSF21 = Util.containsClass(content, JSFUtils.JSF_2_1__API_SPECIFIC_CLASS);
+                                if (isJSF21) {
+                                    jsfLibraries.add(new LibraryItem(library, JSFVersion.JSF_2_1));
+                                } else if (isJSF20) {
                                     jsfLibraries.add(new LibraryItem(library, JSFVersion.JSF_2_0));
+                                } else if (isJSF12) {
+                                    jsfLibraries.add(new LibraryItem(library, JSFVersion.JSF_1_2));
                                 } else {
                                     jsfLibraries.add(new LibraryItem(library, JSFVersion.JSF_1_1));
                                 }
@@ -291,16 +294,20 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             jsfComponentDescriptors.addAll(provider.getJsfComponents());
         }
 
-        for (JsfComponentImplementation jsfDescriptor : jsfComponentDescriptors) {
-            List<JsfComponentImplementation> list = componentsMap.get(jsfDescriptor.getJsfVersion());
+        for (JSFVersion jsfVersion : JSFVersion.values()) {
+            List<JsfComponentImplementation> list = componentsMap.get(jsfVersion);
             if (list == null) {
                 list = new ArrayList<JsfComponentImplementation>();
+                componentsMap.put(jsfVersion, list);
             }
-            list.add(jsfDescriptor);
-            componentsMap.put(jsfDescriptor.getJsfVersion(), list);
+            for (JsfComponentImplementation jsfImplementation : jsfComponentDescriptors) {
+                if (jsfImplementation.getJsfVersion().contains(jsfVersion)) {
+                    list.add(jsfImplementation);
+                }
+            }
         }
         jsfComponentsInitialized = true;
-        if (currentJSFVersion !=null) {
+        if (currentJSFVersion != null) {
             updateJsfComponentsModel(currentJSFVersion);
         }
     }
@@ -329,7 +336,10 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                         for (ServerLibrary lib : libs) {
                             // FIXME optimize
                             if ("JavaServer Faces".equals(lib.getSpecificationTitle())) { // NOI18N
-                                if (Version.fromJsr277NotationWithFallback("2.0").equals(lib.getSpecificationVersion())) { // NOI18N
+                                if (Version.fromJsr277NotationWithFallback("2.1").equals(lib.getSpecificationVersion())) { //NOI18N
+                                    serverJsfLibraries.add(new ServerLibraryItem(lib, JSFVersion.JSF_2_1));
+                                    found.add(JSFVersion.JSF_2_1);
+                                } else if (Version.fromJsr277NotationWithFallback("2.0").equals(lib.getSpecificationVersion())) { // NOI18N
                                     serverJsfLibraries.add(new ServerLibraryItem(lib, JSFVersion.JSF_2_0));
                                     found.add(JSFVersion.JSF_2_0);
                                 } else if (Version.fromJsr277NotationWithFallback("1.2").equals(lib.getSpecificationVersion())) { // NOI18N
@@ -372,9 +382,12 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 boolean isJSF = Util.containsClass(Arrays.asList(cp), JSFUtils.FACES_EXCEPTION);
                 boolean isJSF12 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
                 boolean isJSF20 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
+                boolean isJSF21 = Util.containsClass(Arrays.asList(cp), JSFUtils.JSF_2_1__API_SPECIFIC_CLASS);
 
                 JSFVersion jsfVersion = null;
-                if (isJSF20) {
+                if (isJSF21) {
+                    jsfVersion = JSFVersion.JSF_2_1;
+                } else if (isJSF20) {
                     jsfVersion = JSFVersion.JSF_2_0;
                 } else if (isJSF12) {
                     jsfVersion = JSFVersion.JSF_1_2;
@@ -460,7 +473,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         boolean faceletsPresent = false;
         Library jsfLibrary = null;
         LibraryType libraryType = panel.getLibraryType();
-        
+
         if (libraryType == null) {
             return;
         }
@@ -476,12 +489,14 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         } else if (libraryType == LibraryType.SERVER) {
             //XXX: need to find lib version
             ServerLibraryItem item = (ServerLibraryItem) serverLibraries.getSelectedItem();
-            if (item != null && item.getVersion() == JSFVersion.JSF_2_0) {
+            if (item != null
+                    && (item.getVersion() == JSFVersion.JSF_2_0 || item.getVersion() == JSFVersion.JSF_2_1)) {
                 faceletsPresent = true;
             }
         }
         if (jsfLibrary != null) {
-            if (jsfLibraries.get(cbLibraries.getSelectedIndex()).getVersion() == JSFVersion.JSF_2_0) {
+            if (jsfLibraries.get(cbLibraries.getSelectedIndex()).getVersion() == JSFVersion.JSF_2_0
+                    || jsfLibraries.get(cbLibraries.getSelectedIndex()).getVersion() == JSFVersion.JSF_2_1) {
                 faceletsPresent = true;
             } else {
                 List<URL> content = jsfLibrary.getContent("classpath"); //NOI18N
@@ -500,7 +515,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             if (!customizer) {
                 panel.setEnableFacelets(true);
             }
-            
+
             if (panel.isEnableFacelets()) {
                 preferredLanguages.add(0, PreferredLanguage.Facelets);
             } else {
@@ -930,7 +945,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             String message;
 
             // TODO: perhaps remove the version check at all:
-            message = JSFUtils.isJSFInstallFolder(new File(folder), JSFVersion.JSF_2_0);
+            message = JSFUtils.isJSFInstallFolder(new File(folder), JSFVersion.JSF_2_1);
             if ("".equals(folder)) {
                 setInfoMessage(message);
                 return false;
@@ -1396,6 +1411,9 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                     break;
                 case JSF_2_0:
                     sb.append("JSF 2.0"); // NOI18N
+                    break;
+                case JSF_2_1:
+                    sb.append("JSF 2.1"); // NOI18N
                     break;
             }
             if (library != null && (library.getImplementationTitle() != null || library.getImplementationVersion() != null)) {

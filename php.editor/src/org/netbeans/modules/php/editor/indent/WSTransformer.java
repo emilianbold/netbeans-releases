@@ -109,7 +109,7 @@ class WSTransformer extends DefaultTreePathVisitor {
             PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT,
             PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT,
             PHPTokenId.PHP_LINE_COMMENT);
-    
+
     private final Collection<PHPTokenId> NO_BREAK_B4_TKNS = Arrays.asList(PHPTokenId.PHP_CLOSETAG,
             PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_CATCH,
             PHPTokenId.PHP_WHILE);
@@ -256,7 +256,7 @@ class WSTransformer extends DefaultTreePathVisitor {
 		}
 		ts.move(offset);
 		ts.moveNext();
-		
+
 	    }
 	    else {
 		String text = token.text().toString();
@@ -270,7 +270,7 @@ class WSTransformer extends DefaultTreePathVisitor {
 			ts.moveNext();
 		    }
 		    if (!isStringConcat && ts.movePrevious()) {
-			token = LexUtilities.findPrevious(ts, WS_AND_COMMENT_TOKENS);	
+			token = LexUtilities.findPrevious(ts, WS_AND_COMMENT_TOKENS);
 			isStringConcat =  (token.id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING) ? true : false;
 			ts.move(offset);
 			ts.moveNext();
@@ -330,7 +330,7 @@ class WSTransformer extends DefaultTreePathVisitor {
             super.visit(node);
             return;
         }
-        
+
         if (node.isCurly()){
 	    CodeStyle.BracePlacement openingBraceStyle;
 	    if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration) {
@@ -389,7 +389,7 @@ class WSTransformer extends DefaultTreePathVisitor {
                     newLineReplacement = CodeStyle.get(context.document()).spaceBeforeCatchLeftBrace() ? " " : ""; //NOI18N
                 }
             }
-            
+
             TokenSequence<PHPTokenId> tokenSequence = tokenSequence(node.getStartOffset());
             tokenSequence.move(node.getStartOffset());
 
@@ -464,7 +464,7 @@ class WSTransformer extends DefaultTreePathVisitor {
                     }
                 }
             }
-            
+
         }
         super.visit(node);
     }
@@ -595,7 +595,7 @@ class WSTransformer extends DefaultTreePathVisitor {
 		    parameters.get(parameters.size() -1).getEndOffset(),
 		    CodeStyle.get(context.document()).spaceWithinMethodDeclParens());
 	}
-	
+
 	// wrapping method/function parameters
 	if (parameters != null && parameters.size() > 1) {
 	    CodeStyle.WrapStyle style = CodeStyle.get(context.document()).wrapMethodParams();
@@ -786,7 +786,7 @@ class WSTransformer extends DefaultTreePathVisitor {
 		checkSpaceAroundToken(ts, space);
 	    }
 	}
-	
+
 	// the true part doesn't have to be defined
 	// exmaple: $sPhase = substr($sPhaseTeam, 1, 1) ?: '';
 	if (node.getIfTrue() != null) {
@@ -887,10 +887,10 @@ class WSTransformer extends DefaultTreePathVisitor {
     @Override
     public void visit(ArrayAccess node) {
 	// spaces within
-	if (node.getIndex() != null) {
+	if (node.getDimension() != null) {
 	    checkSpacesWithinParents(
-		    node.getIndex().getStartOffset(),
-		    node.getIndex().getEndOffset(),
+		    node.getDimension().getStartOffset(),
+		    node.getDimension().getEndOffset(),
 		    CodeStyle.get(context.document()).spaceWithinArrayBrackets());
 	}
 	super.visit(node);
@@ -1056,12 +1056,12 @@ class WSTransformer extends DefaultTreePathVisitor {
                                 token.length(), "\n")); //NOI18N
                         }
                     }
-                    
+
                     if (lineCommentBefore) {
                         lineCommentBefore = false;
                     }
-                    
-                    
+
+
 
                 if (ts.movePrevious() && ts.movePrevious()) {
                     token = LexUtilities.findPrevious(ts, Arrays.asList(PHPTokenId.WHITESPACE,
@@ -1293,7 +1293,7 @@ class WSTransformer extends DefaultTreePathVisitor {
                 break; // return false
             }
         }
-        
+
         return retVal;
     }
 
@@ -1469,5 +1469,5 @@ class WSTransformer extends DefaultTreePathVisitor {
         FIELD,
         UNKNOWN;
     }
-    
+
 }

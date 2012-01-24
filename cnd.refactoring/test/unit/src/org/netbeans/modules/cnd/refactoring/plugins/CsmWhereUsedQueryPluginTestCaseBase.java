@@ -62,6 +62,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -84,6 +85,12 @@ public class CsmWhereUsedQueryPluginTestCaseBase extends RefactoringBaseTestCase
     public CsmWhereUsedQueryPluginTestCaseBase(String testName) {
         super(testName);
         System.setProperty("cnd.test.skip.coloring", "true");
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        CsmWhereUsedQueryPlugin.LOG.setLevel(Level.WARNING);
     }
 
     protected void performWhereUsed(String source, int line, int column, Map<Object, Boolean> params) throws Exception {
@@ -153,6 +160,7 @@ public class CsmWhereUsedQueryPluginTestCaseBase extends RefactoringBaseTestCase
     }
     private static final Comparator<RefactoringElementImplementation> COMPARATOR = new Comparator<RefactoringElementImplementation>() {
 
+        @Override
         public int compare(RefactoringElementImplementation o1, RefactoringElementImplementation o2) {
             Parameters.notNull("o1", o1);
             Parameters.notNull("o2", o2);
