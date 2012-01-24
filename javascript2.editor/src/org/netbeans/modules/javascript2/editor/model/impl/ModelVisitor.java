@@ -74,6 +74,10 @@ public class ModelVisitor extends PathNodeVisitor {
         this.functionStack = new ArrayList<List<FunctionNode>>();
     }
 
+    public JsObject getGlobalObject() {
+        return modelBuilder.getGlobal();
+    }
+    
     @Override
     public Node visit(AccessNode accessNode, boolean onset) {
         if(onset) {
@@ -284,10 +288,6 @@ public class ModelVisitor extends PathNodeVisitor {
 
         }
         return super.visit(functionNode, onset);
-    }
-
-    public JsObject getGlobalObject() {
-        return modelBuilder.getGlobal();
     }
     
     @Override
