@@ -108,6 +108,22 @@ public abstract class VCSFilesystemTestFactory extends NbTestSetup {
      */
     public abstract void delete(String path) throws IOException;
     
+    /**
+     * Move the files with the given relative paths
+     * 
+     * @param path
+     * @throws IOException 
+     */
+    public abstract void move(String from, String to) throws IOException;
+    
+    /**
+     * Copy the files with the given relative paths
+     * 
+     * @param path
+     * @throws IOException 
+     */
+    public abstract void copy(String from, String to) throws IOException;
+    
     public static VCSFilesystemTestFactory getInstance (Test test) {
         VCSFilesystemTestFactory factory = getFromMap (test);
         return factory;

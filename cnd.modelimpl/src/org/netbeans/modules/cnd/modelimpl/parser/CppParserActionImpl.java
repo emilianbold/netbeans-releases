@@ -200,6 +200,7 @@ public class CppParserActionImpl implements CppParserAction {
     @Override
     public void namespace_declaration(Token token) {
         NamespaceBuilder nsBuilder = new NamespaceBuilder();
+        nsBuilder.setParentNamespace(builderContext.getNamespaceBuilderIfExist());
         nsBuilder.setFile(file);
         if(token instanceof APTToken) {
             nsBuilder.setStartOffset(((APTToken)token).getOffset());
@@ -240,12 +241,7 @@ public class CppParserActionImpl implements CppParserAction {
             nsBuilder.setEndOffset(((APTToken)token).getEndOffset());
         }
         builderContext.pop();
-        if(builderContext.top() == null) {
-            nsBuilder.create();
-        } else {
-            NamespaceBuilder nsBuilder2 = builderContext.getNamespaceBuilder();
-            nsBuilder2.addNamespace(nsBuilder);
-        }
+        nsBuilder.create();
     }
     
     @Override

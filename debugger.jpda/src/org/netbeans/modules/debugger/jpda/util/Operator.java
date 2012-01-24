@@ -292,7 +292,7 @@ public class Operator {
         }
         Set<ThreadReference> ignoredThreads = testIgnoreEvent(eventSet);
         if (ignoredThreads != null && ignoredThreads.isEmpty()) {
-            eventSet.resume(); // Ignore such events completely
+            EventSetWrapper.resume(eventSet); // Ignore such events completely
             return true;
         }
         if (ignoredThreads != null) {
@@ -343,7 +343,7 @@ public class Operator {
                                 if (suspendedAll) {
                                     List<ThreadReference> allThreads = thref.virtualMachine().allThreads();
                                     for (ThreadReference t : allThreads) {
-                                        logger.warning("   "+t+" is suspended = "+t.isSuspended());
+                                        logger.warning("   "+t+" is suspended = "+t.isSuspended()+", status = "+t.status());
                                     }
                                 }
                             } catch (ObjectCollectedException ocex) {
@@ -632,6 +632,15 @@ public class Operator {
         return true;
     }
     
+    public static void dumpThreadsStatus(VirtualMachine vm, Level l) {
+        logger.log(l, "DUMP of threads:\n");
+        List<ThreadReference> allThreads = vm.allThreads();
+        for (ThreadReference t : allThreads) {
+            logger.log(l, "   "+t+" "+JPDAThreadImpl.getThreadStateLog(t));
+        }
+        logger.log(l, "DUMP DONE.");
+    }
+    
     private static void dumpThreadsStatus(VirtualMachine vm) {
         if (!logger.isLoggable(Level.FINE)) return;
         logger.fine("DUMP of threads:\n");
@@ -756,7 +765,7 @@ public class Operator {
                             if (logger.isLoggable(Level.FINE)) {
                                 logger.fine("  the event(s) in the Queue for "+tr+" are ignored and event set is resumed.");
                             }
-                            eventSet.resume(); // Ignore such events completely
+                            EventSetWrapper.resume(eventSet); // Ignore such events completely
                         } else if (ignoredThreads != null) {
                             synchronized (parallelEvents) {
                                 parallelEvents.add(eventSet);

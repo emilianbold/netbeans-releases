@@ -137,7 +137,7 @@ public class ValidationTest extends JellyTestCase {
         if (System.getProperty("os.name", "other").toLowerCase().indexOf("windows") == -1) {
             DialogOperator cdtsfp = new DialogOperator("Choose directory to search for platforms"); //TODO I18N
             new JTextFieldOperator(cdtsfp, 0).setText(System.getProperty("platform.home"));
-            (new JButtonOperator(cdtsfp, "OK")).pushNoBlock();
+            (new JButtonOperator(cdtsfp, "Open")).pushNoBlock();
             cdtsfp.waitClosed();
         }
         
@@ -154,7 +154,7 @@ public class ValidationTest extends JellyTestCase {
         djmep.waitClosed();
         
         (new JButtonOperator(ajpw, "Finish")).pushNoBlock();
-        
+        ajpw.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         ajpw.waitClosed();
         
         (new JButtonOperator(jpm, "Close")).push();

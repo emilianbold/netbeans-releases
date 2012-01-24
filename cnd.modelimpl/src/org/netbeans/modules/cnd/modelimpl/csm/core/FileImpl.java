@@ -741,10 +741,15 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (reportParse || logState || TraceFlags.DEBUG) {
             logParse("ReParsing", preprocHandler); //NOI18N
         }
+        if(TraceFlags.CPP_PARSER_ACTION) {
+            disposeAll(false);
+        }
         CsmParserResult parsing = doParse(preprocHandler, aptFull, lazyCompound);
         if (parsing != null) {
             if (isValid()) {
-                disposeAll(false);
+                if(!TraceFlags.CPP_PARSER_ACTION) {
+                    disposeAll(false);
+                }
                 parsing.render();
             }
         } else {
@@ -1439,6 +1444,11 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return getFileDeclarations().findExistingDeclaration(startOffset, endOffset, name);
     }
 
+    @Override
+    public CsmOffsetableDeclaration findExistingDeclaration(int startOffset, CharSequence name, CsmDeclaration.Kind kind) {
+        return getFileDeclarations().findExistingDeclaration(startOffset, name, kind);
+    }
+    
     @Override
     public void addDeclaration(CsmOffsetableDeclaration decl) {
         getFileDeclarations().addDeclaration(decl);
