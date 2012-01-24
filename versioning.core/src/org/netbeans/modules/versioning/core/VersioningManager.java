@@ -69,7 +69,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor.VCSAnnotationEvent;
 import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor.VCSAnnotationListener;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
-import org.netbeans.spi.queries.CollocationQueryImplementation;
+import org.netbeans.spi.queries.CollocationQueryImplementation2;
 import org.openide.util.*;
 import org.openide.util.Lookup.Result;
 
@@ -191,7 +191,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
         @Override public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file) { throw new IllegalStateException(); }
         @Override public VCSInterceptor getInterceptor() { throw new IllegalStateException(); }
         @Override public void getOriginalFile(VCSFileProxy workingCopy, VCSFileProxy originalFile) { throw new IllegalStateException(); }
-        @Override public CollocationQueryImplementation getCollocationQueryImplementation() { throw new IllegalStateException(); }
+        @Override public CollocationQueryImplementation2 getCollocationQueryImplementation() { throw new IllegalStateException(); }
         @Override public void addPropertyCL(PropertyChangeListener listener) { throw new IllegalStateException(); }
         @Override public void removePropertyCL(PropertyChangeListener listener) { throw new IllegalStateException(); }
         @Override public boolean isExcluded(VCSFileProxy file) { throw new IllegalStateException(); }

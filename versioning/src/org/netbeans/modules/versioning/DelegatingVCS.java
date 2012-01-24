@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,6 +60,7 @@ import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
+import org.netbeans.spi.queries.CollocationQueryImplementation2;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -87,6 +89,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
     private VCSAnnotator annotator;
     private VCSVisibilityQuery visibilityQuery;
     private VCSInterceptor interceptor;
+    private CollocationQueryImplementation2 collocationQuery;
     
     private DelegatingVCS(Map<?, ?> map) {
         this.map = map;
@@ -146,8 +149,22 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
     }
 
     @Override
-    public CollocationQueryImplementation getCollocationQueryImplementation() {
-        return getDelegate().getCollocationQueryImplementation();
+    public CollocationQueryImplementation2 getCollocationQueryImplementation() {
+        if(collocationQuery == null) {
+            collocationQuery = new CollocationQueryImplementation2() {
+                private CollocationQueryImplementation cqi = getDelegate().getCollocationQueryImplementation();
+                @Override
+                public boolean areCollocated(URI uri1, URI uri2) {
+                    return cqi != null && cqi.areCollocated(new File(uri1), new File(uri2));
+                }
+                @Override
+                public URI findRoot(URI uri) {
+                    File file = cqi != null ? cqi.findRoot(new File(uri)) : null;
+                    return file != null ? file.toURI() : null;
+                }
+            };
+        } 
+        return collocationQuery;        
     }
 
     @Override
