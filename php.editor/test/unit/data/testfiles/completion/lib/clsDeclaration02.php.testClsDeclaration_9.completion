@@ -84,6 +84,7 @@ CLASS      Author_1                        [PUBLIC]   mixedtypes_1.php
 CLASS      B                               [PUBLIC]   Test197084.php
 CLASS      B                               [PUBLIC]   test.php
 CLASS      B135618                         [PUBLIC]   issue135618.php
+CLASS      BadRequestException             [PUBLIC]   Nette\Application
 CLASS      Bar                             [PUBLIC]   issue191666.php
 CLASS      BaseClass                       [PUBLIC]   traits.php
 CLASS      Basic142234                     [PUBLIC]   issue142234.php
@@ -121,13 +122,17 @@ CLASS      ExMyExceptionFromNs             [PUBLIC]   Extra
 CLASS      ExMyExceptionFromNs             [PUBLIC]   ExtraThrow
 CLASS      Exception                       [PUBLIC]   MySpace
 CLASS      Exception                       [PUBLIC]   MySpaceThrow
+CLASS      Exception                       [PUBLIC]   Nette\Application
+CLASS      Exception                       [PUBLIC]   exceptions.php
 CLASS      Exception                       [PUBLIC]   issue194875.php
 CLASS      Exception                       [PUBLIC]   issue201310.php
 CLASS      Exception1                      [PUBLIC]   issue204958.php
+CLASS      ExceptionClassName              [PUBLIC]   issue207594.php
 CLASS      Foo                             [PUBLIC]   issue159970.php
 CLASS      Foo                             [PUBLIC]   issue191666.php
 CLASS      Foo                             [PUBLIC]   test203294.php
 CLASS      ForClsCtxCodeCompletion         [PUBLIC]   insideClass3.php
+CLASS      ForbiddenRequestException       [PUBLIC]   Nette\Application
 CLASS      HTML                            [PUBLIC]   html.php
 CLASS      HTMLbase                        [PUBLIC]   htmlbase.php
 CLASS      Hello146648                     [PUBLIC]   issue146648.php
