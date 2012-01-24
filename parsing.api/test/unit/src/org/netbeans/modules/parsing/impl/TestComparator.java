@@ -65,9 +65,9 @@ public class TestComparator {
         if (failed) return;
         Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "Got: {0} Expecting: {1} {2}", new Object[]{line, text, Arrays.toString(Thread.currentThread().getStackTrace())});  //NOI18N
         if (!text.startsWith (line)) {
-            Logger.getLogger("FileModificationTest.logger").info("FAILED!");    //NOI18N
+            Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "FAILED!\n{0}\nBut expecting:\n{1}", new Object[]{line, text});    //NOI18N
             failed = true;
-            throw new IllegalArgumentException (line + "\nBut expecting:\n" + text);
+//            throw new IllegalArgumentException (line + "\nBut expecting:\n" + text);
         }
         text = text.substring (line.length ());
         if (text.startsWith ("\n"))
