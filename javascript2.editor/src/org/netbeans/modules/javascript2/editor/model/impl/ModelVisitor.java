@@ -149,13 +149,16 @@ public class ModelVisitor extends PathNodeVisitor {
                         variable.setDeclared(false);
                         modelBuilder.getGlobal().addProperty(newVarName, variable);
                     } else {
-                        if (binaryNode.rhs() instanceof UnaryNode && Token.descType(binaryNode.rhs().getToken()) == TokenType.NEW) {
-                            // new XXXX() statement
-                            JsObject lhs = hasParent ? parent.getProperty(newVarName) : hasGrandParent ? parent.getParent().getProperty(newVarName) : null;
-                            modelBuilder.setCurrentObject((JsObjectImpl)lhs);
-                            binaryNode.rhs().accept(this);
-                            modelBuilder.reset();
-                            return null;
+                        JsObject lhs = hasParent ? parent.getProperty(newVarName) : hasGrandParent ? parent.getParent().getProperty(newVarName) : null;
+                        if (lhs != null) {
+                            ((JsObjectImpl)lhs).addOccurrence(name.getOffsetRange());
+                            if (binaryNode.rhs() instanceof UnaryNode && Token.descType(binaryNode.rhs().getToken()) == TokenType.NEW) {
+                                // new XXXX() statement
+                                modelBuilder.setCurrentObject((JsObjectImpl)lhs);
+                                binaryNode.rhs().accept(this);
+                                modelBuilder.reset();
+                                return null;
+                            }
                         }
                     }
                 }

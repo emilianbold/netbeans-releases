@@ -50,21 +50,37 @@ public class JsCodeCompletionTest extends JsTestBase {
     public JsCodeCompletionTest(String testName) {
         super(testName);
     }
-    
+
     public void testProperty01() throws Exception {
         checkCompletion("testfiles/model/jQueryFragment01.js", "^jQuery.event.customEvent.test();", false);
     }
-    
+
     public void testProperty02() throws Exception {
         checkCompletion("testfiles/model/jQueryFragment01.js", "jQuery.^event.customEvent.test();", false);
     }
-    
+
     public void testProperty03() throws Exception {
         checkCompletion("testfiles/model/jQueryFragment01.js", "jQuery.event.^customEvent.test();", false);
     }
-    
+
     public void testProperty04() throws Exception {
         checkCompletion("testfiles/model/jQueryFragment01.js", "jQuery.event.customEvent.^test();", false);
+    }
+
+    public void testTypeInferenceNew01() throws Exception {
+        checkCompletion("testfiles/completion/typeInferenceNew.js", "^formatter.println(\"Car:\");", false);
+    }
+
+    public void testTypeInferenceNew02() throws Exception {
+        checkCompletion("testfiles/completion/typeInferenceNew.js", "formatter.println(\"color: \" + object.^getColor());", false);
+    }
+
+    public void testTypeInferenceNew03() throws Exception {
+        checkCompletion("testfiles/completion/typeInferenceNew.js", "formatter.println(\"town: \" + object.^town);", false);
+    }
+    
+    public void testMethodsOfUndefinedObjects() throws Exception {
+        checkCompletion("testfiles/completion/typeInferenceNew.js", "formatter.^println(\"town: \" + object.town);", false);
     }
     
 }
