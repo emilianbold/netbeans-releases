@@ -190,15 +190,16 @@ public class Utils {
             AnnotationModelHelper helper) 
     {
         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        // Fix for BZ#201039 - REST configuration dialog appears after expanding a web project with WebLogic target
-        ClassTree tree = helper.getCompilationController().getTrees().getTree(element);
-        if ( tree == null ){
-            // the element is not in source , it's binary
-            return false;
-        }
-        if (restSupport != null && ! restSupport.isRestSupportOn() && 
-                isRest(element, helper)) 
-        {
+        if (restSupport == null || restSupport.isRestSupportOn() ){
+	    return false;
+	}
+        if ( isRest(element, helper)) {
+            // Fix for BZ#201039 - REST configuration dialog appears after expanding a web project with WebLogic target
+            ClassTree tree = helper.getCompilationController().getTrees().getTree(element);
+            if ( tree == null ){
+                // the element is not in source , it's binary
+                return false;
+            }
             try {
                 restSupport.ensureRestDevelopmentReady();
                 return true;
