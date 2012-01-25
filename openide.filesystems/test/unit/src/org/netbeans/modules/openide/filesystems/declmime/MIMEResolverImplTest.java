@@ -98,7 +98,7 @@ public class MIMEResolverImplTest extends NbTestCase {
         root.refresh();
     }
     
-    private static MIMEResolver createResolver(FileObject fo) throws Exception {
+    protected MIMEResolver createResolver(FileObject fo) throws Exception {
         if (fo == null) throw new NullPointerException();
         return MIMEResolverImpl.forDescriptor(fo);
     }

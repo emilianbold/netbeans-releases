@@ -43,6 +43,9 @@
  */
 package org.openide.filesystems;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -176,6 +179,22 @@ public abstract class MIMEResolver {
         protected final Map<String, Set<String>> getMIMEToExtensions(FileObject fo) {
             return MIMEResolverImpl.getMIMEToExtensions(fo);
         }
+        
+    }
+    
+    
+    public @interface ExtensionRegistration {
+        public String mimeType();
+        public String[] extension();
     }
 
+    public @interface NamespaceRegistration {
+        public String mimeType();
+        public String[] namespace();
+    }
+    
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Registration {
+        public String value();
+    }
 }
