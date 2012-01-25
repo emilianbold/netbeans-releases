@@ -338,6 +338,7 @@ public class TaskProcessor {
                                     break;
                                 }
                             }
+                            Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "Adding tasks: {0} from: {1}", new Object[]{aRequests, java.util.Arrays.toString(Thread.currentThread().getStackTrace())});  //NOI18N
                             requests.addAll (aRequests);
                         }
                     }
@@ -410,12 +411,14 @@ public class TaskProcessor {
                     if ((cr=finishedRequests.remove(source)) != null && cr.size()>0)  {
                         for (Request toAdd : cr) {
                             assert toAdd.reschedule == ReschedulePolicy.ON_CHANGE;
+                            Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "Adding tasks: {0} from: {1}", new Object[]{toAdd, java.util.Arrays.toString(Thread.currentThread().getStackTrace())});  //NOI18N
                             requests.add(toAdd);
                         }
                     }
                 }
                 if ((cr=waitingRequests.remove(source)) != null && cr.size()>0)  {
                     for (Request toAdd : cr) {                        
+                        Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "Adding tasks: {0} from: {1}", new Object[]{toAdd, java.util.Arrays.toString(Thread.currentThread().getStackTrace())});  //NOI18N
                         requests.add(toAdd);
                     }
                 }
@@ -786,12 +789,14 @@ public class TaskProcessor {
                                                             rc.add(r);
                                                             LOGGER.log(Level.FINE, "Waiting Task: {0}", r);      //NOI18N
                                                         } else {
+                                                            Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "Adding tasks: {0} from: {1}", new Object[]{r, java.util.Arrays.toString(Thread.currentThread().getStackTrace())});  //NOI18N
                                                             requests.add(r);
                                                             LOGGER.log(Level.FINE, "Rescheduling Waiting Task: {0}", r); //NOI18N
                                                         }
                                                     }
                                                     else if (reschedule || SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID)) {
                                                         //The JavaSource was changed or canceled rechedule it now
+                                                        Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "Adding tasks: {0} from: {1}", new Object[]{r, java.util.Arrays.toString(Thread.currentThread().getStackTrace())});  //NOI18N
                                                         requests.add(r);
                                                         LOGGER.log(Level.FINE, "Rescheduling Canceled Task: {0}", r); //NOI18N
                                                     } else if (r.reschedule == ReschedulePolicy.ON_CHANGE) {
@@ -823,6 +828,7 @@ public class TaskProcessor {
                                                         rc.add(r);
                                                         LOGGER.log(Level.FINE, "Waiting NEVER Task: {0}", r.toString()); //NOI18N
                                                 } else {
+                                                    Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "Adding tasks: {0} from: {1}", new Object[]{r, java.util.Arrays.toString(Thread.currentThread().getStackTrace())});  //NOI18N
                                                     requests.add(r);
                                                     LOGGER.log(Level.FINE, "Rescheduling Waiting NEVER Task: {0}", r.toString()); //NOI18N
                                                 }
