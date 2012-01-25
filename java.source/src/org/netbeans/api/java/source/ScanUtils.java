@@ -111,6 +111,10 @@ public final class ScanUtils {
      * Note that it is not guaranteed, even after task retry, that the Element will be resolved, or will be fully attributed. If the
      * handle points to Element which does not exist, or uses unknown type etc, the Element may be broken even after parsing finishes.
      * Always check the element for its kind and other properties.
+     * 
+     * @param s source to work with
+     * @param trees Trees instance used to resolve the Element
+     * @param path path to resolve
      *
      * @see #waituserActionTask
      * @see #postUserActionTask
@@ -125,12 +129,53 @@ public final class ScanUtils {
                 return e;
             }
         }
-        if (SourceUtils.isScanInProgress()) {
+        if (shouldSignal()) {
             signalIncompleteData(s, path);
         }
         return e;
     }
-
+    
+    /**
+     * Attempts to find Element by path; aborts and restarts the user task if scanning is in progress and element could not be found.
+     * If the element does not exist, or is 'not complete' (e.g. type was not yet scanned etc), the task is aborted, and
+     * restarted when the parsing finishes.
+     * <p/>
+     * The method can be only used from {@link #waitUserActionTask}, {@link #postUserActionTask} as it throws an exception to interrupt
+     * the process, which is processed by the mentioned methods. If the method is called in other context, {@link IllegalStateException}
+     * will be thrown.
+     * <p/>
+     * Use this method if you want to not to fail computation if a referenced type might not be yet scanned.
+     * Note that it is not guaranteed, even after task retry, that the Element will be resolved, or will be fully attributed. If the
+     * handle points to Element which does not exist, or uses unknown type etc, the Element may be broken even after parsing finishes.
+     * Always check the element for its kind and other properties.
+     * 
+     * @param s JavaSource to use
+     * @param info CompilationInfo applicable for the user task
+     * @param path path that should be resolved to Element
+     * 
+     * @return resolved Element instance, or {@code null} if the element could not be found.
+     */
+    public static <T extends Element> T findElement(@NonNull JavaSource s, @NonNull CompilationInfo info, 
+            @NonNull TreePath path) {
+        checkRetryContext();
+        T e = (T) info.getTrees().getElement(path);
+        if (e != null) {
+            TypeMirror tm = e.asType();
+            if (!isErrorKind(tm)) {
+                return e;
+            }
+        }
+        if (shouldSignal()) {
+            TreePathHandle hnd = TreePathHandle.create(path, info);
+            signalIncompleteData(s, hnd);
+        }
+        return e;
+    }
+    
+    private static boolean shouldSignal() {
+        return SourceUtils.isScanInProgress() && Boolean.TRUE.equals(retryGuard.get());
+    }
+    
     /**
      * Runs the user task through {@link JavaSource#runUserActionTask}, and returns Future completion handle for it. 
      * The executed Task may indicate that it does not have enough data when scan is in progress, through e.g. {@link #checkElement}.
@@ -161,21 +206,24 @@ public final class ScanUtils {
 
     private static Future<Void> postUserActionTask(@NonNull final JavaSource src, @NonNull final Task<CompilationController> uat, final boolean shared, final AtomicReference<Throwable> status) throws IOException {
         boolean retry = SourceUtils.isScanInProgress();
-        if (retry) {
-            try {
-                retryGuard.set(Boolean.TRUE);
-                src.runUserActionTask(uat, shared);
-                // the action passed ;)
-                retry = false;
-            } catch (RetryWhenScanFinished e) {
-                // expected, will retry in runWhenParseFinished
-                retry = true;
-            } finally {
-                retryGuard.set(Boolean.FALSE);
+        Boolean b = retryGuard.get();
+        try {
+            retryGuard.set(Boolean.TRUE);
+            src.runUserActionTask(uat, shared);
+            // the action passed ;)
+            retry = false;
+        } catch (RetryWhenScanFinished e) {
+            // expected, will retry in runWhenParseFinished
+            retry = true;
+        } finally {
+            if (b == null) {
+                retryGuard.remove();
+            } else {
+                retryGuard.set(b);
             }
-            if (!retry) {
-                return new FinishedFuture();
-            }
+        }
+        if (!retry) {
+            return new FinishedFuture();
         }
         final TaskWrapper wrapper = new TaskWrapper(uat, status);
         Future<Void> handle = src.runWhenScanFinished(wrapper, shared);
@@ -193,7 +241,7 @@ public final class ScanUtils {
      * @param src java source to process
      * @param uat task to execute
      * @param shared if true, shared Javac will be used to process the source
-     *
+     * 
      * @throws IOException in the case of a failure in the user task, or scheduling failure (propagated from {@link JavaSource#runUserActionTask},
      * {@link JavaSource#runWhenScanFinished}
      *
@@ -211,9 +259,7 @@ public final class ScanUtils {
             return;
         }
         try {
-            Future<Void> handle = src.runWhenScanFinished(uat, shared);
-            // wait for completion
-            handle.get();
+            f.get();
         } catch (InterruptedException ex) {
             IOException ioex = new IOException("Interrupted", ex);
             throw ioex;
@@ -247,6 +293,12 @@ public final class ScanUtils {
      * Note that it is not guaranteed, even after task retry, that the Element will be resolved, or will be fully attributed. If the
      * handle points to Element which does not exist, or uses unknown type etc, the Element may be broken even after parsing finishes.
      * Always check the element for its kind and other properties.
+     * 
+     * @param s source to work with
+     * @param elService Elements service used to locate the type
+     * @param type type name whose TypeElement should be returned
+     * 
+     * @return resolved TypeElement, or null if type could not be located
      *
      * @see #waituserActionTask
      * @see #postUserActionTask
@@ -262,7 +314,7 @@ public final class ScanUtils {
                 return e;
             }
         }
-        if (SourceUtils.isScanInProgress()) {
+        if (shouldSignal()) {
             signalIncompleteData(s, type);
         }
         return e;
@@ -325,6 +377,7 @@ public final class ScanUtils {
      *
      * @param e the Element to check
      * @param s the source of the Element
+     * @return the original Element, to support 'fluent' pattern
      *
      * @throws IllegalStateException if not called from within user task
      *
@@ -336,7 +389,7 @@ public final class ScanUtils {
         if (!isErrorKind(tm)) {
             return e;
         }
-        if (SourceUtils.isScanInProgress()) {
+        if (shouldSignal()) {
             signalIncompleteData(s, e);
         }
         return e;
@@ -356,6 +409,12 @@ public final class ScanUtils {
      * Note that it is not guaranteed, even after task retry, that the Element will be resolved, or will be fully attributed. If the
      * handle points to Element which does not exist, or uses unknown type etc, the Element may be broken even after parsing finishes.
      * Always check the element for its kind and other properties.
+     * 
+     * @param s java source to work with
+     * @param info CompilationInfo used for resolution
+     * @param handle handle to resolve
+     * 
+     * @return resolved Element instance or null if the element could not be found or is incomplete.
      *
      * @see #waituserActionTask
      * @see #postUserActionTask
@@ -367,7 +426,7 @@ public final class ScanUtils {
         assert s != null;
         assert info != null;
         assert handle != null;
-        assert info.getJavaSource() == null : info.getJavaSource() == s;
+        assert info.getJavaSource() == null || info.getJavaSource() == s;
         checkRetryContext();
         T e = (T) handle.resolve(info);
         if (e != null) {
@@ -376,16 +435,22 @@ public final class ScanUtils {
                 return e;
             }
         }
-        if (SourceUtils.isScanInProgress()) {
+        if (shouldSignal()) {
             signalIncompleteData(s, handle);
         }
         return e;
     }
-
+    
     private static void checkRetryContext() throws IllegalStateException {
-        if (!retryGuard.get()) {
+        Boolean b = retryGuard.get();
+        if (b == null) {
             throw new IllegalStateException("The method may be only called within SourceUtils.waitUserActionTask");
         }
+    }
+    
+    private static void signalIncompleteData(JavaSource s, TreePathHandle handle) {
+        checkRetryContext();
+        throw new RetryWhenScanFinished(s, handle);
     }
 
     private static void signalIncompleteData(JavaSource s, TreePath path) {
@@ -430,11 +495,7 @@ public final class ScanUtils {
      * Guards usage of the abortAndRetry methods; since they throw an exception, which is 
      * only caught on specific places
      */
-    private static final ThreadLocal<Boolean> retryGuard = new ThreadLocal<Boolean>() {
-        protected Boolean initialValue() {
-            return Boolean.FALSE;
-        }
-    };
+    private static final ThreadLocal<Boolean> retryGuard = new ThreadLocal<Boolean>();
     
     private final static class FinishedFuture implements Future<Void> {
         @Override
@@ -481,6 +542,7 @@ public final class ScanUtils {
 
         @Override
         public void run(CompilationController parameter) throws Exception {
+            Boolean b = retryGuard.get();
             try {
                 retryGuard.set(Boolean.TRUE);
                 userTask.run(parameter);
@@ -491,7 +553,11 @@ public final class ScanUtils {
                 status.set(ex);
                 throw ex;
             } finally {
-                retryGuard.set(Boolean.FALSE);
+                if (b == null) {
+                    retryGuard.remove();
+                } else {
+                    retryGuard.set(b);
+                }
             }
         }
     }
