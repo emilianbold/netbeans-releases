@@ -58,6 +58,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     final private Identifier declarationName;
     final private JsObject parent;
     final private List<Occurrence> occurrences;
+    final private HashMap<Integer, Collection<String>> assignments;
     private boolean isDeclared;
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange) {
@@ -67,6 +68,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.parent = parent;
         this.isDeclared = false;
         this.occurrences = new ArrayList<Occurrence>();
+        this.assignments = new HashMap<Integer, Collection<String>>();
     }
     
     @Override
@@ -131,5 +133,29 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     
     public void addOccurrence(OffsetRange offsetRange) {
         occurrences.add(new OccurrenceImpl(offsetRange, this));
-    }    
+    }
+    
+    public void addAssignment(String typeName, int offset){
+        System.out.println("addingSignment: " + typeName + ", " + offset + " to object " + this.getName());
+        Collection<String> types = assignments.get(offset);
+        if (types == null) {
+            types = new ArrayList<String>();
+            assignments.put(offset, types);
+        }
+        types.add(typeName);
+    }
+
+    @Override
+    public Collection<String> getAssignmentTypeNames(int offset) {
+        Collection<String> result = Collections.EMPTY_LIST;
+        int closeOffset = -1;
+        for(Integer position : assignments.keySet()) {
+            if (closeOffset < position && position <= offset) {
+                closeOffset = position;
+                result = assignments.get(position);
+            }
+        }
+        
+        return result;
+    }
 }

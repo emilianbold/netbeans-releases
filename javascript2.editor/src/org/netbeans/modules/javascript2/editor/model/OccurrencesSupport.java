@@ -79,8 +79,7 @@ public class OccurrencesSupport {
         } else {
             for(Occurrence occurrence: object.getOccurrences()) {
                 if (occurrence.getOffsetRange().containsInclusive(offset)) {
-                    result = occurrence;
-                    break;
+                    return occurrence;
                 }
             }
             for(JsObject property: object.getProperties().values()) {
