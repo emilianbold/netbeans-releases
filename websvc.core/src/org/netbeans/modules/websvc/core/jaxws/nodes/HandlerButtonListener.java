@@ -194,7 +194,8 @@ public class HandlerButtonListener implements ActionListener{
                         TypeElement typeElement = SourceUtils.getPublicTopLevelElement(workingCopy);
                         if (typeElement!=null) {
                             TreeMaker make = workingCopy.getTreeMaker();
-                            AnnotationMirror chainAnnotation = JaxWsNode.getAnnotation(workingCopy, typeElement, "javax.jws.HandlerChain"); //NOI18N
+                            AnnotationMirror chainAnnotation = JaxWsNode.getAnnotation( 
+                                    typeElement, "javax.jws.HandlerChain"); //NOI18N
                             if (chainAnnotation!=null) {
                                 ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
                                 AnnotationTree anotTree = (AnnotationTree)workingCopy.getTrees().getTree(typeElement,chainAnnotation);
