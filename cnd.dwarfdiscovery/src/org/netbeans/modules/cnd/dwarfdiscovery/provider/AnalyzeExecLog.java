@@ -482,7 +482,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             List<String> aUserIncludes = new ArrayList<String>();
             Map<String,String> aUserMacros = new HashMap<String, String>();
             List<String> languageArtifacts = new ArrayList<String>();
-            List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(iterator, false, aUserIncludes, aUserMacros, null, languageArtifacts, compilerSettings.getProjectBridge(), language == LanguageKind.CPP);
+            List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(iterator, DiscoveryUtils.LogOrigin.ExecLog, aUserIncludes, aUserMacros, null, languageArtifacts, compilerSettings.getProjectBridge(), language == LanguageKind.CPP);
             for (String what : sourcesList) {
                 if (what == null) {
                     continue;
