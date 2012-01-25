@@ -56,6 +56,7 @@ public class MIMEResolverMarshallTest extends MIMEResolverImplTest {
 
     @Override
     protected MIMEResolver createResolver(FileObject fo) throws Exception {
-        return super.createResolver(fo);
+        byte[] arr = MIMEResolverImpl.toStream(super.createResolver(fo));
+        return MIMEResolverImpl.forStream(arr);
     }
 }
