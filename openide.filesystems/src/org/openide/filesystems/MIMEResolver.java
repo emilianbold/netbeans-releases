@@ -43,25 +43,32 @@
  */
 package org.openide.filesystems;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.*;
 import org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl;
+import org.openide.filesystems.annotations.LayerBuilder;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * This class is intended as superclass for individual resolvers.
- * All registered subclasses of MIMEResolver are looked up and asked one by one
- * to resolve MIME type of passed FileObject. Resolving is finished right after
+ * Use the {@link FileUtil#getMIMEType(org.openide.filesystems.FileObject, java.lang.String[])} 
+ * to invoke the mime resolving infrastructure.
+ * All registered mime resolvers are looked up and asked one by one
+ * to {@link #findMIMEType(org.openide.filesystems.FileObject)  resolve MIME type} 
+ * of passed in {@link FileObject}. Resolving is finished right after
  * a resolver is able to resolve the FileObject or if all registered
- * resolvers returned null (not recognized).
+ * resolvers returned <code>null</code> (not recognized).
  * <p>
- * Resolvers are registered if they have their record in the Lookup area.
- * E.g. in form : org-some-package-JavaResolver.instance file.
+ * Use {@link ExtensionRegistration}, 
+ * {@link MIMEResolver.NamespaceRegistration} or {@link MIMEResolver.Registration}
+ * to register declarative resolvers. 
  * <p>
- * MIME resolvers can also be registered in the <code>Services/MIMEResolver</code>
- * folder as <code>*.xml</code> files obeying a <a href="doc-files/HOWTO-MIME.html">certain format</a>.
- * These will be interpreted before resolvers in lookup (in the order specified in that folder).
+ * In the rarely case, when declarative resolvers are not sufficient, you can
+ * register subclass of {@link MIMEResolver} directly by using {@link ServiceProvider}
+ * annotation.
  *
  * @author  rmatous
  */
@@ -110,6 +117,11 @@ public abstract class MIMEResolver {
      */
     String[] getMIMETypes() {
         return resolvableMIMETypes;
+    }
+
+    /** factory method for {@link MIMEResolver.Registration} */
+    static MIMEResolver create(FileObject fo) throws IOException {
+        return MIMEResolverImpl.create(fo);
     }
 
     /** Internal support for implementors of MIME resolver UIs. 
@@ -176,6 +188,74 @@ public abstract class MIMEResolver {
         protected final Map<String, Set<String>> getMIMEToExtensions(FileObject fo) {
             return MIMEResolverImpl.getMIMEToExtensions(fo);
         }
+        
     }
 
+    /** Often a mime type can be deduced just by looking at a file extension.
+     * If that is your case, this annotation is for you. It associates
+     * extension(s) with provided mime type.
+     * @since 7.58
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ExtensionRegistration {
+        /** Display name to present this type of objects to the user.
+         */
+        public String displayName();
+        /** Mime type to be assigned to files with {@link #extension}.
+         */
+        public String mimeType();
+        /** One or few extensions that should be recognized as given
+         * {@link #mimeType}.
+         */
+        public String[] extension();
+        /** In case ordering of mime resolvers is important, one can 
+         * specify it by defining their {@link LayerBuilder#position() position}.
+         */        
+        public int position() default Integer.MAX_VALUE;
+    }
+
+    public @interface NamespaceRegistration {
+        public String mimeType();
+        public String[] namespace();
+    }
+    
+    /** Registration that allows effective, declarative registration of 
+     * complex {@link MIMEResolver mime resolvers}. The <code>value</code>
+     * attribute of the annotation should be a relative reference to
+     * an XML like <a href="doc-files/HOWTO-MIME.html">document</a> describing
+     * the rules that will be interpreted by the mime recognizing infrastructure.
+     * <pre>
+     * {@code @}{@link NbBundle.Messages}({
+     *    "NICE_NAME=Nice name!"
+     * })
+     * {@code @}MIMEResolver.Registration(
+     *   displayName="#NICE_NAME"
+     *   resource="<a href="doc-files/HOWTO-MIME.html">your-resolver-definition.xml</a>"
+     * )
+     * class AnyClassYouHave {
+     *   // ...
+     * }
+     * </pre>
+     * The definition is pre-processed during compile time in order to eliminate
+     * XML parsing during execution.
+     * 
+     * @since 7.58
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Registration {
+        /** {@link LayerBuilder#absolutizeResource(javax.lang.model.element.Element, java.lang.String) Relative path} 
+         * to resource XML file describing
+         * the <a href="doc-files/HOWTO-MIME.html">mime recognition rules</a>.
+         */
+        public String resource();
+
+        /** In case ordering of mime resolvers is important, one can 
+         * specify it by defining their {@link LayerBuilder#position() position}.
+         */        
+        public int position() default Integer.MAX_VALUE;
+        
+        /** Display name to present this type of objects to the user.
+         */
+        public String displayName();
+    }
 }

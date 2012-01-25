@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,18 +34,37 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.openide.filesystems.declmime;
 
-import org.xml.sax.ContentHandler;
+import java.io.IOException;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 
-/**
- * It is just a marker class that is extended by all classes that
- * want to be typed as MIMEResolverImpl components.
+/** Tests marshalling of resolvers.
  *
- * @author  Petr Kuzel
- * @version
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-interface MIMEComponent extends FileObjectFilter, ContentHandler {
+public class MIMEResolverMarshallTest extends MIMEResolverImplTest {
+
+    public MIMEResolverMarshallTest(String testName) {
+        super(testName);
+    }
+    
+    @Override
+    protected MIMEResolver createResolver(FileObject fo) throws Exception {
+        final MIMEResolver orig = super.createResolver(fo);
+        byte[] arr;
+        try {
+            arr = MIMEResolverImpl.toStream(orig);
+        } catch (IOException ex) {
+            // not serializable
+            return orig;
+        }
+        return MIMEResolverImpl.forStream(arr);
+    }
 }

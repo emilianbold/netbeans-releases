@@ -71,9 +71,19 @@ import org.openide.windows.TopComponent;
  *
  * @author Libor Kramolis
  */
+@MIMEResolver.Registration(
+    displayName="org.netbeans.modules.xml.resources.Bundle#XMLFallbackResolver",
+    position=999000,
+    resource="resources/xml-fallback-resolver.xml"
+)
 public final class XMLDataObject extends org.openide.loaders.XMLDataObject
         implements XMLDataObjectLook, PropertyChangeListener {
     
+    @MIMEResolver.Registration(
+        displayName="org.netbeans.modules.xml.resources.Bundle#XMLFirstResolver",
+        position=60001,
+        resource="resources/xml-mime-resolver.xml"
+    )
     /**
      * Special MIME type so that other XML data objects do not inherit our editor
      */
