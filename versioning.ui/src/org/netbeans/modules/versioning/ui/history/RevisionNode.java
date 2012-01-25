@@ -284,19 +284,19 @@ public class RevisionNode extends AbstractNode implements Comparable {
         public abstract String getDisplayName();
         protected HistoryEntry getEntry(Object value) {
             if(value instanceof Node) {
-                return getEntry((Node)value);
+                return getHistoryEntry((Node)value);
         }
             return null;
         }
  
-        private HistoryEntry getEntry(Node node) {
+        private HistoryEntry getHistoryEntry(Node node) {
             if(node instanceof RevisionNode) {
                 return ((RevisionNode)node).entry;
             } else if (node instanceof FileNode) {
                 return ((FileNode)node).entry;
             } else {
                 Node[] nodes = node.getChildren().getNodes();
-                return getEntry(nodes[0]);
+                return nodes != null && nodes.length > 0 ? getHistoryEntry(nodes[0]) : null;
             }
         }
         
