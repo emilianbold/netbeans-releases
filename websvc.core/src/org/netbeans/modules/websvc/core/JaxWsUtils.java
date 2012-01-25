@@ -239,6 +239,27 @@ public class JaxWsUtils {
         jaxWsSupport.addService(targetName, serviceImplPath + "." + 
                 targetName, wsdlURL.toExternalForm(), service, port, artifactsPckg, jsr109, false);
     }
+    
+    public static boolean hasAnnotation( Element element , String fqn ){
+        return  getAnnotation(element, fqn)!= null;
+    }
+    
+    public static AnnotationMirror getAnnotation( Element element , String fqn ){
+        for( AnnotationMirror mirror : element.getAnnotationMirrors() ){
+            if ( hasFqn(mirror, fqn)){
+                return mirror;
+            }
+        }
+        return null;
+    }
+    
+    public  static boolean hasFqn( AnnotationMirror mirror , String fqn){
+        Element anElement = mirror.getAnnotationType().asElement();
+        if ( anElement instanceof TypeElement ){
+            return fqn.contentEquals( ((TypeElement)anElement).getQualifiedName());
+        }
+        return false;
+    }
 
     private static void generateProviderImplClass(Project project, 
             FileObject targetFolder, FileObject implClass,
