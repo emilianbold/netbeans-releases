@@ -54,10 +54,11 @@ import org.openide.util.Parameters;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Use the {@link #findMIMEType(org.openide.filesystems.FileObject)} to invoke
- * the mime resolving infrastructure.
+ * Use the {@link FileUtil#getMIMEType(org.openide.filesystems.FileObject, java.lang.String[])} 
+ * to invoke the mime resolving infrastructure.
  * All registered mime resolvers are looked up and asked one by one
- * to resolve MIME type of passed in {@link FileObject}. Resolving is finished right after
+ * to {@link #findMIMEType(org.openide.filesystems.FileObject)  resolve MIME type} 
+ * of passed in {@link FileObject}. Resolving is finished right after
  * a resolver is able to resolve the FileObject or if all registered
  * resolvers returned <code>null</code> (not recognized).
  * <p>
