@@ -50,14 +50,14 @@ import org.netbeans.modules.php.api.util.StringUtils;
 /**
  * Base class for all run configs.
  */
-public abstract class RunConfigWeb<T extends RunConfigWeb<?>> extends RunConfig<T> {
+public abstract class RunConfigWeb<T extends RunConfigWeb<?>> extends BaseRunConfig<T> {
 
     protected String url;
 
 
     //~ Methods
 
-    // use this for url validation as well?
+    // XXX use this for url validation as well?
     public URL getFullUrl() throws MalformedURLException, URISyntaxException {
         URL retval = null;
         if (StringUtils.hasText(url)) {

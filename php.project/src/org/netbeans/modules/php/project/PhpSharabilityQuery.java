@@ -44,29 +44,30 @@ package org.netbeans.modules.php.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.queries.SharabilityQuery.Sharability;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.queries.SharabilityQueryImplementation;
+import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.util.Mutex;
 
 /**
  * Copied from PythonSharabilityQuery.
  * @author Tomas Zezula
  */
-public class PhpSharabilityQuery implements SharabilityQueryImplementation, PropertyChangeListener {
+public class PhpSharabilityQuery implements SharabilityQueryImplementation2, PropertyChangeListener {
 
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private final SourceRoots sources;
     private final SourceRoots tests;
     private final SourceRoots selenium;
-    private volatile SharabilityQueryImplementation delegate;
+    private volatile SharabilityQueryImplementation2 delegate;
 
-    PhpSharabilityQuery(final AntProjectHelper helper, final PropertyEvaluator evaluator,
+    private PhpSharabilityQuery(final AntProjectHelper helper, final PropertyEvaluator evaluator,
             final SourceRoots sources, final SourceRoots tests, final SourceRoots selenium) {
         assert helper != null;
         assert evaluator != null;
@@ -80,22 +81,27 @@ public class PhpSharabilityQuery implements SharabilityQueryImplementation, Prop
         this.tests = tests;
         this.selenium = selenium;
 
-        this.sources.addPropertyChangeListener(this);
-        this.tests.addPropertyChangeListener(this);
-        this.selenium.addPropertyChangeListener(this);
+    }
+
+    public static PhpSharabilityQuery create(final AntProjectHelper helper, final PropertyEvaluator evaluator,
+            final SourceRoots sources, final SourceRoots tests, final SourceRoots selenium) {
+        PhpSharabilityQuery query = new PhpSharabilityQuery(helper, evaluator, sources, tests, selenium);
+        sources.addPropertyChangeListener(query);
+        tests.addPropertyChangeListener(query);
+        selenium.addPropertyChangeListener(query);
+        return query;
     }
 
     @Override
-    public int getSharability(final File file) {
-        assert file != null;
-        return ProjectManager.mutex().readAccess(new Mutex.Action<Integer>() {
+    public Sharability getSharability(final URI uri) {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Sharability>() {
             @Override
-            public Integer run() {
+            public Sharability run() {
                 synchronized (PhpSharabilityQuery.this) {
                     if (delegate == null) {
                         delegate = createDelegate();
                     }
-                    return delegate.getSharability(file);
+                    return delegate.getSharability(uri);
                 }
             }
         });
@@ -108,7 +114,7 @@ public class PhpSharabilityQuery implements SharabilityQueryImplementation, Prop
         }
     }
 
-    private SharabilityQueryImplementation createDelegate() {
+    private SharabilityQueryImplementation2 createDelegate() {
         String[] srcProps = sources.getRootProperties();
         String[] testProps = tests.getRootProperties();
         String[] seleniumProps = tests.getRootProperties();
@@ -129,6 +135,7 @@ public class PhpSharabilityQuery implements SharabilityQueryImplementation, Prop
             props.add("${" + test + "}"); // NOI18N
         }
 
-        return helper.createSharabilityQuery(evaluator, props.toArray(new String[props.size()]), new String[0]);
+        return helper.createSharabilityQuery2(evaluator, props.toArray(new String[props.size()]), new String[0]);
     }
+
 }

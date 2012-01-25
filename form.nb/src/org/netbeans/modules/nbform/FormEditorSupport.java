@@ -92,6 +92,7 @@ import org.netbeans.api.editor.guards.SimpleSection;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -1269,6 +1270,18 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
     @Override
     public Object getJavaContext() {
         return null; // nothing else than FileObject is needed in NB
+    }
+
+    @Override
+    public int getCodeIndentSize() {
+        CodeStyle cs = CodeStyle.getDefault(getFormDataObject().getPrimaryFile());
+        return cs != null ? cs.getIndentSize() : 4;
+    }
+
+    @Override
+    public boolean getCodeBraceOnNewLine() {
+        CodeStyle cs = CodeStyle.getDefault(getFormDataObject().getPrimaryFile());
+        return cs != null ? cs.getMethodDeclBracePlacement() != CodeStyle.BracePlacement.SAME_LINE : false;
     }
 
     public SimpleSection getVariablesSection() {

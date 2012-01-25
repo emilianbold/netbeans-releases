@@ -224,7 +224,9 @@ public class WatchPanel {
                 }
             }
         }
-        if (adjustContext) {
+        if (adjustContext && !EventQueue.isDispatchThread()) {
+            // Do the adjustment only outside of AWT.
+            // When in AWT, the context update in RP is spawned.
             adjustLine(c);
         }
         return c;

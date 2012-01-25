@@ -203,4 +203,12 @@ public class PhpParserErrorTest extends CslTestBase {
     public void testBinaryNotation_04() throws Exception {
         checkErrors("testfiles/parser/binaryNotation_04.php");
     }
+
+    public void testStaticExpressionCall_01() throws Exception {
+        checkErrors("testfiles/parser/staticExpressionCall_01.php");
+    }
+
+    public void testStaticExpressionCall_02() throws Exception {
+        checkErrors("testfiles/parser/staticExpressionCall_02.php");
+    }
 }
