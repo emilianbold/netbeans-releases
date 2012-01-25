@@ -634,6 +634,15 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         if (RETURN_JAVA_IO_FILE && attrName.equals("java.io.File")) { // NOI18N
             return new FileObjectBasedFile(getExecutionEnvironment(), this);
         }
+        if (attrName.startsWith("ProvidedExtensions")) {  //NOI18N
+            // #158600 - delegate to ProvidedExtensions if attrName starts with ProvidedExtensions prefix
+            if (USE_VCS) {
+                FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
+                if (interceptor != null) {
+                    return interceptor.getAttribute(FilesystemInterceptorProvider.toFileProxy(this), attrName);
+                }
+            }
+        }
         return getFileSystem().getAttribute(this, attrName);
     }
 
