@@ -214,7 +214,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     @Override
     public void delete(FileLock lock) throws IOException {
         if (!checkLock(lock)) {
-            throw new IOException("Wrong lock");
+            throw new IOException("Wrong lock"); //NOI18N
         }
         FilesystemInterceptor interceptor = null;
         if (USE_VCS) {
@@ -493,7 +493,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     @Override
     public void rename(FileLock lock, String name, String ext) throws IOException {
         if (!checkLock(lock)) {
-            throw new IOException("Wrong lock");
+            throw new IOException("Wrong lock"); //NOI18N
         }
         RemoteFileObjectBase p = getParent();
         if (p != null) {
@@ -571,7 +571,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     @Override
     public FileObject move(FileLock lock, FileObject target, String name, String ext) throws IOException {
         if (!checkLock(lock)) {
-            throw new IOException("Wrong lock");
+            throw new IOException("Wrong lock"); //NOI18N
         }
         if (USE_VCS) {
             FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
