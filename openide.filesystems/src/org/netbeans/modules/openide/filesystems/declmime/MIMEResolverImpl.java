@@ -90,8 +90,8 @@ public final class MIMEResolverImpl {
         return new Impl(fo);
     }
     
-    public static MIMEResolver forStream(byte[] serialData) throws IOException {
-        return new Impl(serialData);
+    private static MIMEResolver forStream(FileObject def, byte[] serialData) throws IOException {
+        return new Impl(def, serialData);
     }
     
     static byte[] toStream(MIMEResolver mime) throws IOException {
@@ -279,13 +279,35 @@ public final class MIMEResolverImpl {
         return orderedResolvers.values();
     }
 
-    public static MIMEResolver forExts(String mimeType, List<String> exts) throws IOException {
+    private static MIMEResolver forExts(FileObject def, String mimeType, List<String> exts) throws IOException {
         FileElement e = new FileElement();
         for (String ext : exts) {
             e.fileCheck.addExt(ext);
         }
         e.setMIME(mimeType);
-        return new Impl(e, mimeType);
+        return new Impl(def, e, mimeType);
+    }
+
+    /** factory method for {@link MIMEResolver.Registration} */
+    public static MIMEResolver create(FileObject fo) throws IOException {
+        byte[] arr = (byte[]) fo.getAttribute("bytes");
+        if (arr != null) {
+            return forStream(fo, arr);
+        }
+        String mimeType = (String) fo.getAttribute("mimeType");
+        List<String> exts = new ArrayList<String>();
+        int cnt = 0;
+        for (;;) {
+            String ext = (String) fo.getAttribute("ext." + cnt++);
+            if (ext == null) {
+                break;
+            }
+            exts.add(ext);
+        }
+        if (!exts.isEmpty()) {
+            return forExts(fo, mimeType, exts);
+        }
+        throw new IllegalArgumentException("" + fo);
     }
 
     // MIMEResolver ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -319,8 +341,8 @@ public final class MIMEResolverImpl {
         }
 
         @SuppressWarnings("deprecation")
-        private Impl(byte[] serialData) throws IOException {
-            data = null;
+        private Impl(FileObject def, byte[] serialData) throws IOException {
+            data = def;
             state = DescParser.LOAD;
             ByteArrayInputStream is = new ByteArrayInputStream(serialData);
             DataInputStream dis = new DataInputStream(is);
@@ -328,8 +350,8 @@ public final class MIMEResolverImpl {
 
         }
         @SuppressWarnings("deprecation")
-        private Impl(FileElement e, String... mimes) throws IOException {
-            this.data = null;
+        private Impl(FileObject def, FileElement e, String... mimes) throws IOException {
+            this.data = def;
             this.implResolvableMIMETypes = mimes;
             this.smell = new FileElement[] { e };
             this.state = DefaultParser.PARSED;

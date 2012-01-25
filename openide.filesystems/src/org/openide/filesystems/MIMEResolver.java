@@ -118,27 +118,10 @@ public abstract class MIMEResolver {
     String[] getMIMETypes() {
         return resolvableMIMETypes;
     }
-    
+
     /** factory method for {@link MIMEResolver.Registration} */
     static MIMEResolver create(FileObject fo) throws IOException {
-        byte[] arr = (byte[]) fo.getAttribute("bytes"); // NOI18N
-        if (arr != null) {
-            return MIMEResolverImpl.forStream(arr);
-        }
-        String mimeType = (String)fo.getAttribute("mimeType"); // NOI18N
-        List<String> exts = new ArrayList<String>();
-        int cnt = 0;
-        for (;;) {
-            String ext = (String) fo.getAttribute("ext." + cnt++); // NOI18N
-            if (ext == null) {
-                break;
-            }
-            exts.add(ext);
-        }
-        if (!exts.isEmpty()) {
-            return MIMEResolverImpl.forExts(mimeType, exts);
-        }
-        throw new IllegalArgumentException("" + fo); // NOI18N
+        return MIMEResolverImpl.create(fo);
     }
 
     /** Internal support for implementors of MIME resolver UIs. 
