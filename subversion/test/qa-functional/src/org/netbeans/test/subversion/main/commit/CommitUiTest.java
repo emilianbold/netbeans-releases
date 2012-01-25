@@ -72,7 +72,7 @@ public class CommitUiTest extends JellyTestCase {
      }
 
     public void testInvokeCloseCommit() throws Exception {
-        try {
+//        try {
             MessageHandler mh = new MessageHandler("Committing");
             log.addHandler(mh);
 
@@ -87,7 +87,7 @@ public class CommitUiTest extends JellyTestCase {
 
 
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
-            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
+            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getAbsolutePath() + File.separator + "repo_dump");
             projectPath = TestKit.prepareProject("Java", "Java Application", PROJECT_NAME);
 
             ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
@@ -133,10 +133,10 @@ public class CommitUiTest extends JellyTestCase {
 
             co.verify();
             co.cancel();
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
-        } finally {
+       // } catch (Exception e) {
+         //   throw new Exception("Test failed: " + e);
+       // } finally {
             TestKit.closeProject(PROJECT_NAME);
-        }
+       // }
     }
 }

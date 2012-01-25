@@ -44,6 +44,7 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Collection;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheEditor;
@@ -55,10 +56,10 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -70,8 +71,8 @@ public class RemoveCommand extends GitCommand {
     private final ProgressMonitor monitor;
     private final boolean cached;
 
-    public RemoveCommand (Repository repository, File[] roots, boolean cached, ProgressMonitor monitor, FileListener listener) {
-        super(repository, monitor);
+    public RemoveCommand (Repository repository, GitClassFactory gitFactory, File[] roots, boolean cached, ProgressMonitor monitor, FileListener listener) {
+        super(repository, gitFactory, monitor);
         this.roots = roots;
         this.listener = listener;
         this.monitor = monitor;
@@ -121,10 +122,11 @@ public class RemoveCommand extends GitCommand {
                             edit.add(new DirCacheEditor.DeletePath(treeWalk.getPathString()));
                         }
                     }
-                    if (!cached && (!treeWalk.isSubtree() || treeWalk.isPostChildren() && Utils.isUnderOrEqual(treeWalk, pathFilters))) {
+                    if (!cached && !Utils.isFromNested(treeWalk.getFileMode(1).getBits())
+                            && (!treeWalk.isSubtree() || treeWalk.isPostChildren() && Utils.isUnderOrEqual(treeWalk, pathFilters))) {
                         // delete also the file
                         if (!path.delete() && path.exists()) {
-                            monitor.notifyError(NbBundle.getMessage(RemoveCommand.class, "MSG_Error_CannotDeleteFile", path.getAbsolutePath())); //NOI18N
+                            monitor.notifyError(MessageFormat.format(Utils.getBundle(RemoveCommand.class).getString("MSG_Error_CannotDeleteFile"), path.getAbsolutePath())); //NOI18N
                         }
                     }
                 }

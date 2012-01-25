@@ -46,6 +46,7 @@ import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.test.refactoring.actions.RenameMenuAction;
 import org.netbeans.modules.test.refactoring.actions.RenamePopupAction;
 import org.netbeans.modules.test.refactoring.actions.UndoAction;
 import org.netbeans.modules.test.refactoring.operators.RenameOperator;
@@ -58,6 +59,19 @@ public class RenameTest extends ModifyingRefactoring {
 
     public RenameTest(String name) {
         super(name);
+    }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(RenameTest.class).addTest(
+                "testRenameClass",
+                "testRenamePackage",
+                "testRenameMethod",
+                //"testRenameGenerics",
+                //"testRenameVariable",
+                //"testRenameParameter",
+                "testRenameCtor"
+                ).enableModules(".*").clusters(".*"));
     }
 
     public void testRenameClass() {
@@ -166,19 +180,20 @@ public class RenameTest extends ModifyingRefactoring {
 //
 //    }
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(RenameTest.class).enableModules(".*").clusters(".*"));
-    }
+    
 
     private void performRename(String className,String pkgName, String newName, int row, int col) {
         openSourceFile(pkgName, className);
-        EditorOperator editor = new EditorOperator(className);
+        new EventTool().waitNoEvent(1000);
+        EditorOperator editor = new EditorOperator(className+".java");
         editor.setCaretPosition(row, col);
+        editor.select(row, col, col+1);
+        new EventTool().waitNoEvent(1000);
         new RenamePopupAction().perform(editor);
+        new org.netbeans.jemmy.EventTool().waitNoEvent(3000);
         RenameOperator ro = new RenameOperator();
         ro.getNewName().typeText(newName);
         ro.getPreview().push();
         dumpRefactoringResults();
-    }    
+    }  
 }

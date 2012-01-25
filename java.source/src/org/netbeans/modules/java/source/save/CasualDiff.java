@@ -2737,6 +2737,7 @@ public class CasualDiff {
             }
             switch (item.operation) {
                 case MODIFY: {
+                    lastGroup = group;
                     int[] bounds = estimator.getPositions(i);
                     bounds[0] = Math.min(bounds[0], getCommentCorrectedOldPos(oldList.get(i)));
                     copyTo(localPointer, bounds[0], printer);
@@ -2746,6 +2747,7 @@ public class CasualDiff {
                 }
                 case INSERT: {
                     boolean insetBlankLine = lastGroup >= 0 && lastGroup != group;
+                    lastGroup = group;
                     int pos = importGroups != null ? i == 0 || insetBlankLine && i < oldList.size() ? estimator.getPositions(i)[0] : estimator.getPositions(i-1)[2]
                             : estimator.getInsertPos(i);
                     if (pos > localPointer) {
@@ -2801,7 +2803,7 @@ public class CasualDiff {
                 }
                 case DELETE: {
                     int[] pos = estimator.getPositions(i);
-                    if (localPointer < pos[0]) {
+                    if (localPointer < pos[0] && lastdel == null) {
                         copyTo(localPointer, pos[0], printer);
                     }
                     lastdel = oldList.get(i);
@@ -2811,6 +2813,7 @@ public class CasualDiff {
                     break;
                 }
                 case NOCHANGE: {
+                    lastGroup = group;
                     int[] pos = estimator.getPositions(i);
                     if (pos[0] > localPointer && i != 0) {
                         // print fill-in
@@ -2829,7 +2832,6 @@ public class CasualDiff {
                     break;
                 }
             }
-            lastGroup = group;
         }
         return localPointer;
     }

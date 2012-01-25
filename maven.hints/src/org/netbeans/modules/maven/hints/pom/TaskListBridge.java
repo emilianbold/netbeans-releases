@@ -49,6 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -77,7 +78,7 @@ public class TaskListBridge extends FileTaskScanner {
 
     @Override
     public List<? extends Task> scan(FileObject resource) {
-        if ("text/x-maven-pom+xml".equals(resource.getMIMEType()) //NOI18N
+        if (Constants.POM_MIME_TYPE.equals(resource.getMIMEType()) //NOI18N
                 && "pom.xml".equals(resource.getNameExt())) { //NOI18N
             Project prj = FileOwnerQuery.getOwner(resource);
             if (prj != null && prj.getLookup().lookup(NbMavenProject.class) != null) {

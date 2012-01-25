@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.SftpIOException;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
@@ -291,7 +292,7 @@ public class RemoteFileSystemUtils {
         }
     }
     
-    public static void delete(ExecutionEnvironment execEnv, String path, boolean directory) throws IOException {
+    public static boolean delete(ExecutionEnvironment execEnv, String path, boolean directory) throws IOException {
         StringWriter writer = new StringWriter();
         Future<Integer> task;
         if (directory) {
@@ -300,9 +301,7 @@ public class RemoteFileSystemUtils {
             task = CommonTasksSupport.rmFile(execEnv, path, writer);
         }
         try {
-            if (task.get().intValue() != 0) {
-                
-            }
+            return task.get().intValue() == 0;
         } catch (InterruptedException ex) {
             throw new InterruptedIOException();
         } catch (ExecutionException ex) {
@@ -336,4 +335,20 @@ public class RemoteFileSystemUtils {
     public static InputStream createDummyInputStream() {
         return new DummyInputStream();
     }    
+    
+    public static boolean isFileNotFoundException(Throwable ex) {
+        while (ex != null) {
+            if (ex instanceof FileNotFoundException) {
+                return true;
+            }
+            if (ex instanceof SftpIOException) {
+                if (((SftpIOException)ex).getId() == SftpIOException.SSH_FX_NO_SUCH_FILE) {
+                    return true;
+                }
+            }
+            ex = ex.getCause();
+        }
+        return false;
+    }
+    
 }

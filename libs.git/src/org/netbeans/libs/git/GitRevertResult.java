@@ -43,13 +43,21 @@ package org.netbeans.libs.git;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  *
  * @author ondra
  */
-public interface GitRevertResult {
+public final class GitRevertResult {
     
+    private Status status;
+    private GitRevisionInfo revertCommit;
+
+    private final List<File> conflicts;
+    private final List<File> failures;
+
     public static enum Status {
         REVERTED {
             @Override
@@ -83,11 +91,26 @@ public interface GitRevertResult {
         }
     }
     
-    public Status getStatus ();
-    
-    public GitRevisionInfo getNewHead ();
-    
-    public Collection<File> getConflicts();
-    
-    public Collection<File> getFailures ();    
+    GitRevertResult (Status status, GitRevisionInfo commit, List<File> conflicts, List<File> failures) {
+        this.status = status;
+        this.revertCommit = commit;
+        this.conflicts = conflicts == null ? Collections.<File>emptyList() : conflicts;
+        this.failures = failures == null ? Collections.<File>emptyList() : failures;
+    }
+
+    public Status getStatus () {
+        return status;
+    }
+
+    public GitRevisionInfo getNewHead () {
+        return revertCommit;
+    }
+
+    public Collection<File> getConflicts () {
+        return conflicts;
+    }
+
+    public Collection<File> getFailures () {
+        return failures;
+    }
 }

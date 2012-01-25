@@ -53,7 +53,7 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.merge.MergeStrategy;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitMergeResult;
-import org.netbeans.libs.git.jgit.JGitMergeResult;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -66,8 +66,8 @@ public class MergeCommand extends GitCommand {
     private GitMergeResult result;
     private String commitMessage;
 
-    public MergeCommand (Repository repository, String revision, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public MergeCommand (Repository repository, GitClassFactory gitFactory, String revision, ProgressMonitor monitor) {
+        super(repository, gitFactory, monitor);
         this.revision = revision;
     }
 
@@ -93,7 +93,7 @@ public class MergeCommand extends GitCommand {
         }
         command.setStrategy(MergeStrategy.RESOLVE);
         try {
-            result = new JGitMergeResult(command.call(), repository.getWorkTree());
+            result = getClassFactory().createMergeResult(command.call(), repository.getWorkTree());
         } catch (GitAPIException ex) {
             throw new GitException(ex);
         } catch (JGitInternalException ex) {

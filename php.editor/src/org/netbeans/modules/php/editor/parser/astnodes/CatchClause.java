@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
@@ -44,7 +44,7 @@ package org.netbeans.modules.php.editor.parser.astnodes;
 /**
  * Represents a catch clause (as part of a try statement)
  * <pre>e.g.<pre> catch (ExceptionClassName $variable) { body; },
- * 
+ *
  */
 public class CatchClause extends Statement {
 
@@ -67,7 +67,7 @@ public class CatchClause extends Statement {
 
     /**
      * Returns the class name of this catch clause.
-     * 
+     *
      * @return the exception variable declaration node
      */
     public Expression getClassName() {
@@ -76,7 +76,7 @@ public class CatchClause extends Statement {
 
     /**
      * Returns the exception variable declaration of this catch clause.
-     * 
+     *
      * @return the exception variable declaration node
      */
     public Variable getVariable() {
@@ -85,13 +85,13 @@ public class CatchClause extends Statement {
 
     /**
      * Returns the body of this catch clause.
-     * 
+     *
      * @return the catch clause body
      */
     public Block getBody() {
         return this.body;
     }
-    
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);

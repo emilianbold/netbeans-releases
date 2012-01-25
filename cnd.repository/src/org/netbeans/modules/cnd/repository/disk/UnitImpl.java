@@ -109,6 +109,11 @@ public final class UnitImpl implements Unit {
     }
 
     @Override
+    public String toString() {
+        return "UnitImpl{" + unitName + '}'; // NOI18N
+    }
+
+    @Override
     public Persistent get(Key key) throws IOException {
         assert key != null;
         // I commented a next assertion because it is too expensive.

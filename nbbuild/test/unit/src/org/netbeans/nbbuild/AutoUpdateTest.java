@@ -47,11 +47,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.apache.tools.ant.Project;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -172,7 +178,45 @@ public class AutoUpdateTest extends TestBase {
         File lastM = new File(new File(target, "platform"), ".lastModified");
         assertTrue("Last modified file created", lastM.exists());
     }
-    
+
+    public void testDownloadOSGi() throws Exception {
+        AutoUpdate au = new AutoUpdate();
+        au.setProject(new Project());
+        File install = new File(getWorkDir(), "install");
+        install.mkdirs();
+        au.setInstallDir(install);
+        AutoUpdate.Modules modules = au.createModules();
+        modules.setIncludes(".*");
+        modules.setClusters("platform|ide");
+        File catalog = extractString(
+                "<module_updates>\n" +
+                " <module codenamebase='org.apache.commons.io' distribution='ide/org-apache-commons-io.jar' downloadsize='109043' targetcluster='ide'>\n" +
+                "  <manifest AutoUpdate-Show-In-Client='false' OpenIDE-Module='org.apache.commons.io' OpenIDE-Module-Name='Apache Commons IO Bundle' OpenIDE-Module-Specification-Version='1.4'/>\n" +
+                " </module>\n" +
+                "</module_updates>\n");
+        File bundle = new File(getWorkDir(), "ide/org-apache-commons-io.jar");
+        bundle.getParentFile().mkdirs();
+        OutputStream os = new FileOutputStream(bundle);
+        Manifest m = new Manifest();
+        m.getMainAttributes().putValue("Manifest-Version", "1.0");
+        m.getMainAttributes().putValue("Bundle-SymbolicName", "org.apache.commons.io");
+        new JarOutputStream(os, m).close();
+        au.setUpdateCenter(catalog.toURI().toURL());
+        au.execute();
+        File tracking = new File(install, "ide/update_tracking/org-apache-commons-io.xml");
+        assertTrue(tracking.isFile());
+        Document doc = XMLUtil.parse(new InputSource(tracking.toURI().toString()), false, false, null, null);
+        Set<String> files = new TreeSet<String>();
+        NodeList nl = doc.getElementsByTagName("file");
+        for (int i = 0; i < nl.getLength(); i++) {
+            files.add(((Element) nl.item(i)).getAttribute("name"));
+        }
+        assertEquals("[config/Modules/org-apache-commons-io.xml, modules/org-apache-commons-io.jar]", files.toString());
+        assertEquals(bundle.length(), new File(install, "ide/modules/org-apache-commons-io.jar").length());
+        File config = new File(install, "ide/config/Modules/org-apache-commons-io.xml");
+        assertTrue(config.isFile());
+        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Module Status 1.0//EN\"\n                        \"http://www.netbeans.org/dtds/module-status-1_0.dtd\">\n<module name=\"org.apache.commons.io\">\n    <param name=\"autoload\">true</param>\n    <param name=\"eager\">false</param>\n    <param name=\"jar\">modules/org-apache-commons-io.jar</param>\n    <param name=\"reloadable\">false</param>\n</module>\n", readFile(config));
+    }
     
     public void testDownloadAndExtractExternal() throws Exception {
         File f = new File(getWorkDir(), "org-netbeans-api-annotations-common.xml");

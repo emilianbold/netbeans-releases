@@ -46,13 +46,7 @@ import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.util.List;
-import java.util.Set;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -61,7 +55,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.openide.util.Exceptions;
@@ -198,7 +192,7 @@ class VarUsageVisitor extends RefactoringVisitor {
         for (VariableTree variableTree : parameters) {
             Element var = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), variableTree));
             if(p.equals(var)) {
-                TypeElement classElement = (TypeElement) workingCopy.getTrees().getElement(RetoucheUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false));
+                TypeElement classElement = (TypeElement) workingCopy.getTrees().getElement(JavaRefactoringUtils.findEnclosingClass(workingCopy, getCurrentPath(), true, true, true, true, false));
                 List<ExecutableElement> methods = ElementFilter.methodsIn(workingCopy.getElements().getAllMembers(classElement));
                 String methodName = node.getName().toString();
                 for (ExecutableElement method : methods) {
@@ -246,7 +240,7 @@ class VarUsageVisitor extends RefactoringVisitor {
         List<? extends Element> memberElements = elements.getAllMembers(superTypeElement);
         for (Element elem : memberElements) {
             if(ElementKind.METHOD.equals(elem.getKind())){
-                if(isStatic(execElem) && elements.hides(execElem, elem)){
+                if(execElem.getModifiers().contains(Modifier.STATIC) && elements.hides(execElem, elem)){
                     return true;
                 }else{
                     if(execElem.equals(elem) || elements.overrides(execElem, (ExecutableElement)elem, 
@@ -302,11 +296,6 @@ class VarUsageVisitor extends RefactoringVisitor {
 
     private boolean isDeclaredType(TypeMirror type) {
         return TypeKind.DECLARED.equals(type.getKind());
-    }
-    //TODO: This method can be shared. Copied from UseSuperTypeRefactoringPlugin.
-    private boolean isStatic(Element element) {
-        Set<Modifier> modifiers = element.getModifiers();
-        return modifiers.contains(Modifier.STATIC);
     }
 
 }

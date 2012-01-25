@@ -84,7 +84,7 @@ public class RemoveTest extends AbstractGitTestCase {
         GitClient client = getClient(workDir);
         add(file);
         commit(file);
-        Map<File, GitStatus> statuses = client.getStatus(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { file }, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
 
@@ -103,7 +103,7 @@ public class RemoveTest extends AbstractGitTestCase {
         GitClient client = getClient(workDir);
         add(file);
         commit(file);
-        Map<File, GitStatus> statuses = client.getStatus(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { file }, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
 
@@ -112,12 +112,12 @@ public class RemoveTest extends AbstractGitTestCase {
         client.remove(new File[] { file }, false, m);
         assertEquals(Collections.singleton(file), m.notifiedFiles);
         assertFalse(file.exists());
-        statuses = client.getStatus(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(new File[] { file }, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_REMOVED, false);
 
         commit(file);
-        statuses = client.getStatus(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(new File[] { file }, NULL_PROGRESS_MONITOR);
         assertEquals(0, statuses.size());
     }
 
@@ -129,7 +129,7 @@ public class RemoveTest extends AbstractGitTestCase {
         commit(file);
 
         GitClient client = getClient(workDir);
-        Map<File, GitStatus> statuses = client.getStatus(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { file }, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
 
@@ -138,13 +138,13 @@ public class RemoveTest extends AbstractGitTestCase {
         client.remove(new File[] { file }, true, m);
         assertTrue(file.exists());
         assertEquals(Collections.singleton(file), m.notifiedFiles);
-        statuses = client.getStatus(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(new File[] { file }, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, false);
 
         commit(file);
 
-        statuses = client.getStatus(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(new File[] { file }, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, workDir, file, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_ADDED, false);
     }
@@ -168,7 +168,7 @@ public class RemoveTest extends AbstractGitTestCase {
         add(file);
         commit(workDir);
         GitClient client = getClient(workDir);
-        Map<File, GitStatus> statuses = client.getStatus(folders, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(folders, NULL_PROGRESS_MONITOR);
         assertEquals(3, statuses.size());
         assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file2, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
@@ -185,17 +185,17 @@ public class RemoveTest extends AbstractGitTestCase {
         assertTrue(file.exists());
         assertTrue(folder.exists());
         assertEquals(new HashSet<File>(Arrays.asList(file1, file2, file3, folder1, folder2)), m.notifiedFiles);
-        statuses = client.getStatus(folders, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(folders, NULL_PROGRESS_MONITOR);
         assertEquals(3, statuses.size());
         assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_REMOVED, false);
         assertStatus(statuses, workDir, file2, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_REMOVED, false);
         assertStatus(statuses, workDir, file3, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_REMOVED, false);
-        statuses = client.getStatus(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(new File[] { file }, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
 
         commit(workDir);
-        statuses = client.getStatus(folders, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(folders, NULL_PROGRESS_MONITOR);
         assertEquals(0, statuses.size());
     }
 
@@ -219,7 +219,7 @@ public class RemoveTest extends AbstractGitTestCase {
         add(file);
         commit(workDir);
         GitClient client = getClient(workDir);
-        Map<File, GitStatus> statuses = client.getStatus(folders, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(folders, NULL_PROGRESS_MONITOR);
         assertEquals(3, statuses.size());
         assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file2, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
@@ -232,17 +232,17 @@ public class RemoveTest extends AbstractGitTestCase {
         assertTrue(file2.exists());
         assertTrue(file3.exists());
         assertEquals(new HashSet<File>(Arrays.asList(file1, file2, file3)), m.notifiedFiles);
-        statuses = client.getStatus(folders, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(folders, NULL_PROGRESS_MONITOR);
         assertEquals(3, statuses.size());
         assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file2, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file3, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, false);
-        statuses = client.getStatus(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(new File[] { file }, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
 
         commit(workDir);
-        statuses = client.getStatus(folders,ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(folders,NULL_PROGRESS_MONITOR);
         assertEquals(3, statuses.size());
         assertStatus(statuses, workDir, file1, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_ADDED, false);
         assertStatus(statuses, workDir, file2, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_ADDED, false);
@@ -254,7 +254,7 @@ public class RemoveTest extends AbstractGitTestCase {
         file.createNewFile();
         assertTrue(file.exists());
         GitClient client = getClient(workDir);
-        Map<File, GitStatus> statuses = client.getStatus(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { file }, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, workDir, file, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_ADDED, false);
 
@@ -263,7 +263,7 @@ public class RemoveTest extends AbstractGitTestCase {
         client.remove(new File[] { file }, false, m);
         assertFalse(file.exists());
         assertEquals(Collections.singleton(file), m.notifiedFiles);
-        statuses = client.getStatus(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(new File[] { file }, NULL_PROGRESS_MONITOR);
         assertEquals(0, statuses.size());
     }
 
@@ -281,7 +281,7 @@ public class RemoveTest extends AbstractGitTestCase {
 
         File[] folders = new File[] { folder1, folder2 };
         GitClient client = getClient(workDir);
-        Map<File, GitStatus> statuses = client.getStatus(folders, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(folders, NULL_PROGRESS_MONITOR);
         assertEquals(3, statuses.size());
         assertStatus(statuses, workDir, file1, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_ADDED, false);
         assertStatus(statuses, workDir, file2, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_ADDED, false);
@@ -297,7 +297,7 @@ public class RemoveTest extends AbstractGitTestCase {
         assertFalse(folder2.exists());
         assertTrue(folder.exists());
         assertEquals(new HashSet<File>(Arrays.asList(file1, file2, file3, folder1, folder2)), m.notifiedFiles);
-        statuses = client.getStatus(folders, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(folders, NULL_PROGRESS_MONITOR);
         assertEquals(0, statuses.size());
     }
 
@@ -330,5 +330,39 @@ public class RemoveTest extends AbstractGitTestCase {
         assertTrue(m.isCanceled());
         assertEquals(1, m.count);
         assertEquals(null, exs[0]);
+    }
+
+    // must not return status for nested repositories
+    public void testRemoveNested () throws Exception {
+        File f = new File(workDir, "f");
+        write(f, "file");
+        
+        GitClient client = getClient(workDir);
+        client.add(new File[] { f }, NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { f }, "init commit", null, null, NULL_PROGRESS_MONITOR);
+        
+        File nested = new File(workDir, "nested");
+        nested.mkdirs();
+        File f2 = new File(nested, "f");
+        write(f2, "file");
+        GitClient clientNested = getClient(nested);
+        clientNested.init(NULL_PROGRESS_MONITOR);
+        
+        ProgressMonitor pm = new ProgressMonitor.DefaultProgressMonitor() {
+
+            @Override
+            public void notifyError (String message) {
+                fail("No ERROR may ocur: " + message);
+            }
+            
+        };
+        client.remove(new File[] { nested }, false, pm);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, workDir, f, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        
+        statuses = clientNested.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, nested, f2, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_ADDED, false);
     }
 }

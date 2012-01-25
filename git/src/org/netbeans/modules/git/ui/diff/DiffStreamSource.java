@@ -192,7 +192,7 @@ public class DiffStreamSource extends StreamSource {
         try {
             if (isEditable()) {
                 // we cannot move editable documents because that would break Document sharing
-                remoteFile = VersionsCache.getInstance().getFileRevision(baseFile, revision, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                remoteFile = VersionsCache.getInstance().getFileRevision(baseFile, revision, GitUtils.NULL_PROGRESS_MONITOR);
             } else {
                 File tempFolder = Utils.getTempFolder();
                 // To correctly get content of the base file, we need to checkout all files that belong to the same
@@ -202,7 +202,7 @@ public class DiffStreamSource extends StreamSource {
                 for (File file : allFiles) {
                     boolean isBase = file.equals(baseFile);
                     try {
-                        File rf = VersionsCache.getInstance().getFileRevision(file, revision, ProgressMonitor.NULL_PROGRESS_MONITOR);
+                        File rf = VersionsCache.getInstance().getFileRevision(file, revision, GitUtils.NULL_PROGRESS_MONITOR);
                         if (rf == null) {
                             remoteFile = null;
                             return;

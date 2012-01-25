@@ -42,21 +42,13 @@
 
 package org.netbeans.modules.php.project.connections.spi;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.keyring.Keyring;
-import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * Class representing a remote configuration (e.g. FTP, SFTP).
@@ -69,7 +61,6 @@ import org.openide.util.RequestProcessor;
 public abstract class RemoteConfiguration {
 
     protected static final Logger LOGGER = Logger.getLogger(RemoteConfiguration.class.getName());
-    static final RequestProcessor KEYRING_ACCESS = new RequestProcessor();
 
     protected final ConfigManager.Configuration cfg;
 
@@ -240,10 +231,13 @@ public abstract class RemoteConfiguration {
      * @return value of the given key as a number or defaultValue if any error occurs
      */
     protected int readNumber(String key, int defaultValue) {
-        try {
-            return Integer.parseInt(cfg.getValue(key));
-        } catch (NumberFormatException nfe) {
-            LOGGER.log(Level.FINE, "Exception while parsing number of '" + key + "'", nfe);
+        String currentValue = cfg.getValue(key);
+        if (StringUtils.hasText(currentValue)) {
+            try {
+                return Integer.parseInt(currentValue);
+            } catch (NumberFormatException nfe) {
+                LOGGER.log(Level.FINE, "Exception while parsing number of '" + key + "'", nfe);
+            }
         }
         cfg.putValue(key, String.valueOf(defaultValue));
         return defaultValue;
@@ -298,49 +292,15 @@ public abstract class RemoteConfiguration {
     }
 
     private String readPasswordFromKeyring() {
-        try {
-            final Future<String> result = KEYRING_ACCESS.submit(new Callable<String>() {
-                @Override
-                public String call() throws Exception {
-                    // new password key
-                    char[] newPassword = Keyring.read(passwordKey);
-                    if (newPassword != null) {
-                        return new String(newPassword);
-                    }
-                    // deprecated password key
-                    newPassword = Keyring.read(deprecatedPasswordKey);
-                    if (newPassword != null) {
-                        return new String(newPassword);
-                    }
-                    return null;
-                }
-            });
-            if (SwingUtilities.isEventDispatchThread()) {
-                if (!result.isDone()) {
-                    try {
-                        // let's wait in awt to avoid flashing dialogs
-                        result.get(99, TimeUnit.MILLISECONDS);
-                    } catch (TimeoutException ex) {
-                        ProgressUtils.showProgressDialogAndRun(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    result.get();
-                                } catch (InterruptedException ex) {
-                                    Thread.currentThread().interrupt();
-                                } catch (ExecutionException ex) {
-                                    LOGGER.log(Level.INFO, null, ex);
-                                }
-                            }
-                        }, NbBundle.getMessage(RemoteConfiguration.class, "MSG_KeyringAccess"));
-                    }
-                }
-            }
-            return result.get();
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        } catch (ExecutionException ex) {
-            LOGGER.log(Level.INFO, null, ex);
+        // new password key
+        char[] newPassword = Keyring.read(passwordKey);
+        if (newPassword != null) {
+            return new String(newPassword);
+        }
+        // deprecated password key
+        newPassword = Keyring.read(deprecatedPasswordKey);
+        if (newPassword != null) {
+            return new String(newPassword);
         }
         return null;
     }
@@ -352,29 +312,19 @@ public abstract class RemoteConfiguration {
             return;
         }
         if (StringUtils.hasText(password)) {
-            KEYRING_ACCESS.post(new Runnable() {
-                @Override
-                public void run() {
-                    Keyring.save(passwordKey, password.toCharArray(),
-                            NbBundle.getMessage(RemoteConfiguration.class, "MSG_PasswordFor", getDisplayName(), type));
-                    // remove old password key
-                    Keyring.delete(deprecatedPasswordKey);
-                }
-            });
+            Keyring.save(passwordKey, password.toCharArray(),
+                    NbBundle.getMessage(RemoteConfiguration.class, "MSG_PasswordFor", getDisplayName(), type));
+            // remove old password key
+            Keyring.delete(deprecatedPasswordKey);
         } else {
             deletePassword();
         }
     }
 
     protected void deletePassword() {
-        KEYRING_ACCESS.post(new Runnable() {
-            @Override
-            public void run() {
-                Keyring.delete(passwordKey);
-                // remove old password key
-                Keyring.delete(deprecatedPasswordKey);
-            }
-        });
+        Keyring.delete(passwordKey);
+        // remove old password key
+        Keyring.delete(deprecatedPasswordKey);
     }
 
 }

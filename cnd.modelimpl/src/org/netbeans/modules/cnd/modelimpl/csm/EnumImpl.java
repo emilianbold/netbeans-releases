@@ -48,6 +48,7 @@ import java.util.* ;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl.EnumeratorBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -69,49 +70,52 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
     }
 
-    private EnumImpl(String name, String qName, CsmFile file, int startOffset, int endOffset) {
+    private EnumImpl(CharSequence name, String qName, CsmFile file, int startOffset, int endOffset) {
         super(name, qName, file, startOffset, endOffset);
         enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
     }
     
-    private void init(CsmScope scope, AST ast, boolean register) {
+    public void init(CsmScope scope, AST ast, final CsmFile file, boolean register) {
 	initScope(scope);
-        temporaryRepositoryRegistration(register, this);
-        initEnumeratorList(ast, register);
+//        initEnumeratorList(ast, file, register);
         if (register) {
             register(scope, true);
         }
     }
     
-    public static EnumImpl create(AST ast, CsmScope scope, CsmFile file, boolean register) {
+    public static EnumImpl create(AST ast, CsmScope scope, final CsmFile file, boolean register) {
         NameHolder nameHolder = NameHolder.createEnumName(ast);
 	EnumImpl impl = new EnumImpl(ast, nameHolder, file);
-	impl.init(scope, ast, register);
+	impl.init2(scope, ast, file, register);
         nameHolder.addReference(file, impl);
 	return impl;
     }
-
-    public static EnumImpl create(String name, String qName,CsmFile file, CsmScope scope, int startOffset, int endOffset, boolean register) {
-	EnumImpl impl = new EnumImpl(name, qName, file, startOffset, endOffset);
-	impl.initScope(scope);
-        temporaryRepositoryRegistration(register, impl);
+    
+    void init2(CsmScope scope, AST ast, final CsmFile file, boolean register) {
+	initScope(scope);
+        temporaryRepositoryRegistration(register, this);
+        initEnumeratorList(ast, file, register);
         if (register) {
-            impl.register(scope, true);
+            register(scope, true);
         }
-	return impl;
-    }
+    }    
 
     void addEnumerator(String name, int startOffset, int endOffset, boolean register) {
         EnumeratorImpl ei = EnumeratorImpl.create(this, name, startOffset, endOffset, register);
         CsmUID<CsmEnumerator> uid = UIDCsmConverter.<CsmEnumerator>objectToUID(ei);
         enumerators.add(uid);
     }
+
+    void addEnumerator(EnumeratorImpl ei) {
+        CsmUID<CsmEnumerator> uid = UIDCsmConverter.<CsmEnumerator>objectToUID(ei);
+        enumerators.add(uid);
+    }
     
-    private void initEnumeratorList(AST ast, boolean global){
+    private void initEnumeratorList(AST ast, final CsmFile file, boolean global){
         //enum A { a, b, c };
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             if( token.getType() == CPPTokenTypes.CSM_ENUMERATOR_LIST ) {
-                addList(token, global);
+                addList(token, file, global);
                 return;
             }
         }
@@ -127,15 +131,15 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
                 enumList = token.getNextSibling();
             }
             if (enumList != null && enumList.getType() == CPPTokenTypes.CSM_ENUMERATOR_LIST) {
-                addList(enumList, global);
+                addList(enumList, file, global);
             }
         }
     }
     
-    private void addList(AST token, boolean global){
+    private void addList(AST token, final CsmFile file, boolean global){
         for( AST t = token.getFirstChild(); t != null; t = t.getNextSibling() ) {
             if( t.getType() == CPPTokenTypes.ID ) {
-                EnumeratorImpl ei = EnumeratorImpl.create(t, this, global);
+                EnumeratorImpl ei = EnumeratorImpl.create(t, file, this, global);
                 CsmUID<CsmEnumerator> uid = UIDCsmConverter.<CsmEnumerator>objectToUID(ei);
                 enumerators.add(uid);
             }
@@ -169,6 +173,58 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         Collection<CsmEnumerator> enumers = getEnumerators();
         Utils.disposeAll(enumers);
         RepositoryUtils.remove(enumerators);
+    }
+    
+    public static class EnumBuilder implements CsmObjectBuilder {
+        
+        private CharSequence name;
+        private String qName;
+        private CsmFile file;
+        private int startOffset;
+        private int endOffset;
+
+        List<EnumeratorBuilder> enumeratorBuilders = new ArrayList<EnumeratorBuilder>();
+        
+        public void setName(CharSequence name) {
+            this.name = name;
+            // for now without scope
+            qName = name.toString();
+        }
+
+        public void setFile(CsmFile file) {
+            this.file = file;
+        }
+        
+        public void setEndOffset(int endOffset) {
+            this.endOffset = endOffset;
+        }
+
+        public void setStartOffset(int startOffset) {
+            this.startOffset = startOffset;
+        }
+
+        public void addEnumerator(EnumeratorBuilder eb) {
+            enumeratorBuilders.add(eb);
+        }
+        
+        public EnumImpl create(boolean register) {
+            if(name != null) {
+                NameHolder nameHolder = NameHolder.createName(name);
+                EnumImpl impl = new EnumImpl(name, qName, file, startOffset, endOffset);
+    //            impl.init(scope, ast, file, register);
+                nameHolder.addReference(file, impl);
+                OffsetableDeclarationBase.temporaryRepositoryRegistration(register, impl);
+                
+                for (EnumeratorBuilder enumeratorBuilder : enumeratorBuilders) {
+                    enumeratorBuilder.setEnum(impl);
+                    EnumeratorImpl ei = enumeratorBuilder.create(register);
+                    impl.addEnumerator(ei);
+                }
+                return impl;
+            }
+            return null;
+        }
+    
     }
     
 ////////////////////////////////////////////////////////////////////////////

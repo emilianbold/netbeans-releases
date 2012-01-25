@@ -57,6 +57,7 @@ import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.EmptyStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
@@ -88,8 +89,10 @@ public class InvocationContextResolver {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     ParserResult info = (ParserResult) resultIterator.getParserResult();
-                    int caretOffset = component.getCaretPosition();
-                    nodes = NavUtils.underCaret(info, caretOffset);
+                    if (info != null) {
+                        int caretOffset = component.getCaretPosition();
+                        nodes = NavUtils.underCaret(info, caretOffset);
+                    }
                 }
             });
         } catch (ParseException ex) {
@@ -98,11 +101,15 @@ public class InvocationContextResolver {
     }
 
     public boolean isExactlyIn(InvocationContext context) {
-        ASTNode lastNode = nodes.get(nodes.size() - 1);
-        if (lastNode instanceof Block) {
-            lastNode = nodes.get(nodes.size() - 2);
+        boolean result = false;
+        if (!nodes.isEmpty()) {
+            ASTNode lastNode = nodes.get(nodes.size() - 1);
+            if (lastNode instanceof Block) {
+                lastNode = nodes.get(nodes.size() - 2);
+            }
+            result = context.isExactlyIn(lastNode);
         }
-        return context.isExactlyIn(lastNode);
+        return result;
     }
 
     public enum InvocationContext {
@@ -138,6 +145,13 @@ public class InvocationContextResolver {
             @Override
             boolean isExactlyIn(ASTNode lastNode) {
                 return lastNode instanceof Program;
+            }
+        },
+
+        EMPTY_STATEMENT {
+            @Override
+            boolean isExactlyIn(ASTNode lastNode) {
+                return lastNode instanceof EmptyStatement;
             }
         };
 

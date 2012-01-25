@@ -44,50 +44,38 @@
 
 package org.netbeans.core.actions;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static org.netbeans.core.actions.Bundle.*;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.modules.Places;
-import org.openide.util.actions.CallableSystemAction;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
-// TODO Make this action plain javax.swing.Action, SystemAction is unneeded overkill here.
-public class LogAction extends CallableSystemAction {
+@ActionID(category="View", id="org.netbeans.core.actions.LogAction")
+@ActionRegistration(displayName = "#MSG_LogTab_name", iconInMenu = false, iconBase = "org/netbeans/core/resources/log-file.gif")
+@ActionReference(path = "Menu/View", position = 500)
+@Messages("MSG_LogTab_name=IDE &Log")
+public class LogAction implements ActionListener {
 
-
-    public LogAction() {
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-    }
-
-
-    public void performAction() {
+    @Messages("MSG_ShortLogTab_name=IDE Log")
+    @Override public void actionPerformed(ActionEvent evt) {
         File userDir = Places.getUserDirectory();
         if (userDir == null) {
             return;
         }
         File f = new File(userDir, "/var/log/messages.log");
-        LogViewerSupport p = new LogViewerSupport(f, NbBundle.getMessage(LogAction.class, "MSG_ShortLogTab_name"));
-	try {
+        LogViewerSupport p = new LogViewerSupport(f, MSG_ShortLogTab_name());
+        try {
             p.showLogViewer();
-	} catch (java.io.IOException e) {
+        } catch (IOException e) {
             Logger.getLogger(LogAction.class.getName()).log(Level.INFO, "Showing IDE log action failed", e);
         }
     }
 
-    public String getName() {
-        return NbBundle.getMessage(LogAction.class, "MSG_LogTab_name"); // NOI18N
-    }
-
-    @Override public String iconResource() {
-        return "org/netbeans/core/resources/log-file.gif"; // NOI18N
-    }
-
-    @Override public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override public boolean asynchronous() {
-        return false ;
-    }
 }

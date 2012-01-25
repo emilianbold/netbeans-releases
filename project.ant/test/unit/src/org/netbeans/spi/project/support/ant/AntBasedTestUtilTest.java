@@ -50,9 +50,10 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.net.URI;
 import java.util.Properties;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.spi.queries.CollocationQueryImplementation;
+import org.netbeans.spi.queries.CollocationQueryImplementation2;
 
 /**
  * Test functionality of AntBasedTestUtil itself.
@@ -110,19 +111,19 @@ public class AntBasedTestUtilTest extends NbTestCase {
     }
     
     public void testTestCollocationQueryImplementation() throws Exception {
-        File root = new File(System.getProperty("java.io.tmpdir"));
+        URI root = URI.create("file:/tmp/");
         assertTrue("using absolute root " + root, root.isAbsolute());
-        CollocationQueryImplementation cqi = AntBasedTestUtil.testCollocationQueryImplementation(root);
-        File f1 = new File(root, "f1");
-        File f2 = new File(root, "f2");
-        File d1f1 = new File(new File(root, "d1"), "f1");
-        File d2f1 = new File(new File(root, "d2"), "f1");
-        File s = new File(root, "separate");
-        File s1 = new File(s, "s1");
-        File s2 = new File(s, "s2");
-        File t = new File(root, "transient");
-        File t1 = new File(t, "t1");
-        File t2 = new File(t, "t2");
+        CollocationQueryImplementation2 cqi = AntBasedTestUtil.testCollocationQueryImplementation(root);
+        URI f1 = root.resolve("f1");
+        URI f2 = root.resolve("f2");
+        URI d1f1 = root.resolve("d1/f1");
+        URI d2f1 = root.resolve("d2/f1");
+        URI s = root.resolve("separate/");
+        URI s1 = s.resolve("s1");
+        URI s2 = s.resolve("s2");
+        URI t = root.resolve("transient/");
+        URI t1 = t.resolve("t1");
+        URI t2 = t.resolve("t2");
         assertTrue("f1 & f2 collocated", cqi.areCollocated(f1, f2));
         assertTrue("f1 & f2 collocated (reverse)", cqi.areCollocated(f2, f1));
         assertTrue("d1f1 & d2f1 collocated", cqi.areCollocated(d1f1, d2f1));

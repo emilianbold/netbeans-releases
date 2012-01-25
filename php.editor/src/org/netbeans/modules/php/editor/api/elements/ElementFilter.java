@@ -67,7 +67,7 @@ public abstract class ElementFilter {
     public static ElementFilter allOf(final Collection<ElementFilter> filters) {
         return ElementFilter.allOf(filters.toArray(new ElementFilter[filters.size()]));
     }
-    
+
     public static ElementFilter allOf(final ElementFilter... filters) {
         return new ElementFilter() {
 
@@ -290,7 +290,7 @@ public abstract class ElementFilter {
         }
         return ElementFilter.anyOf(filters);
     }
-    
+
     public static ElementFilter forMembersOfType(final TypeElement typeElement) {
         return new ElementFilter() {
             private ElementFilter filterDelegate = null;

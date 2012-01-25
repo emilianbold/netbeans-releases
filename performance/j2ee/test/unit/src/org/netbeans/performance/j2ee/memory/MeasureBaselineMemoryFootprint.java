@@ -50,8 +50,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import java.lang.management.ManagementFactory;
 
 import java.util.StringTokenizer;
+import org.openide.util.Exceptions;
 
 /**
  * Measure memory footprint, by checking size of memory occupied by runide process.
@@ -103,6 +105,7 @@ public class MeasureBaselineMemoryFootprint extends org.netbeans.junit.NbPerform
             memory = getMemoryConsumption();
             
             if(memory>0){
+                System.out.println("Memory consumption of process "+pid+" is: "+memory+"kB");
                 reportPerformance("Memory Consumption After Start", memory , "kB", 1);
             }else
                 fail("Measured value = "+memory+"kB - it's wrong value!");
@@ -117,53 +120,24 @@ public class MeasureBaselineMemoryFootprint extends org.netbeans.junit.NbPerform
     /**
      * Measure memory footprint. Looks for file [xtest.tmpdir]/ide.pid
      * to IDE process PID which is used by utils to measure memory.
-     * @throws IOException if [xtest.tmpdir]/ide.pid file doesn't exist
+     * @throws IOException if [workdir]/ide.pid file doesn't exist
      * @return return measured memory footprint
      */
     private long getMemoryConsumption() throws IOException {
-        String workdir = System.getProperty("xtest.tmpdir");
-        
-        File ideRunning;
         log("Start");
-        
-        if (workdir!=null) {
-            log("Workdir {"+workdir+"}.");
-            workdir = workdir.substring(0,workdir.lastIndexOf(File.separator));
-            
-            // create flag file indicating running tests
-            ideRunning = new File(workdir,"ide.pid");
-            log("Looking for file {"+ideRunning.getAbsolutePath()+"}.");
-            
-            if (ideRunning.exists()) {
-                log("PID file exists.");
-                try {
-                    LineNumberReader reader = new LineNumberReader(new FileReader(ideRunning));
-                    String line = reader.readLine();
-                    if (line != null) {
-                        try {
-                            pid = Long.parseLong(line);
-                            log("Measure memory footprint of process with PID="+pid);
-                            long measuredMemory = measureMemory();
-                            Thread.sleep(2000);
-                            return measuredMemory;
-                        } catch (NumberFormatException nfe) {
-                            nfe.printStackTrace(getLog());
-                            fail("Cannot parse PID written in the ide.pid file: "+line+"- cannot measure.");
-                        }
-                    }
-                } catch (IOException ioe) {
-                    ioe.printStackTrace(getLog());
-                    fail("IOException when reading PID from ide.pid file - cannot measure");
-                } catch (Exception e) {
-                    e.printStackTrace(getLog());
-                    fail("Exception when trying to measure IDE's used memory");
-                }
-            } else {
-                fail("Cannot find file containing PID of running IDE ("+ideRunning.getAbsolutePath()+") - cannot measure");
+        try {
+            pid = getPID();
+            log("Measure memory footprint of process with PID="+pid);
+            long measuredMemory = measureMemory();
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
             }
-        } else {
-            fail("xtest.workdir property is not specified - cannot measure");
-        }
+            return measuredMemory;
+        } catch (NumberFormatException nfe) {
+            nfe.printStackTrace(getLog());                
+        }        
         fail("Wrong state");
         return 0;
     }
@@ -247,15 +221,15 @@ public class MeasureBaselineMemoryFootprint extends org.netbeans.junit.NbPerform
      * @param psCommand command to be runned (using platform depend util)
      */
     private long psOnWindows(){
-        String xtestHome = System.getProperty("xtest.tmpdir");
-        if (xtestHome != null) {
-            File psFile = new File(xtestHome,"pslist.exe");
+        String home = getWorkDirPath();
+        if (home != null) {
+            File psFile = new File(home,"pslist.exe");
             String psPath = psFile.getAbsolutePath();
             String psCommand = psPath;
             executePsCommand(psCommand);
             return parsePsFile();
         } else {
-            fail("xtest.home system property not set - cannot find ps distributed with XTest on windows");
+            fail("home system property not set - cannot find ps distributed on windows");
         }
         return 0;
     }
@@ -376,5 +350,8 @@ public class MeasureBaselineMemoryFootprint extends org.netbeans.junit.NbPerform
         return UNKNOWN;
     }
     
-    
+    private long getPID() {
+        String selfName = ManagementFactory.getRuntimeMXBean().getName();
+        return Long.parseLong(selfName.substring(0, selfName.indexOf('@')));
+    }
 }

@@ -49,8 +49,8 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
-import org.netbeans.modules.refactoring.spi.ui.*;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -67,6 +67,7 @@ public class FileTreeElement implements TreeElement {
     }
 
 
+    @Override
     public TreeElement getParent(boolean isLogical) {
         if (isLogical) {
             return TreeElementFactory.getTreeElement(fo.getParent());
@@ -76,6 +77,7 @@ public class FileTreeElement implements TreeElement {
         }
     }
 
+    @Override
     public Icon getIcon() {
         try {
             return new ImageIcon(DataObject.find(fo).getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
@@ -84,10 +86,12 @@ public class FileTreeElement implements TreeElement {
         }
     }
 
+    @Override
     public String getText(boolean isLogical) {
         return fo.getNameExt();
     }
 
+    @Override
     public Object getUserObject() {
         return fo;
     }

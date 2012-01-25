@@ -66,6 +66,7 @@ class ResultTreeScrollController implements TreeWillExpandListener,
     private int lastX = -1;
     private JScrollPane scrollPane;
     private JTree tree;
+    private boolean enabled = true;
 
     private ResultTreeScrollController(JScrollPane scrollPane, JTree tree) {
         this.scrollPane = scrollPane;
@@ -76,7 +77,9 @@ class ResultTreeScrollController implements TreeWillExpandListener,
     public synchronized void treeWillExpand(TreeExpansionEvent event)
             throws ExpandVetoException {
 
-        lastX = (int) scrollPane.getViewport().getViewPosition().getX();
+        if (enabled) {
+            lastX = (int) scrollPane.getViewport().getViewPosition().getX();
+        }
     }
 
     @Override
@@ -87,6 +90,9 @@ class ResultTreeScrollController implements TreeWillExpandListener,
     @Override
     public void treeExpanded(final TreeExpansionEvent event) {
 
+        if (!enabled) {
+            return;
+        }
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
@@ -94,16 +100,18 @@ class ResultTreeScrollController implements TreeWillExpandListener,
 
                 Rectangle r = tree.getPathBounds(event.getPath());
 
-                Object treeNode = event.getPath().getLastPathComponent();
-                int childCount = tree.getModel().getChildCount(treeNode);
+                if (r != null) {
+                    Object treeNode = event.getPath().getLastPathComponent();
+                    int childCount = tree.getModel().getChildCount(treeNode);
 
-                // View height needed to show node and its children.
-                int height = (int) r.getHeight() * (childCount + 1);
+                    // View height needed to show node and its children.
+                    int height = (int) r.getHeight() * (childCount + 1);
 
-                Rectangle rectToShow = new Rectangle(lastX, (int) r.getY(),
-                        (int) scrollPane.getWidth() - 20, height);
+                    Rectangle rectToShow = new Rectangle(lastX, (int) r.getY(),
+                            (int) scrollPane.getWidth() - 20, height);
 
-                tree.scrollRectToVisible(rectToShow);
+                    tree.scrollRectToVisible(rectToShow);
+                }
             }
         });
     }
@@ -112,13 +120,24 @@ class ResultTreeScrollController implements TreeWillExpandListener,
     public void treeCollapsed(TreeExpansionEvent tee) {
     }
 
+    /**
+     * Enable or disable the scroll controller.
+     *
+     * Automatic scrolling should be disabled when tree nodes are expanded
+     * programatically, e.g. from method ResultTreeModel.fixTreeExpansionState.
+     */
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
     /** Register listeners to a JTree and its containing JScrollPane,
      * and disables tree auto-scolling on node expansion.
      * 
      * @param scrollPane
      * @param tree 
      */
-    static void register(JScrollPane scrollPane, JTree tree) {
+    static ResultTreeScrollController register(JScrollPane scrollPane,
+            JTree tree) {
 
         ResultTreeScrollController h =
                 new ResultTreeScrollController(scrollPane, tree);
@@ -126,5 +145,6 @@ class ResultTreeScrollController implements TreeWillExpandListener,
         tree.addTreeWillExpandListener(h);
         tree.addTreeExpansionListener(h);
         tree.setScrollsOnExpand(false);
+        return h;
     }
 }

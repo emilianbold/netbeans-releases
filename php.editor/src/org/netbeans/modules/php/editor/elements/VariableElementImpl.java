@@ -74,14 +74,17 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
     public static final String IDX_FIELD = PHPIndexer.FIELD_VAR;
 
     private final Set<TypeResolver> instanceTypes;
+    private Set<TypeResolver> instanceFQTypes;
     protected VariableElementImpl(
             final String variableName,
             final int offset,
             final String fileUrl,
             final ElementQuery elementQuery,
-            final Set<TypeResolver> instanceTypes) {
+            final Set<TypeResolver> instanceTypes,
+            final Set<TypeResolver> instanceFQTypes) {
         super(VariableElementImpl.getName(variableName, true), null, fileUrl, offset, elementQuery);
         this.instanceTypes = instanceTypes;
+        this.instanceFQTypes = instanceFQTypes;
     }
 
     public static VariableElementImpl create(
@@ -90,7 +93,7 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
             final String fileUrl,
             final ElementQuery elementQuery,
             final Set<TypeResolver> instanceTypes) {
-        return new VariableElementImpl(variableName, offset, fileUrl, elementQuery, instanceTypes);
+        return new VariableElementImpl(variableName, offset, fileUrl, elementQuery, instanceTypes, instanceTypes);
     }
 
     public static VariableElementImpl create(
@@ -99,7 +102,7 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
             final FileObject fo,
             final ElementQuery elementQuery,
             final Set<TypeResolver> instanceTypes) {
-        return new VariableElementImpl(variableName, offset, (String)null, elementQuery, instanceTypes) {
+        return new VariableElementImpl(variableName, offset, (String)null, elementQuery, instanceTypes, instanceTypes) {
             @Override
             public synchronized FileObject getFileObject() {
                 return fo;
@@ -132,7 +135,7 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
         if (matchesQuery(query, signParser)) {
             retval = new VariableElementImpl(signParser.getVariableName(),
                     signParser.getOffset(), indexResult.getUrl().toString(),
-                    indexScopeQuery, signParser.getTypes());
+                    indexScopeQuery, signParser.getTypes(), signParser.getFQTypes());
         }
         return retval;
     }
@@ -142,15 +145,16 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
         Parameters.notNull("fileQuery", fileQuery);
         ASTNodeInfo<Variable> info = ASTNodeInfo.create(node);
         return new VariableElementImpl(info.getName(), info.getRange().getStart(),
-                fileQuery.getURL().toExternalForm(), fileQuery, typeResolvers);
+                fileQuery.getURL().toExternalForm(), fileQuery, typeResolvers, typeResolvers);
     }
 
     public static VariableElement fromFrameworks(final PhpVariable variable, final ElementQuery elementQuery) {
         Parameters.notNull("variable", variable);
+        Set<TypeResolver> typeResolvers = variable.getType() == null
+                    ? Collections.<TypeResolver>emptySet()
+                    : Collections.<TypeResolver>singleton(new TypeResolverImpl(variable.getType().getFullyQualifiedName()));
         VariableElementImpl retval = new VariableElementImpl(variable.getName(), variable.getOffset(), null, elementQuery,
-                variable.getType() == null 
-                    ? Collections.<TypeResolver>emptySet() 
-                    : Collections.<TypeResolver>singleton(new TypeResolverImpl(variable.getType().getFullyQualifiedName())));
+                typeResolvers, typeResolvers);
         retval.fileObject = variable.getFile();
         return retval;
     }
@@ -194,6 +198,11 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
         return instanceTypes;
     }
 
+    @Override
+    public final Set<TypeResolver> getInstanceFQTypes() {
+        return instanceFQTypes;
+    }
+
     private void checkSignature(StringBuilder sb) {
         boolean checkEnabled = false;
         assert checkEnabled = true;
@@ -203,6 +212,7 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
             assert getName().equals(parser.getVariableName());
             assert getOffset() == parser.getOffset();
             assert getInstanceTypes().size() == parser.getTypes().size();
+            assert getInstanceFQTypes().size() == parser.getFQTypes().size();
         }
     }
 
@@ -232,6 +242,10 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
 
         Set<TypeResolver> getTypes() {
             return TypeResolverImpl.parseTypes(signature.string(2));
+        }
+
+        Set<TypeResolver> getFQTypes() {
+            return TypeResolverImpl.parseTypes(signature.string(4));
         }
 
     }

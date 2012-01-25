@@ -47,6 +47,7 @@ import java.io.FilePermission;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.Permission;
@@ -104,7 +105,11 @@ public class RemoteFileURLConnection extends URLConnection {
             throw newFileNotFoundException();
         }
         if (iStream == null) {
-            iStream = fileObject.getInputStream();
+            if (fileObject.isData()) {
+                iStream = fileObject.getInputStream();
+            } else {
+                iStream = new FIS(fileObject);
+            }
         }
         return iStream;
     }
@@ -168,5 +173,108 @@ public class RemoteFileURLConnection extends URLConnection {
             super.close();
         }
     }
-}
+    
+    /**
+     * The class allows reading of folder via URL. Because of html oriented user
+     * interface the document has html format. Taken from
+     * org.openide.filesystems.FileURL
+     *
+     * @author Ales Novak
+     * @version 0.10 May 15, 1998
+     */
+    private static final class FIS extends InputStream {
 
+        /**
+         * delegated reader that reads the document
+         */
+        private StringReader reader;
+
+        /**
+         * @param folder is a folder
+         */
+        public FIS(FileObject folder) throws IOException {
+            reader = new StringReader(createDocument(folder));
+        }
+
+        /**
+         * creates html document as string
+         */
+        private String createDocument(FileObject folder)
+                throws IOException {
+            StringBuilder buff = new StringBuilder(150);
+            StringBuilder lit = new StringBuilder(15);
+            FileObject[] fobia = folder.getChildren();
+            String name;
+
+            buff.append("<HTML>\n"); // NOI18N
+            buff.append("<BODY>\n"); // NOI18N
+
+            FileObject parent = folder.getParent();
+
+            if (parent != null) {
+                // lit.setLength(0);
+                // lit.append('/').append(parent.getPackageName('/'));
+                buff.append("<P>"); // NOI18N
+                buff.append("<A HREF=").append("..").append(">").append("..").append("</A>").append("\n"); // NOI18N
+                buff.append("</P>"); // NOI18N
+            }
+
+            for (int i = 0; i < fobia.length; i++) {
+                lit.setLength(0);
+                lit.append(fobia[i].getNameExt());
+                name = lit.toString();
+
+                if (fobia[i].isFolder()) {
+                    lit.append('/'); // NOI18N
+                }
+
+                buff.append("<P>"); // NOI18N
+                buff.append("<A HREF=").append((Object) lit).append(">").append(name).append("</A>").append("\n"); // NOI18N
+                buff.append("</P>"); // NOI18N
+            }
+
+            buff.append("</BODY>\n"); // NOI18N
+            buff.append("</HTML>\n"); // NOI18N
+
+            return buff.toString();
+        }
+
+        //************************************** stream methods **********
+        @Override
+        public int read() throws IOException {
+            return reader.read();
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            char[] ch = new char[len];
+            int r = reader.read(ch, 0, len);
+
+            for (int i = 0; i < r; i++) {
+                b[off + i] = (byte) ch[i];
+            }
+
+            return r;
+        }
+
+        @Override
+        public long skip(long skip) throws IOException {
+            return reader.skip(skip);
+        }
+
+        @Override
+        public void close() throws IOException {
+            reader.close();
+        }
+
+        @Override
+        public void reset() throws IOException {
+            reader.reset();
+        }
+
+        @Override
+        public boolean markSupported() {
+            return false;
+        }
+    }
+}

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
+import java.awt.EventQueue;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -102,6 +103,9 @@ public class FileObj extends BaseFileObj {
         "EXC_INVALID_FILE=File {0} is not valid"
     )
     public OutputStream getOutputStream(final FileLock lock, ProvidedExtensions extensions, FileObject mfo) throws IOException {
+        if (LOGGER.isLoggable(Level.FINE) && EventQueue.isDispatchThread()) {
+            LOGGER.log(Level.WARNING, "writing " + this, new IllegalStateException("getOutputStream invoked in AWT"));
+        }
         if (!isValid()) {
             FileNotFoundException fnf = new FileNotFoundException("FileObject " + this + " is not valid."); //NOI18N
             Exceptions.attachLocalizedMessage(fnf, Bundle.EXC_INVALID_FILE(this));
@@ -156,6 +160,9 @@ public class FileObj extends BaseFileObj {
     }
 
     public InputStream getInputStream() throws FileNotFoundException {
+        if (LOGGER.isLoggable(Level.FINE) && EventQueue.isDispatchThread()) {
+            LOGGER.log(Level.WARNING, "reading " + this, new IllegalStateException("getInputStream invoked in AWT"));
+        }
         if (!isValid()) {
             throw new FileNotFoundException("FileObject " + this + " is not valid.");  //NOI18N
         }

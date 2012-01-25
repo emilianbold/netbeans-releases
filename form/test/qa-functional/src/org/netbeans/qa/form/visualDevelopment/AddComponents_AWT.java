@@ -86,7 +86,7 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class AddComponents_AWT extends ExtJellyTestCase {
 
-    public String FILE_NAME = "clear_Frame";
+    public String FILE_NAME = "clear_Frame.java";
     public String PACKAGE_NAME = "data";
     public String DATA_PROJECT_NAME = "SampleProject";
     public String FRAME_ROOT = "[Frame]";

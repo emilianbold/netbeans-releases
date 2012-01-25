@@ -46,7 +46,6 @@ package org.netbeans.api.xml.parsers;
 
 import java.io.*;
 import java.net.URL;
-import java.util.*;
 
 import javax.swing.text.Document;
 
@@ -112,15 +111,10 @@ public final class DocumentInputSource extends InputSource {
         if (system == null) {
             Object obj = doc.getProperty(Document.StreamDescriptionProperty);        
             if (obj instanceof DataObject) {
-                try { 
                         DataObject dobj = (DataObject) obj;
                         FileObject fo = dobj.getPrimaryFile();
-                        URL url = fo.getURL();
+                        URL url = fo.toURL();
                         system = url.toExternalForm();
-                } catch (IOException io) {
-                    ErrorManager emgr = (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);
-                    emgr.notify(io);
-                }
             } else {
                 ErrorManager emgr = (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);
                 emgr.log("XML:DocumentInputSource:Unknown stream description:" + obj);

@@ -55,6 +55,8 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.SwingUtilities;
 
@@ -1037,19 +1039,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         @Override
 	protected void onDone(MIRecord record) {
-            int pid = 0;
-            String msg = record.command().getConsoleStream();
-	    int pos1 = msg.toLowerCase().indexOf("* 1 thread "); // NOI18N
-            if (pos1 >= 0) {
-                int pos2 = msg.indexOf('.', pos1);
-                if (pos2 > 0) {
-                    try {
-                        pid = Integer.valueOf(msg.substring(pos1 + 11, pos2));
-                    } catch (NumberFormatException ex) {
-                        //log.warning("Failed to get PID from \"info threads\""); // NOI18N
-                    }
-                }
-            }
+            long pid = extractPidThreads(record);
 
 	    session().setSessionEngine(GdbEngineCapabilityProvider.getGdbEngineType());
 	    if (pid != 0) {
@@ -1061,6 +1051,25 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             }
 	    finish();
 	}
+    }
+    
+    static long extractPidThreads(MIRecord record) {
+        String msg = record.command().getConsoleStream();
+        Pattern pattern = Pattern.compile("[*]\\s+1\\s+[Tt]hread\\s+\\d+"); //NOI18N
+        Matcher matcher = pattern.matcher(msg);
+        if (matcher.find()) {
+            String group = matcher.group();
+            Pattern patternPid = Pattern.compile("\\d+$");  //NOI18N
+            Matcher matcherPid = patternPid.matcher(group);
+            if (matcherPid.find()) {
+                try {
+                    return Long.valueOf(matcherPid.group());
+                } catch (NumberFormatException ex) {
+                    //log.warning("Failed to get PID from \"info threads\""); // NOI18N
+                }
+            }
+        }
+        return 0;
     }
 
     private final class InfoProcMICmd extends MiCommandImpl {
@@ -1885,8 +1894,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         } else {
             visited = true;
         }
-	visitedLocation = MILocation.make(l, visited);
-        setVisitedLocation(visitedLocation);
+        setVisitedLocation(MILocation.make(l, visited));
         
         state().isUpAllowed = !l.bottomframe();
         state().isDownAllowed = !l.topframe();
@@ -2092,7 +2100,26 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             }
         }
 
+        // disable breakpoints and signals
+        send("-break-disable"); //NOI18N
+        send("-gdb-set unwindonsignal on"); //NOI18N
+        
         dataMIEval(expr, dis);
+        
+        // enable breakpoints and signals
+        final Handler[] handlers = bm().getHandlers();
+        if (handlers.length > 0) {
+            StringBuilder command = new StringBuilder();
+            command.append("-break-enable"); // NOI18N
+            for (Handler h : handlers) {
+                if (h.breakpoint().isEnabled()) {
+                    command.append(' ');
+                    command.append(h.getId());
+                }
+            }
+            send(command.toString());
+        }
+        send("-gdb-set unwindonsignal off"); //NOI18N
     }
 
     @Override
@@ -2968,10 +2995,19 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     frameValue = ((MIResult)stack.asList().get(0)).value();
 		    MITList frameTuple = frameValue.asTuple();
 		    homeLoc = MILocation.make(this, frameTuple, null, false, stack.size(), breakpoint);
-		}
-
-		visitedLocation = MILocation.make(homeLoc, false);
-		setVisitedLocation(visitedLocation);
+                }
+                
+                MITList frameTuple = null;
+                boolean visited = false;
+                // find the first frame with source info if dis was not requested
+                for (MITListItem stf : stack.asList()) {
+                    frameTuple = ((MIResult)stf).value().asTuple();
+                    if (disRequested || frameTuple.valueOf("file") != null) { //NOI18N
+                        break;
+                    }
+                    visited = true;
+                }
+		setVisitedLocation(MILocation.make(this, frameTuple, null, visited, stack.size(), breakpoint));
                 
                 state().isUpAllowed = !homeLoc.bottomframe();
                 state().isDownAllowed = !homeLoc.topframe();

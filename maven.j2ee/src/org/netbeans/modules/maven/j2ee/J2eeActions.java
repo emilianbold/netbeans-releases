@@ -74,7 +74,7 @@ import org.openide.util.TaskListener;
 public class J2eeActions {
 
     @ActionID(id = "org.netbeans.modules.maven.j2ee.verify", category = "Project")
-    @ActionRegistration(displayName = "#ACT_Verify")
+    @ActionRegistration(displayName = "#ACT_Verify", lazy=false)
     @ActionReference(position = 651, path = "Projects/org-netbeans-modules-maven/Actions")
     @Messages("ACT_Verify=Verify")
     public static ContextAwareAction verifyAction() {

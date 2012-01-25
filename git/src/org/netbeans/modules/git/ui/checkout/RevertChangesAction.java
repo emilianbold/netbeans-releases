@@ -49,7 +49,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.modules.git.FileInformation;
@@ -81,7 +81,7 @@ public class RevertChangesAction extends SingleRepositoryAction {
 
     @Override
     protected void performAction (final File repository, final File[] roots, VCSContext context) {
-        final RevertChanges revert = new RevertChanges();
+        final RevertChanges revert = new RevertChanges(roots);
         if (revert.show()) {
             GitProgressSupport supp = new GitProgressSupport() {
                 @Override
@@ -105,18 +105,18 @@ public class RevertChangesAction extends SingleRepositoryAction {
                         // revert
                         if(revert.isRevertAll()) {
                             // XXX log                            
-                            client.checkout(actionRoots, "HEAD", true, this); // XXX no constant for HEAD???
+                            client.checkout(actionRoots, "HEAD", true, getProgressMonitor()); // XXX no constant for HEAD???
                             logRevert("revert all", actionRoots, repository);
                         } else if (revert.isRevertIndex()) {
-                            client.reset(actionRoots, "HEAD", true, this);
+                            client.reset(actionRoots, "HEAD", true, getProgressMonitor());
                             logRevert("revert index", actionRoots, repository);
                         } else if (revert.isRevertWT()) {
-                            client.checkout(actionRoots, null, true, this);                             
+                            client.checkout(actionRoots, null, true, getProgressMonitor());                             
                             logRevert("revert wt", actionRoots, repository);
                         }
                         
                         if(revert.isRemove()) {
-                            client.clean(actionRoots, this);
+                            client.clean(actionRoots, getProgressMonitor());
                             logRevert("clean ", actionRoots, repository);
                         }
                         

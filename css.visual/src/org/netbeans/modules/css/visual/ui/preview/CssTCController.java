@@ -161,10 +161,8 @@ public class CssTCController implements PropertyChangeListener {
     static void refreshOpenedWindowGroups() {
         if (CssPreviewTopComponent.getDefault().isPreviewPanelRegistered()) {
             closeGroup(SB_ONLY_GROUP_NAME);
-            openGroup(SB_AND_PREVIEW_GROUP_NAME);
         } else {
             closeGroup(SB_AND_PREVIEW_GROUP_NAME);
-            openGroup(SB_ONLY_GROUP_NAME);
         }
     }
 

@@ -70,7 +70,7 @@ import org.openide.util.actions.Presenter;
  * @see "#47925"
  */
 @ActionID(id = "org.netbeans.modules.project.ui.Rerun", category = "Project")
-@ActionRegistration(displayName = "#LBL_RunLastBuildAction_general")
+@ActionRegistration(displayName = "#LBL_RunLastBuildAction_general", lazy=false)
 @ActionReference(path = "Menu/BuildProject", position = 1000)
 public final class RunLastBuildAction extends AbstractAction implements ChangeListener, Presenter.Menu, Presenter.Toolbar {
     

@@ -43,29 +43,30 @@
 
 package org.netbeans.modules.css.editor.properties;
 
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.css.lib.api.CssTokenId;
+
 /**
  *
  * @author mfukala@netbeans.org
  */
 public class Identifier implements CssPropertyValueAcceptor {
 
+    @Override
     public String id() {
         return "identifier"; //NOI18N
     }
-
-    //FIXME - the ability to properly accepts only correct identifiers is higly limited
+    
+    @Override
     public boolean accepts(String token) {
-        if(token.length() == 0) {
-            return false;
+        TokenHierarchy<String> th = TokenHierarchy.create(token, CssTokenId.language());
+        TokenSequence<CssTokenId> ts = th.tokenSequence(CssTokenId.language());
+        ts.moveStart();
+        if(ts.moveNext()) {
+            return ts.token().id() == CssTokenId.IDENT;
         }
-        
-        char f = token.charAt(0);
-        
-        if(f == '-' || Character.isDigit(f)) {
-            return false;
-        }
-        
-        return true;
+        return false;
     }
     
 }

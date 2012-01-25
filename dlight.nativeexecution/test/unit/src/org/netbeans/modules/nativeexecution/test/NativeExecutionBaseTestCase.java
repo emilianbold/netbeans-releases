@@ -511,7 +511,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     protected String mkTemp(ExecutionEnvironment execEnv, boolean directory) throws Exception {        
         String[] mkTempArgs;
         if (HostInfoUtils.getHostInfo(execEnv).getOSFamily() == OSFamily.MACOSX) {
-            mkTempArgs = directory ? new String[] { "-t", "/tmp", "-d" } : new String[] { "-t", "/tmp" };
+            mkTempArgs = directory ? new String[] { "-t", "tmp", "-d" } : new String[] { "-t", "tmp" };
         } else {
             mkTempArgs = directory ? new String[] { "-d" } : new String[0];
         }        

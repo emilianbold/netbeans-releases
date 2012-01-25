@@ -45,6 +45,7 @@
 package org.netbeans.modules.java.project;
 
 import java.awt.Image;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.queries.AccessibilityQuery;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.filesystems.FileObject;
@@ -66,10 +67,10 @@ public final class PackageDisplayUtils {
     private static final boolean TRUNCATE_PACKAGE_NAMES =
         Boolean.getBoolean("org.netbeans.spi.java.project.support.ui.packageView.TRUNCATE_PACKAGE_NAMES"); // NOI18N
 
-    private static final Image PACKAGE = ImageUtilities.loadImage("org/netbeans/spi/java/project/support/ui/package.gif"); // NOI18N
-    private static final Image PACKAGE_EMPTY = ImageUtilities.loadImage("org/netbeans/spi/java/project/support/ui/packageEmpty.gif"); // NOI18N
-    private static final Image PACKAGE_PRIVATE = ImageUtilities.loadImage("org/netbeans/spi/java/project/support/ui/packagePrivate.gif"); // NOI18N
-    private static final Image PACKAGE_PUBLIC = ImageUtilities.loadImage("org/netbeans/spi/java/project/support/ui/packagePublic.gif"); // NOI18N
+    public static final /* XXX #7116293 @StaticResource */ String PACKAGE = "org/netbeans/spi/java/project/support/ui/package.gif";
+    private static final @StaticResource String PACKAGE_EMPTY = "org/netbeans/spi/java/project/support/ui/packageEmpty.gif";
+    private static final @StaticResource String PACKAGE_PRIVATE = "org/netbeans/spi/java/project/support/ui/packagePrivate.gif";
+    private static final @StaticResource String PACKAGE_PUBLIC = "org/netbeans/spi/java/project/support/ui/packagePublic.gif";
 
     /**
      * Find the proper display label for a package.
@@ -137,17 +138,17 @@ public final class PackageDisplayUtils {
      */
     public static Image getIcon(FileObject pkg, String pkgname, boolean empty ) {
         if ( empty ) {
-            return PACKAGE_EMPTY;
+            return ImageUtilities.loadImage(PACKAGE_EMPTY);
         } else {
             Boolean b = pkg.isValid() ? AccessibilityQuery.isPubliclyAccessible(pkg) : null;
             if (b != null) {
                 if (b.booleanValue()) {
-                    return PACKAGE_PUBLIC;
+                    return ImageUtilities.loadImage(PACKAGE_PUBLIC);
                 } else {
-                    return PACKAGE_PRIVATE;
+                    return ImageUtilities.loadImage(PACKAGE_PRIVATE);
                 }
             } else {
-                return PACKAGE;
+                return ImageUtilities.loadImage(PACKAGE);
             } 
         }
     }

@@ -480,6 +480,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
             c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
         }
         final FileObject fo = this.getDataObject().getPrimaryFile();
+        doc.putProperty(FileObject.DEFAULT_LINE_SEPARATOR_ATTR, fo.getAttribute(FileObject.DEFAULT_LINE_SEPARATOR_ATTR));
         final Reader r;
         if (warnedEncodingFiles.contains(fo)) {
             r = new InputStreamReader (stream, c);
@@ -502,6 +503,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     }
 
     private static boolean createAndThrowIncorrectCharsetUQE(final FileObject fo, Charset charset) throws UserQuestionException {
+        ERR.log(Level.INFO, "Encoding problem using {0} for {1}", new Object[]{charset, fo}); // NOI18N
         throw new UserQuestionException(NbBundle.getMessage(DataObject.class, "MSG_EncodingProblem", charset)) {
             @Override
             public void confirmed() throws IOException {
@@ -607,8 +609,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     }
 
     /** Indicates whether the <code>Env</code> is read only. */
-    @Override
-    boolean isEnvReadOnly() {
+    private boolean isEnvReadOnly() {
         CloneableEditorSupport.Env myEnv = desEnv();
         return myEnv instanceof Env && !((Env) myEnv).getFileImpl().canWrite();
     }

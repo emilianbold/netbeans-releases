@@ -44,12 +44,27 @@ package org.netbeans.libs.git;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import org.eclipse.jgit.api.MergeResult;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.merge.ResolveMerger;
 
 /**
  *
  * @author ondra
  */
-public interface GitMergeResult {
+public final class GitMergeResult {
+
+    private final MergeStatus mergeStatus;
+    private final File workDir;
+    private final List<File> conflicts;
+    private final List<File> failures;
+    private final String newHead;
+    private final String base;
+    private final String[] mergedCommits;
 
     /**
      * The status the merge resulted in.
@@ -94,15 +109,68 @@ public interface GitMergeResult {
         }
     }
     
-    public MergeStatus getMergeStatus ();
+    GitMergeResult (MergeResult result, File workDir) {
+        this.mergeStatus = GitMergeResult.MergeStatus.valueOf(result.getMergeStatus().name());
+        this.workDir = workDir;
+        this.newHead = result.getNewHead() == null ? null : result.getNewHead().getName();
+        this.base = result.getBase() == null ? null : result.getBase().getName();
+        this.mergedCommits = getMergedCommits(result);
+        this.conflicts = getConflicts(result);
+        this.failures = getFailures(result);
+    }
     
-    public String getBase ();
+    public MergeStatus getMergeStatus () {
+        return mergeStatus;
+    }
     
-    public String[] getMergedCommits ();
+    public String getBase () {
+        return base;
+    }
     
-    public String getNewHead ();
+    public String[] getMergedCommits () {
+        return mergedCommits;
+    }
     
-    public Collection<File> getConflicts();
+    public String getNewHead () {
+        return newHead;
+    }
     
-    public Collection<File> getFailures ();
+    public Collection<File> getConflicts() {
+        return conflicts;
+    }
+    
+    public Collection<File> getFailures () {
+        return failures;
+    }
+
+    private String[] getMergedCommits (MergeResult result) {
+        ObjectId[] mergedObjectIds = result.getMergedCommits();
+        String[] commits = new String[mergedObjectIds.length];
+        for (int i = 0; i < mergedObjectIds.length; ++i) {
+            commits[i] = ObjectId.toString(mergedObjectIds[i]);
+        }
+        return commits;
+    }
+
+    private List<File> getConflicts(MergeResult result) {
+        List<File> files = new LinkedList<File>();
+        Map<String, int[][]> mergeConflicts = result.getConflicts();
+        if (mergeConflicts != null) {
+            for (Map.Entry<String, int[][]> conflict : mergeConflicts.entrySet()) {
+                files.add(new File(workDir, conflict.getKey()));
+            }
+        }
+        return Collections.unmodifiableList(files);
+    }
+
+    private List<File> getFailures (MergeResult result) {
+        List<File> files = new LinkedList<File>();
+        Map<String, ResolveMerger.MergeFailureReason> obstructions = result.getFailingPaths();
+        if (obstructions != null) {
+            for (Map.Entry<String, ResolveMerger.MergeFailureReason> failure : obstructions.entrySet()) {
+                files.add(new File(workDir, failure.getKey()));
+            }
+        }
+        return Collections.unmodifiableList(files);
+    }
 }

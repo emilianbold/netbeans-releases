@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
-import com.sun.source.tree.ClassTree;
 import com.sun.source.util.TreePath;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -51,8 +50,8 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.ExtractSuperclassRefactoring;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.util.HelpCtx;
@@ -74,7 +73,7 @@ public class ExtractSuperclassRefactoringUI implements RefactoringUI {
     public static ExtractSuperclassRefactoringUI create(TreePathHandle selectedHandle, CompilationInfo info) {
         TreePath path = selectedHandle.resolve(info);
 
-        path = RetoucheUtils.findEnclosingClass(info, path, true, false, false, false, false);
+        path = JavaRefactoringUtils.findEnclosingClass(info, path, true, false, false, false, false);
 
         if (path != null) {
             return new ExtractSuperclassRefactoringUI(path, info);
@@ -91,10 +90,12 @@ public class ExtractSuperclassRefactoringUI implements RefactoringUI {
     
     // --- IMPLEMENTATION OF RefactoringUI INTERFACE ---------------------------
     
+    @Override
     public boolean isQuery() {
         return false;
     }
 
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
             panel = new ExtractSuperclassPanel(refactoring, parent);
@@ -102,32 +103,39 @@ public class ExtractSuperclassRefactoringUI implements RefactoringUI {
         return panel;
     }
 
+    @Override
     public Problem setParameters() {
         captureParameters();
         return refactoring.checkParameters();
     }
     
+    @Override
     public Problem checkParameters() {
         captureParameters();
         return refactoring.fastCheckParameters();
     }
 
+    @Override
     public AbstractRefactoring getRefactoring() {
         return refactoring;
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(ExtractSuperclassAction.class, "DSC_ExtractSC", name); // NOI18N
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(ExtractSuperclassAction.class, "LBL_ExtractSC"); // NOI18N
     }
 
+    @Override
     public boolean hasParameters() {
         return true;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ExtractSuperclassRefactoringUI.class.getName());
     }

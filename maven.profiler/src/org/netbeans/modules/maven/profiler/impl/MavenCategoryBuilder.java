@@ -60,11 +60,12 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 public class MavenCategoryBuilder extends CategoryBuilder {
 
     public MavenCategoryBuilder(Project proj) {
-        super(proj, findProjectId(proj));
+        super(proj);
     }
 
-    private static String findProjectId(Project proj) {
-        NbMavenProject mp = proj.getLookup().lookup(NbMavenProject.class);
+    @Override
+    protected String getProjectTypeId() {
+        NbMavenProject mp = getProject().getLookup().lookup(NbMavenProject.class);
         String mpType = mp.getPackagingType();
         if (mpType.equals(NbMavenProject.TYPE_JAR)) {
             return "org-netbeans-modules-java-j2seproject";

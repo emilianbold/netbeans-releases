@@ -54,7 +54,6 @@ import java.awt.datatransfer.*;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -204,13 +203,10 @@ public final class Utils {
             if( null != dob ) {
                 FileObject primaryFile = dob.getPrimaryFile();
                 if( null != primaryFile && primaryFile.isFolder() ) {
-                    final Object cleaner = primaryFile.getAttribute( "removeWritables" ); //NOI18N
-                    if( null != cleaner && (cleaner instanceof Callable) ) {
-                        try {
-                            ((Callable)cleaner).call();
-                        } catch (Exception ex) {
-                            ERR.log( Level.INFO, ex.getLocalizedMessage(), ex );
-                        }
+                    try {
+                        primaryFile.revert();
+                    } catch (IOException ex) {
+                        ERR.log(Level.INFO, null, ex);
                     }
                 }
             }

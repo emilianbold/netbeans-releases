@@ -107,12 +107,18 @@ public class FileInformation extends VCSFileInformation {
                 s.add(Status.NEW_HEAD_WORKING_TREE);
             }
             // correction
-            if (s.size() == 1 && (s.contains(Status.MODIFIED_INDEX_WORKING_TREE)
-                    || s.contains(Status.MODIFIED_HEAD_INDEX))) {
-                // does not make sense, file is modified between index and wt (or head and index) but otherwise up to date
-                // let's assume it's modified also between head and wt
-                Git.STATUS_LOG.log(Level.WARNING, "inconsistent status found for {0}: {1}", new Object[] { status.getFile(), s }); //NOI18N
-                s.add(Status.MODIFIED_HEAD_WORKING_TREE);
+            if (s.size() == 1) {
+                if (s.contains(Status.MODIFIED_INDEX_WORKING_TREE) || s.contains(Status.MODIFIED_HEAD_INDEX)) {
+                    // does not make sense, file is modified between index and wt (or head and index) but otherwise up to date
+                    // let's assume it's modified also between head and wt
+                    Git.STATUS_LOG.log(Level.WARNING, "inconsistent status found for {0}: {1}", new Object[] { status.getFile(), s }); //NOI18N
+                    s.add(Status.MODIFIED_HEAD_WORKING_TREE);
+                } else if (s.contains(Status.REMOVED_INDEX_WORKING_TREE) || s.contains(Status.REMOVED_HEAD_INDEX)) {
+                    // does not make sense, file is removed between index and wt (or head and index) but otherwise up to date
+                    // let's assume it's removed also between head and wt
+                    Git.STATUS_LOG.log(Level.WARNING, "inconsistent status found for {0}: {1}", new Object[] { status.getFile(), s }); //NOI18N
+                    s.add(Status.REMOVED_HEAD_WORKING_TREE);
+                }
             }
             // file is removed in the WT, but is NOT in HEAD yet
             // or is removed both in WT and index

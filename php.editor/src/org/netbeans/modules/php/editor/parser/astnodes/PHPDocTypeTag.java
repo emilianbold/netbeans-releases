@@ -59,7 +59,7 @@ public class PHPDocTypeTag extends PHPDocTag {
 
     private final List<PHPDocTypeNode> types;
     protected String documentation;
-    
+
     public PHPDocTypeTag(int start, int end, PHPDocTag.Type kind, String value, List<PHPDocTypeNode> types) {
         super(start, end, kind, value);
         this.types = types;
@@ -78,17 +78,36 @@ public class PHPDocTypeTag extends PHPDocTag {
     public String getDocumentation() {
         if (documentation == null && types.size() > 0) {
             PHPDocTypeNode lastType = types.get(0);
+            boolean isLastNodeArray = lastType.isArray();
             for (PHPDocTypeNode node : types) {
                 if (lastType.getEndOffset() < node.getEndOffset()) {
                     lastType = node;
+                    isLastNodeArray = node.isArray();
                 }
             }
-            int index = getValue().indexOf(lastType.getValue());
-            documentation = getValue().substring(index + lastType.getValue().length()).trim();
+            int indexAfterTypeWithoutArrayPostfix = getValue().indexOf(lastType.getValue()) + lastType.getValue().length();
+            if (isLastNodeArray) {
+                String documentationWithArrayPrefix = getValue().substring(indexAfterTypeWithoutArrayPostfix).trim();
+                int firstSpace = documentationWithArrayPrefix.indexOf(" "); //NOI18N
+                int firstTab = documentationWithArrayPrefix.indexOf("\t"); //NOI18N
+                int min = -1;
+                if (firstSpace > 0 && (firstSpace < firstTab || firstTab == -1)) {
+                    min = firstSpace;
+                } else if (firstTab > 0 && (firstTab < firstSpace || firstSpace == -1)) {
+                    min = firstTab;
+                }
+                if (min == -1) {
+                    documentation = ""; //NOI18N
+                } else {
+                    documentation = getValue().substring(indexAfterTypeWithoutArrayPostfix + min).trim();
+                }
+            } else {
+                documentation = getValue().substring(indexAfterTypeWithoutArrayPostfix).trim();
+            }
         }
         return documentation;
     }
-    
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);

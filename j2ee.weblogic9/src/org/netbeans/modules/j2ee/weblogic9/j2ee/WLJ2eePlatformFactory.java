@@ -125,14 +125,19 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
     private static final Pattern JAVAX_PERSISTENCE_2_PATTERN = Pattern.compile(
             "^.*javax\\.persistence.*(_2-\\d+(-\\d+)?)\\.jar$");
-    
+
+    private static final Pattern JERSEY_PATTERN = Pattern.compile(
+            "^.*com\\.sun\\.jersey.*\\.jar$");
+
     private static final Pattern OEPE_CONTRIBUTIONS_PATTERN = Pattern.compile("^.*oepe-contributions\\.jar.*$"); // NOI18N
-    
+
     private static final FilenameFilter PATCH_DIR_FILTER = new PrefixesFilter("patch_wls"); // NOI18N    
 
     private static final Version JDK6_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("10.3"); // NOI18N
 
     private static final Version JPA2_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.1"); // NOI18N
+
+    private static final Version JAX_RS_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.1"); // NOI18N
 
     @Override
     public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
@@ -199,6 +204,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             }
 
             addPersistenceLibrary(list, platformRoot, mwHome, j2eePlatform);
+            addJerseyLibrary(list, platformRoot, mwHome, j2eePlatform);
 
             // file needed for jsp parsing WL9 and WL10
             list.add(fileToUrl(new File(platformRoot, "server/lib/wls-api.jar"))); // NOI18N
@@ -345,8 +351,38 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 }
             }
         }
-    }     
-    
+    }
+
+    //XXX there seems to be a bug in api.jar - it does not contain link to javax.ws
+    // method checks whether there is already persistence API present in the list
+    private static void addJerseyLibrary(List<URL> list, @NonNull File serverRoot,
+            @NullAllowed File middleware, @NullAllowed J2eePlatformImplImpl j2eePlatform) throws MalformedURLException {
+
+        if (middleware != null) {
+            File modules = getMiddlewareModules(middleware);
+            if (modules.exists() && modules.isDirectory()) {
+                FilenameFilter filter = null;
+                Version serverVersion = null;
+                if (j2eePlatform != null) {
+                    serverVersion = j2eePlatform.dm.getServerVersion();
+                } else {
+                    serverVersion = WLPluginProperties.getServerVersion(serverRoot);
+                }
+                if (JAX_RS_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
+                    filter = new FilenameFilter() {
+                        @Override
+                        public boolean accept(File dir, String name) {
+                            return JERSEY_PATTERN.matcher(name).matches();
+                        }
+                    };
+                }
+                for (File jerseyFile : modules.listFiles(filter)) {
+                    list.add(fileToUrl(jerseyFile));
+                }
+            }
+        }
+    }
+
     private static File getMiddlewareModules(File middleware) {
         File modules = new File(middleware, "modules"); // NOI18N
         if (!modules.exists() || !modules.isDirectory()) {

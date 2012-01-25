@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
@@ -47,8 +47,8 @@ package org.netbeans.modules.php.editor.parser.astnodes;
  * The key can be null
  * <pre>e.g.<pre> 1,
  * 'Dodo'=>'Golo',
- * $a, 
- * $b=>foo(), 
+ * $a,
+ * $b=>foo(),
  * 1=>$myClass->getFirst() *
  */
 public class ArrayElement extends ASTNode {
@@ -70,8 +70,8 @@ public class ArrayElement extends ASTNode {
 
     /**
      * Returns the key of this array element(null if missing).
-     * 
-     * @return the key of the array element 
+     *
+     * @return the key of the array element
      */
     public Expression getKey() {
         return key;
@@ -79,13 +79,13 @@ public class ArrayElement extends ASTNode {
 
     /**
      * Returns the value expression of this array element.
-     * 
+     *
      * @return the value expression of this array element
      */
     public Expression getValue() {
         return this.value;
     }
-    
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);

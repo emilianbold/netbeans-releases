@@ -88,7 +88,7 @@ public class ExportCommitTest extends AbstractGitTestCase {
         GitClient client = getClient(workDir);
         write(file, "modification\n");
         add(files);
-        GitRevisionInfo commit = client.commit(files, "my commit message", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo commit = client.commit(files, "my commit message", null, null, NULL_PROGRESS_MONITOR);
         exportDiff(commit.getRevision(), patchFile);
         assertPatchFile(commit, getGoldenFile("exportCommit.patch"), patchFile);
     }
@@ -107,7 +107,7 @@ public class ExportCommitTest extends AbstractGitTestCase {
         write(file, "modification 1\n");
         write(file2, "modification 2\n");
         add(files);
-        GitRevisionInfo commit = client.commit(files, "first\nsecond\nthird", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo commit = client.commit(files, "first\nsecond\nthird", null, null, NULL_PROGRESS_MONITOR);
         
         exportDiff(commit.getRevision(), patchFile);
         assertPatchFile(commit, getGoldenFile("exportCommitMultiLine.patch"), patchFile);
@@ -122,18 +122,18 @@ public class ExportCommitTest extends AbstractGitTestCase {
         commit(files);
         
         GitClient client = getClient(workDir);
-        client.createBranch("branch", "master", ProgressMonitor.NULL_PROGRESS_MONITOR);
-        client.checkoutRevision("branch", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.createBranch("branch", "master", NULL_PROGRESS_MONITOR);
+        client.checkoutRevision("branch", true, NULL_PROGRESS_MONITOR);
         write(file, "modification on branch\nb\nc\n");
         add(files);
-        GitRevisionInfo branchCommit = client.commit(files, "branch modified", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo branchCommit = client.commit(files, "branch modified", null, null, NULL_PROGRESS_MONITOR);
         
-        client.checkoutRevision("master", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.checkoutRevision("master", true, NULL_PROGRESS_MONITOR);
         write(file, "a\nb\nmodification on master\n");
         add(files);
-        GitRevisionInfo commit = client.commit(files, "master modified", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo commit = client.commit(files, "master modified", null, null, NULL_PROGRESS_MONITOR);
         
-        assertEquals(GitMergeResult.MergeStatus.MERGED, client.merge("branch", ProgressMonitor.NULL_PROGRESS_MONITOR).getMergeStatus());
+        assertEquals(GitMergeResult.MergeStatus.MERGED, client.merge("branch", NULL_PROGRESS_MONITOR).getMergeStatus());
         try {
             exportDiff("master", patchFile);
             fail();
@@ -152,10 +152,10 @@ public class ExportCommitTest extends AbstractGitTestCase {
         commit(files);
         
         GitClient client = getClient(workDir);
-        client.rename(file, renamed, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.rename(file, renamed, false, NULL_PROGRESS_MONITOR);
         write(renamed, "first\nsecond\nthird\n");
         add(renamed);
-        GitRevisionInfo commit = client.commit(files, "file renamed", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo commit = client.commit(files, "file renamed", null, null, NULL_PROGRESS_MONITOR);
         exportDiff(commit.getRevision(), patchFile);
         assertPatchFile(commit, getGoldenFile("exportCommitRename.patch"), patchFile);
     }
@@ -167,14 +167,14 @@ public class ExportCommitTest extends AbstractGitTestCase {
         write(file, "init\n");
         add(files);
         GitClient client = getClient(workDir);
-        GitRevisionInfo commit = client.commit(files, "initial commit", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo commit = client.commit(files, "initial commit", null, null, NULL_PROGRESS_MONITOR);
         exportDiff("master", patchFile);
         assertPatchFile(commit, getGoldenFile("exportInitialCommit.patch"), patchFile);
     }
 
     private void exportDiff (String commit, File patchFile) throws Exception {
         OutputStream out = new BufferedOutputStream(new FileOutputStream(patchFile));
-        getClient(workDir).exportCommit(commit, out, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(workDir).exportCommit(commit, out, NULL_PROGRESS_MONITOR);
         out.close();
     }
 

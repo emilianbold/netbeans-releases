@@ -102,7 +102,6 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
             }
         }
 
-        assert NbMavenProject.TYPE_JAR.equals(config.getProject().getLookup().lookup(NbMavenProject.class).getPackagingType());
         if ((ActionProvider.COMMAND_RUN.equals(actionName) ||
                 ActionProvider.COMMAND_DEBUG.equals(actionName) ||
                 "profile".equals(actionName))) {

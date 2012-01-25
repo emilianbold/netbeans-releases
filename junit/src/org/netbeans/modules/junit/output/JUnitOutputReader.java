@@ -93,6 +93,7 @@ import static org.netbeans.modules.junit.output.RegexpUtils.TEST_LISTENER_PREFIX
 import static org.netbeans.modules.junit.output.RegexpUtils.TESTS_COUNT_PREFIX;
 import static org.netbeans.modules.junit.output.RegexpUtils.TESTSUITE_PREFIX;
 import static org.netbeans.modules.junit.output.RegexpUtils.TESTSUITE_STATS_PREFIX;
+import org.openide.util.Lookup;
 
 /**
  * Obtains events from a single session of an Ant <code>junit</code> task
@@ -119,8 +120,6 @@ final class JUnitOutputReader {
     /** whether XML report is expected */
     private boolean expectXmlReport;
     /** */
-    private final File antScript;
-    /** */
     private final long timeOfSessionStart;
     
     /** */
@@ -135,8 +134,6 @@ final class JUnitOutputReader {
     
     private TestSession testSession;
 
-    private Project project;
-
     private File resultsDir;
 
     private JUnitTestcase testcase;
@@ -150,15 +147,24 @@ final class JUnitOutputReader {
     /** Creates a new instance of JUnitOutputReader */
     JUnitOutputReader(final AntSession session,
                       final AntSessionInfo sessionInfo,
-                      final Project project,
+                      Project project,
                       final Properties props) {
-        this.project = project;
         this.sessionType = sessionInfo.getSessionType();
-        this.antScript = FileUtil.normalizeFile(session.getOriginatingScript());
+        File antScript = FileUtil.normalizeFile(session.getOriginatingScript());
         this.timeOfSessionStart = sessionInfo.getTimeOfTestTaskStart();
         if (project == null){
             FileObject fileObj = FileUtil.toFileObject(antScript);
-            this.project = FileOwnerQuery.getOwner(fileObj);
+            project = FileOwnerQuery.getOwner(fileObj);
+            if (project == null) {
+                project = new Project() {
+                    public @Override FileObject getProjectDirectory() {
+                        return FileUtil.createMemoryFileSystem().getRoot();
+                    }
+                    public @Override Lookup getLookup() {
+                        return Lookup.EMPTY;
+                    }
+                };
+            }
         }
         String className = props.getProperty("classname", "");      //NOI18N
         String methodName = props.getProperty("methodname");        //NOI18N
@@ -167,12 +173,8 @@ final class JUnitOutputReader {
                     methodName != null ?
                         className + "." + methodName : className;
 
-        this.testSession = new JUnitTestSession(sName, this.project, sessionType, new JUnitTestRunnerNodeFactory()); //NOI18N
+        this.testSession = new JUnitTestSession(sName, project, sessionType, new JUnitTestRunnerNodeFactory()); //NOI18N
         testSession.setRerunHandler(new JUnitExecutionManager(session, testSession, props));
-    }
-
-    Project getProject() {
-        return project;
     }
 
     TestSession getTestSession() {

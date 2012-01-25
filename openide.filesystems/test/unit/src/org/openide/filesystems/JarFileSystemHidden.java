@@ -67,7 +67,7 @@ public class JarFileSystemHidden extends NbTestCase {
 
         JarFileSystem fs = new JarFileSystem(f);
 
-        URL u = fs.getRoot().getURL();
+        URL u = fs.getRoot().toURL();
         assertNotNull("URL is OK", u);
         if (!u.toExternalForm().startsWith("jar:file") || !u.toExternalForm().endsWith("broken.jar!/")) {
             fail("Unexpected URL: " + u);
@@ -106,7 +106,7 @@ public class JarFileSystemHidden extends NbTestCase {
             fail("The file " + f + " shall not be opened when fs created:\n" + log);
         }
 
-        URL u = fs.getRoot().getURL();
+        URL u = fs.getRoot().toURL();
         assertNotNull("URL is OK", u);
         if (!u.toExternalForm().startsWith("jar:file") || !u.toExternalForm().endsWith("ok.jar!/")) {
             fail("Unexpected URL: " + u);

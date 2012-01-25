@@ -62,8 +62,7 @@ import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
-import org.netbeans.modules.php.project.phpunit.PhpUnit;
+import org.netbeans.modules.php.project.api.PhpLanguageProperties.PhpVersion;
 import org.netbeans.modules.php.project.ui.options.PhpOptionsPanelController;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
@@ -96,18 +95,7 @@ public final class Utils {
         return ImageUtilities.mergeImages(UiUtils.getTreeFolderIcon(opened), badge, 8, 8);
     }
 
-    public static boolean validatePhpUnitForProject(PhpUnit phpUnit, PhpProject project) {
-        String error = PhpUnit.validateVersion(phpUnit);
-        if (error == null) {
-            error = PhpUnit.validateVersion(phpUnit, project);
-        }
-        if (error != null) {
-            UiUtils.invalidScriptProvided(error, PhpUnit.OPTIONS_SUB_PATH);
-            return false;
-        }
-        return true;
-    }
-
+    // XXX move it (with its test) to RunConfigWebValidator
     /**
      * Return <code>true</code> if the URL is valid, <code>false</code> otherwise (as well as for <code>null</code>).
      * @param url URL, can be <code>null</code>.

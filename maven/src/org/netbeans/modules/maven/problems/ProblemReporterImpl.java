@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.problems;
 
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -52,39 +51,45 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
+import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.execution.MavenExecutionResult;
+import org.apache.maven.model.Plugin;
+import org.apache.maven.model.building.ModelBuildingException;
+import org.apache.maven.model.building.ModelProblem;
+import org.apache.maven.model.resolution.UnresolvableModelException;
 import org.apache.maven.plugin.PluginArtifactsCache;
+import org.apache.maven.plugin.PluginResolutionException;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuildingException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.maven.NbArtifactFixer;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.actions.OpenPOMAction;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import static org.netbeans.modules.maven.problems.Bundle.*;
-import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -249,7 +254,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                 File f = as.next().getFile();
                 if (f != null) {
                     LOG.log(Level.FINE, "ceasing to listen to {0} from {1}", new Object[] {f, nbproject.getPOMFile()});
-                    FileUtil.removeFileChangeListener(fcl, f);
+                    FileUtil.removeFileChangeListener(fcl, FileUtil.normalizeFile(f));
                     if (f.isFile()) {
                         BatchProblemNotifier.resolved(f);
                     }
@@ -372,7 +377,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                     ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
                             ERR_SystemScope(),
                             MSG_SystemScope(),
-                            new OpenPomAction(nbproject));
+                            OpenPOMAction.instance().createContextAwareInstance(Lookups.fixed(nbproject)));
                     addReport(report);
                 } else {
                     if (file == null) {
@@ -430,38 +435,48 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     }
 
     
-    static class OpenPomAction extends AbstractAction {
-        
-        private NbMavenProjectImpl project;
-        private String filepath;
-        
-        @Messages("ACT_OpenPom=Open pom.xml")
-        OpenPomAction(NbMavenProjectImpl proj) {
-            putValue(Action.NAME, ACT_OpenPom());
-            project = proj;
-        }
-        
-        OpenPomAction(NbMavenProjectImpl project, String filePath) {
-            this(project);
-            filepath = filePath;
-        }
-        
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            FileObject fo = null;
-            if (filepath != null) {
-                fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(filepath)));
-            } else {
-                fo = FileUtil.toFileObject(project.getPOMFile());
-            }
-            if (fo != null) {
-                try {
-                    DataObject dobj = DataObject.find(fo);
-                    EditCookie edit = dobj.getCookie(EditCookie.class);
-                    edit.edit();
-                } catch (DataObjectNotFoundException ex) {
-                    ex.printStackTrace();
+    @Messages({
+        "TXT_Artifact_Resolution_problem=Artifact Resolution problem",
+        "TXT_Artifact_Not_Found=Artifact Not Found",
+        "TXT_Cannot_Load_Project=Unable to properly load project"
+    })
+    public void reportExceptions(MavenExecutionResult res) throws MissingResourceException {
+        for (Throwable e : res.getExceptions()) {
+            LOG.log(Level.FINE, "Error on loading project " + nbproject.getPOMFile(), e);
+            String msg = e.getMessage();
+            if (e instanceof ArtifactResolutionException) { // XXX when does this occur?
+                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
+                        TXT_Artifact_Resolution_problem(), msg, null);
+                addReport(report);
+                addMissingArtifact(((ArtifactResolutionException) e).getArtifact());
+            } else if (e instanceof ArtifactNotFoundException) { // XXX when does this occur?
+                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
+                        TXT_Artifact_Not_Found(), msg, null);
+                addReport(report);
+                addMissingArtifact(((ArtifactNotFoundException) e).getArtifact());
+            } else if (e instanceof ProjectBuildingException) {
+                addReport(new ProblemReport(ProblemReport.SEVERITY_HIGH,
+                        TXT_Cannot_Load_Project(), msg, new SanityBuildAction(nbproject)));
+                if (e.getCause() instanceof ModelBuildingException) {
+                    ModelBuildingException mbe = (ModelBuildingException) e.getCause();
+                    for (ModelProblem mp : mbe.getProblems()) {
+                        LOG.log(Level.FINE, mp.toString(), mp.getException());
+                        if (mp.getException() instanceof UnresolvableModelException) {
+                            // Probably obsoleted by ProblemReporterImpl.checkParent, but just in case:
+                            UnresolvableModelException ume = (UnresolvableModelException) mp.getException();
+                            addMissingArtifact(nbproject.getEmbedder().createProjectArtifact(ume.getGroupId(), ume.getArtifactId(), ume.getVersion()));
+                        } else if (mp.getException() instanceof PluginResolutionException) {
+                            Plugin plugin = ((PluginResolutionException) mp.getException()).getPlugin();
+                            // XXX this is not actually accurate; should rather pick out the ArtifactResolutionException & ArtifactNotFoundException inside
+                            addMissingArtifact(nbproject.getEmbedder().createArtifact(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion(), "jar"));
+                        }
+                    }
                 }
+            } else {
+                LOG.log(Level.INFO, "Exception thrown while loading maven project at " + nbproject.getProjectDirectory(), e); //NOI18N
+                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
+                        "Error reading project model", msg, null);
+                addReport(report);
             }
         }
     }

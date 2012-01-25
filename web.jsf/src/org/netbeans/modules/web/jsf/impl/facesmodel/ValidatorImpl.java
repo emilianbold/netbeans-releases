@@ -120,20 +120,22 @@ class ValidatorImpl extends IdentifiableDescriptionGroupImpl implements
         visitor.visit( this );
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.Validator#getValidatorClass()
+    /**
+     * Gets validator-class of the faces-config-validatorType.
+     * @return trimmed validator-class if any, {@code null} otherwise
      */
     public String getValidatorClass() {
-        return getChildElementText(
-                JSFConfigQNames.VALIDATOR_CLASS.getQName(getNamespaceURI()));
+        String validatorClass = getChildElementText(JSFConfigQNames.VALIDATOR_CLASS.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickFullyQualifiedClassType(validatorClass);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.jsf.api.metamodel.Validator#getValidatorId()
+    /**
+     * Gets validator-id of the faces-config-validatorType.
+     * @return trimmed validator-id if any, {@code null} otherwise
      */
     public String getValidatorId() {
-        return getChildElementText(
-                JSFConfigQNames.VALIDATOR_ID.getQName(getNamespaceURI()));
+        String validatorId = getChildElementText(JSFConfigQNames.VALIDATOR_ID.getQName(getNamespaceURI()));
+        return ElementTypeHelper.pickString(validatorId);
     }
     
     protected List<String> getSortedListOfLocalNames(){

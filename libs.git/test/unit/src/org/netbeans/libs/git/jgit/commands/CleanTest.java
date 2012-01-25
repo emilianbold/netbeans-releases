@@ -52,11 +52,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.FileListener;
@@ -88,7 +90,7 @@ public class CleanTest extends AbstractGitTestCase {
         assertNullDirCacheEntry(Collections.singleton(file));
         GitClient client = getClient(workDir);
         assertTrue(file.exists());
-        client.add(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(new File[] { file }, NULL_PROGRESS_MONITOR);
         assertDirCacheEntry(Collections.singleton(file));
 
         Monitor m = new Monitor();
@@ -114,7 +116,7 @@ public class CleanTest extends AbstractGitTestCase {
         assertNullDirCacheEntry(Collections.singleton(folder));
         GitClient client = getClient(workDir);
         assertTrue(folder.exists());
-        client.add(new File[] { file11, file21 }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(new File[] { file11, file21 }, NULL_PROGRESS_MONITOR);
         assertDirCacheEntry(Arrays.asList(new File[] {file11, file21}));
 
         Monitor m = new Monitor();
@@ -227,8 +229,8 @@ public class CleanTest extends AbstractGitTestCase {
         GitClient client = getClient(workDir);
         
         assertTrue(file.exists());
-        client.add(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        client.commit(new File[] { file }, "initial commit", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(new File[] { file }, NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { file }, "initial commit", null, null, NULL_PROGRESS_MONITOR);
         assertDirCacheEntry(Collections.singleton(file));
         
         Monitor m = new Monitor();
@@ -357,7 +359,7 @@ public class CleanTest extends AbstractGitTestCase {
         GitClient client = getClient(workDir);
         
         File[] addedFiles = new File[] {addedFile, nestedAddedFile};
-        client.add(addedFiles, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(addedFiles, NULL_PROGRESS_MONITOR);
         assertDirCacheEntry(Arrays.asList(addedFiles));
         
         Monitor m = new Monitor();
@@ -384,6 +386,32 @@ public class CleanTest extends AbstractGitTestCase {
         assertFalse(nestedUnversionedFolder.exists());
          
         assertNotifiedCleanedFiles(m.notifiedFiles, new File[] {unversionedFile, nestedUnversionedFile, nestedUnversionedFolder});
+    }
+    
+    // must not return status for nested repositories
+    public void testCleanNested () throws Exception {
+        File f = new File(workDir, "f");
+        write(f, "file");
+        
+        GitClient client = getClient(workDir);
+        client.add(new File[] { f }, NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { f }, "init commit", null, null, NULL_PROGRESS_MONITOR);
+        
+        File nested = new File(workDir, "nested");
+        nested.mkdirs();
+        File f2 = new File(nested, "f");
+        write(f2, "file");
+        GitClient clientNested = getClient(nested);
+        clientNested.init(NULL_PROGRESS_MONITOR);
+        
+        client.clean(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, workDir, f, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        
+        statuses = clientNested.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, nested, f2, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_ADDED, false);
     }
     
     private void assertDirCacheEntry (Collection<File> files) throws IOException {

@@ -339,11 +339,11 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
 //                        add(new JMenuItem(new AbstractAction("Find in projects") {
 //                            @Override
 //                            public void actionPerformed(ActionEvent e) {
-//                                FindInFilesAction a = (FindInFilesAction) FileUtil.getConfigObject("Actions/Edit/org-netbeans-modules-search-FindInFilesAction.instance", Action.class);
+//                                Action a = Actions.forID("Edit", "org.netbeans.modules.search.FindInFilesAction");
 //                                if(a instanceof ContextAwareAction) {
 ////                                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
 //                                }            
-//                                a.performAction();
+//                                a.actionPerformed(null);
 //                            }
 //                        }));
                     } catch(Exception ex) {

@@ -46,7 +46,6 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -70,9 +69,8 @@ import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
-import org.openide.cookies.InstanceCookie;
+import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
@@ -82,7 +80,6 @@ import org.openide.util.NbBundle;
  */
 public class ClassEncapsulation {
 
-    private static final String ACTION_PATH = "Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-InnerToOuterAction.instance";   //NOI18N
     private static final Logger LOG = Logger.getLogger(ClassEncapsulation.class.getName());
 
     static final String ALLOW_ENUMS_KEY = "allow.enums";
@@ -192,40 +189,21 @@ public class ClassEncapsulation {
 
         private void invokeRefactoring(final JTextComponent component, final int position) {
             assert component != null;
-            final FileObject cfgRoot = FileUtil.getConfigRoot();
-            final FileObject actionFo = cfgRoot.getFileObject(ACTION_PATH);
-            if (actionFo == null) {
-                LOG.warning("Move Inner to Outer action not found at: " + ACTION_PATH); //NOI18N
+            final Action a = Actions.forID("Refactoring", "org.netbeans.modules.refactoring.java.api.ui.InnerToOuterAction");
+            if (a == null) {
+                LOG.warning("Move Inner to Outer action not found"); //NOI18N
                 return;
             }
-            try {
-                final DataObject actionDobj = DataObject.find(actionFo);
-                final InstanceCookie ic = actionDobj.getLookup().lookup(InstanceCookie.class);
-                if (ic == null) {
-                    throw new IOException();
-                }
-                final Object instance = ic.instanceCreate();
-                if (!(instance instanceof Action)) {
-                    throw new IOException();
-                }
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         if (position != -1) {
                             component.setCaretPosition(position);
                         }
-                        ((Action)instance).actionPerformed(new ActionEvent(component, 0, null));
+                        a.actionPerformed(new ActionEvent(component, 0, null));
                     }
                 });
-            } catch (IOException ioe) {
-                LOG.warning("Move Inner to Outer action is broken: " + ACTION_PATH); //NOI18N
-                return;
-            } catch (ClassNotFoundException cnf) {
-                LOG.warning("Move Inner to Outer action is broken: " + ACTION_PATH); //NOI18N
-                return;
-            }
         }
-
     }
 
     public static final class CustomizerImpl extends OneCheckboxCustomizerProvider {

@@ -43,6 +43,7 @@
 package org.netbeans.nbbuild;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.Properties;
 import java.util.jar.Attributes;
 import org.netbeans.junit.NbTestCase;
@@ -73,10 +74,10 @@ public class MakeUpdateDescTest extends NbTestCase {
         localization.setProperty("OpenIDE-Module-Name", "My Bundle");
         localization.setProperty("OpenIDE-Module-Display-Category", "hello");
         localization.setProperty("OpenIDE-Module-Short-Description", "Hello there!");
-        Element e = MakeUpdateDesc.fakeOSGiInfoXml(attr, localization, null);
+        Element e = MakeUpdateDesc.fakeOSGiInfoXml(attr, localization, new File(getWorkDir(), "something/some.jar"));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         XMLUtil.write(e, baos);
-        assertEquals("<module codenamebase='bundle' distribution='' downloadsize='0'> <manifest " +
+        assertEquals("<module codenamebase='bundle' distribution='' downloadsize='0' targetcluster='something'> <manifest " +
                 "AutoUpdate-Show-In-Client='false' " +
                 "OpenIDE-Module='bundle' OpenIDE-Module-Display-Category='hello' " +
                 "OpenIDE-Module-Module-Dependencies='org.netbeans.api.progress/1 &gt; 1.19, " +

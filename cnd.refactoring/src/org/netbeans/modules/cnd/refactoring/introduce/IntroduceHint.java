@@ -1237,10 +1237,12 @@ public class IntroduceHint /*implements CancellableTask<CompilationInfo>*/ {
             }
         }
 
+        @Override
         public String getText() {
             return NbBundle.getMessage(IntroduceHint.class, "FIX_" + getKeyExt()); //NOI18N
         }
 
+        @Override
         public ChangeInfo implement() throws IOException, BadLocationException {
             JButton btnOk = new JButton(NbBundle.getMessage(IntroduceHint.class, "LBL_Ok"));
             JButton btnCancel = new JButton(NbBundle.getMessage(IntroduceHint.class, "LBL_Cancel"));
@@ -1386,6 +1388,7 @@ public class IntroduceHint /*implements CancellableTask<CompilationInfo>*/ {
             this.allowFinalInCurrentMethod = allowFinalInCurrentMethod;
         }
 
+        @Override
         public String getText() {
             return NbBundle.getMessage(IntroduceHint.class, "FIX_IntroduceField");
         }
@@ -1395,6 +1398,7 @@ public class IntroduceHint /*implements CancellableTask<CompilationInfo>*/ {
             return "[IntroduceField:" + guessedName + ":" + numDuplicates + ":" + statik + ":" + allowFinalInCurrentMethod + ":" + Arrays.toString(initilizeIn) + "]"; // NOI18N
         }
 
+        @Override
         public ChangeInfo implement() throws IOException, BadLocationException {
             JButton btnOk = new JButton(NbBundle.getMessage(IntroduceHint.class, "LBL_Ok"));
             btnOk.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IntroduceHint.class, "AD_IntrHint_OK"));
@@ -1599,6 +1603,7 @@ public class IntroduceHint /*implements CancellableTask<CompilationInfo>*/ {
             this.to = to;
         }
 
+        @Override
         public String getText() {
             return NbBundle.getMessage(IntroduceHint.class, "FIX_IntroduceMethod");
         }
@@ -1607,6 +1612,7 @@ public class IntroduceHint /*implements CancellableTask<CompilationInfo>*/ {
             return "[IntroduceMethod:" + from + ":" + to + "]"; // NOI18N
         }
 
+        @Override
         public ChangeInfo implement() throws Exception {
             JButton btnOk = new JButton(NbBundle.getMessage(IntroduceHint.class, "LBL_Ok"));
             JButton btnCancel = new JButton(NbBundle.getMessage(IntroduceHint.class, "LBL_Cancel"));
@@ -1799,6 +1805,7 @@ public class IntroduceHint /*implements CancellableTask<CompilationInfo>*/ {
 //            this.thrownTypes = thrownTypes;
         }
 
+        @Override
         public String getText() {
             return NbBundle.getMessage(IntroduceHint.class, "FIX_IntroduceMethod");
         }
@@ -1808,6 +1815,7 @@ public class IntroduceHint /*implements CancellableTask<CompilationInfo>*/ {
             return "[IntroduceExpressionBasedMethodFix]"; // NOI18N
         }
 
+        @Override
         public ChangeInfo implement() throws Exception {
             JButton btnOk = new JButton(NbBundle.getMessage(IntroduceHint.class, "LBL_Ok"));
             JButton btnCancel = new JButton(NbBundle.getMessage(IntroduceHint.class, "LBL_Cancel"));

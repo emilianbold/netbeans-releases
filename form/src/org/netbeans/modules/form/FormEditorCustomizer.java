@@ -44,30 +44,21 @@
 
 package org.netbeans.modules.form;
 
-import java.lang.reflect.Modifier;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.Modifier;
+import java.util.HashSet;
+import java.util.MissingResourceException;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractButton;
-import javax.swing.ButtonGroup;
-import javax.swing.GroupLayout;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JSpinner;
-import javax.swing.LayoutStyle;
-import javax.swing.SpinnerNumberModel;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.nodes.PropertySupport;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -90,14 +81,12 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
     private PropertyPanel guideLineColEditor = new PropertyPanel();
     private PropertyPanel selectionBorderColEditor = new PropertyPanel();    
 
+    private Set<Component> brandedInvisibleComponents;
+
     private boolean changed = false;
     private boolean listen = false;
 
-    private boolean showLayoutStyle;
-
     public FormEditorCustomizer () {
-        FormServices services = Lookup.getDefault().lookup(FormServices.class);
-        showLayoutStyle = services.isLayoutExtensionsLibrarySupported();
         
         ButtonGroup group = new ButtonGroup ();
         loc(cbFold, "Fold"); // NOI18N
@@ -166,95 +155,83 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         selectionBorderColLabel.setLabelFor(selectionBorderColEditor);
         gridSizeLabel.setLabelFor(spGridSize);
 
+        brandVisibility("rbGenerateLocals", generateComponetsLabel, rbGenerateLocals, rbGenerateFields); // NOI18N
+        brandVisibility("cbModifier", variableModifierLabel, cbModifier); // NOI18N
+        brandVisibility("cbListenerStyle", listenerStyleLabel, cbListenerStyle); // NOI18N
+        brandVisibility("cbAutoI18n", autoI18nLabel, cbAutoI18n); // NOI18N
+        brandVisibility("cbLayoutStyle", layoutStyleLabel, cbLayoutStyle); // NOI18N
+        brandVisibility("cbComponentNames", componentNamesLabel, cbComponentNames); // NOI18N
+        brandVisibility("cbFold", cbFold); // NOI18N
+        brandVisibility("cbAssistant", cbAssistant); // NOI18N
+        brandVisibility("cbFQN", cbFQN); // NOI18N
+        brandVisibility("guideLineColEditor", guideLineColLabel, guideLineColEditor); // NOI18NS
+        brandVisibility("selectionBorderColEditor", selectionBorderColLabel, selectionBorderColEditor); // NOI18N
+        brandVisibility("spGridSize", gridSizeLabel, spGridSize); // NOI18N
+
         GroupLayout layout = new GroupLayout(this);
-
-        GroupLayout.ParallelGroup labelHorizontalGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addComponent(generateComponetsLabel)
-            .addComponent(variableModifierLabel)
-            .addComponent(componentNamesLabel)
-            .addComponent(listenerStyleLabel)
-            .addComponent(autoI18nLabel)
-            .addComponent(guideLineColLabel)
-            .addComponent(selectionBorderColLabel)
-            .addComponent(gridSizeLabel);
-        if (showLayoutStyle) {
-            labelHorizontalGroup.addComponent(layoutStyleLabel);
-        }
-        
-        GroupLayout.ParallelGroup componentHorizontalGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
-            .addComponent(rbGenerateLocals)
-            .addComponent(rbGenerateFields)
-            .addComponent(cbFold)
-            .addComponent(cbAssistant)
-            .addComponent(cbFQN)
-            .addComponent(cbModifier, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(cbComponentNames, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(cbListenerStyle, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(cbAutoI18n, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(guideLineColEditor, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(selectionBorderColEditor, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(spGridSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, 40);
-        if (showLayoutStyle) {
-            componentHorizontalGroup.addComponent(cbLayoutStyle, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
-        }
-
+        layout.setAutoCreateGaps(true);
         setLayout(layout);
+
+        GroupLayout.ParallelGroup labelHorizontalGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
+        addComponent(generateComponetsLabel, labelHorizontalGroup);
+        addComponent(variableModifierLabel, labelHorizontalGroup);
+        addComponent(componentNamesLabel, labelHorizontalGroup);
+        addComponent(listenerStyleLabel, labelHorizontalGroup);
+        addComponent(autoI18nLabel, labelHorizontalGroup);
+        addComponent(guideLineColLabel, labelHorizontalGroup);
+        addComponent(selectionBorderColLabel, labelHorizontalGroup);
+        addComponent(gridSizeLabel, labelHorizontalGroup);
+        addComponent(layoutStyleLabel, labelHorizontalGroup);
+
+        GroupLayout.ParallelGroup componentHorizontalGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING, false);
+        addComponent(rbGenerateLocals, componentHorizontalGroup);
+        addComponent(rbGenerateFields, componentHorizontalGroup);
+        addComponent(cbFold, componentHorizontalGroup);
+        addComponent(cbAssistant, componentHorizontalGroup);
+        addComponent(cbFQN, componentHorizontalGroup);
+        addComponent(cbModifier, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE, componentHorizontalGroup);
+        addComponent(cbComponentNames, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE, componentHorizontalGroup);
+        addComponent(cbListenerStyle, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE, componentHorizontalGroup);
+        addComponent(cbAutoI18n, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE, componentHorizontalGroup);
+        addComponent(guideLineColEditor, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE, componentHorizontalGroup);
+        addComponent(selectionBorderColEditor, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE, componentHorizontalGroup);
+        addComponent(spGridSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, 40, componentHorizontalGroup);
+        addComponent(cbLayoutStyle, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE, componentHorizontalGroup);
+
         layout.setHorizontalGroup(
             layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(labelHorizontalGroup)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(componentHorizontalGroup)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
-        GroupLayout.SequentialGroup verticalGroup = layout.createSequentialGroup()
-            .addContainerGap()
-            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                .addComponent(generateComponetsLabel)
-                .addComponent(rbGenerateLocals))
-            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(rbGenerateFields)
-            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                .addComponent(variableModifierLabel)
-                .addComponent(cbModifier))
-            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                .addComponent(listenerStyleLabel)
-                .addComponent(cbListenerStyle))
-            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                .addComponent(autoI18nLabel)
-                .addComponent(cbAutoI18n));
-        if (showLayoutStyle) {
-            verticalGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                    .addComponent(layoutStyleLabel)
-                    .addComponent(cbLayoutStyle));
-        }
-        verticalGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                .addComponent(componentNamesLabel)
-                .addComponent(cbComponentNames))
-            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(cbFold)
-            .addComponent(cbAssistant)
-            .addComponent(cbFQN)
-            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(guideLineColLabel, GroupLayout.Alignment.CENTER)
-                .addComponent(guideLineColEditor, GroupLayout.Alignment.CENTER, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(selectionBorderColLabel, GroupLayout.Alignment.CENTER)
-                .addComponent(selectionBorderColEditor, GroupLayout.Alignment.CENTER, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addComponent(gridSizeLabel, GroupLayout.Alignment.CENTER)
-                .addComponent(spGridSize, GroupLayout.Alignment.CENTER, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-            .addContainerGap();
+        GroupLayout.SequentialGroup verticalGroup = layout.createSequentialGroup();
+        verticalGroup.addContainerGap();
+        addLine(layout, verticalGroup, GroupLayout.Alignment.BASELINE,
+                generateComponetsLabel, rbGenerateLocals);
+        addComponent(rbGenerateFields, verticalGroup);
+        addLine(layout, verticalGroup, GroupLayout.Alignment.BASELINE,
+                variableModifierLabel, cbModifier);
+        addLine(layout, verticalGroup, GroupLayout.Alignment.BASELINE,
+                listenerStyleLabel, cbListenerStyle);
+        addLine(layout, verticalGroup, GroupLayout.Alignment.BASELINE,
+                autoI18nLabel, cbAutoI18n);
+        addLine(layout, verticalGroup, GroupLayout.Alignment.BASELINE,
+                layoutStyleLabel, cbLayoutStyle);
+        addLine(layout, verticalGroup, GroupLayout.Alignment.BASELINE,
+                componentNamesLabel, cbComponentNames);
+        addComponent(cbFQN, verticalGroup);
+        addComponent(cbFold, verticalGroup);
+        addComponent(cbAssistant, verticalGroup);
+        addLine(layout, verticalGroup, GroupLayout.Alignment.CENTER,
+                guideLineColLabel, guideLineColEditor);
+        addLine(layout, verticalGroup, GroupLayout.Alignment.CENTER,
+                selectionBorderColLabel, selectionBorderColEditor);
+        addLine(layout, verticalGroup, GroupLayout.Alignment.CENTER,
+                gridSizeLabel, spGridSize);
+        verticalGroup.addContainerGap();
+
         layout.setVerticalGroup(verticalGroup);
 
         cbFold.addActionListener (this);
@@ -269,7 +246,50 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         cbAutoI18n.addActionListener(this);
         spGridSize.addChangeListener(this);
     }
-    
+
+    private void addComponent(Component comp, GroupLayout.Group targetGroup) {
+        if (isVisible(comp)) {
+            targetGroup.addComponent(comp);
+        }
+    }
+
+    private void addComponent(Component comp, int min, int pref, int max, GroupLayout.Group targetGroup) {
+        if (isVisible(comp)) {
+            targetGroup.addComponent(comp, min, pref, max);
+        }
+    }
+
+    private void addLine(GroupLayout layout, GroupLayout.Group targetGroup, GroupLayout.Alignment align,
+                         Component... components) {
+        if (!isVisible(components[0])) {
+            return;
+        }
+        GroupLayout.Group group = layout.createParallelGroup(align);
+        for (Component comp : components) {
+            group.addComponent(comp, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
+        }
+        targetGroup.addGroup(group);
+    }
+
+    private boolean isVisible(Component comp) {
+        return brandedInvisibleComponents == null || !brandedInvisibleComponents.contains(comp);
+    }
+
+    private void brandVisibility(String key, Component... components) {
+        try {
+            String value = NbBundle.getMessage(FormEditorCustomizer.class, "OPTIONS_"+key+"_HIDDEN"); // NOI18N
+            if ("true".equals(value)) { // NOI18N
+                for (Component comp : components) {
+                    if (brandedInvisibleComponents == null) {
+                        brandedInvisibleComponents = new HashSet();
+                    }
+                    brandedInvisibleComponents.add(comp);
+                }
+            }
+        } catch (MissingResourceException ex) {
+        }
+    }
+
     private static String loc (String key) {
         return NbBundle.getMessage (FormEditorCustomizer.class, key);
     }

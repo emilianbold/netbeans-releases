@@ -57,6 +57,7 @@ public class SimpleStatistics extends BaseStatistics<Integer> {
 	super(text, level);
     }
     
+    @Override
     public void print(PrintStream ps) {
 	int avg = (cnt == 0) ? 0 : sum / cnt;
 	//ps.printf("%s %8d min    %8d max    %8d avg\n", text, min, max, avg);	// NOI18N
@@ -66,6 +67,7 @@ public class SimpleStatistics extends BaseStatistics<Integer> {
 	}
     }
     
+    @Override
     protected void printDistribution(PrintStream ps) {
 	ps.printf("\tDistribution:\n");	// NOI18N
 	printDistributionDetailed(ps);

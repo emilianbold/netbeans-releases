@@ -156,6 +156,7 @@ public class IncludeResolverImplTestCase extends TraceModelTestBase {
             List<CsmFile> files = new ArrayList<CsmFile>();
             files.addAll(project.getAllFiles());
             Collections.sort(files, new Comparator<CsmFile>() {
+                @Override
                 public int compare(CsmFile file1, CsmFile file2) {
                     assertNotNull(file1);
                     assertNotNull(file1);

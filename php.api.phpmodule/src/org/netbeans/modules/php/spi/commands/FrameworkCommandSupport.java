@@ -42,10 +42,11 @@
 
 package org.netbeans.modules.php.spi.commands;
 
-import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -205,16 +206,13 @@ public abstract class FrameworkCommandSupport {
      * @return {@link ExecutionDescriptor descriptor} with factory for standard output processor.
      */
     public ExecutionDescriptor getDescriptor(InputProcessorFactory outFactory) {
-        ExecutionDescriptor descriptor = PhpProgram.getExecutionDescriptor().postExecution(new RefreshPhpModuleRunnable(phpModule))
-                .errProcessorFactory(PhpProgram.ANSI_STRIPPING_FACTORY);
+        ExecutionDescriptor descriptor = PhpProgram.getExecutionDescriptor().postExecution(new RefreshPhpModuleRunnable(phpModule));
         String optionsPath = getOptionsPath();
         if (optionsPath != null) {
             descriptor = descriptor.optionsPath(optionsPath);
         }
         if (outFactory != null) {
-            descriptor = descriptor.outProcessorFactory(new ProxyInputProcessorFactory(PhpProgram.ANSI_STRIPPING_FACTORY, outFactory));
-        } else {
-            descriptor = descriptor.outProcessorFactory(PhpProgram.ANSI_STRIPPING_FACTORY);
+            descriptor = descriptor.outProcessorFactory(outFactory);
         }
         return descriptor;
     }
@@ -367,23 +365,23 @@ public abstract class FrameworkCommandSupport {
 
     /**
      * {@link #createSilentCommand(String, String[]) Silently} run the given command
-     * and redirect its output to a temporary file. This file is deleted on JVM exit.
+     * and redirect its output to a stream.
      * <p>
-     * Please notice that the file can be {@code null}, incomplete or even empty
+     * Please notice that the stream can be {@code null}, incomplete or even empty
      * if any error occurs during command running or if the command is cancelled.
      * @param comand command to be run
      * @param arguments arguments of the given command
-     * @return file with command output or {@code null} if the command can't be run
+     * @return input stream with command output or {@code null} if the command can't be run
      * @see #getProcessBuilder(boolean)
      * @since 1.51
      */
-    protected final File redirectScriptOutput(String command, String... arguments) {
+    protected final InputStream redirectScriptOutput(String command, String... arguments) {
         ExternalProcessBuilder processBuilder = createSilentCommand(command, arguments);
         if (processBuilder == null) {
             return null;
         }
 
-        File output = null;
+        InputStream output = null;
         try {
             final RedirectOutputProcessor inputProcessor = new RedirectOutputProcessor();
             ExecutionDescriptor executionDescriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL).outProcessorFactory(
@@ -398,7 +396,7 @@ public abstract class FrameworkCommandSupport {
             Future<Integer> task = service.run();
             try {
                 if (task.get().intValue() == 0) {
-                    output = inputProcessor.getOutputFile();
+                    output = inputProcessor.getOutput();
                 }
             } catch (CancellationException ex) {
                 // cancelled
@@ -514,23 +512,17 @@ public abstract class FrameworkCommandSupport {
 
         private static final Logger LOGGER = Logger.getLogger(RedirectOutputProcessor.class.getName());
 
-        private final File outputFile;
-        private final FileOutputStream fos;
-        private final BufferedOutputStream bos;
+        private final ByteArrayOutputStream output;
 
 
         RedirectOutputProcessor() throws IOException {
-            outputFile = File.createTempFile("nb-framework-output-", ".tmp"); // NOI18N
-            fos = new FileOutputStream(outputFile);
-            bos = new BufferedOutputStream(fos);
-
-            outputFile.deleteOnExit();
+            output = new ByteArrayOutputStream();
         }
 
         @Override
         public void processInput(char[] chars) throws IOException {
             for (char c : chars) {
-                bos.write((byte) c);
+                output.write((byte) c);
             }
         }
 
@@ -540,21 +532,11 @@ public abstract class FrameworkCommandSupport {
 
         @Override
         public void close() {
-            try {
-                bos.close();
-            } catch (IOException exc) {
-                LOGGER.log(Level.WARNING, null, exc);
-            } finally {
-                try {
-                    fos.close();
-                } catch (IOException exc) {
-                    LOGGER.log(Level.WARNING, null, exc);
-                }
-            }
+            // nothing to do
         }
 
-        public File getOutputFile() {
-            return outputFile;
+        public InputStream getOutput() {
+            return new ByteArrayInputStream(output.toByteArray());
         }
 
     }

@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser;
@@ -135,7 +135,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             }
         }
 
-        Map<OffsetRange, Set<ColoringAttributes>> highlights;        
+        Map<OffsetRange, Set<ColoringAttributes>> highlights;
         // for unused private fields: name, varible
         // if isused, then it's deleted from the list and marked as the field
         private final Map<String, IdentifierColoring> privateFieldsUsed;
@@ -261,9 +261,18 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             super.visit(node);
         }
 
-
         @Override
         public void visit(InterfaceDeclaration node) {
+            if (isCancelled()) {
+                return;
+            }
+            Identifier name = node.getName();
+            addOffsetRange(name, ColoringAttributes.CLASS_SET);
+            node.getBody().accept(this);
+        }
+
+        @Override
+        public void visit(TraitDeclaration node) {
             if (isCancelled()) {
                 return;
             }
@@ -353,7 +362,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         private class FieldAccessVisitor extends DefaultVisitor {
             private final Set<ColoringAttributes> coloring;
-            
+
             public FieldAccessVisitor(Set<ColoringAttributes> coloring) {
                 this.coloring = coloring;
             }
@@ -361,9 +370,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             @Override
             public void visit(ArrayAccess node) {
                 scan(node.getName());
-                // don't scan(scan(node.getIndex()); issue #194535
+                // don't scan(scan(node.getDimension()); issue #194535
             }
-            
+
             @Override
             public void visit(Identifier identifier) {
                 //remove the field, because is used

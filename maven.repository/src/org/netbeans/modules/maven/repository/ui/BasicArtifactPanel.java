@@ -76,7 +76,7 @@ import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
-import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
+import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.openide.awt.Actions;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -110,10 +110,7 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                     }
                     NBVersionInfo info = (NBVersionInfo) obj;
                     if (info != null) {
-                        ArtifactViewerFactory fact = Lookup.getDefault().lookup(ArtifactViewerFactory.class);
-                        TopComponent tc = fact.createTopComponent(info);
-                        tc.open();
-                        tc.requestActive();
+                        ArtifactViewer.showArtifactViewer(info);
                     }
                 }
             }

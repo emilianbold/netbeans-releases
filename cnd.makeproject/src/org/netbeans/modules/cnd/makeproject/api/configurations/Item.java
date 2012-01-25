@@ -67,6 +67,8 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.ConfigurationRequirementProvider;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.IncludePathExpansionProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -533,19 +535,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     public boolean canHaveConfiguration() {
-        String mimeType = getMIMEType();
-        if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
-            return true;
-        } else if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
-            return true;
-        } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType)) {
-            return true;
-        } else if (MIMENames.FORTRAN_MIME_TYPE.equals(mimeType)) {
-            return true;
-        } else if (MIMENames.ASM_MIME_TYPE.equals(mimeType)) {
-            return true;
-        }
-        return false;
+        return ConfigurationRequirementProvider.askAllProviders(this);
     }
 
     private MakeConfigurationDescriptor getMakeConfigurationDescriptor() {
@@ -597,7 +587,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                 vec.addAll(CndFileUtils.toFSPathList(fs, compiler.getSystemIncludeDirectories()));
             }
         }
-        return vec;
+        return SPI_ACCESSOR.expandIncludePaths(vec, compilerConfiguration, compiler, makeConfiguration);
     }
 
     @Override
@@ -639,7 +629,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             List<String> vec3 = new ArrayList<String>();
             vec3 = SPI_ACCESSOR.getItemUserIncludePaths(vec3, cccCompilerConfiguration, compiler, makeConfiguration);
             result.addAll(CndFileUtils.toFSPathList(compilerFS, vec3));
-            return result;
+            return SPI_ACCESSOR.expandIncludePaths(result, cccCompilerConfiguration, compiler, makeConfiguration);
         }
         return Collections.<FSPath>emptyList();
     }
@@ -834,22 +824,30 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
 
     private static final class SpiAccessor {
 
-        private Collection<? extends UserOptionsProvider> providers;
+        private Collection<? extends UserOptionsProvider> uoProviders;
+        private Collection<? extends IncludePathExpansionProvider> ipeProviders;
 
-        private synchronized Collection<? extends UserOptionsProvider> getProviders() {
-            if (providers == null) {
-                providers = Lookup.getDefault().lookupAll(UserOptionsProvider.class);
+        private synchronized Collection<? extends UserOptionsProvider> getUserOptionsProviders() {
+            if (uoProviders == null) {
+                uoProviders = Lookup.getDefault().lookupAll(UserOptionsProvider.class);
             }
-            return providers;
+            return uoProviders;
         }
 
+        private synchronized Collection<? extends IncludePathExpansionProvider> getIncludePathExpansionProviders() {
+            if (ipeProviders == null) {
+                ipeProviders = Lookup.getDefault().lookupAll(IncludePathExpansionProvider.class);
+            }
+            return ipeProviders;
+        }
+        
         private SpiAccessor() {
         }
 
         private List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-            if(!getProviders().isEmpty()) {
+            if(!getUserOptionsProviders().isEmpty()) {
                 List<String> res = new ArrayList<String>();
-                for (UserOptionsProvider provider : getProviders()) {
+                for (UserOptionsProvider provider : getUserOptionsProviders()) {
                     res.addAll(provider.getItemUserIncludePaths(includes, compilerOptions, compiler, makeConfiguration));
                 }
                 return res;
@@ -859,9 +857,9 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         }
 
         private List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-            if(!getProviders().isEmpty()) {
+            if(!getUserOptionsProviders().isEmpty()) {
                 List<String> res = new ArrayList<String>();
-                for (UserOptionsProvider provider : getProviders()) {
+                for (UserOptionsProvider provider : getUserOptionsProviders()) {
                     res.addAll(provider.getItemUserMacros(macros, compilerOptions, compiler, makeConfiguration));
                 }
                 return res;
@@ -871,8 +869,8 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         }
 
         private LanguageFlavor getLanguageFlavor(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-            if(!getProviders().isEmpty()) {
-                for (UserOptionsProvider provider : getProviders()) {
+            if(!getUserOptionsProviders().isEmpty()) {
+                for (UserOptionsProvider provider : getUserOptionsProviders()) {
                     LanguageFlavor languageFlavor = provider.getLanguageFlavor(compilerOptions, compiler, makeConfiguration);
                     if(languageFlavor != null && languageFlavor != LanguageFlavor.UNKNOWN) {
                         return languageFlavor;
@@ -882,6 +880,13 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             } else {
                 return LanguageFlavor.UNKNOWN;
             }
+        }
+        
+        private List<FSPath> expandIncludePaths(List<FSPath> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
+            for (IncludePathExpansionProvider provider : getIncludePathExpansionProviders()) {
+                includes = provider.expandIncludePaths(includes, compilerOptions, compiler, makeConfiguration);
+            }
+            return includes;
         }
     }
 }

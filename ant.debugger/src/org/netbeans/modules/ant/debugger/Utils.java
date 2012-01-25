@@ -65,7 +65,6 @@ import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -405,11 +404,7 @@ public class Utils {
         }
         InputSource in = new InputSource (new StringReader (w.toString ()));
         if (fo != null) { // #10348
-            try {
-                in.setSystemId (fo.getURL ().toExternalForm ());
-            } catch (FileStateInvalidException e) {
-                assert false : e;
-            }
+                in.setSystemId(fo.toURL().toExternalForm());
             // [PENDING] Ant's ProjectHelper has an elaborate set of work-
             // arounds for inconsistent parser behavior, e.g. file:foo.xml
             // works in Ant but not with Xerces parser. You must use just foo.xml

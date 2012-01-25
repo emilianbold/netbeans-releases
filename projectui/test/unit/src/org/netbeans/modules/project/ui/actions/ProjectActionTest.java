@@ -79,6 +79,10 @@ public class ProjectActionTest extends NbTestCase {
     private TestSupport.TestProject project1;
     private TestSupport.TestProject project2;
 
+    @Override protected boolean runInEQ() {
+        return true;
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -104,27 +108,23 @@ public class ProjectActionTest extends NbTestCase {
                
         project2 = (TestSupport.TestProject)ProjectManager.getDefault().findProject( p2 );                
     }
-    
-    @Override
-    public boolean runInEQ () {
-        return true;
+
+    private static void assertEnablement(final Action action, final boolean enabled) throws Exception {
+        LookupSensitiveAction.RP.post(new Runnable() {public @Override void run() {}}).waitFinished();
+        assertTrue(action.isEnabled() ^ !enabled);
     }
     
     public void testCommandEnablement() throws Exception {
         TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup();
-        ProjectAction action = new ProjectAction( "COMMAND", "TestProjectAction", null, lookup );
-        
-        assertFalse( "Action should NOT be enabled", action.isEnabled() );        
-        
+        Action action = new ProjectAction("COMMAND", "TestProjectAction", null, lookup);
+        action.isEnabled(); // priming check
+        assertEnablement(action, false);
         lookup.change(d1_1);
-        assertTrue( "Action should be enabled", action.isEnabled() );        
-        
+        assertEnablement(action, true);
         lookup.change(d1_1, d1_2);
-        assertFalse( "Action should NOT be enabled", action.isEnabled() );        
-        
+        assertEnablement(action, false);
         lookup.change(d1_1, d2_1);
-        assertFalse( "Action should NOT be enabled", action.isEnabled() );        
-        
+        assertEnablement(action, false);
     }
     
     public void testProviderEnablement() throws Exception {
@@ -163,49 +163,11 @@ public class ProjectActionTest extends NbTestCase {
     }
     
     public void testAcceleratorsPropagated() {
-        doTestAcceleratorsPropagated(new ActionCreator() {
-            public ProjectAction create(Lookup l) {
+        TestSupport.doTestAcceleratorsPropagated(new TestSupport.ActionCreator() {
+            public LookupSensitiveAction create(Lookup l) {
                 return new ProjectAction("command", "TestProjectAction", null, l);
             }
         }, true);
-    }
-    
-    public static void doTestAcceleratorsPropagated(ActionCreator creator, boolean testMenus) {
-        Lookup l1 = Lookups.fixed(new Object[] {"1"});
-        Lookup l2 = Lookups.fixed(new Object[] {"2"});
-        
-        ProjectAction a1 = creator.create(l1);
-        
-        KeyStroke k1 = KeyStroke.getKeyStroke("shift pressed A");
-        KeyStroke k2 = KeyStroke.getKeyStroke("shift pressed A");
-        
-        assertNotNull(k1);
-        assertNotNull(k2);
-        
-        a1.putValue(Action.ACCELERATOR_KEY, k1);
-        
-        ProjectAction a2 = creator.create(l2);
-        
-        assertEquals(k1, a2.getValue(Action.ACCELERATOR_KEY));
-        
-        a2.putValue(Action.ACCELERATOR_KEY, k2);
-        
-        assertEquals(k2, a1.getValue(Action.ACCELERATOR_KEY));
-        
-        if (testMenus) {
-            assertEquals(k2, a2.getMenuPresenter().getAccelerator());
-        }
-
-        a1.putValue(Action.ACCELERATOR_KEY, k1);
-        assertEquals(k1, a2.getValue(Action.ACCELERATOR_KEY));
-        
-        if (testMenus) {
-            assertEquals(k1, a2.getMenuPresenter().getAccelerator());
-        }
-    }
-    
-    public static interface ActionCreator {
-        public ProjectAction create(Lookup l);
     }
     
     private static class TestActionProvider implements ActionProvider {

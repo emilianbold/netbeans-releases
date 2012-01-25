@@ -64,7 +64,7 @@ public class Utilities {
 
     private static final String DEFAULT_NAME = "name"; // NOI18N
 
-    public Utilities() {
+    private Utilities() {
     }
     
     public static CsmClass extractEnclosingClass(CsmContext editorContext) {

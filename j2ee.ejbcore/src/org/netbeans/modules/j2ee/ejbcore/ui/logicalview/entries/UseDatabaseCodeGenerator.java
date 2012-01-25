@@ -242,7 +242,7 @@ public class UseDatabaseCodeGenerator implements CodeGenerator {
         
         final HashMap<String, Datasource> references = new HashMap<String, Datasource>();
         holder.setReferences(references);
-        holder.setModuleDataSources(j2eeModuleProvider.getModuleDatasources());
+        holder.setModuleDataSources(j2eeModuleProvider.getConfigSupport().getDatasources());
         holder.setServerDataSources(j2eeModuleProvider.getServerDatasources());
         
         if (j2eeModuleProvider.getJ2eeModule().getType().equals(J2eeModule.Type.EJB)) {

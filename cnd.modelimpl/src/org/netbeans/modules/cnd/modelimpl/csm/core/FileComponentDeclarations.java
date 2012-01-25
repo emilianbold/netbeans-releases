@@ -256,6 +256,23 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         return UIDCsmConverter.UIDtoDeclaration(anUid);
     }
 
+    CsmOffsetableDeclaration findExistingDeclaration(int startOffset, CharSequence name, CsmDeclaration.Kind kind) {
+        OffsetSortedKey key = new OffsetSortedKey(startOffset, Math.abs(CharSequences.create(name).hashCode()));
+        CsmUID<CsmOffsetableDeclaration> anUid = null;
+        try {
+            declarationsLock.readLock().lock();
+            anUid = declarations.get(key);
+            // It seems next line wrong, so commented when method was moved from FileImpl
+            //sortedDeclarations = null;
+        } finally {
+            declarationsLock.readLock().unlock();
+        }
+        if (anUid != null && UIDUtilities.getKind(anUid) != kind) {
+            anUid = null;
+        }
+        return UIDCsmConverter.UIDtoDeclaration(anUid);
+    }
+    
     Collection<CsmUID<CsmOffsetableDeclaration>> getDeclarations(int startOffset, int endOffset) {
         List<CsmUID<CsmOffsetableDeclaration>> res;
         try {

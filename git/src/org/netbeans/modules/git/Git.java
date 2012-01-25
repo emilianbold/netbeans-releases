@@ -43,12 +43,10 @@
 package org.netbeans.modules.git;
 
 import org.netbeans.modules.git.client.GitProgressSupport;
-import org.netbeans.modules.git.client.GitClientInvocationHandler;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -58,11 +56,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.libs.git.GitClient;
-import org.netbeans.libs.git.GitClientFactory;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.client.CredentialsCallback;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
@@ -149,7 +145,7 @@ public final class Git {
         if (repository != null) {
             try {
                 GitClient client = getClient(repository);
-                if (!client.catFile(workingCopy, GitUtils.HEAD, new FileOutputStream(originalFile), ProgressMonitor.NULL_PROGRESS_MONITOR)) {
+                if (!client.catFile(workingCopy, GitUtils.HEAD, new FileOutputStream(originalFile), GitUtils.NULL_PROGRESS_MONITOR)) {
                     originalFile.delete();
                 }
             } catch (java.io.FileNotFoundException ex) {
@@ -197,12 +193,9 @@ public final class Git {
         if (repositoryFolder != null) {
             repository = repositoryFolder;
         }
-        GitClient client = GitClientFactory.getInstance(null).getClient(repository);
+        GitClient client = new GitClient(repository, progressSupport, handleAuthenticationIssues);
         client.setCallback(new CredentialsCallback());
-        GitClientInvocationHandler handler = new GitClientInvocationHandler(client, repository);
-        handler.setProgressSupport(progressSupport);
-        handler.setHandleAuthenticationIssues(handleAuthenticationIssues);
-        return (GitClient) Proxy.newProxyInstance(GitClient.class.getClassLoader(), new Class[] { GitClient.class }, handler);
+        return client;
     }
 
     public RequestProcessor getRequestProcessor() {
@@ -303,7 +296,7 @@ public final class Git {
                 LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
                 break;
             }
-            if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
+            if (VersioningSupport.isExcluded(file)) break;
             if (GitUtils.repositoryExistsFor(file)){
                 LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
                 done.clear();   // all folders added before must be removed, they ARE in fact managed by git
@@ -333,7 +326,7 @@ public final class Git {
         File[] roots = knownRoots.toArray(new File[knownRoots.size()]);
         File knownParent = null;
         for (File r : roots) {
-            if(!Utils.isScanForbidden(file) && Utils.isAncestorOrEqual(r, file) && (knownParent == null || Utils.isAncestorOrEqual(knownParent, r))) {
+            if(!VersioningSupport.isExcluded(file) && Utils.isAncestorOrEqual(r, file) && (knownParent == null || Utils.isAncestorOrEqual(knownParent, r))) {
                 knownParent = r;
             }
         }
@@ -354,7 +347,7 @@ public final class Git {
             hpResult = (Result<? extends VCSHyperlinkProvider>) Lookup.getDefault().lookupResult(VCSHyperlinkProvider.class);
         }
         if (hpResult == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.<VCSHyperlinkProvider>emptyList();
         }
         Collection<? extends VCSHyperlinkProvider> providersCol = hpResult.allInstances();
         List<VCSHyperlinkProvider> providersList = new ArrayList<VCSHyperlinkProvider>(providersCol.size());

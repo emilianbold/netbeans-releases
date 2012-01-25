@@ -117,7 +117,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     transient private BaseJspEditorSupport editorSupport;
     transient final private static boolean debug = false;
     
-    transient private String encoding = null;
+    transient private AtomicReference<String> encoding = new AtomicReference<String>();
 
      @MultiViewElement.Registration(
             displayName="#LBL_JSPEditorTab",
@@ -280,30 +280,45 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         return "text/x-java"; // NOI18N
     }
     
-    public String getFileEncoding() {
-        if (encoding == null){
-            updateFileEncoding(false); //from file
-        }
-        return encoding;
+    /**
+     * Ensures the file encoding is determined. The call may may access 
+     * JSP parser and obtain project's lock.
+     */
+    void loadFileEncoding() {
+        getFileEncoding();
+    }
+    
+    String getFileEncoding() {
+        //just assure we do not return the initial null value
+        encoding.compareAndSet(null, findFileEncoding(false));
+        return encoding.get();
     }
     
     void updateFileEncoding(boolean fromEditor) {
+        encoding.set(findFileEncoding(fromEditor));
+    }
+    
+    private String findFileEncoding(boolean fromEditor) {
         TagLibParseSupport tlps = (TagLibParseSupport) getCookie(TagLibParseSupport.class);
         if (tlps != null) {
-            encoding = tlps.getCachedOpenInfo(true, fromEditor).getEncoding();
-        }
-
-        if (encoding == null) {
-            if (LOGGER.isLoggable(Level.FINER)) {
-                LOGGER.log(Level.FINER, "Retrieved encoding is null for file " + getPrimaryFile().getNameExt());//NOI18N
+            String found = tlps.getCachedOpenInfo(true, fromEditor).getEncoding();
+            if(found != null) {
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.log(Level.FINER, "Encoding updated for file {0} to {1}", new Object[]{getPrimaryFile().getNameExt(), encoding});  //NOI18N
+                }
+                return found;
+            } else {
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.log(Level.FINER, "Retrieved encoding is null for file {0}, using default encoding {1}", new Object[]{getPrimaryFile().getNameExt(), DEFAULT_ENCODING});//NOI18N
+                }
+                return DEFAULT_ENCODING;
             }
-            encoding = DEFAULT_ENCODING;
+        } else {
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.log(Level.FINER, "No TagLibParseSupport found - cannot retrieve encoding file {0}, using default encoding {1}", new Object[]{getPrimaryFile().getNameExt(), DEFAULT_ENCODING});//NOI18N
+            }
+            return DEFAULT_ENCODING;
         }
-        if (LOGGER.isLoggable(Level.FINER)) {
-            LOGGER.log(Level.FINER, "Encoding updated for file " + getPrimaryFile().getNameExt() //NOI18N
-                    + " to " + encoding);  //NOI18N
-        }
-
     }
     
     /** Updates classFileData, servletDataObject, servletEdit

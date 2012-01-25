@@ -107,6 +107,40 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="FileSensitiveAction.performer">
+            <api name="general"/>
+            <summary>Adding ability to create a file sensitive action with custom performer</summary>
+            <version major="1" minor="56"/>
+            <date day="13" month="1" year="2012"/>
+            <author login="yardus"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>FileSensitiveActions.fileSensitiveAction(performer, name, icon)</code> method for creating file sensitive actions with custom performers.
+                    This method is a logical counterpart to <code>ProjectSensitiveActions.projectSensitiveAction(performer, name, icon)</code>
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.ui.support" name="FileSensitiveActions"/>
+            <class package="org.netbeans.spi.project.ui.support" name="FileActionPerformer"/>
+            <issue number="51571"/>
+        </change>
+        <change id="willOpenProjects">
+            <api name="general"/>
+            <summary>Will open project notification</summary>
+            <version major="1" minor="55"/>
+            <date day="12" month="12" year="2011"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    A <a href="@TOP@/architecture-summary.html#property-willOpenProjects">
+                    new friend contract</a> added for benefit of ide.ergonomics
+                    module.
+                </p>
+            </description>
+            <class package="org.netbeans.api.project.ui" name="OpenProjects"/>
+            <issue number="203220"/>
+        </change>
         <change id="Templates.definesMainProject">
             <api name="general"/>
             <summary>Added <code>definesMainProject</code> property to wizards</summary>

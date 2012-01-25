@@ -90,6 +90,7 @@ public class Catalog {
             try {
                 while (rs.next()) {
                     String schemaName = rs.getString("TABLE_SCHEM"); // NOI18N
+                    if(schemaName == null) schemaName = "";//handle null as empty name
                     Schema schema = new Schema(provider, this, schemaName);
                     schemas.put(schemaName, schema);
                 }

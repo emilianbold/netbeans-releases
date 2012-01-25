@@ -44,11 +44,9 @@ package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.util.logging.Logger;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
@@ -126,7 +124,8 @@ public abstract class ConfigAction {
         return XDebugStarterFactory.getInstance() != null;
     }
 
-    public abstract boolean isValid(boolean indexFileNeeded);
+    public abstract boolean isProjectValid();
+    public abstract boolean isFileValid();
 
     public abstract boolean isRunFileEnabled(Lookup context);
     public abstract boolean isDebugFileEnabled(Lookup context);
@@ -141,12 +140,4 @@ public abstract class ConfigAction {
         project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.RUN);
     }
 
-    protected boolean isIndexFileValid(FileObject baseDirectory) {
-        assert baseDirectory != null;
-        String indexFile = ProjectPropertiesSupport.getIndexFile(project);
-        if (indexFile == null || indexFile.trim().length() == 0 || baseDirectory.getFileObject(indexFile) == null) {
-            return false;
-        }
-        return true;
-    }
 }

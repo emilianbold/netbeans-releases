@@ -51,12 +51,12 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
-import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitClient.DiffMode;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
@@ -123,7 +123,7 @@ public class ExportUncommittedChangesAction extends SingleRepositoryAction {
                                     out = new BufferedOutputStream(new FileOutputStream(toFile));
                                     client.addNotificationListener(new DefaultFileListener(roots));
                                     setProgress(NbBundle.getMessage(ExportUncommittedChangesAction.class, "MSG_ExportUncommittedChangesAction.preparingDiff")); //NOI18N
-                                    client.exportDiff(files, diffMode, out, this);
+                                    client.exportDiff(files, diffMode, out, getProgressMonitor());
                                     if (!isCanceled()) {
                                         success = true;
                                     }

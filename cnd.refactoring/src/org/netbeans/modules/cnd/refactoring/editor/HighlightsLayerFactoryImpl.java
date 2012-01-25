@@ -56,6 +56,7 @@ import org.netbeans.spi.editor.highlighting.ZOrder;
  */
 public class HighlightsLayerFactoryImpl implements HighlightsLayerFactory {
     
+    @Override
     public HighlightsLayer[] createLayers(Context context) {
         return new HighlightsLayer[] {
             //"above" mark occurrences (1000)

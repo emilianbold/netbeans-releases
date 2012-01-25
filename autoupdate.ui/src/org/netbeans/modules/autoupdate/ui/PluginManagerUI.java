@@ -47,29 +47,12 @@ package org.netbeans.modules.autoupdate.ui;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Window;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.TooManyListenersException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.DropMode;
+import java.util.*;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -84,9 +67,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -105,6 +86,7 @@ public class PluginManagerUI extends javax.swing.JPanel  {
     private Object helpInstance = null;
     
     private static RequestProcessor.Task runningTask;
+    private static Collection<Runnable> runOnCancel = null;
     private boolean wasSettings = false;
     public static final int INDEX_OF_UPDATES_TAB = 0;
     public static final int INDEX_OF_AVAILABLE_TAB = 1;
@@ -180,7 +162,6 @@ public class PluginManagerUI extends javax.swing.JPanel  {
         
         // the Close & Help buttons are always enabled
         bClose.setEnabled (true);
-        bHelp.setEnabled (getHelpInstance () != null);
         
         Component parent = getParent ();
         Component rootPane = getRootPane ();
@@ -470,57 +451,8 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
 }//GEN-LAST:event_tpTabsStateChanged
 
 private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bHelpActionPerformed
-        try {
-            Object help = getHelpInstance ();
-            if (help == null) {
-                return;
-            }
-            Method showHelpM = help.getClass ().getMethod ("showHelp", HelpCtx.class); // NOI18N
-            if (showHelpM != null) {
-                showHelpM.invoke (help, getHelpCtx ());
-            }
-        } catch (Exception ex) {
-            Logger.getLogger (PluginManagerUI.class.getName ()).log (Level.INFO, ex.getLocalizedMessage (), ex);
-        }
+    getHelpCtx().display();
 }//GEN-LAST:event_bHelpActionPerformed
-
-    private Object getHelpInstance () {
-        if (helpInstance == null) {
-            try {
-                Class<?> clazz = Class.forName("org.netbeans.api.javahelp.Help", // NOI18N
-                        false, Thread.currentThread().getContextClassLoader());
-                if (clazz == null) {
-                    return null;
-                }
-                helpInstance = Lookup.getDefault ().lookup (clazz);
-            } catch (ClassNotFoundException ex) {
-                Logger.getLogger(PluginManagerUI.class.getName()).log(Level.FINE, "JavaHelp integration not found", ex);
-            }
-        }
-        return helpInstance;
-    }
-
-    private boolean isValidHelpID (String id) {
-        boolean res = true;
-        try {
-            Object help = getHelpInstance ();
-            if (help == null) {
-                return res;
-            }
-            Method isValidIDM = help.getClass ().getMethod ("isValidID", String.class, boolean.class); // NOI18N
-            if (isValidIDM != null) {
-                Object resO = isValidIDM.invoke (help, id, true);
-                if (resO instanceof Boolean) {
-                    res = (Boolean) resO;
-                } else {
-                    res = true;
-                }
-            }
-        } catch (Exception ex) {
-            Logger.getLogger (PluginManagerUI.class.getName ()).log (Level.INFO, ex.getLocalizedMessage (), ex);
-        }
-        return res;
-    }
 
     private HelpCtx getHelpCtx() {
         String id = PluginManagerUI.class.getName ();
@@ -529,12 +461,6 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
             id = ((UnitTab) c).getHelpId ();
         } else if (c instanceof SettingsTab) {
             id = SettingsTab.class.getName ();
-        }
-
-        Logger LOG = Logger.getLogger(PluginManagerUI.class.getName());
-        if(LOG.isLoggable(Level.FINE)) { // #176576
-            LOG.log(Level.FINE,
-                    isValidHelpID(id) ? "HelpId is {0}" : "{0} looks no valid HelpCtx", id);
         }
         return new HelpCtx (id);
     }
@@ -564,7 +490,6 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
         SettingsTab tab = new SettingsTab (this);
         tpTabs.add (tab, INDEX_OF_SETTINGS_TAB);
         tpTabs.setTitleAt(INDEX_OF_SETTINGS_TAB, tab.getDisplayName());
-        bHelp.setEnabled (getHelpInstance () != null);
     }
     
     void decorateTabTitle (UnitTable table) {
@@ -654,10 +579,33 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
     
     public static void unregisterRunningTask () {
         runningTask = null;
+        runOnCancel = null;
+    }
+    
+    public static RequestProcessor.Task getRunningTask (Runnable onCancel) {
+        if (runningTask != null) {
+            if (runOnCancel == null) {
+                runOnCancel = new HashSet<Runnable>();
+            }
+            runOnCancel.add(onCancel);
+        }
+        return runningTask;
     }
     
     public static RequestProcessor.Task getRunningTask () {
         return runningTask;
+    }
+    
+    public static void cancelRunningTask() {
+        if (runningTask != null && runOnCancel != null) {
+            runningTask = null;
+            for (Runnable run : runOnCancel) {
+                run.run();
+            }
+            runOnCancel = null;
+        } else {
+            runningTask = null;
+        }
     }
     
     //TODO: all the request for refresh should be cancelled if there is already one such running refresh task

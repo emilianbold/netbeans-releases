@@ -43,10 +43,17 @@
 package org.netbeans.modules.php.editor;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.nav.TestBase;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 
-public class DocRendererTest extends NbTestCase {
+public class DocRendererTest extends TestBase {
 
     public DocRendererTest(String name) {
         super(name);
@@ -93,7 +100,7 @@ public class DocRendererTest extends NbTestCase {
             assertEquals(expected, processed);
         }
     }
-    
+
     public void testLinksInDescription01() {
 
         String tested = "Sort the given array of {@link MyObject}s by ORDER field.";
@@ -108,8 +115,5 @@ public class DocRendererTest extends NbTestCase {
         }
         assertEquals(expected, result);
     }
-    
-    
-    
-    
+
 }

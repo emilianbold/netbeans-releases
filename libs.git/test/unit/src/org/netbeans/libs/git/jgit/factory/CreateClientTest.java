@@ -45,7 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
-import org.netbeans.libs.git.jgit.JGitClientFactory;
+import org.netbeans.libs.git.GitClientFactory;
 
 /**
  *
@@ -74,7 +74,7 @@ public class CreateClientTest extends AbstractGitTestCase {
         String content = read(new File(gitFolder, "config"));
         write(new File(gitFolder, "config"), content + "[remote \"origin\"]\n	puttykeyfile = ");
         try {
-            JGitClientFactory.getInstance(null).getClient(newLocation);
+            GitClientFactory.getInstance().getClient(newLocation);
             fail("Should fail");
         } catch (GitException ex) {
             assertEquals("It seems the config file for the repository at [" + newLocation.getAbsolutePath() + "] is corrupted.\nEnsure it ends with empty line.", ex.getMessage());

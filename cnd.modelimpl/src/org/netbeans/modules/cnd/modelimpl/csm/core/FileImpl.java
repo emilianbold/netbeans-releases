@@ -521,7 +521,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                             time = System.currentTimeMillis();
                             try {
                                 for (APTPreprocHandler preprocHandler : handlers) {
-                                    _parse(preprocHandler, fullAPT);
+                                    _parse(preprocHandler, fullAPT, TraceFlags.EXCLUDE_COMPOUND);
                                     if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
                                         break; // does not make sense parsing old data
                                     }
@@ -547,10 +547,10 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                             try {
                                 for (APTPreprocHandler preprocHandler : handlers) {
                                     if (first) {
-                                        _reparse(preprocHandler, fullAPT);
+                                        _reparse(preprocHandler, fullAPT, TraceFlags.EXCLUDE_COMPOUND);
                                         first = false;
                                     } else {
-                                        _parse(preprocHandler, fullAPT);
+                                        _parse(preprocHandler, fullAPT, TraceFlags.EXCLUDE_COMPOUND);
                                     }
                                     if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
                                         break; // does not make sense parsing old data
@@ -725,7 +725,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return fileAPT;
     }
 
-    private void _reparse(APTPreprocHandler preprocHandler, APTFile aptFull) {
+    private void _reparse(APTPreprocHandler preprocHandler, APTFile aptFull, boolean lazyCompound) {
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("------ reparsing " + fileBuffer.getUrl()); // NOI18N
         }
@@ -741,10 +741,15 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (reportParse || logState || TraceFlags.DEBUG) {
             logParse("ReParsing", preprocHandler); //NOI18N
         }
-        CsmParserResult parsing = doParse(preprocHandler, aptFull);
+        if(TraceFlags.CPP_PARSER_ACTION) {
+            disposeAll(false);
+        }
+        CsmParserResult parsing = doParse(preprocHandler, aptFull, lazyCompound);
         if (parsing != null) {
             if (isValid()) {
-                disposeAll(false);
+                if(!TraceFlags.CPP_PARSER_ACTION) {
+                    disposeAll(false);
+                }
                 parsing.render();
             }
         } else {
@@ -828,7 +833,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         final APTFile fullAPT = getFileAPT(true);
         synchronized (stateLock) {
-            CsmParserResult parsing = _parse(handlers.iterator().next(), fullAPT);
+            CsmParserResult parsing = _parse(handlers.iterator().next(), fullAPT, false);
             Object ast = parsing.getAST();
             if (ast instanceof AST) {
                 return (AST) ast;
@@ -838,14 +843,14 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
 
-    private CsmParserResult _parse(APTPreprocHandler preprocHandler, APTFile aptFull) {
+    private CsmParserResult _parse(APTPreprocHandler preprocHandler, APTFile aptFull, boolean lazyCompound) {
         inParse.get().set(true);
         try {
             Diagnostic.StopWatch sw = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
             if (reportParse || logState || TraceFlags.DEBUG) {
                 logParse("Parsing", preprocHandler); //NOI18N
             }
-            CsmParserResult parsing = doParse(preprocHandler, aptFull);
+            CsmParserResult parsing = doParse(preprocHandler, aptFull, lazyCompound);
             if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) {
                 sw.stopAndReport("Parsing of " + fileBuffer.getUrl() + " took \t"); // NOI18N
             }
@@ -1122,7 +1127,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             // use cached TS
             TokenStream tokenStream = getTokenStream(0, Integer.MAX_VALUE, 0, true);
             if (tokenStream != null) {
-                CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFileObject().getNameExt(), tokenStream, flags);
+                CPPParserEx parser = CPPParserEx.getInstance(this, tokenStream, flags);
                 parser.setErrorDelegate(delegate);
                 parser.setLazyCompound(false);
                 parser.translation_unit();
@@ -1138,7 +1143,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return null;
     }
 
-    private CsmParserResult doParse(APTPreprocHandler preprocHandler, APTFile aptFull) {
+    private CsmParserResult doParse(APTPreprocHandler preprocHandler, APTFile aptFull, boolean lazyCompound) {
 
         if (reportErrors) {
             if (!ParserThreadManager.instance().isParserThread() && !ParserThreadManager.instance().isStandalone()) {
@@ -1194,7 +1199,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             assert parser != null : "no parser for " + this;
 
             parser.init(this, filteredTokenStream);
-            parseResult = parser.parse(CsmParser.ConstructionKind.TRANSLATION_UNIT);
+            parseResult = parser.parse(lazyCompound ? CsmParser.ConstructionKind.TRANSLATION_UNIT : CsmParser.ConstructionKind.TRANSLATION_UNIT_WITH_COMPOUND);
             FilePreprocessorConditionState pcState = pcBuilder.build();
             if (false) {
                 setAPTCacheEntry(preprocHandler, aptCacheEntry, false);
@@ -1439,6 +1444,11 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return getFileDeclarations().findExistingDeclaration(startOffset, endOffset, name);
     }
 
+    @Override
+    public CsmOffsetableDeclaration findExistingDeclaration(int startOffset, CharSequence name, CsmDeclaration.Kind kind) {
+        return getFileDeclarations().findExistingDeclaration(startOffset, name, kind);
+    }
+    
     @Override
     public void addDeclaration(CsmOffsetableDeclaration decl) {
         getFileDeclarations().addDeclaration(decl);
@@ -1698,7 +1708,11 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                                         CsmDeclaration.Kind kind = cls.getKind();
                                         CsmVisibility visibility = CsmVisibility.PRIVATE;
                                         if(kind == CsmDeclaration.Kind.CLASS) {
-                                            visibility = CsmVisibility.PRIVATE;
+                                            // FIXUP: it's better to have extra items in completion list
+                                            // for crazy classes, than fail on resolving included
+                                            // public methods
+                                            // IZ#204951 - The c++ parser does not follow/parse #includes which are textually nested within a class definition
+                                            visibility = CsmVisibility.PUBLIC;
                                         } else if( kind == CsmDeclaration.Kind.STRUCT ||
                                                 kind == CsmDeclaration.Kind.UNION) {
                                             visibility = CsmVisibility.PUBLIC;
@@ -2056,6 +2070,10 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         printOut.printf("\tlastParsedTime=%d, lastParsed=%d %s %s\n", this.lastParseTime, this.lastParsed, this.parsingState, this.state);// NOI18N 
         FileBuffer buffer = getBuffer();
         printOut.printf("\tfileBuf=%s lastModified=%d\n", toYesNo(buffer.isFileBased()), buffer.lastModified());// NOI18N 
+    }
+
+    public void dumpIndex(PrintWriter printOut) {
+        getFileReferences().dump(printOut);
     }
 
     public void dumpPPStates(PrintWriter printOut) {

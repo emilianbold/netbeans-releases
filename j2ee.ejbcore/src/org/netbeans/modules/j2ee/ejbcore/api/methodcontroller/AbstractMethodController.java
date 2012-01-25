@@ -437,12 +437,14 @@ public abstract class AbstractMethodController extends EjbMethodController {
                         controller.toPhase(Phase.ELEMENTS_RESOLVED);
                         Types types = controller.getTypes();
                         TypeElement typeElement = controller.getElements().getTypeElement(ejbClass);
-                        TypeMirror superCls = typeElement.getSuperclass();
-                        TypeMirror objectCls = controller.getElements().getTypeElement("java.lang.Object").asType(); //NOI18N
-                        while ((superCls != null) && (superCls instanceof DeclaredType) && !types.isSameType(superCls, objectCls)) {
-                            TypeElement superElem = (TypeElement) ((DeclaredType) superCls).asElement();
-                            result.add(superElem.getQualifiedName().toString());
-                            superCls = superElem.getSuperclass();
+                        if (typeElement != null) {
+                            TypeMirror superCls = typeElement.getSuperclass();
+                            TypeMirror objectCls = controller.getElements().getTypeElement("java.lang.Object").asType(); //NOI18N
+                            while ((superCls != null) && (superCls instanceof DeclaredType) && !types.isSameType(superCls, objectCls)) {
+                                TypeElement superElem = (TypeElement) ((DeclaredType) superCls).asElement();
+                                result.add(superElem.getQualifiedName().toString());
+                                superCls = superElem.getSuperclass();
+                            }
                         }
                     }
                 }, true);

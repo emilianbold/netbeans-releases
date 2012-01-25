@@ -108,6 +108,7 @@ import org.openide.nodes.Node;
 public class CommitAction extends ContextAction {
 
     static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage"; // NOI18N
+    static final String KEY_CANCELED_MESSAGE = "commit"; //NOI18N
 
     @Override
     protected boolean enable(Node[] nodes) {
@@ -255,7 +256,7 @@ public class CommitAction extends ContextAction {
 
         final String message = panel.getCommitMessage().trim();
         if (dd.getValue() != commitButton && !message.isEmpty()) {
-            HgModuleConfig.getDefault().setLastCanceledCommitMessage(message);
+            HgModuleConfig.getDefault().setLastCanceledCommitMessage(KEY_CANCELED_MESSAGE, message);
         }
         if (dd.getValue() == DialogDescriptor.CLOSED_OPTION) {
             al.actionPerformed(new ActionEvent(cancelButton, ActionEvent.ACTION_PERFORMED, null));
@@ -263,7 +264,7 @@ public class CommitAction extends ContextAction {
             final Map<HgFileNode, CommitOptions> commitFiles = data.getCommitFiles();
             final Map<File, Set<File>> rootFiles = HgUtils.sortUnderRepository(ctx, true);
             final boolean commitAllFiles = panel.cbAllFiles.isSelected();
-            HgModuleConfig.getDefault().setLastCanceledCommitMessage(""); //NOI18N
+            HgModuleConfig.getDefault().setLastCanceledCommitMessage(KEY_CANCELED_MESSAGE, ""); //NOI18N
             org.netbeans.modules.versioning.util.Utils.insert(HgModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message.trim(), 20);
             RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
             HgProgressSupport support = new HgProgressSupport() {
@@ -511,8 +512,7 @@ public class CommitAction extends ContextAction {
         } catch (HgException.HgCommandCanceledException ex) {
             // canceled by user, do nothing
         } catch (HgException ex) {
-            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-            DialogDisplayer.getDefault().notifyLater(e);
+            HgUtils.notifyException(ex);
         } finally {
             refreshFS(filesToRefresh);
             cache.refreshAllRoots(filesToRefresh);
@@ -649,7 +649,7 @@ public class CommitAction extends ContextAction {
                             offeredFileNames += "\n" + f.getName();     //NOI18N
                         }
                     } else {
-                        reducedCommitCandidates = Collections.EMPTY_LIST;
+                        reducedCommitCandidates = Collections.<File>emptyList();
                         refreshFiles = Collections.singleton(repository);
                         offeredFileNames = "\n" + repository.getName(); //NOI18N
                     }
@@ -673,7 +673,7 @@ public class CommitAction extends ContextAction {
                         } else if(!commitAfterMerge(Boolean.TRUE.equals(locallyModifiedExcluded.get(repository)), repository)) {
                             return;
                         } else {
-                            HgCommand.doCommit(repository, Collections.EMPTY_LIST, msg, closingBranch, logger);
+                            HgCommand.doCommit(repository, Collections.<File>emptyList(), msg, closingBranch, logger);
                             refreshFiles = new HashSet<File>(Mercurial.getInstance().getSeenRoots(repository));
                             commitAfterMerge = true;
                         }

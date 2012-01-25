@@ -55,9 +55,9 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.netbeans.junit.MockServices;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
-import org.netbeans.modules.versioning.VersioningAnnotationProvider;
+import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.versioning.masterfs.VersioningAnnotationProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
@@ -3015,7 +3015,7 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
     public void testMoveFileToIgnoredFolder_DO () throws Exception {
         // prepare
         File ignored = createFolder(repositoryLocation, "ignoredFolder");
-        getClient(repositoryLocation).ignore(new File[] { ignored }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(repositoryLocation).ignore(new File[] { ignored }, GitUtils.NULL_PROGRESS_MONITOR);
         File toFolder = createFolder(ignored, "toFolder");
         File fromFile = createFile(repositoryLocation, "file");
         File toFile = new File(toFolder, fromFile.getName());
@@ -3037,7 +3037,7 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
     public void testMoveFileToIgnoredFolder_FO () throws Exception {
         // prepare
         File ignored = createFolder(repositoryLocation, "ignoredFolder");
-        getClient(repositoryLocation).ignore(new File[] { ignored }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(repositoryLocation).ignore(new File[] { ignored }, GitUtils.NULL_PROGRESS_MONITOR);
         File toFolder = createFolder(ignored, "toFolder");
         File fromFile = createFile(repositoryLocation, "file");
         File toFile = new File(toFolder, fromFile.getName());
@@ -3059,7 +3059,7 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
     public void testCopyFileToIgnoredFolder_DO () throws Exception {
         // prepare
         File ignored = createFolder(repositoryLocation, "ignoredFolder");
-        getClient(repositoryLocation).ignore(new File[] { ignored }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(repositoryLocation).ignore(new File[] { ignored }, GitUtils.NULL_PROGRESS_MONITOR);
         File toFolder = createFolder(ignored, "toFolder");
         File fromFile = createFile(repositoryLocation, "file");
         File toFile = new File(toFolder, fromFile.getName());
@@ -3081,7 +3081,7 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
     public void testCopyFileToIgnoredFolder_FO () throws Exception {
         // prepare
         File ignored = createFolder(repositoryLocation, "ignoredFolder");
-        getClient(repositoryLocation).ignore(new File[] { ignored }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(repositoryLocation).ignore(new File[] { ignored }, GitUtils.NULL_PROGRESS_MONITOR);
         File toFolder = createFolder(ignored, "toFolder");
         File fromFile = createFile(repositoryLocation, "file");
         File toFile = new File(toFolder, fromFile.getName());

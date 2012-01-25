@@ -48,11 +48,7 @@ import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Scanner;
+import java.util.*;
 import java.util.logging.Logger;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
@@ -180,6 +176,7 @@ public class FindUsagesVisitor extends FindVisitor {
                     return;
                 }
                 Iterator iter = workingCopy.getElementUtilities().getMembers(el.asType(),new ElementUtilities.ElementAcceptor() {
+                    @Override
                     public boolean accept(Element e, TypeMirror type) {
                         return id.equals(e.getSimpleName());
                     }

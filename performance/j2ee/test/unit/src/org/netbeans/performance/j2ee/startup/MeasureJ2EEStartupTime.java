@@ -47,6 +47,7 @@ package org.netbeans.performance.j2ee.startup;
 import java.io.IOException;
 import org.netbeans.modules.performance.utilities.MeasureStartupTimeTestCase;
 
+
 /**
  * Measures startup time by MeasureStartupTimeTestCase class.
  * Martin.Schovanek@sun.com

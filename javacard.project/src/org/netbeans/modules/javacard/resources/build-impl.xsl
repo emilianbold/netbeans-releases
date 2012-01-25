@@ -177,6 +177,10 @@ to a Java Card Runtime install.
 javacard.home set to ${javacard.home} in ${computed.file.path},
 but ${javacard.home} does not exist on disk.]]>
                 </fail>
+                
+                <condition property="use.preprocessor">
+                    <istrue value="${{compile.use.preprocessor}}"/>
+                </condition>
 
                 <echo>Java Card Home is ${javacard.home} (${javacard.name})</echo>
             </target>
@@ -386,19 +390,19 @@ No emulator found at ${emulator.executable}]]>
 
             <xsl:choose>
                 <xsl:when test="$classiclibraryproject">
-                    <target name="pack" depends="unpack-dependencies,compile,compile-proxies,create-descriptors,do-pack"/>
+                    <target name="pack" depends="unpack-dependencies,compile,compile-with-preprocessor,compile-proxies,create-descriptors,do-pack"/>
                 </xsl:when>
 
                 <xsl:when test="$classicappletproject">
-                    <target name="pack" depends="unpack-dependencies,compile,compile-proxies,create-descriptors,create-static-pages,do-pack"/>
+                    <target name="pack" depends="unpack-dependencies,compile,compile-with-preprocessor,compile-proxies,create-descriptors,create-static-pages,do-pack"/>
                 </xsl:when>
 
                 <xsl:when test="$extensionlibraryproject">
-                    <target name="pack" depends="unpack-dependencies,compile,create-descriptors,do-pack"/>
+                    <target name="pack" depends="unpack-dependencies,compile,compile-with-preprocessor,create-descriptors,do-pack"/>
                 </xsl:when>
 
                 <xsl:otherwise>
-                    <target name="pack" depends="unpack-dependencies,compile,create-descriptors,create-static-pages,do-pack"/>
+                    <target name="pack" depends="unpack-dependencies,compile,compile-with-preprocessor,create-descriptors,create-static-pages,do-pack"/>
                 </xsl:otherwise>
             </xsl:choose>
 
@@ -557,8 +561,8 @@ run   - Builds and deploys the application and starts the browser.
                 <delete dir="${{dist.dir}}"/>
             </target>
 
-            <target name="compile" depends="-init">
-                <javac destdir="${{build.classes.dir}}" source="${{javac.source}}" target="${{javac.target}}" nowarn="${{javac.deprecation}}" debug="${{javac.debug}}" optimize="no" bootclasspathref="javacard.classpath" includeAntRuntime="no">
+            <target name="compile" depends="-init" unless="use.preprocessor">
+                <javac destdir="${{build.classes.dir}}" source="${{javac.source}}" target="${{javac.target}}" nowarn="${{javac.deprecation}}" debug="${{javac.debug}}" optimize="no" bootclasspath="${{javacard.classic.bootclasspath}}" includeAntRuntime="no">
                     <xsl:for-each select="/project:project/project:configuration/jcproj:data/jcproj:source-roots/jcproj:root">
                         <xsl:if test="@id != 'src.proxies.dir'">
                         <xsl:element name="src">
@@ -599,6 +603,69 @@ run   - Builds and deploys the application and starts the browser.
                         </xsl:element>
                     </xsl:for-each>
                     </classpath>
+                </javac>
+            <xsl:if test="$classicappletproject or $classiclibraryproject">
+                <condition property="compile.proxies">
+                    <and>
+                        <isset property="use.my.proxies"/>
+                        <equals arg1="${{use.my.proxies}}" arg2="true"/>
+                        <available file="${{src.proxies.dir}}" type="dir"/>
+                    </and>
+                </condition>
+            </xsl:if>
+                <copy todir="${{build.classes.dir}}">
+                    <xsl:call-template name="createFilesets">
+                        <xsl:with-param name="roots" select="/project:project/project:configuration/jcproj:data/jcproj:source-roots"/>
+<!--                        <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>-->
+                    </xsl:call-template>
+                </copy>
+            </target>
+
+            <target name="compile-with-preprocessor" depends="-init" if="use.preprocessor">
+                <javac destdir="${{build.classes.dir}}" source="${{javac.source}}" target="${{javac.target}}" nowarn="${{javac.deprecation}}" debug="${{javac.debug}}" optimize="no" bootclasspath="${{javacard.classic.bootclasspath}}" includeAntRuntime="no">
+                    <xsl:for-each select="/project:project/project:configuration/jcproj:data/jcproj:source-roots/jcproj:root">
+                        <xsl:if test="@id != 'src.proxies.dir'">
+                        <xsl:element name="src">
+                            <xsl:attribute name="path">
+                                <xsl:text>${</xsl:text>
+                                <xsl:value-of select="@id"/>
+                                <xsl:text>}</xsl:text>
+                            </xsl:attribute>
+                        </xsl:element>
+                        </xsl:if>
+                    </xsl:for-each>
+                    <classpath id="compile.path">
+                    <xsl:for-each select="/project:project/project:configuration/jcproj:data/jcproj:dependencies/jcproj:dependency">
+                        <xsl:element name="pathelement">
+                            <xsl:attribute name="path">
+                                <xsl:choose>
+                                    <xsl:when test="@kind = 'CLASSIC_LIB' or @kind = 'EXTENSION_LIB' or @kind = 'JAVA_PROJECT'">
+                                        <xsl:text>${dependency.</xsl:text>
+                                        <xsl:value-of select="@id"/>
+                                        <xsl:text>.origin}/dist/</xsl:text>
+                                        <xsl:value-of select="@id"/>
+                                        <xsl:choose>
+                                            <xsl:when test="@kind = 'CLASSIC_LIB'">
+                                                <xsl:text>.cap</xsl:text>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:text>.jar</xsl:text>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:text>${dependency.</xsl:text>
+                                        <xsl:value-of select="@id"/>
+                                        <xsl:text>.origin}</xsl:text>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:attribute>
+                        </xsl:element>
+                    </xsl:for-each>
+                    </classpath>
+                    <compilerarg line="-processor com.oracle.javacard.stringproc.StringConstantsProcessor"/>
+                    <compilerarg value="-processorpath"/>
+                    <compilerarg path="${{javacard.classic.bootclasspath}};${{javacard.toolClassPath}}"/>
                 </javac>
             <xsl:if test="$classicappletproject or $classiclibraryproject">
                 <condition property="compile.proxies">

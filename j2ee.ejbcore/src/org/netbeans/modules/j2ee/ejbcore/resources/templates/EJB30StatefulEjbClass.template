@@ -5,8 +5,8 @@
 
 <#if package?? && package != "">
 package ${package};
-
 </#if>
+
 import javax.ejb.Stateful;
 <#if annotationLocalBean??>
 import javax.ejb.LocalBean;
@@ -21,8 +21,8 @@ import javax.ejb.LocalBean;
 @LocalBean
 </#if>
 public class ${name} <#if interfaces??>implements ${interfaces} </#if>{
-    
+
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
-    
+
 }

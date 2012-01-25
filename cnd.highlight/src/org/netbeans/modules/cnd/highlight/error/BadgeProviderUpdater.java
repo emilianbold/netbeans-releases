@@ -78,13 +78,16 @@ public class BadgeProviderUpdater implements CsmModelListener, CsmProgressListen
     public void close() {
     }
 
+    @Override
     public void projectOpened(CsmProject project) {
     }
 
+    @Override
     public void projectClosed(CsmProject project) {
         BadgeProvider.getInstance().removeProject(project);
     }
 
+    @Override
     public void modelChanged(CsmChangeEvent e) {
         for (Iterator it = e.getRemovedFiles().iterator(); it.hasNext();) {
             CsmFile file = (CsmFile) it.next();
@@ -92,35 +95,45 @@ public class BadgeProviderUpdater implements CsmModelListener, CsmProgressListen
         }
     }
 
+    @Override
     public void projectParsingStarted(CsmProject project) {
     }
 
+    @Override
     public void projectFilesCounted(CsmProject project, int filesCount) {
     }
 
+    @Override
     public void projectParsingFinished(CsmProject project) {
     }
 
+    @Override
     public void projectParsingCancelled(CsmProject project) {
     }
 
+    @Override
     public void fileInvalidated(CsmFile file) {
     }
 
+    @Override
     public void fileAddedToParse(CsmFile file) {
     }
 
+    @Override
     public void fileParsingStarted(CsmFile file) {
     }
 
+    @Override
     public void fileParsingFinished(CsmFile file) {
         BadgeProvider.getInstance().invalidateFile(file);
     }
 
+    @Override
     public void projectLoaded(CsmProject project) {
         BadgeProvider.getInstance().invalidateProject(project);
     }
 
+    @Override
     public void parserIdle() {
     }
 }

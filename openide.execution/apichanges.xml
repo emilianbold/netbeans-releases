@@ -57,6 +57,26 @@ made subject to such option by the copyright holder.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="NbClassLoader.no.FileStateInvalidException">
+            <api name="execution"/>
+            <summary><code>NbClassLoader(FileObject[], ...)</code> does not throw <code>FileStateInvalidException</code></summary>
+            <version major="1" minor="26"/>
+            <date year="2012" month="1" day="20"/>
+            <author login="jglick"/>
+            <compatibility source="incompatible">
+                <p>
+                    No <code>NbClassLoader</code> constructor throws <code>FileStateInvalidException</code> any longer,
+                    which can cause some existing source code to not compile.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    <code>NbClassLoader(FileObject[], ClassLoader, InputOutput)</code> does not throw <code>FileStateInvalidException</code> any more.
+                </p>
+            </description>
+            <class package="org.openide.execution" name="NbClassLoader"/>
+            <issue number="207294"/>
+        </change>
     <change id="automatic-request-of-engine-impl">
       <api name="execution"/>
       <summary> No need to require ExecutionEngine token anymore</summary>

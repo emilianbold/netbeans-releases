@@ -222,14 +222,14 @@ made subject to such option by the copyright holder.
             <td> <!-- stability category -->
                 <a>
                     <xsl:attribute name="href">
-                        <xsl:text>http://openide.netbeans.org/tutorial/api-design.html#category-</xsl:text>
+                        <xsl:text>http://wiki.netbeans.org/API_Stability#</xsl:text>
                         <xsl:value-of select="$category" />
                     </xsl:attribute>
                     <xsl:choose>
                         <xsl:when test="$category='official'">Official</xsl:when>
                         <xsl:when test="$category='stable'">Stable</xsl:when>
-                        <xsl:when test="$category='devel'">Under Development</xsl:when>
-                        <xsl:when test="$category='third'">Third party</xsl:when>
+                        <xsl:when test="$category='devel'">Devel</xsl:when>
+                        <xsl:when test="$category='third'">Third_Party</xsl:when>
                         <xsl:when test="$category='standard'">Standard</xsl:when>
                         <xsl:when test="$category='friend'">Friend</xsl:when>
                         <xsl:when test="$category='private'">Private</xsl:when>

@@ -63,6 +63,49 @@ import org.netbeans.modules.profiler.api.JavaPlatform;
  * @author Ian Formanek
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+//    "ProfilerOptionsPanel_UseProjectJvmText=<Use Java Platform defined in Project>",
+    "ProfilerOptionsPanel_KeyOpenAlways=Always",
+    "ProfilerOptionsPanel_KeyOpenMonitoring=For Monitoring Only",
+    "ProfilerOptionsPanel_KeyOpenNever=Never",
+    "ProfilerOptionsPanel_EngineSettingsBorderText=General",
+//    "ProfilerOptionsPanel_JavaPlatformLabelText=Profiler &Java Platform:",
+//    "ProfilerOptionsPanel_ManagePlatformsButtonName=&Manage Platforms...",
+    "ProfilerOptionsPanel_CommPortLabelText=Communication &Port:",
+    "ProfilerOptionsPanel_WindowsSettingsBorderText=When Profiling Session Starts",
+    "ProfilerOptionsPanel_TelemetryOverviewLabelText=Open Telemetry &Overview:",
+    "ProfilerOptionsPanel_ThreadsViewLabelText=Open Thre&ads View:",
+    "ProfilerOptionsPanel_ThreadsViewHintText=Threads View is opened only when Threads Monitoring is enabled",
+    "ProfilerOptionsPanel_LiveResultsLabelText=Open Live Results For:",
+    "ProfilerOptionsPanel_CpuChckBoxText=&CPU",
+    "ProfilerOptionsPanel_MemoryChckBoxText=M&emory",
+    "ProfilerOptionsPanel_SnapshotsSettingsBorderText=Miscellaneous",
+    "ProfilerOptionsPanel_OpenSnapshotRadioText=Open New Snapshot",
+    "ProfilerOptionsPanel_SaveSnapshotRadioText=Save New Snapshot",
+    "ProfilerOptionsPanel_OpenSaveSnapshotRadioText=Open and Save New Snapshot",
+    "ProfilerOptionsPanel_ResetHintText=Click the Reset button to reset state of Do Not Show Again confirmations in all Profiler dialogs:",
+    "ProfilerOptionsPanel_ResetButtonName=&Reset",
+    "ProfilerOptionsPanel_PortNoSpinnerAccessDescr=Defines port used for communication with Profiler agent.",
+    "ProfilerOptionsPanel_CpuLiveResultsCheckboxAccessDescr=CPU live results window will be opened automatically.",
+    "ProfilerOptionsPanel_MemoryLiveResultsCheckboxAccessDescr=Memory live results window will be opened automatically.",
+    "ProfilerOptionsPanel_TelemetryOverviewComboAccessDescr=Policy for opening Telemetry window when profiling session starts.",
+    "ProfilerOptionsPanel_ThreadsViewComboAccessDescr=Policy for opening Threads view window when profiling session starts.",
+    "ProfilerOptionsPanel_OomeBorderText=On O&utOfMemoryError:",
+    "ProfilerOptionsPanel_OomeNothingText=Do nothing",
+    "ProfilerOptionsPanel_OomeProjectText=Save heap dump to profiled project",
+    "ProfilerOptionsPanel_OomeTempText=Save heap dump to temporary directory",
+    "ProfilerOptionsPanel_OomeCustomText=Save heap dump to:",
+    "ProfilerOptionsPanel_OomeCustomAccessDescr=Save heap dump to custom directory",
+    "ProfilerOptionsPanel_OomeCustomTextfieldAccessDescr=Directory where heap dumps will be saved",
+    "ProfilerOptionsPanel_OomeCustomButtonAccessName=Choose directory",
+    "ProfilerOptionsPanel_ChooseDumpDirCaption=Choose Heap Dump Directory",
+    "ProfilerOptionsPanel_EnableAnalysisCheckbox=E&nable Rule-Based Heap Analysis",
+    "ProfilerOptionsPanel_TakingSnapshotLabelText=When taking &snapshot:",
+    "ProfilerOptionsPanel_TakingSnapshotComboAccessDescr=Specifies what to do when taking the snapshot",
+    "ProfilerOptionsPanel_OomeComboAccessDescr=Specifies action on OutOfMemoryError",
+    "ProfilerOptionsPanel_HeapWalkerLabelText=HeapWalker:",
+    "ProfilerOptionsPanel_JavaPlatformComboAccessDescr=Java platform used for running the profiled application"
+})
 public final class ProfilerOptionsPanel extends JPanel implements ActionListener {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
@@ -110,105 +153,17 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         }
     }
 
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String USE_PROJECT_JVM_TEXT = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                           "ProfilerOptionsPanel_UseProjectJvmText"); //NOI18N
-    private static final String KEY_OPEN_ALWAYS = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                      "ProfilerOptionsPanel_KeyOpenAlways"); //NOI18N
-    private static final String KEY_OPEN_MONITORING = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                          "ProfilerOptionsPanel_KeyOpenMonitoring"); //NOI18N
-    private static final String KEY_OPEN_NEVER = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                     "ProfilerOptionsPanel_KeyOpenNever"); //NOI18N
-    private static final String ENGINE_SETTINGS_BORDER_TEXT = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                                  "ProfilerOptionsPanel_EngineSettingsBorderText"); //NOI18N
-    private static final String JAVA_PLATFORM_LABEL_TEXT = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                               "ProfilerOptionsPanel_JavaPlatformLabelText"); //NOI18N
-    private static final String MANAGE_PLATFORMS_BUTTON_NAME = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                                   "ProfilerOptionsPanel_ManagePlatformsButtonName"); //NOI18N
-    private static final String COMM_PORT_LABEL_TEXT = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                           "ProfilerOptionsPanel_CommPortLabelText"); //NOI18N
-    private static final String WINDOWS_SETTINGS_BORDER_TEXT = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                                   "ProfilerOptionsPanel_WindowsSettingsBorderText"); //NOI18N
-    private static final String TELEMETRY_OVERVIEW_LABEL_TEXT = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                                    "ProfilerOptionsPanel_TelemetryOverviewLabelText"); //NOI18N
-    private static final String THREADS_VIEW_LABEL_TEXT = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                              "ProfilerOptionsPanel_ThreadsViewLabelText"); //NOI18N
-    private static final String THREADS_VIEW_HINT_TEXT = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                             "ProfilerOptionsPanel_ThreadsViewHintText"); //NOI18N
-    private static final String LIVE_RESULTS_LABEL_TEXT = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                              "ProfilerOptionsPanel_LiveResultsLabelText"); //NOI18N
-    private static final String CPU_CHCKBOX_TEXT = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                       "ProfilerOptionsPanel_CpuChckBoxText"); //NOI18N
-    private static final String MEMORY_CHCKBOX_TEXT = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                          "ProfilerOptionsPanel_MemoryChckBoxText"); //NOI18N
-    private static final String SNAPSHOTS_SETTINGS_BORDER_TEXT = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                                     "ProfilerOptionsPanel_SnapshotsSettingsBorderText"); //NOI18N
-    private static final String OPEN_SNAPSHOT_RADIO_TEXT = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                               "ProfilerOptionsPanel_OpenSnapshotRadioText"); //NOI18N
-    private static final String SAVE_SNAPSHOT_RADIO_TEXT = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                               "ProfilerOptionsPanel_SaveSnapshotRadioText"); //NOI18N
-    private static final String OPEN_SAVE_SNAPSHOT_RADIO_TEXT = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                                    "ProfilerOptionsPanel_OpenSaveSnapshotRadioText"); //NOI18N
-    private static final String RESET_HINT_TEXT = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                      "ProfilerOptionsPanel_ResetHintText"); //NOI18N
-    private static final String RESET_BUTTON_NAME = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                        "ProfilerOptionsPanel_ResetButtonName"); //NOI18N
-    private static final String PORT_NO_SPINNER_ACCESS_DESCR = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                                   "ProfilerOptionsPanel_PortNoSpinnerAccessDescr"); //NOI18N
-    private static final String CPU_LIVE_RESULTS_CHECKBOX_ACCESS_DESCR = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                                             "ProfilerOptionsPanel_CpuLiveResultsCheckboxAccessDescr"); //NOI18N
-    private static final String MEMORY_LIVE_RESULTS_CHECKBOX_ACCESS_DESCR = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                                                "ProfilerOptionsPanel_MemoryLiveResultsCheckboxAccessDescr"); //NOI18N
-    private static final String TELEMETRY_OVERVIEW_COMBO_ACCESS_DESCR = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                                            "ProfilerOptionsPanel_TelemetryOverviewComboAccessDescr"); //NOI18N
-    private static final String THREADS_VIEW_COMBO_ACCESS_DESCR = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                                      "ProfilerOptionsPanel_ThreadsViewComboAccessDescr"); //NOI18N  
-    private static final String OOME_BORDER_TEXT = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                       "ProfilerOptionsPanel_OomeBorderText"); //NOI18N  
-    private static final String OOME_NOTHING_TEXT = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                        "ProfilerOptionsPanel_OomeNothingText"); //NOI18N  
-    private static final String OOME_PROJECT_TEXT = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                        "ProfilerOptionsPanel_OomeProjectText"); //NOI18N  
-    private static final String OOME_CUSTOM_TEXT = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                       "ProfilerOptionsPanel_OomeCustomText"); //NOI18N  
-    private static final String OOME_TEMP_TEXT = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                     "ProfilerOptionsPanel_OomeTempText"); //NOI18N  
-    private static final String OOME_CUSTOM_ACCESS_DESCR = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                               "ProfilerOptionsPanel_OomeCustomAccessDescr"); //NOI18N 
-    private static final String OOME_CUSTOM_TEXTFIELD_ACCESS_DESCR = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                                         "ProfilerOptionsPanel_OomeCustomTextfieldAccessDescr"); //NOI18N 
-    private static final String OOME_CUSTOM_BUTTON_ACCESS_NAME = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                                     "ProfilerOptionsPanel_OomeCustomButtonAccessName"); //NOI18N 
-    private static final String CHOOSE_DUMPDIR_CAPTION = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                             "ProfilerOptionsPanel_ChooseDumpDirCaption"); //NOI18N 
-    private static final String ENABLE_ANALYSIS_CHECKBOX = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                               "ProfilerOptionsPanel_EnableAnalysisCheckbox"); //NOI18N 
-    private static final String TAKING_SNAPSHOT_LABEL_TEXT = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                                 "ProfilerOptionsPanel_TakingSnapshotLabelText"); //NOI18N 
-    private static final String TAKING_SNAPSHOT_COMBO_ACCESS_DESCR = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                                         "ProfilerOptionsPanel_TakingSnapshotComboAccessDescr"); //NOI18N 
-    private static final String OOME_COMBO_ACCESS_DESCR = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                              "ProfilerOptionsPanel_OomeComboAccessDescr"); //NOI18N 
-    private static final String HEAPWALKER_LABEL_TEXT = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                            "ProfilerOptionsPanel_HeapWalkerLabelText"); //NOI18N 
-    private static final String JAVA_PLAFORM_COMBO_ACCESS_DESCR = NbBundle.getMessage(ProfilerOptionsPanel.class,
-                                                                                      "ProfilerOptionsPanel_JavaPlatformComboAccessDescr"); //NOI18N 
-                                                                                                                                            // -----
-
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
-    private ArrayList supportedJavaPlatforms = new ArrayList();
-    private ArrayList supportedJavaPlatformsNames = new ArrayList();
-    private JButton managePlatformsButton;
+//    private ArrayList supportedJavaPlatforms = new ArrayList();
+//    private ArrayList supportedJavaPlatformsNames = new ArrayList();
+//    private JButton managePlatformsButton;
     private JButton oomeDetectionChooseDirButton;
     private JButton resetConfirmationsButton;
     private JCheckBox cpuLiveResultsCheckbox;
     private JCheckBox enableHeapWalkerAnalysisCheckbox;
     private JCheckBox memoryLiveResultsCheckbox;
-    private JComboBox javaPlatformCombo;
+//    private JComboBox javaPlatformCombo;
     private JComboBox oomeCombo;
     private JComboBox openThreadsViewCombo;
     private JComboBox takingSnapshotCombo;
@@ -225,15 +180,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public JavaPlatform getSelectedJavaPlatform() {
-        int selectedJavaPlatformIndex = javaPlatformCombo.getSelectedIndex();
-
-        if ((selectedJavaPlatformIndex == -1) || (selectedJavaPlatformIndex == 0)) {
-            return null; // not selected, or <use project> selected
-        }
-
-        selectedJavaPlatformIndex--;
-
-        return (JavaPlatform) supportedJavaPlatforms.get(selectedJavaPlatformIndex);
+        return null;
     }
 
     /**
@@ -243,17 +190,17 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         if (e.getSource() == resetConfirmationsButton) {
             ProfilerIDESettings.getInstance().clearDoNotShowAgainMap();
             resetConfirmationsButton.setEnabled(false);
-        } else if (e.getSource() == managePlatformsButton) {
-            JavaPlatform platform = getSelectedJavaPlatform();
-            JavaPlatform.showCustomizer(/* FIXX platform */ );
-            updateJavaPlatformComboItems();
+//        } else if (e.getSource() == managePlatformsButton) {
+//            JavaPlatform platform = getSelectedJavaPlatform();
+//            JavaPlatform.showCustomizer(/* FIXX platform */ );
+//            updateJavaPlatformComboItems();
         } else if (e.getSource() == oomeDetectionChooseDirButton) {
             JFileChooser chooser = new JFileChooser();
             chooser.setCurrentDirectory(new java.io.File(oomeDetectionDirTextField.getText()));
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             chooser.setMultiSelectionEnabled(false);
             chooser.setDialogType(JFileChooser.OPEN_DIALOG);
-            chooser.setDialogTitle(CHOOSE_DUMPDIR_CAPTION);
+            chooser.setDialogTitle(Bundle.ProfilerOptionsPanel_ChooseDumpDirCaption());
 
             if (chooser.showOpenDialog(SwingUtilities.getRoot(this)) == JFileChooser.APPROVE_OPTION) {
                 oomeDetectionDirTextField.setText(chooser.getSelectedFile().getAbsolutePath());
@@ -265,29 +212,29 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         // GlobalProfilingSettings
         pis.setPortNo(((Number) portNoSpinner.getValue()).intValue());
 
-        JavaPlatform sel = getSelectedJavaPlatform();
-
-        pis.setJavaPlatformForProfiling((sel == null) ? null : sel.getDisplayName());
+//        JavaPlatform sel = getSelectedJavaPlatform();
+//
+//        pis.setJavaPlatformForProfiling((sel == null) ? null : sel.getDisplayName());
 
         // ProfilerIDESettings
         pis.setDisplayLiveResultsCPU(cpuLiveResultsCheckbox.isSelected());
         pis.setDisplayLiveResultsMemory(memoryLiveResultsCheckbox.isSelected());
 
         Object takingSnapshotSelected = takingSnapshotCombo.getSelectedItem();
-        pis.setAutoOpenSnapshot((takingSnapshotSelected == OPEN_SNAPSHOT_RADIO_TEXT)
-                                || (takingSnapshotSelected == OPEN_SAVE_SNAPSHOT_RADIO_TEXT));
-        pis.setAutoSaveSnapshot((takingSnapshotSelected == SAVE_SNAPSHOT_RADIO_TEXT)
-                                || (takingSnapshotSelected == OPEN_SAVE_SNAPSHOT_RADIO_TEXT));
+        pis.setAutoOpenSnapshot((takingSnapshotSelected == Bundle.ProfilerOptionsPanel_OpenSnapshotRadioText())
+                                || (takingSnapshotSelected == Bundle.ProfilerOptionsPanel_OpenSaveSnapshotRadioText()));
+        pis.setAutoSaveSnapshot((takingSnapshotSelected == Bundle.ProfilerOptionsPanel_SaveSnapshotRadioText())
+                                || (takingSnapshotSelected == Bundle.ProfilerOptionsPanel_OpenSaveSnapshotRadioText()));
 
         Object oomeSelected = oomeCombo.getSelectedItem();
 
-        if (oomeSelected == OOME_NOTHING_TEXT) {
+        if (oomeSelected == Bundle.ProfilerOptionsPanel_OomeNothingText()) {
             pis.setOOMDetectionMode(pis.OOME_DETECTION_NONE);
-        } else if (oomeSelected == OOME_PROJECT_TEXT) {
+        } else if (oomeSelected == Bundle.ProfilerOptionsPanel_OomeProjectText()) {
             pis.setOOMDetectionMode(pis.OOME_DETECTION_PROJECTDIR);
-        } else if (oomeSelected == OOME_TEMP_TEXT) {
+        } else if (oomeSelected == Bundle.ProfilerOptionsPanel_OomeTempText()) {
             pis.setOOMDetectionMode(pis.OOME_DETECTION_TEMPDIR);
-        } else if (oomeSelected == OOME_CUSTOM_TEXT) {
+        } else if (oomeSelected == Bundle.ProfilerOptionsPanel_OomeCustomText()) {
             pis.setOOMDetectionMode(pis.OOME_DETECTION_CUSTOMDIR);
         }
 
@@ -295,17 +242,17 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
 
         pis.setHeapWalkerAnalysisEnabled(enableHeapWalkerAnalysisCheckbox.isSelected());
 
-        if (telemetryOverviewCombo.getSelectedItem() == KEY_OPEN_ALWAYS) {
+        if (telemetryOverviewCombo.getSelectedItem() == Bundle.ProfilerOptionsPanel_KeyOpenAlways()) {
             pis.setTelemetryOverviewBehavior(ProfilerIDESettings.OPEN_ALWAYS);
-        } else if (telemetryOverviewCombo.getSelectedItem() == KEY_OPEN_MONITORING) {
+        } else if (telemetryOverviewCombo.getSelectedItem() == Bundle.ProfilerOptionsPanel_KeyOpenMonitoring()) {
             pis.setTelemetryOverviewBehavior(ProfilerIDESettings.OPEN_MONITORING);
         } else {
             pis.setTelemetryOverviewBehavior(ProfilerIDESettings.OPEN_NEVER);
         }
 
-        if (openThreadsViewCombo.getSelectedItem() == KEY_OPEN_ALWAYS) {
+        if (openThreadsViewCombo.getSelectedItem() == Bundle.ProfilerOptionsPanel_KeyOpenAlways()) {
             pis.setThreadsViewBehavior(ProfilerIDESettings.OPEN_ALWAYS);
-        } else if (openThreadsViewCombo.getSelectedItem() == KEY_OPEN_MONITORING) {
+        } else if (openThreadsViewCombo.getSelectedItem() == Bundle.ProfilerOptionsPanel_KeyOpenMonitoring()) {
             pis.setThreadsViewBehavior(ProfilerIDESettings.OPEN_MONITORING);
         } else {
             pis.setThreadsViewBehavior(ProfilerIDESettings.OPEN_NEVER);
@@ -326,35 +273,35 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         }
 
         if (settings.getAutoOpenSnapshot() && settings.getAutoSaveSnapshot()
-                && (takingSnapshotCombo.getSelectedItem() != OPEN_SAVE_SNAPSHOT_RADIO_TEXT)) {
+                && (takingSnapshotCombo.getSelectedItem() != Bundle.ProfilerOptionsPanel_OpenSaveSnapshotRadioText())) {
             return false;
         }
 
-        if (settings.getAutoOpenSnapshot() && (takingSnapshotCombo.getSelectedItem() != OPEN_SNAPSHOT_RADIO_TEXT)) {
+        if (settings.getAutoOpenSnapshot() && (takingSnapshotCombo.getSelectedItem() != Bundle.ProfilerOptionsPanel_OpenSnapshotRadioText())) {
             return false;
         }
 
-        if (settings.getAutoSaveSnapshot() && (takingSnapshotCombo.getSelectedItem() != SAVE_SNAPSHOT_RADIO_TEXT)) {
+        if (settings.getAutoSaveSnapshot() && (takingSnapshotCombo.getSelectedItem() != Bundle.ProfilerOptionsPanel_SaveSnapshotRadioText())) {
             return false;
         }
 
         if ((settings.getOOMDetectionMode() == settings.OOME_DETECTION_NONE)
-                && (oomeCombo.getSelectedItem() != OOME_NOTHING_TEXT)) {
+                && (oomeCombo.getSelectedItem() != Bundle.ProfilerOptionsPanel_OomeNothingText())) {
             return false;
         }
 
         if ((settings.getOOMDetectionMode() == settings.OOME_DETECTION_PROJECTDIR)
-                && (oomeCombo.getSelectedItem() != OOME_PROJECT_TEXT)) {
+                && (oomeCombo.getSelectedItem() != Bundle.ProfilerOptionsPanel_OomeProjectText())) {
             return false;
         }
 
         if ((settings.getOOMDetectionMode() == settings.OOME_DETECTION_TEMPDIR)
-                && (oomeCombo.getSelectedItem() != OOME_TEMP_TEXT)) {
+                && (oomeCombo.getSelectedItem() != Bundle.ProfilerOptionsPanel_OomeTempText())) {
             return false;
         }
 
         if ((settings.getOOMDetectionMode() == settings.OOME_DETECTION_CUSTOMDIR)
-                && (oomeCombo.getSelectedItem() != OOME_CUSTOM_TEXT)) {
+                && (oomeCombo.getSelectedItem() != Bundle.ProfilerOptionsPanel_OomeCustomText())) {
             return false;
         }
 
@@ -362,45 +309,45 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
             return false;
         }
 
-        if (telemetryOverviewCombo.getSelectedItem() == KEY_OPEN_ALWAYS) {
+        if (telemetryOverviewCombo.getSelectedItem() == Bundle.ProfilerOptionsPanel_KeyOpenAlways()) {
             if (settings.getTelemetryOverviewBehavior() != ProfilerIDESettings.OPEN_ALWAYS) {
                 return false;
             }
-        } else if (telemetryOverviewCombo.getSelectedItem() == KEY_OPEN_MONITORING) {
+        } else if (telemetryOverviewCombo.getSelectedItem() == Bundle.ProfilerOptionsPanel_KeyOpenMonitoring()) {
             if (settings.getTelemetryOverviewBehavior() != ProfilerIDESettings.OPEN_MONITORING) {
                 return false;
             }
-        } else if (telemetryOverviewCombo.getSelectedItem() == KEY_OPEN_NEVER) {
+        } else if (telemetryOverviewCombo.getSelectedItem() == Bundle.ProfilerOptionsPanel_KeyOpenNever()) {
             if (settings.getTelemetryOverviewBehavior() != ProfilerIDESettings.OPEN_NEVER) {
                 return false;
             }
         }
 
-        if (openThreadsViewCombo.getSelectedItem() == KEY_OPEN_ALWAYS) {
+        if (openThreadsViewCombo.getSelectedItem() == Bundle.ProfilerOptionsPanel_KeyOpenAlways()) {
             if (settings.getThreadsViewBehavior() != ProfilerIDESettings.OPEN_ALWAYS) {
                 return false;
             }
-        } else if (openThreadsViewCombo.getSelectedItem() == KEY_OPEN_MONITORING) {
+        } else if (openThreadsViewCombo.getSelectedItem() == Bundle.ProfilerOptionsPanel_KeyOpenMonitoring()) {
             if (settings.getThreadsViewBehavior() != ProfilerIDESettings.OPEN_MONITORING) {
                 return false;
             }
-        } else if (openThreadsViewCombo.getSelectedItem() == KEY_OPEN_NEVER) {
+        } else if (openThreadsViewCombo.getSelectedItem() == Bundle.ProfilerOptionsPanel_KeyOpenNever()) {
             if (settings.getThreadsViewBehavior() != ProfilerIDESettings.OPEN_NEVER) {
                 return false;
             }
         }
 
-        JavaPlatform sel = getSelectedJavaPlatform();
-
-        if (sel == null) {
-            if (settings.getJavaPlatformForProfiling() != null) {
-                return false;
-            }
-        } else {
-            if (!sel.getDisplayName().equals(settings.getJavaPlatformForProfiling())) {
-                return false;
-            }
-        }
+//        JavaPlatform sel = getSelectedJavaPlatform();
+//
+//        if (sel == null) {
+//            if (settings.getJavaPlatformForProfiling() != null) {
+//                return false;
+//            }
+//        } else {
+//            if (!sel.getDisplayName().equals(settings.getJavaPlatformForProfiling())) {
+//                return false;
+//            }
+//        }
 
         if (settings.getHeapWalkerAnalysisEnabled() != enableHeapWalkerAnalysisCheckbox.isSelected()) {
             return false;
@@ -411,37 +358,37 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
 
     public void init(ProfilerIDESettings pis) {
         resetConfirmationsButton.setEnabled(true);
-        updateJavaPlatformComboItems();
+//        updateJavaPlatformComboItems();
 
         // GlobalProfilingSettings
         portNoSpinner.setValue(Integer.valueOf(pis.getPortNo()));
 
-        if (pis.getJavaPlatformForProfiling() != null) {
-            javaPlatformCombo.setSelectedItem(pis.getJavaPlatformForProfiling());
-        } else {
-            javaPlatformCombo.setSelectedIndex(0);
-        }
+//        if (pis.getJavaPlatformForProfiling() != null) {
+//            javaPlatformCombo.setSelectedItem(pis.getJavaPlatformForProfiling());
+//        } else {
+//            javaPlatformCombo.setSelectedIndex(0);
+//        }
 
         // ProfilerIDESettings
         cpuLiveResultsCheckbox.setSelected(pis.getDisplayLiveResultsCPU());
         memoryLiveResultsCheckbox.setSelected(pis.getDisplayLiveResultsMemory());
 
         if (pis.getAutoOpenSnapshot() && pis.getAutoSaveSnapshot()) {
-            takingSnapshotCombo.setSelectedItem(OPEN_SAVE_SNAPSHOT_RADIO_TEXT);
+            takingSnapshotCombo.setSelectedItem(Bundle.ProfilerOptionsPanel_OpenSaveSnapshotRadioText());
         } else if (pis.getAutoOpenSnapshot()) {
-            takingSnapshotCombo.setSelectedItem(OPEN_SNAPSHOT_RADIO_TEXT);
+            takingSnapshotCombo.setSelectedItem(Bundle.ProfilerOptionsPanel_OpenSnapshotRadioText());
         } else if (pis.getAutoSaveSnapshot()) {
-            takingSnapshotCombo.setSelectedItem(SAVE_SNAPSHOT_RADIO_TEXT);
+            takingSnapshotCombo.setSelectedItem(Bundle.ProfilerOptionsPanel_SaveSnapshotRadioText());
         }
 
         if (pis.getOOMDetectionMode() == pis.OOME_DETECTION_NONE) {
-            oomeCombo.setSelectedItem(OOME_NOTHING_TEXT);
+            oomeCombo.setSelectedItem(Bundle.ProfilerOptionsPanel_OomeNothingText());
         } else if (pis.getOOMDetectionMode() == pis.OOME_DETECTION_PROJECTDIR) {
-            oomeCombo.setSelectedItem(OOME_PROJECT_TEXT);
+            oomeCombo.setSelectedItem(Bundle.ProfilerOptionsPanel_OomeProjectText());
         } else if (pis.getOOMDetectionMode() == pis.OOME_DETECTION_TEMPDIR) {
-            oomeCombo.setSelectedItem(OOME_TEMP_TEXT);
+            oomeCombo.setSelectedItem(Bundle.ProfilerOptionsPanel_OomeTempText());
         } else if (pis.getOOMDetectionMode() == pis.OOME_DETECTION_CUSTOMDIR) {
-            oomeCombo.setSelectedItem(OOME_CUSTOM_TEXT);
+            oomeCombo.setSelectedItem(Bundle.ProfilerOptionsPanel_OomeCustomText());
         }
 
         oomeDetectionDirTextField.setText(pis.getCustomHeapdumpPath());
@@ -450,30 +397,30 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
 
         switch (pis.getTelemetryOverviewBehavior()) {
             case ProfilerIDESettings.OPEN_ALWAYS:
-                telemetryOverviewCombo.setSelectedItem(KEY_OPEN_ALWAYS);
+                telemetryOverviewCombo.setSelectedItem(Bundle.ProfilerOptionsPanel_KeyOpenAlways());
 
                 break;
             case ProfilerIDESettings.OPEN_MONITORING:
-                telemetryOverviewCombo.setSelectedItem(KEY_OPEN_MONITORING);
+                telemetryOverviewCombo.setSelectedItem(Bundle.ProfilerOptionsPanel_KeyOpenMonitoring());
 
                 break;
             default:
-                telemetryOverviewCombo.setSelectedItem(KEY_OPEN_NEVER);
+                telemetryOverviewCombo.setSelectedItem(Bundle.ProfilerOptionsPanel_KeyOpenNever());
 
                 break;
         }
 
         switch (pis.getThreadsViewBehavior()) {
             case ProfilerIDESettings.OPEN_ALWAYS:
-                openThreadsViewCombo.setSelectedItem(KEY_OPEN_ALWAYS);
+                openThreadsViewCombo.setSelectedItem(Bundle.ProfilerOptionsPanel_KeyOpenAlways());
 
                 break;
             case ProfilerIDESettings.OPEN_MONITORING:
-                openThreadsViewCombo.setSelectedItem(KEY_OPEN_MONITORING);
+                openThreadsViewCombo.setSelectedItem(Bundle.ProfilerOptionsPanel_KeyOpenMonitoring());
 
                 break;
             default:
-                openThreadsViewCombo.setSelectedItem(KEY_OPEN_NEVER);
+                openThreadsViewCombo.setSelectedItem(Bundle.ProfilerOptionsPanel_KeyOpenNever());
 
                 break;
         }
@@ -490,7 +437,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         // --- General -------------------------------------------------------------
 
         // General caption
-        CategorySeparator generalSeparator = new CategorySeparator(ENGINE_SETTINGS_BORDER_TEXT);
+        CategorySeparator generalSeparator = new CategorySeparator(Bundle.ProfilerOptionsPanel_EngineSettingsBorderText());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -500,50 +447,50 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         gridBagConstraints.insets = new Insets(2, 0, 0, 6);
         add(generalSeparator, gridBagConstraints);
 
-        // javaPlatformLabel
-        JLabel javaPlatformLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(javaPlatformLabel, JAVA_PLATFORM_LABEL_TEXT);
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new Insets(5, 10, 0, 5);
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        add(javaPlatformLabel, gridBagConstraints);
-
-        // javaPlatformCombo
-        javaPlatformCombo = new JComboBox() {
-                public Dimension getMinimumSize() {
-                    return getPreferredSize();
-                }
-            };
-        javaPlatformCombo.getAccessibleContext().setAccessibleDescription(JAVA_PLAFORM_COMBO_ACCESS_DESCR);
-        javaPlatformLabel.setLabelFor(javaPlatformCombo);
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new Insets(5, 10, 0, 5);
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        add(javaPlatformCombo, gridBagConstraints);
-
-        // managePlatformsButton
-        managePlatformsButton = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(managePlatformsButton, MANAGE_PLATFORMS_BUTTON_NAME);
-        managePlatformsButton.getAccessibleContext().setAccessibleDescription(MANAGE_PLATFORMS_BUTTON_NAME);
-        managePlatformsButton.addActionListener(this);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(5, 3, 0, 6);
-        gridBagConstraints.fill = GridBagConstraints.NONE;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        add(managePlatformsButton, gridBagConstraints);
+//        // javaPlatformLabel
+//        JLabel javaPlatformLabel = new JLabel();
+//        org.openide.awt.Mnemonics.setLocalizedText(javaPlatformLabel, Bundle.ProfilerOptionsPanel_JavaPlatformLabelText());
+//        gridBagConstraints = new GridBagConstraints();
+//        gridBagConstraints.gridx = 0;
+//        gridBagConstraints.gridy = 1;
+//        gridBagConstraints.insets = new Insets(5, 10, 0, 5);
+//        gridBagConstraints.anchor = GridBagConstraints.WEST;
+//        add(javaPlatformLabel, gridBagConstraints);
+//
+//        // javaPlatformCombo
+//        javaPlatformCombo = new JComboBox() {
+//                public Dimension getMinimumSize() {
+//                    return getPreferredSize();
+//                }
+//            };
+//        javaPlatformCombo.getAccessibleContext().setAccessibleDescription(Bundle.ProfilerOptionsPanel_JavaPlatformComboAccessDescr());
+//        javaPlatformLabel.setLabelFor(javaPlatformCombo);
+//        gridBagConstraints = new GridBagConstraints();
+//        gridBagConstraints.gridx = 1;
+//        gridBagConstraints.gridy = 1;
+//        gridBagConstraints.weightx = 1.0;
+//        gridBagConstraints.gridwidth = 2;
+//        gridBagConstraints.insets = new Insets(5, 10, 0, 5);
+//        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+//        gridBagConstraints.anchor = GridBagConstraints.WEST;
+//        add(javaPlatformCombo, gridBagConstraints);
+//
+//        // managePlatformsButton
+//        managePlatformsButton = new JButton();
+//        org.openide.awt.Mnemonics.setLocalizedText(managePlatformsButton, Bundle.ProfilerOptionsPanel_ManagePlatformsButtonName());
+//        managePlatformsButton.getAccessibleContext().setAccessibleDescription(Bundle.ProfilerOptionsPanel_ManagePlatformsButtonName());
+//        managePlatformsButton.addActionListener(this);
+//        gridBagConstraints = new java.awt.GridBagConstraints();
+//        gridBagConstraints.gridx = 3;
+//        gridBagConstraints.gridy = 1;
+//        gridBagConstraints.insets = new java.awt.Insets(5, 3, 0, 6);
+//        gridBagConstraints.fill = GridBagConstraints.NONE;
+//        gridBagConstraints.anchor = GridBagConstraints.WEST;
+//        add(managePlatformsButton, gridBagConstraints);
 
         // portNoLabel
         JLabel portNoLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(portNoLabel, COMM_PORT_LABEL_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(portNoLabel, Bundle.ProfilerOptionsPanel_CommPortLabelText());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -565,13 +512,13 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         portNoLabel.setLabelFor(portNoSpinner);
 
         if (portNoSpinner.getAccessibleContext() != null) {
-            portNoSpinner.getAccessibleContext().setAccessibleDescription(PORT_NO_SPINNER_ACCESS_DESCR);
+            portNoSpinner.getAccessibleContext().setAccessibleDescription(Bundle.ProfilerOptionsPanel_PortNoSpinnerAccessDescr());
         }
 
         portNoSpinner.fixAccessibility();
         portNoSpinner.setModel(new SpinnerNumberModel(5140, 1, 65535, 1));
         portNoSpinner.setPreferredSize(new Dimension(portNoSpinner.getPreferredSize().width,
-                                                     javaPlatformCombo.getPreferredSize().height));
+                                                     new JComboBox().getPreferredSize().height));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -583,7 +530,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         // --- When Profiling Starts -----------------------------------------------
 
         // Profiling Start caption
-        CategorySeparator profilingStartSeparator = new CategorySeparator(WINDOWS_SETTINGS_BORDER_TEXT);
+        CategorySeparator profilingStartSeparator = new CategorySeparator(Bundle.ProfilerOptionsPanel_WindowsSettingsBorderText());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -595,7 +542,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
 
         // telemetryOverviewLabel
         JLabel telemetryOverviewLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(telemetryOverviewLabel, TELEMETRY_OVERVIEW_LABEL_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(telemetryOverviewLabel, Bundle.ProfilerOptionsPanel_TelemetryOverviewLabelText());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -610,8 +557,12 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
                 }
             };
         telemetryOverviewLabel.setLabelFor(telemetryOverviewCombo);
-        telemetryOverviewCombo.getAccessibleContext().setAccessibleDescription(TELEMETRY_OVERVIEW_COMBO_ACCESS_DESCR);
-        telemetryOverviewCombo.setModel(new DefaultComboBoxModel(new String[] { KEY_OPEN_ALWAYS, KEY_OPEN_MONITORING, KEY_OPEN_NEVER }));
+        telemetryOverviewCombo.getAccessibleContext().setAccessibleDescription(Bundle.ProfilerOptionsPanel_TelemetryOverviewComboAccessDescr());
+        telemetryOverviewCombo.setModel(new DefaultComboBoxModel(new String[] { 
+            Bundle.ProfilerOptionsPanel_KeyOpenAlways(), 
+            Bundle.ProfilerOptionsPanel_KeyOpenMonitoring(), 
+            Bundle.ProfilerOptionsPanel_KeyOpenNever() 
+        }));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -622,7 +573,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
 
         // openThreadsViewLabel
         JLabel openThreadsViewLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(openThreadsViewLabel, THREADS_VIEW_LABEL_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(openThreadsViewLabel, Bundle.ProfilerOptionsPanel_ThreadsViewLabelText());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -638,8 +589,12 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
             };
         openThreadsViewLabel.setLabelFor(openThreadsViewCombo);
         openThreadsViewCombo.getAccessibleContext()
-                            .setAccessibleDescription(THREADS_VIEW_COMBO_ACCESS_DESCR + THREADS_VIEW_HINT_TEXT);
-        openThreadsViewCombo.setModel(new DefaultComboBoxModel(new String[] { KEY_OPEN_ALWAYS, KEY_OPEN_MONITORING, KEY_OPEN_NEVER }));
+                            .setAccessibleDescription(Bundle.ProfilerOptionsPanel_ThreadsViewComboAccessDescr() + Bundle.ProfilerOptionsPanel_ThreadsViewHintText());
+        openThreadsViewCombo.setModel(new DefaultComboBoxModel(new String[] { 
+            Bundle.ProfilerOptionsPanel_KeyOpenAlways(), 
+            Bundle.ProfilerOptionsPanel_KeyOpenMonitoring(), 
+            Bundle.ProfilerOptionsPanel_KeyOpenNever()
+        }));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -655,7 +610,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         openThreadsViewCombo.setPreferredSize(new Dimension(maxWidth, maxHeight));
 
         // liveResultsLabel
-        JLabel liveResultsLabel = new JLabel(LIVE_RESULTS_LABEL_TEXT);
+        JLabel liveResultsLabel = new JLabel(Bundle.ProfilerOptionsPanel_LiveResultsLabelText());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -669,14 +624,14 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
 
         // cpuLiveResultsCheckbox
         cpuLiveResultsCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(cpuLiveResultsCheckbox, CPU_CHCKBOX_TEXT);
-        cpuLiveResultsCheckbox.getAccessibleContext().setAccessibleDescription(CPU_LIVE_RESULTS_CHECKBOX_ACCESS_DESCR);
+        org.openide.awt.Mnemonics.setLocalizedText(cpuLiveResultsCheckbox, Bundle.ProfilerOptionsPanel_CpuChckBoxText());
+        cpuLiveResultsCheckbox.getAccessibleContext().setAccessibleDescription(Bundle.ProfilerOptionsPanel_CpuLiveResultsCheckboxAccessDescr());
         liveResultsPanel.add(cpuLiveResultsCheckbox);
 
         // memoryLiveResultsCheckbox
         memoryLiveResultsCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(memoryLiveResultsCheckbox, MEMORY_CHCKBOX_TEXT);
-        memoryLiveResultsCheckbox.getAccessibleContext().setAccessibleDescription(MEMORY_LIVE_RESULTS_CHECKBOX_ACCESS_DESCR);
+        org.openide.awt.Mnemonics.setLocalizedText(memoryLiveResultsCheckbox, Bundle.ProfilerOptionsPanel_MemoryChckBoxText());
+        memoryLiveResultsCheckbox.getAccessibleContext().setAccessibleDescription(Bundle.ProfilerOptionsPanel_MemoryLiveResultsCheckboxAccessDescr());
         liveResultsPanel.add(memoryLiveResultsCheckbox);
 
         // liveResultsLabel placing
@@ -691,7 +646,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         // --- Miscellaneous -------------------------------------------------------
 
         // Miscellaneous caption
-        CategorySeparator miscellaneousSeparator = new CategorySeparator(SNAPSHOTS_SETTINGS_BORDER_TEXT);
+        CategorySeparator miscellaneousSeparator = new CategorySeparator(Bundle.ProfilerOptionsPanel_SnapshotsSettingsBorderText());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -703,7 +658,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
 
         // takingSnapshotLabel
         JLabel takingSnapshotLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(takingSnapshotLabel, TAKING_SNAPSHOT_LABEL_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(takingSnapshotLabel, Bundle.ProfilerOptionsPanel_TakingSnapshotLabelText());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
@@ -718,10 +673,11 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
                 }
             };
         takingSnapshotLabel.setLabelFor(takingSnapshotCombo);
-        takingSnapshotCombo.getAccessibleContext().setAccessibleDescription(TAKING_SNAPSHOT_COMBO_ACCESS_DESCR);
+        takingSnapshotCombo.getAccessibleContext().setAccessibleDescription(Bundle.ProfilerOptionsPanel_TakingSnapshotComboAccessDescr());
         takingSnapshotCombo.setModel(new DefaultComboBoxModel(new String[] {
-                                                                  OPEN_SNAPSHOT_RADIO_TEXT, SAVE_SNAPSHOT_RADIO_TEXT,
-                                                                  OPEN_SAVE_SNAPSHOT_RADIO_TEXT
+                                                                  Bundle.ProfilerOptionsPanel_OpenSnapshotRadioText(), 
+                                                                  Bundle.ProfilerOptionsPanel_SaveSnapshotRadioText(),
+                                                                  Bundle.ProfilerOptionsPanel_OpenSnapshotRadioText()
                                                               }));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -733,7 +689,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
 
         // oomeDetectionLabel
         JLabel oomeDetectionLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(oomeDetectionLabel, OOME_BORDER_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(oomeDetectionLabel, Bundle.ProfilerOptionsPanel_OomeBorderText());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
@@ -748,14 +704,17 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
                 }
             };
         oomeDetectionLabel.setLabelFor(oomeCombo);
-        oomeCombo.getAccessibleContext().setAccessibleDescription(OOME_COMBO_ACCESS_DESCR);
+        oomeCombo.getAccessibleContext().setAccessibleDescription(Bundle.ProfilerOptionsPanel_OomeComboAccessDescr());
         oomeCombo.addItemListener(new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {
                     updateEnabling();
                 }
             });
         oomeCombo.setModel(new DefaultComboBoxModel(new String[] {
-                                                        OOME_NOTHING_TEXT, OOME_PROJECT_TEXT, OOME_TEMP_TEXT, OOME_CUSTOM_TEXT
+                                                        Bundle.ProfilerOptionsPanel_OomeNothingText(), 
+                                                        Bundle.ProfilerOptionsPanel_OomeProjectText(), 
+                                                        Bundle.ProfilerOptionsPanel_OomeTempText(), 
+                                                        Bundle.ProfilerOptionsPanel_OomeCustomText()
                                                     }));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -782,8 +741,8 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
                     return new Dimension(super.getMinimumSize().width, getPreferredSize().height);
                 }
             };
-        oomeDetectionDirTextField.getAccessibleContext().setAccessibleName(OOME_CUSTOM_ACCESS_DESCR);
-        oomeDetectionDirTextField.getAccessibleContext().setAccessibleDescription(OOME_CUSTOM_TEXTFIELD_ACCESS_DESCR);
+        oomeDetectionDirTextField.getAccessibleContext().setAccessibleName(Bundle.ProfilerOptionsPanel_OomeCustomAccessDescr());
+        oomeDetectionDirTextField.getAccessibleContext().setAccessibleDescription(Bundle.ProfilerOptionsPanel_OomeCustomTextfieldAccessDescr());
         oomeDetectionDirTextField.setEnabled(false);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -798,7 +757,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         // oomeDetectionChooseDirButton
         oomeDetectionChooseDirButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(oomeDetectionChooseDirButton, "&..."); // NOI18N
-        oomeDetectionChooseDirButton.getAccessibleContext().setAccessibleName(OOME_CUSTOM_BUTTON_ACCESS_NAME);
+        oomeDetectionChooseDirButton.getAccessibleContext().setAccessibleName(Bundle.ProfilerOptionsPanel_OomeCustomButtonAccessName());
         oomeDetectionChooseDirButton.addActionListener(this);
         oomeDetectionChooseDirButton.setEnabled(false);
         gridBagConstraints = new GridBagConstraints();
@@ -819,7 +778,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         add(oomeDetectionPanel, gridBagConstraints);
 
         // heapWalkerLabel
-        JLabel heapWalkerLabel = new JLabel(HEAPWALKER_LABEL_TEXT);
+        JLabel heapWalkerLabel = new JLabel(Bundle.ProfilerOptionsPanel_HeapWalkerLabelText());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 11;
@@ -830,8 +789,8 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
 
         // enableHeapWalkerAnalysisCheckbox
         enableHeapWalkerAnalysisCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(enableHeapWalkerAnalysisCheckbox, ENABLE_ANALYSIS_CHECKBOX);
-        enableHeapWalkerAnalysisCheckbox.getAccessibleContext().setAccessibleDescription(ENABLE_ANALYSIS_CHECKBOX);
+        org.openide.awt.Mnemonics.setLocalizedText(enableHeapWalkerAnalysisCheckbox, Bundle.ProfilerOptionsPanel_EnableAnalysisCheckbox());
+        enableHeapWalkerAnalysisCheckbox.getAccessibleContext().setAccessibleDescription(Bundle.ProfilerOptionsPanel_EnableAnalysisCheckbox());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 11;
@@ -845,7 +804,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         JPanel resetConfirmationsPanel = new JPanel(new GridBagLayout());
 
         // resetConfirmationsArea
-        JTextArea resetConfirmationsArea = new JTextArea(RESET_HINT_TEXT) {
+        JTextArea resetConfirmationsArea = new JTextArea(Bundle.ProfilerOptionsPanel_ResetHintText()) {
             public Dimension getPreferredSize() {
                 Dimension size = super.getPreferredSize();
                 size.width = 1;
@@ -870,8 +829,8 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
 
         // resetConfirmationsButton
         resetConfirmationsButton = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(resetConfirmationsButton, RESET_BUTTON_NAME);
-        resetConfirmationsButton.getAccessibleContext().setAccessibleDescription(RESET_HINT_TEXT);
+        org.openide.awt.Mnemonics.setLocalizedText(resetConfirmationsButton, Bundle.ProfilerOptionsPanel_ResetButtonName());
+        resetConfirmationsButton.getAccessibleContext().setAccessibleDescription(Bundle.ProfilerOptionsPanel_ResetHintText());
         resetConfirmationsButton.addActionListener(this);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -884,6 +843,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 12;
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+        gridBagConstraints.weightx = 1;
         gridBagConstraints.weighty = 1;
         gridBagConstraints.insets = new Insets(5, 10, 0, 6);
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
@@ -892,47 +852,47 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
     }
 
     private void updateEnabling() {
-        boolean customOOMEdirSelected = oomeCombo.getSelectedItem() == OOME_CUSTOM_TEXT;
+        boolean customOOMEdirSelected = oomeCombo.getSelectedItem() == Bundle.ProfilerOptionsPanel_OomeCustomText();
         oomeDetectionDirTextField.setEnabled(customOOMEdirSelected);
         oomeDetectionChooseDirButton.setEnabled(customOOMEdirSelected);
     }
 
-    private void updateJavaPlatformComboItems() {
-        updateJavaPlatforms();
-
-        Object selectedJavaPlatform = javaPlatformCombo.getSelectedItem();
-
-        javaPlatformCombo.removeAllItems();
-
-        DefaultComboBoxModel javaPlatformComboModel = new DefaultComboBoxModel(supportedJavaPlatformsNames.toArray());
-        javaPlatformComboModel.insertElementAt(USE_PROJECT_JVM_TEXT, 0);
-
-        javaPlatformCombo.setModel(javaPlatformComboModel);
-
-        if (selectedJavaPlatform != null) {
-            javaPlatformCombo.setSelectedItem(selectedJavaPlatform);
-        }
-    }
-
-    private void updateJavaPlatforms() {
-        supportedJavaPlatforms.clear();
-        supportedJavaPlatformsNames.clear();
-
-        Iterator supportedPlatforms = JavaPlatform.getPlatforms().iterator();
-
-        JavaPlatform supportedJavaPlatform;
-        String supportedJavaPlatformName;
-
-        while (supportedPlatforms.hasNext()) {
-            supportedJavaPlatform = (JavaPlatform) supportedPlatforms.next();
-            supportedJavaPlatformName = supportedJavaPlatform.getDisplayName();
-
-            if (!supportedJavaPlatformsNames.contains(supportedJavaPlatformName)) {
-                supportedJavaPlatforms.add(supportedJavaPlatform);
-                supportedJavaPlatformsNames.add(supportedJavaPlatformName);
-            }
-        }
-
-        supportedJavaPlatforms.addAll(JavaPlatform.getPlatforms());
-    }
+//    private void updateJavaPlatformComboItems() {
+//        updateJavaPlatforms();
+//
+//        Object selectedJavaPlatform = javaPlatformCombo.getSelectedItem();
+//
+//        javaPlatformCombo.removeAllItems();
+//
+//        DefaultComboBoxModel javaPlatformComboModel = new DefaultComboBoxModel(supportedJavaPlatformsNames.toArray());
+//        javaPlatformComboModel.insertElementAt(Bundle.ProfilerOptionsPanel_UseProjectJvmText(), 0);
+//
+//        javaPlatformCombo.setModel(javaPlatformComboModel);
+//
+//        if (selectedJavaPlatform != null) {
+//            javaPlatformCombo.setSelectedItem(selectedJavaPlatform);
+//        }
+//    }
+//
+//    private void updateJavaPlatforms() {
+//        supportedJavaPlatforms.clear();
+//        supportedJavaPlatformsNames.clear();
+//
+//        Iterator supportedPlatforms = JavaPlatform.getPlatforms().iterator();
+//
+//        JavaPlatform supportedJavaPlatform;
+//        String supportedJavaPlatformName;
+//
+//        while (supportedPlatforms.hasNext()) {
+//            supportedJavaPlatform = (JavaPlatform) supportedPlatforms.next();
+//            supportedJavaPlatformName = supportedJavaPlatform.getDisplayName();
+//
+//            if (!supportedJavaPlatformsNames.contains(supportedJavaPlatformName)) {
+//                supportedJavaPlatforms.add(supportedJavaPlatform);
+//                supportedJavaPlatformsNames.add(supportedJavaPlatformName);
+//            }
+//        }
+//
+//        supportedJavaPlatforms.addAll(JavaPlatform.getPlatforms());
+//    }
 }

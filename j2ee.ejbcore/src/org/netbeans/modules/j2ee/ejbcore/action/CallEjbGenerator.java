@@ -486,12 +486,12 @@ public class CallEjbGenerator {
                 if (global){
                     // field itself
                     VariableTree variableTree = treeMaker.Variable(
-                            treeMaker.Modifiers(Collections.EMPTY_SET),
+                            treeMaker.Modifiers(Collections.<Modifier>emptySet()),
                             _RetoucheUtil.uniqueMemberName(fileObject, className, ejbName, "ejb"),
                             methodTree.getReturnType(),
-                            treeMaker.MethodInvocation(Collections.EMPTY_LIST,
+                            treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(),
                                                        treeMaker.Identifier(methodTree.getName()),
-                                                       Collections.EMPTY_LIST)
+                                                       Collections.<ExpressionTree>emptyList())
                             );
                     // adding field to class
                     newClassTree = treeMaker.insertClassMember(newClassTree, 0, variableTree);

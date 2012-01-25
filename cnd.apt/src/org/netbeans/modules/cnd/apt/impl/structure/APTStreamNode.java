@@ -74,10 +74,12 @@ public final class APTStreamNode extends APTStreamBaseNode
         assert (validToken(token)) : "must init only from valid tokens"; // NOI18N
     }
     
+    @Override
     public final int getType() {
         return APT.Type.TOKEN_STREAM;
     }    
     
+    @Override
     protected boolean validToken(APTToken t) {
         if (t == null) {
             return false;

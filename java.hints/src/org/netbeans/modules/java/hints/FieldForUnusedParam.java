@@ -91,6 +91,7 @@ import org.openide.util.NbBundle;
  */
 public class FieldForUnusedParam extends AbstractHint {
 
+    private static final String ERROR = "<error>"; //TODO: there should ideally be an API method for this
     private static final String FINAL_FIELDS = "final-fields";
 
     public static boolean isFinalFields() {
@@ -138,6 +139,10 @@ public class FieldForUnusedParam extends AbstractHint {
         if (parentEl == null || parentEl.getKind() != ElementKind.CONSTRUCTOR || parent.getBody() == null) {
             return null;
         }
+
+        VariableTree var = (VariableTree) treePath.getLeaf();
+
+        if (var.getName().contentEquals(ERROR)) return null;
         
         boolean existing = false;
         

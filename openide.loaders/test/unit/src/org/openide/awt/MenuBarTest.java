@@ -58,6 +58,7 @@ import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.actions.OpenAction;
@@ -121,6 +122,14 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         };
         MenuBar.allInstances(ics, new ArrayList<Object>());
     }
+
+    private void generateTenActions() throws IOException {
+        FileObject fo = df.getPrimaryFile().createFolder("1Menu");
+        for (int i = 0; i < 10; i++) {
+            FileObject item = fo.createData("item-" + i + ".instance");
+            item.setAttribute("instanceCreate", new JMenuItem("" + i));
+        }
+    }
     
     private static class IC implements InstanceCookie {
         private boolean throwing;
@@ -161,6 +170,8 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         mb.waitFinished();
         
         assertEquals("Two children there", 2, mb.getComponentCount());
+        assertEquals("Programatic names deduced from the folder", "m1", mb.getComponent(0).getName());
+        assertEquals("Programatic names deduced from the folder", "m2", mb.getComponent(1).getName());
         
         assertEquals("No removals", 0, remove);
         assertEquals("Two additions", 2, add);
@@ -282,6 +293,43 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         if (log.length() > 0) {
             fail("No warnings please:\n" + log);
         }
+    }
+    
+    public void testDontWaitWhenHoldingATreeLock() throws Exception {
+        class P extends JPanel {
+            public void run() throws Exception {
+                synchronized (getTreeLock()) {
+                    generateTenActions();
+                    assertEquals("Cannot answer one menu due to the lock", 0, mb.getMenuCount());
+                }
+                assertEquals("Now it is OK", 1, mb.getMenuCount());
+                JMenu menu = mb.getMenu(0);
+                synchronized (getTreeLock()) {
+                    assertEquals("Cannot answer properly 10", 0, menu.getItemCount());
+                }
+                assertEquals("Now it is 10", 10, menu.getItemCount());
+            }
+        }
+        new P().run();
+    }
+    
+    public void testItemCount() throws IOException {
+        generateTenActions();
+        assertEquals("One menu", 1, mb.getMenuCount());
+        JMenu menu = mb.getMenu(0);
+        assertEquals("Ten items", 10, menu.getItemCount());
+    }
+    public void testMenuComponentCount() throws IOException {
+        generateTenActions();
+        assertEquals("One menu", 1, mb.getMenuCount());
+        JMenu menu = mb.getMenu(0);
+        assertEquals("Ten items", 10, menu.getMenuComponentCount());
+    }
+    public void testMenuComponents() throws IOException {
+        generateTenActions();
+        assertEquals("One menu", 1, mb.getMenuCount());
+        JMenu menu = mb.getMenu(0);
+        assertEquals("Ten items", 10, menu.getMenuComponents().length);
     }
 
     private void doActionIsCreatedOnlyOnce_13195(String name) throws Exception {

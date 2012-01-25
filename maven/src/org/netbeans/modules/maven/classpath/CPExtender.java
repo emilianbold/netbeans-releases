@@ -67,7 +67,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.model.ModelOperation;
@@ -75,8 +74,10 @@ import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Repository;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -85,9 +86,10 @@ import org.openide.util.Utilities;
  * maven dependencies to the way classpath items are added through this api.
  * @author mkleint
  */
+@ProjectServiceProvider(service=ProjectClassPathModifierImplementation.class, projectType="org-netbeans-modules-maven")
 public class CPExtender extends ProjectClassPathModifierImplementation {
 
-    private NbMavenProjectImpl project;
+    private Project project;
     private static final String POM_XML = "pom.xml"; //NOI18N
     
     /**
@@ -99,8 +101,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
      */
     public static final String CLASSPATH_COMPILE_ONLY = "classpath/compile_only";
 
-    /** Creates a new instance of CPExtender */
-    public CPExtender(NbMavenProjectImpl project) {
+    public CPExtender(Project project) {
         this.project = project;
     }
     
@@ -111,9 +112,17 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
             modified = urls.size() > 0;
             assert model != null;
             for (URL url : urls) {
-                File jar = FileUtil.archiveOrDirForURL(url);
-                if (jar == null) {
+                FileObject fo = URLMapper.findFileObject(url);
+                if (fo == null) {
                     throw new IOException("Could find no file corresponding to " + url);
+                }
+                FileObject jarFO = FileUtil.getArchiveFile(fo);
+                if (jarFO == null || FileUtil.getArchiveRoot(jarFO) != fo) {
+                    throw new IOException("Cannot add non-root of JAR: " + url);
+                }
+                File jar = FileUtil.toFile(jarFO);
+                if (jar == null) {
+                    throw new IOException("no disk file found corresponding to " + jarFO);
                 }
                 if (jar.isDirectory()) {
                     throw new IOException("Cannot add folders to Maven projects as dependencies: " + url); //NOI18N
@@ -201,7 +210,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
                 }
                 //set repository
                 org.netbeans.modules.maven.model.pom.Repository reposit = ModelUtils.addModelRepository(
-                        project.getOriginalMavenProject(), model, result.getRepoRoot());
+                        project.getLookup().lookup(NbMavenProject.class).getMavenProject(), model, result.getRepoRoot());
                 if (reposit != null) {
                     reposit.setId(library.getName());
                     reposit.setLayout(result.getRepoType());
@@ -309,7 +318,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
         final String scope = findScope(sg, classPathType);
         ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
             public @Override void performOperation(POMModel model) {
-                Set<Artifact> arts = project.getOriginalMavenProject().getArtifacts();
+                Set<Artifact> arts = project.getLookup().lookup(NbMavenProject.class).getMavenProject().getArtifacts();
                 for (Project prj: projects) {
                     NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
                     if (nbprj != null) {

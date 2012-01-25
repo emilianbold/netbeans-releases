@@ -52,9 +52,8 @@ import java.io.File;
 import java.util.Collection;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.ppoints.ProfilingPointsManager;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
@@ -65,6 +64,12 @@ import org.openide.util.actions.SystemAction;
  * @author Jiri Sedlacek
  * @author Tomas Hurka
  */
+@NbBundle.Messages({
+    "ShowOppositeProfilingPointAction_NoEndDefinedMsg=No end point defined for this Profiling Point",
+    "ShowOppositeProfilingPointAction_NoDataString=<No Data Available>",
+    "ShowOppositeProfilingPointAction_EndActionName=Go To End Point",
+    "ShowOppositeProfilingPointAction_StartActionName=Go To Start Point"
+})
 public class ShowOppositeProfilingPointAction extends SystemAction implements ContextAwareAction {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
@@ -110,20 +115,6 @@ public class ShowOppositeProfilingPointAction extends SystemAction implements Co
         }
     }
 
-    //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    // -----
-    // I18N String constants
-    private static final String NO_END_DEFINED_MSG = NbBundle.getMessage(ShowOppositeProfilingPointAction.class,
-                                                                         "ShowOppositeProfilingPointAction_NoEndDefinedMsg"); // NOI18N
-    private static final String NO_DATA_STRING = NbBundle.getMessage(ShowOppositeProfilingPointAction.class,
-                                                                     "ShowOppositeProfilingPointAction_NoDataString"); // NOI18N
-    private static final String END_ACTION_NAME = NbBundle.getMessage(ShowOppositeProfilingPointAction.class,
-                                                                      "ShowOppositeProfilingPointAction_EndActionName"); // NOI18N
-    private static final String START_ACTION_NAME = NbBundle.getMessage(ShowOppositeProfilingPointAction.class,
-                                                                        "ShowOppositeProfilingPointAction_StartActionName"); // NOI18N
-                                                                                                                             // -----
-
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     public ShowOppositeProfilingPointAction() {
@@ -141,7 +132,7 @@ public class ShowOppositeProfilingPointAction extends SystemAction implements Co
 
     @Override
     public String getName() {
-        return NO_DATA_STRING;
+        return Bundle.ShowOppositeProfilingPointAction_NoDataString();
     }
 
     @Override
@@ -154,7 +145,9 @@ public class ShowOppositeProfilingPointAction extends SystemAction implements Co
             Collection<? extends CodeProfilingPoint.Annotation> anns = actionContext.lookupAll(CodeProfilingPoint.Annotation.class);
             final InvocationLocationDescriptor desc = getCurrentLocationDescriptor(anns);
             if (desc != null) {
-                String name = desc.isStartLocation() ? END_ACTION_NAME : START_ACTION_NAME;
+                String name = desc.isStartLocation() ? 
+                    Bundle.ShowOppositeProfilingPointAction_EndActionName() : 
+                        Bundle.ShowOppositeProfilingPointAction_StartActionName();
 
                 return new AbstractAction(name) {
 
@@ -165,9 +158,8 @@ public class ShowOppositeProfilingPointAction extends SystemAction implements Co
                         if (oppositeLocation != null) {
                             Utils.openLocation(oppositeLocation);
                         } else {
-                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    NO_END_DEFINED_MSG,
-                                    NotifyDescriptor.WARNING_MESSAGE));
+                            ProfilerDialogs.displayWarning(
+                                    Bundle.ShowOppositeProfilingPointAction_NoEndDefinedMsg());
                         }
                     }
                 };

@@ -50,7 +50,6 @@ import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.actions.SystemAction;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.modules.subversion.SvnFileNode;
@@ -88,6 +87,7 @@ public class SyncFileNode extends AbstractNode {
     private RequestProcessor.Task repoload;
 
     private final VersioningPanel panel;
+    private DataObject dobj;
 
     SyncFileNode(SvnFileNode node, VersioningPanel _panel) {
         this(Children.LEAF, node, _panel);
@@ -98,6 +98,7 @@ public class SyncFileNode extends AbstractNode {
         super(children, Lookups.fixed(node.getLookupObjects()));
         this.node = node;
         this.panel = _panel;
+        init();
         initProperties();
         refreshHtmlDisplayName();
     }
@@ -134,21 +135,23 @@ public class SyncFileNode extends AbstractNode {
      */
     @Override
     public <T extends Cookie> T getCookie(Class<T> klass) {
+        if (dobj == null) {
+            return super.getCookie(klass);
+        } else {
+            return dobj.getCookie(klass);
+        }
+    }
+
+    private void init () {
         FileObject fo = node.getFileObject();
         if (fo != null) {
             try {
-                DataObject dobj = DataObject.find(fo);
-                if (fo.equals(dobj.getPrimaryFile())) {
-                    return dobj.getCookie(klass);
-                }
+                dobj = DataObject.find(fo);
             } catch (DataObjectNotFoundException e) {
                 // ignore file without data objects
             }
         }
-        return super.getCookie(klass);
     }
-
-
 
     private void initProperties() {
         if (node.getFile().isDirectory()) setIconBaseWithExtension("org/openide/loaders/defaultFolder.gif"); // NOI18N

@@ -117,7 +117,7 @@ public class MethodDeclarationInfo extends ASTNodeInfo<MethodDeclaration> {
         }
         return retval;
     }
-    
+
     public PhpModifiers getAccessModifiers() {
         int realModifiers = getOriginalNode().getModifier();
         realModifiers = (isFromInterface) ? (realModifiers | Modifier.ABSTRACT | Modifier.PUBLIC) : realModifiers;

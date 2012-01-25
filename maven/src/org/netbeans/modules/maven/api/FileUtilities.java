@@ -51,12 +51,10 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import org.apache.maven.artifact.Artifact;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -262,12 +260,13 @@ public final class FileUtilities {
      * @return Sorted set of package names
      */
     public static SortedSet<String> getPackageNames (Project prj) {
+        /*
         ProjectSourcesClassPathProvider cpProvider = prj.getLookup().lookup(ProjectSourcesClassPathProvider.class);
         assert cpProvider != null : "Project has to provide ProjectSourcesClassPathProvider ability"; //NOI18N
-
+        */
         SortedSet<String> result = new TreeSet<String>();
         getSourcePackageNames(prj, result, false);
-
+        /* #201099: usually undesirable; TBD when it would be:
         final ClassPath runtimeCP = cpProvider.getProjectSourcesClassPath(ClassPath.EXECUTE);
         FileObject[] cpRoots = runtimeCP.getRoots();
         for (int i = 0; i < cpRoots.length; i++) {
@@ -281,7 +280,7 @@ public final class FileUtilities {
                 }, result, false);
             }
         }
-
+        */
         return result;
     }
 

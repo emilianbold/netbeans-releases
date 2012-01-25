@@ -50,7 +50,7 @@ import java.net.URISyntaxException;
 import java.util.Date;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -76,6 +76,9 @@ import org.openide.util.RequestProcessor;
  */
 public class RepositoryNode extends AbstractNode {
 
+    private static final @StaticResource String LOCAL_REPO = "org/netbeans/modules/maven/repository/localrepo.png";
+    private static final @StaticResource String REMOTE_REPO = "org/netbeans/modules/maven/repository/remoterepo.png";
+
     private RepositoryInfo info;
     private final GroupListChildren children;
 
@@ -95,9 +98,9 @@ public class RepositoryNode extends AbstractNode {
     @Override
     public Image getIcon(int arg0) {
         if (info.isRemoteDownloadable()) {
-            return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/remoterepo.png", true); //NOI18N
+            return ImageUtilities.loadImage(REMOTE_REPO, true);
         }
-        return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/localrepo.png", true); //NOI18N
+        return ImageUtilities.loadImage(LOCAL_REPO, true);
     }
 
     @Override
@@ -142,7 +145,8 @@ public class RepositoryNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean arg0) {
         return new Action[]{
-            new RefreshIndexAction(),
+            // XXX Find
+            new RefreshIndexAction(), // XXX allow multiselections
             new EditAction(),
             DeleteAction.get(DeleteAction.class),
             null,
@@ -207,15 +211,10 @@ public class RepositoryNode extends AbstractNode {
         }
 
         public @Override void actionPerformed(ActionEvent e) {
-            setEnabled(false);
+            setEnabled(false); // XXX ineffective if in context menu
             RPrefreshindex.post(new Runnable() {
                 public @Override void run() {
                     RepositoryIndexer.indexRepo(info);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public @Override void run() {
-                            RefreshIndexAction.this.setEnabled(true);
-                        }
-                    });
                 }
             });
         }

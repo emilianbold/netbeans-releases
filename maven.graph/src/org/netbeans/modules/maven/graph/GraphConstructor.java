@@ -74,8 +74,7 @@ class GraphConstructor implements DependencyNodeVisitor {
         edges = new ArrayList<ArtifactGraphEdge>();
     }
 
-
-    public boolean visit(DependencyNode node) {
+    @Override public boolean visit(DependencyNode node) {
         if (root == null) {
             root = node;
         }
@@ -119,7 +118,7 @@ class GraphConstructor implements DependencyNodeVisitor {
         return true;
     }
 
-    public boolean endVisit(DependencyNode node) {
+    @Override public boolean endVisit(DependencyNode node) {
         path.pop();
 //        graphPath.pop();
         if (root == node) {

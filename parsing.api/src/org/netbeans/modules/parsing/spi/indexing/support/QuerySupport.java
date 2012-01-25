@@ -460,11 +460,15 @@ public final class QuerySupport {
             return q;
         }
 
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         public Iterable<? extends Pair<URL, DocumentIndex>> getIndices(List<? extends URL> roots) {
             synchronized (root2index) {
                 List<Pair<URL, DocumentIndex>> indices = new LinkedList<Pair<URL, DocumentIndex>>();
 
                 for(URL r : roots) {
+                    assert PathRegistry.noHostPart(r) : r;
                     Reference<DocumentIndex> indexRef = root2index.get(r);
                     DocumentIndex index = indexRef != null ? indexRef.get() : null;
                     if (index == null) {
@@ -496,6 +500,9 @@ public final class QuerySupport {
         /* test */ static /* final, but tests need to change it */ IndexFactoryImpl indexFactory = new LuceneIndexFactory();
 
         private final String indexerId;
+        @org.netbeans.api.annotations.common.SuppressWarnings(
+        value="DMI_COLLECTION_OF_URLS"
+        /*,justification="URLs have never host part"*/)
         private final Map<URL, Reference<DocumentIndex>> root2index = new HashMap<URL, Reference<DocumentIndex>>();
 
         private IndexerQuery(String indexerId) {

@@ -49,9 +49,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
@@ -67,7 +65,6 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
@@ -518,11 +515,7 @@ public class LineBreakpoint extends JPDABreakpoint {
         }
 
         public void fileRenamed(FileRenameEvent fe) {
-            try {
-                this.setURL(((FileObject) fe.getSource()).getURL().toString());
-            } catch (FileStateInvalidException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
+                this.setURL(((FileObject) fe.getSource()).toURL().toString());
         }
 
         public void fileAttributeChanged(FileAttributeEvent fe) {
@@ -562,11 +555,7 @@ public class LineBreakpoint extends JPDABreakpoint {
                 FileObject newFO = ((DataObject) evt.getSource()).getPrimaryFile();
                 fileListener = WeakListeners.create(FileChangeListener.class, this, newFO);
                 newFO.addFileChangeListener(fileListener);
-                try {
-                    this.setURL(newFO.getURL().toString());
-                } catch (FileStateInvalidException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                }
+                    this.setURL(newFO.toURL().toString());
                 fo = newFO;
                 DebuggerManager.getDebuggerManager().addBreakpoint(this);
                 firePropertyChange(PROP_GROUP_PROPERTIES, null, null);

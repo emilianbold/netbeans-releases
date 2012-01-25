@@ -60,8 +60,8 @@ import org.openide.filesystems.FileObject;
  */
 public class ElementGripFactory {
 
-    private static ElementGripFactory instance;
-    private WeakHashMap<FileObject, Interval> map = new WeakHashMap<FileObject, Interval>();
+    private static final ElementGripFactory instance = new ElementGripFactory();
+    private final WeakHashMap<FileObject, Interval> map = new WeakHashMap<FileObject, Interval>();
 
     /**
      * Creates a new instance of ElementGripFactory
@@ -70,18 +70,20 @@ public class ElementGripFactory {
     }
 
     public static ElementGripFactory getDefault() {
-        if (instance == null) {
-            instance = new ElementGripFactory();
-        }
         return instance;
     }
 
     public void cleanUp() {
-        map.clear();
+        synchronized (map) {
+            map.clear();
+        }
     }
 
     public ElementGrip get(FileObject fileObject, int position) {
-        Interval start = map.get(fileObject);
+        Interval start;
+        synchronized (map) {
+            start = map.get(fileObject);
+        }
         if (start == null) {
             return null;
         }
@@ -93,7 +95,10 @@ public class ElementGripFactory {
     }
 
     public ElementGrip getParent(ElementGrip el) {
-        Interval start = map.get(el.getFileObject());
+        Interval start;
+        synchronized (map) {
+            start = map.get(el.getFileObject());
+        }
         return start == null ? null : start.getParent(el);
     }
 
@@ -113,10 +118,15 @@ public class ElementGripFactory {
     }
 
     public void put(FileObject parentFile, CsmOffsetable csmObj) {
-        Interval root = map.get(parentFile);
+        Interval root;
+        synchronized (map) {
+            root = map.get(parentFile);
+        }
         Interval i = Interval.createInterval(csmObj, root, null, parentFile);
         if (i != null) {
-            map.put(parentFile, i);
+            synchronized (map) {
+                map.put(parentFile, i);
+            }
         }
     }
 

@@ -53,7 +53,6 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -63,7 +62,7 @@ import java.util.logging.Logger;
 
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent; 
@@ -84,8 +83,8 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -108,17 +107,22 @@ public class WSCompletionProvider implements CompletionProvider {
 
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if (queryType == CompletionProvider.COMPLETION_QUERY_TYPE) {
-            return new AsyncCompletionTask(new WsCompletionQuery(component.getSelectionStart()), component);
+            return new AsyncCompletionTask(new WsCompletionQuery(component.
+                    getSelectionStart()), component);
         }
         return null;
     }
     
-    static final class WsCompletionQuery extends AsyncCompletionQuery implements CancellableTask<CompilationController> {
+    static final class WsCompletionQuery extends AsyncCompletionQuery implements 
+        CancellableTask<CompilationController> 
+    {
         private int caretOffset;
         private int anchorOffset;
         private List<CompletionItem> results;
         private JTextComponent component;
         private JAXWSSupport jaxWsSupport;
+        private volatile boolean hasErrors;
+        private RequestProcessor REQUEST_PROCESSOR = new RequestProcessor(WsCompletionQuery.class);
         
         private WsCompletionQuery(int caretOffset) {
             this.caretOffset = caretOffset;
@@ -127,14 +131,33 @@ public class WSCompletionProvider implements CompletionProvider {
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
                 NbEditorUtilities.getFileObject(doc);
-                JavaSource js = JavaSource.forDocument(doc);
+                final JavaSource js = JavaSource.forDocument(doc);
                 if (js!=null) {
-                    Future<Void> f = js.runWhenScanFinished(this, true);
-                    if (f != null && !f.isDone()) {
+                    Future<?> completion = REQUEST_PROCESSOR.submit( new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                js.runUserActionTask( WsCompletionQuery.this , true);
+                            }
+                            catch (IOException ex) {
+                                LOG.log( Level.WARNING , null , ex );
+                            }
+                        }
+                    });
+                    if ( !completion.isDone()) {
                         setCompletionHack(false);
                         resultSet.setWaitText(NbBundle.
                                 getMessage(WSCompletionProvider.class, 
                                         "scanning-in-progress"));       // NOI18N
+                    }
+                    if (isTaskCancelled()) {
+                        return;
+                    }
+                    if ( hasErrors() && SourceUtils.isScanInProgress()){
+                        Future<Void> f = js.runWhenScanFinished(this, true);
+                        if (!f.isDone()) {
+                            setCompletionHack(false);
+                        }
                         f.get();
                     }
                     if (isTaskCancelled()) {
@@ -166,8 +189,11 @@ public class WSCompletionProvider implements CompletionProvider {
             }
         }
         
-        public void cancel() {}
+        @Override
+        public void cancel() {
+        }
 
+        @Override
         public void run(CompilationController controller) throws Exception {
             resolveCompletion(controller);
         }
@@ -202,14 +228,19 @@ public class WSCompletionProvider implements CompletionProvider {
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
             FileObject fo = NbEditorUtilities.getFileObject(component.getDocument());
-            if (fo!=null) jaxWsSupport = JAXWSSupport.getJAXWSSupport(fo);
+            if (fo!=null) {
+                jaxWsSupport = JAXWSSupport.getJAXWSSupport(fo);
+            }
         }
         
-        private Env getCompletionEnvironment(CompilationController controller, boolean upToOffset) throws IOException {
+        private Env getCompletionEnvironment(CompilationController controller, 
+                boolean upToOffset) throws IOException 
+        {
             int offset = caretOffset;
             String prefix = "";
             if (upToOffset && offset > 0) {
-                TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+                TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().
+                    tokenSequence(JavaTokenId.language());
                 boolean successfullyMoved = false;
                 if (ts.move(offset) == 0) // When right at the token end
                     successfullyMoved = ts.movePrevious(); // Move to previous token
@@ -231,6 +262,10 @@ public class WSCompletionProvider implements CompletionProvider {
             controller.toPhase(Phase.PARSED);
             TreePath path = controller.getTreeUtilities().pathFor(caretOffset);
             return new Env(offset, prefix, path);
+        }
+        
+        private boolean hasErrors(){
+            return hasErrors;
         }
         
         /** #145615: this helps to work around the issue with stuck
@@ -256,28 +291,57 @@ public class WSCompletionProvider implements CompletionProvider {
                             ExpressionTree var = ((AssignmentTree)parent).getVariable();
                             if (var.getKind() == Kind.IDENTIFIER) {
                                 Name name = ((IdentifierTree)var).getName();
-                                if (name.contentEquals("wsdlLocation") && jaxWsSupport!=null) { //NOI18N
-                                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                                    TypeElement webMethodEl = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
-                                    if (webMethodEl!=null) {
-                                        TypeMirror el = controller.getTrees().getTypeMirror(parentPath.getParentPath());
-                                        if (el!=null) {
-                                            if ( webMethodEl!=null && controller.getTypes().isSameType(el,webMethodEl.asType())) {
-                                                FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
-                                                if (wsdlFolder!=null) {                                                
-                                                    Enumeration<? extends FileObject> en = wsdlFolder.getChildren(true);
-                                                    while (en.hasMoreElements()) {
-                                                        FileObject fo = en.nextElement();
-                                                        if (fo.isData() && "wsdl".equalsIgnoreCase(fo.getExt())) {
-                                                            String wsdlPath = FileUtil.getRelativePath(wsdlFolder.getParent().getParent(), fo);
-                                                            // Temporary fix for wsdl files in EJB project
-                                                            if (wsdlPath.startsWith("conf/")) wsdlPath = "META-INF/"+wsdlPath.substring(5); //NOI18
-                                                            if (wsdlPath.startsWith(env.getPrefix())) {
-                                                                results.add(WSCompletionItem.createWsdlFileItem(wsdlFolder, fo, env.getOffset()));
-                                                            }
-                                                        } 
-                                                    }
-                                                }
+                                if (!name.contentEquals("wsdlLocation") ||   //NOI18N 
+                                        jaxWsSupport!=null) 
+                                {
+                                    return;
+                                }
+                                controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                                TypeElement webMethodEl = controller
+                                            .getElements().getTypeElement(
+                                                    "javax.jws.WebService"); // NOI18N
+                                if (webMethodEl == null) {
+                                    hasErrors = true;
+                                    return;
+                                }
+                                TypeMirror el = controller.getTrees().getTypeMirror(
+                                                    parentPath.getParentPath());
+                                if (el == null || el.getKind() == TypeKind.ERROR) {
+                                    hasErrors = true;
+                                    return;
+                                }
+                                if (controller.getTypes().isSameType(el,
+                                            webMethodEl.asType()))
+                                {
+                                    FileObject wsdlFolder = jaxWsSupport
+                                                .getWsdlFolder(false);
+                                    if (wsdlFolder != null) {
+                                        Enumeration<? extends FileObject> en = 
+                                                wsdlFolder.getChildren(true);
+                                        while (en.hasMoreElements()) {
+                                            FileObject fo = en.nextElement();
+                                            if (!fo.isData() || !"wsdl"   // NOI18N
+                                                        .equalsIgnoreCase(fo.getExt()))
+                                            {
+                                                continue;
+                                            }
+                                            String wsdlPath = FileUtil.getRelativePath(
+                                                           wsdlFolder.getParent()
+                                                           .getParent(),fo);
+                                            // Temporary fix for wsdl
+                                            // files in EJB project
+                                            if (wsdlPath.startsWith("conf/"))   // NOI18
+                                            {
+                                                wsdlPath = "META-INF/"+ wsdlPath// NOI18
+                                                                  .substring(5); 
+                                            }
+                                            if (wsdlPath.startsWith(env.getPrefix()))
+                                            {
+                                                results.add(WSCompletionItem
+                                                                .createWsdlFileItem(
+                                                                        wsdlFolder,
+                                                                        fo,
+                                                                        env.getOffset()));
                                             }
                                         }
                                     }
@@ -289,27 +353,39 @@ public class WSCompletionProvider implements CompletionProvider {
             }
         }
         
-        private void createAssignmentResults(CompilationController controller, Env env) 
-            throws IOException {
+        private void createAssignmentResults(CompilationController controller, 
+                Env env) throws IOException 
+        {
             TreePath elementPath = env.getPath();
             TreePath parentPath = elementPath.getParentPath();
             Tree parent = parentPath.getLeaf();
             switch (parent.getKind()) {                
                 case ANNOTATION : {
-                    ExpressionTree var = ((AssignmentTree)elementPath.getLeaf()).getVariable();
-                    if (var.getKind() == Kind.IDENTIFIER) {
+                    ExpressionTree var = ((AssignmentTree)elementPath.getLeaf()).
+                        getVariable();
+                    if (var!= null && var.getKind() == Kind.IDENTIFIER) {
                         Name name = ((IdentifierTree)var).getName();
                         if (name.contentEquals("value"))  {//NOI18N
                             controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                            TypeElement webParamEl = controller.getElements().getTypeElement("javax.xml.ws.BindingType"); //NOI18N
-                            if (webParamEl!=null) {
-                                TypeMirror el = controller.getTrees().getTypeMirror(parentPath);
-                                if (el!=null) {
-                                    if ( webParamEl!=null && controller.getTypes().isSameType(el,webParamEl.asType())) {
-                                        for (String mode : BINDING_TYPES) {
-                                            if (mode.startsWith(env.getPrefix())) 
-                                                results.add(WSCompletionItem.createEnumItem(mode, "String", env.getOffset())); //NOI18N
-                                        }
+                            TypeElement webParamEl = controller.getElements().
+                                getTypeElement("javax.xml.ws.BindingType"); //NOI18N
+                            if (webParamEl==null) {
+                                hasErrors = true;
+                                return;
+                            }
+                            TypeMirror el = controller.getTrees().getTypeMirror(parentPath);
+                            if (el==null || el.getKind() == TypeKind.ERROR) {
+                                hasErrors = true;
+                                return;
+                            }
+                            if ( webParamEl!=null && controller.getTypes().
+                                            isSameType(el,webParamEl.asType())) 
+                            {
+                                for (String mode : BINDING_TYPES) {
+                                    if (mode.startsWith(env.getPrefix())){ 
+                                                results.add(WSCompletionItem.
+                                                        createEnumItem(mode, 
+                                                                "String", env.getOffset())); //NOI18N
                                     }
                                 }
                             }

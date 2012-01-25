@@ -43,19 +43,13 @@
  */
 package org.netbeans.modules.html.editor.completion;
 
+import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.netbeans.editor.ext.html.parser.spi.HelpItem;
-import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
-import org.netbeans.modules.html.editor.api.Utils;
-import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
-import java.net.URL;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.html.editor.javadoc.HelpManager;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
@@ -64,14 +58,15 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.ext.html.parser.spi.HelpItem;
+import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.html.editor.HtmlPreferences;
+import org.netbeans.modules.html.editor.api.Utils;
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
+import org.netbeans.modules.html.editor.javadoc.HelpManager;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.spi.editor.completion.CompletionDocumentation;
-import org.netbeans.spi.editor.completion.CompletionItem;
-import org.netbeans.spi.editor.completion.CompletionResultSet;
-import org.netbeans.spi.editor.completion.CompletionProvider;
-import org.netbeans.spi.editor.completion.CompletionTask;
+import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.util.Exceptions;
@@ -326,7 +321,6 @@ public class HtmlCompletionProvider implements CompletionProvider {
                                                 || ts.token().id() == HTMLTokenId.VALUE
                                                 || ts.token().id() == HTMLTokenId.VALUE_CSS
                                                 || ts.token().id() == HTMLTokenId.VALUE_JAVASCRIPT);
-                                        return;
                                     }
                                 }
                             }
@@ -339,7 +333,6 @@ public class HtmlCompletionProvider implements CompletionProvider {
                                                 || ts.token().id() == HTMLTokenId.VALUE
                                                 || ts.token().id() == HTMLTokenId.VALUE_CSS
                                                 || ts.token().id() == HTMLTokenId.VALUE_JAVASCRIPT);
-                                        return;
                                     }
                                 }
                             }
@@ -352,26 +345,28 @@ public class HtmlCompletionProvider implements CompletionProvider {
                 return true;
             case '>':
                 //handle tag autocomplete
-                final boolean[] ret = new boolean[1];
-                doc.runAtomic(new Runnable() {
+                if(HtmlPreferences.autoPopupEndTagAutoCompletion()) {
+                    final boolean[] ret = new boolean[1];
+                    doc.runAtomic(new Runnable() {
 
-                    @Override
-                    public void run() {
-                        TokenSequence ts = Utils.getJoinedHtmlSequence(doc, dotPos);
-                        if (ts == null) {
-                            //no suitable token sequence found
-                            ret[0] = false;
-                        } else {
-                            ts.move(dotPos - 1);
-                            if (ts.moveNext() || ts.movePrevious()) {
-                                if (ts.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL && !CharSequenceUtilities.equals("/>", ts.token().text())) {
-                                    ret[0] = true;
+                        @Override
+                        public void run() {
+                            TokenSequence ts = Utils.getJoinedHtmlSequence(doc, dotPos);
+                            if (ts == null) {
+                                //no suitable token sequence found
+                                ret[0] = false;
+                            } else {
+                                ts.move(dotPos - 1);
+                                if (ts.moveNext() || ts.movePrevious()) {
+                                    if (ts.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL && !CharSequenceUtilities.equals("/>", ts.token().text())) {
+                                        ret[0] = true;
+                                    }
                                 }
                             }
                         }
-                    }
-                });
-                return ret[0];
+                    });
+                    return ret[0];
+                }
 
         }
         return false;

@@ -77,6 +77,7 @@ import org.netbeans.modules.mercurial.ui.ignore.IgnoreAction;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.LogAction;
 import org.netbeans.modules.mercurial.ui.menu.BranchMenu;
+import org.netbeans.modules.mercurial.ui.menu.QueuesMenu;
 import org.netbeans.modules.mercurial.ui.menu.TagMenu;
 import org.netbeans.modules.mercurial.ui.properties.PropertiesAction;
 import org.netbeans.modules.mercurial.ui.pull.FetchAction;
@@ -87,7 +88,7 @@ import org.netbeans.modules.mercurial.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.mercurial.ui.update.UpdateAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
-import org.openide.filesystems.FileUtil;
+import org.openide.awt.Actions;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -313,6 +314,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
 
         List<Action> actions = new ArrayList<Action>(INITIAL_ACTION_ARRAY_LENGTH);
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
+            // XXX use Actions.forID
             Action a = Utils.getAcceleratedAction("Actions/Mercurial/org-netbeans-modules-mercurial-ui-create-CreateAction.instance");
             if(a instanceof ContextAwareAction) {
                 a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
@@ -361,6 +363,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                 actions.add(null);
                 actions.add(new BranchMenu(null));
                 actions.add(new TagMenu(null));
+                actions.add(new QueuesMenu(null));
                 actions.add(null);
                 actions.add(SystemAction.get(PropertiesAction.class));
             }
@@ -368,7 +371,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         } else {
             Lookup context = ctx.getElements();
             if (noneVersioned){
-                Action a = (Action) FileUtil.getConfigObject("Actions/Mercurial/org-netbeans-modules-mercurial-ui-create-CreateAction.instance", Action.class);
+                Action a = Actions.forID("Mercurial", "org.netbeans.modules.mercurial.ui.create.CreateAction");
                 if(a instanceof ContextAwareAction) {
                     a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
                 }            
@@ -407,6 +410,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                 actions.add(new ShareMenu(context));
                 actions.add(new BranchMenu(context));
                 actions.add(new TagMenu(context));
+                actions.add(new QueuesMenu(context));
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(PropertiesAction.class), loc.getString("CTL_PopupMenuItem_Properties"), context)); //NOI18N
             }

@@ -16,6 +16,7 @@
                         <attr name="template" boolvalue="true"/>
                     </file>
 
+                   
                     <file name="InterceptorStateless" url="InterceptorStateless.zip">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.samples.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
@@ -30,6 +31,28 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/AnnotationOverrideInterceptor.html"/>
                         <attr name="template" boolvalue="true"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/EARProjectIcon.gif"/>
+                    </file>
+                    
+                    <file name="EmbeddedGlassfish" url="EmbeddedGlassfish.zip">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/EmbeddedGlassfish.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/Maven2SamplesIcon.gif"/>                            
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                    <file name="EjbContainer" url="EjbContainer.zip">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/EjbContainer.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/Maven2SamplesIcon.gif"/>                            
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                    <file name="ApplicationScopedResources" url="ApplicationScopedResources.zip">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/ApplicationScopedResources.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/EARProjectIcon.gif"/>                            
+                        <attr name="template" boolvalue="true"/>
                     </file>
 
                 </folder>
@@ -106,6 +129,30 @@
                     </file>
 
                 </folder>
+                <!-- this is failing the commit-validation testFolderOrding todo fix this test-->
+                <!--<folder name="Glassfish">
+                     <file name="EmbeddedGlassfish" url="EmbeddedGlassfish.zip">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/EmbeddedGlassfish.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/Maven2SamplesIcon.gif"/>                            
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                    <file name="EjbContainer" url="EjbContainer.zip">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/EjbContainer.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/Maven2SamplesIcon.gif"/>                            
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                    <file name="ApplicationScopedResources" url="ApplicationScopedResources.zip">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.samples.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/ApplicationScopedResources.html"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/EARProjectIcon.gif"/>                            
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                </folder> -->   
             </folder>
         </folder>
     </folder>

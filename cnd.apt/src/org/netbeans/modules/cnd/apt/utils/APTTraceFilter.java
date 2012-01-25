@@ -66,6 +66,7 @@ public class APTTraceFilter implements TokenStream {
         this.name = name;        
     }
     
+    @Override
     public Token nextToken() throws TokenStreamException {
         Token token = orig.nextToken();
         APTUtils.LOG.log(Level.INFO, "{0} : {1}\n", new Object[] { name, token}); // NOI18N

@@ -49,6 +49,7 @@ import org.netbeans.modules.versioning.spi.VCSAnnotator;
 
 import java.io.File;
 import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
+import org.netbeans.spi.queries.CollocationQueryImplementation;
 
 /**
  * Test versioning system.
@@ -62,6 +63,7 @@ public class TestVCS extends VersioningSystem {
     private VCSInterceptor interceptor;
     private VCSAnnotator annotator;
     private VCSVisibilityQuery vq;
+    private TestVCSCollocationQuery vcq;
 
     public static final String VERSIONED_FOLDER_SUFFIX = "-test-versioned";
 
@@ -74,6 +76,7 @@ public class TestVCS extends VersioningSystem {
         interceptor = new TestVCSInterceptor();
         annotator = new TestVCSAnnotator();
         vq = new TestVCSVisibilityQuery();
+        vcq = new TestVCSCollocationQuery();
     }
 
     public File getTopmostManagedAncestor(File file) {
@@ -97,6 +100,11 @@ public class TestVCS extends VersioningSystem {
     @Override
     public VCSVisibilityQuery getVisibilityQuery() {
         return vq;
-}
+    }
 
+    @Override
+    public CollocationQueryImplementation getCollocationQueryImplementation() {
+        return vcq;
+    }
+    
 }

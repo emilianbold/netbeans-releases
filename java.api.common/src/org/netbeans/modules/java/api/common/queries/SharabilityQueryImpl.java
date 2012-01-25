@@ -45,32 +45,34 @@
 package org.netbeans.modules.java.api.common.queries;
 
 import org.netbeans.modules.java.api.common.SourceRoots;
-import java.io.File;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.openide.util.Mutex;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 
 /**
  * Default implementation of {@link SharabilityQueryImplementation} which is capable to take more sources.
  * It listens to the changes in particular property values.
  * @author Tomas Zezula, Tomas Mysik
  */
-class SharabilityQueryImpl implements SharabilityQueryImplementation, PropertyChangeListener {
+class SharabilityQueryImpl implements SharabilityQueryImplementation2, PropertyChangeListener {
 
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private final SourceRoots srcRoots;
     private final SourceRoots testRoots;
     private final List<String> additionalSourceRoots;
-    private SharabilityQueryImplementation delegate;
+    private SharabilityQueryImplementation2 delegate;
 
     @SuppressWarnings("LeakingThisInConstructor")
     public SharabilityQueryImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots srcRoots,
@@ -94,11 +96,9 @@ class SharabilityQueryImpl implements SharabilityQueryImplementation, PropertyCh
         }
     }
 
-    @Override
-    public int getSharability(final File file) {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<Integer>() {
-            @Override
-            public Integer run() {
+    @Override public SharabilityQuery.Sharability getSharability(final URI file) {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<SharabilityQuery.Sharability>() {
+            @Override public SharabilityQuery.Sharability run() {
                 synchronized (SharabilityQueryImpl.this) {
                     if (delegate == null) {
                         delegate = createDelegate();
@@ -118,7 +118,7 @@ class SharabilityQueryImpl implements SharabilityQueryImplementation, PropertyCh
         }
     }
 
-    private SharabilityQueryImplementation createDelegate() {
+    private SharabilityQueryImplementation2 createDelegate() {
         String[] srcProps = srcRoots.getRootProperties();
         String[] testProps = testRoots == null ? new String[0] : testRoots.getRootProperties();
         String[] buildDirectories = new String[] {"${dist.dir}", "${build.dir}"}; // NOI18N
@@ -136,6 +136,6 @@ class SharabilityQueryImpl implements SharabilityQueryImplementation, PropertyCh
         }
         props.addAll(additionalSourceRoots);
 
-        return helper.createSharabilityQuery(evaluator, props.toArray(new String[props.size()]), buildDirectories);
+        return helper.createSharabilityQuery2(evaluator, props.toArray(new String[props.size()]), buildDirectories);
     }
 }

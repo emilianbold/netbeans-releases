@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -61,6 +62,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.openide.util.CharSequences;
 
 /**
  * Implements CsmNamespaceDefinition
@@ -78,10 +80,13 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     private final CsmUID<CsmNamespace> namespaceUID;
     
     private NamespaceDefinitionImpl(AST ast, CsmFile file, NamespaceImpl parent) {
-        super(file, getStartOffset(ast), getEndOffset(ast));
+        this(NameCache.getManager().getString(AstUtil.getText(ast)), parent, file, getStartOffset(ast), getEndOffset(ast));
+    }
+
+    private NamespaceDefinitionImpl(CharSequence name, NamespaceImpl parent, CsmFile file, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset);
         declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
-        assert ast.getType() == CPPTokenTypes.CSM_NAMESPACE_DECLARATION;
-        name = NameCache.getManager().getString(AstUtil.getText(ast));
+        this.name = name;
         NamespaceImpl nsImpl = ((ProjectBase) file.getProject()).findNamespaceCreateIfNeeded(parent, name);
         
         // set parent ns, do it in constructor to have final fields
@@ -97,10 +102,11 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         int end = getEndOffset(ast);
         CharSequence name = NameCache.getManager().getString(AstUtil.getText(ast)); // otherwise equals returns false
         // #147376 Strange navigator behavior in header
-        CsmOffsetableDeclaration candidate = container.findExistingDeclaration(start, end, name);
+        CsmOffsetableDeclaration candidate = container.findExistingDeclaration(start, name, CsmDeclaration.Kind.NAMESPACE_DEFINITION);
         if (CsmKindUtilities.isNamespaceDefinition(candidate)) {
             return (NamespaceDefinitionImpl) candidate;
         } else {
+            assert !TraceFlags.CPP_PARSER_ACTION : candidate + " " + name + " " + AstUtil.getFirstCsmAST(ast).getLine() + " " + containerfile.getAbsolutePath() + " " + container ;
             NamespaceDefinitionImpl ns = new NamespaceDefinitionImpl(ast, containerfile, parentNamespace);
             container.addDeclaration(ns);
             return ns;
@@ -140,6 +146,17 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         return UIDCsmConverter.UIDtoDeclaration(out);
     }
 
+    @Override
+    public CsmOffsetableDeclaration findExistingDeclaration(int start, CharSequence name, CsmDeclaration.Kind kind) {
+        CsmUID<CsmOffsetableDeclaration> out = null;
+        // look for the object with the same start position and the same name
+        // TODO: for now we are in O(n), but better to be O(ln n) speed
+        synchronized (declarations) {
+            out = UIDUtilities.findExistingUIDInList(declarations, start, name, kind);
+        }
+        return UIDCsmConverter.UIDtoDeclaration(out);
+    }
+    
     @Override
     public void addDeclaration(CsmOffsetableDeclaration decl) {
         CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
@@ -255,6 +272,95 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         return impl;
     }
     
+    
+    public static class NamespaceBuilder implements CsmObjectBuilder {
+        
+        private CharSequence name = CharSequences.empty();
+        private String qName;
+        private CsmFile file;
+        private int startOffset;
+        private int endOffset;
+        private NamespaceBuilder parent;
+
+        private NamespaceImpl namespace;
+        private NamespaceDefinitionImpl instance;
+        private List<CsmOffsetableDeclaration> declarations = new ArrayList<CsmOffsetableDeclaration>();
+        
+        public void setName(CharSequence name) {
+            this.name = name;
+            // for now without scope
+            qName = name.toString();
+        }
+
+        public void setFile(CsmFile file) {
+            this.file = file;
+        }
+        
+        public void setEndOffset(int endOffset) {
+            this.endOffset = endOffset;
+        }
+
+        public void setStartOffset(int startOffset) {
+            this.startOffset = startOffset;
+        }
+
+        public void setParentNamespace(NamespaceBuilder parent) {
+            this.parent = parent;
+        }
+
+        public void addDeclaration(CsmOffsetableDeclaration decl) {
+            this.declarations.add(decl);
+        }
+        
+        public NamespaceDefinitionImpl getNamespaceDefinitionInstance() {
+            if(instance != null) {
+                return instance;
+            }
+            MutableDeclarationsContainer container;
+            if (parent == null) {
+                container = (FileImpl) file;
+            } else {
+                container = parent.getNamespaceDefinitionInstance();
+            }
+            if(container != null) {
+                CsmOffsetableDeclaration decl = container.findExistingDeclaration(startOffset, name, CsmDeclaration.Kind.NAMESPACE_DEFINITION);
+                if (CsmKindUtilities.isNamespaceDefinition(decl)) {
+                    instance = (NamespaceDefinitionImpl) decl;
+                }
+            }
+            return instance;
+        }
+        
+        public NamespaceImpl getNamespace() {
+            if(namespace != null) {
+                return namespace;
+            }
+            if(parent != null) {
+                namespace = ((ProjectBase) file.getProject()).findNamespaceCreateIfNeeded(parent.getNamespace(), name);
+            } else {
+                namespace = ((ProjectBase) file.getProject()).findNamespaceCreateIfNeeded((NamespaceImpl)((ProjectBase) file.getProject()).getGlobalNamespace(), name);
+            }
+            return namespace;
+        }
+        
+        public NamespaceDefinitionImpl create() {
+            NamespaceDefinitionImpl ns = getNamespaceDefinitionInstance();
+            if (ns == null) {
+                NamespaceImpl parentNamespace = parent != null ? parent.getNamespace() : (NamespaceImpl)((ProjectBase) file.getProject()).getGlobalNamespace();
+                ns = new NamespaceDefinitionImpl(name, parentNamespace, file, startOffset, endOffset);
+                if(parent != null) {
+                    parent.addDeclaration(ns);
+                } else {
+                    ((FileImpl)file).addDeclaration(ns);
+                }
+            }
+            for (CsmOffsetableDeclaration decl : declarations) {
+                ns.addDeclaration(decl);
+            }
+            return ns;
+        }
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     

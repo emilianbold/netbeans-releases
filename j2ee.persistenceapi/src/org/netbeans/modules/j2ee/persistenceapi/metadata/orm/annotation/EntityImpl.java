@@ -44,8 +44,13 @@
 
 package org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
@@ -66,6 +71,7 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
     // transient: set to null in javaContextLeft()
     private IdClassImpl idClass;
     private AttributesImpl attributes;
+    ArrayList<NamedQuery> nqs;
 
     public EntityImpl(AnnotationModelHelper helper, EntityMappingsImpl root, TypeElement typeElement) {
         super(helper, typeElement);
@@ -75,16 +81,16 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
         assert valid;
     }
 
-    boolean refresh(TypeElement typeElement) {
+    final boolean refresh(TypeElement typeElement) {
         class2 = typeElement.getQualifiedName().toString();
         AnnotationModelHelper helper = getHelper();
         Map<String, ? extends AnnotationMirror> annByType = helper.getAnnotationsByType(typeElement.getAnnotationMirrors());
         AnnotationMirror entityAnn = annByType.get("javax.persistence.Entity"); // NOI18N
         if (entityAnn == null) {
             return false;
-        }
+        }annByType.get("javax.persistence.NamedQueries");
         AnnotationParser parser = AnnotationParser.create(helper);
-        parser.expectString("name", parser.defaultValue(typeElement.getSimpleName().toString())); // NOI18N
+        parser.expectString("name", AnnotationParser.defaultValue(typeElement.getSimpleName().toString())); // NOI18N
         ParseResult parseResult = parser.parse(entityAnn); // NOI18N
         name = parseResult.get("name", String.class); // NOI18N
         // also reading the table element to avoid initializing the whole model
@@ -92,6 +98,45 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
         // over all entities calling getTable().
         // XXX locale?
         table = new TableImpl(helper, annByType.get("javax.persistence.Table"), name.toUpperCase()); // NOI18N
+        //fill named queries
+        AnnotationMirror nqsAnn = annByType.get("javax.persistence.NamedQueries");
+        ArrayList<AnnotationMirror> nqAnn = null;
+        if(nqsAnn == null){
+            nqsAnn = annByType.get("javax.persistence.NamedQuery");
+            if(nqsAnn != null){
+                nqAnn = new ArrayList<AnnotationMirror>();
+                nqAnn.add(nqsAnn);
+            }
+        } else {
+                Map<? extends ExecutableElement, ? extends AnnotationValue> maps = nqsAnn.getElementValues();
+                nqAnn = new ArrayList<AnnotationMirror>();
+                for(AnnotationValue vl:maps.values()){
+                    List  lst = (List) vl.getValue();
+                    for(Object val:lst){
+                        if(val instanceof AnnotationMirror){
+                            AnnotationMirror am = (AnnotationMirror) val;
+                            if("javax.persistence.NamedQuery".equals(am.getAnnotationType().toString())){
+                                nqAnn.add(am);
+                                //values.add(Utilities.getAnnotationAttrValue(am, "query").toString());
+                            }
+                        }
+                    }
+                }
+        }
+        nqs = null;//we reset all queries
+        if(nqAnn != null && nqAnn.size()>0){
+            parser = AnnotationParser.create(helper);
+            parser.expectString("name", AnnotationParser.defaultValue("")); // NOI18N
+            parser.expectString("query", AnnotationParser.defaultValue("")); // NOI18N
+            for(AnnotationMirror am:nqAnn){
+                parseResult = parser.parse(am); // NOI18N
+                String nm = parseResult.get("name", String.class); // NOI18N            
+                parseResult = parser.parse(am); // NOI18N
+                String qr = parseResult.get("query", String.class); // NOI18N
+                this.addNamedQuery(new NamedQueryImpl(typeElement, nm, qr));
+            }
+        }
+        //
         return true;
     }
 
@@ -99,6 +144,7 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
         return root;
     }
 
+    @Override
     public void javaContextLeft() {
         attributes = null;
         idClass = null;
@@ -294,38 +340,52 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
         throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
     }
 
+    @Override
     public void setNamedQuery(int index, NamedQuery value) {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        nqs.set(index, value); // NOI18N
     }
 
+    @Override
     public NamedQuery getNamedQuery(int index) {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return nqs !=null && nqs.size()>index ? nqs.get(index) : null; // NOI18N
     }
 
+    @Override
     public int sizeNamedQuery() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return nqs != null ? nqs.size() : 0; // NOI18N
     }
 
+    @Override
     public void setNamedQuery(NamedQuery[] value) {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        nqs = new ArrayList<NamedQuery>(Arrays.asList(value));
     }
 
+    @Override
     public NamedQuery[] getNamedQuery() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return nqs.toArray(new NamedQuery[]{}); // NOI18N
     }
 
+    @Override
     public int addNamedQuery(NamedQuery value) {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        if(nqs == null){
+            nqs = new ArrayList<NamedQuery> ();
+        }
+        nqs.add(value);
+        return nqs.size()-1;
     }
 
+    @Override
     public int removeNamedQuery(NamedQuery value) {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        nqs.remove(value); // NOI18N
+        return nqs.size();
     }
 
+    @Override
     public NamedQuery newNamedQuery() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return new NamedQueryImpl(getTypeElement(), null, null); // NOI18N
     }
 
+    @Override
     public void setNamedNativeQuery(int index, NamedNativeQuery value) {
         throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
     }

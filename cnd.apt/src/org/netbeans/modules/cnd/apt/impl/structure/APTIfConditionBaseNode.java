@@ -102,6 +102,7 @@ public abstract class APTIfConditionBaseNode extends APTTokenAndChildBasedNode
         return condition != null ? new ListBasedTokenStream(condition) : APTUtils.EMPTY_STREAM;
     }
     
+    @Override
     public boolean accept(APTFile curFile,APTToken token) {
         assert (token != null);
         int ttype = token.getType();

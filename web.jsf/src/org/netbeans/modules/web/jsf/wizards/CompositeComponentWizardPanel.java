@@ -144,7 +144,7 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
 
     	String errorMessage = null;
 	WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-	if (!Utilities.isJavaEE6(wizard) && !(JSFUtils.isJavaEE5((TemplateWizard) wizard) && JSFUtils.isJSF20(webModule))) {
+	if (!Utilities.isJavaEE6(wizard) && !(JSFUtils.isJavaEE5((TemplateWizard) wizard) && JSFUtils.isJSF20Plus(webModule))) {
 	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_Not_JSF20");//NOI18N
 	}
 	if (component == null || component.getTargetName() == null || component.getTargetGroup() == null) {
@@ -205,9 +205,9 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
                 }
             }
         }
-	
+
 	wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage);
-	
+
 	return errorMessage == null;
     }
 

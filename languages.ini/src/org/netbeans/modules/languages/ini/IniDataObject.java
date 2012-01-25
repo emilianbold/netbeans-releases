@@ -83,7 +83,7 @@ public class IniDataObject extends MultiDataObject {
             displayName="#Source",
             iconBase="org/netbeans/modules/languages/ini/resources/ini_file_16.png",
             persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
-            mimeType="text/x-ini",
+            mimeType=IniLanguageProvider.MIME_TYPE,
             preferredID="ini.source",
             position=1
     )

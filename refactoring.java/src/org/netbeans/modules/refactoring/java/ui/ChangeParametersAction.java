@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
-import org.netbeans.modules.refactoring.java.ui.JavaActionsImplementationFactory;
-import org.netbeans.modules.refactoring.java.ui.JavaRefactoringGlobalAction;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -60,7 +58,7 @@ import org.openide.util.NbBundle;
  * @author Jan Becicka
  */
 @ActionID(id = "org.netbeans.modules.refactoring.java.api.ui.ChangeParametersAction", category = "Refactoring")
-@ActionRegistration(displayName = "#LBL_ChangeMethodSignatureAction")
+@ActionRegistration(displayName = "#LBL_ChangeMethodSignatureAction", lazy = false)
 @ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "CallHierarchyAction", position = 430)
 public class ChangeParametersAction extends JavaRefactoringGlobalAction {
     
@@ -71,18 +69,22 @@ public class ChangeParametersAction extends JavaRefactoringGlobalAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
+    @Override
     public final void performAction(Lookup context) {
         JavaActionsImplementationFactory.doChangeParameters(context);
     }
     
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
+    @Override
     protected boolean enable(Lookup context) {
         return JavaActionsImplementationFactory.canChangeParameters(context);
     }

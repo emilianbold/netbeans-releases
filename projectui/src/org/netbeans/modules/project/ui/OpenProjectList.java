@@ -103,7 +103,6 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
@@ -137,6 +136,7 @@ public final class OpenProjectList {
     
     // Property names
     public static final String PROPERTY_OPEN_PROJECTS = "OpenProjects";
+    public static final String PROPERTY_WILL_OPEN_PROJECTS = "willOpenProjects"; // NOI18N
     public static final String PROPERTY_MAIN_PROJECT = "MainProject";
     public static final String PROPERTY_RECENT_PROJECTS = "RecentProjects";
     public static final String PROPERTY_REPLACE = "ReplaceProject";
@@ -398,15 +398,10 @@ public final class OpenProjectList {
                 for (Project p : toOpenProjects) {
                     INSTANCE.addModuleInfo(p);
                     // Set main project
-                    try {
                         if ( mainProjectURL != null && 
-                             mainProjectURL.equals( p.getProjectDirectory().getURL() ) ) {
+                             mainProjectURL.equals( p.getProjectDirectory().toURL() ) ) {
                             lazyMainProject = p;
                         }
-                    }
-                    catch( FileStateInvalidException e ) {
-                        // Not a main project
-                    }
                 }
                 return toOpenProjects.size();
                 }
@@ -579,7 +574,7 @@ public final class OpenProjectList {
                 @Override public void run() {
                     cancellation.t = Thread.currentThread();
                     try {
-                        doOpen(projects, openSubprojects, handle, cancellation);
+                        open(projects, openSubprojects, handle, cancellation);
                     } finally {
                         handle.finish();
                     }
@@ -589,7 +584,7 @@ public final class OpenProjectList {
                 }
             });
         } else {
-            doOpen(projects, openSubprojects, null, null);
+            open(projects, openSubprojects, null, null);
             if (mainProject != null && Arrays.asList(projects).contains(mainProject) && openProjects.contains(mainProject)) {
                 setMainProject(mainProject);
             }
@@ -606,16 +601,26 @@ public final class OpenProjectList {
         "# {0} - project display name", "OpenProjectList.finding_subprojects=Finding required projects of {0}",
         "# {0} - project path", "OpenProjectList.deleted_project={0} seems to have been deleted."
     })
-    private void doOpen(Project[] projects, boolean openSubprojects, ProgressHandle handle, AtomicBoolean canceled) {
+    public void open(Project[] projects, boolean openSubprojects, ProgressHandle handle, AtomicBoolean canceled) {
         assert !Arrays.asList(projects).contains(null) : "Projects can't be null";
         LOAD.waitFinished();
             
+        pchSupport.firePropertyChange(PROPERTY_WILL_OPEN_PROJECTS, null, projects);
+        for (int i = 0; i < projects.length; i++) {
+            try {
+                projects[i] = ProjectManager.getDefault().findProject(projects[i].getProjectDirectory());
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, "Cannot convert " + projects[i].getProjectDirectory(), ex);
+            } catch (IllegalArgumentException ex) {
+                LOGGER.log(Level.INFO, "Cannot convert " + projects[i].getProjectDirectory(), ex);
+            }
+        }
             
         try {
             LOAD.enter();
         boolean recentProjectsChanged = false;
         int  maxWork = 1000;
-        int  workForSubprojects = maxWork / 2;
+        double workForSubprojects = maxWork / (openSubprojects ? 2.0 : 10.0);
         double currentWork = 0;
         Collection<Project> projectsToOpen = new LinkedHashSet<Project>();
         
@@ -929,10 +934,9 @@ public final class OpenProjectList {
                             }
                         }
                         if (fail) {
+                            LOGGER.log(Level.WARNING, "Project {0} is not open and cannot be set as main.", ProjectUtils.getInformation(project).getDisplayName());
                             logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
-                            IllegalArgumentException x = new IllegalArgumentException("Project " + ProjectUtils.getInformation(project).getDisplayName() + " is not open and cannot be set as main.");
-                            Exceptions.attachSeverity(x, Level.INFO);
-                            throw x;
+                            return null;
                         }
                     }
                 } catch (IOException ex) {
@@ -1105,15 +1109,10 @@ public final class OpenProjectList {
     private static List<URL> projects2URLs( Collection<Project> projects ) {
         ArrayList<URL> URLs = new ArrayList<URL>( projects.size() );
         for(Project p: projects) {
-            try {
-                URL root = p.getProjectDirectory().getURL();
+                URL root = p.getProjectDirectory().toURL();
                 if ( root != null ) {
                     URLs.add( root );
                 }
-            }
-            catch( FileStateInvalidException e ) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
         }        
         
         return URLs;
@@ -1253,13 +1252,8 @@ public final class OpenProjectList {
     }
     
     private static void saveMainProject( Project mainProject ) {        
-        try {
-            URL mainRoot = mainProject == null ? null : mainProject.getProjectDirectory().getURL(); 
+            URL mainRoot = mainProject == null ? null : mainProject.getProjectDirectory().toURL();
             OpenProjectListSettings.getInstance().setMainProjectURL( mainRoot );
-        }
-        catch ( FileStateInvalidException e ) {
-            OpenProjectListSettings.getInstance().setMainProjectURL((String) null);
-        }
     }
         
     private ArrayList<FileObject> getTemplateNamesLRU( final Project project, PrivilegedTemplates priv ) {
@@ -1268,8 +1262,6 @@ public final class OpenProjectList {
         
         final ArrayList<FileObject> result = new ArrayList<FileObject>(NUM_TEMPLATES);
         
-        RecommendedTemplates rt = project.getLookup().lookup( RecommendedTemplates.class );
-        String rtNames[] = rt == null ? new String[0] : rt.getRecommendedTypes();
         PrivilegedTemplates pt = priv != null ? priv : project.getLookup().lookup( PrivilegedTemplates.class );
         String ptNames[] = pt == null ? null : pt.getPrivilegedTemplates();        
         final ArrayList<String> privilegedTemplates = new ArrayList<String>( Arrays.asList( pt == null ? new String[0]: ptNames ) );
@@ -1281,6 +1273,7 @@ public final class OpenProjectList {
             
             ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
                 public @Override Void run() {
+                String[] rtNames = getRecommendedTypes(project);
                 Iterator<String> it = getRecentTemplates().iterator();
                 for( int i = 0; i < NUM_TEMPLATES && it.hasNext(); i++ ) {
                     String templateName = it.next();
@@ -1288,12 +1281,9 @@ public final class OpenProjectList {
                     if ( fo == null ) {
                         it.remove(); // Does not exists remove
                     }
-                    else if ( isRecommended( project, fo ) ) {
+                    else if ( isRecommended( rtNames, fo ) ) {
                         result.add( fo );
                         privilegedTemplates.remove( templateName ); // Not to have it twice
-                    }
-                    else {
-                        continue;
                     }
                 }
                 return null;
@@ -1314,9 +1304,9 @@ public final class OpenProjectList {
         return result;
                
     }
-    
-    static boolean isRecommended (Project p, FileObject primaryFile) {
-        if (getRecommendedTypes (p) == null || getRecommendedTypes (p).length == 0) {
+
+    static boolean isRecommended (String[] recommendedTypes, FileObject primaryFile) {
+        if (recommendedTypes == null || recommendedTypes.length == 0) {
             // if no recommendedTypes are supported (i.e. freeform) -> disaply all templates
             return true;
         }
@@ -1324,14 +1314,13 @@ public final class OpenProjectList {
         Object o = primaryFile.getAttribute ("templateCategory"); // NOI18N
         if (o != null) {
             assert o instanceof String : primaryFile + " attr templateCategory = " + o;
-            boolean ok = false;
+            List<String> recommendedTypesList = Arrays.asList(recommendedTypes);
             for (String category : getCategories((String) o)) {
-                if (Arrays.asList (getRecommendedTypes (p)).contains (category)) {
-                    ok = true;
-                    break;
+                if (recommendedTypesList.contains (category)) {
+                    return true;
                 }
             }
-            return ok;
+            return false;
         } else {
             // issue 44871, if attr 'templateCategorized' is not set => all is ok
             // no category set, ok display it
@@ -1339,7 +1328,12 @@ public final class OpenProjectList {
         }
     }
 
-    private static String[] getRecommendedTypes (Project project) {
+    /**
+     * Returns list of recommended template types for project. Do not call in
+     * loop because it may scan project files to resolve its type which is time
+     * consuming.
+     */
+    static String[] getRecommendedTypes(Project project) {
         if (project == null) {
             return null;
         }
@@ -1381,15 +1375,11 @@ public final class OpenProjectList {
         
         public void add(final Project p) {
             final UnloadedProjectInformation projectInfo;
-            try { // #183681: call outside of lock
+            // #183681: call outside of lock
                 projectInfo = ProjectInfoAccessor.DEFAULT.getProjectInfo(
                         ProjectUtils.getInformation(p).getDisplayName(),
                         ProjectUtils.getInformation(p).getIcon(),
-                        p.getProjectDirectory().getURL());
-            } catch(FileStateInvalidException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                return;
-            }
+                        p.getProjectDirectory().toURL());
             ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
                 public @Override Void run() {
                 int index = getIndex(p);
@@ -1566,17 +1556,10 @@ public final class OpenProjectList {
         }
         
         private int getIndex( Project p ) {
-            
-            URL pURL;
-            try {
-                if ( p == null || p.getProjectDirectory() == null ) {
-                    return -1;
-                }
-                pURL = p.getProjectDirectory().getURL();                
-            }
-            catch( FileStateInvalidException e ) {
+            if (p == null || p.getProjectDirectory() == null) {
                 return -1;
             }
+            URL pURL = p.getProjectDirectory().toURL();
             
             int i = 0;
             
@@ -1613,14 +1596,7 @@ public final class OpenProjectList {
             
             public ProjectReference( Project p ) {
                 this.projectReference = new WeakReference<Project>( p );
-                try {
-                    projectURL = p.getProjectDirectory().getURL();                
-                }
-                catch( FileStateInvalidException e ) {
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        log(Level.FINE, "FSIE getting URL for project: " + p.getProjectDirectory());
-                    }
-                }
+                projectURL = p.getProjectDirectory().toURL();
             }
             
             public Project getProject() {

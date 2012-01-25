@@ -310,8 +310,11 @@ is the proper place.
                   Added a new class to help with action accelerators.
                   Should not be used by typical modules.
               </p>
+              <p>
+                  (Moved into the org.openide.awt module as of 7.34.)
+              </p>
           </description>
-          <class package="org.openide.awt" name="AcceleratorBinding"/>
+          <class package="org.openide.awt" name="AcceleratorBinding" link="no"/>
           <issue number="180543"/>
       </change>
      <change id="XMLDataObject.subclass">

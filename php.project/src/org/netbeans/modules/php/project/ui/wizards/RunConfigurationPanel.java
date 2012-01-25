@@ -57,9 +57,15 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.connections.ConfigManager;
-import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.environment.PhpEnvironment.DocumentRoot;
+import org.netbeans.modules.php.project.runconfigs.RunConfigLocal;
+import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
+import org.netbeans.modules.php.project.runconfigs.validation.RunConfigLocalValidator;
+import org.netbeans.modules.php.project.runconfigs.validation.RunConfigRemoteValidator;
+import org.netbeans.modules.php.project.runconfigs.validation.RunConfigScriptValidator;
+import org.netbeans.modules.php.project.runconfigs.validation.RunConfigValidator;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServer.ComboBoxModel;
 import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
@@ -67,7 +73,6 @@ import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
-import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -75,7 +80,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
-import static org.netbeans.modules.php.project.ui.customizer.RunAsRemoteWeb.NO_REMOTE_CONFIGURATION;
+import org.netbeans.modules.php.project.ui.wizards.NewPhpProjectWizardIterator.WizardType;
 
 /**
  * @author Tomas Mysik
@@ -337,20 +342,22 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private void storeRunAsLocalWeb(WizardDescriptor settings) {
-        settings.putProperty(URL, runAsLocalWeb.getUrl());
-        settings.putProperty(INDEX_FILE, runAsLocalWeb.getIndexFile());
+        RunConfigLocal config = runAsLocalWeb.createRunConfig();
+        settings.putProperty(URL, config.getUrl());
+        settings.putProperty(INDEX_FILE, config.getIndexRelativePath());
     }
 
     private void storeRunAsRemoteWeb(WizardDescriptor settings) {
-        settings.putProperty(URL, runAsRemoteWeb.getUrl());
-        settings.putProperty(INDEX_FILE, runAsRemoteWeb.getIndexFile());
-        settings.putProperty(REMOTE_CONNECTION, runAsRemoteWeb.getRemoteConfiguration());
-        settings.putProperty(REMOTE_DIRECTORY, RunAsValidator.sanitizeUploadDirectory(runAsRemoteWeb.getUploadDirectory(), true));
-        settings.putProperty(REMOTE_UPLOAD, runAsRemoteWeb.getUploadFiles());
+        RunConfigRemote config = runAsRemoteWeb.createRunConfig();
+        settings.putProperty(URL, config.getUrl());
+        settings.putProperty(INDEX_FILE, config.getIndexRelativePath());
+        settings.putProperty(REMOTE_CONNECTION, config.getRemoteConfiguration());
+        settings.putProperty(REMOTE_DIRECTORY, config.getSanitizedUploadDirectory());
+        settings.putProperty(REMOTE_UPLOAD, config.getUploadFilesType());
     }
 
     private void storeRunAsScript(WizardDescriptor settings) {
-        settings.putProperty(INDEX_FILE, runAsScript.getIndexFile());
+        settings.putProperty(INDEX_FILE, runAsScript.createRunConfig().getIndexRelativePath());
     }
 
     @Override
@@ -366,15 +373,15 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                     return false;
                 }
                 error = validateRunAsLocalWeb();
-                indexFile = runAsLocalWeb.getIndexFile();
+                indexFile = runAsLocalWeb.createRunConfig().getIndexRelativePath();
                 break;
             case REMOTE:
                 error = validateRunAsRemoteWeb();
-                indexFile = runAsRemoteWeb.getIndexFile();
+                indexFile = runAsRemoteWeb.createRunConfig().getIndexRelativePath();
                 break;
             case SCRIPT:
                 error = validateRunAsScript();
-                indexFile = runAsScript.getIndexFile();
+                indexFile = runAsScript.createRunConfig().getIndexRelativePath();
                 break;
             default:
                 assert false : "Unhandled RunAsType type: " + getRunAsType();
@@ -386,8 +393,8 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             return false;
         }
         // index file is just warning
-        String warning = RunAsValidator.validateIndexFile(sourcesFolderProvider.getSourcesFolder(), indexFile, null);
-        if (wizardType == wizardType.EXISTING
+        String warning = RunConfigValidator.validateIndexFile(sourcesFolderProvider.getSourcesFolder(), indexFile);
+        if (wizardType == WizardType.EXISTING
                 && warning != null) {
             descriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, warning);
         } else {
@@ -451,7 +458,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private String validateRunAsLocalWeb() {
-        String error = RunAsValidator.validateWebFields(runAsLocalWeb.getUrl(), sourcesFolderProvider.getSourcesFolder(), null, null);
+        String error = RunConfigLocalValidator.validateNewProject(runAsLocalWeb.createRunConfig());
         if (error != null) {
             return error;
         }
@@ -463,27 +470,11 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private String validateRunAsRemoteWeb() {
-        String error = RunAsValidator.validateWebFields(runAsRemoteWeb.getUrl(), sourcesFolderProvider.getSourcesFolder(), null, null);
-        if (error != null) {
-            return error;
-        }
-
-        RemoteConfiguration selected = runAsRemoteWeb.getRemoteConfiguration();
-        assert selected != null;
-        if (selected == NO_REMOTE_CONFIGURATION) {
-            return NbBundle.getMessage(RunAsRemoteWeb.class, "MSG_NoConfigurationSelected");
-        }
-
-        error = RunAsValidator.validateUploadDirectory(runAsRemoteWeb.getUploadDirectory(), true);
-        if (error != null) {
-            return error;
-        }
-
-        return null;
+        return RunConfigRemoteValidator.validateNewProject(runAsRemoteWeb.createRunConfig());
     }
 
     private String validateRunAsScript() {
-        return RunAsValidator.validateScriptFields(runAsScript.getPhpInterpreter(), sourcesFolderProvider.getSourcesFolder(), null, null, null, null);
+        return RunConfigScriptValidator.validateNewProject(runAsScript.createRunConfig());
     }
 
     private String validateServerLocation() {
@@ -508,7 +499,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             return err;
         }
         // warn about visibility of source folder
-        String url = runAsLocalWeb.getUrl();
+        String url = runAsLocalWeb.createRunConfig().getUrl();
         String warning = NbBundle.getMessage(RunConfigurationPanel.class, "MSG_TargetFolderVisible", url);
         descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, warning); // NOI18N
         return null;
@@ -530,12 +521,14 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         String indexFile = null;
         switch (getRunAsType()) {
             case LOCAL:
-                url = runAsLocalWeb.getUrl();
-                indexFile = runAsLocalWeb.getIndexFile();
+                RunConfigLocal configLocal = runAsLocalWeb.createRunConfig();
+                url = configLocal.getUrl();
+                indexFile = configLocal.getIndexRelativePath();
                 break;
             case REMOTE:
-                url = runAsRemoteWeb.getUrl();
-                indexFile = runAsRemoteWeb.getIndexFile();
+                RunConfigRemote configRemote = runAsRemoteWeb.createRunConfig();
+                url = configRemote.getUrl();
+                indexFile = configRemote.getIndexRelativePath();
                 break;
             case SCRIPT:
                 // do not validate anything
@@ -558,7 +551,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private void adjustUrl() {
-        String currentUrl = runAsLocalWeb.getUrl();
+        String currentUrl = runAsLocalWeb.createRunConfig().getUrl();
         if (defaultLocalUrl == null) {
             defaultLocalUrl = currentUrl;
         }
@@ -656,12 +649,12 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private void adjustUploadDirectory(String originalProjectName, String newProjectName) {
-        String uploadDirectory = runAsRemoteWeb.getUploadDirectory();
-        if (!uploadDirectory.equals("/" + originalProjectName)) { // NOI18N
+        String uploadDirectory = runAsRemoteWeb.createRunConfig().getUploadDirectory();
+        if (!uploadDirectory.equals(TransferFile.REMOTE_PATH_SEPARATOR + originalProjectName)) {
             // already disconnected
             return;
         }
-        runAsRemoteWeb.setUploadDirectory("/" + newProjectName); // NOI18N
+        runAsRemoteWeb.setUploadDirectory(TransferFile.REMOTE_PATH_SEPARATOR + newProjectName);
     }
 
     private void adjustCopyFiles(String originalProjectName, String projectName) {

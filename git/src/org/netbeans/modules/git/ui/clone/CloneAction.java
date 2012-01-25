@@ -58,17 +58,17 @@ import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate.Type;
-import org.netbeans.libs.git.utils.GitURI;
-import org.netbeans.libs.git.utils.Utils;
+import org.netbeans.libs.git.GitURI;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.output.OutputLogger;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.ProjectUtilities;
 import org.openide.awt.ActionID;
@@ -151,7 +151,7 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
             List<? extends GitBranch> branches = wiz.getBranches();
             final List<String> refSpecs = new ArrayList<String>(branches.size());
             for (GitBranch branch : branches) {
-                refSpecs.add(Utils.getRefSpec(branch, remoteName));
+                refSpecs.add(GitUtils.getRefSpec(branch, remoteName));
             }
             final GitBranch branch = wiz.getBranch();
             final boolean scan = wiz.scanForProjects();
@@ -161,18 +161,18 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                 protected void perform () {
                     try {
                         GitClient client = getClient();
-                        client.init(this);
-                        Map<String, GitTransportUpdate> updates = client.fetch(remoteUri.toPrivateString(), refSpecs, this);
+                        client.init(getProgressMonitor());
+                        Map<String, GitTransportUpdate> updates = client.fetch(remoteUri.toPrivateString(), refSpecs, getProgressMonitor());
                         log(updates);
                         
                         if(isCanceled()) {
                             return;
                         }
 
-                        client.setRemote(new CloneRemoteConfig(remoteName, remoteUri, refSpecs), this);
-                        
-                        client.createBranch(branch.getName(), remoteName + "/" + branch.getName(), this);
-                        client.checkoutRevision(branch.getName(), true, this);
+                        client.setRemote(new CloneRemoteConfig(remoteName, remoteUri, refSpecs).toGitRemote(), getProgressMonitor());
+                        org.netbeans.modules.versioning.util.Utils.logVCSExternalRepository("GIT", remoteUri.toString()); //NOI18N
+                        client.createBranch(branch.getName(), remoteName + "/" + branch.getName(), getProgressMonitor());
+                        client.checkoutRevision(branch.getName(), true, getProgressMonitor());
 
                         Git.getInstance().getFileStatusCache().refreshAllRoots(destination);
                         Git.getInstance().versionedFilesChanged();                       
@@ -219,7 +219,9 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
         checkedOutProjects.put(null, new HashSet<Project>()); // initialize root project container
         File normalizedWorkingFolder = FileUtil.normalizeFile(workingFolder);
         FileObject fo = FileUtil.toFileObject(normalizedWorkingFolder);
-        if (fo != null) {
+        if (fo == null || !fo.isFolder()) {
+            return;
+        } else {
             ProjectUtilities.scanForProjects(fo, checkedOutProjects);
         }
         if (support != null && support.isCanceled()) {
@@ -229,7 +231,7 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
         ProjectUtilities.openClonedOutProjects(checkedOutProjects, workingFolder);
     }    
     
-    private static class CloneRemoteConfig implements GitRemoteConfig {
+    private static class CloneRemoteConfig {
         private String remoteName;
         private GitURI remoteUri;
         private List<String> refSpecs;
@@ -238,25 +240,24 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
             this.remoteUri = remoteUri;
             this.refSpecs = refSpecs;
         }
-        @Override
         public String getRemoteName() {
             return remoteName;
         }
-        @Override
         public List<String> getUris() {
             return Arrays.asList(remoteUri.toPrivateString());
         }
-        @Override
         public List<String> getPushUris() {
             return Collections.emptyList();
         }
-        @Override
         public List<String> getFetchRefSpecs() {
             return refSpecs;
         }
-        @Override
         public List<String> getPushRefSpecs() {
             return Collections.emptyList();
+        }
+
+        private GitRemoteConfig toGitRemote () {
+            return new GitRemoteConfig(remoteName, getUris(), getPushUris(), getFetchRefSpecs(), getPushRefSpecs());
         }
     }    
 }

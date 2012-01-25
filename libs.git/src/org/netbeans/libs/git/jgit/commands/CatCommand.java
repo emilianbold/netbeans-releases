@@ -45,6 +45,7 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.text.MessageFormat;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.errors.MissingObjectException;
@@ -55,9 +56,9 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -73,8 +74,8 @@ public class CatCommand extends GitCommand {
     private final boolean fromRevision;
     private final int stage;
 
-    public CatCommand (Repository repository, File file, String revision, OutputStream out, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public CatCommand (Repository repository, GitClassFactory gitFactory, File file, String revision, OutputStream out, ProgressMonitor monitor) {
+        super(repository, gitFactory, monitor);
         this.file = file;
         this.revision = revision;
         this.os = out;
@@ -83,8 +84,8 @@ public class CatCommand extends GitCommand {
         this.stage = 0;
     }
 
-    public CatCommand (Repository repository, File file, int stage, OutputStream out, ProgressMonitor monitor) {
-        super(repository, monitor);
+    public CatCommand (Repository repository, GitClassFactory gitFactory, File file, int stage, OutputStream out, ProgressMonitor monitor) {
+        super(repository, gitFactory, monitor);
         this.file = file;
         this.revision = null;
         this.os = out;
@@ -99,7 +100,7 @@ public class CatCommand extends GitCommand {
         if (retval) {
             relativePath = Utils.getRelativePath(getRepository().getWorkTree(), file);
             if (relativePath.isEmpty()) {
-                String message = NbBundle.getMessage(CatCommand.class, "MSG_Error_CannotCatRoot", file); //NOI18N
+                String message = MessageFormat.format(Utils.getBundle(CatCommand.class).getString("MSG_Error_CannotCatRoot"), file); //NOI18N
                 monitor.preparationsFailed(message);
                 throw new GitException(message);
             }

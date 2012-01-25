@@ -92,14 +92,14 @@ public class PullTest extends AbstractGitTestCase {
         
         otherWT = new File(workDir.getParentFile(), "repo2");
         GitClient client = getClient(otherWT);
-        client.init(ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.init(NULL_PROGRESS_MONITOR);
         f = new File(otherWT, "f");
         write(f, "init");
         f2 = new File(otherWT, "f2");
         write(f2, "init");
-        client.add(new File[] { f, f2 }, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        masterInfo = client.commit(new File[] { f, f2 }, "init commit", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        branch = client.createBranch(BRANCH_NAME, Constants.MASTER, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(new File[] { f, f2 }, NULL_PROGRESS_MONITOR);
+        masterInfo = client.commit(new File[] { f, f2 }, "init commit", null, null, NULL_PROGRESS_MONITOR);
+        branch = client.createBranch(BRANCH_NAME, Constants.MASTER, NULL_PROGRESS_MONITOR);
         RemoteConfig cfg = new RemoteConfig(repository.getConfig(), "origin");
         cfg.addURI(new URIish(otherWT.toURI().toURL().toString()));
         cfg.update(repository.getConfig());
@@ -109,7 +109,7 @@ public class PullTest extends AbstractGitTestCase {
     public void testPullNotExistingBranch () throws Exception {
         GitClient client = getClient(workDir);
         try {
-            GitPullResult result = client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/idontexistbranch", ProgressMonitor.NULL_PROGRESS_MONITOR);
+            GitPullResult result = client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/idontexistbranch", NULL_PROGRESS_MONITOR);
             fail("Must fail");
         } catch (GitException.MissingObjectException ex) {
             // OK
@@ -121,11 +121,11 @@ public class PullTest extends AbstractGitTestCase {
         File f = new File(workDir, "local");
         write(f, "aaa");
         add(f);
-        Map<String, GitBranch> branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<String, GitBranch> branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(0, branches.size());
         assertTrue(f.exists());
-        GitPullResult result = client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
-        branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitPullResult result = client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", NULL_PROGRESS_MONITOR);
+        branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(3, branches.size());
         assertTrue(branches.get("origin/master").isRemote());
         assertTrue(branches.get("origin/" + BRANCH_NAME).isRemote());
@@ -147,19 +147,19 @@ public class PullTest extends AbstractGitTestCase {
 
     public void testPullIntoDetached () throws Exception {
         GitClient client = getClient(workDir);
-        client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", NULL_PROGRESS_MONITOR);
         File f = new File(workDir, this.f.getName());
         write(f, "blabla");
         add(f);
         commit(f);
-        client.checkoutRevision("origin/master", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        Map<String, GitBranch> branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.checkoutRevision("origin/master", true, NULL_PROGRESS_MONITOR);
+        Map<String, GitBranch> branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertTrue(branches.get(GitBranch.NO_BRANCH).isActive());
         
         String commitId = makeRemoteChange("master");
         
-        GitPullResult result = client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
-        branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitPullResult result = client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", NULL_PROGRESS_MONITOR);
+        branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertEquals(4, branches.size());
         assertTrue(branches.get("origin/master").isRemote());
         assertEquals(commitId, branches.get("origin/master").getId());
@@ -175,13 +175,13 @@ public class PullTest extends AbstractGitTestCase {
 
     public void testPullChangesInSameBranch () throws Exception {
         GitClient client = getClient(workDir);
-        client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
-        Map<String, GitBranch> branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", NULL_PROGRESS_MONITOR);
+        Map<String, GitBranch> branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         
         String commitId = makeRemoteChange("master");
         
-        GitPullResult result = client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
-        branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitPullResult result = client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", NULL_PROGRESS_MONITOR);
+        branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertTrue(branches.get("master").isActive());
         assertEquals(commitId, branches.get("origin/master").getId());
         assertEquals(commitId, branches.get("master").getId());
@@ -194,18 +194,18 @@ public class PullTest extends AbstractGitTestCase {
 
     public void testPullChangesInSameBranchPlusMerge () throws Exception {
         GitClient client = getClient(workDir);
-        client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", NULL_PROGRESS_MONITOR);
         File f = new File(workDir, this.f.getName());
         File f2 = new File(workDir, "f2");
         write(f2, "hi, i am new");
         add(f2);
-        String localCommitId = client.commit(new File[] { f2 }, "local change", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
-        Map<String, GitBranch> branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        String localCommitId = client.commit(new File[] { f2 }, "local change", null, null, NULL_PROGRESS_MONITOR).getRevision();
+        Map<String, GitBranch> branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         
         String commitId = makeRemoteChange("master");
         
-        GitPullResult result = client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
-        branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitPullResult result = client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", NULL_PROGRESS_MONITOR);
+        branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertTrue(branches.get("master").isActive());
         assertEquals(commitId, branches.get("origin/master").getId());
         assertFalse(commitId.equals(branches.get("master").getId()));
@@ -220,17 +220,17 @@ public class PullTest extends AbstractGitTestCase {
 
     public void testPullChangesMergeConflict () throws Exception {
         GitClient client = getClient(workDir);
-        client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", NULL_PROGRESS_MONITOR);
         File f = new File(workDir, this.f.getName());
         write(f, "hi, i am new");
         add(f);
-        client.commit(new File[] { f }, "local change", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
-        Map<String, GitBranch> branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { f }, "local change", null, null, NULL_PROGRESS_MONITOR).getRevision();
+        Map<String, GitBranch> branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         
         String commitId = makeRemoteChange("master");
         
-        GitPullResult result = client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
-        branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitPullResult result = client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", NULL_PROGRESS_MONITOR);
+        branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertTrue(branches.get("master").isActive());
         assertEquals(commitId, branches.get("origin/master").getId());
         assertFalse(commitId.equals(branches.get("master").getId()));
@@ -244,18 +244,18 @@ public class PullTest extends AbstractGitTestCase {
 
     public void testPullChangesInOtherBranchPlusMerge () throws Exception {
         GitClient client = getClient(workDir);
-        client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", NULL_PROGRESS_MONITOR);
         File f = new File(workDir, this.f.getName());
         File f2 = new File(workDir, "f2");
         write(f2, "hi, i am new");
         add(f2);
-        String localCommitId = client.commit(new File[] { f2 }, "local change", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
-        Map<String, GitBranch> branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        String localCommitId = client.commit(new File[] { f2 }, "local change", null, null, NULL_PROGRESS_MONITOR).getRevision();
+        Map<String, GitBranch> branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         
         String commitId = makeRemoteChange(BRANCH_NAME);
         
-        GitPullResult result = client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/" + BRANCH_NAME, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitPullResult result = client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/" + BRANCH_NAME, NULL_PROGRESS_MONITOR);
+        branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         assertTrue(branches.get("master").isActive());
         assertEquals(commitId, branches.get("origin/" + BRANCH_NAME).getId());
         assertFalse(commitId.equals(branches.get("master").getId()));
@@ -271,44 +271,44 @@ public class PullTest extends AbstractGitTestCase {
 
     public void testPullFailOnLocalChanges () throws Exception {
         GitClient client = getClient(workDir);
-        client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", NULL_PROGRESS_MONITOR);
         File f = new File(workDir, this.f.getName());
         write(f, "local change");
         add(f);
-        Map<String, GitBranch> branches = client.getBranches(true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<String, GitBranch> branches = client.getBranches(true, NULL_PROGRESS_MONITOR);
         
         makeRemoteChange("master");
         try {
-            GitPullResult result = client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
+            GitPullResult result = client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", NULL_PROGRESS_MONITOR);
             fail("Should fail");
         } catch (GitException.CheckoutConflictException ex) {
             // OK
         }
-        client.reset("master", GitClient.ResetType.HARD, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.reset("master", GitClient.ResetType.HARD, NULL_PROGRESS_MONITOR);
         File f2 = new File(workDir, "f2");
         write(f2, "hi, i am new");
         add(f2);
-        GitPullResult result = client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitPullResult result = client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", NULL_PROGRESS_MONITOR);
         assertEquals(MergeStatus.FAST_FORWARD, result.getMergeResult().getMergeStatus());
-        assertStatus(client.getStatus(new File[] { f2 }, ProgressMonitor.NULL_PROGRESS_MONITOR), workDir, f2, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false);
+        assertStatus(client.getStatus(new File[] { f2 }, NULL_PROGRESS_MONITOR), workDir, f2, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false);
     }
 
     public void testPullCommitMessages () throws Exception {
         GitClient client = getClient(workDir);
-        client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", NULL_PROGRESS_MONITOR);
         File f = new File(workDir, "localFile");
         
         makeLocalChange(f, "1");
         makeRemoteChange("master");
-        GitPullResult result = client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitPullResult result = client.pull(otherWT.toURI().toString(), Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", NULL_PROGRESS_MONITOR);
         assertEquals(GitMergeResult.MergeStatus.MERGED, result.getMergeResult().getMergeStatus());
-        assertEquals("Merge branch 'master' of " + new URIish(otherWT.toURI().toString()).toString(), client.log(result.getMergeResult().getNewHead(), ProgressMonitor.NULL_PROGRESS_MONITOR).getFullMessage());
+        assertEquals("Merge branch 'master' of " + new URIish(otherWT.toURI().toString()).toString(), client.log(result.getMergeResult().getNewHead(), NULL_PROGRESS_MONITOR).getFullMessage());
         
         makeLocalChange(f, "2");
         makeRemoteChange("master", "2");
-        result = client.pull("origin", Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        result = client.pull("origin", Arrays.asList(new String[] { "+refs/heads/*:refs/remotes/origin/*" }), "origin/master", NULL_PROGRESS_MONITOR);
         assertEquals(GitMergeResult.MergeStatus.MERGED, result.getMergeResult().getMergeStatus());
-        assertEquals("Merge branch 'master' of " + new URIish(otherWT.toURI().toString()).toString(), client.log(result.getMergeResult().getNewHead(), ProgressMonitor.NULL_PROGRESS_MONITOR).getFullMessage());
+        assertEquals("Merge branch 'master' of " + new URIish(otherWT.toURI().toString()).toString(), client.log(result.getMergeResult().getNewHead(), NULL_PROGRESS_MONITOR).getFullMessage());
     }
 
     private void setupRemoteSpec (String remote, String fetchSpec) throws URISyntaxException, IOException {
@@ -334,18 +334,18 @@ public class PullTest extends AbstractGitTestCase {
     
     private String makeRemoteChange (String branch, String content) throws Exception {
         GitClient client = getClient(otherWT);
-        client.checkoutRevision(branch, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.checkoutRevision(branch, true, NULL_PROGRESS_MONITOR);
         write(f, content);
         File[] roots = new File[] { f };
-        client.add(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        return client.commit(roots, "remote change", null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
+        client.add(roots, NULL_PROGRESS_MONITOR);
+        return client.commit(roots, "remote change", null, null, NULL_PROGRESS_MONITOR).getRevision();
     }
 
     private String makeLocalChange (File f, String content) throws Exception {
         GitClient client = getClient(workDir);
         write(f, content);
         File[] roots = new File[] { f };
-        client.add(roots, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        return client.commit(roots, "local change: " + content, null, null, ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
+        client.add(roots, NULL_PROGRESS_MONITOR);
+        return client.commit(roots, "local change: " + content, null, null, NULL_PROGRESS_MONITOR).getRevision();
     }
 }

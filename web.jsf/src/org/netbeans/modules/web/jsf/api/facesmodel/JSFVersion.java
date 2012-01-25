@@ -49,5 +49,9 @@ package org.netbeans.modules.web.jsf.api.facesmodel;
  * @author Petr Pisl, ads
  */
 public enum JSFVersion {
-    JSF_1_0, JSF_1_1, JSF_1_2, JSF_2_0;
+    JSF_1_0,
+    JSF_1_1,
+    JSF_1_2,
+    JSF_2_0,
+    JSF_2_1;
 }

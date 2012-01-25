@@ -44,16 +44,19 @@ package org.netbeans.modules.maven;
 
 import java.nio.charset.Charset;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import org.apache.maven.model.License;
 import org.apache.maven.model.Organization;
+import org.apache.maven.project.MavenProject;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.spi.project.AuxiliaryProperties;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -65,19 +68,22 @@ import org.openide.loaders.DataObject;
  *
  * @author mkleint
  */
+@ProjectServiceProvider(service=CreateFromTemplateAttributesProvider.class, projectType="org-netbeans-modules-maven")
 public class TemplateAttrProvider implements CreateFromTemplateAttributesProvider {
-    private final NbMavenProjectImpl project;
+
+    private final Project project;
     
-    TemplateAttrProvider(NbMavenProjectImpl prj) {
+    public TemplateAttrProvider(Project prj) {
         project = prj;
     }
     
     public @Override Map<String,?> attributesFor(DataObject template, DataFolder target, String name) {
         Map<String,String> values = new TreeMap<String,String>();
         String license = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_LICENSE, true); //NOI18N
+        MavenProject mp = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
         if (license == null) {
             // try to match the project's license URL and the mavenLicenseURL attribute of license template
-            List<License> lst = project.getOriginalMavenProject().getLicenses();
+            List<License> lst = mp.getLicenses();
             if (!lst.isEmpty()) {
                 String url = lst.get(0).getUrl();
                 FileObject licenses = FileUtil.getConfigFile("Templates/Licenses"); //NOI18N
@@ -96,7 +102,7 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
             values.put("license", license); // NOI18N
         }
 
-        Organization organization = project.getOriginalMavenProject().getOrganization();
+        Organization organization = mp.getOrganization();
         if (organization != null) {
             String organizationName = organization.getName();
             if (organizationName != null) {

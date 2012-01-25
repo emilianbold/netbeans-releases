@@ -44,6 +44,8 @@ package org.netbeans.modules.php.editor.nav;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -82,6 +84,7 @@ import org.openide.filesystems.FileUtil;
  * @author Radek Matous
  */
 public class DeclarationFinderImpl implements DeclarationFinder {
+
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
         return findDeclarationImpl(info, caretOffset);
@@ -94,111 +97,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
     }
 
     public static OffsetRange getReferenceSpan(TokenSequence<PHPTokenId> ts, final int caretOffset) {
-        if (ts == null) {
-            return OffsetRange.NONE;
-        }
-        ts.move(caretOffset);
-        int startTSOffset = 0;
-        if (ts.moveNext()) {
-            startTSOffset = ts.offset();
-            Token<PHPTokenId> token = ts.token();
-            PHPTokenId id = token.id();
-            if (id.equals(PHPTokenId.PHP_STRING) || id.equals(PHPTokenId.PHP_VARIABLE)) {
-                return new OffsetRange(ts.offset(), ts.offset() + token.length());
-            }
-            if (id.equals(PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING)) {
-                OffsetRange retval = new OffsetRange(ts.offset(), ts.offset() + token.length());
-                for (int i = 0; i < 2 && ts.movePrevious(); i++) {
-                    token = ts.token();
-                    id = token.id();
-                    if (id.equals(PHPTokenId.PHP_INCLUDE) || id.equals(PHPTokenId.PHP_INCLUDE_ONCE) || id.equals(PHPTokenId.PHP_REQUIRE) || id.equals(PHPTokenId.PHP_REQUIRE_ONCE)) {
-                        return retval;
-                    } if (id.equals(PHPTokenId.PHP_STRING) && token.text().toString().equalsIgnoreCase("define")) {//NOI18N
-                        return retval;
-                    }
-                }
-            } else if (id.equals(PHPTokenId.PHPDOC_COMMENT)) {
-                PHPDocCommentParser docParser = new PHPDocCommentParser();
-                PHPDocBlock docBlock = docParser.parse(ts.offset()-3, ts.offset() + token.length()-3, token.toString());
-                ASTNode[] hierarchy = Utils.getNodeHierarchyAtOffset(docBlock, caretOffset);
-                PhpDocTypeTagInfo node = null;
-                PHPDocTypeTag typeTag = null;
-                if (hierarchy != null && hierarchy.length > 0) {
-                    if (hierarchy[0] instanceof PHPDocTypeTag) {
-                        typeTag = (PHPDocTypeTag) hierarchy[0];
-                        if (typeTag.getStartOffset() < caretOffset && caretOffset < typeTag.getEndOffset()) {
-                            List<? extends PhpDocTypeTagInfo> tagInfos = PhpDocTypeTagInfo.create(typeTag, Kind.CLASS);
-                            for (PhpDocTypeTagInfo typeTagInfo : tagInfos) {
-                                if (typeTagInfo.getKind().equals(Kind.CLASS)
-                                        && typeTagInfo.getRange().containsInclusive(caretOffset)) {
-                                    node = typeTagInfo;
-                                    break;
-                                }
-                            }
-                            if (node == null || !node.getRange().containsInclusive(caretOffset)) {
-                                tagInfos = PhpDocTypeTagInfo.create(typeTag, Kind.VARIABLE);
-                                for (PhpDocTypeTagInfo typeTagInfo : tagInfos) {
-                                    if (typeTagInfo.getKind().equals(Kind.VARIABLE)) {
-                                        node = typeTagInfo;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (node != null) {
-                                return node.getRange().containsInclusive(caretOffset) ? node.getRange() : OffsetRange.NONE;
-                            }
-                        }
-                    } else {
-                        List<PHPDocTag> tags = docBlock.getTags();
-                        for (PHPDocTag phpDocTag : tags) {
-                            if (phpDocTag instanceof PHPDocMethodTag) {
-                                PHPDocMethodTag methodTag = (PHPDocMethodTag) phpDocTag;
-                                MagicMethodDeclarationInfo methodInfo = MagicMethodDeclarationInfo.create(methodTag);
-                                if (methodInfo != null) {
-                                    if (methodInfo.getRange().containsInclusive(caretOffset)) {
-                                        return methodInfo.getRange();
-                                    } else if (methodInfo.getTypeRange().containsInclusive(caretOffset)) {
-                                        return methodInfo.getTypeRange();
-                                    }
-                                }
-                            }
-                        }
-
-                    }
-                }
-            } else if (id.equals(PHPTokenId.PHP_COMMENT) && token.text() != null) {
-                String text = token.text().toString();
-                final String dollaredVar = "@var";
-                if (text.contains(dollaredVar)) {
-                    String[] segments = text.split("\\s");
-                    for (int i = 0; i < segments.length; i++) {
-                        String seg = segments[i];
-                        if (seg.equals(dollaredVar) && segments.length > i+2) {
-                            for (int j = 1; j <= 2 ; j++) {
-                                seg = segments[i + j];
-                                if (seg != null && seg.trim().length() > 0) {
-                                    int indexOf = text.indexOf(seg);
-                                    assert indexOf != -1;
-                                    indexOf += ts.offset();
-                                    OffsetRange range = new OffsetRange(indexOf, indexOf + seg.length());
-                                    if (range.containsInclusive(caretOffset)) {
-                                        return range;
-                                    }
-                                }
-                            }
-                            return OffsetRange.NONE;
-                        }
-                    }
-                }
-
-            }
-        }
-        if (caretOffset == startTSOffset) {
-            // if there is not a refence, and the curet is just beetween two tokens,
-            // try the previous token. See issue #199329
-            return getReferenceSpan(ts, caretOffset - 1);
-        }
-        return OffsetRange.NONE;
+        return new ReferenceSpanFinder().getReferenceSpan(ts, caretOffset);
     }
 
     public static DeclarationLocation findDeclarationImpl(ParserResult info, int caretOffset) {
@@ -250,6 +149,140 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             }
         }
         return location;
+    }
+
+    private static class ReferenceSpanFinder {
+
+        private static final int RECURSION_LIMIT = 100;
+        private int recursionCounter = 0;
+        private static final Logger LOGGER = Logger.getLogger(DeclarationFinderImpl.class.getName());
+
+        public OffsetRange getReferenceSpan(TokenSequence<PHPTokenId> ts, final int caretOffset) {
+            if (ts == null) {
+                return OffsetRange.NONE;
+            }
+            ts.move(caretOffset);
+            int startTSOffset = 0;
+            if (ts.moveNext()) {
+                startTSOffset = ts.offset();
+                Token<PHPTokenId> token = ts.token();
+                PHPTokenId id = token.id();
+                if (id.equals(PHPTokenId.PHP_STRING) || id.equals(PHPTokenId.PHP_VARIABLE)) {
+                    return new OffsetRange(ts.offset(), ts.offset() + token.length());
+                }
+                if (id.equals(PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING)) {
+                    OffsetRange retval = new OffsetRange(ts.offset(), ts.offset() + token.length());
+                    for (int i = 0; i < 2 && ts.movePrevious(); i++) {
+                        token = ts.token();
+                        id = token.id();
+                        if (id.equals(PHPTokenId.PHP_INCLUDE) || id.equals(PHPTokenId.PHP_INCLUDE_ONCE) || id.equals(PHPTokenId.PHP_REQUIRE) || id.equals(PHPTokenId.PHP_REQUIRE_ONCE)) {
+                            return retval;
+                        } if (id.equals(PHPTokenId.PHP_STRING) && token.text().toString().equalsIgnoreCase("define")) {//NOI18N
+                            return retval;
+                        }
+                    }
+                } else if (id.equals(PHPTokenId.PHPDOC_COMMENT)) {
+                    PHPDocCommentParser docParser = new PHPDocCommentParser();
+                    PHPDocBlock docBlock = docParser.parse(ts.offset()-3, ts.offset() + token.length()-3, token.toString());
+                    ASTNode[] hierarchy = Utils.getNodeHierarchyAtOffset(docBlock, caretOffset);
+                    PhpDocTypeTagInfo node = null;
+                    PHPDocTypeTag typeTag = null;
+                    if (hierarchy != null && hierarchy.length > 0) {
+                        if (hierarchy[0] instanceof PHPDocTypeTag) {
+                            typeTag = (PHPDocTypeTag) hierarchy[0];
+                            if (typeTag.getStartOffset() < caretOffset && caretOffset < typeTag.getEndOffset()) {
+                                List<? extends PhpDocTypeTagInfo> tagInfos = PhpDocTypeTagInfo.create(typeTag, Kind.CLASS);
+                                for (PhpDocTypeTagInfo typeTagInfo : tagInfos) {
+                                    if (typeTagInfo.getKind().equals(Kind.CLASS)
+                                            && typeTagInfo.getRange().containsInclusive(caretOffset)) {
+                                        node = typeTagInfo;
+                                        break;
+                                    }
+                                }
+                                if (node == null || !node.getRange().containsInclusive(caretOffset)) {
+                                    tagInfos = PhpDocTypeTagInfo.create(typeTag, Kind.VARIABLE);
+                                    for (PhpDocTypeTagInfo typeTagInfo : tagInfos) {
+                                        if (typeTagInfo.getKind().equals(Kind.VARIABLE)) {
+                                            node = typeTagInfo;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (node != null) {
+                                    return node.getRange().containsInclusive(caretOffset) ? node.getRange() : OffsetRange.NONE;
+                                }
+                            }
+                        } else {
+                            List<PHPDocTag> tags = docBlock.getTags();
+                            for (PHPDocTag phpDocTag : tags) {
+                                if (phpDocTag instanceof PHPDocMethodTag) {
+                                    PHPDocMethodTag methodTag = (PHPDocMethodTag) phpDocTag;
+                                    MagicMethodDeclarationInfo methodInfo = MagicMethodDeclarationInfo.create(methodTag);
+                                    if (methodInfo != null) {
+                                        if (methodInfo.getRange().containsInclusive(caretOffset)) {
+                                            return methodInfo.getRange();
+                                        } else if (methodInfo.getTypeRange().containsInclusive(caretOffset)) {
+                                            return methodInfo.getTypeRange();
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                } else if (id.equals(PHPTokenId.PHP_COMMENT) && token.text() != null) {
+                    String text = token.text().toString();
+                    final String dollaredVar = "@var";
+                    if (text.contains(dollaredVar)) {
+                        String[] segments = text.split("\\s");
+                        for (int i = 0; i < segments.length; i++) {
+                            String seg = segments[i];
+                            if (seg.equals(dollaredVar) && segments.length > i+2) {
+                                for (int j = 1; j <= 2 ; j++) {
+                                    seg = segments[i + j];
+                                    if (seg != null && seg.trim().length() > 0) {
+                                        int indexOf = text.indexOf(seg);
+                                        assert indexOf != -1;
+                                        indexOf += ts.offset();
+                                        OffsetRange range = new OffsetRange(indexOf, indexOf + seg.length());
+                                        if (range.containsInclusive(caretOffset)) {
+                                            return range;
+                                        }
+                                    }
+                                }
+                                return OffsetRange.NONE;
+                            }
+                        }
+                    }
+
+                }
+            }
+            if (caretOffset == startTSOffset) {
+                if (recursionCounter < RECURSION_LIMIT) {
+                    recursionCounter++;
+                    // if there is not a refence, and the curet is just beetween two tokens,
+                    // try the previous token. See issue #199329
+                    return getReferenceSpan(ts, caretOffset - 1);
+                } else {
+                    logRecursion(ts);
+                }
+            }
+            return OffsetRange.NONE;
+        }
+
+        private void logRecursion(TokenSequence<PHPTokenId> ts) {
+            CharSequence tokenText = null;
+            if (ts != null) {
+                Token<PHPTokenId> token = ts.token();
+                if (token != null) {
+                    tokenText = token.text();
+                } else {
+                    tokenText = "Possibly between tokens"; //NOI18N
+                }
+            }
+            LOGGER.log(Level.WARNING, "Stack overflow detection - limit: {0}, token: {1}", new Object[]{RECURSION_LIMIT, tokenText});
+        }
+
     }
 
     public static class AlternativeLocationImpl implements AlternativeLocation {

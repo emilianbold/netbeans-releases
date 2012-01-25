@@ -56,14 +56,17 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author mkleint
  */
+@ProjectServiceProvider(service=LineConvertors.FileLocator.class, projectType="org-netbeans-modules-maven")
 public class MavenFileLocator implements LineConvertors.FileLocator {
 
     private ClassPath classpath;
@@ -97,7 +100,7 @@ public class MavenFileLocator implements LineConvertors.FileLocator {
 
     private ClassPath getProjectClasspath(Project p) {
         ClassPath result = null;
-        ClassPathProviderImpl cpp = p.getLookup().lookup(ClassPathProviderImpl.class);
+        ClassPathProvider cpp = p.getLookup().lookup(ClassPathProvider.class);
         Set<FileObject> roots = new HashSet<FileObject>();
         Sources sources = ProjectUtils.getSources(p);
         if (sources != null) {
@@ -125,7 +128,7 @@ public class MavenFileLocator implements LineConvertors.FileLocator {
                 }
             }
         }
-        JavaPlatform platform = cpp.getJavaPlatform();
+        JavaPlatform platform = p.getLookup().lookup(ActiveJ2SEPlatformProvider.class).getJavaPlatform();
 
         if (platform != null) {
             roots.addAll(Arrays.asList(platform.getSourceFolders().getRoots()));

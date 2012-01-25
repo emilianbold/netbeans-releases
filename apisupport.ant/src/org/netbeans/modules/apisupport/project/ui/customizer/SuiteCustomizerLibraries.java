@@ -330,8 +330,12 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
 
     private void refreshModules() {
+        NbPlatform plaf = getProperties().getActivePlatform();
+        if (plaf == null) {
+            return;
+        }
         // create platform modules children first
-        platformModules = getProperties().getActivePlatform().getSortedModules();
+        platformModules = plaf.getSortedModules();
         initNodes();
         Set<String> disabledModuleCNB = new HashSet<String>(Arrays.asList(getProperties().getDisabledModules()));
         Set<String> enabledClusters = new HashSet<String>(Arrays.asList(getProperties().getEnabledClusters()));
@@ -794,7 +798,6 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         DISABLED_PLATFORM_MODULES.add("org.openide.io"); // NOI18N
         DISABLED_PLATFORM_MODULES.add("org.netbeans.core.output2"); // NOI18N
          */
-        DISABLED_PLATFORM_MODULES.add("org.netbeans.core.multiview"); // NOI18N
         // this one is useful only for writers of apps showing local disk
         DISABLED_PLATFORM_MODULES.add("org.netbeans.modules.favorites"); // NOI18N
         // And these are deprecated:

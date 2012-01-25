@@ -53,6 +53,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
@@ -60,6 +61,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.spi.actions.ActionConvertor;
 import org.netbeans.modules.maven.spi.actions.ReplaceTokenProvider;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -72,6 +74,7 @@ import org.openide.util.Lookup;
  *
  * @author mkleint
  */
+@ProjectServiceProvider(service={ReplaceTokenProvider.class, ActionConvertor.class}, projectType="org-netbeans-modules-maven")
 public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, ActionConvertor {
     private static final String ARTIFACTID = "artifactId";//NOI18N
     private static final String CLASSPATHSCOPE = "classPathScope";//NOI18N
@@ -107,7 +110,7 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
         return files.toArray(new FileObject[files.size()]);
     }
 
-    public Map<String, String> createReplacements(String actionName, Lookup lookup) {
+    @Override public Map<String, String> createReplacements(String actionName, Lookup lookup) {
         FileObject[] fos = extractFileObjectsfromLookup(lookup);
         Tuple tuple = new Tuple(null, null);
         FileObject fo = null;
@@ -122,15 +125,9 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
 
         if (fos.length > 0) {
             fo = fos[0];
-            Sources srcs = project.getLookup().lookup(Sources.class);
+            Sources srcs = ProjectUtils.getSources(project);
             if ("text/x-java".equals(fo.getMIMEType())) {//NOI18N
                 tuple = checkSG(srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA), replaceMap, fo);
-            }
-            if ("text/x-groovy".equals(fo.getMIMEType())) {//NOI18N
-                tuple = checkSG(srcs.getSourceGroups(MavenSourcesImpl.TYPE_GROOVY), replaceMap, fo);
-            }
-            if ("text/x-scala".equals(fo.getMIMEType())) {//NOI18N
-                tuple = checkSG(srcs.getSourceGroups(MavenSourcesImpl.TYPE_SCALA), replaceMap, fo);
             }
             if (tuple.relPath == null) {
                 replaceMap.put(CLASSNAME_EXT, "");//NOI18N
@@ -149,10 +146,7 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
 
         if (tuple.group != null &&
                 //TODO not nice, how to figure in a better way? by source classpath?
-                (MavenSourcesImpl.NAME_TESTSOURCE.equals(tuple.group.getName()) ||
-                 MavenSourcesImpl.NAME_GROOVYTESTSOURCE.equals(tuple.group.getName()) ||
-                 MavenSourcesImpl.NAME_SCALATESTSOURCE.equals(tuple.group.getName())
-                )) {
+                (MavenSourcesImpl.NAME_TESTSOURCE.equals(tuple.group.getName()))) {
             replaceMap.put(CLASSPATHSCOPE,"test"); //NOI18N
         } else {
             replaceMap.put(CLASSPATHSCOPE,"runtime"); //NOI18N
@@ -194,7 +188,7 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
     private static class Tuple {
         final String relPath;
         final SourceGroup group;
-        public Tuple(String path, SourceGroup sg) {
+        Tuple(String path, SourceGroup sg) {
             relPath = path;
             group = sg;
         }
@@ -250,7 +244,7 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
 //                new FileObject[files.size()]);
 //    }
 
-    public String convert(String action, Lookup lookup) {
+    @Override public String convert(String action, Lookup lookup) {
         if (SingleMethod.COMMAND_DEBUG_SINGLE_METHOD.equals(action)) {
             return ActionProvider.COMMAND_DEBUG_TEST_SINGLE;
         }
@@ -263,29 +257,16 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
             if (fos.length > 0) {
                 FileObject fo = fos[0];
                 if ("text/x-java".equals(fo.getMIMEType())) {//NOI18N
-                    Sources srcs = project.getLookup().lookup(Sources.class);
+                    Sources srcs = ProjectUtils.getSources(project);
                     SourceGroup[] grp = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                     for (int i = 0; i < grp.length; i++) {
                         String relPath = FileUtil.getRelativePath(grp[i].getRootFolder(), fo);
                         if (relPath != null) {
-                            if (!SourceUtils.isScanInProgress()) {
-                                if (SourceUtils.isMainClass(relPath.replaceFirst("[.]java$", "").replace('/', '.'), ClasspathInfo.create(fo), true)) {
-                                    return action + ".main";//NOI18N
-                                }
+                            if (SourceUtils.isMainClass(relPath.replaceFirst("[.]java$", "").replace('/', '.'), ClasspathInfo.create(fo), true)) {
+                                return action + ".main";//NOI18N
                             }
                         }
                     }
-                }
-                if ("text/x-groovy".equals(fo.getMIMEType())) {
-                    //TODO this only applies to groovy files with main() method.
-                    // we should have a way to execute any groovy script? how?
-                    // running groovy tests is another specialized usecase.
-                    return action + ".main";
-                }
-                if ("text/x-scala".equals(fo.getMIMEType())) {
-                    //TODO this only applies to scala files with main() method.
-                    // we should have a way to execute any scala script? how?
-                    return action + ".main";
                 }
             }
         }

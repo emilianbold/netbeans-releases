@@ -281,20 +281,12 @@ public class BrokenReferencesSupport {
                             dd = new DialogDescriptor(customizer,
                                 Bundle.LBL_Broken_References_Resolve_Panel_Title(),
                                 true,
-                                new Object[] {DialogDescriptor.CANCEL_OPTION},
-                                DialogDescriptor.CANCEL_OPTION,
+                                new Object[] {closeOption},
+                                closeOption,
                                 DialogDescriptor.DEFAULT_ALIGN,
                                 null,
                                 null);
-                            Dialog dlg = null;
-                            try {
-                                dlg = DialogDisplayer.getDefault().createDialog(dd);
-                                dlg.setVisible(true);
-                            } finally {
-                                if (dlg != null) {
-                                    dlg.dispose();
-                                }
-                            }
+                            DialogDisplayer.getDefault().notify(dd);
                         }
                     } finally {
                         synchronized (BrokenReferencesSupport.class) {

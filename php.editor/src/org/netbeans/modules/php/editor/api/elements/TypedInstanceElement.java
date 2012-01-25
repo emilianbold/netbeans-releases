@@ -49,4 +49,5 @@ import java.util.Set;
  */
 public interface TypedInstanceElement extends PhpElement {
     Set<TypeResolver> getInstanceTypes();
+    Set<TypeResolver> getInstanceFQTypes();
 }

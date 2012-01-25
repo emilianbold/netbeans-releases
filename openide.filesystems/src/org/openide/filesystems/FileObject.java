@@ -51,6 +51,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -60,6 +62,7 @@ import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import org.openide.util.Enumerations;
 import org.openide.util.UserQuestionException;
@@ -71,6 +74,19 @@ import org.openide.util.UserQuestionException;
 * @author Jaroslav Tulach, Petr Hamernik, Ian Formanek
 */
 public abstract class FileObject extends Object implements Serializable {
+    /**
+     * Name of default line separator attribute.
+     * File object can provide default line separator if it differs from
+     * <code>System.getProperty("line.separator")</code>. Call
+     * <code>fo.getAttribute(DEFAULT_LINE_SEPARATOR_PROP)</code> returns string with
+     * default line separator. Default line separator will be used by the text
+     * editor if saving new content to an initially empty file. Any other code
+     * which creates file content programmatically must manually read this
+     * property if it cares.
+     * @since 7.56
+     */
+    public static final String DEFAULT_LINE_SEPARATOR_ATTR = "default-line-separator"; //NOI18N
+
     /** generated Serialized Version UID */
     static final long serialVersionUID = 85305031923497718L;
 
@@ -1058,6 +1074,42 @@ public abstract class FileObject extends Object implements Serializable {
         return true;
     }
 
+    static final String REMOVE_WRITABLES_ATTR = "removeWritables";
+
+    /**
+     * Checks whether this file can be reverted to a pristine state.
+     * @return whether {@link #revert} might do something
+     * @since 7.55
+     */
+    public final boolean canRevert() {
+        return getAttribute(REMOVE_WRITABLES_ATTR) instanceof Callable<?>;
+    }
+
+    /**
+     * Revert this file to a pristine state.
+     * Generally only meaningful for files on the system filesystem (layers + user directory):
+     * if the file is defined in a layer but modified in the user directory, it is reset;
+     * if it is defined only in the user directory, it is deleted.
+     * If {@link #canRevert} is false, does nothing.
+     * Note that while content can be reset, it may not be possible to reset attributes.
+     * <p>Implementors: for historical reasons this method checks {@link #getAttribute}
+     * for a special attribute named {@code removeWritables} which must be of type
+     * {@link Callable Callable<Void>}. If present, the file is considered modified.
+     * @since 7.55
+     */
+    public final void revert() throws IOException {
+        Object v = getAttribute(REMOVE_WRITABLES_ATTR);
+        if (v instanceof Callable<?>) {
+            try {
+                ((Callable<?>) v).call();
+            } catch (IOException x) {
+                throw x;
+            } catch (Exception x) {
+                throw new IOException(x);
+            }
+        }
+    }
+
     /** Should check for external modifications. For folders it should reread
     * the content of disk, for data file it should check for the last
     * time the file has been modified.
@@ -1078,18 +1130,43 @@ public abstract class FileObject extends Object implements Serializable {
         refresh(false);
     }
 
+    /**
+     * @throws FileStateInvalidException never
+     * @deprecated Use {@link #toURL} instead.
+     */
+    @Deprecated
+    public final URL getURL() throws FileStateInvalidException {
+        return toURL();
+    }
+
     /** Get URL that can be used to access this file.
      * If the file object does not correspond to a disk file or JAR entry,
      * the URL will only be usable within NetBeans as it uses a special protocol handler.
      * Otherwise an attempt is made to produce an external URL.
     * @return URL of this file object
-    * @exception FileStateInvalidException if the file is not valid
      * @see URLMapper#findURL
      * @see URLMapper#INTERNAL
+     * @since 7.57
     */
-    public final URL getURL() throws FileStateInvalidException {
-        // XXX why does this still throw FSIE? need not
+    public final URL toURL() {
         return URLMapper.findURL(this, URLMapper.INTERNAL);
+    }
+
+    /**
+     * Gets a URI for this file.
+     * Similar to {@link #toURL}.
+     * @return an absolute URI representing this file location
+     * @since 7.57
+     */
+    public final URI toURI() {
+        try {
+            URI uri = toURL().toURI();
+            assert uri.isAbsolute() : uri;
+            assert uri.equals(uri.normalize()) : uri;
+            return uri;
+        } catch (URISyntaxException x) {
+            throw new IllegalStateException(x);
+        }
     }
 
     /**

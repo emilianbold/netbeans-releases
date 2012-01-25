@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+*     Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -100,9 +100,10 @@ Other names may be trademarks of their respective owners.
 
 
 <!--Start of RESTful web service wizard help links -->
-        <mapID target="org.netbeans.modules.websvc.rest.wizard.EntitySelectionPanel" url="webservice/create/create_rest_from_scratch.html" />
-        <mapID target="org.netbeans.modules.websvc.rest.wizard.PatternSelectionPanel" url="webservice/create/create_rest_from_scratch.html" />
-        <mapID target="org.netbeans.modules.websvc.rest.wizard.ClientStubsSetupPanel" url="webservice/consume/wsc_stubs.html" />
+        <mapID target="org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.STANDALONE" url="webservice/csh/wizards/RestPatternResourceSimple.html" />
+       <mapID target="org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.CONTAINER" url="webservice/csh/wizards/RestPatternResourceContainer.html" />
+        <mapID target="org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.CLIENTCONTROLLED" url="webservice/csh/wizards/RestPatternResourceContainer.html" />
+        
 <!--End of RESTful web service section -->
 
 <!--Start of web service CSH -->
@@ -362,18 +363,6 @@ Other names may be trademarks of their respective owners.
     <!-- Other Persistence topics located in Java helpset -->
 
 <!-- End of Persistence help -->
-
-<!-- Start of Packaged Archive project help -->
-
-    <mapID target="archiveproject_about" url="archiveproject/archiveproject_about.html" />
-    <mapID target="archiveproject-deploying" url="archiveproject/archiveproject-deploying.html" />
-    <!-- CSH -->
-    <!-- New Project wiz - Packaged Archive Project, Name & Location page -->
-    <mapID target="org.netbeans.modules.j2ee.archive.wizard.DeployableWizardPanel" url="archiveproject/csh/archiveproject_new_wizard.html" />
-    <!-- Packaged Archive Project Properties - Run page (the only page for this project) -->
-    <mapID target="org.netbeans.modules.j2ee.archive.customizer.CustomizerRun" url="archiveproject/csh/archiveproject-properties-run.html" />
-
-<!-- End of Packaged Archive project help -->
 
 
 <!-- Begin Glassfish help topics -->

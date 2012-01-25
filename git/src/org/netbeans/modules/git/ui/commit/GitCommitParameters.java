@@ -171,13 +171,13 @@ public class GitCommitParameters extends DefaultCommitParameters implements Item
             String name = m.group(1).trim();
             String mail = m.groupCount() > 1 ? (m.group(2) != null ? m.group(2) : "") : ""; // NOI18N
             mail = mail.trim();
-            return new ParametersGitUser(name, mail);
+            return new GitUser(name, mail);
         }        
         m = invalidUserFormat.matcher(str.trim());
         if(m.matches()) {            
             return null;
         }
-        return new ParametersGitUser(str, "");
+        return new GitUser(str, "");
     }
 
     @Override
@@ -198,23 +198,6 @@ public class GitCommitParameters extends DefaultCommitParameters implements Item
     @Override
     public void changedUpdate(DocumentEvent e) {
         fireChange();
-    }
-    
-    private class ParametersGitUser extends GitUser {
-        private final String mail;
-        private final String name;
-        public ParametersGitUser(String name, String mail) {
-            this.mail = mail;
-            this.name = name;
-        }
-        @Override
-        public String getName() {
-            return name;
-        }
-        @Override
-        public String getEmailAddress() {
-            return mail;
-        }
     }
     
 }

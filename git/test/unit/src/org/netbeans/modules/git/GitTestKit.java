@@ -44,6 +44,7 @@ package org.netbeans.modules.git;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.EnumSet;
 import org.netbeans.libs.git.GitUser;
@@ -75,8 +76,10 @@ public class GitTestKit {
         return new TestNode(root, file, status);
     }
     
-    public static GitUser creategGitUser() {
-        return new TestUser();
+    public static GitUser createGitUser () throws Exception {
+        Constructor<GitUser> cnst = GitUser.class.getConstructor(String.class, String.class);
+        cnst.setAccessible(true);
+        return cnst.newInstance("Test User", "test@user.org");
     }
     
     private static class TestNode extends GitFileNode {
@@ -104,18 +107,4 @@ public class GitTestKit {
             return info;
         }        
     }    
-    
-    private static class TestUser extends GitUser {
-
-        @Override
-        public String getName() {
-            return "Test User";
-        }
-
-        @Override
-        public String getEmailAddress() {
-            return "test@user.org";
-        }
-        
-    }
 }

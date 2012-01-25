@@ -240,6 +240,14 @@ public class LazyLookupProvidersTest extends NbTestCase {
         baos = new ByteArrayOutputStream();
         assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, baos));
         assertTrue(baos.toString(), baos.toString().contains("public"));
+        AnnotationProcessorTestUtils.makeSource(src, "p.C",
+                "public class C {",
+                " @org.netbeans.spi.project.ProjectServiceProvider(service=Runnable.class, projectType=\"test\")",
+                " public class Inner implements Runnable {public void run() {}}",
+                "}");
+        baos = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, baos));
+        assertTrue(baos.toString(), baos.toString().contains("inner"));
     }
 
 }

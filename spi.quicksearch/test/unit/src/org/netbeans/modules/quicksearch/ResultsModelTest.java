@@ -64,8 +64,6 @@ public class ResultsModelTest extends NbTestCase {
      * firing for listeners should be coalesced.
      */
     public void testFireCoalescing () {
-        System.out.println("Testing coalescing of change firing of ResultsModel...");
-        
         changeCounter = 0;
         
         ResultsModel model = ResultsModel.getInstance();
@@ -118,5 +116,20 @@ public class ResultsModelTest extends NbTestCase {
         
     }
 
+    public void testHTML() throws Exception { // #138728
+        assertHTML("<html>a <b>key</b> finding", "a key finding", "key");
+        assertHTML("<html><b>key</b>s", "keys", "key");
+        assertHTML("<html>skeleton <b>key</b>", "skeleton key", "key");
+        assertHTML("<html>a <b>key</b> of a key", "a key of a key", "key");
+        assertHTML("<html>A <b>Key</b> Finding", "A Key Finding", "key");
+        assertHTML("<html>a <b>key</b> finding", "a key finding", "Key");
+        assertHTML("<html>a <b>key</b> &amp; stuff", "a key & stuff", "key");
+        assertHTML("<html>a <b>key</b> \u0003", "a key \u0003", "key");
+        assertHTML("<html>some other finding", "some other finding", "key");
+        assertHTML("<html>leave my keys alone!", "<html>leave my keys alone!", "key");
+    }
+    private void assertHTML(String displayed, String provided, String searched) {
+        assertEquals(displayed, new ResultsModel.ItemResult(null, Accessor.DEFAULT.createRequest(searched, null), null, provided).getDisplayName());
+    }
 
 }

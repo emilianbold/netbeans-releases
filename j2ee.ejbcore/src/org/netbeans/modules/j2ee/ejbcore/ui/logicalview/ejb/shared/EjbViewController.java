@@ -45,11 +45,7 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -78,8 +74,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 
 /**
@@ -244,7 +238,7 @@ public final class EjbViewController {
         Set<ElementHandle<TypeElement>> elementHandles = cpInfo.getClassIndex().getDeclaredTypes(
                 getSimpleName(qualifiedClassName),
                 NameKind.SIMPLE_NAME,
-                Collections.singleton(SearchScope.SOURCE));
+                new HashSet(Arrays.asList(SearchScope.SOURCE, SearchScope.DEPENDENCIES)));
         for (ElementHandle<TypeElement> elementHandle : elementHandles) {
             if (qualifiedClassName.equals(elementHandle.getQualifiedName())) {
                 return elementHandle;
@@ -419,7 +413,7 @@ public final class EjbViewController {
             }
 
         } catch (IOException ioe) {
-            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Exception(ioe));
+            Exceptions.printStackTrace(ioe);
         }
     }
 

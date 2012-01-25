@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.UIManager;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.cookies.EditCookie;
@@ -133,6 +134,12 @@ public class NodeUtils {
         return ro;
     }
     private static Reference<LocalFileSystem> repoFS;
+
+    /**
+     * Icon for a dependency JAR file.
+     * @since 2.37
+     */
+    public static final @StaticResource String ICON_DEPENDENCY_JAR = "org/netbeans/modules/maven/spi/nodes/DependencyJar.gif";
 
     private NodeUtils() {}
     

@@ -51,18 +51,6 @@ made subject to such option by the copyright holder.
             <file name="jfx-impl.xml" url="templates/jfx-impl.xml_">
                 <attr name="position" intvalue="25"/>
             </file>
-            <file name="jfx-impl-readme.xmlinc" url="templates/jfx-impl-readme.xmlinc_">
-                <attr name="position" intvalue="35"/>
-            </file>
-            <file name="jfx-impl-platform.xmlinc" url="templates/jfx-impl-platform.xmlinc_">
-                <attr name="position" intvalue="45"/>
-            </file>
-            <file name="jfx-impl-parameters.xmlinc" url="templates/jfx-impl-parameters.xmlinc_">
-                <attr name="position" intvalue="55"/>
-            </file>
-            <file name="jfx-impl-callbacks.xmlinc" url="templates/jfx-impl-callbacks.xmlinc_">
-                <attr name="position" intvalue="65"/>
-            </file>
         </folder>
         
         <folder name="Project">
@@ -111,7 +99,7 @@ made subject to such option by the copyright holder.
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/templates/FXMain.html"/>
-                <attr name="templateCategory" stringvalue="java-main-class"/>
+                <attr name="templateCategory" stringvalue="javafx"/>
             </file>
 
             <file name="FXPreloader.java" url="templates/FXPreloader.template">
@@ -122,7 +110,7 @@ made subject to such option by the copyright holder.
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/templates/FXPreloader.html"/>
-                <attr name="templateCategory" stringvalue="java-main-class"/>
+                <attr name="templateCategory" stringvalue="javafx"/>
             </file>
 
             <file name="FXML.java" url="templates/FXML_java_1.template">
@@ -133,6 +121,7 @@ made subject to such option by the copyright holder.
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/templates/FXML.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javafx2.project.FXMLTemplateWizardIterator.create"/>
+                <attr name="templateCategory" stringvalue="javafx"/>
             </file>
 
             <file name="FXML.fxml" url="templates/FXML_fxml.template">

@@ -31,14 +31,13 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import com.sun.source.util.TreePath;
 import java.util.Collection;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGrip;
 
 /**
@@ -54,14 +53,16 @@ final class OverriddenAbsMethodFinder implements CancellableTask<CompilationCont
         methodHandle = methodPathHandle;
     }
 
+    @Override
     public void cancel() {
         
     }
 
+    @Override
     public void run(CompilationController compilationController) throws Exception {
         ExecutableElement implementingMethod = (ExecutableElement) 
                 methodHandle.resolveElement(compilationController);
-        Collection<ExecutableElement> overriddenMethods = RetoucheUtils.getOverridenMethods(implementingMethod, 
+        Collection<ExecutableElement> overriddenMethods = JavaRefactoringUtils.getOverriddenMethods(implementingMethod, 
                 compilationController);
         for (ExecutableElement overriddenMethod : overriddenMethods) {
             if(overriddenMethod.getModifiers().contains(Modifier.ABSTRACT)){

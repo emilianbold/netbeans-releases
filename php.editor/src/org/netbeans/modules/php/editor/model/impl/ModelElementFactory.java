@@ -42,9 +42,12 @@
 
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.Collection;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.UseElement;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
@@ -52,6 +55,7 @@ import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.TraitDeclarationInfo;
 
 /**
  *
@@ -88,17 +92,22 @@ class ModelElementFactory {
         return iface;
     }
 
-    static MethodScopeImpl create(MethodDeclarationInfo nodeInfo, ModelBuilder context, ModelVisitor visitor) {
-        String returnType = VariousUtils.getReturnTypeFromPHPDoc(context.getProgram(), 
-                nodeInfo.getOriginalNode().getFunction());
+    static TraitScopeImpl create(TraitDeclarationInfo nodeInfo, ModelBuilder context) {
+        return new TraitScopeImpl(context.getCurrentScope(), nodeInfo);
+    }
 
-        MethodScopeImpl method = new MethodScopeImpl(context.getCurrentScope(), returnType, nodeInfo, visitor);
+    static MethodScopeImpl create(MethodDeclarationInfo nodeInfo, ModelBuilder context, ModelVisitor visitor) {
+        String returnType = VariousUtils.getReturnTypeFromPHPDoc(context.getProgram(),
+                nodeInfo.getOriginalNode().getFunction());
+        String qualifiedReturnType = VariousUtils.qualifyTypeNames(returnType, nodeInfo.getOriginalNode().getStartOffset(), context.getCurrentScope());
+        MethodScopeImpl method = new MethodScopeImpl(context.getCurrentScope(), qualifiedReturnType, nodeInfo, visitor);
         return method;
     }
 
     static FieldElementImpl create(SingleFieldDeclarationInfo nodeInfo, ModelBuilder context) {
         String returnType = VariousUtils.getFieldTypeFromPHPDoc(context.getProgram(),nodeInfo.getOriginalNode());
-        FieldElementImpl fei = new FieldElementImpl(context.getCurrentScope(), returnType, nodeInfo);
+        String returnFQType = VariousUtils.qualifyTypeNames(returnType, nodeInfo.getRange().getStart(), context.getCurrentScope());
+        FieldElementImpl fei = new FieldElementImpl(context.getCurrentScope(), returnType, returnFQType, nodeInfo);
         return fei;
     }
 

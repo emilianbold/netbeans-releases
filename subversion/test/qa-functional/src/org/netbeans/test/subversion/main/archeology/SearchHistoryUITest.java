@@ -22,6 +22,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.subversion.operators.SourcePackagesNode;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
@@ -130,7 +131,9 @@ public class SearchHistoryUITest extends JellyTestCase{
             mh = new MessageHandler("Retrieving files");
             TestKit.removeHandlers(log);
             log.addHandler(mh);
-            sh.performPopup(1, "Diff");
+            sh.clickForPopup(200, 200);
+            JPopupMenuOperator jpmo=new JPopupMenuOperator();
+            jpmo.pushMenu("Diff to Previous Revision");
             TestKit.waitText(mh);
            
             stream.flush();

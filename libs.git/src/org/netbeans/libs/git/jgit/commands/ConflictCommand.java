@@ -56,7 +56,7 @@ import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitStatus.Status;
-import org.netbeans.libs.git.jgit.JGitStatus;
+import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.libs.git.progress.StatusListener;
@@ -71,8 +71,8 @@ public class ConflictCommand extends StatusCommand {
     private final StatusListener listener;
     private final File[] roots;
 
-    public ConflictCommand (Repository repository, File[] roots, ProgressMonitor monitor, StatusListener listener) {
-        super(repository, roots, monitor, listener);
+    public ConflictCommand (Repository repository, GitClassFactory gitFactory, File[] roots, ProgressMonitor monitor, StatusListener listener) {
+        super(repository, gitFactory, roots, monitor, listener);
         this.monitor = monitor;
         this.listener = listener;
         this.roots = roots;
@@ -117,7 +117,7 @@ public class ConflictCommand extends StatusCommand {
                     int stage = indexEntry == null ? 0 : indexEntry.getStage();
 
                     if (stage != 0) {
-                        GitStatus status = new JGitStatus(true, path, workTreePath, file, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, null, false, null);
+                        GitStatus status = getClassFactory().createStatus(true, path, workTreePath, file, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, null, false, null);
                         conflicts[stage - 1] = status;
                     }
                 }

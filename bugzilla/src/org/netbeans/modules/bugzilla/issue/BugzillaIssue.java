@@ -738,7 +738,9 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         final BugzillaVersion installedVersion = rc != null ? rc.getInstalledVersion() : null;
         boolean oldRepository = installedVersion != null ? installedVersion.compareMajorMinorOnly(BugzillaVersion.BUGZILLA_3_0) <= 0 : false;
         if(oldRepository) {
-            return data.getRoot().getMappedAttribute(BugzillaOperation.reassignbycomponent.getInputId()) != null;
+            return BugzillaOperation.reassignbycomponent.getInputId() != null ? 
+                        data.getRoot().getMappedAttribute(BugzillaOperation.reassignbycomponent.getInputId()) != null :
+                        false;
         } else {
             return data.getRoot().getAttribute(BugzillaAttribute.SET_DEFAULT_ASSIGNEE.getKey()) != null;
         }

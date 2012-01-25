@@ -88,8 +88,13 @@ public abstract class MIProxy {
         gdbLogger = new GdbLogger();
 	cmdManager = new MICommandManager(injector, gdbLogger);
 	this.prompt = prompt;
-
+        
 	parser = new MIParser(encoding);
+        
+        // Log NB version and gdb log file name
+        // Find better place for this, see IZ 207277
+//        cmdManager.echo("This log is saved to: " + gdbLogger.getFilename() + "\n\r"); // NOI18N
+//        cmdManager.echo("NB build: " + System.getProperty("netbeans.buildnumber") + "\n\r"); // NOI18N
     }
 
 

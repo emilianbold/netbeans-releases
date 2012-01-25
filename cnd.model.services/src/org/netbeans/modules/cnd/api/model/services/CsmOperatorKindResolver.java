@@ -94,6 +94,7 @@ public abstract class CsmOperatorKindResolver {
             res = Lookup.getDefault().lookupResult(CsmOperatorKindResolver.class);
         }
 
+        @Override
         public OperatorKind getKind(Document doc, int offset) {
             for (CsmOperatorKindResolver resolver : res.allInstances()) {
                 OperatorKind out = resolver.getKind(doc, offset);

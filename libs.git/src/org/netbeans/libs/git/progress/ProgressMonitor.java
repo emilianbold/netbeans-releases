@@ -46,22 +46,21 @@ package org.netbeans.libs.git.progress;
  *
  * @author ondra
  */
-public interface ProgressMonitor {
-    public static final ProgressMonitor NULL_PROGRESS_MONITOR = new DefaultProgressMonitor();
+public abstract class ProgressMonitor {
     
-    public boolean isCanceled ();
+    public abstract boolean isCanceled ();
 
-    public void started (String command);
+    public abstract void started (String command);
 
-    public void finished();
+    public abstract void finished();
 
-    public void preparationsFailed (String message);
+    public abstract void preparationsFailed (String message);
 
-    public void notifyError (String message);
+    public abstract void notifyError (String message);
 
-    public void notifyWarning (String message);
+    public abstract void notifyWarning (String message);
 
-    public static class DefaultProgressMonitor implements ProgressMonitor {
+    public static class DefaultProgressMonitor extends ProgressMonitor {
         private boolean canceled;
 
         public final synchronized boolean cancel () {

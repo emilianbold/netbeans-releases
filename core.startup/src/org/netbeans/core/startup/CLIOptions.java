@@ -77,6 +77,7 @@ public class CLIOptions extends CLIHandler {
     /* The size of the fonts in the UI - 0 pt, the default value is set in NbTheme (for Metal L&F), for other L&Fs is set
        in the class Main. The value can be changed in Themes.xml in system directory or by command-line argument -fontsize <size> */
     private static int uiFontSize = 0;
+    private static boolean fallbackToMemory;
 
     /** The netbeans home dir - acquired from property netbeans.home */
     private static String homeDir;
@@ -98,6 +99,14 @@ public class CLIOptions extends CLIHandler {
     }
 
     private static boolean gui = true;
+    
+    static boolean isFallbackToMemory() {
+        return fallbackToMemory;
+    }
+    
+    static void fallbackToMemory() {
+        fallbackToMemory = true;
+    }
     
     /** Checks whether we are supposed to use GUI features or not.
      */

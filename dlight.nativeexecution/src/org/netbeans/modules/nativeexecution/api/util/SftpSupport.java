@@ -47,7 +47,6 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.StringWriter;
@@ -73,6 +72,7 @@ import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.SftpIOException;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.nativeexecution.api.util.Md5checker.Result;
 import org.netbeans.modules.nativeexecution.support.Logger;
@@ -203,14 +203,8 @@ class SftpSupport {
         return channel;
     }
 
-    private static SftpException decorateSftpException(SftpException e, String path) {
-        if (e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-            FileNotFoundException fnfe = (path == null) ?  
-                    new FileNotFoundException(e.getMessage()) : new FileNotFoundException(path);
-            return new SftpException(e.id, e.getMessage(), fnfe);
-        } else {
-            return e;
-        }
+    private static SftpIOException decorateSftpException(SftpException e, String path) {
+        return new SftpIOException(e.id, e.getMessage(), path, e);
     }
 
     private abstract class Worker implements Callable<Integer> {
@@ -417,7 +411,7 @@ class SftpSupport {
             uploadCount.incrementAndGet();
         }
 
-        private void put(ChannelSftp cftp) throws SftpException {
+        private void put(ChannelSftp cftp) throws SftpIOException {
             // the below is just the replacement for one code line:
             // cftp.put(srcFileName, dstFileName);
             // (connected with #184068 -  Instable remote unit tests failure)
@@ -441,7 +435,7 @@ class SftpSupport {
                         if (attempt == 2) {
                             Logger.fullThreadDump(message);
                         }
-                        e.printStackTrace();
+                        e.printStackTrace(System.err);
                     }
                 }
             }
@@ -520,6 +514,9 @@ class SftpSupport {
         private final String path;
 
         public StatLoader(String path) {
+            if (path.isEmpty()) { // This make sence when clients ask path for root FileObject
+                path = "/"; //NOI18N
+            }
             assert path.startsWith("/"); //NOI18N
             this.path = path;
         }
@@ -605,7 +602,7 @@ class SftpSupport {
         }
     }
     
-    private StatInfo createStatInfo(String dirName, String baseName, SftpATTRS attrs, ChannelSftp cftp) throws SftpException {
+    private StatInfo createStatInfo(String dirName, String baseName, SftpATTRS attrs, ChannelSftp cftp) throws SftpIOException {
         String linkTarget = null;
         if (attrs.isLink()) {
             String path = dirName + '/' + baseName;

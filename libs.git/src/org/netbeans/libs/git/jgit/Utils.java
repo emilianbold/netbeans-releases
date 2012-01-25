@@ -44,6 +44,7 @@ package org.netbeans.libs.git.jgit;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,12 +52,16 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.jgit.errors.AmbiguousObjectException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.errors.RevisionSyntaxException;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.FileMode;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.RefComparator;
@@ -73,7 +78,6 @@ import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitObjectType;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -136,6 +140,10 @@ public final class Utils {
     }
 
     public static String getRelativePath (File repo, final File file) {
+        return getRelativePath(repo, file, false);
+    }
+
+    private static String getRelativePath (File repo, final File file, boolean canonicalized) {
         StringBuilder relativePath = new StringBuilder("");
         File parent = file;
         if (!parent.equals(repo)) {
@@ -144,7 +152,14 @@ public final class Utils {
                 parent = parent.getParentFile();
             }
             if (parent == null) {
-                throw new IllegalArgumentException(file.getAbsolutePath() + " is not under " + repo.getAbsolutePath());
+                if (!canonicalized) {
+                    try {
+                        return getRelativePath(repo.getCanonicalFile(), file.getCanonicalFile(), true);
+                    } catch (IOException ex) {
+                        Logger.getLogger(Utils.class.getName()).log(Level.FINE, null, ex);
+                    }
+                }
+                throw new IllegalArgumentException(file.getPath() + " is not under " + repo.getPath());
             }
             relativePath.deleteCharAt(relativePath.length() - 1);
         }
@@ -186,7 +201,7 @@ public final class Utils {
         } catch (MissingObjectException ex) {
             throw new GitException.MissingObjectException(revision, GitObjectType.COMMIT, ex);
         } catch (IncorrectObjectTypeException ex) {
-            throw new GitException(NbBundle.getMessage(Utils.class, "MSG_Exception_IdNotACommit", revision)); //NOI18N
+            throw new GitException(MessageFormat.format(Utils.getBundle(Utils.class).getString("MSG_Exception_IdNotACommit"), revision)); //NOI18N
         } catch (IOException ex) {
             throw new GitException(ex);
         }
@@ -198,7 +213,7 @@ public final class Utils {
         } catch (RevisionSyntaxException ex) {
             throw new GitException.MissingObjectException(objectId, GitObjectType.COMMIT, ex);
         } catch (AmbiguousObjectException ex) {
-            throw new GitException(NbBundle.getMessage(Utils.class, "MSG_Exception_IdNotACommit", objectId), ex); //NOI18N
+            throw new GitException(MessageFormat.format(Utils.getBundle(Utils.class).getString("MSG_Exception_IdNotACommit"), objectId), ex); //NOI18N
         } catch (IOException ex) {
             throw new GitException(ex);
         }
@@ -254,7 +269,7 @@ public final class Utils {
      * @param prefix prefix denoting heads amongst references
      * @return 
      */
-    public static Map<String, GitBranch> refsToBranches (Collection<Ref> allRefs, String prefix) {
+    public static Map<String, GitBranch> refsToBranches (Collection<Ref> allRefs, String prefix, GitClassFactory factory) {
         Map<String, GitBranch> branches = new HashMap<String, GitBranch>();
         
         // try to find the head first - it usually is the active remote branch
@@ -273,7 +288,7 @@ public final class Utils {
                 String name = refName.substring(prefix.length());
                 branches.put(
                     name, 
-                    new JGitBranch(
+                    factory.createBranch(
                         name, 
                         false, 
                         head != null && ref.getObjectId().equals(head.getObjectId()), 
@@ -300,5 +315,27 @@ public final class Utils {
             }
         }
         return tags;
+    }
+
+    /**
+     * Returns a resource bundle contained in the same package the given clazz is.
+     * @param clazz
+     * @return 
+     */
+    public static ResourceBundle getBundle (Class clazz) {
+        String pref = clazz.getName();
+        int last = pref.lastIndexOf('.');
+
+        if (last >= 0) {
+            pref = pref.substring(0, last + 1) + "Bundle"; //NOI18N
+        } else {
+            // base package, search for bundle
+            pref = "Bundle"; // NOI18N
+        }
+        return ResourceBundle.getBundle(pref);
+    }
+
+    public static boolean isFromNested (int fm) {
+        return fm == FileMode.TYPE_GITLINK;
     }
 }

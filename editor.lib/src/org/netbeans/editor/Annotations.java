@@ -398,8 +398,8 @@ public class Annotations implements DocumentListener {
             if (lastGetLineAnnotationsIdx != -1 && lastGetLineAnnotationsLine != -1 && lastGetLineAnnotationsResult != null) {
                 if (lastGetLineAnnotationsLine == line) {
                     return lastGetLineAnnotationsResult;
-                } else if (lastGetLineAnnotationsLine + 1 == line && lastGetLineAnnotationsIdx + 1 < lineAnnotationsArray.size()) {
-                    annos = (LineAnnotations)lineAnnotationsArray.get(lastGetLineAnnotationsIdx + 1);
+                } else if (   lastGetLineAnnotationsLine + 1 == line && lastGetLineAnnotationsIdx + 1 < lineAnnotationsArray.size()
+                           && (annos = (LineAnnotations)lineAnnotationsArray.get(lastGetLineAnnotationsIdx + 1)).getLine() == line) {
                     lastGetLineAnnotationsIdx++;
                     lastGetLineAnnotationsLine = annos.getLine();
                     lastGetLineAnnotationsResult = annos;

@@ -126,10 +126,7 @@ class CompletionContextFinder {
         new Object[]{PHPTokenId.PHP_CATCH, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN, NAMESPACE_FALSE_TOKEN},
         new Object[]{PHPTokenId.PHP_CATCH, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN, PHPTokenId.WHITESPACE},
         new Object[]{PHPTokenId.PHP_CATCH, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN},
-        new Object[]{PHPTokenId.PHP_CATCH, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_STRING},
-        new Object[]{PHPTokenId.PHP_INSTANCEOF, PHPTokenId.WHITESPACE},
-        new Object[]{PHPTokenId.PHP_INSTANCEOF, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN},
-        new Object[]{PHPTokenId.PHP_INSTANCEOF, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING}
+        new Object[]{PHPTokenId.PHP_CATCH, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_STRING}
     );
 
     private static final List<Object[]> CLASS_MEMBER_TOKENCHAINS = Arrays.asList(
@@ -416,6 +413,9 @@ class CompletionContextFinder {
         }
         Token<PHPTokenId> token = tokenSequence.token();
         PHPTokenId tokenId =token.id();
+        if (tokenId.equals(PHPTokenId.PHP_CLOSETAG) && (tokenSequence.offset() < caretOffset)) {
+            return CompletionContext.NONE;
+        }
         int tokenIdOffset = tokenSequence.token().offset(th);
 
         CompletionContext clsIfaceDeclContext = getClsIfaceDeclContext(token,(caretOffset-tokenIdOffset), tokenSequence);
@@ -484,8 +484,6 @@ class CompletionContextFinder {
                         return CompletionContext.SERVER_ENTRY_CONSTANTS;
                     }
                 }
-                return CompletionContext.NONE;
-            case PHP_CLOSETAG:
                 return CompletionContext.NONE;
             default:
         }
@@ -992,8 +990,12 @@ class CompletionContextFinder {
             } else if (aSTNode instanceof MethodDeclaration) {
                 methDecl = true;
             } else if (aSTNode instanceof ClassDeclaration) {
-                clsDecl = true;
-                if (funcDecl) isClassInsideFunc = true;
+                if (aSTNode.getEndOffset() != caretOffset) {
+                    clsDecl = true;
+                    if (funcDecl) isClassInsideFunc = true;
+                } else {
+                    return false;
+                }
             }
         }
         if (funcDecl && !methDecl && !clsDecl) {

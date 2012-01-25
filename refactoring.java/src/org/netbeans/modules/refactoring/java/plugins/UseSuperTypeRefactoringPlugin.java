@@ -44,24 +44,27 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ModificationResult.Difference;
+import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
-import org.netbeans.modules.refactoring.java.spi.DiffElement;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
+import org.netbeans.modules.refactoring.java.spi.DiffElement;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
+import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.ErrorManager;
@@ -97,12 +100,14 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
      * Prepares the underlying where used query & checks
      * for the visibility of the target type.
      */
+    @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         TreePathHandle subClassHandle = refactoring.getTypeElement();
         replaceSubtypeUsages(subClassHandle, refactoringElements);
         return null;
     }
 
+    @Override
     protected JavaSource getJavaSource(Phase p) {
         switch (p) {
             default:
@@ -151,12 +156,14 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
         JavaSource javaSrc = JavaSource.forFileObject(subClassHandle.getFileObject());
         try {
             javaSrc.runUserActionTask(new CancellableTask<CompilationController>() {
+                @Override
                 public void cancel() { }
+                @Override
                 public void run(CompilationController complController) throws IOException {
                     complController.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
 
                     FileObject fo = subClassHandle.getFileObject();
-                    ClasspathInfo classpathInfo = RetoucheUtils.getClasspathInfoFor(true, true, fo) ;
+                    ClasspathInfo classpathInfo = RefactoringUtils.getClasspathInfoFor(true, true, fo) ;
                     
                     ClassIndex clsIndx = classpathInfo.getClassIndex();
                     TypeElement javaClassElement = (TypeElement) subClassHandle.
@@ -200,9 +207,11 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
             this.superClassHandle = superClassHandle;
         }
 
+        @Override
         public void cancel() {
         }
 
+        @Override
         public void run(WorkingCopy compiler) throws Exception {
             try {
                 if (compiler.toPhase(JavaSource.Phase.RESOLVED) != JavaSource.Phase.RESOLVED) {
