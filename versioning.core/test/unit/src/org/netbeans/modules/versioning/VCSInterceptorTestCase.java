@@ -137,7 +137,7 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
                 if(vs instanceof DelegatingVCS) {
                     DelegatingVCS dvcs = (DelegatingVCS)vs;
                     if("TestVCSDisplay".equals(dvcs.getDisplayName())) {
-                        inteceptor = (TestVCSInterceptor) dvcs.getInterceptor();
+                        inteceptor = (TestVCSInterceptor) dvcs.getVCSInterceptor();
                     }
                 }
             }

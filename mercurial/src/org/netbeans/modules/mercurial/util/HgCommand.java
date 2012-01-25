@@ -1273,7 +1273,9 @@ public class HgCommand {
         } catch (HgException ex) {
             HgUtils.notifyException(ex);
         } finally {
+             if(logger != null) {
             logger.closeLog();
+        }
         }
 
         return messages.toArray(new HgLogMessage[0]);
