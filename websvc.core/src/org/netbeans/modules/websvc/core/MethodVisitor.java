@@ -169,17 +169,21 @@ public class MethodVisitor {
      */
     private boolean hasWebMethodAnnotation(ExecutableElement method){
         boolean isWebMethod = false;
-        TypeElement methodAnotationEl = info.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
         List<? extends AnnotationMirror> methodAnnotations = method.getAnnotationMirrors();
         for (AnnotationMirror anMirror : methodAnnotations) {
-            if (info.getTypes().isSameType(methodAnotationEl.asType(), anMirror.getAnnotationType())) {
+            if (JaxWsUtils.hasFqn(anMirror, "javax.jws.WebMethod")) {       // NOI18N
                 //WebMethod found, set boolean to true
                 isWebMethod = true;
                 //Now determine if "exclude" is present and set to true
-                Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
-                for(Entry<? extends ExecutableElement, ? extends AnnotationValue> entry: expressions.entrySet()) {
+                Map<? extends ExecutableElement, 
+                        ? extends AnnotationValue> expressions = anMirror.
+                            getElementValues();
+                for(Entry<? extends ExecutableElement, 
+                        ? extends AnnotationValue> entry: expressions.entrySet()) 
+                {
                     if (entry.getKey().getSimpleName().contentEquals("exclude")) { //NOI18N
-                        String value = (String)expressions.get(entry.getKey()).getValue();
+                        String value = (String)expressions.get(entry.getKey()).
+                            getValue();
                         if ("true".equals(value)){
                             isWebMethod = false;
                             break;
@@ -201,14 +205,21 @@ public class MethodVisitor {
         }
         
         //if method name is not the same as the operation name, look at WebMethod annotation
-        TypeElement methodAnotationEl = info.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
-        List<? extends AnnotationMirror> methodAnnotations = method.getAnnotationMirrors();
+        List<? extends AnnotationMirror> methodAnnotations = 
+                method.getAnnotationMirrors();
         for (AnnotationMirror anMirror : methodAnnotations) {
-            if (info.getTypes().isSameType(methodAnotationEl.asType(), anMirror.getAnnotationType())) {
-                Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
-                for(Entry<? extends ExecutableElement, ? extends AnnotationValue> entry: expressions.entrySet()) {
-                    if (entry.getKey().getSimpleName().contentEquals("operationName")) { //NOI18N
-                        String name = (String)expressions.get(entry.getKey()).getValue();
+            if (JaxWsUtils.hasFqn(anMirror, "javax.jws.WebMethod")) {   // NOI18N
+                Map<? extends ExecutableElement, 
+                        ? extends AnnotationValue> expressions = 
+                                anMirror.getElementValues();
+                for(Entry<? extends ExecutableElement, 
+                        ? extends AnnotationValue> entry: expressions.entrySet()) 
+                {
+                    if (entry.getKey().getSimpleName().
+                            contentEquals("operationName"))  //NOI18N
+                    {
+                        String name = (String)expressions.get(entry.getKey()).
+                            getValue();
                         if (operationName.equals(name)){
                             return true;
                         }
