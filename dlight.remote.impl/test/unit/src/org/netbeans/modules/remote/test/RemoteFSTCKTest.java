@@ -55,7 +55,15 @@ import org.openide.filesystems.URLMapperTestHidden;
  * @author vv159170
  */
 public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
-    private static final boolean ALLOW_TCK = true;
+    private static final boolean ALLOW_TCK;
+    static {
+        String property = System.getProperty("run.test.RandomlyFails");
+        if ("false".equals(property)) {
+            ALLOW_TCK = false;
+        } else {
+            ALLOW_TCK = true;
+        }
+    }
     
     public RemoteFSTCKTest(Test test) {
         super(test);
@@ -66,7 +74,8 @@ public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
         if (ALLOW_TCK) {
             suite.addTestSuite(FileSystemTestHid.class);
             suite.addTestSuite(FileObjectTestHid.class);
-            suite.addTestSuite(AttributesTestHidden.class);
+            // it seems AttributesTestHidden does not belong to FS TCK
+            //suite.addTestSuite(AttributesTestHidden.class);
             suite.addTestSuite(URLMapperTestHidden.class);
             suite.addTestSuite(FileUtilTestHidden.class);
         }

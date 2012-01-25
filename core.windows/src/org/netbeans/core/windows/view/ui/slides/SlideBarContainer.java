@@ -69,7 +69,7 @@ import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.netbeans.core.windows.view.ui.AbstractModeContainer;
 import org.netbeans.core.windows.view.ui.ModeComponent;
 import org.netbeans.core.windows.view.dnd.TopComponentDroppable;
-import org.netbeans.core.windows.view.ui.Tabbed;
+import org.netbeans.swing.tabcontrol.customtabs.Tabbed;
 import org.openide.windows.TopComponent;
 
 

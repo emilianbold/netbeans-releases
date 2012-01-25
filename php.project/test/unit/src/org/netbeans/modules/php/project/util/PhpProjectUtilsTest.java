@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.project.util;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
@@ -69,6 +70,15 @@ public class PhpProjectUtilsTest extends NbTestCase {
         // test for empty string (relative path ".")
         string = "one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two";
         assertArrayEquals(new String[] {"one", "", "two"}, StringUtils.explode(string, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR).toArray(new String[0]));
+    }
+
+    public void testResolveFile() throws Exception {
+        File workDir = getWorkDir();
+        assertEquals(workDir, PhpProjectUtils.resolveFile(workDir, null));
+        assertEquals(workDir, PhpProjectUtils.resolveFile(workDir, ""));
+        assertEquals(workDir, PhpProjectUtils.resolveFile(workDir, " "));
+        assertEquals(new File(workDir, "a.php"), PhpProjectUtils.resolveFile(workDir, "a.php"));
+        assertEquals(new File(new File(workDir, "myfolder"), "a.php"), PhpProjectUtils.resolveFile(workDir, "myfolder/a.php"));
     }
 
 }

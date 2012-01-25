@@ -378,7 +378,7 @@ public final class VCSFilesystemInterceptor {
      * @param fo a VCSFileProxy
      */
     public static void fileLocked(VCSFileProxy fo) {
-        LOG.log(Level.FINE, "fileLocked {0}", fo.toString());
+        LOG.log(Level.FINE, "fileLocked {0}", fo);
         getInterceptor(fo, "beforeEdit").beforeEdit();           // NOI18N
     }
 
