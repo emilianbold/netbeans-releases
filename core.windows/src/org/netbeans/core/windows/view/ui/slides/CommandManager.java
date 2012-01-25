@@ -44,23 +44,20 @@
 
 package org.netbeans.core.windows.view.ui.slides;
 
-import java.awt.AWTEvent;
-import java.awt.Component;
-import java.awt.Rectangle;
-import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.Toolkit;
-import java.awt.event.AWTEventListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
+import java.awt.*;
+import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.UIManager;
 import javax.swing.border.Border;
 import org.netbeans.core.windows.Constants;
-import org.netbeans.swing.tabcontrol.*;
+import org.netbeans.swing.tabcontrol.SlideBarDataModel;
+import org.netbeans.swing.tabcontrol.SlidingButton;
+import org.netbeans.swing.tabcontrol.TabData;
+import org.netbeans.swing.tabcontrol.TabbedContainer;
+import org.netbeans.swing.tabcontrol.customtabs.Tabbed;
+import org.netbeans.swing.tabcontrol.customtabs.TabbedComponentFactory;
+import org.netbeans.swing.tabcontrol.customtabs.TabbedType;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
@@ -77,7 +74,7 @@ final class CommandManager implements ActionListener {
     /** Asociated slide bar */
     private final SlideBar slideBar;
     /** Local tabbed container used to display slided component */
-    private TabbedContainer slidedTabContainer;
+    private Tabbed slidingTabbed;
 
     /** Data of slide operation in progress */
     private Component curSlidedComp;
@@ -100,8 +97,8 @@ final class CommandManager implements ActionListener {
         if (!isCompSlided()) {
             return;
         }
-        SlideOperation op = SlideOperationFactory.createSlideResize(getSlidedTabContainer(), curSlideOrientation);
-        Rectangle finish = getSlidedTabContainer().getBounds(null);
+        SlideOperation op = SlideOperationFactory.createSlideResize(getSlidingTabbed().getComponent(), curSlideOrientation);
+        Rectangle finish = getSlidingTabbed().getComponent().getBounds(null);
         String side = orientation2Side(curSlideOrientation);
         if (Constants.BOTTOM.equals(side)) {
             finish.height = finish.height - delta;
@@ -135,14 +132,24 @@ final class CommandManager implements ActionListener {
         curSlidedComp = model.getTab(tabIndex).getComponent();
         curSlideOrientation = model.getOrientation();
         curSlideButton = slideBar.getButton(tabIndex);
-        TabbedContainer cont = updateSlidedTabContainer(tabIndex);
+        Tabbed cont = updateSlidedTabContainer(tabIndex);
         SlideOperation operation = SlideOperationFactory.createSlideIn(
-            cont, curSlideOrientation, true, true);
+            cont.getComponent(), curSlideOrientation, true, true);
+
+        boolean alreadyListening = false;
+        for( AWTEventListener el : Toolkit.getDefaultToolkit().getAWTEventListeners() ) {
+            if( el == getAWTListener() ) {
+                alreadyListening = false;
+                break;
+            }
+        }
+        if( !alreadyListening )
+            Toolkit.getDefaultToolkit().addAWTEventListener( getAWTListener(), MouseEvent.MOUSE_EVENT_MASK);
         
         curSlideButton.setSelected(true);
 
         postEvent(new SlideBarActionEvent(slideBar, SlideBar.COMMAND_SLIDE_IN, operation));
-        recog.attachResizeRecognizer(orientation2Side(curSlideOrientation), cont);
+        recog.attachResizeRecognizer(orientation2Side(curSlideOrientation), cont.getComponent());
     }
     
     /** Fires slide out operation. 
@@ -155,11 +162,13 @@ final class CommandManager implements ActionListener {
         }
         
         SlideOperation operation = SlideOperationFactory.createSlideOut(
-            getSlidedTabContainer(), curSlideOrientation, useEffect, requestsActivation);
+            getSlidingTabbed().getComponent(), curSlideOrientation, useEffect, requestsActivation);
         
+        Toolkit.getDefaultToolkit().removeAWTEventListener( getAWTListener() );
+
         curSlideButton.setSelected(false);
         
-        recog.detachResizeRecognizer(orientation2Side(curSlideOrientation), getSlidedTabContainer());
+        recog.detachResizeRecognizer(orientation2Side(curSlideOrientation), getSlidingTabbed().getComponent());
         
         curSlidedComp = null;
         curSlideButton = null;
@@ -174,9 +183,9 @@ final class CommandManager implements ActionListener {
         SlideOperation operation = null;
         if (isCompSlided()) {
             operation = SlideOperationFactory.createSlideIntoDesktop(
-                getSlidedTabContainer(), curSlideOrientation, useEffect);
+                getSlidingTabbed().getComponent(), curSlideOrientation, useEffect);
         }
-        recog.detachResizeRecognizer(orientation2Side(curSlideOrientation), getSlidedTabContainer());
+        recog.detachResizeRecognizer(orientation2Side(curSlideOrientation), getSlidingTabbed().getComponent());
         postEvent(new SlideBarActionEvent(slideBar, SlideBar.COMMAND_DISABLE_AUTO_HIDE, operation, null, tabIndex));
     }
     
@@ -207,7 +216,7 @@ final class CommandManager implements ActionListener {
      * sliding component.
      */
     public void setActive(boolean active) {
-        getSlidedTabContainer().setActive(active);
+        getSlidingTabbed().setActive(active);
     }
     
     /********* implementation of ActionListener **************/
@@ -290,53 +299,36 @@ final class CommandManager implements ActionListener {
     }    
 
     
-    private TabbedContainer getSlidedTabContainer () {
-        if (slidedTabContainer == null) {
-            TabDataModel slidedCompModel = new DefaultTabDataModel();
-            slidedTabContainer = new TabbedContainer(slidedCompModel, TabbedContainer.TYPE_VIEW, slideBar.createWinsysInfo()) {
-                @Override
-                public void addNotify() {
-                    super.addNotify();
-                    Toolkit.getDefaultToolkit().addAWTEventListener( getAWTListener(), MouseEvent.MOUSE_EVENT_MASK);
-                }
-                
-                @Override
-                public void removeNotify() {
-                    super.removeNotify();
-                    Toolkit.getDefaultToolkit().removeAWTEventListener( getAWTListener() );
-                }
-            };
-            slidedTabContainer.addActionListener(this);
+    private Tabbed getSlidingTabbed () {
+        if (slidingTabbed == null) {
+            TabbedComponentFactory factory = Lookup.getDefault().lookup( TabbedComponentFactory.class );
+            slidingTabbed = factory.createTabbedComponent( TabbedType.VIEW, slideBar.createWinsysInfo() );
+            slidingTabbed.addActionListener(this);
             Border b = null;
             String side = orientation2Side( slideBar.getModel().getOrientation() );
             b = UIManager.getBorder("floatingBorder-"+side); //NOI18N
             if( b == null )
                 b = UIManager.getBorder("floatingBorder"); //NOI18N
-            if (b != null) {
-                slidedTabContainer.setBorder (b);
+            if (b != null && slidingTabbed.getComponent() instanceof JComponent ) {
+                ((JComponent)slidingTabbed.getComponent()).setBorder (b);
             }
-            
-            registerEscHandler(slidedTabContainer);
+
+            if( slidingTabbed.getComponent() instanceof JComponent )
+            registerEscHandler((JComponent)slidingTabbed.getComponent());
         }
-        return slidedTabContainer;
+        return slidingTabbed;
     }
     
-    private TabbedContainer updateSlidedTabContainer(int tabIndex) {
-        TabbedContainer container = getSlidedTabContainer();
-        TabDataModel containerModel = container.getModel();
+    private Tabbed updateSlidedTabContainer(int tabIndex) {
+        Tabbed container = getSlidingTabbed();
+//        TabDataModel containerModel = container.getModel();
         SlideBarDataModel dataModel = slideBar.getModel();
         // creating new TabData instead of just referencing
         // to be able to compare and track changes between models of slide bar and 
         // slided tabbed container
         TabData origTab = dataModel.getTab(tabIndex);
-        TabData newTab = new TabData(origTab.getUserObject(), origTab.getIcon(), 
-                            origTab.getText(), origTab.getTooltip());
-        if (containerModel.size() == 0) {
-            containerModel.addTab(0, newTab);
-        } else {
-            containerModel.setTab(0, newTab);
-        }
-        container.getSelectionModel().setSelectedIndex(0);
+        TopComponent tc = ( TopComponent ) origTab.getComponent();
+        container.setTopComponents( new TopComponent[] { tc }, tc );
         return container;
     }
     
@@ -352,13 +344,12 @@ final class CommandManager implements ActionListener {
                 @Override
                 public void eventDispatched(AWTEvent event) {
                     if( event.getID() == MouseEvent.MOUSE_CLICKED && event.getSource() instanceof Component
-                            && !(SwingUtilities.isDescendingFrom((Component)event.getSource(), getSlidedTabContainer())
+                            && !(SwingUtilities.isDescendingFrom((Component)event.getSource(), getSlidingTabbed().getComponent())
                             || SwingUtilities.isDescendingFrom((Component)event.getSource(), slideBar)) ) {
                         //#159356 - make sure window slides out when clicked outside that window
                         TopComponent tc = slideBar.getTabbed().getSelectedTopComponent();
                         if( null != tc && TopComponent.getRegistry().getActivated() != tc )
                             slideBar.getSelectionModel().setSelectedIndex( -1 );
-                        return;
                     }
                 }
             };
@@ -420,7 +411,7 @@ final class CommandManager implements ActionListener {
         if (!isCompSlided()) {
             return null;
         }
-        return slidedTabContainer;
+        return slidingTabbed.getComponent();
     }
 
     /** Synchronizes its state with current state of data model. 
@@ -443,12 +434,8 @@ final class CommandManager implements ActionListener {
             // in which case do nothing
             if (curSlidedIndex < model.size()) {
                 String freshText = model.getTab(curSlidedIndex).getText();
-                TabDataModel slidedModel = getSlidedTabContainer().getModel();
-                String slidedText = slidedModel.getTab(0).getText();
-                if (slidedText == null || !slidedText.equals(freshText)) {
-                    slidedModel.setText(0, freshText);
-                    slideBar.repaint();
-                }
+                getSlidingTabbed().setTitleAt( 0, freshText );
+                slideBar.repaint();
                 curSlideButton = slideBar.getButton(curSlidedIndex);
                 curSlideButton.setSelected(true);
             }

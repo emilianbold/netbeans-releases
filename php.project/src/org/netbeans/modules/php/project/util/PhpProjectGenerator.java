@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProjectType;
 import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.netbeans.modules.php.project.api.PhpLanguageProperties.PhpVersion;
@@ -166,6 +167,7 @@ public final class PhpProjectGenerator {
         final AntProjectHelper helper = ProjectGenerator.createProject(projectFO, PhpProjectType.TYPE);
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws MutexException {
                     try {
                         // configure
@@ -277,6 +279,9 @@ public final class PhpProjectGenerator {
             case REMOTE:
                 configureRunAsRemoteWeb(projectProperties, sharedProperties, privateProperties);
                 break;
+            case INTERNAL:
+                configureRunAsInternalServer(projectProperties, sharedProperties, privateProperties);
+                break;
             default:
                 assert false : "Unhandled RunAsType type: " + runAs;
                 break;
@@ -294,6 +299,23 @@ public final class PhpProjectGenerator {
         privateProperties.put(PhpProjectProperties.REMOTE_CONNECTION, remoteConfiguration.getName());
         privateProperties.put(PhpProjectProperties.REMOTE_DIRECTORY, remoteDirectory);
         privateProperties.put(PhpProjectProperties.REMOTE_UPLOAD, uploadFiles.name());
+    }
+
+    private static void configureRunAsInternalServer(ProjectProperties projectProperties, EditableProperties sharedProperties, EditableProperties privateProperties) {
+        String hostname = projectProperties.getHostname();
+        Integer port = projectProperties.getPort();
+        String router = projectProperties.getRouter();
+
+        assert hostname != null;
+        assert port != null;
+
+        privateProperties.put(PhpProjectProperties.HOSTNAME, hostname);
+        privateProperties.put(PhpProjectProperties.PORT, String.valueOf(port));
+        if (StringUtils.hasText(router)) {
+            privateProperties.put(PhpProjectProperties.ROUTER, router);
+        }
+        // XXX remove index.file from properties, so run/debug project can then work
+        privateProperties.remove(PhpProjectProperties.INDEX_FILE);
     }
 
     private static void createIndexFile(FileObject template, FileObject sourceDir, String indexFile) throws IOException {
@@ -351,6 +373,9 @@ public final class PhpProjectGenerator {
         private RemoteConfiguration remoteConfiguration;
         private String remoteDirectory;
         private PhpProjectProperties.UploadFiles uploadFiles;
+        private String hostname;
+        private Integer port;
+        private String router;
         private Map<PhpFrameworkProvider, PhpModuleExtender> frameworkExtenders; // for USAGES only
 
         public ProjectProperties() {
@@ -371,6 +396,9 @@ public final class PhpProjectGenerator {
             remoteConfiguration = properties.remoteConfiguration;
             remoteDirectory = properties.remoteDirectory;
             uploadFiles = properties.uploadFiles;
+            hostname = properties.hostname;
+            port = properties.port;
+            router = properties.router;
             frameworkExtenders = properties.frameworkExtenders;
         }
 
@@ -554,6 +582,41 @@ public final class PhpProjectGenerator {
             return this;
         }
 
+        public String getHostname() {
+            return hostname;
+        }
+
+        /**
+         * @param hostname hostname, can be <code>null</code>
+         */
+        public ProjectProperties setHostname(String hostname) {
+            this.hostname = hostname;
+            return this;
+        }
+
+        public Integer getPort() {
+            return port;
+        }
+
+        /**
+         * @param port port, can be <code>null</code>
+         */
+        public ProjectProperties setPort(Integer port) {
+            this.port = port;
+            return this;
+        }
+
+        public String getRouter() {
+            return router;
+        }
+
+        /**
+         * @param router hostname, can be <code>null</code>
+         */
+        public ProjectProperties setRouter(String router) {
+            this.router = router;
+            return this;
+        }
 
         public Map<PhpFrameworkProvider, PhpModuleExtender> getFrameworkExtenders() {
             if (frameworkExtenders == null) {

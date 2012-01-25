@@ -45,6 +45,7 @@
 package org.netbeans.core.windows;
 
 import java.util.MissingResourceException;
+import javax.swing.JTabbedPane;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -256,7 +257,57 @@ public final class Switches {
     public static boolean isDragAndDropSlidingEnabled() {
         return getSwitchValue( "WinSys.DragAndDrop.Sliding.Enabled", false ); //NOI18N
     }
-    
+
+    /**
+     * @return True to force JTabbedPane implementation of Tab Control for all
+     * window types (view/editor/sliding).
+     *
+     * @since 2.44
+     */
+    public static boolean isUseSimpleTabs() {
+        return getSwitchValue( "WinSys.TabControl.SimpleTabs.Enabled", false ); //NOI18N
+    }
+
+    /**
+     * Defines the tab placement. The possible bundle values are <code>top</code>, <code>bottom</code>, <code>left</code>, <code>right</code>.
+     * @return Tab placement when JTabbedPane implementation of Tab Control is
+     * being used. The return value is one of <code>JTabbedPane.TOP</code> (default), <code>JTabbedPane.BOTTOM</code>,
+     * <code>JTabbedPane.LEFT</code>, <code>JTabbedPane.RIGHT</code>.
+     * 
+     * @see JTabbedPane#getTabPlacement() 
+     * 
+     * @since 2.44
+     */
+    public static int getSimpleTabsPlacement() {
+        int result = JTabbedPane.TOP;
+        try {
+            String resValue = NbBundle.getMessage(Switches.class, "WinSys.TabControl.SimpleTabs.Enabled" ); //NOI18N
+            if( "bottom".equals( resValue ) )
+                result = JTabbedPane.BOTTOM;
+            else if( "right".equals( resValue ) )
+                result = JTabbedPane.RIGHT;
+            else if( "left".equals( resValue ) )
+                result = JTabbedPane.LEFT;
+        } catch( MissingResourceException mrE ) {
+            //ignore
+        }
+        return result;
+    }
+
+    /**
+     * Defines the tab layout when JTabbedPane implementation of Tab Control is being
+     * used. Has no effect when isUseSimpleTabs() returns false.
+     * @return True to use JTabbedPane.WRAP_TAB_LAYOUT layout for window tabs.
+     * @see #isUseSimpleTabs()
+     * @see JTabbedPane#WRAP_TAB_LAYOUT
+     *
+     * @since 2.44
+     */
+    public static boolean isSimpleTabsMultiRow() {
+
+        return getSwitchValue( "WinSys.TabControl.SimpleTabs.MultiRow", false ); //NOI18N
+    }
+
     private static boolean getSwitchValue( String switchName, boolean defaultValue ) {
         boolean result = defaultValue;
         try {

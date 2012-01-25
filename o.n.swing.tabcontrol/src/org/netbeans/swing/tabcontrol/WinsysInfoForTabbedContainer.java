@@ -45,6 +45,7 @@
 package org.netbeans.swing.tabcontrol;
 
 import java.awt.Component;
+import org.netbeans.swing.tabcontrol.customtabs.TabbedComponentFactory;
 import org.openide.windows.TopComponent;
 
 
@@ -56,6 +57,7 @@ import org.openide.windows.TopComponent;
  * the position of the container or on maximization state.
  *
  * @see TabbedContainer#TabbedContainer
+ * @see TabbedComponentFactory
  *
  * @author S. Aubrecht
  */

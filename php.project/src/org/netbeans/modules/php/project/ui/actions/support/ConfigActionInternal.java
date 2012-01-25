@@ -39,67 +39,72 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.runconfigs;
+package org.netbeans.modules.php.project.ui.actions.support;
 
-import java.io.File;
-import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.internalserver.InternalWebServer;
+import org.netbeans.modules.php.project.runconfigs.RunConfigInternal;
+import org.netbeans.modules.php.project.runconfigs.validation.RunConfigInternalValidator;
+import org.openide.util.Lookup;
 
-/**
- * Base class for all run configs.
- */
-public abstract class RunConfig<T extends RunConfig<?>> {
+class ConfigActionInternal extends ConfigActionLocal {
 
-    protected File indexParentDir;
-    protected String indexRelativePath;
-    protected String arguments;
-
-
-    RunConfig() {
+    ConfigActionInternal(PhpProject project) {
+        super(project);
     }
 
-    //~ Methods
+    @Override
+    public boolean isProjectValid() {
+        return isValid();
+    }
 
-    public File getIndexFile() {
-        if (indexParentDir == null) {
-            throw new NullPointerException("Property 'indexParentDir' must be set");
+    @Override
+    public boolean isFileValid() {
+        return isValid();
+    }
+
+    private boolean isValid() {
+        boolean valid = RunConfigInternalValidator.validateConfigAction(RunConfigInternal.forProject(project)) == null;
+        if (!valid) {
+            showCustomizer();
         }
-        if (StringUtils.hasText(indexRelativePath)) {
-            return new File(indexParentDir, indexRelativePath.replace('/', File.separatorChar)); // NOI18N
+        return valid;
+    }
+
+    @Override
+    public void debugFile(Lookup context) {
+        if (!startInternalServer()) {
+            return;
         }
-        return indexParentDir;
+        super.debugFile(context);
     }
 
-    //~ Getters & setters
-
-    public String getArguments() {
-        return arguments;
+    @Override
+    public void debugProject() {
+        if (!startInternalServer()) {
+            return;
+        }
+        super.debugProject();
     }
 
-    // XXX is there a better way?
-    @SuppressWarnings("unchecked")
-    public T setArguments(String arguments) {
-        this.arguments = arguments;
-        return (T) this;
+    @Override
+    public void runFile(Lookup context) {
+        if (!startInternalServer()) {
+            return;
+        }
+        super.runFile(context);
     }
 
-    public File getIndexParentDir() {
-        return indexParentDir;
+    @Override
+    public void runProject() {
+        if (!startInternalServer()) {
+            return;
+        }
+        super.runProject();
     }
 
-    @SuppressWarnings("unchecked")
-    public T setIndexParentDir(File indexParentDir) {
-        this.indexParentDir = indexParentDir;
-        return (T) this;
-    }
-
-    public String getIndexRelativePath() {
-        return indexRelativePath;
-    }
-
-    @SuppressWarnings("unchecked")
-    public T setIndexRelativePath(String indexRelativePath) {
-        this.indexRelativePath = indexRelativePath;
-        return (T) this;
+    private boolean startInternalServer() {
+        return project.getLookup().lookup(InternalWebServer.class).start();
     }
 
 }
