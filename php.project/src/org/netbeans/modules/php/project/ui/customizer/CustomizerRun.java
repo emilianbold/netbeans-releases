@@ -85,6 +85,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             new RunAsLocalWeb(properties, manager, category),
             new RunAsRemoteWeb(properties, manager, category),
             new RunAsScript(properties.getProject(), manager, category),
+            new RunAsInternalServer(properties, manager, category),
         };
         initComponents();
         comboModel = new ConfigComboBoxModel();

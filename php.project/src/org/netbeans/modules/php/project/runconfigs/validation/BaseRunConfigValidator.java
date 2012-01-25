@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,56 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.php.project.util;
+package org.netbeans.modules.php.project.runconfigs.validation;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
-import static org.junit.Assert.*;
+/**
+ * Validator for {@link org.netbeans.modules.php.project.runconfigs.BaseRunConfig}.
+ */
+public final class BaseRunConfigValidator {
 
-public class PhpProjectUtilsTest extends NbTestCase {
-
-    public PhpProjectUtilsTest(String name) {
-        super(name);
+    private BaseRunConfigValidator() {
     }
 
-    public void testImplode() {
-        final List<String> items = Arrays.asList("one", "two");
-        assertEquals("one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two", StringUtils.implode(items, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR));
+    @NbBundle.Messages("BaseRunConfigValidator.error.index.label=Index File")
+    public static String validateIndexFile(File rootDirectory, String indexFile) {
+        return validateRelativeFile(rootDirectory, indexFile, Bundle.BaseRunConfigValidator_error_index_label());
     }
 
-    public void testExplode() {
-        final String[] items = {"one", "two"};
-        String string = "one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two";
-        assertArrayEquals(items, StringUtils.explode(string, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR).toArray(new String[0]));
-
-        // test for empty string (relative path ".")
-        string = "one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two";
-        assertArrayEquals(new String[] {"one", "", "two"}, StringUtils.explode(string, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR).toArray(new String[0]));
-    }
-
-    public void testResolveFile() throws Exception {
-        File workDir = getWorkDir();
-        assertEquals(workDir, PhpProjectUtils.resolveFile(workDir, null));
-        assertEquals(workDir, PhpProjectUtils.resolveFile(workDir, ""));
-        assertEquals(workDir, PhpProjectUtils.resolveFile(workDir, " "));
-        assertEquals(new File(workDir, "a.php"), PhpProjectUtils.resolveFile(workDir, "a.php"));
-        assertEquals(new File(new File(workDir, "myfolder"), "a.php"), PhpProjectUtils.resolveFile(workDir, "myfolder/a.php"));
+    @NbBundle.Messages({
+        "BaseRunConfigValidator.error.relativeFile.missing={0} must be specified in order to run or debug project in command line.",
+        "BaseRunConfigValidator.error.relativeFile.invalid={0} must be a valid relative URL."
+    })
+    static String validateRelativeFile(File rootDirectory, String relativeFile, String errSource) {
+        assert rootDirectory != null;
+        if (!StringUtils.hasText(relativeFile)) {
+            return Bundle.BaseRunConfigValidator_error_relativeFile_missing(errSource);
+        }
+        boolean error = false;
+        if (relativeFile.startsWith("/") // NOI18N
+                || relativeFile.startsWith("\\")) { // NOI18N
+            error = true;
+        } else if (Utilities.isWindows() && relativeFile.contains(File.separator)) {
+            error = true;
+        } else {
+            File index = PhpProjectUtils.resolveFile(rootDirectory, relativeFile);
+            if (!index.isFile()
+                    || !index.equals(FileUtil.normalizeFile(index))) {
+                error = true;
+            }
+        }
+        if (error) {
+            return Bundle.BaseRunConfigValidator_error_relativeFile_invalid(errSource);
+        }
+        return null;
     }
 
 }
