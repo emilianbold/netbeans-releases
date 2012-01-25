@@ -43,6 +43,8 @@ package org.netbeans.modules.openide.filesystems.declmime;
 
 import java.net.URL;
 import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -90,6 +92,13 @@ public class MIMEResolverProcessorTest extends NbTestCase {
         MIMEResolver mime = FileUtil.getConfigObject(PATH, MIMEResolver.class);
         assertNotNull("Mime type found", mime);
         assertEquals("build1.xml recognized as Ant script", "text/x-ant+xml", mime.findMIMEType(root.getFileObject("build1", "xml")));
+        
+        Map<String, Set<String>> map = MIMEResolverImpl.getMIMEToExtensions(fo);
+        assertNotNull("Map is provided", map);
+        assertFalse("Map is not empty", map.isEmpty());
+        Set<String> arr = map.get("text/x-ant+xml");
+        assertEquals("One extension", 1, arr.size());
+        assertEquals("It is xml", "xml", arr.iterator().next());
     }
     
     public void testExtensionResolver() throws Exception {
@@ -106,5 +115,12 @@ public class MIMEResolverProcessorTest extends NbTestCase {
         
         FileObject check = FileUtil.createMemoryFileSystem().getRoot().createData("my.xyz");
         assertEquals("build1.xml recognized as Ant script", "text/x-yz", mime.findMIMEType(check));        
+
+        Map<String, Set<String>> map = MIMEResolverImpl.getMIMEToExtensions(fo);
+        assertNotNull("Map is provided", map);
+        assertFalse("Map is not empty", map.isEmpty());
+        Set<String> arr = map.get("text/x-yz");
+        assertEquals("One extension", 1, arr.size());
+        assertEquals("It is xyz", "xyz", arr.iterator().next());
     }
 }

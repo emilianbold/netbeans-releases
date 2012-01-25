@@ -128,12 +128,18 @@ public final class MIMEResolverImpl {
      * {@literal {image/jpeg=[jpg, jpeg], image/gif=[]}}.
      */
     public static Map<String, Set<String>> getMIMEToExtensions(FileObject fo) {
+        Impl impl;
         if (!fo.hasExt("xml")) { // NOI18N
-            return Collections.emptyMap();
+            impl = FileUtil.getConfigObject(fo.getPath(), Impl.class);
+            if (impl == null) {
+                return Collections.emptyMap();
+            }
+            impl.init();
+        } else {
+            impl = new Impl(fo);
+            impl.parseDesc();
         }
         Map<String, Set<String>> result = new HashMap<String, Set<String>>();
-        Impl impl = new Impl(fo);
-        impl.parseDesc();
         FileElement[] elements = impl.smell;
         if (elements != null) {
             for (FileElement fileElement : elements) {
