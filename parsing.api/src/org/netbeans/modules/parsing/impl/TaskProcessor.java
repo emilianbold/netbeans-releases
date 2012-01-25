@@ -656,6 +656,7 @@ public class TaskProcessor {
             try {
                 while (true) {                   
                     try {                        
+                        Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "ALL REQUESTS: ", new Object[]{requests});  //NOI18N
                         final Request r = requests.take();
                         if (r != null && r != Request.NONE) {
                             RepositoryUpdater.getDefault().suspend();
@@ -710,6 +711,7 @@ public class TaskProcessor {
                                                     lockCount++;
                                                     try {
                                                         if (r.task instanceof EmbeddingProvider) {
+                                                            Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "Performaing EmbeddignProvider: {0}", new Object[]{r});  //NOI18N
                                                             sourceCache.refresh ((EmbeddingProvider) r.task, r.schedulerType);
                                                         }
                                                         else {
