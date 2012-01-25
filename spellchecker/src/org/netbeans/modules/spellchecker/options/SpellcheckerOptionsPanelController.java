@@ -58,7 +58,7 @@ import org.openide.util.Lookup;
 @SubRegistration(
     location="Editor",
     id="Spellchecker",
-    position=700,
+    position=750,
     displayName="#TITLE_OptionsPanel",
     keywords="#KW_SpellcheckerOptions",
     keywordsCategory="Editor/Spellchecker")
