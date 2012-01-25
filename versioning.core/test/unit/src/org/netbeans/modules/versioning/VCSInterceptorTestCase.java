@@ -309,6 +309,7 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
 
     public void testFileCreatedLockedRenamedDeleted() throws IOException {
         inteceptor.moveHandler = moveHandler;
+        inteceptor.deleteHandler = deleteHandler;
         FileObject fo = getVersionedFolder();
         logHandler.clear();
         
