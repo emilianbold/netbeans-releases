@@ -44,20 +44,8 @@
 
 package org.netbeans.modules.openide.filesystems.declmime;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.io.*;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.openide.filesystems.declmime.FileElement.Type;
@@ -100,6 +88,18 @@ public final class MIMEResolverImpl {
 
     public static MIMEResolver forDescriptor(FileObject fo) {
         return new Impl(fo);
+    }
+    
+    static MIMEResolver forStream(byte[] serialData) throws IOException, ClassNotFoundException {
+        return new Impl(serialData);
+    }
+    
+    static byte[] toStream(MIMEResolver mime) throws IOException {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        DataOutputStream dos = new DataOutputStream(os);
+        ((Impl)mime).writeExternal(dos);
+        dos.close();
+        return os.toByteArray();
     }
 
     /** Check whether given resolver is declarative. */
@@ -275,7 +275,7 @@ public final class MIMEResolverImpl {
 
     // MIMEResolver ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    private static class Impl extends MIMEResolver {
+    private static final class Impl extends MIMEResolver {
         // This file object describes rules that drive ths instance
         private final FileObject data;
 
@@ -291,15 +291,24 @@ public final class MIMEResolverImpl {
         // Resolvers in reverse order
         private FileElement[] smell = null;
                 
-        private short state = DescParser.INIT;
+        private short state;
 
         private String[] implResolvableMIMETypes = null;
 
         @SuppressWarnings("deprecation")
         Impl(FileObject obj) {
             if (ERR.isLoggable(Level.FINE)) ERR.fine("MIMEResolverImpl.Impl.<init>(" + obj + ")");  // NOI18N
+            state = DescParser.INIT;
             data = obj;
             data.addFileChangeListener(FileUtil.weakFileChangeListener(listener, data));
+        }
+
+        private Impl(byte[] serialData) throws IOException, ClassNotFoundException {
+            data = null;
+            state = DescParser.LOAD;
+            ByteArrayInputStream is = new ByteArrayInputStream(serialData);
+            DataInputStream dis = new DataInputStream(is);
+            readExternal(dis);
         }
 
         public String findMIMEType(FileObject fo) {
@@ -374,7 +383,42 @@ public final class MIMEResolverImpl {
             return "MIMEResolverImpl.Impl[" + data.getPath() + "]";  // NOI18N
         }
 
+        public void writeExternal(DataOutput out) throws IOException {
+            init();
+            if (state == DescParser.ERROR) {
+                throw new IOException();
+            }
+            out.writeInt(implResolvableMIMETypes.length);
+            for (String m : implResolvableMIMETypes) {
+                out.writeUTF(m);
+            }
+            out.writeInt(smell.length);
+            for (FileElement fe : smell) {
+                fe.writeExternal(out);
+            }
+        }
 
+        public void readExternal(DataInput in) throws IOException, ClassNotFoundException {
+            if (state != DescParser.LOAD) {
+                throw new IOException();
+            }
+            try {
+                implResolvableMIMETypes = new String[in.readInt()];
+                for (int i = 0; i < implResolvableMIMETypes.length; i++) {
+                    implResolvableMIMETypes[i] = in.readUTF();
+                }
+                smell = new FileElement[in.readInt()];
+                for (int i = 0; i < smell.length; i++) {
+                    smell[i] = new FileElement();
+                    smell[i].readExternal(in);
+                }
+                state = DescParser.PARSED;
+            } finally {
+                if (state == DescParser.LOAD) {
+                    state = DescParser.ERROR;
+                }
+            }
+        }
     }
 
     

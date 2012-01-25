@@ -41,9 +41,7 @@
  */
 package org.netbeans.modules.openide.filesystems.declmime;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -64,8 +62,7 @@ import org.openide.xml.XMLUtil;
  * Responsible for pairing and performing fast check followed by optional
  * rules and if all matches returning MIME type.
  */
-class FileElement {
-
+final class FileElement {
     FileElement() {
     }
     Type fileCheck = new Type();
@@ -124,11 +121,19 @@ class FileElement {
         buf.append("Result:").append(mime);
         return buf.toString();
     }
+
+    public void writeExternal(DataOutput out) throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void readExternal(DataInput in) throws IOException, ClassNotFoundException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
         
     /**
      * Hold data from XML document and performs first stage check according to them.
      * <p>
-     * The first stage check is resonsible for filtering files according  to their 
+     * The first stage check is responsible for filtering files according  to their 
      * attributes provided by lower layers.
      * <p>
      * We could generate hardwired class bytecode on a fly.

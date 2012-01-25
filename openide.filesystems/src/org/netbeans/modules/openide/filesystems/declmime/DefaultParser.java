@@ -72,6 +72,7 @@ abstract class DefaultParser  extends DefaultHandler {
     protected static final short PARSED = 1000;
     protected static final short ERROR = -1;
     protected static final short INIT = 0;
+    protected static final short LOAD = 1;
 
     protected DefaultParser() {        
     }
