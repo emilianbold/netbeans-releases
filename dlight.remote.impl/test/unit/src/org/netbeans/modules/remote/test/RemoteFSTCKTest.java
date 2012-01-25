@@ -74,7 +74,8 @@ public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
         if (ALLOW_TCK) {
             suite.addTestSuite(FileSystemTestHid.class);
             suite.addTestSuite(FileObjectTestHid.class);
-            suite.addTestSuite(AttributesTestHidden.class);
+            // it seems AttributesTestHidden does not belong to FS TCK
+            //suite.addTestSuite(AttributesTestHidden.class);
             suite.addTestSuite(URLMapperTestHidden.class);
             suite.addTestSuite(FileUtilTestHidden.class);
         }
