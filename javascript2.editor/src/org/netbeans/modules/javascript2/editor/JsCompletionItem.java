@@ -41,12 +41,14 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.CompletionContextFinder.CompletionContext;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
@@ -148,4 +150,52 @@ public class JsCompletionItem implements CompletionProposal {
         public CompletionContext context;
     }
     
+    public static class JsFunctionCompletionItem extends JsCompletionItem {
+        private JsFunction function;
+        
+        JsFunctionCompletionItem(ElementHandle element, CompletionRequest request) {
+            super(element, request);
+            this.function = (JsFunction)element;
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            formatter.emphasis(true);
+            formatter.appendText(getName());
+            formatter.emphasis(false);
+            formatter.appendText("(");
+            appendParamsStr(formatter);
+            formatter.appendText(")");
+            return formatter.getText();
+        }
+        
+        private void appendParamsStr(HtmlFormatter formatter){
+            Collection<? extends Identifier> allParameters = function.getParameters();
+            for (Iterator<? extends Identifier> it = allParameters.iterator(); it.hasNext();) {
+                Identifier ident = it.next();
+                formatter.parameters(true);
+                formatter.appendText(ident.getName());
+                formatter.parameters(false);
+                if (it.hasNext()) {
+                    formatter.appendText(", ");  //NOI18N
+                }    
+            }
+        }
+    }
+
+    public static class Factory {
+        
+        public static JsCompletionItem create(JsObject object, CompletionRequest request) {
+            JsCompletionItem result;
+            switch (object.getJSKind()) {
+                case FUNCTION:
+                case METHOD:
+                    result = new JsFunctionCompletionItem(object, request);
+                    break;
+                default:
+                    result = new JsCompletionItem(object, request);
+            }
+            return result;
+        }
+    }
 }

@@ -284,7 +284,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     for (JsObject object : type.getProperties().values()) {
                         if (!(object instanceof JsFunction && ((JsFunction) object).isAnonymous())
                                 && startsWith(object.getName(), request.prefix)) {
-                            resultList.add(new JsCompletionItem(object, request));
+                            resultList.add(JsCompletionItem.Factory.create(object, request));
                         }
                     }
                 } else {
@@ -294,7 +294,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                                 for (JsObject property : object.getProperties().values()) {
                                     if (!(property instanceof JsFunction && ((JsFunction) property).isAnonymous())
                                             && startsWith(property.getName(), request.prefix)) {
-                                        resultList.add(new JsCompletionItem(property, request));
+                                        resultList.add(JsCompletionItem.Factory.create(property, request));
                                     }
                                 }
                                 break;
