@@ -157,7 +157,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         "RunAsType.local.label=Local Web Site (running on local web server)",
         "RunAsType.script.label=Script (run in command line)",
         "RunAsType.remote.label=Remote Web Site (FTP, SFTP)",
-        "RunAsType.internal.label=Built-in Web Server (running on built-in web server)"
+        "RunAsType.internal.label=PHP Built-in Web Server (running on built-in web server)"
     })
     public static enum RunAsType {
         LOCAL(Bundle.RunAsType_local_label()),
