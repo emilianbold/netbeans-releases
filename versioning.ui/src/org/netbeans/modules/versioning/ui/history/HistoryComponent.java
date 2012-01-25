@@ -407,7 +407,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             settingsButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/options.png"))); 
             settingsButton.addActionListener(this);
             showHistoryAction = new ShowHistoryAction();
-            searchHistoryButton = new LinkButton(NbBundle.getMessage(this.getClass(), "LBL_ShowVersioningHistory", new Object[] {vs.getProperty(VersioningSystem.PROP_DISPLAY_NAME)})); // NOI18N
+            searchHistoryButton = new LinkButton(); // NOI18N
             searchHistoryButton.addActionListener(showHistoryAction);
             
             setup(vs);
@@ -438,11 +438,8 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
 
         void setup(VersioningSystem vs) {
             boolean visible = vs != null && vs.getVCSHistoryProvider() != null;
-            filterCombo.setVisible(visible);
-            filterLabel.setVisible(visible);
-            searchHistoryButton.setVisible(visible);
-            
             if(visible) {
+                searchHistoryButton.setText(NbBundle.getMessage(this.getClass(), "LBL_ShowVersioningHistory", new Object[] {vs.getProperty(VersioningSystem.PROP_DISPLAY_NAME)}));
                 Filter[] filters;
                 filters = new Filter[] {
                     new AllFilter(), 
@@ -452,6 +449,9 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
                     new ByMsgFilter()};
                 filterCombo.setModel(new DefaultComboBoxModel(filters));                 
             }
+            filterCombo.setVisible(visible);
+            filterLabel.setVisible(visible);
+            searchHistoryButton.setVisible(visible);
         }
         
         @Override
