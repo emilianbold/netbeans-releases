@@ -41,44 +41,50 @@
  */
 package org.netbeans.modules.php.project.runconfigs.validation;
 
-import java.io.File;
 import org.netbeans.modules.php.api.util.StringUtils;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.php.project.connections.common.RemoteValidator;
+import org.netbeans.modules.php.project.runconfigs.RunConfigInternal;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
- * Validator for {@link org.netbeans.modules.php.project.runconfigs.RunConfig}.
+ * Validator for {@link RunConfigInternal}.
  */
-public final class RunConfigValidator {
+public final class RunConfigInternalValidator {
 
-    private RunConfigValidator() {
+    private RunConfigInternalValidator() {
     }
 
-    @NbBundle.Messages({
-        "RunConfigValidator.error.index.missing=Index File must be specified in order to run or debug project in command line.",
-        "RunConfigValidator.error.index.invalid=Index File must be a valid relative URL."
-    })
-    public static String validateIndexFile(File rootDirectory, String indexFile) {
-        assert rootDirectory != null;
-        if (!StringUtils.hasText(indexFile)) {
-            return Bundle.RunConfigValidator_error_index_missing();
+    public static String validateNewProject(RunConfigInternal config) {
+        return validate(config, false);
+    }
+
+    public static String validateCustomizer(RunConfigInternal config) {
+        return validate(config, true);
+    }
+
+    public static String validateConfigAction(RunConfigInternal config) {
+        return validate(config, true);
+    }
+
+    @NbBundle.Messages("RunConfigInternalValidator.router.label=Router")
+    private static String validate(RunConfigInternal config, boolean validateRouter) {
+        String error;
+        error = RemoteValidator.validateHost(config.getHostname());
+        if (error != null) {
+            return error;
         }
-        boolean error = false;
-        if (indexFile.startsWith("/") // NOI18N
-                || indexFile.startsWith("\\")) { // NOI18N
-            error = true;
-        } else if (Utilities.isWindows() && indexFile.contains(File.separator)) {
-            error = true;
-        } else {
-            File index = new File(rootDirectory, indexFile.replace('/', File.separatorChar)); // NOI18N
-            if (!index.isFile()
-                    || !index.equals(FileUtil.normalizeFile(index))) {
-                error = true;
+        error = RemoteValidator.validatePort(config.getPort());
+        if (error != null) {
+            return error;
+        }
+        if (validateRouter) {
+            String routerRelativePath = config.getRouterRelativePath();
+            if (StringUtils.hasText(routerRelativePath)) {
+                error = BaseRunConfigValidator.validateRelativeFile(config.getWorkDir(), routerRelativePath, Bundle.RunConfigInternalValidator_router_label());
+                if (error != null) {
+                    return error;
+                }
             }
-        }
-        if (error) {
-            return Bundle.RunConfigValidator_error_index_invalid();
         }
         return null;
     }

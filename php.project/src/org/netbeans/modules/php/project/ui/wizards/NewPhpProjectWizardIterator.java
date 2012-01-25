@@ -179,6 +179,9 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 .setRemoteConfiguration((RemoteConfiguration) descriptor.getProperty(RunConfigurationPanel.REMOTE_CONNECTION))
                 .setRemoteDirectory((String) descriptor.getProperty(RunConfigurationPanel.REMOTE_DIRECTORY))
                 .setUploadFiles(wizardType == WizardType.REMOTE ? UploadFiles.ON_SAVE : (UploadFiles) descriptor.getProperty(RunConfigurationPanel.REMOTE_UPLOAD))
+                .setHostname((String) descriptor.getProperty(RunConfigurationPanel.HOSTNAME))
+                .setPort(getPort())
+                .setRouter((String) descriptor.getProperty(RunConfigurationPanel.ROUTER))
                 .setFrameworkExtenders(frameworkExtenders);
 
         PhpProjectGenerator.Monitor monitor = null;
@@ -388,6 +391,9 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         settings.putProperty(RunConfigurationPanel.REMOTE_CONNECTION, null);
         settings.putProperty(RunConfigurationPanel.REMOTE_DIRECTORY, null);
         settings.putProperty(RunConfigurationPanel.REMOTE_UPLOAD, null);
+        settings.putProperty(RunConfigurationPanel.HOSTNAME, null);
+        settings.putProperty(RunConfigurationPanel.PORT, null);
+        settings.putProperty(RunConfigurationPanel.ROUTER, null);
         settings.putProperty(PhpFrameworksPanel.VALID, null);
         settings.putProperty(PhpFrameworksPanel.EXTENDERS, null);
         settings.putProperty(RemoteConfirmationPanel.REMOTE_FILES, null);
@@ -464,6 +470,14 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             return new File(localServer.getSrcRoot());
         }
         return null;
+    }
+
+    private Integer getPort() {
+        String port = (String) descriptor.getProperty(RunConfigurationPanel.PORT);
+        if (port == null) {
+            return null;
+        }
+        return Integer.valueOf(port);
     }
 
     private void extendPhpModule(PhpModule phpModule, Map<PhpFrameworkProvider, PhpModuleExtender> frameworkExtenders,
@@ -573,7 +587,10 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             return null;
         }
 
-        privateProperties.setProperty(PhpProjectProperties.INDEX_FILE, indexFile);
+        if (!RunAsType.INTERNAL.equals(getRunAsType())) {
+            // XXX do not store index file for internal web otherwise run/debug project will not work
+            privateProperties.setProperty(PhpProjectProperties.INDEX_FILE, indexFile);
+        }
         return FileUtil.toFileObject(createProperties.getSourcesDirectory()).getFileObject(indexFile);
     }
 

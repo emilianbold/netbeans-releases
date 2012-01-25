@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,63 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.php.project.util;
+package org.netbeans.modules.php.project.runconfigs;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 
-import static org.junit.Assert.*;
+/**
+ * Base class for run configs with index file.
+ */
+abstract class BaseRunConfig<T extends BaseRunConfig<?>> {
 
-public class PhpProjectUtilsTest extends NbTestCase {
+    protected File indexParentDir;
+    protected String indexRelativePath;
+    protected String arguments;
 
-    public PhpProjectUtilsTest(String name) {
-        super(name);
+
+    BaseRunConfig() {
     }
 
-    public void testImplode() {
-        final List<String> items = Arrays.asList("one", "two");
-        assertEquals("one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two", StringUtils.implode(items, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR));
+    //~ Methods
+
+    public File getIndexFile() {
+        return PhpProjectUtils.resolveFile(indexParentDir, indexRelativePath);
     }
 
-    public void testExplode() {
-        final String[] items = {"one", "two"};
-        String string = "one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two";
-        assertArrayEquals(items, StringUtils.explode(string, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR).toArray(new String[0]));
+    //~ Getters & setters
 
-        // test for empty string (relative path ".")
-        string = "one" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "" + PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR + "two";
-        assertArrayEquals(new String[] {"one", "", "two"}, StringUtils.explode(string, PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR).toArray(new String[0]));
+    public String getArguments() {
+        return arguments;
     }
 
-    public void testResolveFile() throws Exception {
-        File workDir = getWorkDir();
-        assertEquals(workDir, PhpProjectUtils.resolveFile(workDir, null));
-        assertEquals(workDir, PhpProjectUtils.resolveFile(workDir, ""));
-        assertEquals(workDir, PhpProjectUtils.resolveFile(workDir, " "));
-        assertEquals(new File(workDir, "a.php"), PhpProjectUtils.resolveFile(workDir, "a.php"));
-        assertEquals(new File(new File(workDir, "myfolder"), "a.php"), PhpProjectUtils.resolveFile(workDir, "myfolder/a.php"));
+    // XXX is there a better way?
+    @SuppressWarnings("unchecked")
+    public T setArguments(String arguments) {
+        this.arguments = arguments;
+        return (T) this;
+    }
+
+    public File getIndexParentDir() {
+        return indexParentDir;
+    }
+
+    @SuppressWarnings("unchecked")
+    public T setIndexParentDir(File indexParentDir) {
+        this.indexParentDir = indexParentDir;
+        return (T) this;
+    }
+
+    public String getIndexRelativePath() {
+        return indexRelativePath;
+    }
+
+    @SuppressWarnings("unchecked")
+    public T setIndexRelativePath(String indexRelativePath) {
+        this.indexRelativePath = indexRelativePath;
+        return (T) this;
     }
 
 }
