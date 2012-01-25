@@ -43,6 +43,7 @@ package org.netbeans.modules.remotefs.versioning.spi;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.Future;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
@@ -71,7 +72,15 @@ import org.openide.util.test.MockLookup;
  */
 public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
 
-    private static final boolean ALLOW_TCK = true;
+    private static final boolean ALLOW_TCK;
+    static {
+        String property = System.getProperty("run.test.RandomlyFails");
+        if ("false".equals(property)) {
+            ALLOW_TCK = false;
+        } else {
+            ALLOW_TCK = true;
+        }
+    }
     private ExecutionEnvironment execEnv = null;
     private String tmpDir;
     private FileObject root;
@@ -85,11 +94,6 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
         return tmpDir;
     }
 
-    @Override
-    public void delete(String path) throws IOException {
-        CommonTasksSupport.rmFile(execEnv, getRootPath()+"/"+path, null);
-    }
-    
     @Override
     protected FileObject createFile(String path) throws IOException {
         return createFileObject(path, false);
@@ -112,11 +116,6 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
             fo = FileUtil.createData(root, path);
         }
         return fo;
-    }
-
-    @Override
-    protected void setReadOnly(String path) throws IOException {
-        CommonTasksSupport.chmod(execEnv, getRootPath()+"/"+path, 0444, null);
     }
 
     public static void main(String args[]) {
@@ -191,16 +190,33 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
 
     @Override
     public void move(String from, String to) throws IOException {
-        ExitStatus status = ProcessUtils.executeInDir(getRootPath(), execEnv, "mv", from, to);
-        if (status.isOK()) {
+        ExitStatus res = ProcessUtils.executeInDir(getRootPath(), execEnv, "mv", from, to);
+        if (res.exitCode != 0) {
+            throw new IOException("mv failed: " + res.error);
         }
     }
 
     @Override
     public void copy(String from, String to) throws IOException {
-        ExitStatus status = ProcessUtils.executeInDir(getRootPath(), execEnv, "mv", from, to);
-        if (status.isOK()) {
+        ExitStatus res = ProcessUtils.executeInDir(getRootPath(), execEnv, "cp", "-r", from, to);
+        if (res.exitCode != 0) {
+            throw new IOException("cp failed: " + res.error);
         }
     }
 
+    @Override
+    public void delete(String path) throws IOException {
+        ExitStatus res = ProcessUtils.executeInDir(getRootPath(), execEnv, "rm", "-rf", getRootPath()+"/"+path);
+        if (res.exitCode != 0) {
+            throw new IOException("rm failed: " + res.error);
+        }
+    }
+
+    @Override
+    protected void setReadOnly(String path) throws IOException {
+        ExitStatus res = ProcessUtils.executeInDir(getRootPath(), execEnv, "chmod", "444", getRootPath()+"/"+path);
+        if (res.exitCode != 0) {
+            throw new IOException("chmod failed: " + res.error);
+        }
+    }
 }
