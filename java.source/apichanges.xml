@@ -116,13 +116,14 @@ is the proper place.
              <author login="sdedic"/>
             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
              <description>
-                 Added <code>SourceUtils.waitUserActionTask</code>, <code>SourceUtils.postUserActionTask</code> and
-                 <code>SourceUtils.postUserRefreshTask</code>, which supports retry after scanning finishes. Elements can be 
+                 Added class <code>ScanUtils</code>, which help to check completness of parsing data and allow to
+                 restart processing after project scan finishes to see most complete data. Elements can be 
                  checked using new methods
                  <code>checkElement</code>, <code>resolveElement</code>, <code>findElement</code> and <code>findTypeElement</code>
                  that throws an exception indicating the user task should be aborted and restarted later. See javadoc for more info.
              </description>
-             <issue number="to-be-filed"/>
+             <class package="org.netbeans.api.java.source" name="ScanUtils"/>
+             <issue number="207704"/>
         </change>
         <change id="Indexing-aware-JavaSourceTaskFactories">
              <api name="general"/>
