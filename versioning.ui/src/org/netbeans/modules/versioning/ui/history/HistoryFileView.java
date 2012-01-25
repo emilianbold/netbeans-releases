@@ -624,7 +624,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                 @Override
                 public Icon getIcon(Object o) {
                     final Node n = Visualizer.findNode(o);
-                    if(n instanceof WaitNode) {
+                    if(HistoryRootNode.isWait(n)) {
                         return delegate.getIcon(o);
                     }
                     if(getOutline().getOutlineModel().isLeaf(o) || HistoryRootNode.isLoadNext(n))

@@ -97,7 +97,11 @@ public class HistoryRootNode extends AbstractNode {
     
     static boolean isLoadNext(Object n) {
         return n instanceof HistoryRootNode.LoadNextNode;
-        }
+    }
+    
+    static boolean isWait(Object n) {
+        return n instanceof HistoryRootNode.WaitNode;
+    }
                     
     synchronized void addLHEntries(HistoryEntry[] entries) {
         addEntries(entries, false);
