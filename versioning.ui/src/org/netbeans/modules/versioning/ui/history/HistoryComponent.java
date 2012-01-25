@@ -447,7 +447,8 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
                     new LHFilter(),
                     new ByUserFilter(),
                     new ByMsgFilter()};
-                filterCombo.setModel(new DefaultComboBoxModel(filters));                 
+                filterCombo.setModel(new DefaultComboBoxModel(filters));   
+                showHistoryAction.delegate = vs.getVCSHistoryProvider().createShowHistoryAction(files);
             }
             filterCombo.setVisible(visible);
             filterLabel.setVisible(visible);
