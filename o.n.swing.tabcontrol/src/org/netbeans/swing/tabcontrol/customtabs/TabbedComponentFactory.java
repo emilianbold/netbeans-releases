@@ -42,82 +42,48 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.apache.tools.ant.module;
+package org.netbeans.swing.tabcontrol.customtabs;
 
-import java.beans.PropertyChangeListener;
-import javax.swing.JComponent;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
+import org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer;
 
 /**
- * Implementation of one panel in Options Dialog.
+ * Service interface used by the Window System for creating NetBeans specific
+ * Tabbed Containers. Use this if you want to provide an alternative implementation
+ * e.g. based on JTabbedPane:
+        <pre>
+            class MyTabbedPane extends JTabbedPane implements Tabbed.Accessor {
+                private final Tabbed tabbedImpl = new Tabbed() {
+                    //implement abstract methods while delegating most of them to JTabbedPane
+                };
+
+                public Tabbed getTabbed() {
+                    return tabbedImpl;
+                }
+            }
+        </pre>
+
+        <p>Then inject your new implementation to the window system by registering
+        your own TabbedComponentFactory:</p>
+        <pre>
+            &#64;ServiceProvider(service=TabbedComponentFactory.class,position=1000)
+            public class MyTabbedPaneFactory implements TabbedComponentFactory {
+                public Tabbed createTabbedComponent( TabbedType type, WinsysInfoForTabbedContainer info ) {
+                    return new MyTabbedPane().getTabbed();
+                }
+            }
+        </pre>
  *
- * @author Jan Jancura
+ * @since 1.33
+ * @author S. Aubrecht
  */
-@OptionsPanelController.SubRegistration(
-    location="Java",
-    id=AntPanelController.OPTIONS_SUBPATH,
-    displayName="#Ant",
-    keywords="#KW_AntOptions",
-    keywordsCategory="Java/Ant"
-//    toolTip="#Ant_Tooltip"
-)
-public final class AntPanelController extends OptionsPanelController {
-
-    public static final String OPTIONS_SUBPATH = "Ant"; // NOI18N
-
-    @Override
-    public void update () {
-        getAntCustomizer ().update ();
-    }
-
-    @Override
-    public void applyChanges () {
-        getAntCustomizer ().applyChanges ();
-    }
-    
-    @Override
-    public void cancel () {
-        getAntCustomizer ().cancel ();
-    }
-    
-    @Override
-    public boolean isValid () {
-        return getAntCustomizer ().dataValid ();
-    }
-    
-    @Override
-    public boolean isChanged () {
-        return getAntCustomizer ().isChanged ();
-    }
-    
-    @Override
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx ("netbeans.optionsDialog.advanced.ant");
-    }
-    
-    @Override
-    public JComponent getComponent (Lookup lookup) {
-        return getAntCustomizer ();
-    }
-
-    @Override
-    public void addPropertyChangeListener (PropertyChangeListener l) {
-        getAntCustomizer ().addPropertyChangeListener (l);
-    }
-
-    @Override
-    public void removePropertyChangeListener (PropertyChangeListener l) {
-        getAntCustomizer ().removePropertyChangeListener (l);
-    }
-
-    
-    private AntCustomizer antCustomizer;
-    
-    private AntCustomizer getAntCustomizer () {
-        if (antCustomizer == null)
-            antCustomizer = new AntCustomizer ();
-        return antCustomizer;
-    }
+public interface TabbedComponentFactory {
+    /**
+     * Create Tabbed implementation for given type.
+     *
+     * @param type Type of the container to be created.
+     * @param info Information from the window system that may affect the look
+     * and feel of the tab control.
+     * @return New Tabbed instance.
+     */
+    public Tabbed createTabbedComponent( TabbedType type, WinsysInfoForTabbedContainer info );
 }

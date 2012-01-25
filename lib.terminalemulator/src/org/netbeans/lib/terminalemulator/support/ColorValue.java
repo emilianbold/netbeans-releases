@@ -42,82 +42,61 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.apache.tools.ant.module;
+package org.netbeans.lib.terminalemulator.support;
 
-import java.beans.PropertyChangeListener;
-import javax.swing.JComponent;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
+import java.awt.Color;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Implementation of one panel in Options Dialog.
+ * Represents one color with some text description.
  *
- * @author Jan Jancura
+ * copied from editor/options.
+ * @author theofanis
  */
-@OptionsPanelController.SubRegistration(
-    location="Java",
-    id=AntPanelController.OPTIONS_SUBPATH,
-    displayName="#Ant",
-    keywords="#KW_AntOptions",
-    keywordsCategory="Java/Ant"
-//    toolTip="#Ant_Tooltip"
-)
-public final class AntPanelController extends OptionsPanelController {
+class ColorValue {
 
-    public static final String OPTIONS_SUBPATH = "Ant"; // NOI18N
+    public static final ColorValue  CUSTOM_COLOR =
+            new ColorValue (loc ("Custom"), null); //NOI18N
 
-    @Override
-    public void update () {
-        getAntCustomizer ().update ();
+    private static Map<Color, String> colorMap = new HashMap<Color, String>();
+    static {
+        colorMap.put (Color.BLACK,      loc ("Black"));         //NOI18N
+        colorMap.put (Color.BLUE,       loc ("Blue"));          //NOI18N
+        colorMap.put (Color.CYAN,       loc ("Cyan"));          //NOI18N
+        colorMap.put (Color.DARK_GRAY,  loc ("Dark_Gray"));     //NOI18N
+        colorMap.put (Color.GRAY,       loc ("Gray"));          //NOI18N
+        colorMap.put (Color.GREEN,      loc ("Green"));         //NOI18N
+        colorMap.put (Color.LIGHT_GRAY, loc ("Light_Gray"));    //NOI18N
+        colorMap.put (Color.MAGENTA,    loc ("Magenta"));       //NOI18N
+        colorMap.put (Color.ORANGE,     loc ("Orange"));        //NOI18N
+        colorMap.put (Color.PINK,       loc ("Pink"));          //NOI18N
+        colorMap.put (Color.RED,        loc ("Red"));           //NOI18N
+        colorMap.put (Color.WHITE,      loc ("White"));         //NOI18N
+        colorMap.put (Color.YELLOW,     loc ("Yellow"));        //NOI18N
     }
+    
+    String text;
+    Color color;
 
-    @Override
-    public void applyChanges () {
-        getAntCustomizer ().applyChanges ();
-    }
-    
-    @Override
-    public void cancel () {
-        getAntCustomizer ().cancel ();
-    }
-    
-    @Override
-    public boolean isValid () {
-        return getAntCustomizer ().dataValid ();
-    }
-    
-    @Override
-    public boolean isChanged () {
-        return getAntCustomizer ().isChanged ();
-    }
-    
-    @Override
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx ("netbeans.optionsDialog.advanced.ant");
-    }
-    
-    @Override
-    public JComponent getComponent (Lookup lookup) {
-        return getAntCustomizer ();
+    ColorValue (Color color) {
+        this.color = color;
+        text = colorMap.get (color);
+        if (text != null) return;
+        StringBuffer sb = new StringBuffer ();
+        sb.append ('[').append (color.getRed ()).
+            append (',').append (color.getGreen ()).
+            append (',').append (color.getBlue ()).
+            append (']');
+        text = sb.toString ();
     }
 
-    @Override
-    public void addPropertyChangeListener (PropertyChangeListener l) {
-        getAntCustomizer ().addPropertyChangeListener (l);
+    ColorValue (String text, Color color) {
+        this.text = text;
+        this.color = color;
     }
-
-    @Override
-    public void removePropertyChangeListener (PropertyChangeListener l) {
-        getAntCustomizer ().removePropertyChangeListener (l);
-    }
-
     
-    private AntCustomizer antCustomizer;
-    
-    private AntCustomizer getAntCustomizer () {
-        if (antCustomizer == null)
-            antCustomizer = new AntCustomizer ();
-        return antCustomizer;
+    private static String loc (String key) {
+	return Catalog.get(key);
     }
 }

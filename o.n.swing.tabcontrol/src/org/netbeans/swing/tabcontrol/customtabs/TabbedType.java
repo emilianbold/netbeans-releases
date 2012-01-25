@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,57 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.swing.tabcontrol.customtabs;
 
-package org.netbeans.api.javahelp;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.netbeans.swing.tabcontrol.TabbedContainer;
 
 /**
- * Registers a help set.
- * A help set reference according to {@code -//NetBeans//DTD JavaHelp Help Set Reference 1.0//EN} is created.
- * If the help set specifies a search view, the search indexer will also be run;
- * all {@code *.html} and {@code *.htm} in the package containing the help set, and its subpackages, will be indexed.
- * @since org.netbeans.modules.javahelp/1 2.20
+ * Lists all possible types of tabbed container.
+ *
+ * @see TabbedContainer
+ *
+ * @since 1.33
+ * @author S. Aubrecht
  */
-@Retention(RetentionPolicy.SOURCE)
-@Target(ElementType.PACKAGE)
-public @interface HelpSetRegistration {
-
+public enum TabbedType {
     /**
-     * Relative location of a help set file.
-     * Typically matches: {@code -//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 2.0//EN}
+     * Tabbed container showing non-document windows.
      */
-    String helpSet();
-
+    VIEW {
+        @Override
+        public int toInt() {
+            return TabbedContainer.TYPE_VIEW;
+        }
+    },
     /**
-     * Whether the help set should be merged into the master help set.
+     * Tabbed container showing document windows.
      */
-    boolean merge() default true;
-
+    EDITOR {
+        @Override
+        public int toInt() {
+            return TabbedContainer.TYPE_EDITOR;
+        }
+    },
     /**
-     * Position of help set reference.
+     * Tabbed container showing minimized windows.
      */
-    int position() default Integer.MAX_VALUE;
-
+    SLIDING {
+        @Override
+        public int toInt() {
+            return TabbedContainer.TYPE_SLIDING;
+        }
+    },
     /**
-     * Helpset-relative HTML filenames to exclude from indexing.
+     * Tabbed container which uses toolbar-like component to switch active window.
      */
-    String[] excludes() default {"credits.html"};
+    TOOLBAR {
+        @Override
+        public int toInt() {
+            return TabbedContainer.TYPE_TOOLBAR;
+        }
+    };
 
+    public abstract int toInt();
 }
