@@ -44,6 +44,7 @@ package org.netbeans.modules.javafx2.editor.fxml;
 
 import java.io.IOException;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
@@ -63,7 +64,7 @@ public class FXMLDataObject extends MultiDataObject {
 
     @Override
     protected Node createNodeDelegate() {
-        return new FXMLDataNode(this, Children.LEAF, getLookup());
+        return new DataNode(this, Children.LEAF, getLookup());
     }
 
     @Override
