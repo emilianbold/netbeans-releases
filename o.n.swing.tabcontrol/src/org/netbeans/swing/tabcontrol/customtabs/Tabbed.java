@@ -43,102 +43,115 @@
  */
 
 
-package org.netbeans.core.windows.view.ui;
+package org.netbeans.swing.tabcontrol.customtabs;
 
 
-import org.openide.windows.TopComponent;
-
-import javax.swing.*;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.event.ChangeListener;
+import org.openide.windows.TopComponent;
 
 
 /**
- * Interface describing component which is used inside <code>SimpleContainer</code>.
- * There will be at two implementations one for view and second one for editor type.
+ * Abstraction of a container similar to JTabbedPane. The container holds several
+ * TopComponents and user is switching the active (showing) TopComponent by clicking
+ * on a tab with TopComponent title (and icon). The look and feel of the container
+ * may differ depending whether it is showing document or non-document TopComponents.
+ *
+ * @see TabbedComponentFactory
+ *
+ * @since 1.33
  *
  * @author  Peter Zavadsky
+ * @author S. Aubrecht
  */
-public interface Tabbed {
+public abstract class Tabbed {
 
-    public void requestAttention(TopComponent tc);
+    public abstract void requestAttention(TopComponent tc);
 
-    public void cancelRequestAttention(TopComponent tc);
+    public abstract void cancelRequestAttention(TopComponent tc);
     
-    public void addTopComponent(String name, Icon icon, TopComponent tc, String toolTip);
+    public abstract void addTopComponent(String name, Icon icon, TopComponent tc, String toolTip);
 
-    public void insertComponent(String name, Icon icon, Component comp, String toolTip, int position);
+    public abstract void insertComponent(String name, Icon icon, Component comp, String toolTip, int position);
     
-    public void setTopComponents(TopComponent[] tcs, TopComponent selected);
+    public abstract void setTopComponents(TopComponent[] tcs, TopComponent selected);
     
-    public int getTabCount();
+    public abstract int getTabCount();
     
-    public TopComponent[] getTopComponents();
+    public abstract TopComponent[] getTopComponents();
     
-    public TopComponent getTopComponentAt(int index);
+    public abstract TopComponent getTopComponentAt(int index);
     
-    public int indexOf(Component tc);
+    public abstract int indexOf(Component tc);
     
-    public void removeComponent(Component comp);
+    public abstract void removeComponent(Component comp);
     
-    public void setTitleAt(int index, String title);
+    public abstract void setTitleAt(int index, String title);
     
-    public void setIconAt(int index, Icon icon);
+    public abstract void setIconAt(int index, Icon icon);
     
-    public void setToolTipTextAt(int index, String toolTip);
+    public abstract void setToolTipTextAt(int index, String toolTip);
     
-    public void setSelectedComponent(Component comp);
+    public abstract void setSelectedComponent(Component comp);
     
-    public TopComponent getSelectedTopComponent();
+    public abstract TopComponent getSelectedTopComponent();
 
-    public void addChangeListener(ChangeListener listener);
+    public abstract void addChangeListener(ChangeListener listener);
     
-    public void removeChangeListener(ChangeListener listener);
+    public abstract void removeChangeListener(ChangeListener listener);
 
-    public void addActionListener (ActionListener al);
+    public abstract void addActionListener (ActionListener al);
 
-    public void removeActionListener (ActionListener al);
+    public abstract void removeActionListener (ActionListener al);
 
-    public void setActive(boolean active);
+    public abstract void setActive(boolean active);
     
-    public int tabForCoordinate(Point p);
+    public abstract int tabForCoordinate(Point p);
    
-    public Shape getIndicationForLocation(Point location, TopComponentDraggable startingTransfer,
+    public abstract Shape getIndicationForLocation(Point location, TopComponent startingTransfer,
             Point startingPoint, boolean attachingPossible);
     
-    public Object getConstraintForLocation(Point location, boolean attachingPossible);
+    public abstract Object getConstraintForLocation(Point location, boolean attachingPossible);
     
-    public Image createImageOfTab (int tabIndex);
+    public abstract Image createImageOfTab (int tabIndex);
     
-    /** Accessor for visual component holding components */
-    public Component getComponent();
+    /**
+     * Accessor for visual component holding components
+     * @see Accessor
+     */
+    public abstract Component getComponent();
     
     /** Allows tabbed implementors to speficy content of popup menu on tab
      * with given index. Incoming actions are default set by winsys
      */
-    public Action[] getPopupActions(Action[] defaultActions, int tabIndex);
+    public abstract Action[] getPopupActions(Action[] defaultActions, int tabIndex);
     
     /** Returns bounds of tab with given index */
-    public Rectangle getTabBounds(int tabIndex);
+    public abstract Rectangle getTabBounds(int tabIndex);
     
     /**
      * @return Bounds of the area which displays the tab headers.
      * @since 2.32
      */
-    public Rectangle getTabsArea();
+    public abstract Rectangle getTabsArea();
     
-    public boolean isTransparent();
+    public abstract boolean isTransparent();
     
-    public void setTransparent( boolean transparent );
+    public abstract void setTransparent( boolean transparent );
     
-    /** Interface for simple accessing of Tabbed instance */
+    /**
+     * Visual containers that hold the tabbed components must implement this interface
+     * otherwise window drag and drop and some popup menu may not work correctly.
+     * 
+     * @see Tabbed#getComponent()
+     */
     public interface Accessor {
 
         public Tabbed getTabbed ();
 
     } // end of Accessor
-
 }
 

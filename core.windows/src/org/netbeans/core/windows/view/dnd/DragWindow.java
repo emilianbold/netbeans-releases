@@ -62,7 +62,7 @@ import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.core.windows.options.WinSysPrefs;
-import org.netbeans.core.windows.view.ui.Tabbed;
+import org.netbeans.swing.tabcontrol.customtabs.Tabbed;
 
 /**
  *

@@ -59,7 +59,7 @@ import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.windows.nativeaccess.NativeWindowSystem;
 import org.netbeans.core.windows.options.WinSysPrefs;
-import org.netbeans.core.windows.view.ui.Tabbed;
+import org.netbeans.swing.tabcontrol.customtabs.Tabbed;
 
 /**
  *

@@ -52,7 +52,7 @@ import java.util.logging.Logger;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.WindowManagerImpl;
-import org.netbeans.core.windows.view.ui.Tabbed;
+import org.netbeans.swing.tabcontrol.customtabs.Tabbed;
 import org.netbeans.swing.tabcontrol.ComponentConverter;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
@@ -64,12 +64,11 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.util.ArrayList;
+import java.awt.event.ActionListener;
 import java.util.Arrays;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.actions.ActionUtils;
-import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 import org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
@@ -81,7 +80,7 @@ import org.openide.util.ChangeSupport;
  *
  * @author  Tim Boudreau
  */
-public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Accessor, SlideController {
+public class TabbedAdapter extends TabbedContainer implements Tabbed.Accessor, SlideController {
     
     public static final int DOCUMENT = 1;
     
@@ -93,8 +92,8 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
     private PropertyChangeListener tooltipListener, weakTooltipListener;
 
     /** Creates a new instance of TabbedAdapter */
-    public TabbedAdapter (int type) {
-        super (null, type, new WinsysInfo(type));
+    public TabbedAdapter (int type, WinsysInfoForTabbedContainer winsysInfo) {
+        super (null, type, winsysInfo);
         getSelectionModel().addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged (ChangeEvent ce) {
@@ -104,98 +103,10 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
                 }
             }
         });
-//        Color fillC = (Color)UIManager.get("nb_workplace_fill"); //NOI18N
-//        if (fillC != null) setBackground (fillC);
     }
     
-    @Override
-    public void addTopComponent(String name, javax.swing.Icon icon, TopComponent tc, String toolTip) {
-        insertComponent (name, icon, tc, toolTip, getTabCount());
-    }
-    
-    @Override
-    public TopComponent getTopComponentAt(int index) {
-        if (index == -1 || index >= getModel().size()) {
-            return null;
-        }
-        return (TopComponent)getModel().getTab(index).getComponent();
-    }
-    
-    @Override
-    public TopComponent getSelectedTopComponent() {
-        int i = getSelectionModel().getSelectedIndex();
-        return i == -1 ? null : getTopComponentAt(i);
-    }
-    
-    @Override
-    public void requestAttention (TopComponent tc) {
-        int idx = indexOf(tc);
-        if (idx >= 0) {
-            requestAttention(idx);
-        } else {
-            Logger.getAnonymousLogger().fine(
-                "RequestAttention on component unknown to container: " + tc); //NOI18N
-        }
-    }
-
-    @Override
-    public void cancelRequestAttention (TopComponent tc) {
-        int idx = indexOf(tc);
-        if (idx >= 0) {
-            cancelRequestAttention(idx);
-        } else {
-            throw new IllegalArgumentException ("TopComponent " + tc 
-                + " is not a child of this container"); //NOI18N
-        }
-    }    
-
-    @Override
-    public void insertComponent(String name, javax.swing.Icon icon, Component comp, String toolTip, int position) {
-        TabData td = new TabData (comp, icon, name, toolTip);
-        
-        if(DEBUG) {
-            debugLog("InsertTab: " + name + " hash:" + System.identityHashCode(comp)); // NOI18N
-        }
-        
-        getModel().addTab(position, td);
-        comp.addPropertyChangeListener(JComponent.TOOL_TIP_TEXT_KEY, getTooltipListener(comp));
-    }
- 
-    @Override
-    public void setSelectedComponent(Component comp) {
-        int i = indexOf (comp);
-        if (i == -1 && null != comp) {
-            throw new IllegalArgumentException (
-                "Component not a child of this control: " + comp); //NOI18N
-        } else {
-            getSelectionModel().setSelectedIndex(i);
-        }
-    }
-    
-    @Override
-    public TopComponent[] getTopComponents() {
-        ComponentConverter cc = getComponentConverter();
-        TabData[] td = (TabData[]) getModel().getTabs().toArray(new TabData[0]);
-        TopComponent[] result = new TopComponent[getModel().size()];
-        for (int i=0; i < td.length; i++) {
-            result[i] = (TopComponent) cc.getComponent(td[i]);
-        }
-        return result;
-    }
-    
-    @Override
-    public void removeComponent(Component comp) {
-        int i=indexOf(comp);
-        getModel().removeTab(i);
-        comp.removePropertyChangeListener(JComponent.TOOL_TIP_TEXT_KEY, getTooltipListener(comp));
-        if (getModel().size() == 0) {
-            revalidate();
-            repaint();
-        }
-    }
 
     public void addComponents(Component[] comps, String[] names, javax.swing.Icon[] icons, String[] tips) {
-        ArrayList al = new ArrayList (comps.length);
         TabData[] data = new TabData[comps.length];
         for (int i=0; i < comps.length; i++) {
             TabData td = new TabData (comps[i], icons[i], names[i], tips[i]);
@@ -205,65 +116,6 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         getModel().addTabs (0, data);
     }
 
-    @Override
-    public void setTopComponents(TopComponent[] tcs, TopComponent selected) {
-        // #100144 - correct null selection and log, probably some problem in
-        // winsys model consistency, but without reproduction no chance to find out
-        if (selected == null && tcs.length > 0) {
-            selected = tcs[0];
-            Logger.getLogger(TabbedAdapter.class.getName()).warning(
-                    "Selected component is null although open components are " +
-                    Arrays.asList(tcs));
-        }
-        int sizeBefore = getModel().size();
-
-        detachTooltipListeners(getModel().getTabs());
-        
-        TabData[] data = new TabData[tcs.length];
-        int toSelect=-1;
-        for(int i = 0; i < tcs.length; i++) {
-            TopComponent tc = tcs[i];
-            Image icon = tc.getIcon();
-            String displayName = WindowManagerImpl.getInstance().getTopComponentDisplayName(tc);
-            data[i] = new TabData(
-                tc,
-                icon == null ? null : new ImageIcon(icon),
-                displayName == null ? "" : displayName, // NOI18N
-                tc.getToolTipText());
-            if (selected == tcs[i]) {
-                toSelect = i;
-            }
-            tc.addPropertyChangeListener(JComponent.TOOL_TIP_TEXT_KEY, getTooltipListener(tc));
-        }
-
-        //DO NOT DELETE THIS ASSERTION AGAIN!
-        //If it triggered, it means there is a problem in the state of the
-        //window system's model.  If it is just diagnostic logging, there
-        //*will* be an exception later, it just won't contain any useful
-        //information. See issue 39914 for what happens if it is deleted.
-        assert selected != null && toSelect != -1 : "Tried to set a selected component that was " +
-            " not in the array of open components. ToSelect: " + selected + " ToSelectName=" + selected.getDisplayName() +
-            " ToSelectClass=" + selected.getClass() + 
-            " open components: " + Arrays.asList(tcs);
-        
-        getModel().setTabs(data);
-        
-        if (toSelect != -1) {
-            getSelectionModel().setSelectedIndex(toSelect);
-        } else if (selected != null) {
-            //Assertions are off
-            Logger.getAnonymousLogger().warning("Tried to" +
-            "set a selected component that was not in the array of open " +
-            "components.  ToSelect: " + selected + " components: " + 
-            Arrays.asList(tcs));
-        }
-        int sizeNow = getModel().size();
-        if (sizeBefore != 0 && sizeNow == 0) {
-            //issue 40076, ensure repaint if the control has been emptied.
-            revalidate();
-            repaint();
-        }
-    }
 
     /** Removes tooltip listeners from given tabs */
     private void detachTooltipListeners(List tabs) {
@@ -275,87 +127,6 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         }
     }
     
-    // DnD>>
-    /** Finds tab which contains x coordinate of given location point.
-     * @param location The point for which a constraint is required
-     * @return Integer object representing found tab index. Returns null if
-     * no such tab can be found.
-     */
-    @Override
-    public Object getConstraintForLocation(Point location, boolean attachingPossible) {
-        //#47909
-        // first process the tabs when mouse is inside the tabs area..
-        int tab = tabForCoordinate(location);
-        if (tab != -1) {
-            int index = dropIndexOfPoint(location);
-            return index < 0 ? null : Integer.valueOf(index);
-        }
-        // ----
-        if(attachingPossible) {
-            String s = getSideForLocation(location);
-            if(s != null) {
-                return s;
-            }
-        }
-        int index = dropIndexOfPoint(location);
-        return index < 0 ? null : Integer.valueOf(index);
-    }
-
-    /** Computes and returns feedback indication shape for given location
-     * point.
-     * TBD - extend for various feedback types
-     * @return Shape representing feedback indication
-     */
-    @Override
-    public Shape getIndicationForLocation(Point location,
-        TopComponentDraggable startingTransfer, Point startingPoint, boolean attachingPossible) {
-
-        Rectangle rect = getBounds();
-        rect.setLocation(0, 0);
-        
-        TopComponent draggedTC = startingTransfer.getTopComponent();
-        //#47909
-        int tab = tabForCoordinate(location);
-        // first process the tabs when mouse is inside the tabs area..
-        // need to process before the side resolution.
-        if (tab != -1) {
-            Shape s = getDropIndication(draggedTC, location);
-            if(s != null) {
-                return s;
-            }
-        }
-        
-        String side;
-        if(attachingPossible) {
-            side = getSideForLocation(location);
-        } else {
-            side = null;
-        }
-        
-        double ratio = Constants.DROP_TO_SIDE_RATIO;
-        if(side == Constants.TOP) {
-            return new Rectangle(0, 0, rect.width, (int)(rect.height * ratio));
-        } else if(side == Constants.LEFT) {
-            return new Rectangle(0, 0, (int)(rect.width * ratio), rect.height);
-        } else if(side == Constants.RIGHT) {
-            return new Rectangle(rect.width - (int)(rect.width * ratio), 0, (int)(rect.width * ratio), rect.height);
-        } else if(side == Constants.BOTTOM) {
-            return new Rectangle(0, rect.height - (int)(rect.height * ratio), rect.width, (int)(rect.height * ratio));
-        }
-
-        // #47909 now check shape again.. when no sides were checked, assume changing tabs when in component center.
-        Shape s = getDropIndication(draggedTC, location);
-        if(s != null) {
-            return s;
-        }
-        
-        if( startingTransfer.isTopComponentTransfer() && startingPoint != null 
-            && indexOf(startingTransfer.getTopComponent()) != -1) {
-            return getStartingIndication(startingPoint, location);
-        }
-        
-        return rect;
-    }
 
     private String getSideForLocation(Point location) {
         Rectangle bounds = getBounds();
@@ -420,24 +191,6 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
     // DnD<<
 
     
-    /** Registers ChangeListener to receive events.
-     * @param listener The listener to register.
-     *
-     */
-    @Override
-    public void addChangeListener(ChangeListener listener) {
-        cs.addChangeListener(listener);
-    }    
-    
-    /** Removes ChangeListener from the list of listeners.
-     * @param listener The listener to remove.
-     *
-     */
-    @Override
-    public void removeChangeListener(ChangeListener listener) {
-        cs.removeChangeListener(listener);
-    }
-    
     /** Notifies all registered listeners about the event. */
     private void fireStateChanged() {
         if (!SwingUtilities.isEventDispatchThread()) {
@@ -472,25 +225,8 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         Debug.log(TabbedAdapter.class, message);
     }
     
-    @Override
-    public Component getComponent() {
-        return this;
-    }
-    
-    /** Add action for enabling auto hide of views */
-    @Override
-    public Action[] getPopupActions(Action[] defaultActions, int tabIndex) {
-        if( tabIndex < 0 ) {
-            ModeImpl mode = getModeImpl();
-            if( null != mode )
-                return ActionUtils.createDefaultPopupActions( mode );
-            return null;
-        }
-        return defaultActions;
-    }
-    
     private ModeImpl getModeImpl() {
-        TopComponent[] topComponents = getTopComponents();
+        TopComponent[] topComponents = tabbedImpl.getTopComponents();
         if( topComponents.length < 1 )
             return null;
         return ( ModeImpl ) WindowManagerImpl.getInstance().findMode( topComponents[0] );
@@ -525,22 +261,12 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
     
     @Override
     public Tabbed getTabbed() {
-        return this;
-    }
-    
-    @Override
-    public Rectangle getTabBounds(int tabIndex) {
-        return getTabRect(tabIndex, new Rectangle());
-    }
-    
-    @Override
-    public Rectangle getTabsArea() {
-        return getUI().getTabsArea();
+        return tabbedImpl;
     }
 
     /********* implementation of WinsysInfoForTabbed ********/
     
-    static class WinsysInfo extends WinsysInfoForTabbedContainer {
+    public static class WinsysInfo extends WinsysInfoForTabbedContainer {
         private int containerType;
         public WinsysInfo( int containerType ) {
             this.containerType = containerType;
@@ -628,6 +354,342 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         }
         return weakTooltipListener;
     }
+    
+    private final Tabbed tabbedImpl = new Tabbed() {
+
+        @Override
+        public void addTopComponent(String name, javax.swing.Icon icon, TopComponent tc, String toolTip) {
+            insertComponent (name, icon, tc, toolTip, getTabCount());
+        }
+
+        @Override
+        public TopComponent getTopComponentAt(int index) {
+            if (index == -1 || index >= getModel().size()) {
+                return null;
+            }
+            return (TopComponent)getModel().getTab(index).getComponent();
+        }
+
+        @Override
+        public TopComponent getSelectedTopComponent() {
+            int i = getSelectionModel().getSelectedIndex();
+            return i == -1 ? null : getTopComponentAt(i);
+        }
+
+        @Override
+        public void requestAttention (TopComponent tc) {
+            int idx = indexOf(tc);
+            if (idx >= 0) {
+                TabbedAdapter.this.requestAttention(idx);
+            } else {
+                Logger.getAnonymousLogger().fine(
+                    "RequestAttention on component unknown to container: " + tc); //NOI18N
+            }
+        }
+
+        @Override
+        public void cancelRequestAttention (TopComponent tc) {
+            int idx = indexOf(tc);
+            if (idx >= 0) {
+                TabbedAdapter.this.cancelRequestAttention(idx);
+            } else {
+                throw new IllegalArgumentException ("TopComponent " + tc 
+                    + " is not a child of this container"); //NOI18N
+            }
+        }    
+
+        @Override
+        public void insertComponent(String name, javax.swing.Icon icon, Component comp, String toolTip, int position) {
+            TabData td = new TabData (comp, icon, name, toolTip);
+
+            if(DEBUG) {
+                debugLog("InsertTab: " + name + " hash:" + System.identityHashCode(comp)); // NOI18N
+            }
+
+            getModel().addTab(position, td);
+            comp.addPropertyChangeListener(JComponent.TOOL_TIP_TEXT_KEY, getTooltipListener(comp));
+        }
+
+        @Override
+        public void setSelectedComponent(Component comp) {
+            int i = indexOf (comp);
+            if (i == -1 && null != comp) {
+                throw new IllegalArgumentException (
+                    "Component not a child of this control: " + comp); //NOI18N
+            } else {
+                getSelectionModel().setSelectedIndex(i);
+            }
+        }
+
+        @Override
+        public TopComponent[] getTopComponents() {
+            ComponentConverter cc = getComponentConverter();
+            TabData[] td = (TabData[]) getModel().getTabs().toArray(new TabData[0]);
+            TopComponent[] result = new TopComponent[getModel().size()];
+            for (int i=0; i < td.length; i++) {
+                result[i] = (TopComponent) cc.getComponent(td[i]);
+            }
+            return result;
+        }
+
+        @Override
+        public void removeComponent(Component comp) {
+            int i=indexOf(comp);
+            getModel().removeTab(i);
+            comp.removePropertyChangeListener(JComponent.TOOL_TIP_TEXT_KEY, getTooltipListener(comp));
+            if (getModel().size() == 0) {
+                revalidate();
+                repaint();
+            }
+        }
+
+        @Override
+        public Rectangle getTabBounds(int tabIndex) {
+            return getTabRect(tabIndex, new Rectangle());
+        }
+
+        @Override
+        public Rectangle getTabsArea() {
+            return getUI().getTabsArea();
+        }
+
+        @Override
+        public void setTopComponents(TopComponent[] tcs, TopComponent selected) {
+            // #100144 - correct null selection and log, probably some problem in
+            // winsys model consistency, but without reproduction no chance to find out
+            if (selected == null && tcs.length > 0) {
+                selected = tcs[0];
+                Logger.getLogger(TabbedAdapter.class.getName()).warning(
+                        "Selected component is null although open components are " +
+                        Arrays.asList(tcs));
+            }
+            int sizeBefore = getModel().size();
+
+            detachTooltipListeners(getModel().getTabs());
+
+            TabData[] data = new TabData[tcs.length];
+            int toSelect=-1;
+            for(int i = 0; i < tcs.length; i++) {
+                TopComponent tc = tcs[i];
+                Image icon = tc.getIcon();
+                String displayName = WindowManagerImpl.getInstance().getTopComponentDisplayName(tc);
+                data[i] = new TabData(
+                    tc,
+                    icon == null ? null : new ImageIcon(icon),
+                    displayName == null ? "" : displayName, // NOI18N
+                    tc.getToolTipText());
+                if (selected == tcs[i]) {
+                    toSelect = i;
+                }
+                tc.addPropertyChangeListener(JComponent.TOOL_TIP_TEXT_KEY, getTooltipListener(tc));
+            }
+
+            //DO NOT DELETE THIS ASSERTION AGAIN!
+            //If it triggered, it means there is a problem in the state of the
+            //window system's model.  If it is just diagnostic logging, there
+            //*will* be an exception later, it just won't contain any useful
+            //information. See issue 39914 for what happens if it is deleted.
+            assert selected != null && toSelect != -1 : "Tried to set a selected component that was " +
+                " not in the array of open components. ToSelect: " + selected + " ToSelectName=" + selected.getDisplayName() +
+                " ToSelectClass=" + selected.getClass() + 
+                " open components: " + Arrays.asList(tcs);
+
+            getModel().setTabs(data);
+
+            if (toSelect != -1) {
+                getSelectionModel().setSelectedIndex(toSelect);
+            } else if (selected != null) {
+                //Assertions are off
+                Logger.getAnonymousLogger().warning("Tried to" +
+                "set a selected component that was not in the array of open " +
+                "components.  ToSelect: " + selected + " components: " + 
+                Arrays.asList(tcs));
+            }
+            int sizeNow = getModel().size();
+            if (sizeBefore != 0 && sizeNow == 0) {
+                //issue 40076, ensure repaint if the control has been emptied.
+                revalidate();
+                repaint();
+            }
+        }
+        // DnD>>
+        /** Finds tab which contains x coordinate of given location point.
+        * @param location The point for which a constraint is required
+        * @return Integer object representing found tab index. Returns null if
+        * no such tab can be found.
+        */
+        @Override
+        public Object getConstraintForLocation(Point location, boolean attachingPossible) {
+            //#47909
+            // first process the tabs when mouse is inside the tabs area..
+            int tab = tabForCoordinate(location);
+            if (tab != -1) {
+                int index = dropIndexOfPoint(location);
+                return index < 0 ? null : Integer.valueOf(index);
+            }
+            // ----
+            if(attachingPossible) {
+                String s = getSideForLocation(location);
+                if(s != null) {
+                    return s;
+                }
+            }
+            int index = dropIndexOfPoint(location);
+            return index < 0 ? null : Integer.valueOf(index);
+        }
+
+        /** Computes and returns feedback indication shape for given location
+        * point.
+        * TBD - extend for various feedback types
+        * @return Shape representing feedback indication
+        */
+        @Override
+        public Shape getIndicationForLocation(Point location,
+            TopComponent startingTransfer, Point startingPoint, boolean attachingPossible) {
+
+            Rectangle rect = getBounds();
+            rect.setLocation(0, 0);
+
+            TopComponent draggedTC = startingTransfer;
+            //#47909
+            int tab = tabForCoordinate(location);
+            // first process the tabs when mouse is inside the tabs area..
+            // need to process before the side resolution.
+            if (tab != -1) {
+                Shape s = getDropIndication(draggedTC, location);
+                if(s != null) {
+                    return s;
+                }
+            }
+
+            String side;
+            if(attachingPossible) {
+                side = getSideForLocation(location);
+            } else {
+                side = null;
+            }
+
+            double ratio = Constants.DROP_TO_SIDE_RATIO;
+            if(side == Constants.TOP) {
+                return new Rectangle(0, 0, rect.width, (int)(rect.height * ratio));
+            } else if(side == Constants.LEFT) {
+                return new Rectangle(0, 0, (int)(rect.width * ratio), rect.height);
+            } else if(side == Constants.RIGHT) {
+                return new Rectangle(rect.width - (int)(rect.width * ratio), 0, (int)(rect.width * ratio), rect.height);
+            } else if(side == Constants.BOTTOM) {
+                return new Rectangle(0, rect.height - (int)(rect.height * ratio), rect.width, (int)(rect.height * ratio));
+            }
+
+            // #47909 now check shape again.. when no sides were checked, assume changing tabs when in component center.
+            Shape s = getDropIndication(draggedTC, location);
+            if(s != null) {
+                return s;
+            }
+
+            if( null != startingTransfer && startingPoint != null 
+                && indexOf(startingTransfer) != -1) {
+                return getStartingIndication(startingPoint, location);
+            }
+
+            return rect;
+        }
+
+        @Override
+        public Component getComponent() {
+            return TabbedAdapter.this;
+        }
+
+        /** Add action for enabling auto hide of views */
+        @Override
+        public Action[] getPopupActions(Action[] defaultActions, int tabIndex) {
+            if( tabIndex < 0 ) {
+                ModeImpl mode = getModeImpl();
+                if( null != mode )
+                    return ActionUtils.createDefaultPopupActions( mode );
+                return null;
+            }
+            return defaultActions;
+        }
+
+        /** Registers ChangeListener to receive events.
+        * @param listener The listener to register.
+        *
+        */
+        @Override
+        public void addChangeListener(ChangeListener listener) {
+            cs.addChangeListener(listener);
+        }    
+
+        /** Removes ChangeListener from the list of listeners.
+        * @param listener The listener to remove.
+        *
+        */
+        @Override
+        public void removeChangeListener(ChangeListener listener) {
+            cs.removeChangeListener(listener);
+        }
+
+        @Override
+        public int getTabCount() {
+            return TabbedAdapter.this.getTabCount();
+        }
+
+        @Override
+        public int indexOf( Component tc ) {
+            return TabbedAdapter.this.indexOf( tc );
+        }
+
+        @Override
+        public void setTitleAt( int index, String title ) {
+            TabbedAdapter.this.setTitleAt( index, title );
+        }
+
+        @Override
+        public void setIconAt( int index, Icon icon ) {
+            TabbedAdapter.this.setIconAt( index, icon );
+        }
+
+        @Override
+        public void setToolTipTextAt( int index, String toolTip ) {
+            TabbedAdapter.this.setToolTipTextAt( index, toolTip );
+        }
+
+        @Override
+        public void addActionListener( ActionListener al ) {
+            TabbedAdapter.this.addActionListener( al );
+        }
+
+        @Override
+        public void removeActionListener( ActionListener al ) {
+            TabbedAdapter.this.removeActionListener( al );
+        }
+
+        @Override
+        public void setActive( boolean active ) {
+            TabbedAdapter.this.setActive( active );
+        }
+
+        @Override
+        public int tabForCoordinate( Point p ) {
+            return TabbedAdapter.this.tabForCoordinate( p );
+        }
+
+        @Override
+        public Image createImageOfTab( int tabIndex ) {
+            return TabbedAdapter.this.createImageOfTab( tabIndex );
+        }
+
+        @Override
+        public boolean isTransparent() {
+            return TabbedAdapter.this.isTransparent();
+        }
+
+        @Override
+        public void setTransparent( boolean transparent ) {
+            TabbedAdapter.this.setTransparent( transparent );
+        }
+    
+    };
 
     /** Listening to changes of tooltips of currently asociated top components */
     private class ToolTipListener implements PropertyChangeListener {

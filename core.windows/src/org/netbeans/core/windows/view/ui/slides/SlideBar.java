@@ -79,7 +79,7 @@ import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.WindowManagerImpl;
-import org.netbeans.core.windows.view.ui.Tabbed;
+import org.netbeans.swing.tabcontrol.customtabs.Tabbed;
 import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
 import org.netbeans.swing.tabcontrol.SlideBarDataModel;
 import org.netbeans.swing.tabcontrol.SlidingButton;
@@ -407,7 +407,7 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
     public Tabbed getTabbed () {
         return tabbed;
     }
-    
+
     /********* implementation of WinsysInfoForTabbedContainer **************/
     
     public WinsysInfoForTabbedContainer createWinsysInfo() {
