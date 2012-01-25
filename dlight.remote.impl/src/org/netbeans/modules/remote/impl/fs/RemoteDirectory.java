@@ -196,6 +196,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         // Have to comment this out since NB does lots of stuff in the UI thread and I have no way to control this :(
         // RemoteLogger.assertNonUiThread("Remote file operations should not be done in UI thread");
         String path = getPath() + '/' + name;
+        if (name.contains("\\") || name.contains("/")) {
+            throw new IOException("Cannot create file "+path);
+        }
         if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
             throw new ConnectException("Can not create " + getUrlToReport(path) + ": connection required"); //NOI18N
         }
