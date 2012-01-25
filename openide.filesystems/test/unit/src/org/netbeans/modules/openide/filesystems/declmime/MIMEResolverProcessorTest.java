@@ -56,8 +56,10 @@ import org.openide.util.NbBundle;
  */
 @MIMEResolver.Registration(resource="mime-resolver-rule.xml", displayName="#MYNAME")
 @NbBundle.Messages({
-    "MYNAME=My Name"
+    "MYNAME=My Name",
+    "EXTNAME=XYZ extension"
 })
+@MIMEResolver.ExtensionRegistration(displayName="#EXTNAME", extension="xyz", mimeType="text/x-yz")
 public class MIMEResolverProcessorTest extends NbTestCase {
     private FileObject root;
     public MIMEResolverProcessorTest(String name) {
@@ -76,10 +78,11 @@ public class MIMEResolverProcessorTest extends NbTestCase {
     
     
 
-    public void testSingleResolver() throws Exception {
+    public void testXMLFileResolver() throws Exception {
         final String PATH = "Services/MIMEResolver/"
-            + "org-netbeans-modules-openide-filesystems-declmime-MIMEResolverProcessorTest.instance";
+            + "org-netbeans-modules-openide-filesystems-declmime-MIMEResolverProcessorTest-Registration.instance";
         FileObject fo = FileUtil.getConfigFile(PATH);
+        assertNotNull("Registration found", fo);
         String dispName = fo.getFileSystem().getStatus().annotateName(fo.getName(), Collections.singleton(fo));
         assertEquals("Proper display name", Bundle.MYNAME(), dispName);
         
@@ -87,5 +90,21 @@ public class MIMEResolverProcessorTest extends NbTestCase {
         MIMEResolver mime = FileUtil.getConfigObject(PATH, MIMEResolver.class);
         assertNotNull("Mime type found", mime);
         assertEquals("build1.xml recognized as Ant script", "text/x-ant+xml", mime.findMIMEType(root.getFileObject("build1", "xml")));
+    }
+    
+    public void testExtensionResolver() throws Exception {
+        final String PATH = "Services/MIMEResolver/"
+                + "org-netbeans-modules-openide-filesystems-declmime-MIMEResolverProcessorTest-Extension.instance";
+        FileObject fo = FileUtil.getConfigFile(PATH);
+        assertNotNull("Registration found", fo);
+        String dispName = fo.getFileSystem().getStatus().annotateName(fo.getName(), Collections.singleton(fo));
+        assertEquals("Proper display name", Bundle.EXTNAME(), dispName);
+
+        assertNotNull("Declaration found", fo);
+        MIMEResolver mime = FileUtil.getConfigObject(PATH, MIMEResolver.class);
+        assertNotNull("Mime type found", mime);
+        
+        FileObject check = FileUtil.createMemoryFileSystem().getRoot().createData("my.xyz");
+        assertEquals("build1.xml recognized as Ant script", "text/x-yz", mime.findMIMEType(check));        
     }
 }

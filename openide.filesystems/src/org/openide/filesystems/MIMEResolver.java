@@ -46,9 +46,7 @@ package org.openide.filesystems;
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl;
 import org.openide.filesystems.annotations.LayerBuilder;
 import org.openide.util.NbBundle;
@@ -123,7 +121,23 @@ public abstract class MIMEResolver {
     /** factory method for {@link MIMEResolver.Registration} */
     static MIMEResolver create(FileObject fo) throws IOException {
         byte[] arr = (byte[]) fo.getAttribute("bytes"); // NOI18N
-        return MIMEResolverImpl.forStream(arr);
+        if (arr != null) {
+            return MIMEResolverImpl.forStream(arr);
+        }
+        String mimeType = (String)fo.getAttribute("mimeType"); // NOI18N
+        List<String> exts = new ArrayList<String>();
+        int cnt = 0;
+        for (;;) {
+            String ext = (String) fo.getAttribute("ext." + cnt++); // NOI18N
+            if (ext == null) {
+                break;
+            }
+            exts.add(ext);
+        }
+        if (!exts.isEmpty()) {
+            return MIMEResolverImpl.forExts(mimeType, exts);
+        }
+        throw new IllegalArgumentException("" + fo); // NOI18N
     }
 
     /** Internal support for implementors of MIME resolver UIs. 
@@ -192,11 +206,28 @@ public abstract class MIMEResolver {
         }
         
     }
-    
-    
+
+    /** Often a mime type can be deduced just by looking at a file extension.
+     * If that is your case, this annotation is for you. It associates
+     * extension(s) with provided mime type.
+     * @since 7.58
+     */
+    @Retention(RetentionPolicy.SOURCE)
     public @interface ExtensionRegistration {
+        /** Display name to present this type of objects to the user.
+         */
+        public String displayName();
+        /** Mime type to be assigned to files with {@link #extension}.
+         */
         public String mimeType();
+        /** One or few extensions that should be recognized as given
+         * {@link #mimeType}.
+         */
         public String[] extension();
+        /** In case ordering of mime resolvers is important, one can 
+         * specify it by defining their {@link LayerBuilder#position() position}.
+         */        
+        public int position() default Integer.MAX_VALUE;
     }
 
     public @interface NamespaceRegistration {

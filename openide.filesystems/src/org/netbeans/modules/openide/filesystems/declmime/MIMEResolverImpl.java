@@ -273,6 +273,15 @@ public final class MIMEResolverImpl {
         return orderedResolvers.values();
     }
 
+    public static MIMEResolver forExts(String mimeType, List<String> exts) throws IOException {
+        FileElement e = new FileElement();
+        for (String ext : exts) {
+            e.fileCheck.addExt(ext);
+        }
+        e.setMIME(mimeType);
+        return new Impl(e, mimeType);
+    }
+
     // MIMEResolver ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     private static final class Impl extends MIMEResolver {
@@ -289,11 +298,11 @@ public final class MIMEResolverImpl {
         };
 
         // Resolvers in reverse order
-        private FileElement[] smell = null;
+        private FileElement[] smell;
                 
         private short state;
 
-        private String[] implResolvableMIMETypes = null;
+        private String[] implResolvableMIMETypes;
 
         @SuppressWarnings("deprecation")
         Impl(FileObject obj) {
@@ -310,8 +319,17 @@ public final class MIMEResolverImpl {
             ByteArrayInputStream is = new ByteArrayInputStream(serialData);
             DataInputStream dis = new DataInputStream(is);
             readExternal(dis);
+
+        }
+        @SuppressWarnings("deprecation")
+        private Impl(FileElement e, String... mimes) throws IOException {
+            this.data = null;
+            this.implResolvableMIMETypes = mimes;
+            this.smell = new FileElement[] { e };
+            this.state = DefaultParser.PARSED;
         }
 
+        @Override
         public String findMIMEType(FileObject fo) {
             if (fo.hasExt("xml") && fo.getPath().startsWith(MIME_RESOLVERS_PATH)) { // NOI18N
                 // do not try to check ourselves!

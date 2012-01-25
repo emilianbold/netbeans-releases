@@ -54,6 +54,7 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
+import org.openide.filesystems.MIMEResolver.ExtensionRegistration;
 import org.openide.filesystems.MIMEResolver.Registration;
 import org.openide.filesystems.annotations.LayerBuilder;
 import org.openide.filesystems.annotations.LayerBuilder.File;
@@ -73,6 +74,7 @@ public class MIMEResolverProcessor extends LayerGeneratingProcessor {
     public Set<String> getSupportedAnnotationTypes() {
         Set<String> set = new HashSet<String>();
         set.add(MIMEResolver.Registration.class.getCanonicalName());
+        set.add(MIMEResolver.ExtensionRegistration.class.getCanonicalName());
         return set;
     }
     
@@ -83,14 +85,33 @@ public class MIMEResolverProcessor extends LayerGeneratingProcessor {
             MIMEResolver.Registration r = e.getAnnotation(MIMEResolver.Registration.class);
             registerDefinition(e, r.resource(), r);
         }
+        for (Element e : roundEnv.getElementsAnnotatedWith(MIMEResolver.ExtensionRegistration.class)) {
+            MIMEResolver.ExtensionRegistration r = e.getAnnotation(MIMEResolver.ExtensionRegistration.class);
+            registerExt(e, r);
+        }
         return true;
     }
+    private void registerExt(Element e, ExtensionRegistration r) throws LayerGenerationException {
+        final LayerBuilder b = layer(e);
+        File f = b.file("Services/MIMEResolver/" + getName(e).replace('.', '-') + "-Extension.instance"); // NOI18N
+        f.methodvalue("instanceCreate", MIMEResolver.class.getName(), "create"); // NOI18N
+        f.stringvalue("instanceClass", MIMEResolver.class.getName()); // NOI18N
+        f.stringvalue("mimeType", r.mimeType()); // NOI18N
+        int cnt = 0;
+        for (String ext : r.extension()) {
+            f.stringvalue("ext." + (cnt++), ext); // NOI18N
+        }
+        f.position(r.position());
+        f.bundlevalue("displayName", r.displayName()); // NOI18N
+        f.write();
+        
+    }
 
-    protected void registerDefinition(Element e, String relRes, Registration r) throws LayerGenerationException {
+    private void registerDefinition(Element e, String relRes, Registration r) throws LayerGenerationException {
         String absRes = LayerBuilder.absolutizeResource(e, relRes);
         final LayerBuilder b = layer(e);
         FileObject fo = b.validateResource(absRes, e, r, null, false);
-        File f = b.file("Services/MIMEResolver/" + getName(e).replace('.', '-') + ".instance"); // NOI18N
+        File f = b.file("Services/MIMEResolver/" + getName(e).replace('.', '-') + "-Registration.instance"); // NOI18N
         f.methodvalue("instanceCreate", MIMEResolver.class.getName(), "create"); // NOI18N
         f.stringvalue("instanceClass", MIMEResolver.class.getName()); // NOI18N
         f.serialvalue("bytes", generateInstanceResolver(fo, e)); // NOI18N
@@ -138,5 +159,6 @@ public class MIMEResolverProcessor extends LayerGeneratingProcessor {
             return getName(e.getEnclosingElement()) + '.' + e.getSimpleName();
         }
     }
+
     
 }
