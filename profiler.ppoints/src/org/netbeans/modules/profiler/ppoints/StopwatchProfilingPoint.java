@@ -86,7 +86,7 @@ import org.openide.util.Lookup;
     "StopwatchProfilingPoint_HeaderProjectString=<b>Project:</b> {0}",
     "StopwatchProfilingPoint_HeaderLocationString=<b>Location:</b> {0}, line {1}",
     "StopwatchProfilingPoint_HeaderStartLocationString=<b>Start location:</b> {0}, line {1}",
-    "StopwatchProfilingPoint_HeaderEndLocationString=<b>End location:</b> {0}, line {1}",
+    "StopwatchProfilingPoint_HeaderEndLocationString=<b>Stop location:</b> {0}, line {1}",
     "StopwatchProfilingPoint_HeaderMeasureDurationString=<b>Measure:</b> Timestamp and duration",
     "StopwatchProfilingPoint_HeaderMeasureTimestampString=<b>Measure:</b> Timestamp",
     "StopwatchProfilingPoint_HeaderHitsString=<b>Hits:</b> {0}",
