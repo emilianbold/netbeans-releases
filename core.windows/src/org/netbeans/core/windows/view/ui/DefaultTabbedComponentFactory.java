@@ -42,6 +42,7 @@
 package org.netbeans.core.windows.view.ui;
 
 import javax.swing.JTabbedPane;
+import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.options.WinSysPrefs;
 import org.netbeans.core.windows.view.ui.tabcontrol.JTabbedPaneAdapter;
 import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
@@ -63,7 +64,15 @@ public class DefaultTabbedComponentFactory implements TabbedComponentFactory {
 
     @Override
     public Tabbed createTabbedComponent( TabbedType type, WinsysInfoForTabbedContainer info ) {
-        if( type == TabbedType.EDITOR ) {
+        if( Switches.isUseSimpleTabs() ) {
+            boolean multiRow = Switches.isSimpleTabsMultiRow();
+            int placement = Switches.getSimpleTabsPlacement();
+            JTabbedPaneAdapter tabPane = new JTabbedPaneAdapter( type, info );
+            tabPane.setTabPlacement( placement );
+            tabPane.setTabLayoutPolicy( multiRow ? JTabbedPane.WRAP_TAB_LAYOUT : JTabbedPane.SCROLL_TAB_LAYOUT );
+            return tabPane.getTabbed();
+        }
+        else if( type == TabbedType.EDITOR ) {
             boolean multiRow = WinSysPrefs.HANDLER.getBoolean( WinSysPrefs.DOCUMENT_TABS_MULTIROW, false );
             int placement = WinSysPrefs.HANDLER.getInt( WinSysPrefs.DOCUMENT_TABS_PLACEMENT, JTabbedPane.TOP );
             if( multiRow || placement != JTabbedPane.TOP ) {
