@@ -136,7 +136,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     }
     
     public void addAssignment(String typeName, int offset){
-        System.out.println("addingSignment: " + typeName + ", " + offset);
+        System.out.println("addingSignment: " + typeName + ", " + offset + " to object " + this.getName());
         Collection<String> types = assignments.get(offset);
         if (types == null) {
             types = new ArrayList<String>();
@@ -150,7 +150,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         Collection<String> result = Collections.EMPTY_LIST;
         int closeOffset = -1;
         for(Integer position : assignments.keySet()) {
-            if (closeOffset < position && closeOffset <= offset) {
+            if (closeOffset < position && position <= offset) {
                 closeOffset = position;
                 result = assignments.get(position);
             }
