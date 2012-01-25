@@ -385,7 +385,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         public void run() {  
             HistoryRootNode root = getRootNode();
             if(root == null) {
-                final String vcsName = (String) (versioningSystem != null ? 
+                final String vcsName = (String) (getHistoryProvider(versioningSystem) != null ? 
                                                     versioningSystem.getProperty(VersioningSystem.PROP_DISPLAY_NAME) :
                                                     null);
                 root = new HistoryRootNode(files, vcsName, loadNextAction, createActions()); 
@@ -512,7 +512,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                             return column.isAscending() ? 1 : -1;
                         } else if(HistoryRootNode.isLoadNext(o2)) {
                             return column.isAscending() ? -1 : 1;
-            }
+                        }
 
                         if(o1 instanceof RevisionNode && o2 instanceof RevisionNode) {
                             return ((RevisionNode)o1).compareTo(o2);
