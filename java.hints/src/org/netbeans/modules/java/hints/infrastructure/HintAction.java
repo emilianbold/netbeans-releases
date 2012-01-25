@@ -40,12 +40,11 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.EditorCookie.Observable;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -161,10 +160,7 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
         if (!(stream instanceof DataObject))
             return null;
         
-        DataObject dObj = (DataObject) stream;
-        FileObject result = dObj.getPrimaryFile();
-        
-        if ("text/x-java".equals(FileUtil.getMIMEType(result))) //NOI18N
+        if ("text/x-java".equals(NbEditorUtilities.getMimeType(doc))) //NOI18N
             return pane;
         else
             return null;
