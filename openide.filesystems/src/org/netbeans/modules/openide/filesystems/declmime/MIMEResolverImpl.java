@@ -380,7 +380,7 @@ public final class MIMEResolverImpl {
         /** For debug purposes. */
         @Override
         public String toString() {
-            return "MIMEResolverImpl.Impl[" + data.getPath() + "]";  // NOI18N
+            return "MIMEResolverImpl.Impl[" + data + "]";  // NOI18N
         }
 
         public void writeExternal(DataOutput out) throws IOException {
@@ -388,10 +388,7 @@ public final class MIMEResolverImpl {
             if (state == DescParser.ERROR) {
                 throw new IOException();
             }
-            out.writeInt(implResolvableMIMETypes.length);
-            for (String m : implResolvableMIMETypes) {
-                out.writeUTF(m);
-            }
+            Util.writeStrings(out, implResolvableMIMETypes);
             out.writeInt(smell.length);
             for (FileElement fe : smell) {
                 fe.writeExternal(out);
@@ -403,10 +400,7 @@ public final class MIMEResolverImpl {
                 throw new IOException();
             }
             try {
-                implResolvableMIMETypes = new String[in.readInt()];
-                for (int i = 0; i < implResolvableMIMETypes.length; i++) {
-                    implResolvableMIMETypes[i] = in.readUTF();
-                }
+                implResolvableMIMETypes = Util.readStrings(in);
                 smell = new FileElement[in.readInt()];
                 for (int i = 0; i < smell.length; i++) {
                     smell[i] = new FileElement();

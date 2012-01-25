@@ -123,11 +123,22 @@ final class FileElement {
     }
 
     public void writeExternal(DataOutput out) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Util.writeUTF(out, mime);
+        fileCheck.writeExternal(out);
+        if (rule != null) {
+            out.writeBoolean(true);
+            rule.writeExternal(out);
+        } else {
+            out.writeBoolean(false);
+        }
     }
 
     public void readExternal(DataInput in) throws IOException, ClassNotFoundException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        mime = Util.readUTF(in);
+        fileCheck.readExternal(in);
+        if (in.readBoolean()) {
+            rule = new XMLMIMEComponent(in);
+        } 
     }
         
     /**
@@ -139,18 +150,19 @@ final class FileElement {
      * We could generate hardwired class bytecode on a fly.
      */
     static class Type {
+        private static final String EMPTY_EXTENSION = "";  //NOI18N
+
         Type() {}
         private String[] exts;
-        private static final String EMPTY_EXTENSION = "";  //NOI18N
         private String[] mimes;
         private String[] fatts;
-        private List<FilePattern> patterns;
-        private FilePattern lastAddedPattern = null;
-        private List<FileName> names;
         private String[] vals;   // contains null or value of attribute at the same index
+        private boolean exit;
         private byte[]   magic;
         private byte[]   mask;
-        private boolean exit = false;
+        private List<FilePattern> patterns;
+        private List<FileName> names;
+        private transient FilePattern lastAddedPattern;
         
         /** Checks whether the type is valid. At least one of the fields has
          * to be specified.
@@ -162,6 +174,56 @@ final class FileElement {
                    patterns != null ||
                    names != null ||
                    magic != null;
+        }
+
+        private void writeExternal(DataOutput out) throws IOException {
+            Util.writeStrings(out, exts);
+            Util.writeStrings(out, mimes);
+            Util.writeStrings(out, fatts);
+            Util.writeStrings(out, vals);
+            out.writeBoolean(exit);
+            Util.writeBytes(out, magic);
+            Util.writeBytes(out, mask);
+            if (patterns == null) {
+                out.writeInt(-1);
+            } else {
+                out.writeInt(patterns.size());
+                for (FilePattern p : patterns) {
+                    p.writeExternal(out);
+                }
+            }
+            if (names == null) {
+                out.writeInt(-1);
+            } else {
+                out.writeInt(names.size());
+                for (FileName n : names) {
+                    n.writeExternal(out);
+                }
+            }
+        }
+
+        private void readExternal(DataInput in) throws IOException {
+            exts = Util.readStrings(in);
+            mimes = Util.readStrings(in);
+            fatts = Util.readStrings(in);
+            vals = Util.readStrings(in);
+            exit = in.readBoolean();
+            magic = Util.readBytes(in);
+            mask = Util.readBytes(in);
+            int patternsSize = in.readInt();
+            if (patternsSize >= 0) {
+                patterns = new ArrayList<FilePattern>(patternsSize);
+                for (int i = 0; i < patternsSize; i++) {
+                    patterns.add(new FilePattern(in));
+                }
+            }
+            int namesSize = in.readInt();
+            if (namesSize >= 0) {
+                names = new ArrayList<FileName>(namesSize);
+                for (int i = 0; i < namesSize; i++) {
+                    names.add(new FileName(in));
+                }
+            }
         }
 
         /** Used to search in the file for given pattern in given range. If there is an inner
@@ -188,9 +250,9 @@ final class FileElement {
             private final String value;
             private final int range;
             private final boolean ignoreCase;
-            private FilePattern inner;
             private final byte[] bytes;
             private final int valueLength;
+            private FilePattern inner;
 
             public FilePattern(String value, int range, boolean ignoreCase) {
                 this.value = value;
@@ -202,6 +264,27 @@ final class FileElement {
                 }
                 this.range = range;
                 this.ignoreCase = ignoreCase;
+            }
+            
+            public FilePattern(DataInput is) throws IOException {
+                this(
+                    Util.readUTF(is), is.readInt(), is.readBoolean()
+                );
+                if (is.readBoolean()) {
+                    inner = new FilePattern(is);
+                }
+            }
+            
+            public void writeExternal(DataOutput os) throws IOException {
+                Util.writeUTF(os, value);
+                os.writeInt(range);
+                os.writeBoolean(ignoreCase);
+                if (inner != null) {
+                    os.writeBoolean(true);
+                    inner.writeExternal(os);
+                } else {
+                    os.writeBoolean(false);
+                }
             }
 
             public void setInner(FilePattern inner) {
@@ -296,6 +379,18 @@ final class FileElement {
                 }
                 this.substring = substring;
                 this.ignoreCase = ignoreCase;
+            }
+            
+            public FileName(DataInput is) throws IOException {
+                this(
+                    Util.readUTF(is), is.readBoolean(), is.readBoolean()
+                );
+            }
+            
+            public void writeExternal(DataOutput os) throws IOException {
+                Util.writeUTF(os, name);
+                os.writeBoolean(substring);
+                os.writeBoolean(ignoreCase);
             }
 
             public boolean match(FileObject fo) {

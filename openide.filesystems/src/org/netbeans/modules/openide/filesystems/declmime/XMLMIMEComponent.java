@@ -44,6 +44,9 @@
 
 package org.netbeans.modules.openide.filesystems.declmime;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,6 +74,13 @@ final class XMLMIMEComponent extends DefaultParser {
 
     // cached and reused parser used for sniffing    
     private static final LocalSniffingParser local = new LocalSniffingParser();
+    
+    public XMLMIMEComponent() {
+    }
+    
+    public XMLMIMEComponent(DataInput in) throws IOException {
+        template.readExternal(in);
+    }
 
     // FileObjectFilter ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -196,7 +206,10 @@ final class XMLMIMEComponent extends DefaultParser {
     }
     
     // Sniffing parser ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
+
+    void writeExternal(DataOutput out) throws IOException {
+        template.writeExternal(out);
+    }
 
     /**
      * Create just one shared parser instance per thread.
@@ -375,8 +388,27 @@ final class XMLMIMEComponent extends DefaultParser {
         private String[] attns = null;
         private String[] attvs = null;
 
+        public void writeExternal(DataOutput out) throws IOException {
+            Util.writeStrings(out, doctypes);
+            Util.writeStrings(out, pis);
+            Util.writeUTF(out, root);
+            Util.writeStrings(out, nss);
+            Util.writeStrings(out, attns);
+            Util.writeStrings(out, attvs);
+        }
+        
+        public void readExternal(DataInput in) throws IOException {
+            doctypes = Util.readStrings(in);
+            pis = Util.readStrings(in);
+            root = Util.readUTF(in);
+            nss = Util.readStrings(in);
+            attns = Util.readStrings(in);
+            attvs = Util.readStrings(in);
+        }
+        
+        @Override
         public String toString() {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             int i = 0;
             buf.append("xml-check(");
             

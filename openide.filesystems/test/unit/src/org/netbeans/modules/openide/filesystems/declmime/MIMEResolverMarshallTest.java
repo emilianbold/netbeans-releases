@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.openide.filesystems.declmime;
 
+import java.io.IOException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
 
@@ -53,10 +54,17 @@ public class MIMEResolverMarshallTest extends MIMEResolverImplTest {
     public MIMEResolverMarshallTest(String testName) {
         super(testName);
     }
-
+    
     @Override
     protected MIMEResolver createResolver(FileObject fo) throws Exception {
-        byte[] arr = MIMEResolverImpl.toStream(super.createResolver(fo));
+        final MIMEResolver orig = super.createResolver(fo);
+        byte[] arr;
+        try {
+            arr = MIMEResolverImpl.toStream(orig);
+        } catch (IOException ex) {
+            // not serializable
+            return orig;
+        }
         return MIMEResolverImpl.forStream(arr);
     }
 }
