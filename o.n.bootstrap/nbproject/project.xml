@@ -118,6 +118,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.modulemanager</friend>
                 <friend>org.netbeans.modules.sendopts</friend>
                 <friend>org.netbeans.modules.settings</friend>
+                <friend>com.oracle.jdeveloper.extcache</friend>
                 <package>org.netbeans</package>
             </friend-packages>
         </data>

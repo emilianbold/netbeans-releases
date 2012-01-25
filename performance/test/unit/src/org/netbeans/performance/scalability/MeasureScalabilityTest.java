@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,52 +34,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.performance.scalability;
 
-package org.netbeans.performance.j2ee.startup;
-
-import java.io.IOException;
-import org.netbeans.modules.performance.utilities.MeasureStartupTimeTestCase;
-
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 /**
- * Measures startup time by MeasureStartupTimeTestCase class.
- * Martin.Schovanek@sun.com
+ *
+ * @author petr
  */
-public class MeasureJ2EEStartupTime extends MeasureStartupTimeTestCase {
-    
-    public static final String suiteName="J2EE Startup suite";    
-    
-    /** Define testcase
-     * @param testName name of the testcase
-     */
-    public MeasureJ2EEStartupTime(java.lang.String testName) {
-        super(testName);
-    }
-    
-    @Override
-    public void setUp() {
-        System.out.println("########  "+getName()+"  ########");
-    }
+public class MeasureScalabilityTest {
+    public static NbTestSuite suite() {
+        PerformanceTestCase.prepareForMeasurements();
 
-    /** Testing start of IDE with measurement of the startup time.
-     * @throws IOException
-     */
-    public void testStartIDE() throws IOException {
-        measureComplexStartupTime("Startup Time");
-    }
-    
-    /** Testing start of IDE with measurement of the startup time.
-     * @throws IOException
-     */
-    public void testStartIDEWithOpenedFiles() throws IOException {
-        measureComplexStartupTime("Startup Time with opened J2EE projects");
-    }
-    
-    /** Testing start of IDE with measurement of the startup time.
-     * @throws IOException
-     */
-    public void testStartIDEWithWeb() throws IOException {
-        measureComplexStartupTime("Startup Time with opened Web projects");
+        NbTestSuite suite = new NbTestSuite("Scalability suite");
+        System.setProperty("suitename", MeasureScalabilityTest.class.getCanonicalName());
+        System.setProperty("suite", "Scalability suite");
+
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ExpandFolderTest.class)
+        .addTest(TabSwitchSpeedTest.class)
+        .enableModules(".*").clusters(".*").reuseUserDir(true)));
+        return suite;
     }
 }

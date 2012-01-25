@@ -98,7 +98,7 @@ implements CloneableEditorSupport.Env {
     public CloneableEditorNeverendingLoadingAsync2Test(String s) {
         super(s);
     }
-    
+
     @Override
     protected void setUp () {
         support = new CES (this, Lookup.EMPTY);
@@ -191,7 +191,7 @@ implements CloneableEditorSupport.Env {
         blocked = true;
         notifyAll();
         try {
-            wait();
+            wait(5000);
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }

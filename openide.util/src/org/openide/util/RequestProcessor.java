@@ -1447,7 +1447,7 @@ outer:  do {
 
         void schedule(long delay) {
             if (stopped) {
-                throw new IllegalStateException("RequestProcessor already stopped!"); // NOI18N
+                return;
             }
 
             time = System.currentTimeMillis() + delay;
