@@ -187,4 +187,20 @@ public class PhpParserErrorTest extends CslTestBase {
     public void testArrayDereferencing_09() throws Exception {
         checkErrors("testfiles/parser/arrayDereferencing_09.php");
     }
+
+    public void testBinaryNotation_01() throws Exception {
+        checkErrors("testfiles/parser/binaryNotation_01.php");
+    }
+
+    public void testBinaryNotation_02() throws Exception {
+        checkErrors("testfiles/parser/binaryNotation_02.php");
+    }
+
+    public void testBinaryNotation_03() throws Exception {
+        checkErrors("testfiles/parser/binaryNotation_03.php");
+    }
+
+    public void testBinaryNotation_04() throws Exception {
+        checkErrors("testfiles/parser/binaryNotation_04.php");
+    }
 }
