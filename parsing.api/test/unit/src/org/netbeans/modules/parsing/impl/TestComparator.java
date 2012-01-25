@@ -42,11 +42,8 @@
 
 package org.netbeans.modules.parsing.impl;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -63,11 +60,9 @@ public class TestComparator {
 
     public void check (String line) {
         if (failed) return;
-        Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "Got: {0} Expecting: {1} {2}", new Object[]{line, text, Arrays.toString(Thread.currentThread().getStackTrace())});  //NOI18N
         if (!text.startsWith (line)) {
-            Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "FAILED!\n{0}\nBut expecting:\n{1}", new Object[]{line, text});    //NOI18N
             failed = true;
-//            throw new IllegalArgumentException (line + "\nBut expecting:\n" + text);
+            throw new IllegalArgumentException (line + "\nBut expecting:\n" + text);
         }
         text = text.substring (line.length ());
         if (text.startsWith ("\n"))
