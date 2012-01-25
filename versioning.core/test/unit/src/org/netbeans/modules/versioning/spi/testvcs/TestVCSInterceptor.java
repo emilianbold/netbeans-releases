@@ -96,6 +96,9 @@ public class TestVCSInterceptor extends VCSInterceptor {
 
     public boolean isMutable(VCSFileProxy file) {
         isMutableFiles.add(file);
+        if(file.getName().startsWith(TestVCS.ALWAYS_WRITABLE_PREFIX)) {
+            return true;
+        }
         return super.isMutable(file);
     }
 
