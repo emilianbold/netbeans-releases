@@ -47,6 +47,7 @@ package org.netbeans.modules.form;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
@@ -58,6 +59,12 @@ import org.openide.util.Lookup;
  *
  * @author Ian Formanek
  */
+@MIMEResolver.ExtensionRegistration(
+    displayName="org/netbeans/modules/form/resources/Bundle#Services/MIMEResolver/FormResolver.xml",
+    extension="form",
+    mimeType="text/x-form",
+    position=137
+)
 public class FormDataLoader extends MultiFileLoader {
     /** The standard extensions of the recognized files */
     public static final String FORM_EXTENSION = "form"; // NOI18N
