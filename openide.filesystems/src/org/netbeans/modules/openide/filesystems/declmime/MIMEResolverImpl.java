@@ -90,7 +90,7 @@ public final class MIMEResolverImpl {
         return new Impl(fo);
     }
     
-    static MIMEResolver forStream(byte[] serialData) throws IOException, ClassNotFoundException {
+    public static MIMEResolver forStream(byte[] serialData) throws IOException {
         return new Impl(serialData);
     }
     
@@ -303,7 +303,8 @@ public final class MIMEResolverImpl {
             data.addFileChangeListener(FileUtil.weakFileChangeListener(listener, data));
         }
 
-        private Impl(byte[] serialData) throws IOException, ClassNotFoundException {
+        @SuppressWarnings("deprecation")
+        private Impl(byte[] serialData) throws IOException {
             data = null;
             state = DescParser.LOAD;
             ByteArrayInputStream is = new ByteArrayInputStream(serialData);
@@ -395,7 +396,7 @@ public final class MIMEResolverImpl {
             }
         }
 
-        public void readExternal(DataInput in) throws IOException, ClassNotFoundException {
+        private void readExternal(DataInput in) throws IOException {
             if (state != DescParser.LOAD) {
                 throw new IOException();
             }

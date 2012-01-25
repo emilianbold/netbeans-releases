@@ -133,7 +133,7 @@ final class FileElement {
         }
     }
 
-    public void readExternal(DataInput in) throws IOException, ClassNotFoundException {
+    public void readExternal(DataInput in) throws IOException {
         mime = Util.readUTF(in);
         fileCheck.readExternal(in);
         if (in.readBoolean()) {

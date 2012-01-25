@@ -41,9 +41,7 @@
  */
 package org.netbeans.modules.openide.filesystems.declmime;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.processing.Processor;
@@ -51,6 +49,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -81,35 +80,58 @@ public class MIMEResolverProcessor extends LayerGeneratingProcessor {
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
         for (Element e : roundEnv.getElementsAnnotatedWith(MIMEResolver.Registration.class)) {
             MIMEResolver.Registration r = e.getAnnotation(MIMEResolver.Registration.class);
-            String absRes = LayerBuilder.absolutizeResource(e, r.value());
-            final LayerBuilder b = layer(e);
-            FileObject fo = b.validateResource(absRes, e, r, null, false);
-            File f = b.instanceFile("Services/MIMEResolver", null, MIMEResolver.class);
-            try {
-                final InputStream is = fo.openInputStream();
-                generateInstanceResolver(f, is);
-                is.close();
-            } catch (IOException ex) {
-                final LayerGenerationException le = new LayerGenerationException("Cannot process " + absRes, e);
-                le.initCause(ex);
-                throw le;
+            for (String relRes : r.value()) {
+                String absRes = LayerBuilder.absolutizeResource(e, relRes);
+                final LayerBuilder b = layer(e);
+                FileObject fo = b.validateResource(absRes, e, r, null, false);
+                File f = b.file("Services/MIMEResolver/" + getName(e).replace('.', '-') + ".instance"); // NOI18N
+                f.methodvalue("instanceCreate", MIMEResolver.class.getName(), "create"); // NOI18N
+                f.stringvalue("instanceClass", MIMEResolver.class.getName()); // NOI18N
+                f.serialvalue("bytes", generateInstanceResolver(fo, e)); // NOI18N
+                f.write();
             }
         }
         return true;
     }
 
-    private void generateInstanceResolver(File f, InputStream is) throws IOException {
-        org.openide.filesystems.FileObject tmp = FileUtil.createMemoryFileSystem().getRoot().createData("resolver.xml");
-        OutputStream os = tmp.getOutputStream();
-        for (;;) {
-            int ch = is.read();
-            if (ch == -1) {
-                break;
+    private byte[] generateInstanceResolver(FileObject fo, Element e) throws LayerGenerationException {
+        try {
+            InputStream is = fo.openInputStream();
+            org.openide.filesystems.FileObject tmp = FileUtil.createMemoryFileSystem().getRoot().createData("resolver.xml");
+            OutputStream os = tmp.getOutputStream();
+            for (;;) {
+                int ch = is.read();
+                if (ch == -1) {
+                    break;
+                }
+                os.write(ch);
             }
-            os.write(ch);
+            os.close();
+            is.close();
+            final byte[] almostResult = MIMEResolverImpl.toStream(MIMEResolverImpl.forDescriptor(tmp));
+            // XXX: it would be slightly shorter to return the array directly,
+            // but the XMLFileSystem insist on deserializing the value, it does
+            // not support returning plain byte[]
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(out);
+            oos.writeObject(almostResult);
+            oos.close();
+            return out.toByteArray();
+        } catch (IOException ex) {
+            final LayerGenerationException le = new LayerGenerationException("Cannot process " + fo, e);
+            le.initCause(ex);
+            throw le;
         }
-        os.close();
-        
+    }
+
+    private String getName(Element e) {
+        if (e.getKind().isClass() || e.getKind().isInterface()) {
+            return processingEnv.getElementUtils().getBinaryName((TypeElement)e).toString();
+        } else if (e.getKind() == ElementKind.PACKAGE) {
+            return e.getSimpleName().toString();
+        } else {
+            return getName(e.getEnclosingElement()) + '.' + e.getSimpleName();
+        }
     }
     
 }

@@ -43,9 +43,9 @@
  */
 package org.openide.filesystems;
 
+import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -113,6 +113,12 @@ public abstract class MIMEResolver {
      */
     String[] getMIMETypes() {
         return resolvableMIMETypes;
+    }
+    
+    /** factory method for {@link MIMEResolver.Registration} */
+    static MIMEResolver create(FileObject fo) throws IOException {
+        byte[] arr = (byte[]) fo.getAttribute("bytes"); // NOI18N
+        return MIMEResolverImpl.forStream(arr);
     }
 
     /** Internal support for implementors of MIME resolver UIs. 
@@ -195,6 +201,6 @@ public abstract class MIMEResolver {
     
     @Retention(RetentionPolicy.SOURCE)
     public @interface Registration {
-        public String value();
+        public String[] value();
     }
 }
