@@ -53,10 +53,11 @@ import java.beans.PropertyChangeListener;
 import javax.swing.*;
 
 @OptionsPanelController.SubRegistration(
+    location="Java",
     id="Profiler",
     displayName="#ProfilerOptionsCategory_Title",
     keywords="#KW_ProfilerOptions",
-    keywordsCategory="Advanced/Profiler")
+    keywordsCategory="Java/Profiler")
 public class ProfilerOptionsCategory extends OptionsPanelController {
         //~ Static fields/initializers -------------------------------------------------------------------------------------------
 

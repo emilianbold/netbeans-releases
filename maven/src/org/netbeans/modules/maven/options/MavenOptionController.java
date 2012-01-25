@@ -57,10 +57,11 @@ import org.openide.util.Lookup;
  * @author Milos Kleint
  */
 @OptionsPanelController.SubRegistration(
+    location="Java",
     id=MavenOptionController.OPTIONS_SUBPATH,
     displayName="#TIT_Maven_Category",
     keywords="#KW_MavenOptions",
-    keywordsCategory="Advanced/Maven"
+    keywordsCategory="Java/Maven"
 //    toolTip="#TIP_Maven_Category"
 )
 public class MavenOptionController extends OptionsPanelController {
