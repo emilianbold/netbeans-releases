@@ -436,7 +436,7 @@ public final class MIMEResolverImpl {
         private short file_state = INIT;
         
         // references active resolver component
-        private MIMEComponent component = null;        
+        private XMLMIMEComponent component = null;        
         private String componentDelimiter = null;
         // holds level of pattern element
         private int patternLevel = 0;
@@ -644,7 +644,7 @@ public final class MIMEResolverImpl {
             }
         }
 
-        private void enterComponent(String name, MIMEComponent component) {
+        private void enterComponent(String name, XMLMIMEComponent component) {
             this.component = component;
             componentDelimiter = name;
 

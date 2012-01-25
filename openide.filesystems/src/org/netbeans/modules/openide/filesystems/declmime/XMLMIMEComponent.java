@@ -62,7 +62,7 @@ import org.xml.sax.ext.LexicalHandler;
  * @author  Petr Kuzel
  * @version
  */
-final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
+final class XMLMIMEComponent extends DefaultParser {
 
     private short parseState = INIT;
     

@@ -67,7 +67,7 @@ final class FileElement {
     }
     Type fileCheck = new Type();
     private String mime = null;
-    MIMEComponent rule = null;
+    XMLMIMEComponent rule = null;
     // unique string to mark exit condition
     static final String EXIT_MIME_TYPE = "mime-type-to-exit"; //NOI18N
 
