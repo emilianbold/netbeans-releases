@@ -61,7 +61,11 @@ import org.openide.util.NbBundle;
     "MYNAME=My Name",
     "EXTNAME=XYZ extension"
 })
-@MIMEResolver.ExtensionRegistration(displayName="#EXTNAME", extension="xyz", mimeType="text/x-yz")
+@MIMEResolver.ExtensionRegistration(
+    displayName="#EXTNAME", 
+    extension={"abc", "xyz"}, 
+    mimeType="text/x-yz"
+)
 public class MIMEResolverProcessorTest extends NbTestCase {
     private FileObject root;
     public MIMEResolverProcessorTest(String name) {
@@ -114,13 +118,16 @@ public class MIMEResolverProcessorTest extends NbTestCase {
         assertNotNull("Mime type found", mime);
         
         FileObject check = FileUtil.createMemoryFileSystem().getRoot().createData("my.xyz");
-        assertEquals("build1.xml recognized as Ant script", "text/x-yz", mime.findMIMEType(check));        
+        FileObject check2 = FileUtil.createMemoryFileSystem().getRoot().createData("my.xyz");
+        assertEquals("xyz recognized OK", "text/x-yz", mime.findMIMEType(check));        
+        assertEquals("abc recognized OK", "text/x-yz", mime.findMIMEType(check2));        
 
         Map<String, Set<String>> map = MIMEResolverImpl.getMIMEToExtensions(fo);
         assertNotNull("Map is provided", map);
         assertFalse("Map is not empty", map.isEmpty());
         Set<String> arr = map.get("text/x-yz");
-        assertEquals("One extension", 1, arr.size());
-        assertEquals("It is xyz", "xyz", arr.iterator().next());
+        assertEquals("One extension", 2, arr.size());
+        assertTrue("contains abc", arr.contains("abc"));
+        assertTrue("contains xyz", arr.contains("xyz"));
     }
 }
