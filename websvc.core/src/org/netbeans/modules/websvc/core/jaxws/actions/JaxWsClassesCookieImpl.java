@@ -79,36 +79,41 @@ public class JaxWsClassesCookieImpl implements JaxWsClassesCookie {
         this.implClassFO = implClassFO;
     }
     
+    @Override
     public void addOperation(final MethodTree method) {
         JavaSource targetSource = JavaSource.forFileObject(implClassFO);
-        CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+        CancellableTask<WorkingCopy> modificationTask = 
+            new CancellableTask<WorkingCopy>() 
+            {
+            @Override
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);            
                 TreeMaker make = workingCopy.getTreeMaker();
-                ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
+                ClassTree javaClass = SourceUtils.
+                    getPublicTopLevelTree(workingCopy);
                 if (javaClass!=null) {
-                    GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                    
-                    TypeElement webMethodAn = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
-                    TypeElement webParamAn = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
+                    GenerationUtils genUtils = GenerationUtils.newInstance(
+                                workingCopy);
                     
                     AnnotationTree webMethodAnnotation = make.Annotation(
-                        make.QualIdent(webMethodAn), 
+                        make.QualIdent("javax.jws.WebMethod"),      //NOI18N
                         Collections.<ExpressionTree>emptyList()
                     );
                     // add @WebMethod annotation
-                    ModifiersTree modifiersTree = make.addModifiersAnnotation(method.getModifiers(), webMethodAnnotation);
+                    ModifiersTree modifiersTree = make.addModifiersAnnotation(
+                            method.getModifiers(), webMethodAnnotation);
                     
                     // add @Oneway annotation
                     if (Kind.PRIMITIVE_TYPE == method.getReturnType().getKind()) {
-                        PrimitiveTypeTree primitiveType = (PrimitiveTypeTree)method.getReturnType();
+                        PrimitiveTypeTree primitiveType = 
+                            (PrimitiveTypeTree)method.getReturnType();
                         if (TypeKind.VOID == primitiveType.getPrimitiveTypeKind()) {
-                            TypeElement oneWayAn = workingCopy.getElements().getTypeElement("javax.jws.Oneway"); //NOI18N
                             AnnotationTree oneWayAnnotation = make.Annotation(
-                                make.QualIdent(oneWayAn), 
+                                make.QualIdent("javax.jws.Oneway"),         // NOI18N
                                 Collections.<ExpressionTree>emptyList()
                             );
-                            modifiersTree = make.addModifiersAnnotation(modifiersTree, oneWayAnnotation);
+                            modifiersTree = make.addModifiersAnnotation(
+                                    modifiersTree, oneWayAnnotation);
                         }
                     }
                     
@@ -117,9 +122,10 @@ public class JaxWsClassesCookieImpl implements JaxWsClassesCookie {
                     List<VariableTree> newParameters = new ArrayList<VariableTree>();
                     for (VariableTree param:parameters) {
                         AnnotationTree paramAnnotation = make.Annotation(
-                            make.QualIdent(webParamAn), 
+                            make.QualIdent("javax.jws.WebParam"),           //NOI18N
                             Collections.<ExpressionTree>singletonList(
-                                make.Assignment(make.Identifier("name"), make.Literal(param.getName().toString()))) //NOI18N
+                                make.Assignment(make.Identifier("name"),    //NOI18N
+                                        make.Literal(param.getName().toString()))) 
                         );
                         newParameters.add(genUtils.addAnnotation(param, paramAnnotation));
                     }
@@ -133,14 +139,19 @@ public class JaxWsClassesCookieImpl implements JaxWsClassesCookie {
                                 method.getThrows(),
                                 method.getBody(),
                                 (ExpressionTree)method.getDefaultValue());
-                    Comment comment = Comment.create(NbBundle.getMessage(JaxWsClassesCookieImpl.class, "TXT_WSOperation"));                    
+                    Comment comment = Comment.create(NbBundle.getMessage(
+                            JaxWsClassesCookieImpl.class, "TXT_WSOperation"));      //NOI18N                 
                     make.addComment(annotatedMethod, comment, true);
                     
-                    ClassTree modifiedClass = make.addClassMember(javaClass,annotatedMethod);
+                    ClassTree modifiedClass = make.addClassMember(javaClass,
+                            annotatedMethod);
                     workingCopy.rewrite(javaClass, modifiedClass);
                 }
             }
-            public void cancel() {}
+            @Override
+            public void cancel() {
+                
+            }
         };
         try {
             targetSource.runModificationTask(modificationTask).commit();
