@@ -55,7 +55,7 @@ import org.openide.filesystems.URLMapperTestHidden;
  * @author vv159170
  */
 public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
-    private static final boolean ALLOW_TCK = false;
+    private static final boolean ALLOW_TCK = true;
     
     public RemoteFSTCKTest(Test test) {
         super(test);

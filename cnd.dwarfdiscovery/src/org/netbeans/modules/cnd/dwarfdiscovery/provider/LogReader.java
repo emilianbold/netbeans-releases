@@ -687,7 +687,7 @@ public class LogReader {
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
         List<String> languageArtifacts = new ArrayList<String>();
-        List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(line, true, userIncludes, userMacros, null, languageArtifacts, compilerSettings.getProjectBridge(), li.compilerType == CompilerType.CPP);
+        List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.BuildLog, userIncludes, userMacros, null, languageArtifacts, compilerSettings.getProjectBridge(), li.compilerType == CompilerType.CPP);
         for(String what : sourcesList) {
             if (what == null){
                 continue;
