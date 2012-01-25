@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -278,12 +279,30 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 }
             }
             if (type != null) {
-                for (JsObject object : type.getProperties().values()) {
-                    if (!(object instanceof JsFunction && ((JsFunction) object).isAnonymous())
-                            && startsWith(object.getName(), request.prefix)) {
-                        resultList.add(new JsCompletionItem(object, request));
+                Collection<String> lastTypeAssignment = type.getAssignmentTypeNames(request.anchor);
+                if (lastTypeAssignment.isEmpty()) {
+                    for (JsObject object : type.getProperties().values()) {
+                        if (!(object instanceof JsFunction && ((JsFunction) object).isAnonymous())
+                                && startsWith(object.getName(), request.prefix)) {
+                            resultList.add(new JsCompletionItem(object, request));
+                        }
+                    }
+                } else {
+                    for (String objectName : lastTypeAssignment) {
+                        for (JsObject object : request.result.getModel().getVariables(request.anchor)) {
+                            if (object.getName().equals(objectName)) {
+                                for (JsObject property : object.getProperties().values()) {
+                                    if (!(property instanceof JsFunction && ((JsFunction) property).isAnonymous())
+                                            && startsWith(property.getName(), request.prefix)) {
+                                        resultList.add(new JsCompletionItem(property, request));
+                                    }
+                                }
+                                break;
+                            }
+                        }
                     }
                 }
+                
             }
         }
     }

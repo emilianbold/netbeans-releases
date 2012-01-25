@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -68,4 +69,10 @@ public interface JsObject extends JsElement {
     
     List<Occurrence> getOccurrences();
    
+    /**
+     * 
+     * @param offset
+     * @return 
+     */
+    Collection<String> getAssignmentTypeNames(int offset);
 }

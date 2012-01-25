@@ -379,6 +379,20 @@ public class ModelVisitor extends PathNodeVisitor {
         return super.visit(referenceNode, onset);
     }
 
+    @Override
+    public Node visit(UnaryNode unaryNode, boolean onset) {
+        if (onset) {
+            if (Token.descType(unaryNode.getToken()) == TokenType.NEW) {
+                if (unaryNode.rhs() instanceof CallNode
+                        && ((CallNode)unaryNode.rhs()).getFunction() instanceof IdentNode) {
+                    System.out.println("pridan new assignment");
+                    modelBuilder.getCurrentObject().addAssignment(
+                            ((IdentNode)((CallNode)unaryNode.rhs()).getFunction()).getName(), unaryNode.getStart());
+                }
+            }
+        }
+        return super.visit(unaryNode, onset);
+    }
     
     @Override
     public Node visit(VarNode varNode, boolean onset) {
