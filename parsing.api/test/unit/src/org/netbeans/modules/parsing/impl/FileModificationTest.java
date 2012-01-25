@@ -47,7 +47,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 
@@ -94,9 +96,33 @@ public class FileModificationTest extends IndexingAwareTestCase {
      * @throws java.lang.Exception
      */
     public void testFileModification () throws Exception {
+        final StringBuilder log = new StringBuilder();
         
-        Logger.getLogger("FileModificationTest.logger").setLevel(Level.INFO);
+        final Logger logger = Logger.getLogger("FileModificationTest.logger");
+        final Handler h = new Handler(){
+            @Override
+            public void publish(LogRecord record) {
+                synchronized (log) {
+                    final String message = record.getMessage();
+                    final Object[] params = record.getParameters();
+                    log.append(params == null ?
+                            message :
+                            java.text.MessageFormat.format(message, params)).
+                        append("\n");
+                }
+            }
 
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        };
+        logger.setLevel(Level.INFO);
+        logger.addHandler(h);
+        try {
         // 1) register tasks and parsers
         MockServices.setServices (MockMimeLookup.class, MyScheduler.class);
         final CountDownLatch        latch1 = new CountDownLatch (1);
@@ -333,7 +359,14 @@ public class FileModificationTest extends IndexingAwareTestCase {
         test.check ("3 - end\n");
 
         // 5) compare output
-        assertEquals ("", test.getResult ());
+        String slog;
+        synchronized (log) {
+            slog = log.toString();
+        }
+        assertEquals ("<log>" +slog+ "</log>","", test.getResult ());
+        } finally {
+            logger.removeHandler(h);
+        }
     }
 }
 

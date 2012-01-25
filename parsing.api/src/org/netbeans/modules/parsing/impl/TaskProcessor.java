@@ -656,8 +656,8 @@ public class TaskProcessor {
             try {
                 while (true) {                   
                     try {                        
-                        Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "ALL REQUESTS: ", new Object[]{requests});  //NOI18N
                         final Request r = requests.take();
+                        Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "CURRENT: {0} REST: {1}", new Object[]{r, requests});  //NOI18N
                         if (r != null && r != Request.NONE) {
                             RepositoryUpdater.getDefault().suspend();
                             try {
@@ -884,8 +884,18 @@ public class TaskProcessor {
     //@ThreadSafe
     public static class Request {
         
-        static final Request DUMMY = new Request ();
-        static final Request NONE = new Request();
+        static final Request DUMMY = new Request () {
+            @Override
+            public String toString() {
+                return "DUMMY"; //NOI18N
+            }
+        };
+        static final Request NONE = new Request() {
+            @Override
+            public String toString() {
+                return "NONE";  //NOI18N
+            }
+        };
         
         private final SchedulerTask task;
         private final SourceCache cache;
