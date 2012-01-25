@@ -54,6 +54,7 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
+import org.openide.filesystems.MIMEResolver.Registration;
 import org.openide.filesystems.annotations.LayerBuilder;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
@@ -80,18 +81,22 @@ public class MIMEResolverProcessor extends LayerGeneratingProcessor {
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
         for (Element e : roundEnv.getElementsAnnotatedWith(MIMEResolver.Registration.class)) {
             MIMEResolver.Registration r = e.getAnnotation(MIMEResolver.Registration.class);
-            for (String relRes : r.value()) {
-                String absRes = LayerBuilder.absolutizeResource(e, relRes);
-                final LayerBuilder b = layer(e);
-                FileObject fo = b.validateResource(absRes, e, r, null, false);
-                File f = b.file("Services/MIMEResolver/" + getName(e).replace('.', '-') + ".instance"); // NOI18N
-                f.methodvalue("instanceCreate", MIMEResolver.class.getName(), "create"); // NOI18N
-                f.stringvalue("instanceClass", MIMEResolver.class.getName()); // NOI18N
-                f.serialvalue("bytes", generateInstanceResolver(fo, e)); // NOI18N
-                f.write();
-            }
+            registerDefinition(e, r.resource(), r);
         }
         return true;
+    }
+
+    protected void registerDefinition(Element e, String relRes, Registration r) throws LayerGenerationException {
+        String absRes = LayerBuilder.absolutizeResource(e, relRes);
+        final LayerBuilder b = layer(e);
+        FileObject fo = b.validateResource(absRes, e, r, null, false);
+        File f = b.file("Services/MIMEResolver/" + getName(e).replace('.', '-') + ".instance"); // NOI18N
+        f.methodvalue("instanceCreate", MIMEResolver.class.getName(), "create"); // NOI18N
+        f.stringvalue("instanceClass", MIMEResolver.class.getName()); // NOI18N
+        f.serialvalue("bytes", generateInstanceResolver(fo, e)); // NOI18N
+        f.position(r.position());
+        f.bundlevalue("displayName", r.displayName()); // NOI18N
+        f.write();
     }
 
     private byte[] generateInstanceResolver(FileObject fo, Element e) throws LayerGenerationException {

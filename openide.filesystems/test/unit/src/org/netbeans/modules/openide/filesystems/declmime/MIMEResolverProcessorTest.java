@@ -42,17 +42,22 @@
 package org.netbeans.modules.openide.filesystems.declmime;
 
 import java.net.URL;
+import java.util.Collections;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.filesystems.XMLFileSystem;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@MIMEResolver.Registration("mime-resolver-rule.xml")
+@MIMEResolver.Registration(resource="mime-resolver-rule.xml", displayName="#MYNAME")
+@NbBundle.Messages({
+    "MYNAME=My Name"
+})
 public class MIMEResolverProcessorTest extends NbTestCase {
     private FileObject root;
     public MIMEResolverProcessorTest(String name) {
@@ -71,10 +76,13 @@ public class MIMEResolverProcessorTest extends NbTestCase {
     
     
 
-    public void testSingleResolver() {
+    public void testSingleResolver() throws Exception {
         final String PATH = "Services/MIMEResolver/"
             + "org-netbeans-modules-openide-filesystems-declmime-MIMEResolverProcessorTest.instance";
         FileObject fo = FileUtil.getConfigFile(PATH);
+        String dispName = fo.getFileSystem().getStatus().annotateName(fo.getName(), Collections.singleton(fo));
+        assertEquals("Proper display name", Bundle.MYNAME(), dispName);
+        
         assertNotNull("Declaration found", fo);
         MIMEResolver mime = FileUtil.getConfigObject(PATH, MIMEResolver.class);
         assertNotNull("Mime type found", mime);
