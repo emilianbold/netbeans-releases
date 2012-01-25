@@ -96,33 +96,6 @@ public class FileModificationTest extends IndexingAwareTestCase {
      * @throws java.lang.Exception
      */
     public void testFileModification () throws Exception {
-        final StringBuilder log = new StringBuilder();
-        
-        final Logger logger = Logger.getLogger("FileModificationTest.logger");
-        final Handler h = new Handler(){
-            @Override
-            public void publish(LogRecord record) {
-                synchronized (log) {
-                    final String message = record.getMessage();
-                    final Object[] params = record.getParameters();
-                    log.append(params == null ?
-                            message :
-                            java.text.MessageFormat.format(message, params)).
-                        append("\n");
-                }
-            }
-
-            @Override
-            public void flush() {
-            }
-
-            @Override
-            public void close() throws SecurityException {
-            }
-        };
-        logger.setLevel(Level.INFO);
-        logger.addHandler(h);
-        try {
         // 1) register tasks and parsers
         MockServices.setServices (MockMimeLookup.class, MyScheduler.class);
         final CountDownLatch        latch1 = new CountDownLatch (1);
@@ -350,7 +323,6 @@ public class FileModificationTest extends IndexingAwareTestCase {
         test.check ("2 - change file\n");
 
         // 4) change file
-        Logger.getLogger("FileModificationTest.logger").info("FILE CHANGE");    //NOI18N
         outputStream = testFile.getOutputStream ();
         writer = new OutputStreamWriter (outputStream);
         writer.append ("Toto je testovaci file (druha verze), na kterem se budou delat hnusne pokusy!!!");
@@ -359,20 +331,6 @@ public class FileModificationTest extends IndexingAwareTestCase {
         test.check ("3 - end\n");
 
         // 5) compare output
-        String slog;
-        synchronized (log) {
-            slog = log.toString();
-        }
-        assertEquals ("<log>" +slog+ "</log>","", test.getResult ());
-        } finally {
-            logger.removeHandler(h);
-        }
+        assertEquals ("", test.getResult ());
     }
 }
-
-
-
-
-
-
-

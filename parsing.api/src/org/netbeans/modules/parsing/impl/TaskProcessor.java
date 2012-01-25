@@ -338,7 +338,6 @@ public class TaskProcessor {
                                     break;
                                 }
                             }
-                            Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "Adding tasks: {0} from: {1}", new Object[]{aRequests, java.util.Arrays.toString(Thread.currentThread().getStackTrace())});  //NOI18N
                             requests.addAll (aRequests);
                         }
                     }
@@ -411,14 +410,12 @@ public class TaskProcessor {
                     if ((cr=finishedRequests.remove(source)) != null && cr.size()>0)  {
                         for (Request toAdd : cr) {
                             assert toAdd.reschedule == ReschedulePolicy.ON_CHANGE;
-                            Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "Adding tasks: {0} from: {1}", new Object[]{toAdd, java.util.Arrays.toString(Thread.currentThread().getStackTrace())});  //NOI18N
                             requests.add(toAdd);
                         }
                     }
                 }
                 if ((cr=waitingRequests.remove(source)) != null && cr.size()>0)  {
                     for (Request toAdd : cr) {                        
-                        Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "Adding tasks: {0} from: {1}", new Object[]{toAdd, java.util.Arrays.toString(Thread.currentThread().getStackTrace())});  //NOI18N
                         requests.add(toAdd);
                     }
                 }
@@ -500,7 +497,6 @@ public class TaskProcessor {
         }
         //Issue #102073 - removed running task which is readded is not performed
         synchronized (INTERNAL_LOCK) {
-            Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "Adding tasks: {0} from: {1}", new Object[]{requests, java.util.Arrays.toString(Thread.currentThread().getStackTrace())});  //NOI18N
             TaskProcessor.requests.addAll (requests);
         }
         return true;
@@ -657,7 +653,6 @@ public class TaskProcessor {
                 while (true) {                   
                     try {                        
                         final Request r = requests.take();
-                        Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "CURRENT: {0} REST: {1}", new Object[]{r, requests});  //NOI18N
                         if (r != null && r != Request.NONE) {
                             RepositoryUpdater.getDefault().suspend();
                             try {
@@ -711,7 +706,6 @@ public class TaskProcessor {
                                                     lockCount++;
                                                     try {
                                                         if (r.task instanceof EmbeddingProvider) {
-                                                            Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "Performaing EmbeddignProvider: {0}", new Object[]{r});  //NOI18N
                                                             sourceCache.refresh ((EmbeddingProvider) r.task, r.schedulerType);
                                                         }
                                                         else {
@@ -725,7 +719,6 @@ public class TaskProcessor {
                                                                             ((IndexingAwareParserResultTask)r.task).getIndexingMode() == TaskIndexingMode.ALLOWED_DURING_SCAN;
                                                                     final boolean compatMode = "true".equals(System.getProperty(COMPAT_MODE));  //NOI18N
                                                                     final boolean shouldCall = !sourceInvalid && (!scanInProgress || canRunDuringScan || compatMode);
-                                                                    Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "Performaing task: {0} shouldCall: {1}", new Object[]{r, shouldCall});  //NOI18N
                                                                     if (shouldCall) {
                                                                         try {
                                                                             final long startTime = System.currentTimeMillis();
@@ -791,14 +784,12 @@ public class TaskProcessor {
                                                             rc.add(r);
                                                             LOGGER.log(Level.FINE, "Waiting Task: {0}", r);      //NOI18N
                                                         } else {
-                                                            Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "Adding tasks: {0} from: {1}", new Object[]{r, java.util.Arrays.toString(Thread.currentThread().getStackTrace())});  //NOI18N
                                                             requests.add(r);
                                                             LOGGER.log(Level.FINE, "Rescheduling Waiting Task: {0}", r); //NOI18N
                                                         }
                                                     }
                                                     else if (reschedule || SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID)) {
                                                         //The JavaSource was changed or canceled rechedule it now
-                                                        Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "Adding tasks: {0} from: {1}", new Object[]{r, java.util.Arrays.toString(Thread.currentThread().getStackTrace())});  //NOI18N
                                                         requests.add(r);
                                                         LOGGER.log(Level.FINE, "Rescheduling Canceled Task: {0}", r); //NOI18N
                                                     } else if (r.reschedule == ReschedulePolicy.ON_CHANGE) {
@@ -830,7 +821,6 @@ public class TaskProcessor {
                                                         rc.add(r);
                                                         LOGGER.log(Level.FINE, "Waiting NEVER Task: {0}", r.toString()); //NOI18N
                                                 } else {
-                                                    Logger.getLogger("FileModificationTest.logger").log(Level.INFO, "Adding tasks: {0} from: {1}", new Object[]{r, java.util.Arrays.toString(Thread.currentThread().getStackTrace())});  //NOI18N
                                                     requests.add(r);
                                                     LOGGER.log(Level.FINE, "Rescheduling Waiting NEVER Task: {0}", r.toString()); //NOI18N
                                                 }
