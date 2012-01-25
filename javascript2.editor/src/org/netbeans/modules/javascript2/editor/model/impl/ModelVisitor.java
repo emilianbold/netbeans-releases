@@ -78,8 +78,12 @@ public class ModelVisitor extends PathNodeVisitor {
         return modelBuilder.getGlobal();
     }
     
+    JsObjectImpl fromAN = null;
     @Override
     public Node visit(AccessNode accessNode, boolean onset) {
+        System.out.println("visiting AN: " + accessNode);
+        System.out.println("     base: " + accessNode.getBase() + " " + accessNode.getBase().getClass().getSimpleName());
+        System.out.println("     property: " + accessNode.getProperty());
         if(onset) {
 //            System.out.println("AccessNode: " + accessNode);
             BinaryNode node = getPath().get(getPath().size() - 1) instanceof BinaryNode
@@ -101,6 +105,30 @@ public class ModelVisitor extends PathNodeVisitor {
                         }
                     }
                 }
+            }
+        } else {
+            if (accessNode.getBase() instanceof IdentNode) {
+                IdentNode base = (IdentNode)accessNode.getBase();
+                if (!"this".equals(base.getName())) {
+                    Identifier name = ModelElementFactory.create((IdentNode)accessNode.getBase());
+                    List<Identifier> fqname = new ArrayList<Identifier>();
+                    fqname.add(name);
+                    fromAN = ModelUtils.getJsObject(modelBuilder, fqname);
+                    fromAN.addOccurrence(name.getOffsetRange());
+                } else {
+                    fromAN = modelBuilder.getCurrentObject();
+                }
+            } 
+            if (fromAN != null) {
+                JsObjectImpl property = (JsObjectImpl)fromAN.getProperty(accessNode.getProperty().getName());
+                if (property != null) {
+                    property.addOccurrence(new OffsetRange(accessNode.getProperty().getStart(), accessNode.getProperty().getFinish()));
+                    fromAN = property;
+                    System.out.println("add occurrence of " + accessNode.getProperty().getName() + " to object " + property.getName() + " parent object " + fromAN.getName());
+                }                
+            }
+            if (!(getPath().get(getPath().size() - 1) instanceof AccessNode)) {
+                fromAN = null;
             }
         }
         return super.visit(accessNode, onset);
@@ -180,9 +208,6 @@ public class ModelVisitor extends PathNodeVisitor {
                     JsObject parent = ModelUtils.getJsObject(modelBuilder, name.subList(0, 1));
                     JsObject property;
                     
-                    if(!parent.getDeclarationName().getOffsetRange().overlaps(name.get(0).getOffsetRange())) {
-                        ((JsObjectImpl)parent).addOccurrence(name.get(0).getOffsetRange());
-                    }
                     for (int i = 1; i < name.size(); i++) {
                         Identifier iden = name.get(i);
                         property = parent.getProperty(iden.getName());
@@ -192,9 +217,7 @@ public class ModelVisitor extends PathNodeVisitor {
                                 property = new JsObjectImpl(parent, iden, iden.getOffsetRange());
                                 parent.addProperty(property.getName(), property);
                             }
-                        } else {
-                            ((JsObjectImpl)property).addOccurrence(iden.getOffsetRange());
-                        }
+                        } 
                     }
 //                    JsObject property = parent.getProperty(name.get(name.size() - 1).getName());
 //                    if (property ==  null && (parent.getParent() != null && (parent.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
