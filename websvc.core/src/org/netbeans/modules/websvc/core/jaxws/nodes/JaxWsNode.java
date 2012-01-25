@@ -629,7 +629,7 @@ public class JaxWsNode extends AbstractNode implements
                         boolean foundWsAnnotation = resolveServiceUrl(controller, 
                                 typeElement,  serviceName, name);
                         if (!foundWsAnnotation) {
-                            isProvider[0] = hasAnnotation(typeElement, 
+                            isProvider[0] = JaxWsUtils.hasAnnotation(typeElement, 
                                     "javax.xml.ws.WebServiceProvider");     // NOI18N
                         }
                         if (!inEjbProject) {
@@ -673,7 +673,8 @@ public class JaxWsNode extends AbstractNode implements
         boolean foundWsAnnotation = false;
         List<? extends AnnotationMirror> annotations = targetElement.getAnnotationMirrors();
         for (AnnotationMirror anMirror : annotations) {
-            boolean isWebMethodAnnotation = hasFqn(anMirror, "javax.jws.WebService");   // NOI18N
+            boolean isWebMethodAnnotation = JaxWsUtils.hasFqn(anMirror, 
+                    "javax.jws.WebService");   // NOI18N
             if (isWebMethodAnnotation) {
                 foundWsAnnotation = true;
                 Map<? extends ExecutableElement, ? extends AnnotationValue> 
@@ -707,7 +708,7 @@ public class JaxWsNode extends AbstractNode implements
     }
 
     private boolean isStatelessEjb(TypeElement targetElement) {
-        return hasAnnotation(targetElement, "javax.ejb.Stateless"); // NOI18N
+        return JaxWsUtils.hasAnnotation(targetElement, "javax.ejb.Stateless"); // NOI18N
     }
 
     private String getNameFromPackageName(String packageName) {
@@ -885,7 +886,7 @@ public class JaxWsNode extends AbstractNode implements
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = SourceUtils.getPublicTopLevelElement(
                         controller);
-                AnnotationMirror handlerAnnotation = getAnnotation(typeElement, 
+                AnnotationMirror handlerAnnotation =JaxWsUtils.getAnnotation(typeElement, 
                         "javax.jws.HandlerChain"); //NOI18N
                 if (handlerAnnotation != null) {
                     isNew[0] = false;
@@ -1107,28 +1108,6 @@ public class JaxWsNode extends AbstractNode implements
         return hostName;
     }
     
-    static boolean hasAnnotation( Element element , String fqn ){
-        return  getAnnotation(element, fqn)!= null;
-    }
-    
-    static AnnotationMirror getAnnotation( Element element , String fqn ){
-        for( AnnotationMirror mirror : element.getAnnotationMirrors() ){
-            if ( hasFqn(mirror, fqn)){
-                return mirror;
-            }
-        }
-        return null;
-    }
-    
-    private static boolean hasFqn( AnnotationMirror mirror , String fqn){
-        Element anElement = mirror.getAnnotationType().asElement();
-        if ( anElement instanceof TypeElement ){
-            return fqn.contentEquals( ((TypeElement)anElement).getQualifiedName());
-        }
-        return false;
-    }
-
-
     private class ServerContextInfo {
         private String host, port, contextRoot;
 
