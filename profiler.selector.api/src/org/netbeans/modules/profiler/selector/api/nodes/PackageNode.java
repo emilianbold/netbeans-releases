@@ -131,7 +131,16 @@ public class PackageNode extends ContainerNode {
               defaultizeName(pkg != null ? pkg.getBinaryName() : Bundle.LBL_Unknown()), 
               Icons.getIcon(LanguageIcons.PACKAGE), parent);
         
-        updateDisplayName(defaultizeName(pkg != null ? pkg.getBinaryName() : Bundle.LBL_Unknown()));
+        boolean flat = false;
+        Collection<SourcePackageInfo> subpkgs = pkg.getSubpackages();
+        while (subpkgs.size() == 1) {
+            pkg = subpkgs.iterator().next();
+            subpkgs = pkg.getSubpackages();
+            flat = true;
+        }
+        if (flat) {
+            updateDisplayName(defaultizeName(pkg != null ? pkg.getBinaryName() : Bundle.LBL_Unknown()));
+        }
         
         this.pkg = pkg;
         if (pkg != null) {
@@ -179,15 +188,5 @@ public class PackageNode extends ContainerNode {
     
     private static String defaultizeName(String name) {
         return ((name == null) || (name.length() == 0)) ? DEFAULT_NAME : name;
-    }
-
-    private static String stripName(String name) {
-        int lastDot = name.lastIndexOf('.'); // NOI18N
-
-        if (lastDot > -1) {
-            return name.substring(lastDot + 1);
-        }
-
-        return name;
     }
 }
