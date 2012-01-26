@@ -101,8 +101,8 @@ import org.openide.util.RequestProcessor;
     "CPUSettingsBasicPanel_QuickFilterDialogCaption=Set Quick Filter",
     "CPUSettingsBasicPanel_FilterSetsDialogCaption=Customize Filter Sets",
     "CPUSettingsBasicPanel_GlobalFiltersDialogCaption=Edit Global Filters",
-    "CPUSettingsBasicPanel_SampleAppRadioText=&Sample application",
-    "CPUSettingsBasicPanel_ProfileAppRadioText=&Profile application",
+    "CPUSettingsBasicPanel_SampleAppRadioText=&Quick (sampled)",
+    "CPUSettingsBasicPanel_ProfileAppRadioText=&Advanced (instrumented)",
     "CPUSettingsBasicPanel_StopwatchRadioText=Stopwatch",
     "CPUSettingsBasicPanel_FilterLabelText=&Filter:",
     "CPUSettingsBasicPanel_ShowFilterString=Show filter value",
@@ -360,7 +360,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
         constraints.gridwidth = 1;
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(0, 10, 0, 0);
+        constraints.insets = new Insets(0, 0, 0, 0);
         partOfAppContainer.add(partOfAppHintLink, constraints);
 
         // partOfAppContainer - customization
