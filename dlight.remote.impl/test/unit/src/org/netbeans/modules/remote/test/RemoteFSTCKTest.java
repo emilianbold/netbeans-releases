@@ -43,6 +43,7 @@ package org.netbeans.modules.remote.test;
 
 import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.remote.impl.fs.RemoteFSTCKTestCase;
 import org.openide.filesystems.FileObjectTestHid;
 import org.openide.filesystems.FileSystemTestHid;
@@ -54,23 +55,51 @@ import org.openide.filesystems.URLMapperTestHidden;
  * @author vv159170
  */
 public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
-    private static final boolean ALLOW_TCK = Boolean.getBoolean("run.test.RandomlyFails");
-    
+   
     public RemoteFSTCKTest(Test test) {
         super(test);
     }
     
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
-        if (ALLOW_TCK) {
-            suite.addTestSuite(FileSystemTestHid.class);
-            suite.addTestSuite(FileObjectTestHid.class);
-            // it seems AttributesTestHidden does not belong to FS TCK
-            //suite.addTestSuite(AttributesTestHidden.class);
-            suite.addTestSuite(URLMapperTestHidden.class);
-            suite.addTestSuite(FileUtilTestHidden.class);
-        }
+        suite.addTestSuite(FileSystemTestHid_.class);
+        suite.addTestSuite(FileObjectTestHid_.class);
+        // it seems AttributesTestHidden does not belong to FS TCK
+        //suite.addTestSuite(AttributesTestHidden.class);
+        suite.addTestSuite(URLMapperTestHidden_.class);
+        suite.addTestSuite(FileUtilTestHidden_.class);
         return new RemoteFSTCKTest(suite);
     }
+    
+    @RandomlyFails
+    public static class FileSystemTestHid_ extends FileSystemTestHid {
 
+        public FileSystemTestHid_(String testName) {
+            super(testName);
+        }
+    }
+
+    @RandomlyFails
+    public static class FileObjectTestHid_ extends FileObjectTestHid {
+
+        public FileObjectTestHid_(String testName) {
+            super(testName);
+        }
+    }
+
+    @RandomlyFails
+    public static class URLMapperTestHidden_ extends URLMapperTestHidden {
+
+        public URLMapperTestHidden_(String testName) {
+            super(testName);
+        }
+    }
+
+    @RandomlyFails
+    public static class FileUtilTestHidden_ extends FileUtilTestHidden {
+
+        public FileUtilTestHidden_(String testName) {
+            super(testName);
+        }
+    }
 }
