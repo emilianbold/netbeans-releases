@@ -237,6 +237,14 @@ public class BrowserReload {
                 }
             }
         }
+
+        @Override
+        public void accepted(SelectionKey key) {
+        }
+
+        @Override
+        public void closed(SelectionKey key) {
+        }
         
     }
     

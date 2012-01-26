@@ -135,6 +135,12 @@ public class WebSocketServer extends SocketServer {
     protected WebSocketChanelHandler getHandler(SelectionKey key ){
         return getContext(key).getHandler();
     }
+
+    @Override
+    public void close(SelectionKey key) throws IOException {
+        super.close(key);
+        getWebSocketReadHandler().closed(key);
+    }
     
     static class SocketContext {
         
@@ -203,6 +209,7 @@ public class WebSocketServer extends SocketServer {
                     return;
                 }
                 initHandler(key);
+                getWebSocketReadHandler().accepted(key);
             }
             catch(IOException e ){
                 close(key);
