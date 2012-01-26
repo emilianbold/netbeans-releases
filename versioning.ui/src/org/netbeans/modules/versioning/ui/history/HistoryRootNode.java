@@ -73,7 +73,6 @@ public class HistoryRootNode extends AbstractNode {
     private static DateFormat dateFormat = DateFormat.getDateInstance();
     
     private Map<Long, HistoryEntry> revisionEntries = new HashMap<Long, HistoryEntry>();
-    private final File[] files;
     
     private LoadNextNode loadNextNode;
     private WaitNode waitNode;
@@ -83,9 +82,8 @@ public class HistoryRootNode extends AbstractNode {
     private final Action loadNextAction;
     private final Action[] actions;
         
-    HistoryRootNode(File[] files, String vcsName, Action loadNextAction, Action... actions) {
+    HistoryRootNode(String vcsName, Action loadNextAction, Action... actions) {
         super(new Children.SortedArray());
-        this.files = files;
         this.vcsName = vcsName;
         this.loadNextAction = loadNextAction;
         this.actions = actions;

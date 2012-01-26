@@ -388,7 +388,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                 final String vcsName = (String) (getHistoryProvider(versioningSystem) != null ? 
                                                     versioningSystem.getProperty(VersioningSystem.PROP_DISPLAY_NAME) :
                                                     null);
-                root = new HistoryRootNode(files, vcsName, loadNextAction, createActions()); 
+                root = new HistoryRootNode(vcsName, loadNextAction, createActions()); 
                 tablePanel.getExplorerManager().setRootContext(root);
             }
             
