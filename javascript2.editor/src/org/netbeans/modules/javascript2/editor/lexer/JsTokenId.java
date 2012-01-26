@@ -196,6 +196,10 @@ public enum JsTokenId implements TokenId {
         return primaryCategory;
     }
 
+    public boolean isKeyword() {
+        return "keyword".equals(primaryCategory); //NOI18N
+    }
+    
     private static final Language<JsTokenId> LANGUAGE =
         new LanguageHierarchy<JsTokenId>() {
                 @Override

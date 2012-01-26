@@ -51,6 +51,14 @@ public class JsCodeCompletionTest extends JsTestBase {
         super(testName);
     }
 
+    public void testPrefix1() throws Exception {
+        checkPrefix("testfiles/completion/cc-prefix1.js");
+    }
+    
+    public void testPrefix2() throws Exception {
+        checkPrefix("testfiles/completion/cc-prefix2.js");
+    }
+    
     public void testProperty01() throws Exception {
         checkCompletion("testfiles/model/jQueryFragment01.js", "^jQuery.event.customEvent.test();", false);
     }

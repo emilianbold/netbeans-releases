@@ -82,7 +82,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
     public CodeCompletionResult complete(CodeCompletionContext ccContext) {
         long start = System.currentTimeMillis();
         
-        String prefix = ccContext.getPrefix();
+        
         BaseDocument doc = (BaseDocument) ccContext.getParserResult().getSnapshot().getSource().getDocument(false);
         if (doc == null) {
             return CodeCompletionResult.NONE;
@@ -100,10 +100,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
         
         JsCompletionItem.CompletionRequest request = new JsCompletionItem.CompletionRequest();
             request.context = context;
-            final String pref = getPrefix(info, caretOffset, true);
-            if (pref == null) {
-                return CodeCompletionResult.NONE;
-            }
+            String pref = getPrefix(info, caretOffset, true);
+            pref = pref == null ? "" : pref;
 
             request.anchor = caretOffset
                     // can't just use 'prefix.getLength()' here cos it might have been calculated with
@@ -111,7 +109,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     - pref.length();
             request.result = jsParserResult;
             request.info = info;
-            request.prefix = prefix;
+            request.prefix = pref;
             
         final List<CompletionProposal> resultList = new ArrayList<CompletionProposal>();
         switch (context) {
@@ -183,14 +181,23 @@ class JsCodeCompletion implements CodeCompletionHandler {
         Token<? extends JsTokenId> token = ts.token();
 
         if (token != null && token.id() != JsTokenId.EOL) {
-            TokenId id = token.id();
-            if (id != JsTokenId.OPERATOR_DOT) {
+            JsTokenId id = token.id();
+            if (id == JsTokenId.STRING_END && ts.movePrevious()) {
+                token = ts.token();
+                id = token.id();
+                if (id == JsTokenId.STRING_BEGIN) {
+                    return "";
+                }
+            }
+            if (id == JsTokenId.IDENTIFIER || id.isKeyword() || id == JsTokenId.STRING) {
                 prefix = token.text().toString();
-                prefix = prefix.substring(0, caretOffset - ts.offset());
+                if (upToOffset) {
+                    prefix = prefix.substring(0, caretOffset - ts.offset());
+                }
             }
         }
         LOGGER.log(Level.FINE, String.format("Prefix for cc: %s", prefix));
-        return prefix;
+        return prefix.length() > 0 ? prefix : null;
     }
 
     @Override
