@@ -88,6 +88,7 @@ import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
@@ -304,6 +305,10 @@ public abstract class BaseActionProvider implements ActionProvider {
         }
     }
 
+    private JavaPlatform getActivePlatform() {
+        return CommonProjectUtils.getActivePlatform(evaluator.getProperty("platform.active"));
+    }
+
     private void modification(FileObject f) {
         if (!allowsFileChangesTracking()) {
             return;
@@ -427,7 +432,6 @@ public abstract class BaseActionProvider implements ActionProvider {
                 if (targetNames == null) {
                     return;
                 }
-                List<String> runJvmargsIde = runJvmargsIde();
                 if (isCompileOnSaveEnabled) {
                     if (COMMAND_BUILD.equals(command) && !allowAntBuild()) {
                         showBuildActionWarning(context);
@@ -436,12 +440,9 @@ public abstract class BaseActionProvider implements ActionProvider {
                     Map<String, Object> execProperties = new HashMap<String, Object>();
 
                     copyMultiValue(ProjectProperties.RUN_JVM_ARGS, execProperties);
-                    for (String arg : runJvmargsIde) {
-                        putMultiValue(execProperties, JavaRunner.PROP_RUN_JVMARGS, arg);
-                    }
                     prepareWorkDir(execProperties);
 
-                    execProperties.put(JavaRunner.PROP_PLATFORM, CommonProjectUtils.getActivePlatform(evaluator.getProperty("platform.active")));
+                    execProperties.put(JavaRunner.PROP_PLATFORM, getActivePlatform());
                     execProperties.put(JavaRunner.PROP_PROJECT_NAME, ProjectUtils.getInformation(project).getDisplayName());
                     String runtimeEnc = evaluator.getProperty(ProjectProperties.RUNTIME_ENCODING);
                     if (runtimeEnc != null) {
@@ -518,7 +519,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                     }
                 }
                 StringBuilder b = new StringBuilder();
-                for (String arg : runJvmargsIde) {
+                for (String arg : runJvmargsIde()) {
                     b.append(' ').append(arg);
                 }
                 if (b.length() > 0) {
@@ -599,7 +600,8 @@ public abstract class BaseActionProvider implements ActionProvider {
                     return Collections.emptyList();
                 }
                 List<String> args = new ArrayList<String>();
-                for (StartupExtender group : StartupExtender.getExtenders(Lookups.singleton(project), mode)) {
+                JavaPlatform p = getActivePlatform();
+                for (StartupExtender group : StartupExtender.getExtenders(Lookups.fixed(project, p != null ? p : JavaPlatformManager.getDefault().getDefaultPlatform()), mode)) {
                     args.addAll(group.getArguments());
                 }
                 return args;
@@ -662,8 +664,7 @@ public abstract class BaseActionProvider implements ActionProvider {
      */
     public String[] getTargetNames(String command, Lookup context, Properties p, boolean doJavaChecks) throws IllegalArgumentException {
         if (Arrays.asList(getPlatformSensitiveActions()).contains(command)) {
-            final String activePlatformId = this.evaluator.getProperty("platform.active");  //NOI18N
-            if (CommonProjectUtils.getActivePlatform (activePlatformId) == null) {
+            if (getActivePlatform() == null) {
                 showPlatformWarning ();
                 return null;
             }

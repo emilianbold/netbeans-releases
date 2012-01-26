@@ -77,7 +77,7 @@ public class RunJarStartupArgs implements LateBoundPrerequisitesChecker {
         for (Map.Entry<? extends String, ? extends String> entry : config.getProperties().entrySet()) {
             if (entry.getKey().equals("exec.args")) {
                 List<String> args = new ArrayList<String>();
-                for (StartupExtender group : StartupExtender.getExtenders(Lookups.singleton(config.getProject()), mode)) {
+                for (StartupExtender group : StartupExtender.getExtenders(Lookups.singleton(config.getProject() /*XXX JavaPlatform*/), mode)) {
                     args.addAll(group.getArguments());
                 }
                 if (!args.isEmpty()) {

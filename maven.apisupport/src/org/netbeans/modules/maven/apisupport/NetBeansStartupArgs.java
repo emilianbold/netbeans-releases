@@ -73,7 +73,7 @@ public class NetBeansStartupArgs implements LateBoundPrerequisitesChecker {
             return true;
         }
         List<String> args = new ArrayList<String>();
-        for (StartupExtender group : StartupExtender.getExtenders(Lookups.singleton(config.getProject()), mode)) {
+        for (StartupExtender group : StartupExtender.getExtenders(Lookups.singleton(config.getProject() /*XXX JavaPlatform*/), mode)) {
             args.addAll(group.getArguments());
         }
         if (!args.isEmpty()) {

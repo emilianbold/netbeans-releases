@@ -79,7 +79,8 @@ public final class StartupExtender {
      * <p>
      * The contents of the {@code context} parameter will depend on the kind of
      * execution. For a simple Java SE program being run in the Java launcher,
-     * a {@code org.netbeans.api.project.Project} can be expected.
+     * a {@code org.netbeans.api.project.Project} can be expected; where available,
+     * a {@code org.netbeans.api.java.platform.JavaPlatform} will be present as well.
      * For a Java EE program being run in an application server, the context
      * may correspond to {@code org.netbeans.api.server.ServerInstance.getLookup()}.
      * Other kinds of API objects may be present according to contracts not

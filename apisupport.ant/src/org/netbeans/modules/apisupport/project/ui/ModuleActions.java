@@ -499,7 +499,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
             mode = null;
         }
         if (mode != null) {
-            for (StartupExtender group : StartupExtender.getExtenders(Lookups.singleton(project), mode)) {
+            for (StartupExtender group : StartupExtender.getExtenders(Lookups.singleton(project /*XXX JavaPlatform*/), mode)) {
                 for (String arg : group.getArguments()) {
                     runArgsIde.append("-J").append(arg).append(' ');
                 }
