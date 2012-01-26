@@ -104,6 +104,7 @@ import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -120,7 +121,7 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
 
     /** Creates a new instance of SemanticHighlighter */
     MarkOccurrencesHighlighter(FileObject file) {
-        super(Phase.RESOLVED);
+        super(Phase.RESOLVED, TaskIndexingMode.ALLOWED_DURING_SCAN);
         this.file = file;
     }
 

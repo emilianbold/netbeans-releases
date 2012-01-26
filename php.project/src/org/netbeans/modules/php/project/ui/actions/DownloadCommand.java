@@ -169,7 +169,7 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
                 // XXX #202673 - work around, remove it once #202728 is fixed
                 suspendCopySupport(project);
                 try {
-                    transferInfo = remoteClient.download(sources, forDownload);
+                    transferInfo = remoteClient.download(forDownload);
                 } finally {
                     unsuspendCopySupport(project);
                 }

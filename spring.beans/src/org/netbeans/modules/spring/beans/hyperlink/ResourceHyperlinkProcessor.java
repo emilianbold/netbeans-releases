@@ -59,6 +59,7 @@ public class ResourceHyperlinkProcessor extends HyperlinkProcessor {
     public ResourceHyperlinkProcessor() {
     }
 
+    @Override
     public void process(HyperlinkEnv env) {
         FileObject fo = env.getFileObject();
         if (fo == null) {

@@ -49,7 +49,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.Task;
@@ -58,9 +57,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
-import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -81,9 +78,7 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter, Task<Compilat
             JavaSource js = JavaSource.forDocument(component.getDocument());
             if (js != null) {
                 try {
-                    Future<Void> task = js.runWhenScanFinished(this, true);
-                    if (!task.isDone())
-                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaCodeTemplateFilter.class, "JCT-scanning-in-progress")); //NOI18N
+                    js.runUserActionTask(this, true);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }

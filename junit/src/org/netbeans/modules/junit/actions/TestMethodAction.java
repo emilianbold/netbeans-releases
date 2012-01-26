@@ -119,8 +119,8 @@ public abstract class TestMethodAction extends NodeAction {
             JavaSource js = JavaSource.forDocument(doc);
             TestClassInfoTask task = new TestClassInfoTask(cursor);
             try {
-                Future<Void> f = js.runWhenScanFinished(task, true);
-                if (f.isDone() && task.getFileObject() != null && task.getMethodName() != null){
+                js.runUserActionTask(task, true);
+                if (task.getFileObject() != null && task.getMethodName() != null){
                     sm = new SingleMethod(task.getFileObject(), task.getMethodName());
                 }
             } catch (IOException ex) {

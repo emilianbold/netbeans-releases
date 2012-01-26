@@ -60,6 +60,11 @@ final class CallHierarchyModel {
     
     public static final String PROP_ROOT = "root"; // NOI18N
     
+    /**
+     * Contents of the model has been changed -- e.g. after computeCalls.
+     */
+    public static final String PROP_CONTENTS = "contents"; // NOI18N
+    
     private Call root;
     private HierarchyType type = HierarchyType.CALLER;
     private Set<Scope> scopes = EnumSet.of(Scope.ALL, Scope.TESTS);
@@ -107,11 +112,20 @@ final class CallHierarchyModel {
         replaceRoot();
     }
     
-    public void computeCalls(Call c, Runnable resultHandler) {
+    public void computeCalls(Call c, final Runnable resultHandler) {
+        Runnable handlerWrapper = new Runnable() {
+
+            @Override
+            public void run() {
+                support.firePropertyChange(PROP_CONTENTS, null, null);
+                resultHandler.run();
+            }
+            
+        };
         if (type == HierarchyType.CALLER) {
-            CallHierarchyTasks.findCallers(c, scopes.contains(Scope.TESTS), scopes.contains(Scope.ALL), resultHandler);
+            CallHierarchyTasks.findCallers(c, scopes.contains(Scope.TESTS), scopes.contains(Scope.ALL), handlerWrapper);
         } else {
-            CallHierarchyTasks.findCallees(c, resultHandler);
+            CallHierarchyTasks.findCallees(c, handlerWrapper);
         }
     }
     

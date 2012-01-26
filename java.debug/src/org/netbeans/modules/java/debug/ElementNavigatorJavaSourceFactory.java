@@ -53,6 +53,7 @@ import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.JavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.LookupBasedJavaSourceTaskFactory;
 import org.netbeans.modules.java.debug.TreeNavigatorJavaSourceFactory.WrapperTask;
+import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -75,7 +76,7 @@ public final class ElementNavigatorJavaSourceFactory extends LookupBasedJavaSour
     }
 
     public ElementNavigatorJavaSourceFactory() {
-        super(Phase.UP_TO_DATE, Priority.NORMAL);
+        super(Phase.UP_TO_DATE, Priority.NORMAL, TaskIndexingMode.ALLOWED_DURING_SCAN);
     }
 
     public synchronized CancellableTask<CompilationInfo> createTask(FileObject file) {
