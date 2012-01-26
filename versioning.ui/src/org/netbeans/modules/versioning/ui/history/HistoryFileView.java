@@ -91,7 +91,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
     private FileTablePanel tablePanel;             
     private File[] files;
 
-    private RequestProcessor rp = new RequestProcessor("LocalHistoryView", 1, true);    
+    private RequestProcessor rp = new RequestProcessor("LocalHistoryView", 1, true); // NOI18N
     private final HistoryComponent tc; 
     private Filter filter;
     private Task refreshTask;
@@ -427,14 +427,14 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
     private Action[] createActions() {
         List<Action> actions = new LinkedList<Action>();
         actions.add(loadNextAction); 
-        actions.add(new AbstractAction("Load All") { // XXX name
+        actions.add(new AbstractAction(NbBundle.getMessage(HistoryFileView.class, "LBL_LoadAll")) { // NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
                 loadVCSEntries(files, true);
             }
         });
         actions.add(null); 
-        actions.add(new AbstractAction("Always Load All") { // XXX name
+        actions.add(new AbstractAction(NbBundle.getMessage(HistoryFileView.class, "LBL_AlwaysLoadAll")) { // NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
                 HistorySettings.getInstance().setLoadAll(true);
@@ -572,9 +572,9 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                     Node n = Visualizer.findNode(o);
                     if(HistoryRootNode.isLoadNext(n)) {
                         StringBuilder sb = new StringBuilder();
-                        sb.append("<html><font color=#0000FF>");
+                        sb.append("<html><font color=#0000FF>");    // NOI18N
                         sb.append(delegate.getDisplayName(o));
-                        sb.append("</font></html>");
+                        sb.append("</font></html>");                // NOI18N
                         return sb.toString();
                     }
                     return delegate.getDisplayName(o);
@@ -672,7 +672,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                         valueString = f.getRendererValue(valueString);
                     }
                     if(value instanceof RevisionNode.MessageProperty) {
-                        String[] lines = valueString.split("\n");
+                        String[] lines = valueString.split("\n"); // NOI18N
                         if(lines.length > 0) {
                             int[] spans = getHyperlinkSpans(lines[0]);
                             if (spans != null && spans.length >= 2) {
@@ -680,7 +680,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                                 String line = addHyperlink(escapeForHTMLLabel(lines[0]), spans);
                                 sb.append(line);
                                 for (int i = 1; i < lines.length; i++) {
-                                    sb.append("\n");
+                                    sb.append("\n"); // NOI18N
                                     sb.append(escapeForHTMLLabel(lines[i]));
                                 }
                                 valueString = sb.toString();
@@ -689,9 +689,9 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                     }
 
                     StringBuilder sb = new StringBuilder();
-                    sb.append("<html>");
+                    sb.append("<html>"); // NOI18N
                     sb.append(valueString);
-                    sb.append("</html>");
+                    sb.append("</html>"); // NOI18N
                     valueString = sb.toString();
                     
                     renderer = super.getTableCellRendererComponent(table, valueString, isSelected, hasFocus, row, column);
@@ -712,25 +712,25 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         
         String getDisplayValue(Node.Property p) throws IllegalAccessException, InvocationTargetException {
             String value = (String) p.getValue();
-            return value != null ? value : "";
+            return value != null ? value : ""; // NOI18N
         }
         
         String getTooltip(Node.Property p) throws IllegalAccessException, InvocationTargetException {
             String tooltip = p.toString();
-            if(tooltip.contains("\n")) {
+            if(tooltip.contains("\n")) { // NOI18N
                 tooltip = escapeForHTMLLabel(tooltip);
                 StringBuilder sb = new StringBuilder();
-                sb.append("<html>");
-                StringTokenizer st = new StringTokenizer(tooltip, "\n");
+                sb.append("<html>"); // NOI18N
+                StringTokenizer st = new StringTokenizer(tooltip, "\n"); // NOI18N
                 while(true) {
                     sb.append(st.nextToken());
                     if(st.hasMoreTokens()) {
-                        sb.append("<br>");
+                        sb.append("<br>"); // NOI18N
                     } else {
                         break;
                     }
                 }
-                sb.append("</html>");
+                sb.append("</html>"); // NOI18N
                 tooltip = sb.toString();
             } 
             return tooltip;
@@ -745,12 +745,12 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                 int start = spans[i++];
                 if(i == 1) {
                     sb.append(s.substring(0, start));
-                    sb.append("<font color=#0000FF><u>");
+                    sb.append("<font color=#0000FF><u>"); // NOI18N
                 }
                 int end = spans[i++];
                 sb.append(s.substring(start, end));
                 if(i == spans.length) {
-                    sb.append("</u></font>");
+                    sb.append("</u></font>"); // NOI18N
                     sb.append(s.substring(end, s.length()));
                 }
             }
@@ -758,7 +758,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         }
         
         private String computeFitText(JTable table, int rowIdx, int columnIdx, String text) {
-            if(text == null) text = "";
+            if(text == null) text = ""; // NOI18N
             if (text.length() <= VISIBLE_START_CHARS + 3) return text;
 
 //            Icon icon = label.getIcon();

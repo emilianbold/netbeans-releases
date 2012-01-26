@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
  */
 public class HistoryRootNode extends AbstractNode {
     
-    static final String NODE_GET_MORE   = "getmoreno"; // NOI18N
+    static final String NODE_LOAD_NEXT  = "getmoreno"; // NOI18N
     static final String NODE_WAIT       = "waitnode";  // NOI18N
     static final String NODE_ROOT       = "rootnode";  // NOI18N
     
@@ -89,10 +89,8 @@ public class HistoryRootNode extends AbstractNode {
         this.vcsName = vcsName;
         this.loadNextAction = loadNextAction;
         this.actions = actions;
-        if(vcsName != null) {
-            waitNode = new WaitNode(vcsName);
-            getChildren().add(new Node[] {waitNode}); 
-        }
+        waitNode = new WaitNode();
+        getChildren().add(new Node[] {waitNode}); 
     }
     
     static boolean isLoadNext(Object n) {
@@ -210,7 +208,7 @@ public class HistoryRootNode extends AbstractNode {
                 return actions;
             }
             return new Action[0];
-            }
+        }
         
         @Override
         public String getDisplayName() {
@@ -220,12 +218,12 @@ public class HistoryRootNode extends AbstractNode {
         @Override
         public int compareTo(Node n) {
             return 1;
-            }
+        }
 
         @Override
         public String getName() {
-            return NODE_GET_MORE;
-            }
+            return NODE_LOAD_NEXT;
+        }
 
         private void refreshMessage() {
             firePropertyChange(RevisionNode.PROPERTY_NAME_LABEL, null, null);
@@ -238,7 +236,7 @@ public class HistoryRootNode extends AbstractNode {
         class MessageProperty extends PropertySupport.ReadOnly<String> {
             private final Date dateFrom;
             public MessageProperty(Date dateFrom) {
-                super(RevisionNode.PROPERTY_NAME_LABEL, String.class, NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Name"), NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Desc"));
+                super(RevisionNode.PROPERTY_NAME_LABEL, String.class, NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Name"), NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Desc")); // NOI18N
                 this.dateFrom = dateFrom;
             }
             @Override
@@ -249,34 +247,29 @@ public class HistoryRootNode extends AbstractNode {
             public PropertyEditor getPropertyEditor() {
                 return new PropertyEditorSupport();
             }
-
             @Override
             public String toString() {
                 if(dateFrom != null) {
-                    return "Shoving " + vcsName + " revisions from " + dateFormat.format(dateFrom) + " (" + vcsCount + " entries)."; 
+                    return NbBundle.getMessage(HistoryRootNode.class, "LBL_ShowingVCSRevisions", vcsName, dateFormat.format(dateFrom), vcsCount); // NOI18N
                 } else {
-                    return "Shoving all " + vcsName + " revisions."; 
+                    return NbBundle.getMessage(HistoryRootNode.class, "LBL_ShowingAllVCSRevisions", vcsName); // NOI18N
                 }
             }
-            
         }
     }
 
     static class WaitNode extends AbstractNode implements Comparable<Node> {
         public WaitNode() {
-            this(null);
-            }
-        public WaitNode(String vcsName) {
             super(Children.LEAF);
-            setDisplayName("Loading" + (vcsName != null ? " from " + vcsName : "") + ". Please wait...");
-            setIconBaseWithExtension("org/netbeans/modules/versioning/ui/resources/icons/wait.gif");  // NOI18N
+            setDisplayName(NbBundle.getMessage(HistoryRootNode.class, "LBL_LoadingPleaseWait"));               // NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/versioning/ui/resources/icons/wait.gif");        // NOI18N
         }
-
+        
         @Override
         public int compareTo(Node n) {
-                return 1;
-            }                    
-
+            return 1;
+        }                    
+        
         @Override
         public String getName() {
             return NODE_WAIT;
