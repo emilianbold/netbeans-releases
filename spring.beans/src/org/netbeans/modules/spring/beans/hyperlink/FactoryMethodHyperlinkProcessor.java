@@ -62,6 +62,7 @@ import org.openide.util.Exceptions;
  */
 public class FactoryMethodHyperlinkProcessor extends HyperlinkProcessor {
 
+    @Override
     public void process(HyperlinkEnv env) {
         Map<String, String> beanAttributes = env.getBeanAttributes();
         SpringBean mergedBean = SpringXMLConfigEditorUtils.getMergedBean(beanAttributes, env.getFileObject());
@@ -81,6 +82,7 @@ public class FactoryMethodHyperlinkProcessor extends HyperlinkProcessor {
             SpringConfigModel model = SpringConfigModel.forFileObject(fo);
             try {
                 model.runReadAction(new Action<SpringBeans>() {
+                    @Override
                     public void run(SpringBeans beans) {
                         SpringBean bean = beans.findBean(factoryBeanName);
                         if (bean == null) {

@@ -57,10 +57,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -88,6 +92,7 @@ import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.test.MockLookup;
@@ -381,8 +386,29 @@ public class RepositoryUpdater2Test extends NbTestCase {
         url2file.put(srcRoot3.getURL(), srcRoot3);
 
         MockLookup.setInstances(new testRootsWorkCancelling_PathRecognizer());
-
-        final TimeoutCustomIndexer indexer = new TimeoutCustomIndexer(2000);
+        final AtomicInteger counter = new AtomicInteger(0);
+        final CountDownLatch[] awaitIndexer = new CountDownLatch[] {
+            new CountDownLatch(1),
+            new CountDownLatch(1),
+            new CountDownLatch(1)
+        };
+        final CountDownLatch[] awaitUserTask = new CountDownLatch[] {
+            new CountDownLatch(1),
+            new CountDownLatch(1),
+            new CountDownLatch(1)
+        };
+        final Runnable action = new Runnable() {
+            @Override
+            public void run() {
+                awaitIndexer[counter.get()].countDown();
+                try {
+                    awaitUserTask[counter.get()].await();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        };
+        final ActionCustomIndexer indexer = new ActionCustomIndexer(action);
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer), new FixedParserFactory(new EmptyParser()));
         Util.allMimeTypes = Collections.singleton("text/plain");
 
@@ -392,24 +418,15 @@ public class RepositoryUpdater2Test extends NbTestCase {
         globalPathRegistry_register(testRootsWorkCancelling_PathRecognizer.SOURCEPATH, new ClassPath[] { ClassPathFactory.createClassPath(mcpi) });
 
         for(int cnt = 1; cnt <= 3; cnt++) {
-            long tm = System.currentTimeMillis();
-            for( ;System.currentTimeMillis() - tm < 5000; ) {
-                if (indexer.indexedRoots.size() == cnt) {
-                    break;
-                } else {
-                    try {
-                        Thread.sleep(345);
-                    } catch (InterruptedException ex) {
-                        break;
-                    }
-                }
-            }
+            awaitIndexer[counter.get()].await(10, TimeUnit.SECONDS);
             assertEquals("Wrong number of roots indexed", cnt, indexer.indexedRoots.size());
-
+            
             final int fcnt = cnt;
             final boolean [] taskCalled = new boolean [] { false };
             ParserManager.parse("text/plain", new UserTask() {
                 public @Override void run(ResultIterator resultIterator) throws Exception {
+                    awaitUserTask[counter.getAndIncrement()].countDown();
+                    Thread.sleep(2000); //Give RU.worker chance to displatch next root - should not happen should be blocked.
                     assertEquals("No more roots should be indexed", fcnt, indexer.indexedRoots.size());
                     taskCalled[0] = true;
                 }
@@ -424,7 +441,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
         Collections.sort(expectedSourceRoots, new RepositoryUpdater.LexicographicComparator(true));
         assertEquals("Wrong scanned sources", expectedSourceRoots, RepositoryUpdater.getDefault().getScannedSources());
         assertEquals("Wrong scanned binaries", 0, RepositoryUpdater.getDefault().getScannedBinaries().size());
-        assertEquals("Wrong scanned unknowns", 0, RepositoryUpdater.getDefault().getScannedBinaries().size());
+        assertEquals("Wrong scanned unknowns", 0, RepositoryUpdater.getDefault().getScannedUnknowns().size());
     }
 
     public static final class testRootsWorkCancelling_PathRecognizer extends PathRecognizer {
@@ -485,6 +502,23 @@ public class RepositoryUpdater2Test extends NbTestCase {
         }
 
     } // End of TimeoutCustomIndexer class
+    
+    private static final class ActionCustomIndexer extends CustomIndexer {
+        
+        public final List<URL> indexedRoots = Collections.synchronizedList(new ArrayList<URL>());
+        private final Runnable action;
+        
+        ActionCustomIndexer(@NonNull final Runnable action) {
+            action.getClass();
+            this.action = action;
+        }
+
+        @Override
+        protected void index(Iterable<? extends Indexable> files, Context context) {
+            indexedRoots.add(context.getRootURI());
+            this.action.run();
+        }
+    } // End of ActionCustomIndexer class
 
     private static final class FixedCustomIndexerFactory<T extends CustomIndexer> extends CustomIndexerFactory {
 
@@ -601,7 +635,6 @@ public class RepositoryUpdater2Test extends NbTestCase {
         }
     } // End of EmptyParser class
 
-    @RandomlyFails // usually fails for jglick
     public void testClasspathDeps1() throws IOException, InterruptedException {
         FileUtil.setMIMEType("txt", "text/plain");
         final FileObject srcRoot1 = workDir.createFolder("src1");
@@ -659,10 +692,14 @@ public class RepositoryUpdater2Test extends NbTestCase {
         Thread.sleep(2000);
         RepositoryUpdater.getDefault().waitUntilFinished(-1);
 
+        //The srcRoot1, srcRoot2 and srcRoot3 should be indexed
+        //The srcRoot2 should be indexed before srcRoot1 because of dependency
+        //The srcRoot3 has no ordering to srcRoot1 and srcRoot2 as there is no dependency
         assertEquals("All roots should be indexed now", 3, indexer.indexedRoots.size());
-        assertEquals("Wrong first root", srcRoot2.getURL(), indexer.indexedRoots.get(0));
-        assertEquals("Wrong second root", srcRoot1.getURL(), indexer.indexedRoots.get(1));
-        assertEquals("Wrong third root", srcRoot3.getURL(), indexer.indexedRoots.get(2));
+        assertTrue(indexer.indexedRoots.contains(srcRoot1.getURL()));
+        assertTrue(indexer.indexedRoots.contains(srcRoot2.getURL()));
+        assertTrue(indexer.indexedRoots.contains(srcRoot3.getURL()));
+        assertTrue(indexer.indexedRoots.indexOf(srcRoot2.getURL()) < indexer.indexedRoots.indexOf(srcRoot1.getURL()));
 
         indexer.indexedRoots.clear();
         mcpi2.addResource(srcRoot4);
@@ -670,10 +707,14 @@ public class RepositoryUpdater2Test extends NbTestCase {
         Thread.sleep(2000);
         RepositoryUpdater.getDefault().waitUntilFinished(-1);
 
+        //The srcRoot1, srcRoot2 and srcRoot4 should be indexed.
+        //The srcRoot2 and srcRoot4 should be indexed before srcRoot1 because of dependency
         assertEquals("Additional and dependent roots not indexed", 3, indexer.indexedRoots.size());
-        assertEquals("Wrong first root", srcRoot4.getURL(), indexer.indexedRoots.get(0));
-        assertEquals("Wrong second root", srcRoot2.getURL(), indexer.indexedRoots.get(1));
-        assertEquals("Wrong second root", srcRoot1.getURL(), indexer.indexedRoots.get(2));
+        assertTrue(indexer.indexedRoots.contains(srcRoot1.getURL()));
+        assertTrue(indexer.indexedRoots.contains(srcRoot2.getURL()));
+        assertTrue(indexer.indexedRoots.contains(srcRoot4.getURL()));
+        assertTrue(indexer.indexedRoots.indexOf(srcRoot2.getURL()) < indexer.indexedRoots.indexOf(srcRoot1.getURL()));
+        assertTrue(indexer.indexedRoots.indexOf(srcRoot4.getURL()) < indexer.indexedRoots.indexOf(srcRoot1.getURL()));
 
     }
 
@@ -888,7 +929,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
         public boolean workCancelled = false;
 
         public testShuttdown_TimedWork() {
-            super(false, false, false, true, null);
+            super(false, false, false, true, SuspendStatus.NOP, null);
         }
 
         protected @Override boolean getDone() {

@@ -54,17 +54,15 @@ import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -239,33 +237,26 @@ public final class JavaIndex {
         return result;
     }
 
-    public static boolean isLibrary (final ClassPath cp) {
-        assert cp != null;
-        for (FileObject fo : cp.getRoots()) {
-            if (isLibrary (fo)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
-    public static boolean isLibrary (final FileObject root) {
+    public static boolean hasSourceCache (
+            @NonNull final URL root,
+            final boolean testForInitialized) {
         assert root != null;
-        try {
-            return isLibrary(root.getURL());
-        } catch (FileStateInvalidException e) {
-            Exceptions.printStackTrace(e);
-            return true;    //Safer
-        }
+        final ClassIndexImpl uq = ClassIndexManager.getDefault().getUsagesQuery(root, !testForInitialized);
+        return uq != null &&
+            (!testForInitialized || uq.getState() == ClassIndexImpl.State.INITIALIZED) &&
+            uq.getType() == ClassIndexImpl.Type.SOURCE;
     }
 
-    public static boolean isLibrary (final URL root) {
+    public static boolean hasBinaryCache(
+            @NonNull final URL root,
+            final boolean testForInitialized) {
         assert root != null;
-        ClassIndexImpl uq = ClassIndexManager.getDefault().getUsagesQuery(root, false);
-        return uq == null || !uq.isSource();
+        final ClassIndexImpl uq = ClassIndexManager.getDefault().getUsagesQuery(root, !testForInitialized);
+        return uq != null &&
+               (!testForInitialized || uq.getState() == ClassIndexImpl.State.INITIALIZED) &&
+               uq.getType() == ClassIndexImpl.Type.BINARY;
     }
 
-    private JavaIndex() {
-        
-    }
+    private JavaIndex() {}
 }

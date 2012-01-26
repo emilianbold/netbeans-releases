@@ -90,7 +90,7 @@ public final class RunConfigInternal {
             @Override
             public RunConfigInternal run() {
                 return new RunConfigInternal()
-                        .setHostname(ProjectPropertiesSupport.getPhpInterpreter(project))
+                        .setHostname(ProjectPropertiesSupport.getHostname(project))
                         .setPort(ProjectPropertiesSupport.getPort(project))
                         .setWorkDir(FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project)))
                         .setDocumentRoot(FileUtil.toFile(ProjectPropertiesSupport.getWebRootDirectory(project)))

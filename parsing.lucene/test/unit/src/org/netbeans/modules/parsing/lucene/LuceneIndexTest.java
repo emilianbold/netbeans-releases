@@ -125,7 +125,8 @@ public class LuceneIndexTest extends NbTestCase {
         clearValidityCache(index);
         File bt = null;
         for (File file : cache.listFiles()) {
-            if (file.getName().endsWith(".cfs")) {
+            // either compound file or filds information must be present
+            if (file.getName().endsWith(".cfs") || file.getName().endsWith(".fnm")) {
                 bt = file;
                 break;
             }

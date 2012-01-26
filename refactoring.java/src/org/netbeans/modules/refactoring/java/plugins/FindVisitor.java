@@ -44,23 +44,30 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
+import javax.lang.model.element.Element;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
+import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author Jan Becicka
  */
-public class FindVisitor extends RefactoringVisitor {
+public class FindVisitor extends TreePathScanner<Tree, Element> {
 
     private Collection<TreePath> usages = new ArrayList<TreePath>();
+    
+    protected CompilationController workingCopy;
 
-    public FindVisitor(WorkingCopy workingCopy) {
+    public FindVisitor(CompilationController workingCopy) {
         try {
             setWorkingCopy(workingCopy);
         } catch (ToPhaseException ex) {
@@ -68,6 +75,21 @@ public class FindVisitor extends RefactoringVisitor {
         }
     }
 
+    /**
+     * 
+     * @param workingCopy 
+     * @throws org.netbeans.modules.refactoring.java.spi.ToPhaseException 
+     */
+    public void setWorkingCopy(CompilationController workingCopy) throws ToPhaseException {
+        this.workingCopy = workingCopy;
+        try {
+            if (this.workingCopy.toPhase(JavaSource.Phase.RESOLVED) != JavaSource.Phase.RESOLVED) {
+                throw new ToPhaseException();
+            }
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
+    }
     
     public Collection<TreePath> getUsages() {
         return usages;
