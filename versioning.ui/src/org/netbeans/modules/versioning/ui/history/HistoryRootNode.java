@@ -190,6 +190,8 @@ public class HistoryRootNode extends AbstractNode {
             
             Sheet sheet = Sheet.createDefault();
             Sheet.Set ps = Sheet.createPropertiesSet();
+            ps.put(new BaseProperty(RevisionNode.PROPERTY_NAME_VERSION)); 
+            ps.put(new BaseProperty(RevisionNode.PROPERTY_NAME_USER)); 
             ps.put(new MessageProperty(dateFrom)); 
             sheet.put(ps);
             setSheet(sheet);        
@@ -231,22 +233,14 @@ public class HistoryRootNode extends AbstractNode {
             fireDisplayNameChange(null, null);
         }
 
-        class MessageProperty extends PropertySupport.ReadOnly<String> {
+        class MessageProperty extends BaseProperty {
             private final Date dateFrom;
             public MessageProperty(Date dateFrom) {
-                super(RevisionNode.PROPERTY_NAME_LABEL, String.class, NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Name"), NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Desc")); // NOI18N
+                super(RevisionNode.PROPERTY_NAME_LABEL, TableEntry.class, NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Name"), NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Desc")); // NOI18N
                 this.dateFrom = dateFrom;
             }
             @Override
-            public String getValue() throws IllegalAccessException, InvocationTargetException {
-                return toString();
-            }    
-            @Override
-            public PropertyEditor getPropertyEditor() {
-                return new PropertyEditorSupport();
-            }
-            @Override
-            public String toString() {
+            public String getDisplayValue() {
                 if(dateFrom != null) {
                     return NbBundle.getMessage(HistoryRootNode.class, "LBL_ShowingVCSRevisions", vcsName, dateFormat.format(dateFrom), vcsCount); // NOI18N
                 } else {
@@ -256,21 +250,66 @@ public class HistoryRootNode extends AbstractNode {
         }
     }
 
-    static class WaitNode extends AbstractNode implements Comparable<Node> {
+    private class WaitNode extends AbstractNode implements Comparable<Node> {
         public WaitNode() {
             super(Children.LEAF);
-            setDisplayName(NbBundle.getMessage(HistoryRootNode.class, "LBL_LoadingPleaseWait"));               // NOI18N
-            setIconBaseWithExtension("org/netbeans/modules/versioning/ui/resources/icons/wait.gif");        // NOI18N
+            setDisplayName(NbBundle.getMessage(HistoryRootNode.class, "LBL_LoadingPleaseWait"));        // NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/versioning/ui/resources/icons/wait.gif");    // NOI18N
+            
+            Sheet sheet = Sheet.createDefault();
+            Sheet.Set ps = Sheet.createPropertiesSet();
+            ps.put(new BaseProperty(RevisionNode.PROPERTY_NAME_VERSION)); 
+            ps.put(new BaseProperty(RevisionNode.PROPERTY_NAME_USER)); 
+            ps.put(new BaseProperty(RevisionNode.PROPERTY_NAME_LABEL)); 
+            sheet.put(ps);
+            setSheet(sheet);                    
         }
         
         @Override
         public int compareTo(Node n) {
             return 1;
-        }                    
+        }   
         
         @Override
         public String getName() {
             return NODE_WAIT;
+        }
+    }    
+    
+    private class BaseProperty extends PropertySupport.ReadOnly<TableEntry> {
+        private final TableEntry te;
+
+        public BaseProperty(String name, Class<TableEntry> type, String displayName, String shortDescription) {
+            super(name, type, displayName, shortDescription);
+            te = new TableEntry() {
+                @Override
+                public String getDisplayValue() {
+                    return BaseProperty.this.getDisplayValue();
+                }
+                @Override
+                public String getTooltip() {
+                    return BaseProperty.this.getDisplayValue();
+                }
+                @Override
+                public int compareTo(TableEntry e) {
+                    return -1;
+                }
+                @Override
+                public Integer order() {
+                    return -1;
+                }                    
+            };  
+        }
+
+        public BaseProperty(String name) {
+            this(name, TableEntry.class, "", "");
+        }
+        String getDisplayValue() {
+            return "";
+        }
+        @Override
+        public TableEntry getValue() throws IllegalAccessException, InvocationTargetException {
+            return te;
         }
     }    
 }

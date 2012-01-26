@@ -61,8 +61,6 @@ import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.table.TableColumn;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
-import org.netbeans.modules.versioning.ui.history.HistoryRootNode.WaitNode;
 import org.netbeans.modules.versioning.ui.history.RevisionNode.Filter;
 import org.netbeans.modules.versioning.ui.history.RevisionNode.MessageProperty;
 import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
@@ -77,7 +75,6 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.OutlineView;
 import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Node;
-import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -503,37 +500,20 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                 getOutline().setRenderDataProvider( new NoLeafIconRenderDataProvider( getOutline().getRenderDataProvider() ) );
                 getOutline().setDefaultRenderer(Node.Property.class, new PropertyRenderer(getOutline()));
                 
-                // XXX do we need this
-                final ETableColumn column = (ETableColumn) getOutline().getColumnModel().getColumn(0);
-                column.setNestedComparator(new Comparator<Object>() {
-                    @Override
-                    public int compare(Object o1, Object o2) {
-                        if(HistoryRootNode.isLoadNext(o1)) {
-                            return column.isAscending() ? 1 : -1;
-                        } else if(HistoryRootNode.isLoadNext(o2)) {
-                            return column.isAscending() ? -1 : 1;
-                        }
-
-                        if(o1 instanceof RevisionNode && o2 instanceof RevisionNode) {
-                            return ((RevisionNode)o1).compareTo(o2);
-                        }
-                        return 0; // XXX
-                    }
-                });
-                
                 TableMouseListener l = new TableMouseListener(getOutline());
                 getOutline().addMouseMotionListener(l);
                 getOutline().addMouseListener(l);
                 
             }
-            
+
             @Override
             public void addNotify() {
                 super.addNotify();
                 setDefaultColumnSizes();
             }
-
+            
             private void setupColumns() {
+                // create colomns
                 ResourceBundle loc = NbBundle.getBundle(FileTablePanel.class);            
                 if(versioningSystem != null) {
                     addPropertyColumn(RevisionNode.PROPERTY_NAME_VERSION, loc.getString("LBL_LocalHistory_Column_Version"));                    // NOI18N            
@@ -543,23 +523,86 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                 } 
                 addPropertyColumn(RevisionNode.PROPERTY_NAME_LABEL, loc.getString("LBL_LocalHistory_Column_Label"));                            // NOI18N            
                 setPropertyColumnDescription(RevisionNode.PROPERTY_NAME_LABEL, loc.getString("LBL_LocalHistory_Column_Label_Desc"));            // NOI18N            
+
+                // comparators
+                ETableColumn etc = (ETableColumn) getOutline().getColumnModel().getColumn(0);
+                etc.setNestedComparator(new NodeComparator(etc));
+                int idx = 1;
+                if(versioningSystem != null) {
+                    setPropertyComparator(idx++);                    
+                    setPropertyComparator(idx++);
+                }
+                setPropertyComparator(idx++);                
             }    
 
+            private void setPropertyComparator(int idx) {
+                ETableColumn etc1 = (ETableColumn) getOutline().getColumnModel().getColumn(idx++);
+                etc1.setNestedComparator(new PropertyComparator(etc1));
+            }
+            
             private void setDefaultColumnSizes() {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         int width = getWidth();                    
-                            getOutline().getColumnModel().getColumn(0).setPreferredWidth(width * 20 / 100);
-                            if(versioningSystem != null) {
-                                getOutline().getColumnModel().getColumn(1).setPreferredWidth(width * 10 / 100);                        
-                                getOutline().getColumnModel().getColumn(2).setPreferredWidth(width * 10 / 100);                        
-                                getOutline().getColumnModel().getColumn(3).setPreferredWidth(width * 60 / 100);                        
-                            } else {
-                                getOutline().getColumnModel().getColumn(1).setPreferredWidth(width * 80 / 100);                        
-                    }
+                        getOutline().getColumnModel().getColumn(0).setPreferredWidth(width * 20 / 100);
+                        if(versioningSystem != null) {
+                            getOutline().getColumnModel().getColumn(1).setPreferredWidth(width * 10 / 100);                        
+                            getOutline().getColumnModel().getColumn(2).setPreferredWidth(width * 10 / 100);                        
+                            getOutline().getColumnModel().getColumn(3).setPreferredWidth(width * 60 / 100);                        
+                        } else {
+                            getOutline().getColumnModel().getColumn(1).setPreferredWidth(width * 80 / 100);                        
+                        }
                     }
                 });
             }            
+    
+            private class NodeComparator implements Comparator<Node> {
+                private final ETableColumn etc;
+                public NodeComparator(ETableColumn etc) {
+                    this.etc = etc;
+                }
+                @Override
+                public int compare(Node n1, Node n2) {
+                    if(HistoryRootNode.isLoadNext(n1) || HistoryRootNode.isWait(n1)) {
+                        return etc.isAscending() ? 1 : -1;
+                    } else if(HistoryRootNode.isLoadNext(n2) || HistoryRootNode.isWait(n2)) {
+                        return etc.isAscending() ? -1 : 1;
+                    }
+                    if(n1 instanceof Comparable) {
+                        return ((Comparable)n1).compareTo(n2);
+                    }
+                    if(n2 instanceof Comparable) {
+                        return -((Comparable)n2).compareTo(n1);
+                    }
+                    return n1.getName().compareTo(n2.getName());
+                }
+            }
+            private class PropertyComparator implements Comparator<TableEntry> {
+                private final ETableColumn etc;
+
+                public PropertyComparator(ETableColumn etc) {
+                    this.etc = etc;
+                }
+                @Override
+                public int compare(TableEntry e1, TableEntry e2) {
+                    if(e1 == null && e2 == null) {
+                        return 0;
+                    }
+                    if(e1 == null) {
+                        return -1;
+                    }
+                    if(e2 == null) {
+                        return 1;
+                    }
+                    Integer so1 = e1.order();
+                    Integer so2 = e2.order();
+                    int c = so1.compareTo(so2);
+                    if(c == 0) {
+                        return e1.compareTo(e2);
+                    }
+                    return etc.isAscending() ? -c : c;
+                }
+            }
     
             private class NoLeafIconRenderDataProvider implements RenderDataProvider {
                 private RenderDataProvider delegate;
@@ -619,15 +662,6 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             }
         }     
     }    
-    
-    private static class ColumnDescriptor<T> extends PropertySupport.ReadOnly<T> {        
-        public ColumnDescriptor(String name, Class<T> type, String displayName, String shortDescription) {
-            super(name, type, displayName, shortDescription);
-        }
-        public T getValue() throws IllegalAccessException, InvocationTargetException {
-            return null;
-        }
-    }      
     
     private static final Icon NO_ICON = new NoIcon();
     private static class NoIcon implements Icon {
@@ -711,8 +745,8 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         }
         
         String getDisplayValue(Node.Property p) throws IllegalAccessException, InvocationTargetException {
-            String value = (String) p.getValue();
-            return value != null ? value : ""; // NOI18N
+            TableEntry value = (TableEntry) p.getValue();
+            return value != null ? value.getDisplayValue() : ""; // NOI18N
         }
         
         String getTooltip(Node.Property p) throws IllegalAccessException, InvocationTargetException {
@@ -817,7 +851,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                 Object value = getValue(e);
                 if(value instanceof MessageProperty) {
                     MessageProperty msg = (MessageProperty) value;
-                    if(msg == null || !containsHyperlink(msg.getValue())) {
+                    if(msg == null || !containsHyperlink(msg.getValue().getDisplayValue())) {
                         outline.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     } else {
                         outline.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -916,4 +950,5 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             loadVCSEntries(files, false); 
         }
     }
+    
 }

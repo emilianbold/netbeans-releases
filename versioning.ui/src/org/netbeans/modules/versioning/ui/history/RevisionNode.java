@@ -164,68 +164,105 @@ public class RevisionNode extends AbstractNode implements Comparable {
             return -1;
         }
         RevisionNode node = (RevisionNode) obj;
-
-        if(node.entry.getDateTime().getTime() > entry.getDateTime().getTime()) {
-            return 1;
-        } else if(node.entry.getDateTime().getTime() < entry.getDateTime().getTime()) {
-            return -1;
-        } else {
-            return 0;
-        }                            
+        return node.entry.getDateTime().compareTo(entry.getDateTime());
     }
     
-    class MessageProperty extends PropertySupport.ReadOnly<String> {
+    class MessageProperty extends PropertySupport.ReadOnly<TableEntry> {
+        private TableEntry te;
         public MessageProperty() {
-            super(PROPERTY_NAME_LABEL, String.class, NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Name"), NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Desc"));
+            super(PROPERTY_NAME_LABEL, TableEntry.class, NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Name"), NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Desc"));
+            te = new TableEntry() {
+                @Override
+                public String getDisplayValue() {
+                    return entry.getMessage();
+                }
+                @Override
+                public String getTooltip() {
+                    return entry.getMessage();
+                }
+            };   
         }
         @Override
-        public String getValue() throws IllegalAccessException, InvocationTargetException {
-            return entry.getMessage();
+        public TableEntry getValue() throws IllegalAccessException, InvocationTargetException {
+            return te;
         }
 
         @Override
         public String toString() {
             return entry.getMessage();
         }
-        
     }
     
-    class EditableMessageProperty extends PropertySupport.ReadWrite<String> {
+    class EditableMessageProperty extends PropertySupport.ReadWrite<TableEntry> {
+        private TableEntry te;
         public EditableMessageProperty() {
-            super(PROPERTY_NAME_LABEL, String.class, NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Name"), NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Desc"));
+            super(PROPERTY_NAME_LABEL, TableEntry.class, NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Name"), NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Desc"));
+            te = new TableEntry() {
+                @Override
+                public String getDisplayValue() {
+                    return entry.getMessage();
+                }
+                @Override
+                public String getTooltip() {
+                    return entry.getMessage();
+                }
+            };   
         }
         @Override
-        public String getValue() throws IllegalAccessException, InvocationTargetException {
-            return entry.getMessage();
+        public TableEntry getValue() throws IllegalAccessException, InvocationTargetException {
+            return te;
         }    
         @Override        
-        public void setValue(String value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException 
+        public void setValue(TableEntry te) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException 
         {        
-            value = value.trim();
-            try {
-                entry.setMessage(!value.equals("") ? value : null);
-            } catch (IOException ex) {
-                History.LOG.log(Level.WARNING, null, ex);
-            }
+            this.te = te;
         }        
         @Override
         public PropertyEditor getPropertyEditor() {
-            return new PropertyEditorSupport();
+            return new PropertyEditorSupport() {
+                @Override
+                public void setAsText(String text) throws IllegalArgumentException {
+                    if (text instanceof String) {
+                        try {
+                            entry.setMessage(!text.equals("") ? text : null);
+                        } catch (IOException ex) {
+                            History.LOG.log(Level.WARNING, null, ex);
+                        }
+                        return;
+                    }
+                    throw new java.lang.IllegalArgumentException(text);
+                }
+                @Override
+                public String getAsText() {
+                    return te.getDisplayValue();
+                }
+            };
         }           
         
         @Override
         public String toString() {
             return entry.getMessage();
-        }        
+        }
     }                      
     
-    class UserProperty extends PropertySupport.ReadOnly<String> {
+    class UserProperty extends PropertySupport.ReadOnly<TableEntry> {
+        private TableEntry te;
         public UserProperty() {
-            super(PROPERTY_NAME_USER, String.class, NbBundle.getMessage(RevisionNode.class, "LBL_UserProperty_Name"), NbBundle.getMessage(RevisionNode.class, "LBL_UserProperty_Desc"));
+            super(PROPERTY_NAME_USER, TableEntry.class, NbBundle.getMessage(RevisionNode.class, "LBL_UserProperty_Name"), NbBundle.getMessage(RevisionNode.class, "LBL_UserProperty_Desc"));
+            te = new TableEntry() {
+                @Override
+                public String getDisplayValue() {
+                    return entry.getUsernameShort();
+                }
+                @Override
+                public String getTooltip() {
+                    return entry.getUsername();
+                }
+            };            
         }
         @Override
-        public String getValue() throws IllegalAccessException, InvocationTargetException {
-            return entry.getUsernameShort();
+        public TableEntry getValue() throws IllegalAccessException, InvocationTargetException {
+            return te;
         }
 
         @Override
@@ -234,13 +271,36 @@ public class RevisionNode extends AbstractNode implements Comparable {
         }
     }        
     
-    class RevisionProperty extends PropertySupport.ReadOnly<String> {
+    class RevisionProperty extends PropertySupport.ReadOnly<TableEntry> {
+        private TableEntry te;
         public RevisionProperty() {
-            super(PROPERTY_NAME_VERSION, String.class, NbBundle.getMessage(RevisionNode.class, "LBL_VersionProperty_Name"), NbBundle.getMessage(RevisionNode.class, "LBL_VersionProperty_Desc"));
+            super(PROPERTY_NAME_VERSION, TableEntry.class, NbBundle.getMessage(RevisionNode.class, "LBL_VersionProperty_Name"), NbBundle.getMessage(RevisionNode.class, "LBL_VersionProperty_Desc"));
+            te = new TableEntry() {
+                @Override
+                public String getDisplayValue() {
+                    return entry.getRevisionShort();
+                }
+                @Override
+                public String getTooltip() {
+                    return entry.getRevision();
+                }
+                @Override
+                public int compareTo(TableEntry e) {
+                    if(e == null) return 1;
+                    Integer i1;
+                    Integer i2;
+                    try {
+                        i1 = Integer.parseInt(getDisplayValue());
+                        i2 = Integer.parseInt(e.getDisplayValue());
+                        return i1.compareTo(i2);
+                    } catch (NumberFormatException ex) {}
+                    return super.compareTo(e);
+                }
+            };
         }
         @Override
-        public String getValue() throws IllegalAccessException, InvocationTargetException {
-            return entry.getRevisionShort();
+        public TableEntry getValue() throws IllegalAccessException, InvocationTargetException {
+            return te;
         }
 
         @Override
