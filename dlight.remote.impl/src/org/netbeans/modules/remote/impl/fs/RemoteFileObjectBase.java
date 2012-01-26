@@ -273,7 +273,11 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     }
 
     @Override
-    public OutputStream getOutputStream(FileLock lock) throws IOException {
+    public final OutputStream getOutputStream(FileLock lock) throws IOException {
+        return getOutputStreamImpl(lock, this);
+    }
+    
+    protected OutputStream getOutputStreamImpl(FileLock lock, RemoteFileObjectBase orig) throws IOException {
         throw new ReadOnlyException();
     }
 
@@ -311,11 +315,15 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     @Override
     @Deprecated
-    public boolean isReadOnly() {
+    public final boolean isReadOnly() {
+        return isReadOnlyImpl(this);
+    }
+    
+    protected boolean isReadOnlyImpl(RemoteFileObjectBase orig) {
         if (USE_VCS) {
             FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
             if (interceptor != null) {
-                return !canWrite() && isValid();
+                return !canWriteImpl(orig) && isValid();
             }
         }
         return !canRead();
@@ -361,7 +369,11 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     }
     
     @Override
-    public boolean canWrite() {
+    public final boolean canWrite() {
+        return canWriteImpl(this);
+    }
+    
+    protected boolean canWriteImpl(RemoteFileObjectBase orig) {
         setFlag(CHECK_CAN_WRITE, true);
         if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
             getFileSystem().addReadOnlyConnectNotification(this);
@@ -376,7 +388,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
                 if (!result && USE_VCS) {
                     FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
                     if (interceptor != null) {
-                        result = interceptor.canWriteReadonlyFile(FilesystemInterceptorProvider.toFileProxy(this));
+                        result = interceptor.canWriteReadonlyFile(FilesystemInterceptorProvider.toFileProxy(orig));
                     }
                 }
                 if (!result) {
@@ -457,7 +469,11 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     }
 
     @Override
-    public FileLock lock() throws IOException {
+    public final FileLock lock() throws IOException {
+        return lockImpl(this);
+    }
+
+    protected FileLock lockImpl(RemoteFileObjectBase orig) throws IOException {
         synchronized(instanceLock) {
             if (lock != null && lock.isValid()) {
                 throw new FileAlreadyLockedException(getPath());
@@ -466,7 +482,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         }
         return lock;
     }
-
+    
     @Override
     public boolean isLocked() {
         boolean res = false;

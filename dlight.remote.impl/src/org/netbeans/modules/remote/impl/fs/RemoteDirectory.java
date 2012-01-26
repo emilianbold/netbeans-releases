@@ -790,7 +790,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             synchronized (refLock) {
                 storageRef = new SoftReference<DirectoryStorage>(storage);
             }
-            // fire all event under lock
+            // fire all event under lockImpl
             if (changed) {
                 dropMagic();
                 for (FileObject deleted : filesToFireDeleted) {
@@ -926,7 +926,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (trace) { trace("waiting for lock"); } // NOI18N
         writeLock.lock();
         try {
-            // in case another writer thread already synchronized content while we were waiting for lock
+            // in case another writer thread already synchronized content while we were waiting for lockImpl
             // even in refresh mode, we need this content, otherwise we'll generate events twice
             synchronized (refLock) {
                 DirectoryStorage s = storageRef.get();
@@ -1108,7 +1108,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             synchronized (refLock) {
                 storageRef = new SoftReference<DirectoryStorage>(storage);
             }
-            // fire all event under lock
+            // fire all event under lockImpl
             if (changed) {
                 dropMagic();
                 FilesystemInterceptorProvider.FilesystemInterceptor interceptor = null;
@@ -1255,7 +1255,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
     
     @Override
-    public final OutputStream getOutputStream(final FileLock lock) throws IOException {
+    protected final OutputStream getOutputStreamImpl(final FileLock lock, RemoteFileObjectBase orig) throws IOException {
         throw new IOException(getPath());
     }
 

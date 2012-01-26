@@ -199,19 +199,19 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
     }
     
     @Override
-    public FileLock lock() throws IOException {
+    protected FileLock lockImpl(RemoteFileObjectBase orig) throws IOException {
         FilesystemInterceptorProvider.FilesystemInterceptor interceptor = null;
         if (USE_VCS) {
             interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
             if (interceptor != null) {
-                if (!canWrite()) {
+                if (!canWriteImpl(orig)) {
                     throw new IOException("Cannot lock "+this); // NOI18N
                 }
             }
         }
-        FileLock lock = super.lock();
+        FileLock lock = super.lockImpl(orig);
         if (interceptor != null) {
-            interceptor.fileLocked(FilesystemInterceptorProvider.toFileProxy(this));
+            interceptor.fileLocked(FilesystemInterceptorProvider.toFileProxy(orig));
         }
         return lock;
     }
@@ -234,7 +234,7 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
     }
 
     @Override
-    public OutputStream getOutputStream(FileLock lock) throws IOException {
+    protected OutputStream getOutputStreamImpl(FileLock lock, RemoteFileObjectBase orig) throws IOException {
         if (!isValid()) {
             throw new FileNotFoundException("FileObject " + this + " is not valid."); //NOI18N
         }
@@ -242,7 +242,7 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
         if (USE_VCS) {
            interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
         }
-        return new DelegateOutputStream(interceptor);
+        return new DelegateOutputStream(interceptor, orig);
     }
 
     // Fixing #206726 - If a remote file is saved frequently, "File modified externally" message appears, user changes are lost
@@ -266,9 +266,9 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
 
         private final FileOutputStream delegate;
 
-        public DelegateOutputStream(FilesystemInterceptorProvider.FilesystemInterceptor interceptor) throws IOException {
+        public DelegateOutputStream(FilesystemInterceptorProvider.FilesystemInterceptor interceptor, RemoteFileObjectBase orig) throws IOException {
             if (interceptor != null) {
-                interceptor.beforeChange(FilesystemInterceptorProvider.toFileProxy(RemotePlainFile.this));
+                interceptor.beforeChange(FilesystemInterceptorProvider.toFileProxy(orig));
             }
             delegate = new FileOutputStream(getCache());
         }

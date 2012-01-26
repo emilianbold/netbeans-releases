@@ -240,9 +240,9 @@ public class InterceptorTestCase extends RemoteFileTestBase {
 //        FileObject remoteDirFO = rootFO.getFileObject(remoteDir);
 //        FileObject fo = remoteDirFO.createData("deleteme.txt");
 //        FileProxyI file = MockupFilesystemInterceptorProvider.toFileProxy(fs, fo.getPath());
-//        FileLock lock = fo.lock();
-//        fo.rename(lock, "deleteme", "now");
-//        lock.releaseLock();
+//        FileLock lockImpl = fo.lockImpl();
+//        fo.rename(lockImpl, "deleteme", "now");
+//        lockImpl.releaseLock();
 //        FileProxyI file2 = MockupFilesystemInterceptorProvider.toFileProxy(fs, fo.getPath());
 //        fo.delete();
 //        assertTrue(interceptor.getBeforeCreateFiles().contains(file));
