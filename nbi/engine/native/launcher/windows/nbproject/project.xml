@@ -2,7 +2,7 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+  Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
   Oracle and Java are registered trademarks of Oracle and/or its affiliates.
   Other names may be trademarks of their respective owners.
@@ -37,13 +37,28 @@
   option applies only if the new code is made subject to such option by the copyright
   holder.
 -->
-
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.cnd.makeproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
             <name>NBI Native Launcher : Windows</name>
             <make-project-type>0</make-project-type>
+            <c-extensions>c</c-extensions>
+            <cpp-extensions/>
+            <header-extensions>h</header-extensions>
+            <sourceEncoding>UTF-8</sourceEncoding>
+            <make-dep-projects/>
+            <sourceRootList/>
+            <confList>
+                <confElem>
+                    <name>Debug</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
+                    <name>Release</name>
+                    <type>1</type>
+                </confElem>
+            </confList>
         </data>
     </configuration>
 </project>
