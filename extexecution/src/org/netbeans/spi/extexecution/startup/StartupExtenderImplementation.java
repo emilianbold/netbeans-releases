@@ -59,6 +59,7 @@ import org.openide.util.Lookup;
  * @author Petr Hejl
  * @since 1.30
  * @see StartupExtender
+ * @see Registration
  */
 public interface StartupExtenderImplementation {
 
