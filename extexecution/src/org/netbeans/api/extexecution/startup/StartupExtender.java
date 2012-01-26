@@ -43,6 +43,8 @@ package org.netbeans.api.extexecution.startup;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.extexecution.startup.StartupExtenderRegistrationProcessor;
 import org.netbeans.spi.extexecution.startup.StartupExtenderImplementation;
@@ -60,6 +62,8 @@ import org.openide.util.lookup.Lookups;
  * @see StartupExtenderImplementation
  */
 public final class StartupExtender {
+
+    private static final Logger LOG = Logger.getLogger(StartupExtender.class.getName());
 
     private final String description;
 
@@ -92,13 +96,16 @@ public final class StartupExtender {
             @NonNull Lookup context, @NonNull StartMode mode) {
         Parameters.notNull("context", context);
         Parameters.notNull("mode", mode);
+        LOG.log(Level.FINE, "getExtenders: context={0} mode={1}", new Object[] {context, mode});
 
         Lookup lkp = Lookups.forPath(StartupExtenderRegistrationProcessor.PATH);
 
         List<StartupExtender> res = new ArrayList<StartupExtender>();
         for (Lookup.Item<StartupExtenderImplementation> item : lkp.lookupResult(StartupExtenderImplementation.class).allItems()) {
-            res.add(new StartupExtender(item.getDisplayName(),
-                    item.getInstance().getArguments(context, mode)));
+            StartupExtender extender = new StartupExtender(item.getDisplayName(),
+                                       item.getInstance().getArguments(context, mode));
+            LOG.log(Level.FINE, " {0} => {1}", new Object[] {extender.description, extender.getArguments()});
+            res.add(extender);
         }
         return res;
     }
