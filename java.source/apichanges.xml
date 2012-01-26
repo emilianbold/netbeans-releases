@@ -112,7 +112,7 @@ is the proper place.
              <api name="general"/>
              <summary>Added <code>SourceUtils.waitUserActionTask</code>.</summary>
              <version major="0" minor="95"/>
-             <date day="31" month="1" year="2012"/>
+             <date day="26" month="1" year="2012"/>
              <author login="sdedic"/>
             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
              <description>
@@ -129,7 +129,7 @@ is the proper place.
              <api name="general"/>
              <summary>Added <code>TaskIndexingMode</code> into <code>JavaSourceTaskFactory</code>s</summary>
              <version major="0" minor="94"/>
-             <date day="31" month="1" year="2012"/>
+             <date day="26" month="1" year="2012"/>
              <author login="tzezula"/>
             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
              <description>
