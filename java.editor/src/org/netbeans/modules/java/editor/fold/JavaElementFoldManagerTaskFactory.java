@@ -49,6 +49,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.JavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
+import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -60,7 +61,7 @@ import org.openide.util.Lookup;
 public class JavaElementFoldManagerTaskFactory extends EditorAwareJavaSourceTaskFactory {
 
     public JavaElementFoldManagerTaskFactory() {
-        super(Phase.PARSED, Priority.NORMAL);
+        super(Phase.PARSED, Priority.NORMAL, TaskIndexingMode.ALLOWED_DURING_SCAN);
     }
 
     public CancellableTask<CompilationInfo> createTask(FileObject file) {

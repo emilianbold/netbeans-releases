@@ -92,7 +92,9 @@ public class SourcePathCheck extends JavaParserResultTask {
                 if (cachedSrc.entries().isEmpty() && !src.entries().isEmpty()) {
                     for (ClassPath.Entry entry : src.entries()) {
                         final URL url = entry.getURL();
-                        if (!this.factory.firedFor.contains(url) && JavaIndex.isLibrary(url) && FileOwnerQuery.getOwner(url.toURI()) != null) {                                                        
+                        if (!this.factory.firedFor.contains(url) &&
+                                !JavaIndex.hasSourceCache(url,false) &&
+                                FileOwnerQuery.getOwner(url.toURI()) != null) {
                             unknown.add(url);
                             this.factory.firedFor.add(url);
                         }

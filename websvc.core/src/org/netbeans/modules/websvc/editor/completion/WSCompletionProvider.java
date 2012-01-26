@@ -55,8 +55,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -133,6 +131,8 @@ public class WSCompletionProvider implements CompletionProvider {
                 NbEditorUtilities.getFileObject(doc);
                 final JavaSource js = JavaSource.forDocument(doc);
                 if (js!=null) {
+/*
+ * Commented out, the code completion infrastructure will provide support for this
                     Future<?> completion = REQUEST_PROCESSOR.submit( new Runnable() {
                         @Override
                         public void run() {
@@ -160,6 +160,8 @@ public class WSCompletionProvider implements CompletionProvider {
                         }
                         f.get();
                     }
+*/
+                    js.runUserActionTask(this, true);
                     if (isTaskCancelled()) {
                         return;
                     }
@@ -176,12 +178,6 @@ public class WSCompletionProvider implements CompletionProvider {
             }
             catch (IOException ex) {
                 LOG.log( Level.WARNING , null , ex );
-            }
-            catch ( InterruptedException e ){
-                LOG.log( Level.INFO , null , e );
-            }
-            catch( ExecutionException e ){
-                LOG.log( Level.WARNING , null , e );
             }
             finally 
             {

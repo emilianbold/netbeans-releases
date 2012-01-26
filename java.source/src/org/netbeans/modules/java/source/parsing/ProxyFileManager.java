@@ -420,7 +420,7 @@ public class ProxyFileManager implements JavaFileManager {
                 }
             }
         }
-        return write ? result : (T) new NullFileObject((InferableJavaFileObject)result);    //safe - NullFileObject subclass of both JFO and FO.
+        return write ? result : (T) FileManagerTransaction.nullFileObject((InferableJavaFileObject)result);    //safe - NullFileObject subclass of both JFO and FO.
     }
 
     private void markerFinished() {

@@ -54,6 +54,7 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.IndexingAwareTestCase;
 import org.netbeans.modules.parsing.api.MyScheduler;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
@@ -78,7 +79,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author hanz
  */
-public class CaretSchelulerTest extends NbTestCase {
+public class CaretSchelulerTest extends IndexingAwareTestCase {
     
     public CaretSchelulerTest (String testName) {
         super (testName);
