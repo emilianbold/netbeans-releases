@@ -37,7 +37,7 @@
  */
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.modules.java.hints.test.api.TestBase;
 
 /**
  *
@@ -58,7 +58,7 @@ public class RemoveUnnecessaryReturnTest extends TestBase {
                        "    }\n" +
                        "}\n",
                        "3:8-3:16:verifier:ERR_UnnecessaryReturnStatement",
-                       "FixImpl",
+                       "FIX_UnnecessaryReturnStatement",
                        ("package test;\n" +
                         "public class Test {\n" +
                         "    public void test() {\n" +
@@ -75,7 +75,7 @@ public class RemoveUnnecessaryReturnTest extends TestBase {
                        "    }\n" +
                        "}\n",
                        "3:15-3:23:verifier:ERR_UnnecessaryReturnStatement",
-                       "FixImpl",
+                       "FIX_UnnecessaryReturnStatement",
                        ("package test;\n" +
                         "public class Test {\n" +
                         "    public void test(boolean b) {\n" +

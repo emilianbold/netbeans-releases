@@ -42,85 +42,76 @@
 
 package org.netbeans.modules.java.hints.perf;
 
-import java.util.prefs.Preferences;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
-import org.netbeans.modules.java.hints.options.HintsSettings;
-import org.netbeans.spi.editor.hints.Fix;
+import org.junit.Test;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class SizeEqualsZeroTest extends TestBase {
+public class SizeEqualsZeroTest {
 
-    public SizeEqualsZeroTest(String name) {
-        super(name, SizeEqualsZero.class);
-    }
-
+    @Test
     public void testSimple1() throws Exception {
-        performFixTest("test/Test.java",
+        HintTest.create()
+                .input("test/Test.java",
                        "package test;\n" +
                        "import java.util.List;" +
                        "public class Test {\n" +
                        "     private void test(List l) {\n" +
                        "         boolean b = l.size() == 0;\n" +
                        "     }\n" +
-                       "}\n",
-                       "3:21-3:34:verifier:.size() == 0",
-                       ".size() == 0 => .isEmpty()",
-                       ("package test;\n" +
+                       "}\n")
+                .run(SizeEqualsZero.class)
+                .findWarning("3:21-3:34:verifier:.size() == 0")
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
                        "import java.util.List;" +
                        "public class Test {\n" +
                        "     private void test(List l) {\n" +
                        "         boolean b = l.isEmpty();\n" +
                        "     }\n" +
-                        "}\n").replaceAll("[\t\n ]+", " "));
+                        "}\n");
     }
 
+    @Test
     public void testSimple2() throws Exception {
-        Preferences p = RulesManager.getPreferences("org.netbeans.modules.java.hints.perf.SizeEqualsZero", HintsSettings.getCurrentProfileId());
-
-        p.putBoolean(SizeEqualsZero.CHECK_NOT_EQUALS, true);
-        
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest.create()
+                .input("package test;\n" +
                        "import java.util.List;" +
                        "public class Test {\n" +
                        "     private void test(List l) {\n" +
                        "         boolean b = l.size() != 0;\n" +
                        "     }\n" +
-                       "}\n",
-                       "3:21-3:34:verifier:.size() != 0",
-                       ".size() != 0 => !.isEmpty()",
-                       ("package test;\n" +
+                       "}\n")
+                .preference(SizeEqualsZero.CHECK_NOT_EQUALS, true)
+                .run(SizeEqualsZero.class)
+                .findWarning("3:21-3:34:verifier:.size() != 0")
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
                         "import java.util.List;" +
                         "public class Test {\n" +
                         "     private void test(List l) {\n" +
                         "         boolean b = !l.isEmpty();\n" +
                         "     }\n" +
-                        "}\n").replaceAll("[\t\n ]+", " "));
+                        "}\n");
     }
 
+    @Test
     public void testSimpleConfig() throws Exception {
-        Preferences p = RulesManager.getPreferences("org.netbeans.modules.java.hints.perf.SizeEqualsZero", HintsSettings.getCurrentProfileId());
-
-        p.putBoolean(SizeEqualsZero.CHECK_NOT_EQUALS, false);
-        
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "import java.util.List;" +
-                            "public class Test {\n" +
-                            "     private void test(List l) {\n" +
-                            "         boolean b = l.size() != 0;\n" +
-                            "     }\n" +
-                            "}\n");
-    }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return f.getText();
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.util.List;" +
+                       "public class Test {\n" +
+                       "     private void test(List l) {\n" +
+                       "         boolean b = l.size() != 0;\n" +
+                       "     }\n" +
+                       "}\n")
+                .preference(SizeEqualsZero.CHECK_NOT_EQUALS, false)
+                .run(SizeEqualsZero.class)
+                .assertWarnings();
     }
 
 }

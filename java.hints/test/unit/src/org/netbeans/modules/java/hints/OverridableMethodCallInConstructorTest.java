@@ -43,7 +43,7 @@
 package org.netbeans.modules.java.hints;
 
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.modules.java.hints.test.api.TestBase;
 
 /**
  *

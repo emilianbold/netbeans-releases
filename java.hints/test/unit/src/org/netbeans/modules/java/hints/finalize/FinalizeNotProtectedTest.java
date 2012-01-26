@@ -43,7 +43,7 @@
 package org.netbeans.modules.java.hints.finalize;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.modules.java.hints.test.api.TestBase;
 import org.netbeans.spi.editor.hints.Fix;
 
 /**
@@ -108,11 +108,6 @@ public class FinalizeNotProtectedTest extends TestBase {
                             "    protected final void finalize() {\n" +
                             "    }\n" +
                             "}").replaceAll("[ \t\n]+", " "));
-    }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return f.getText();
     }
 
 }

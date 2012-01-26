@@ -43,7 +43,7 @@
 package org.netbeans.modules.java.hints.bugs;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.modules.java.hints.test.api.TestBase;
 import org.netbeans.spi.editor.hints.Fix;
 
 /**
@@ -182,11 +182,6 @@ public class TinyTest extends TestBase {
                             "    }\n" +
                             "}\n",
                             "3:23-3:24:verifier:ERR_ResultSetZero");
-    }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return f.getText();
     }
 
 }

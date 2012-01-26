@@ -43,7 +43,7 @@
 package org.netbeans.modules.java.hints;
 
 import org.junit.Test;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.modules.java.hints.test.api.TestBase;
 import org.openide.util.NbBundle;
 
 /**
@@ -67,7 +67,7 @@ public class SystemOutTest extends TestBase {
             "    }\n" +
             "}",
             "3:15-3:18:verifier:Uses of System.out or System.err are often temporary debugging statements.",
-            "FixImpl",
+            "MSG_SystemOut_fix",
             (
                 "package test;\n" +
                 "class Test {\n" +
@@ -89,7 +89,7 @@ public class SystemOutTest extends TestBase {
             "    }\n" +
             "}",
             "3:15-3:18:verifier:Uses of System.out or System.err are often temporary debugging statements.",
-            "FixImpl",
+            "MSG_SystemOut_fix",
             (
                 "package test;\n" +
                 "class Test {\n" +

@@ -46,7 +46,7 @@ import com.sun.source.util.TreePath;
 import java.util.List;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
-import org.netbeans.modules.java.hints.options.HintsSettings;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;

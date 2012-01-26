@@ -42,15 +42,16 @@
 
 package org.netbeans.modules.java.hints.perf;
 
-import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.spi.support.FixFactory;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.support.FixFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -60,7 +61,7 @@ import org.openide.util.NbBundle;
 @Hint(category="performance", suppressWarnings="BooleanConstructorCall")
 public class NoBooleanConstructor {
 
-    @TriggerPattern(value="new java.lang.Boolean($b)", constraints=@Constraint(variable="$b", type="boolean"))
+    @TriggerPattern(value="new java.lang.Boolean($b)", constraints=@ConstraintVariableType(variable="$b", type="boolean"))
     public static ErrorDescription hintBoolean(HintContext ctx) {
         switch (ctx.getInfo().getSourceVersion()) {
             case RELEASE_0:
@@ -75,14 +76,14 @@ public class NoBooleanConstructor {
         }
     }
 
-    @TriggerPattern(value="new java.lang.Boolean($str)", constraints=@Constraint(variable="$str", type="java.lang.String"))
+    @TriggerPattern(value="new java.lang.Boolean($str)", constraints=@ConstraintVariableType(variable="$str", type="java.lang.String"))
     public static ErrorDescription hintString(HintContext ctx) {
         return hint(ctx, "java.lang.Boolean.valueOf($str)", "FIX_NoBooleanConstructorString");
     }
 
     private static ErrorDescription hint(HintContext ctx, String fix, String fixKey) {
         String fixDisplayName = NbBundle.getMessage(Tiny.class, fixKey);
-        Fix f = JavaFix.rewriteFix(ctx, fixDisplayName, ctx.getPath(), fix);
+        Fix f = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), fix);
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_NoBooleanConstructor");
 
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, f, FixFactory.createSuppressWarningsFix(ctx.getInfo(), ctx.getPath(), "BooleanConstructorCall"));

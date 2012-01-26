@@ -42,12 +42,7 @@
 
 package org.netbeans.modules.java.hints.perf;
 
-import java.util.prefs.Preferences;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
-import org.netbeans.modules.java.hints.options.HintsSettings;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.modules.java.hints.test.api.TestBase;
 
 /**
  *
@@ -78,9 +73,7 @@ public class TinyTest extends TestBase {
     }
 
     public void testStringConstructor2() throws Exception {
-        Preferences p = RulesManager.getPreferences("org.netbeans.modules.java.hints.perf.Tiny.stringConstructor", HintsSettings.getCurrentProfileId());
-
-        p.putBoolean(Tiny.SC_IGNORE_SUBSTRING, true);
+        getTestPreferences().putBoolean(Tiny.SC_IGNORE_SUBSTRING, true);
 
         performAnalysisTest("test/Test.java",
                             "package test;\n" +
@@ -92,9 +85,7 @@ public class TinyTest extends TestBase {
     }
 
     public void testStringConstructor3() throws Exception {
-        Preferences p = RulesManager.getPreferences("org.netbeans.modules.java.hints.perf.Tiny.stringConstructor", HintsSettings.getCurrentProfileId());
-
-        p.putBoolean(Tiny.SC_IGNORE_SUBSTRING, false);
+        getTestPreferences().putBoolean(Tiny.SC_IGNORE_SUBSTRING, false);
 
         performFixTest("test/Test.java",
                        "package test;\n" +
@@ -114,9 +105,7 @@ public class TinyTest extends TestBase {
     }
 
     public void testStringConstructor4() throws Exception {
-        Preferences p = RulesManager.getPreferences("org.netbeans.modules.java.hints.perf.Tiny.stringConstructor", HintsSettings.getCurrentProfileId());
-
-        p.putBoolean(Tiny.SC_IGNORE_SUBSTRING, true);
+        getTestPreferences().putBoolean(Tiny.SC_IGNORE_SUBSTRING, true);
 
         performFixTest("test/Test.java",
                        "package test;\n" +
@@ -396,11 +385,6 @@ public class TinyTest extends TestBase {
                             "         return new java.util.EnumMap<java.lang.annotation.RetentionPolicy, Boolean>(java.lang.annotation.RetentionPolicy.class);\n" +
                             "     }\n" +
                             "}\n");
-    }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return f.getText();
     }
 
 }

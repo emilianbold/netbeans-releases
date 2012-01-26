@@ -124,7 +124,7 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.MarkBlock;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

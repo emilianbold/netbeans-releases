@@ -51,13 +51,14 @@ import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.spi.support.FixFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.support.FixFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -77,7 +78,7 @@ public class FinalizeNotProtected {
             if (modifiers.contains(Modifier.PUBLIC)) {
                 return ErrorDescriptionFactory.forName(ctx, tp,
                         NbBundle.getMessage(FinalizeNotProtected.class, "TXT_FinalizeNotProtected"),
-                        JavaFix.toEditorFix(new FixImpl(TreePathHandle.create(tp, ctx.getInfo()))),
+                        new FixImpl(TreePathHandle.create(tp, ctx.getInfo())).toEditorFix(),
                         FixFactory.createSuppressWarningsFix(ctx.getInfo(), ctx.getPath(), "FinalizeNotProtected"));    //NOI18N
             }
         }
@@ -96,7 +97,9 @@ public class FinalizeNotProtected {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
             final Tree tree = tp.getLeaf();
             if (tree.getKind() != Tree.Kind.METHOD) {
                 return;

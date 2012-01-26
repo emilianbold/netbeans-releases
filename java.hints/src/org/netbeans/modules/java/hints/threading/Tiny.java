@@ -67,17 +67,18 @@ import javax.lang.model.element.VariableElement;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.hints.errors.Utilities;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
-import org.netbeans.modules.java.hints.jackpot.spi.Hacks;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
+import org.netbeans.modules.java.hints.spiimpl.Hacks;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -89,16 +90,16 @@ public class Tiny {
     @Hint(category="thread", suppressWarnings="NotifyCalledOnCondition")
     @TriggerPatterns({
         @TriggerPattern(value="$cond.notify()",
-                        constraints=@Constraint(variable="$cond", type="java.util.concurrent.locks.Condition")),
+                        constraints=@ConstraintVariableType(variable="$cond", type="java.util.concurrent.locks.Condition")),
         @TriggerPattern(value="$cond.notifyAll()",
-                        constraints=@Constraint(variable="$cond", type="java.util.concurrent.locks.Condition"))
+                        constraints=@ConstraintVariableType(variable="$cond", type="java.util.concurrent.locks.Condition"))
     })
     public static ErrorDescription notifyOnCondition(HintContext ctx) {
         String method = methodName((MethodInvocationTree) ctx.getPath().getLeaf());
         String toName = method.endsWith("All") ? "signalAll" : "signal";
 
         String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_NotifyOnConditionFix", toName);
-        Fix f = JavaFix.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$cond." + toName + "()");
+        Fix f = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$cond." + toName + "()");
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_NotifyOnCondition", method);
 
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, f);
@@ -107,17 +108,17 @@ public class Tiny {
     @Hint(category="thread", suppressWarnings="WaitCalledOnCondition", options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern(value="$cond.wait()",
-                        constraints=@Constraint(variable="$cond", type="java.util.concurrent.locks.Condition")),
+                        constraints=@ConstraintVariableType(variable="$cond", type="java.util.concurrent.locks.Condition")),
         @TriggerPattern(value="$cond.wait($timeout)",
                         constraints={
-                             @Constraint(variable="$cond", type="java.util.concurrent.locks.Condition"),
-                             @Constraint(variable="$timeout", type="long")
+                             @ConstraintVariableType(variable="$cond", type="java.util.concurrent.locks.Condition"),
+                             @ConstraintVariableType(variable="$timeout", type="long")
                         }),
         @TriggerPattern(value="$cond.wait($timeout, $nanos)",
                         constraints={
-                             @Constraint(variable="$cond", type="java.util.concurrent.locks.Condition"),
-                             @Constraint(variable="$timeout", type="long"),
-                             @Constraint(variable="$nanos", type="int")
+                             @ConstraintVariableType(variable="$cond", type="java.util.concurrent.locks.Condition"),
+                             @ConstraintVariableType(variable="$timeout", type="long"),
+                             @ConstraintVariableType(variable="$nanos", type="int")
                         })
     })
     public static ErrorDescription waitOnCondition(HintContext ctx) {
@@ -128,10 +129,10 @@ public class Tiny {
 
     @Hint(category="thread", suppressWarnings="CallToThreadRun")
     @TriggerPattern(value="$thread.run()",
-                    constraints=@Constraint(variable="$thread", type="java.lang.Thread"))
+                    constraints=@ConstraintVariableType(variable="$thread", type="java.lang.Thread"))
     public static ErrorDescription threadRun(HintContext ctx) {
         String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_ThreadRun");
-        Fix f = JavaFix.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$thread.start()");
+        Fix f = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$thread.start()");
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_ThreadRun");
 
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, f);
@@ -139,7 +140,7 @@ public class Tiny {
 
     @Hint(category="thread", suppressWarnings="CallToThreadStartDuringObjectConstruction", options=Options.QUERY)
     @TriggerPattern(value="$thread.start()",
-                    constraints=@Constraint(variable="$thread", type="java.lang.Thread"))
+                    constraints=@ConstraintVariableType(variable="$thread", type="java.lang.Thread"))
     public static ErrorDescription threadStartInConstructor(HintContext ctx) {
         //TODO: instance initializers?
         if (!Utilities.isInConstructor(ctx)) {
@@ -160,11 +161,11 @@ public class Tiny {
     @Hint(category="thread", options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern(value="$thread.stop()",
-                        constraints=@Constraint(variable="$thread", type="java.lang.Thread")),
+                        constraints=@ConstraintVariableType(variable="$thread", type="java.lang.Thread")),
         @TriggerPattern(value="$thread.suspend()",
-                        constraints=@Constraint(variable="$thread", type="java.lang.Thread")),
+                        constraints=@ConstraintVariableType(variable="$thread", type="java.lang.Thread")),
         @TriggerPattern(value="$thread.resume()",
-                        constraints=@Constraint(variable="$thread", type="java.lang.Thread"))
+                        constraints=@ConstraintVariableType(variable="$thread", type="java.lang.Thread"))
     })
     public static ErrorDescription threadSuspend(HintContext ctx) {
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_ThreadSuspend", methodName((MethodInvocationTree) ctx.getPath().getLeaf()));
@@ -173,7 +174,7 @@ public class Tiny {
 
     @Hint(category="thread", suppressWarnings="NestedSynchronizedStatement", options=Options.QUERY)
     @TriggerPattern(value="synchronized ($lock) $block",
-                    constraints=@Constraint(variable="$lock", type="java.lang.Object"))
+                    constraints=@ConstraintVariableType(variable="$lock", type="java.lang.Object"))
     public static ErrorDescription nestedSynchronized(HintContext ctx) {
         class Found extends Error {
             @Override public synchronized Throwable fillInStackTrace() {
@@ -223,7 +224,7 @@ public class Tiny {
 
     @Hint(category="thread", suppressWarnings="EmptySynchronizedStatement", options=Options.QUERY)
     @TriggerPattern(value="synchronized ($lock) {}",
-                    constraints=@Constraint(variable="$lock", type="java.lang.Object"))
+                    constraints=@ConstraintVariableType(variable="$lock", type="java.lang.Object"))
     public static ErrorDescription emptySynchronized(HintContext ctx) {
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_EmptySynchronized");
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
@@ -231,10 +232,10 @@ public class Tiny {
 
     @Hint(category="thread", suppressWarnings="SynchroniziationOnLockObject")
     @TriggerPattern(value="synchronized ($lock) {$statements$;}",
-                    constraints=@Constraint(variable="$lock", type="java.util.concurrent.locks.Lock"))
+                    constraints=@ConstraintVariableType(variable="$lock", type="java.util.concurrent.locks.Lock"))
     public static ErrorDescription synchronizedOnLock(HintContext ctx) {
         String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_SynchronizedOnLock");
-        Fix f = JavaFix.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$lock.lock(); try {$statements$;} finally {$lock.unlock();}");
+        Fix f = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$lock.lock(); try {$statements$;} finally {$lock.unlock();}");
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_SynchronizedOnLock");
 
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, f);
@@ -260,11 +261,11 @@ public class Tiny {
 
     @Hint(category="thread", suppressWarnings="LockAcquiredButNotSafelyReleased")
     @TriggerPattern(value="$lock.lock(); $statements$; $lock.unlock();",
-                    constraints=@Constraint(variable="$lock", type="java.util.concurrent.locks.Lock"))
+                    constraints=@ConstraintVariableType(variable="$lock", type="java.util.concurrent.locks.Lock"))
     public static ErrorDescription unlockOutsideTryFinally(HintContext ctx) {
         if (ctx.getMultiVariables().get("$statements$").isEmpty()) return null; //#186434
         String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_UnlockOutsideTryFinally");
-        Fix f = JavaFix.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$lock.lock(); try {$statements$;} finally {$lock.unlock();}");
+        Fix f = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$lock.lock(); try {$statements$;} finally {$lock.unlock();}");
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_UnlockOutsideTryFinally");
 
         //XXX:
@@ -286,17 +287,17 @@ public class Tiny {
     @Hint(category="thread", suppressWarnings="WaitWhileNotSynced", options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern(value="$site.wait()",
-                        constraints=@Constraint(variable="$site", type="java.lang.Object")),
+                        constraints=@ConstraintVariableType(variable="$site", type="java.lang.Object")),
         @TriggerPattern(value="$site.wait($timeout)",
                         constraints={
-                             @Constraint(variable="$site", type="java.lang.Object"),
-                             @Constraint(variable="$timeout", type="long")
+                             @ConstraintVariableType(variable="$site", type="java.lang.Object"),
+                             @ConstraintVariableType(variable="$timeout", type="long")
                         }),
         @TriggerPattern(value="$site.wait($timeout, $nanos)",
                         constraints={
-                             @Constraint(variable="$site", type="java.lang.Object"),
-                             @Constraint(variable="$timeout", type="long"),
-                             @Constraint(variable="$nanos", type="int")
+                             @ConstraintVariableType(variable="$site", type="java.lang.Object"),
+                             @ConstraintVariableType(variable="$timeout", type="long"),
+                             @ConstraintVariableType(variable="$nanos", type="int")
                         })
     })
     public static ErrorDescription unsyncWait(HintContext ctx) {
@@ -306,9 +307,9 @@ public class Tiny {
     @Hint(category="thread", suppressWarnings="NotifyWhileNotSynced", options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern(value="$site.notify()",
-                        constraints=@Constraint(variable="$site", type="java.lang.Object")),
+                        constraints=@ConstraintVariableType(variable="$site", type="java.lang.Object")),
         @TriggerPattern(value="$site.notifyAll()",
-                        constraints=@Constraint(variable="$site", type="java.lang.Object"))
+                        constraints=@ConstraintVariableType(variable="$site", type="java.lang.Object"))
     })
     public static ErrorDescription unsyncNotify(HintContext ctx) {
         return unsyncHint(ctx, "ERR_UnsyncedNotify");
@@ -393,11 +394,11 @@ public class Tiny {
     @Hint(category="thread", suppressWarnings="SleepWhileHoldingLock", options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern(value="java.lang.Thread.sleep($to)",
-                        constraints=@Constraint(variable="$to", type="long")),
+                        constraints=@ConstraintVariableType(variable="$to", type="long")),
         @TriggerPattern(value="java.lang.Thread.sleep($to, $nanos)",
                         constraints={
-                            @Constraint(variable="$to", type="long"),
-                            @Constraint(variable="$nanos", type="int")
+                            @ConstraintVariableType(variable="$to", type="long"),
+                            @ConstraintVariableType(variable="$nanos", type="int")
                         })
     })
     public static ErrorDescription sleepInSync(HintContext ctx) {
@@ -413,11 +414,11 @@ public class Tiny {
     @Hint(category="thread", suppressWarnings="SleepWhileInLoop", options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern(value="java.lang.Thread.sleep($to)",
-                        constraints=@Constraint(variable="$to", type="long")),
+                        constraints=@ConstraintVariableType(variable="$to", type="long")),
         @TriggerPattern(value="java.lang.Thread.sleep($to, $nanos)",
                         constraints={
-                            @Constraint(variable="$to", type="long"),
-                            @Constraint(variable="$nanos", type="int")
+                            @ConstraintVariableType(variable="$to", type="long"),
+                            @ConstraintVariableType(variable="$nanos", type="int")
                         })
     })
     public static ErrorDescription sleepInLoop(HintContext ctx) {

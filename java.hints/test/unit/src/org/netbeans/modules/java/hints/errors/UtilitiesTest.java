@@ -227,7 +227,7 @@ public class UtilitiesTest extends NbTestCase {
 
     private void performCapturedTypeTest(String code, String golden) throws Exception {
         int[] position = new int[1];
-        code = org.netbeans.modules.java.hints.TestUtilities.detectOffsets(code, position);
+        code = org.netbeans.modules.java.hints.spiimpl.TestUtilities.detectOffsets(code, position);
 
         performCapturedTypeTest(code, position[0], golden);
     }

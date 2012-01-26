@@ -43,7 +43,7 @@
 package org.netbeans.modules.java.hints;
 
 import org.junit.Test;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.modules.java.hints.test.api.TestBase;
 import org.openide.util.NbBundle;
 
 /**
@@ -68,7 +68,7 @@ public class PointlessBitwiseExpressionTest extends TestBase {
             "    }\n" +
             "}",
             "4:20-4:25:verifier:Pointless bitwise expression",
-            "FixImpl",
+            "MSG_PointlessBitwiseExpression_fix",
             (
                 "package test;\n" +
                 "class Test {\n" +
@@ -93,7 +93,7 @@ public class PointlessBitwiseExpressionTest extends TestBase {
             "    }\n" +
             "}",
             "4:20-4:25:verifier:Pointless bitwise expression",
-            "FixImpl",
+            "MSG_PointlessBitwiseExpression_fix",
             (
                 "package test;\n" +
                 "class Test {\n" +
@@ -118,7 +118,7 @@ public class PointlessBitwiseExpressionTest extends TestBase {
             "    }\n" +
             "}",
             "4:20-4:25:verifier:Pointless bitwise expression",
-            "FixImpl",
+            "MSG_PointlessBitwiseExpression_fix",
             (
                 "package test;\n" +
                 "class Test {\n" +
@@ -143,7 +143,7 @@ public class PointlessBitwiseExpressionTest extends TestBase {
             "    }\n" +
             "}",
             "4:20-4:25:verifier:Pointless bitwise expression",
-            "FixImpl",
+            "MSG_PointlessBitwiseExpression_fix",
             (
                 "package test;\n" +
                 "class Test {\n" +
@@ -169,7 +169,7 @@ public class PointlessBitwiseExpressionTest extends TestBase {
             "    }\n" +
             "}",
             "5:20-5:25:verifier:Pointless bitwise expression",
-            "FixImpl",
+            "MSG_PointlessBitwiseExpression_fix",
             (
                 "package test;\n" +
                 "class Test {\n" +
@@ -196,7 +196,7 @@ public class PointlessBitwiseExpressionTest extends TestBase {
             "    }\n" +
             "}",
             "5:20-5:25:verifier:Pointless bitwise expression",
-            "FixImpl",
+            "MSG_PointlessBitwiseExpression_fix",
             (
                 "package test;\n" +
                 "class Test {\n" +
@@ -223,7 +223,7 @@ public class PointlessBitwiseExpressionTest extends TestBase {
             "    }\n" +
             "}",
             "5:20-5:25:verifier:Pointless bitwise expression",
-            "FixImpl",
+            "MSG_PointlessBitwiseExpression_fix",
             (
                 "package test;\n" +
                 "class Test {\n" +
@@ -250,7 +250,7 @@ public class PointlessBitwiseExpressionTest extends TestBase {
             "    }\n" +
             "}",
             "5:20-5:25:verifier:Pointless bitwise expression",
-            "FixImpl",
+            "MSG_PointlessBitwiseExpression_fix",
             (
                 "package test;\n" +
                 "class Test {\n" +
@@ -276,7 +276,7 @@ public class PointlessBitwiseExpressionTest extends TestBase {
             "    }\n" +
             "}",
             "4:20-4:26:verifier:Pointless bitwise expression",
-            "FixImpl",
+            "MSG_PointlessBitwiseExpression_fix",
             (
                 "package test;\n" +
                 "class Test {\n" +
@@ -302,7 +302,7 @@ public class PointlessBitwiseExpressionTest extends TestBase {
             "    }\n" +
             "}",
             "5:20-5:26:verifier:Pointless bitwise expression",
-            "FixImpl",
+            "MSG_PointlessBitwiseExpression_fix",
             (
                 "package test;\n" +
                 "class Test {\n" +
@@ -328,7 +328,7 @@ public class PointlessBitwiseExpressionTest extends TestBase {
             "    }\n" +
             "}",
             "4:20-4:27:verifier:Pointless bitwise expression",
-            "FixImpl",
+            "MSG_PointlessBitwiseExpression_fix",
             (
                 "package test;\n" +
                 "class Test {\n" +
@@ -354,7 +354,7 @@ public class PointlessBitwiseExpressionTest extends TestBase {
             "    }\n" +
             "}",
             "5:20-5:27:verifier:Pointless bitwise expression",
-            "FixImpl",
+            "MSG_PointlessBitwiseExpression_fix",
             (
                 "package test;\n" +
                 "class Test {\n" +
@@ -380,7 +380,7 @@ public class PointlessBitwiseExpressionTest extends TestBase {
             "    }\n" +
             "}",
             "4:20-4:26:verifier:Pointless bitwise expression",
-            "FixImpl",
+            "MSG_PointlessBitwiseExpression_fix",
             (
                 "package test;\n" +
                 "class Test {\n" +
@@ -406,7 +406,7 @@ public class PointlessBitwiseExpressionTest extends TestBase {
             "    }\n" +
             "}",
             "5:20-5:26:verifier:Pointless bitwise expression",
-            "FixImpl",
+            "MSG_PointlessBitwiseExpression_fix",
             (
                 "package test;\n" +
                 "class Test {\n" +
@@ -444,7 +444,7 @@ public class PointlessBitwiseExpressionTest extends TestBase {
             "    }\n" +
             "}",
             "4:20-4:30:verifier:Pointless bitwise expression",
-            "FixImpl",
+            "MSG_PointlessBitwiseExpression_fix",
             (
                 "package test;\n" +
                 "class Test {\n" +

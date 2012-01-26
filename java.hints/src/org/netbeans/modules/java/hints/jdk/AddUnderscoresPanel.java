@@ -51,9 +51,6 @@ public class AddUnderscoresPanel extends javax.swing.JPanel {
     
     private final Preferences prefs;
 
-    /**
-     * Creates new form AddUnderscoresPanel
-     */
     public AddUnderscoresPanel(Preferences prefs) {
         initComponents();
         this.prefs = prefs;

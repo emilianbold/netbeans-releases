@@ -42,12 +42,7 @@
 
 package org.netbeans.modules.java.hints.jdk;
 
-import java.util.prefs.Preferences;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
-import org.netbeans.modules.java.hints.options.HintsSettings;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.modules.java.hints.test.api.TestBase;
 
 /**
  *
@@ -152,9 +147,8 @@ public class ThrowableInitCauseTest extends TestBase {
     }
 
     public void testSimpleNoStringArgNotStrict() throws Exception {
-        Preferences p = RulesManager.getPreferences("org.netbeans.modules.java.hints.jdk.ThrowableInitCause", HintsSettings.getCurrentProfileId());
+        getTestPreferences().putBoolean(ThrowableInitCause.STRICT_KEY, false);
 
-        p.putBoolean(ThrowableInitCause.STRICT_KEY, false);
         performFixTest("test/Test.java",
                             "package test;" +
                             "import java.io.IOException;" +
@@ -187,9 +181,8 @@ public class ThrowableInitCauseTest extends TestBase {
     }
 
     public void testSimpleNoStringArgNotStrict2() throws Exception {
-        Preferences p = RulesManager.getPreferences("org.netbeans.modules.java.hints.jdk.ThrowableInitCause", HintsSettings.getCurrentProfileId());
-
-        p.putBoolean(ThrowableInitCause.STRICT_KEY, false);
+        getTestPreferences().putBoolean(ThrowableInitCause.STRICT_KEY, false);
+        
         performFixTest("test/Test.java",
                             "package test;" +
                             "import java.io.IOException;" +
@@ -216,9 +209,8 @@ public class ThrowableInitCauseTest extends TestBase {
     }
 
     public void testSimpleNoStringArgStrict() throws Exception {
-        Preferences p = RulesManager.getPreferences("org.netbeans.modules.java.hints.jdk.ThrowableInitCause", HintsSettings.getCurrentProfileId());
+        getTestPreferences().putBoolean(ThrowableInitCause.STRICT_KEY, true);
 
-        p.putBoolean(ThrowableInitCause.STRICT_KEY, true);
         performFixTest("test/Test.java",
                             "package test;" +
                             "import java.io.IOException;" +
@@ -251,9 +243,8 @@ public class ThrowableInitCauseTest extends TestBase {
     }
 
     public void testFinalVariable() throws Exception {
-        Preferences p = RulesManager.getPreferences("org.netbeans.modules.java.hints.jdk.ThrowableInitCause", HintsSettings.getCurrentProfileId());
+        getTestPreferences().putBoolean(ThrowableInitCause.STRICT_KEY, true);
 
-        p.putBoolean(ThrowableInitCause.STRICT_KEY, true);
         performFixTest("test/Test.java",
                             "package test;" +
                             "import java.io.IOException;" +
@@ -286,9 +277,8 @@ public class ThrowableInitCauseTest extends TestBase {
     }
 
     public void testExpression() throws Exception {
-        Preferences p = RulesManager.getPreferences("org.netbeans.modules.java.hints.jdk.ThrowableInitCause", HintsSettings.getCurrentProfileId());
-
-        p.putBoolean(ThrowableInitCause.STRICT_KEY, false);
+        getTestPreferences().putBoolean(ThrowableInitCause.STRICT_KEY, false);
+        
         performFixTest("test/Test.java",
                             "package test;" +
                             "import java.io.IOException;" +
@@ -352,11 +342,6 @@ public class ThrowableInitCauseTest extends TestBase {
                             "         }\n" +
                             "     }\n" +
                             "}\n").replaceAll("[ \t\n]+", " "));
-    }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return f.getText();
     }
 
 }

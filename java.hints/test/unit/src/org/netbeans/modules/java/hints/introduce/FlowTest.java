@@ -60,7 +60,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.hints.TestUtilities;
+import org.netbeans.modules.java.hints.spiimpl.TestUtilities;
 import org.netbeans.modules.java.hints.introduce.Flow.FlowResult;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;

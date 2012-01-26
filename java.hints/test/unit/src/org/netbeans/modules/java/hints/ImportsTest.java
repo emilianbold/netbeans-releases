@@ -37,7 +37,7 @@
  */
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.modules.java.hints.test.api.TestBase;
 
 /**
  *
@@ -61,7 +61,7 @@ public class ImportsTest extends TestBase {
                        "    }\n" +
                        "}",
                        "2:0-2:27:verifier:DN_Imports_UNUSED",
-                       "FixImpl",
+                       "LBL_Imports_Fix_One_UNUSED",
                        ("package org.netbeans.modules.java.editor.semantic.data;\n" +
                        "import java.util.List;\n" +
                        "import java.util.Collections;\n" +

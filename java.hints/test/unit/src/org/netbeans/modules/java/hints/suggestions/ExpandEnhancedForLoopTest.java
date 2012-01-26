@@ -40,7 +40,7 @@
 package org.netbeans.modules.java.hints.suggestions;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.modules.java.hints.test.api.TestBase;
 import org.netbeans.spi.editor.hints.Fix;
 
 /**
@@ -156,11 +156,6 @@ public class ExpandEnhancedForLoopTest extends TestBase {
                             "        }\n" +
                             "    }\n" +
                             "}\n");
-    }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return f.getText();
     }
 
     //TODO: can be generalized?

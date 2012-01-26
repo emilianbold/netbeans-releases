@@ -43,7 +43,7 @@
 package org.netbeans.modules.java.hints;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.modules.java.hints.test.api.TestBase;
 import org.netbeans.spi.editor.hints.Fix;
 
 /**
@@ -102,11 +102,6 @@ public class ThisInAnonymousTest extends TestBase {
                        "5:30-5:34:verifier:ERR_ThisInAnonymousLocal",
                        "FIX_ThisInAnonymous",
                        "package test; public class Test { private void m() { class L extends Runnable { public void run() { synchronized(Test.this) {} } } } } ");
-    }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return f.getText();
     }
 
 }

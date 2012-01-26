@@ -39,15 +39,18 @@
 
 package org.netbeans.modules.java.hints.jackpot.spi;
 
+import org.netbeans.modules.java.hints.providers.spi.HintDescriptionFactory;
+import org.netbeans.spi.java.hints.HintContext;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.Worker;
-import org.netbeans.modules.java.hints.jackpot.spi.Trigger.PatternDescription;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.modules.java.hints.providers.spi.HintDescription.Worker;
+import org.netbeans.modules.java.hints.providers.spi.Trigger.PatternDescription;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import org.openide.util.Lookup;
 
 /**XXX: big hack?

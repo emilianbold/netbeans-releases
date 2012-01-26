@@ -43,7 +43,7 @@
 package org.netbeans.modules.java.hints.threading;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.modules.java.hints.test.api.TestBase;
 import org.netbeans.spi.editor.hints.Fix;
 
 /**
@@ -515,11 +515,5 @@ public class TinyTest extends TestBase {
                             "}\n",
                             "4:20-4:25:verifier:ERR_SleepInLoop");
     }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return f.getText();
-    }
-
 
 }

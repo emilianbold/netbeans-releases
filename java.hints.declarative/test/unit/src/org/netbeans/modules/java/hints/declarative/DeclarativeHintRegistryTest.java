@@ -43,7 +43,6 @@
 package org.netbeans.modules.java.hints.declarative;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -51,8 +50,9 @@ import java.util.Map;
 import org.netbeans.api.java.source.TestUtilities;
 import static org.junit.Assert.*;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
+import org.netbeans.modules.java.hints.spiimpl.SPIAccessor;
+import org.netbeans.modules.java.hints.providers.spi.HintDescription;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -84,7 +84,7 @@ public class DeclarativeHintRegistryTest extends NbTestCase {
 
         HintDescription hd = allHints.iterator().next().iterator().next();
 
-        assertEquals(Arrays.asList("isDirectory"), hd.getSuppressWarnings());
+        assertEquals(Arrays.asList("isDirectory"), hd.getMetadata().suppressWarnings);
     }
 
     public void testEmptyFileShouldHaveHintMetadata() throws Exception {

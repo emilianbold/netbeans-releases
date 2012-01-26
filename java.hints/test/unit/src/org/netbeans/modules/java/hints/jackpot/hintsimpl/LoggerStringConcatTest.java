@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.java.hints.jackpot.hintsimpl;
 
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.modules.java.hints.test.api.TestBase;
 
 /**
  *
@@ -65,7 +65,7 @@ public class LoggerStringConcatTest extends TestBase {
                        "    }\n" +
                        "}\n",
                        "5:28-5:62:verifier:Inefficient use of string concatenation in logger",
-                       "FixImpl",
+                       "MSG_LoggerStringConcat_fix",
                       ("package test;\n" +
                         "import java.util.logging.Level;\n" +
                         "import java.util.logging.Logger;\n" +
@@ -87,7 +87,7 @@ public class LoggerStringConcatTest extends TestBase {
                        "    }\n" +
                        "}\n",
                        "5:17-5:51:verifier:Inefficient use of string concatenation in logger",
-                       "FixImpl",
+                       "MSG_LoggerStringConcat_fix",
                       ("package test;\n" +
                         "import java.util.logging.Level;\n" +
                         "import java.util.logging.Logger;\n" +
@@ -109,7 +109,7 @@ public class LoggerStringConcatTest extends TestBase {
                        "    }\n" +
                        "}\n",
                        "5:17-5:55:verifier:Inefficient use of string concatenation in logger",
-                       "FixImpl",
+                       "MSG_LoggerStringConcat_fix",
                       ("package test;\n" +
                         "import java.util.logging.Level;\n" +
                         "import java.util.logging.Logger;\n" +
@@ -131,7 +131,7 @@ public class LoggerStringConcatTest extends TestBase {
                        "    }\n" +
                        "}\n",
                        "5:17-5:34:verifier:Inefficient use of string concatenation in logger",
-                       "FixImpl",
+                       "MSG_LoggerStringConcat_fix",
                       ("package test;\n" +
                         "import java.util.logging.Level;\n" +
                         "import java.util.logging.Logger;\n" +
@@ -153,7 +153,7 @@ public class LoggerStringConcatTest extends TestBase {
                        "    }\n" +
                        "}\n",
                        "5:17-5:42:verifier:Inefficient use of string concatenation in logger",
-                       "FixImpl",
+                       "MSG_LoggerStringConcat_fix",
                       ("package test;\n" +
                         "import java.util.logging.Level;\n" +
                         "import java.util.logging.Logger;\n" +
@@ -188,7 +188,7 @@ public class LoggerStringConcatTest extends TestBase {
                        "    }\n" +
                        "}\n",
                        "6:17-6:37:verifier:Inefficient use of string concatenation in logger",
-                       "FixImpl",
+                       "MSG_LoggerStringConcat_fix",
                       ("package test;\n" +
                         "import java.util.logging.Level;\n" +
                         "import java.util.logging.Logger;\n" +
@@ -211,7 +211,7 @@ public class LoggerStringConcatTest extends TestBase {
                        "    }\n" +
                        "}\n",
                        "5:17-5:32:verifier:Inefficient use of string concatenation in logger",
-                       "FixImpl",
+                       "MSG_LoggerStringConcat_fix",
                       ("package test;\n" +
                         "import java.util.logging.Level;\n" +
                         "import java.util.logging.Logger;\n" +
@@ -232,7 +232,7 @@ public class LoggerStringConcatTest extends TestBase {
                        "    }\n" +
                        "}\n",
                        "5:15-5:30:verifier:Inefficient use of string concatenation in logger",
-                       "FixImpl",
+                       "MSG_LoggerStringConcat_fix",
                       ("package test;\n" +
                         "import java.util.logging.Level;\n" +
                         "import java.util.logging.Logger;\n" +

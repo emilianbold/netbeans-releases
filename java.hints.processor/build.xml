@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="netbeans" name="java.hints.processor">
-    <description>Builds, tests, and runs the project org.netbeans.modules.java.hints.processor</description>
-    <import file="../nbbuild/templates/projectized.xml"/>
-</project>

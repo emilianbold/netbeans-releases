@@ -77,7 +77,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.impl.Utilities;
+import org.netbeans.modules.java.hints.spiimpl.Utilities;
 import org.openide.filesystems.FileUtil;
 
 /**

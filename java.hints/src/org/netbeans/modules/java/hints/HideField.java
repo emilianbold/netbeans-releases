@@ -54,7 +54,6 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.editor.rename.InstantRenamePerformer;
-import org.netbeans.modules.java.hints.jackpot.spi.support.OneCheckboxCustomizerProvider;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -176,10 +175,10 @@ public class HideField extends AbstractHint {
     
     @Override
     public JComponent getCustomizer(Preferences node) {
-        return new OneCheckboxCustomizerProvider(NbBundle.getMessage(HideField.class, "LBL_WarnHiddenStaticFields"),
-                                                 NbBundle.getMessage(HideField.class, "TP_WarnHiddenStaticFields"),
-                                                 KEY_WARN_HIDDEN_STATIC_FIELDS,
-                                                 DEFAULT_WARN_HIDDEN_STATIC_FIELDS).getCustomizer(node);
+        return new OneCheckboxCustomizer(node, NbBundle.getMessage(HideField.class, "LBL_WarnHiddenStaticFields"),
+                                               NbBundle.getMessage(HideField.class, "TP_WarnHiddenStaticFields"),
+                                               KEY_WARN_HIDDEN_STATIC_FIELDS,
+                                               DEFAULT_WARN_HIDDEN_STATIC_FIELDS);
     }
 
     private static Reference<CompilationInfo> allMembersCacheFrom;

@@ -46,14 +46,15 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.semantic.SemanticHighlighter;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -106,18 +107,18 @@ public class Imports {
         // Has to be done in order to provide 'remove all' fix
         Fix allFix = null;
         if (ctx.isBulkMode() && !violatingImports.isEmpty()) {
-            Fix af = JavaFix.toEditorFix(new ImportsFix(violatingImports, kind));
+            Fix af = new ImportsFix(violatingImports, kind).toEditorFix();
             return Collections.singletonList(ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), NbBundle.getMessage(Imports.class, "DN_Imports_" + kind.toString()), af));
         }
         if (violatingImports.size() > 1) {
-            allFix = JavaFix.toEditorFix(new ImportsFix(violatingImports, kind));
+            allFix = new ImportsFix(violatingImports, kind).toEditorFix();
         }
         List<ErrorDescription> result = new ArrayList<ErrorDescription>(violatingImports.size());
         for (TreePathHandle it : violatingImports) {
             TreePath resolvedIt = it.resolve(ctx.getInfo());
             if (resolvedIt == null) continue; //#204580
             List<Fix> fixes = new ArrayList<Fix>();
-            fixes.add(JavaFix.toEditorFix(new ImportsFix(Collections.singletonList(it), kind)));
+            fixes.add(new ImportsFix(Collections.singletonList(it), kind).toEditorFix());
             if (allFix != null) {
                 fixes.add(allFix);
             }
@@ -227,7 +228,9 @@ public class Imports {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy copy, TreePath tp, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy copy = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
             CompilationUnitTree cut = copy.getCompilationUnit();
             
             TreeMaker make = copy.getTreeMaker();

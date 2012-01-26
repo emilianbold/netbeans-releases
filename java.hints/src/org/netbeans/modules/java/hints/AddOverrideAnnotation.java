@@ -70,11 +70,12 @@ import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.editor.overridden.AnnotationType;
 import org.netbeans.modules.java.editor.overridden.ComputeOverriding;
 import org.netbeans.modules.java.editor.overridden.ElementDescription;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
+import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -131,7 +132,7 @@ public class AddOverrideAnnotation extends AbstractHint {
             }
 
             if (addHint) {
-                List<Fix> fixes = Collections.<Fix>singletonList(JavaFix.toEditorFix(new FixImpl(TreePathHandle.create(treePath, compilationInfo), compilationInfo.getFileObject())));
+                List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(TreePathHandle.create(treePath, compilationInfo), compilationInfo.getFileObject()).toEditorFix());
 
                 int[] span = compilationInfo.getTreeUtilities().findNameSpan((MethodTree) treePath.getLeaf());
 
@@ -188,7 +189,9 @@ public class AddOverrideAnnotation extends AbstractHint {
         private static final Set<Kind> DECLARATION = EnumSet.of(Kind.ANNOTATION_TYPE, Kind.CLASS, Kind.ENUM, Kind.INTERFACE, Kind.METHOD, Kind.VARIABLE);
 
         @Override
-        protected void performRewrite(WorkingCopy copy, TreePath path, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy copy = ctx.getWorkingCopy();
+            TreePath path = ctx.getPath();
             while (path.getLeaf().getKind() != Kind.COMPILATION_UNIT && !DECLARATION.contains(path.getLeaf().getKind())) {
                 path = path.getParentPath();
             }

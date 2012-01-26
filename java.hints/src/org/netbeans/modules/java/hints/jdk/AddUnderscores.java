@@ -49,23 +49,23 @@ import javax.lang.model.SourceVersion;
 import javax.swing.JComponent;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
-import org.netbeans.modules.java.hints.jackpot.spi.CustomizerProvider;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.jdk.AddUnderscores.CustomizerProviderImpl;
-import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
+import org.netbeans.modules.java.hints.providers.spi.CustomizerProvider;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.HintSeverity;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author lahvac
  */
-@Hint(id=AddUnderscores.ID, category="rules15", enabled=false, severity=HintSeverity.CURRENT_LINE_WARNING, customizerProvider=CustomizerProviderImpl.class)
+@Hint(id=AddUnderscores.ID, category="rules15", enabled=false, severity=HintSeverity.CURRENT_LINE_WARNING, customizerProvider=AddUnderscoresPanel.class)
 public class AddUnderscores {
     public static final String ID = "org.netbeans.modules.java.hints.jdk.AddUnderscores";
 
@@ -100,7 +100,7 @@ public class AddUnderscores {
         if (result.equals(literal)) return null;
 
         String displayName = NbBundle.getMessage(AddUnderscores.class, "ERR_" + ID);
-        Fix f = JavaFix.toEditorFix(new FixImpl(ctx.getInfo(), tp, result));
+        Fix f = new FixImpl(ctx.getInfo(), tp, result).toEditorFix();
 
         return ErrorDescriptionFactory.forTree(ctx, tp, displayName, f);
     }
@@ -205,18 +205,12 @@ public class AddUnderscores {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
             wc.rewrite(tp.getLeaf(), wc.getTreeMaker().Identifier(target));
         }
 
     }
 
-    public static final class CustomizerProviderImpl implements CustomizerProvider {
-
-        @Override
-        public JComponent getCustomizer(Preferences prefs) {
-            return new AddUnderscoresPanel(prefs);
-        }
-
-    }
 }

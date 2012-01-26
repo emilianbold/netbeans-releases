@@ -42,9 +42,7 @@
 
 package org.netbeans.modules.java.hints.jdk;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.modules.java.hints.test.api.TestBase;
 
 /**
  *
@@ -78,7 +76,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }" +
                        "}",
                        "0:216-0:218:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\"); try (InputStream in = new FileInputStream(new File(\"a\"))) { in.read(); } System.out.println(\"Done\"); }}");
     }
     
@@ -106,7 +104,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }" +
                        "}",
                        "0:210-0:212:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\"); try (InputStream in = new FileInputStream(new File(\"a\"))) { in.read(); } catch (Exception e) { System.out.println(\"Ex\"); } finally { System.out.println(\"Fin\"); } System.out.println(\"Done\"); }}");
     }
     
@@ -134,7 +132,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }" +
                        "}",
                        "0:216-0:218:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\"); try (InputStream in = new FileInputStream(new File(\"a\"))) { in.read(); } catch (Exception e) { System.out.println(\"Ex\"); } finally { System.out.println(\"Fin\"); } System.out.println(\"Done\"); }}");
     }
     
@@ -161,7 +159,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }" +
                        "}",
                        "0:210-0:212:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\"); try (InputStream in = new FileInputStream(new File(\"a\"))) { in.read(); } System.out.println(\"Done\"); }}");
     }
     
@@ -183,7 +181,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }" +
                        "}",
                        "0:210-0:212:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\");try (InputStream in = new FileInputStream(new File(\"a\"))) { in.read(); } System.out.println(\"Done\"); }}");
     }
     
@@ -205,7 +203,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }" +
                        "}",
                        "0:210-0:212:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\");try (InputStream in = new FileInputStream(new File(\"a\"))) { in.read(); } System.out.println(\"Done\"); }}");
     }
     
@@ -228,7 +226,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }" +
                        "}",
                        "0:210-0:212:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\");try (InputStream in = new FileInputStream(new File(\"a\"))) { in.read(); in.read(); } System.out.println(\"Done\"); }}");
     }
     
@@ -250,7 +248,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }" +
                        "}",
                        "0:216-0:218:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\");try (InputStream in = new FileInputStream(new File(\"a\"))) { in.read(); } System.out.println(\"Done\"); }}");
     }
     
@@ -275,7 +273,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }" +
                        "}",
                        "0:173-0:175:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in = new FileInputStream(new File(\"a\")); InputStream in2 = new FileInputStream(new File(\"a\"))) { in.read(); } }}"
         );
     }
@@ -301,7 +299,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }" +
                        "}",
                        "0:179-0:181:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in = new FileInputStream(new File(\"a\")); InputStream in2 = new FileInputStream(new File(\"a\"))) { in.read(); } }}"
         );
     }
@@ -330,7 +328,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }" +
                        "}",
                        "0:173-0:175:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in = new FileInputStream(new File(\"a\")); InputStream in2 = new FileInputStream(new File(\"a\"))) { in.read(); } catch (Exception e) { throw e; }finally { System.gc(); } }}"
         );
     }
@@ -361,7 +359,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }" +
                        "}",
                        "0:173-0:175:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in = new FileInputStream(new File(\"a\")); InputStream in2 = new FileInputStream(new File(\"a\"))) { in.read(); } catch (Exception e) { throw e; }finally { System.gc(); } }}"
         );
     }
@@ -384,7 +382,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }" +
                        "}",
                        "0:173-0:175:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception {try (InputStream in = new FileInputStream(new File(\"a\"));InputStream in2 = new FileInputStream(new File(\"a\"))) { in.read(); } }}"
         );
     }
@@ -410,7 +408,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }" +
                        "}",
                        "0:245-0:247:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in2 = new FileInputStream(new File(\"a\")); InputStream in = new FileInputStream(new File(\"a\"))){in.read(); } }}"
         );
     }
@@ -440,7 +438,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }" +
                        "}",
                        "0:245-0:247:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in2 = new FileInputStream(new File(\"a\")); InputStream in = new FileInputStream(new File(\"a\"))){in.read(); } catch (Exception e) { throw e; } finally { System.gc(); } }}"
         );
     }
@@ -466,7 +464,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }" +
                        "}",
                        "0:251-0:253:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in2 = new FileInputStream(new File(\"a\")); InputStream in = new FileInputStream(new File(\"a\"))){in.read(); } }}"
         );
     }
@@ -489,7 +487,7 @@ public class ConvertToARMTest extends TestBase {
                        "    }"+
                        "}",
                        "0:245-0:247:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in2 = new FileInputStream(new File(\"a\")); InputStream in = new FileInputStream(new File(\"a\"))){ in.read(); } }}"
         );
     }
@@ -512,7 +510,7 @@ public class ConvertToARMTest extends TestBase {
                        "    }"+
                        "}",
                        "0:245-0:247:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in2 = new FileInputStream(new File(\"a\")); InputStream in = new FileInputStream(new File(\"a\"))){ in.read(); } catch (Exception e) { throw e;} finally { System.gc(); } }}"
         );
     }
@@ -535,7 +533,7 @@ public class ConvertToARMTest extends TestBase {
                        "    }"+
                        "}",
                        "0:251-0:253:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in2 = new FileInputStream(new File(\"a\")); InputStream in = new FileInputStream(new File(\"a\"))){ in.read(); } }}"
         );
     }
@@ -561,7 +559,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }"+
                        "}",
                        "0:246-0:248:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in2 = new FileInputStream(new File(\"a\")); InputStream in = new FileInputStream(new File(\"b\"))) {in.read(); } }}"
         );
     }
@@ -587,7 +585,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }"+
                        "}",
                        "0:246-0:248:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { try (InputStream in2 = new FileInputStream(new File(\"a\")); InputStream in = new FileInputStream(new File(\"b\"))) {in.read(); }catch(Exception e) { throw e;} finally {System.exit(1);} }}"
         );
     }
@@ -623,7 +621,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }"+
                        "}",
                        "0:301-0:303:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1) throws Exception { final byte[] data = new byte[512]; try (InputStream in = new FileInputStream(from)) { final OutputStream out1 = new FileOutputStream(to1); try { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); } } finally { out1.close(); } } }}"
                        );
         
@@ -654,7 +652,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }"+
                        "}",
                        "0:377-0:381:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1) throws Exception { final byte[] data = new byte[512]; final InputStream in = new FileInputStream(from); try { try (OutputStream out1 = new FileOutputStream(to1)) { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); } } } finally { in.close(); } }}"
         );
     }
@@ -695,7 +693,7 @@ public class ConvertToARMTest extends TestBase {
                        "    }"+
                        "}",
                        "0:311-0:313:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; try (InputStream in = new FileInputStream(from)) { final OutputStream out1 = new FileOutputStream(to1); try { final OutputStream out2 = new FileOutputStream(to2); try { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } finally { out2.close(); } } finally { out1.close(); } } }}"
                        );
         
@@ -732,7 +730,7 @@ public class ConvertToARMTest extends TestBase {
                        "    }"+
                        "}",
                        "0:387-0:391:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; final InputStream in = new FileInputStream(from); try { try (OutputStream out1 = new FileOutputStream(to1)) { final OutputStream out2 = new FileOutputStream(to2); try { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } finally { out2.close(); } } } finally { in.close(); } }}"
                        );
         
@@ -769,7 +767,7 @@ public class ConvertToARMTest extends TestBase {
                        "    }"+
                        "}",
                        "0:472-0:476:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; final InputStream in = new FileInputStream(from); try { final OutputStream out1 = new FileOutputStream(to1); try { try (OutputStream out2 = new FileOutputStream(to2)) { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } } finally { out1.close(); } } finally { in.close(); } }}"
                        );
     }
@@ -810,19 +808,19 @@ public class ConvertToARMTest extends TestBase {
                        "    }"+
                        "}",
                        "0:472-0:476:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; final InputStream in = new FileInputStream(from); try { final OutputStream out1 = new FileOutputStream(to1); try { try (OutputStream out2 = new FileOutputStream(to2)) { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } } finally { out1.close(); } } finally { in.close(); } }}"
                        );
         performFixTest("test/Test.java",
                 "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; final InputStream in = new FileInputStream(from); try { final OutputStream out1 = new FileOutputStream(to1); try { try (OutputStream out2 = new FileOutputStream(to2)) { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } } finally { out1.close(); } } finally { in.close(); } }}",
                 "0:348-0:352:verifier:TXT_ConvertToARM",
-                "FixImpl",
+                "TXT_ConvertToARM",
                 "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; final InputStream in = new FileInputStream(from); try { try ( OutputStream out1 = new FileOutputStream(to1); OutputStream out2 = new FileOutputStream(to2)) { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } } finally { in.close(); } }}"
                 );
         performFixTest("test/Test.java",
                 "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; final InputStream in = new FileInputStream(from); try { try ( OutputStream out1 = new FileOutputStream(to1); OutputStream out2 = new FileOutputStream(to2)) { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } } finally { in.close(); } }}",
                 "0:291-0:293:verifier:TXT_ConvertToARM",
-                "FixImpl",
+                "TXT_ConvertToARM",
                 "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; try ( InputStream in = new FileInputStream(from); OutputStream out1 = new FileOutputStream(to1); OutputStream out2 = new FileOutputStream(to2)) { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } }}"
                 );
     }
@@ -863,13 +861,13 @@ public class ConvertToARMTest extends TestBase {
                        "    }"+
                        "}",
                        "0:311-0:313:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; try (InputStream in = new FileInputStream(from)) { final OutputStream out1 = new FileOutputStream(to1); try { final OutputStream out2 = new FileOutputStream(to2); try { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } finally { out2.close(); } } finally { out1.close(); } } }}"
                        );
         performFixTest("test/Test.java",
                 "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; try (InputStream in = new FileInputStream(from)) { final OutputStream out1 = new FileOutputStream(to1); try { final OutputStream out2 = new FileOutputStream(to2); try { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } finally { out2.close(); } } finally { out1.close(); } } }}",
                 "0:343-0:347:verifier:TXT_ConvertToARM",
-                "FixImpl",
+                "TXT_ConvertToARM",
                 "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test { public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; try (InputStream in = new FileInputStream(from); OutputStream out1 = new FileOutputStream(to1)) {final OutputStream out2 = new FileOutputStream(to2); try { int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } } finally { out2.close(); } } }}"
                 );
         performFixTest("test/Test.java",
@@ -897,7 +895,7 @@ public class ConvertToARMTest extends TestBase {
                 "}"+
                 "}",
                 "0:401-0:405:verifier:TXT_ConvertToARM",
-                "FixImpl",
+                "TXT_ConvertToARM",
                 "package test;import java.io.InputStream;import java.io.OutputStream;import java.io.FileInputStream;import java.io.FileOutputStream;import java.io.File;public class Test {public void test(File from, File to1, File to2) throws Exception { final byte[] data = new byte[512]; try ( InputStream in = new FileInputStream(from); OutputStream out1 = new FileOutputStream(to1); OutputStream out2 = new FileOutputStream(to2)) {int len; while ((len = in.read(data)) > 0) { out1.write(data, 0, len); out2.write(data, 0, len); } }}}"
                 );
     }
@@ -920,7 +918,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }" +
                        "}",
                        "0:210-0:213:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\");int r; try (InputStream ins = new FileInputStream(\"\")) { r = ins.read(); } System.out.println(r); }}");
     }
 
@@ -943,7 +941,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }" +
                        "}",
                        "0:210-0:213:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\");int r; try (InputStream ins = new FileInputStream(\"\")) { r = ins.read(); } System.out.println(r); }}");
     }
 
@@ -968,7 +966,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }" +
                        "}",
                        "0:210-0:213:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\");int r1; int sum; try (InputStream ins = new FileInputStream(\"\")) { r1 = ins.read(); int r2 = ins.read(); sum = r1 + r2; } System.out.println(r1); System.out.println(sum); }}");
     }
 
@@ -991,7 +989,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }" +
                        "}",
                        "0:201-0:204:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\");try (InputStream ins = new FileInputStream(\"\")) { ins.read(); } System.out.println(r); }}");
     }
 
@@ -1036,7 +1034,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }" +
                        "}",
                        "0:201-0:204:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\");try (InputStream ins = new FileInputStream(\"\")) { ins.read(); } if (true) { System.out.println(r); } }}");
     }
 
@@ -1062,7 +1060,7 @@ public class ConvertToARMTest extends TestBase {
                        "     }" +
                        "}",
                        "0:208-0:211:verifier:TXT_ConvertToARM",
-                       "FixImpl",
+                       "TXT_ConvertToARM",
                        "package test;import java.io.InputStream;import java.io.FileInputStream;import java.io.File;public class Test { public void test() throws Exception { System.out.println(\"Start\"); try (InputStream ins = new FileInputStream(\"\")) { ins.read(); } System.out.println(\"Done\"); }}");
     }
 
@@ -1153,8 +1151,4 @@ public class ConvertToARMTest extends TestBase {
                             "}");
     }
 
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return "FixImpl";
-    }
 }

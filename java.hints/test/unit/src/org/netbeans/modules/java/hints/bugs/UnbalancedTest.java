@@ -37,7 +37,7 @@
  */
 package org.netbeans.modules.java.hints.bugs;
 
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.modules.java.hints.test.api.TestBase;
 
 /**
  *

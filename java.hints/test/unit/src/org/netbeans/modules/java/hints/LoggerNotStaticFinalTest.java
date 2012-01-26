@@ -43,10 +43,7 @@
 package org.netbeans.modules.java.hints;
 
 import org.junit.Test;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.netbeans.modules.java.hints.jackpot.impl.JavaFixImpl;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.modules.java.hints.test.api.TestBase;
 
 /**
  *
@@ -76,7 +73,7 @@ public class LoggerNotStaticFinalTest extends TestBase {
                        "    private final java.util.logging.Logger LOG = null;\n" +
                        "}",
                        "2:43-2:46:verifier:The logger declaration field LOG should be static and final",
-                       "LoggerNotStaticFinalFix",
+                       "MSG_LoggerNotStaticFinal_checkLoggerDeclaration_fix:LOG",
                        ("package test;\n" +
                        "public class Test {\n" +
                        "    private static final java.util.logging.Logger LOG = null;\n" +
@@ -102,7 +99,7 @@ public class LoggerNotStaticFinalTest extends TestBase {
                        "    private static java.util.logging.Logger LOG = null;\n" +
                        "}",
                        "2:44-2:47:verifier:The logger declaration field LOG should be static and final",
-                       "LoggerNotStaticFinalFix",
+                       "MSG_LoggerNotStaticFinal_checkLoggerDeclaration_fix:LOG",
                        ("package test;\n" +
                        "public class Test {\n" +
                        "    private static final java.util.logging.Logger LOG = null;\n" +
@@ -128,7 +125,7 @@ public class LoggerNotStaticFinalTest extends TestBase {
                        "    private java.util.logging.Logger LOG = null;\n" +
                        "}",
                        "2:37-2:40:verifier:The logger declaration field LOG should be static and final",
-                       "LoggerNotStaticFinalFix",
+                       "MSG_LoggerNotStaticFinal_checkLoggerDeclaration_fix:LOG",
                        ("package test;\n" +
                        "public class Test {\n" +
                        "    private static final java.util.logging.Logger LOG = null;\n" +
@@ -153,11 +150,6 @@ public class LoggerNotStaticFinalTest extends TestBase {
                             "        private java.util.logging.Logger LOG = null;\n" +
                             "    }\n" +
                             "}");
-    }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return "LoggerNotStaticFinalFix";
     }
 
 }

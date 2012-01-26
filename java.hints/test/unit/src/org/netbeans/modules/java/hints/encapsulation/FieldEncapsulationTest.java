@@ -42,11 +42,7 @@
 
 package org.netbeans.modules.java.hints.encapsulation;
 
-
-import java.util.prefs.Preferences;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
-import org.netbeans.modules.java.hints.options.HintsSettings;
+import org.netbeans.modules.java.hints.test.api.TestBase;
 
 /**
  *
@@ -349,9 +345,7 @@ public class FieldEncapsulationTest extends TestBase {
     }
 
     public void testEnumIgnore() throws Exception {
-        Preferences p = RulesManager.getPreferences(FieldEncapsulation.class.getName() + ".publicField", HintsSettings.getCurrentProfileId());
-
-        p.putBoolean(FieldEncapsulation.ALLOW_ENUMS_KEY, true);
+        getTestPreferences().putBoolean(FieldEncapsulation.ALLOW_ENUMS_KEY, true);
 
         performAnalysisTest("test/Test.java",
                             "package test;\n" +

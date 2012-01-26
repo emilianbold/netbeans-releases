@@ -42,12 +42,7 @@
 
 package org.netbeans.modules.java.hints.jdk;
 
-import java.util.prefs.Preferences;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
-import org.netbeans.modules.java.hints.options.HintsSettings;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.modules.java.hints.test.api.TestBase;
 
 /**
  *
@@ -76,7 +71,7 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "     }" +
                        "}",
                        "0:91-0:93:verifier:Convert to switch",
-                       "FixImpl",
+                       "FIX_ConvertToStringSwitch",
                        "package test;public class Test { public void test() { String g = null;switch (g) { case \"j\": System.err.println(1); break; case \"k\": System.err.println(2); break; case \"l\": System.err.println(3); break; } }}");
     }
 
@@ -114,7 +109,7 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "     }" +
                        "}",
                        "1:9-1:11:verifier:Convert to switch",
-                       "FixImpl",
+                       "FIX_ConvertToStringSwitch",
                        ("package test;" +
                        "public class Test {" +
                        "     public int test(int r) throws Exception {" +
@@ -170,7 +165,7 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "     }" +
                        "}",
                        "0:91-0:93:verifier:Convert to switch",
-                       "FixImpl",
+                       "FIX_ConvertToStringSwitch",
                        "package test;public class Test { public void test() { String g = null;switch (g) { case \"j\": case \"m\": System.err.println(1); break; case \"k\": System.err.println(2); break; case \"l\": case \"n\": System.err.println(3); break; default: System.err.println(4); return; } }}");
     }
 
@@ -223,7 +218,7 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "     }" +
                        "}",
                        "1:9-1:11:verifier:Convert to switch",
-                       "FixImpl",
+                       "FIX_ConvertToStringSwitch",
                        ("package test;" +
                        "public class Test {" +
                        "     private int a, b;"+
@@ -284,7 +279,7 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "     }" +
                        "}",
                        "2:13-2:15:verifier:Convert to switch",
-                       "FixImpl",
+                       "FIX_ConvertToStringSwitch",
                        ("package test;" +
                        "public class Test {" +
                        "     private int a, b;"+
@@ -343,7 +338,7 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "     }" +
                        "}",
                        "2:9-2:11:verifier:Convert to switch",
-                       "FixImpl",
+                       "FIX_ConvertToStringSwitch",
                        ("package test;" +
                        "public class Test {" +
                        "     private int a, b;"+
@@ -369,34 +364,22 @@ public class ConvertToStringSwitchTest extends TestBase {
 
     public void testNoEquals() throws Exception {
         setSourceLevel("1.7");
+        getTestPreferences().putBoolean(ConvertToStringSwitch.KEY_ALSO_EQ, false);
 
-        Preferences p = RulesManager.getPreferences("org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch", HintsSettings.getCurrentProfileId());
-        boolean oldSetting = p.getBoolean(ConvertToStringSwitch.KEY_ALSO_EQ, ConvertToStringSwitch.DEF_ALSO_EQ);
-
-        try {
-            p.putBoolean(ConvertToStringSwitch.KEY_ALSO_EQ, false);
-            performAnalysisTest("test/Test.java",
-                                "package test;" +
-                                "public class Test {" +
-                                "     public void test() throws Exception {" +
-                                "         String g = null;\n" +
-                                "         if (\"j\" == g) {" +
-                                "             System.err.println(1);" +
-                                "         } else if (\"l\" == g) {" +
-                                "             System.err.println(2);" +
-                                "         } else {\n" +
-                                "             System.err.println(3);" +
-                                "         }\n" +
-                                "     }" +
-                                "}");
-        } finally {
-            p.putBoolean(ConvertToStringSwitch.KEY_ALSO_EQ, oldSetting);
-        }
-    }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return "FixImpl";
+        performAnalysisTest("test/Test.java",
+                            "package test;" +
+                            "public class Test {" +
+                            "     public void test() throws Exception {" +
+                            "         String g = null;\n" +
+                            "         if (\"j\" == g) {" +
+                            "             System.err.println(1);" +
+                            "         } else if (\"l\" == g) {" +
+                            "             System.err.println(2);" +
+                            "         } else {\n" +
+                            "             System.err.println(3);" +
+                            "         }\n" +
+                            "     }" +
+                            "}");
     }
 
 }

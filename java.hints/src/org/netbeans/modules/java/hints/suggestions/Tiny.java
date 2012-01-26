@@ -62,17 +62,18 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Kind;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.Hint.Kind;
+import org.netbeans.spi.java.hints.HintSeverity;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -84,8 +85,8 @@ public class Tiny {
     @Hint(category="suggestions", hintKind=Kind.SUGGESTION, severity=HintSeverity.CURRENT_LINE_WARNING)
     @TriggerPattern(value="$this.equals($other)",
                     constraints={
-                        @Constraint(variable="$this", type="java.lang.Object"),
-                        @Constraint(variable="$other", type="java.lang.Object")
+                        @ConstraintVariableType(variable="$this", type="java.lang.Object"),
+                        @ConstraintVariableType(variable="$other", type="java.lang.Object")
                     })
     public static ErrorDescription flipEquals(HintContext ctx) {
         int caret = CaretAwareJavaSourceTaskFactory.getLastPosition(ctx.getInfo().getFileObject());
@@ -128,7 +129,7 @@ public class Tiny {
             fixPattern = "$other.equals(this)";
         }
 
-        Fix fix = JavaFix.rewriteFix(ctx, fixDisplayName, ctx.getPath(), fixPattern);
+        Fix fix = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), fixPattern);
         
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, fix);
     }
@@ -148,16 +149,16 @@ public class Tiny {
         List<Fix> fixes = new LinkedList<Fix>();
         
         if (currentRadix != 16) {
-            fixes.add(JavaFix.toEditorFix(new ToDifferentRadixFixImpl(ctx.getInfo(), ctx.getPath(), "0x", 16)));
+            fixes.add(new ToDifferentRadixFixImpl(ctx.getInfo(), ctx.getPath(), "0x", 16).toEditorFix());
         }
         if (currentRadix != 10) {
-            fixes.add(JavaFix.toEditorFix(new ToDifferentRadixFixImpl(ctx.getInfo(), ctx.getPath(), "", 10)));
+            fixes.add(new ToDifferentRadixFixImpl(ctx.getInfo(), ctx.getPath(), "", 10).toEditorFix());
         }
         if (currentRadix != 8) {
-            fixes.add(JavaFix.toEditorFix(new ToDifferentRadixFixImpl(ctx.getInfo(), ctx.getPath(), "0", 8)));
+            fixes.add(new ToDifferentRadixFixImpl(ctx.getInfo(), ctx.getPath(), "0", 8).toEditorFix());
         }
         if (currentRadix != 2 && ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_7) >= 0) {
-            fixes.add(JavaFix.toEditorFix(new ToDifferentRadixFixImpl(ctx.getInfo(), ctx.getPath(), "0b", 2)));
+            fixes.add(new ToDifferentRadixFixImpl(ctx.getInfo(), ctx.getPath(), "0b", 2).toEditorFix());
         }
         
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), NbBundle.getMessage(Tiny.class, "ERR_convertToDifferentBase"), fixes.toArray(new Fix[0]));
@@ -180,7 +181,9 @@ public class Tiny {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
             LiteralTree leaf = (LiteralTree) tp.getLeaf();
             String suffix;
             String target;
@@ -230,7 +233,7 @@ public class Tiny {
         if (parentKind != Tree.Kind.BLOCK && parentKind != Tree.Kind.CASE) return null;
 
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_splitDeclaration");
-        Fix fix = JavaFix.toEditorFix(new FixImpl(ctx.getInfo(), ctx.getPath()));
+        Fix fix = new FixImpl(ctx.getInfo(), ctx.getPath()).toEditorFix();
 
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, fix);
     }
@@ -247,7 +250,9 @@ public class Tiny {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
             Tree parent = tp.getParentPath().getLeaf();
             List<? extends StatementTree> statements;
 

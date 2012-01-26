@@ -43,7 +43,7 @@
 package org.netbeans.modules.java.hints;
 
 import org.junit.Test;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.modules.java.hints.test.api.TestBase;
 import org.openide.util.NbBundle;
 
 /**
@@ -67,7 +67,7 @@ public class PrintStackTraceTest extends TestBase {
             "    }\n" +
             "}",
             "3:25-3:40:verifier:Print Stack Trace",
-            "FixImpl",
+            "MSG_PrintStackTrace_fix",
             (
                 "package test;\n" +
                 "class Test {\n" +

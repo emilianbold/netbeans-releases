@@ -42,9 +42,7 @@
 
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.modules.java.hints.test.api.TestBase;
 
 /**
  *
@@ -66,7 +64,7 @@ public class StringBuilderAppendTest extends TestBase {
                        "    }\n" +
                        "}\n",
                        "4:18-4:41:verifier:String concatenation in StringBuilder.append",
-                       "FixImpl",
+                       "FIX_StringBuilderAppend",
                        ("package test;\n" +
                         "public class Test {\n" +
                         "    private void test(int a, int b) {\n" +
@@ -86,7 +84,7 @@ public class StringBuilderAppendTest extends TestBase {
                        "    }\n" +
                        "}\n",
                        "4:18-4:41:verifier:String concatenation in StringBuffer.append",
-                       "FixImpl",
+                       "FIX_StringBuilderAppend",
                        ("package test;\n" +
                         "public class Test {\n" +
                         "    private void test(int a, int b) {\n" +
@@ -107,7 +105,7 @@ public class StringBuilderAppendTest extends TestBase {
                        "    private static final String CONST = \"d\";\n" +
                        "}\n",
                        "4:18-4:49:verifier:String concatenation in StringBuffer.append",
-                       "FixImpl",
+                       "FIX_StringBuilderAppend",
                        ("package test;\n" +
                         "public class Test {\n" +
                         "    private void test(int a, int b) {\n" +
@@ -162,7 +160,7 @@ public class StringBuilderAppendTest extends TestBase {
                        "    private static final String CONST = \"d\";\n" +
                        "}\n",
                        "4:18-4:39:verifier:String concatenation in StringBuffer.append",
-                       "FixImpl",
+                       "FIX_StringBuilderAppend",
                        ("package test;\n" +
                         "public class Test {\n" +
                         "    private void test(int a, int b) {\n" +
@@ -184,7 +182,7 @@ public class StringBuilderAppendTest extends TestBase {
                        "    private static String CONST = \"d\";\n" +
                        "}\n",
                        "4:18-4:29:verifier:String concatenation in StringBuffer.append",
-                       "FixImpl",
+                       "FIX_StringBuilderAppend",
                        ("package test;\n" +
                         "public class Test {\n" +
                         "    private void test(int a, int b) {\n" +
@@ -193,11 +191,6 @@ public class StringBuilderAppendTest extends TestBase {
                         "    }\n" +
                         "    private static String CONST = \"d\";\n" +
                         "}\n").replaceAll("[ \n\t]+", " "));
-    }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return "FixImpl";
     }
 
 }

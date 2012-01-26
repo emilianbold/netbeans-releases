@@ -44,9 +44,7 @@ package org.netbeans.modules.java.hints.jdk;
 
 
 import java.util.prefs.Preferences;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
-import org.netbeans.modules.java.hints.options.HintsSettings;
+import org.netbeans.modules.java.hints.test.api.TestBase;
 
 /**
  *
@@ -58,25 +56,8 @@ public class ConvertToDiamondBulkHintTest extends TestBase {
         super(name, ConvertToDiamondBulkHint.class);
     }
 
-    private String oldPrefs;
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        Preferences prefs = RulesManager.getPreferences(ConvertToDiamondBulkHint.ID, HintsSettings.getCurrentProfileId());
-
-        oldPrefs = ConvertToDiamondBulkHint.getConfiguration(prefs);
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        setPrefs(oldPrefs);
-        super.tearDown();
-    }
-
     private void setPrefs(String settings) {
-        Preferences prefs = RulesManager.getPreferences(ConvertToDiamondBulkHint.ID, HintsSettings.getCurrentProfileId());
+        Preferences prefs = getTestPreferences();
 
         ConvertToDiamondBulkHint.putConfiguration(prefs, settings);
     }
@@ -93,7 +74,7 @@ public class ConvertToDiamondBulkHintTest extends TestBase {
                        "    private java.util.LinkedList<String> l = new java.util.LinkedList<String>();\n" +
                        "}\n",
                        "2:49-2:77:verifier:redundant type arguments in new expression (use diamond operator instead).",
-                       "FixImpl",
+                       "FIX_ConvertToDiamond",
                        ("package test;\n" +
                        "public class Test {\n" +
                        "    private java.util.LinkedList<String> l = new java.util.LinkedList<>();\n" +
@@ -109,7 +90,7 @@ public class ConvertToDiamondBulkHintTest extends TestBase {
                        "    private LinkedList<String> l = new LinkedList<String>();\n" +
                        "}\n",
                        "3:39-3:57:verifier:redundant type arguments in new expression (use diamond operator instead).",
-                       "FixImpl",
+                       "FIX_ConvertToDiamond",
                        ("package test;\n" +
                        "import java.util.LinkedList;\n" +
                        "public class Test {\n" +

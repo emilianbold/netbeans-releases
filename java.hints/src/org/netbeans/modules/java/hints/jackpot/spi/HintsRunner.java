@@ -42,14 +42,15 @@
 
 package org.netbeans.modules.java.hints.jackpot.spi;
 
+import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import com.sun.source.util.TreePath;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.impl.MessageImpl;
-import org.netbeans.modules.java.hints.jackpot.impl.hints.HintsInvoker;
+import org.netbeans.modules.java.hints.spiimpl.MessageImpl;
+import org.netbeans.modules.java.hints.spiimpl.hints.HintsInvoker;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
 /**

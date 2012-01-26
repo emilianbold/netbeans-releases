@@ -58,15 +58,16 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -188,7 +189,7 @@ public class AssignmentIssues {
     public static ErrorDescription replaceAssignWithOpAssign(HintContext context) {
         final TreePath path = context.getPath();
         return ErrorDescriptionFactory.forTree(context, path, NbBundle.getMessage(AssignmentIssues.class, "MSG_ReplaceAssignmentWithOperatorAssignment", path.getLeaf()), //NOI18N
-                JavaFix.toEditorFix(new ReplaceAssignmentFix(NbBundle.getMessage(AssignmentIssues.class, "FIX_ReplaceAssignmentWithOperatorAssignment", path.getLeaf()), TreePathHandle.create(path, context.getInfo())))); //NOI18N
+                new ReplaceAssignmentFix(NbBundle.getMessage(AssignmentIssues.class, "FIX_ReplaceAssignmentWithOperatorAssignment", path.getLeaf()), TreePathHandle.create(path, context.getInfo())).toEditorFix()); //NOI18N
     }
 
     private static final class AssignmentFinder extends TreePathScanner<Void, List<TreePath>> {
@@ -255,8 +256,9 @@ public class AssignmentIssues {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath path, boolean canShowUI) {
-            final AssignmentTree at = (AssignmentTree) path.getLeaf();
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            final AssignmentTree at = (AssignmentTree) ctx.getPath().getLeaf();
             Kind kind = null;
             switch (at.getExpression().getKind()) {
                 case AND:

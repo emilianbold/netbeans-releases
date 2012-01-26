@@ -44,9 +44,9 @@ package org.netbeans.modules.java.hints.jdk;
 import java.util.Collections;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.java.hints.analyzer.OverridePreferences;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
-import org.netbeans.modules.java.hints.options.HintsSettings;
+import org.netbeans.modules.java.hints.test.api.TestBase;
+import org.netbeans.modules.java.hints.spiimpl.RulesManager;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 
 /**
  *
@@ -64,7 +64,7 @@ public class AddUnderscoresTest extends TestBase {
                        "    private static final int CONST = 12345678;\n" +
                        "}\n",
                        "2:37-2:45:hint:ERR_org.netbeans.modules.javahints.jdk.AddUnderscores",
-                       "FixImpl",
+                       "FIX_org.netbeans.modules.javahints.jdk.AddUnderscores12_345_678",
                        ("package test;\n" +
                        "public class Test {\n" +
                        "    private static final int CONST = 12_345_678;\n" +
@@ -72,14 +72,14 @@ public class AddUnderscoresTest extends TestBase {
     }
 
     public void testSettings() throws Exception {
-        AddUnderscores.setSizeForRadix(prefs, 2, 5);
+        AddUnderscores.setSizeForRadix(getTestPreferences(), 2, 5);
         performFixTest("test/Test.java",
                        "package test;\n" +
                        "public class Test {\n" +
                        "    private static final int CONST = 0B1010101010101010;\n" +
                        "}\n",
                        "2:37-2:55:hint:ERR_org.netbeans.modules.javahints.jdk.AddUnderscores",
-                       "FixImpl",
+                       "FIX_org.netbeans.modules.javahints.jdk.AddUnderscores0B1_01010_10101_01010",
                        ("package test;\n" +
                        "public class Test {\n" +
                        "    private static final int CONST = 0B1_01010_10101_01010;\n" +
@@ -87,14 +87,14 @@ public class AddUnderscoresTest extends TestBase {
     }
 
     public void testHexLong() throws Exception {
-        AddUnderscores.setSizeForRadix(prefs, 16, 3);
+        AddUnderscores.setSizeForRadix(getTestPreferences(), 16, 3);
         performFixTest("test/Test.java",
                        "package test;\n" +
                        "public class Test {\n" +
                        "    private static final int CONST = 0xA5A5A5A5A5A5A5A5L;\n" +
                        "}\n",
                        "2:37-2:56:hint:ERR_org.netbeans.modules.javahints.jdk.AddUnderscores",
-                       "FixImpl",
+                       "FIX_org.netbeans.modules.javahints.jdk.AddUnderscores0xA_5A5_A5A_5A5_A5A_5A5L",
                        ("package test;\n" +
                        "public class Test {\n" +
                        "    private static final int CONST = 0xA_5A5_A5A_5A5_A5A_5A5L;\n" +
@@ -110,14 +110,14 @@ public class AddUnderscoresTest extends TestBase {
     }
 
     public void testAlreadyHasUnderscores2() throws Exception {
-        AddUnderscores.setReplaceLiteralsWithUnderscores(prefs, true);
+        AddUnderscores.setReplaceLiteralsWithUnderscores(getTestPreferences(), true);
         performFixTest("test/Test.java",
                        "package test;\n" +
                        "public class Test {\n" +
                        "    private static final int CONST = 0xA5A5A5A5A5A5A5A_5L;\n" +
                        "}\n",
                        "2:37-2:57:hint:ERR_org.netbeans.modules.javahints.jdk.AddUnderscores",
-                       "FixImpl",
+                       "FIX_org.netbeans.modules.javahints.jdk.AddUnderscores0xA5A5_A5A5_A5A5_A5A5L",
                        ("package test;\n" +
                        "public class Test {\n" +
                        "    private static final int CONST = 0xA5A5_A5A5_A5A5_A5A5L;\n" +
@@ -137,23 +137,10 @@ public class AddUnderscoresTest extends TestBase {
                             "}\n");
     }
 
-    private Preferences prefs;
-
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-
-        prefs = new OverridePreferences(RulesManager.getPreferences(AddUnderscores.ID, HintsSettings.getCurrentProfileId()));
-        HintsSettings.setPreferencesOverride(Collections.singletonMap(AddUnderscores.ID, prefs));
-
         setSourceLevel("1.7");
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        HintsSettings.setPreferencesOverride(Collections.<String, Preferences>emptyMap());
-        prefs = null;
-        super.tearDown();
     }
 
 }

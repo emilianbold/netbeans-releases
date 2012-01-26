@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.java.hints.encapsulation;
 
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.modules.java.hints.test.api.TestBase;
 
 
 /**

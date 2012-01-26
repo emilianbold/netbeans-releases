@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.modules.java.hints.test.api.TestBase;
 
 /**
  *
@@ -155,7 +155,7 @@ public class DoubleCheckTest extends TestBase {
         String golden = (before1 + before3 + after1 + after3).replace("\n", " ");
         performFixTest("test/Test.java", before + after,
             "4:0-4:12:verifier:ERR_DoubleCheck",
-            "FixImpl",
+            "FIX_DoubleCheck",
             golden
         );
     }
