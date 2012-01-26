@@ -302,7 +302,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         }
 
         Set<TransferFile> files = new HashSet<TransferFile>();
-        while(!queue.isEmpty()) {
+        while (!queue.isEmpty()) {
             if (cancelled) {
                 LOGGER.fine("Prepare upload cancelled");
                 break;
