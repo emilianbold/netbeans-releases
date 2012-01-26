@@ -52,8 +52,12 @@ import org.netbeans.test.editor.popup.MainMenuTest;
  */
 public class GeneralSuite {
 
-    public static Test suite() {
+    public static Test suite() {        
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(GeneralTypingTest.class).addTest(GeneralTypingTest.class,"testJavaEnterBeginAndEnd").addTest(MainMenuTest.class,"testMainMenu"));
+                NbModuleSuite.createConfiguration(GeneralTypingTest.class)
+                .addTest(GeneralTypingTest.class,"testJavaEnterBeginAndEnd")
+                .addTest(MainMenuTest.class,"testMainMenu")
+                .enableModules(".*")
+                .clusters(".*"));
     }
 }
