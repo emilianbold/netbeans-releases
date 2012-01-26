@@ -43,10 +43,7 @@
 
 package org.netbeans.modules.profiler.selector.api.nodes;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
 import org.netbeans.modules.profiler.api.icons.Icons;
@@ -131,8 +128,10 @@ public class PackageNode extends ContainerNode {
     /** Creates a new instance of PackageNode */
     public PackageNode(SourcePackageInfo pkg, ContainerNode parent) {
         super(pkg != null ? pkg.getSimpleName() : Bundle.LBL_Unknown(), 
-              stripName(defaultizeName(pkg != null ? pkg.getBinaryName() : Bundle.LBL_Unknown())), 
+              defaultizeName(pkg != null ? pkg.getBinaryName() : Bundle.LBL_Unknown()), 
               Icons.getIcon(LanguageIcons.PACKAGE), parent);
+        
+        updateDisplayName(defaultizeName(pkg != null ? pkg.getBinaryName() : Bundle.LBL_Unknown()));
         
         this.pkg = pkg;
         if (pkg != null) {
@@ -148,6 +147,10 @@ public class PackageNode extends ContainerNode {
     @Override
     final public SourceCodeSelection getSignature() {
         return signature;
+    }
+    
+    final public SourcePackageInfo getPackageInfo() {
+        return pkg;
     }
 
     private List<ClassNode> getContainedClasses() {
