@@ -93,13 +93,13 @@ public abstract class LayerGeneratingProcessor extends AbstractProcessor {
     private static final String LOCAL_DTD_RESOURCE = "/org/openide/filesystems/filesystem1_2.dtd";
 
     private static final ErrorHandler ERROR_HANDLER = new ErrorHandler() {
-        public void warning(SAXParseException exception) throws SAXException {throw exception;}
-        public void error(SAXParseException exception) throws SAXException {throw exception;}
-        public void fatalError(SAXParseException exception) throws SAXException {throw exception;}
+        @Override public void warning(SAXParseException exception) throws SAXException {throw exception;}
+        @Override public void error(SAXParseException exception) throws SAXException {throw exception;}
+        @Override public void fatalError(SAXParseException exception) throws SAXException {throw exception;}
     };
 
     private static final EntityResolver ENTITY_RESOLVER = new EntityResolver() {
-        public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+        @Override public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
             if (PUBLIC_DTD_ID.equals(publicId)) {
                 return new InputSource(LayerGeneratingProcessor.class.getResource(LOCAL_DTD_RESOURCE).toString());
             } else {
