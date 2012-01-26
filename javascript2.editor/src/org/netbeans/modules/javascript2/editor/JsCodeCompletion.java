@@ -223,10 +223,11 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
     private void completeExpression(CompletionRequest request, List<CompletionProposal> resultList) {
         for(JsObject object : request.result.getModel().getVariables(request.anchor)) {
-                    if (!(object instanceof JsFunction && ((JsFunction)object).isAnonymous())
-                            && startsWith(object.getName(), request.prefix))
-                        resultList.add(new JsCompletionItem(object, request));
-                }
+            if (!(object instanceof JsFunction && ((JsFunction) object).isAnonymous())
+                    && startsWith(object.getName(), request.prefix)) {
+                resultList.add(JsCompletionItem.Factory.create(object, request));
+            }
+        }
     }
     
     private void completeObjectProperty(CompletionRequest request, List<CompletionProposal> resultList) {
