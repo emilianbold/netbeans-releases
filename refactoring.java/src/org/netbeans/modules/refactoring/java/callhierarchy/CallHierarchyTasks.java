@@ -125,8 +125,7 @@ final class CallHierarchyTasks {
         Call root = null;
         if (source != null && resolver != null) {
             try {
-                ScanUtils.postUserActionTask(source, resolver, true);
-                root = resolver.getRoot();
+                source.runUserActionTask(resolver, true);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -167,7 +166,7 @@ final class CallHierarchyTasks {
             while (tpath != null) {
                 Kind kind = tpath.getLeaf().getKind();
                 if (kind == Kind.METHOD || kind == Kind.METHOD_INVOCATION || kind == Kind.MEMBER_SELECT) {
-                    method = ScanUtils.findElement(javac.getJavaSource(), javac.getTrees(), tpath);
+                    method = ScanUtils.checkElement(javac, javac.getTrees().getElement(tpath));
                     if (method != null && (method.getKind() == ElementKind.METHOD || method.getKind() == ElementKind.CONSTRUCTOR)) {
                         break;
                     }
@@ -452,7 +451,7 @@ final class CallHierarchyTasks {
         protected void runTask() throws Exception {
             JavaSource js = JavaSource.forFileObject(elmDesc.getSourceToQuery().getFileObject());
             if (js != null) {
-                Future<Void> control = ScanUtils.postUserActionTask(js, this, true);
+                Future<Void> control = ScanUtils.postUserActionTask(js, this);
                 control.get();
             }
         }
@@ -523,7 +522,8 @@ final class CallHierarchyTasks {
         
         private void resolvePath(TreePath tpath) {
             Element resolved = javac.getTrees().getElement(tpath);
-            if (ScanUtils.mayBecomeCompleted(resolved)) {
+            if (javac.getElementUtilities().isErroneous(resolved) &&
+                SourceUtils.isScanInProgress()) {
                 incomplete = true;
                 return;
             } 

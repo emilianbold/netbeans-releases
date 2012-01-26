@@ -219,7 +219,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
                                 }
                                 description[0] = getAvailableMethods(controller, caretOffset, typeElementHandle, fieldHandle);
                             }
-                        }, true);
+                            });
                         } catch (IOException ioe) {
                             Exceptions.printStackTrace(ioe);
                         }
@@ -265,7 +265,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
         
     static ElementNode.Description getAvailableMethods(CompilationInfo controller, int caretOffset, final ElementHandle<? extends TypeElement> typeElementHandle, final ElementHandle<? extends VariableElement> fieldHandle) {
         TypeElement origin = typeElementHandle.resolve(controller);
-        VariableElement field = ScanUtils.resolveElement(controller.getJavaSource(), controller, fieldHandle);
+        VariableElement field = ScanUtils.checkElement(controller, fieldHandle.resolve(controller));
         assert origin != null && field != null;
         if (field.asType().getKind() == TypeKind.DECLARED) {
             DeclaredType type = (DeclaredType) field.asType();
