@@ -568,7 +568,7 @@ public class LuceneIndex implements Index.Transactional {
         private volatile boolean closed;
         private volatile Status validCache;
         private long lastUsedWriter;
-        private ReadWriteLock   rwLock = new java.util.concurrent.locks.ReentrantReadWriteLock();
+        private final ReadWriteLock rwLock = new java.util.concurrent.locks.ReentrantReadWriteLock();
         
         /**
          * IndexWriter with potentially uncommitted data; local to a thread.
