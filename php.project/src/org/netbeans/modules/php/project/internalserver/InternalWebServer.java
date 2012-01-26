@@ -65,6 +65,9 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
+// #207763 - add InternalWebServers that holds all running web servers and:
+//   - before running, verify that no other server with same hostname and port is running; or
+//   - before running, stop all other servers
 /**
  * Manager of internal web server (available in PHP 5.4+)
  * for the given {@link PhpProject}.
