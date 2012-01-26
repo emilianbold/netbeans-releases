@@ -278,7 +278,7 @@ public class HistoryDiffView implements PropertyChangeListener {
                         ss2 = StreamSource.createSource("currentfile", title2, getMimeType(file2), new StringReader("")); // NOI18N
                     }
 
-                    diffView = DiffController.create(ss1, ss2);
+                    diffView = DiffController.createEnhanced(ss1, ss2);
                     diffView.addPropertyChangeListener(HistoryDiffView.this);
 
                     JComponent c = diffView.getJComponent();
