@@ -54,8 +54,7 @@ public class KeyMapSuite {
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(BasicShortcuts.class)
-                    .addTest(KeyMapTest.class, "prepareFileInEditor")
+                NbModuleSuite.createConfiguration(KeyMapTest.class)
                     .addTest(KeyMapTest.class, "testVerify")
                     .addTest(KeyMapTest.class, "testAddDuplicateCancel")
                     .addTest(KeyMapTest.class, "testAddShortcut")
@@ -63,7 +62,7 @@ public class KeyMapSuite {
                     .addTest(KeyMapTest.class, "testAssignAlternativeShortcut")
                     //.addTest(KeyMapTest.class, "testProfileRestore")//fails due to issue 151254
                     .addTest(KeyMapTest.class, "testProfileDuplicte")
-                    .addTest(KeyMapTest.class, "testHelp")
-                    .addTest(KeyMapTest.class, "closeProject").clusters(".*").enableModules(".*"));
+                    .addTest(KeyMapTest.class, "testHelp")                    
+                    .clusters(".*").enableModules(".*"));
     }
 }
