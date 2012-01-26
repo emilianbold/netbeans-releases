@@ -53,6 +53,8 @@ import org.openide.filesystems.FileObject;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 
 /**
  *
@@ -80,6 +82,9 @@ public abstract class ClasspathInfoAccessor {
     private static volatile ClasspathInfoAccessor INSTANCE;
        
     public abstract JavaFileManager getFileManager(ClasspathInfo cpInfo);
+    
+    @NonNull
+    public abstract FileManagerTransaction getFileManagerTransaction(@NonNull ClasspathInfo cpInfo);
     
     public abstract ClassPath getCachedClassPath (ClasspathInfo cpInfo, ClasspathInfo.PathKind kind);
         
