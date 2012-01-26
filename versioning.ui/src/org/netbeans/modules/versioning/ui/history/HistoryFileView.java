@@ -535,30 +535,14 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
 
             private void setupColumns() {
                 ResourceBundle loc = NbBundle.getBundle(FileTablePanel.class);            
-
-                Node.Property [] columns; 
-                int idx = 0;
                 if(versioningSystem != null) {
-                    columns = new Node.Property[3];
-                    columns[idx++] = new ColumnDescriptor<String>(
-                                    RevisionNode.PROPERTY_NAME_VERSION, 
-                                    String.class, 
-                                    loc.getString("LBL_LocalHistory_Column_Version"),          // NOI18N            
-                                    loc.getString("LBL_LocalHistory_Column_Version_Desc"));    // NOI18N            
-                    columns[idx++] = new ColumnDescriptor<String>(
-                                    RevisionNode.PROPERTY_NAME_USER, 
-                                    String.class, 
-                                    loc.getString("LBL_LocalHistory_Column_User"),             // NOI18N            
-                                    loc.getString("LBL_LocalHistory_Column_User_Desc"));       // NOI18N            
-                } else {
-                columns = new Node.Property[1];
-                }
-                columns[idx] = new ColumnDescriptor<String>(
-                                RevisionNode.PROPERTY_NAME_LABEL, 
-                                String.class, 
-                                loc.getString("LBL_LocalHistory_Column_Label"),            // NOI18N            
-                                loc.getString("LBL_LocalHistory_Column_Label_Desc"));      // NOI18N            
-                setProperties(columns);
+                    addPropertyColumn(RevisionNode.PROPERTY_NAME_VERSION, loc.getString("LBL_LocalHistory_Column_Version"));                    // NOI18N            
+                    setPropertyColumnDescription(RevisionNode.PROPERTY_NAME_VERSION, loc.getString("LBL_LocalHistory_Column_Version_Desc"));    // NOI18N            
+                    addPropertyColumn(RevisionNode.PROPERTY_NAME_USER, loc.getString("LBL_LocalHistory_Column_User"));                          // NOI18N            
+                    setPropertyColumnDescription(RevisionNode.PROPERTY_NAME_USER, loc.getString("LBL_LocalHistory_Column_User_Desc"));          // NOI18N            
+                } 
+                addPropertyColumn(RevisionNode.PROPERTY_NAME_LABEL, loc.getString("LBL_LocalHistory_Column_Label"));                            // NOI18N            
+                setPropertyColumnDescription(RevisionNode.PROPERTY_NAME_LABEL, loc.getString("LBL_LocalHistory_Column_Label_Desc"));            // NOI18N            
             }    
 
             private void setDefaultColumnSizes() {
