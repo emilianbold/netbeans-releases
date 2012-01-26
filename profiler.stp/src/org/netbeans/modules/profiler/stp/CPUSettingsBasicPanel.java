@@ -96,9 +96,6 @@ import org.openide.util.RequestProcessor;
  * @author Jiri Sedlacek
  */
 @NbBundle.Messages({
-    "CPUSettingsBasicPanel_NoRootsString=<font color=\"{0}\">No profiling roots, </font><a href=\"#\" {1}>define...</a>",
-    "CPUSettingsBasicPanel_OneRootString=<font color=\"{0}\">1 root method, </font><a href=\"#\" {1}>edit...</a>",
-    "CPUSettingsBasicPanel_MoreRootsString=<font color=\"{0}\">{1} profiling root, </font><a href=\"#\" {2}>edit...</a>",
     "CPUSettingsBasicPanel_DefaultRootsString=<font color=\"{0}\">default profiling roots, </font><a href=\"#\" {1}>customize...</a>",
     "CPUSettingsBasicPanel_CustomRootsString=<font color=\"{0}\">custom profiling roots, </font><a href=\"#\" {1}>edit...</a>",
     "CPUSettingsBasicPanel_QuickFilterDialogCaption=Set Quick Filter",
