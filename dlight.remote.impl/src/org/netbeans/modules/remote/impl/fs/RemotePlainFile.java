@@ -189,12 +189,12 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
     }
 
     @Override
-    public FileObject createData(String name, String ext) throws IOException {
+    public FileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException {
         throw new IOException("Plain file can not have children"); // NOI18N
     }
 
     @Override
-    public FileObject createFolder(String name) throws IOException {
+    public FileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException {
         throw new IOException("Plain file can not have children"); // NOI18N
     }
     
@@ -227,7 +227,7 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
     }
 
     @Override
-    protected void renameChild(FileLock lock, RemoteFileObjectBase toRename, String newNameExt) 
+    protected void renameChild(FileLock lock, RemoteFileObjectBase toRename, String newNameExt, RemoteFileObjectBase orig) 
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         // plain file can not be container of children
         RemoteLogger.assertTrueInConsole(false, "renameChild is not supported on " + this.getClass() + " path=" + getPath()); // NOI18N
