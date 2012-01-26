@@ -53,7 +53,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
-    id="Windows",
+    id="Appearance",
     displayName="#AdvancedOption_DisplayName_WinSys",
     keywords="#KW_WindowOptions",
     keywordsCategory="Advanced/Windows"
