@@ -47,8 +47,6 @@ package org.netbeans.modules.glassfish.common.actions;
 import org.netbeans.modules.glassfish.common.Util;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
-import org.netbeans.modules.glassfish.spi.ProfilerCookie;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -73,15 +71,8 @@ public class ProfileAction extends NodeAction {
     
     private static void performActionImpl(final GlassfishModule commonSupport, Node node) {
         commonSupport.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.PROFILE_MODE, true);
-        // get the cookie
-        ProfilerCookie pc = node.getLookup().lookup(ProfilerCookie.class);
-        if (null != pc) {
-            Object[] pcData = pc.getData();
-            FileObject jdkHome = (FileObject) pcData[0];
-            String[] jvmArgs = (String[]) pcData[1];
-            if (jvmArgs != null && jvmArgs.length > 0)
-                commonSupport.startServer(null,jdkHome,jvmArgs);
-        }
+        
+        commonSupport.startServer(null, ServerState.STOPPED_JVM_PROFILER);
     }
 
     protected boolean enable(Node[] activatedNodes) {
@@ -104,8 +95,7 @@ public class ProfileAction extends NodeAction {
     }
     
     private static boolean enableImpl(GlassfishModule commonSupport, Node node) {
-        ProfilerCookie pc = node.getLookup().lookup(ProfilerCookie.class);
-        return null != pc && commonSupport.getServerState() == ServerState.STOPPED &&
+        return commonSupport.getServerState() == ServerState.STOPPED &&
                 null != commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR) &&
                 Util.isDefaultOrServerTarget(commonSupport.getInstanceProperties());
     }

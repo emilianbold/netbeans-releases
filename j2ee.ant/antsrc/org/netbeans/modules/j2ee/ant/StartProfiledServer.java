@@ -53,7 +53,6 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
-import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.openide.filesystems.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -102,15 +101,11 @@ public class StartProfiledServer extends Task implements Deployment.Logger {
         if (envvar == null) {
             envvar = new String[0];
         }
-        ProfilerServerSettings settings = new ProfilerServerSettings(
-                                                    platform,
-                                                    jvmarg.getVmCommand().getArguments(), 
-                                                    envvar);
         FileObject fo = FileUtil.toFileObject(getProject().getBaseDir());
         fo.refresh(); // without this the "build" directory is not found in filesystems
         J2eeModuleProvider jmp = (J2eeModuleProvider)FileOwnerQuery.getOwner(fo).getLookup().lookup(J2eeModuleProvider.class);
         ServerInstance si = ServerRegistry.getInstance().getServerInstance(jmp.getServerInstanceID());
-        if (!si.startProfile(settings, forceRestart, this)) {
+        if (!si.startProfile(forceRestart, this)) {
             String msg = NbBundle.getMessage(StartProfiledServer.class, "MSG_StartupFailed");
             throw new BuildException(msg);
         }

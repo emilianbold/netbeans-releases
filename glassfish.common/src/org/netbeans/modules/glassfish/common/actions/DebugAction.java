@@ -73,7 +73,7 @@ public class DebugAction extends NodeAction {
     
     private static void performActionImpl(final GlassfishModule commonSupport) {
         commonSupport.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.DEBUG_MODE, true);
-        commonSupport.startServer(null);
+        commonSupport.startServer(null, ServerState.RUNNING);
     }
 
     protected boolean enable(Node[] activatedNodes) {

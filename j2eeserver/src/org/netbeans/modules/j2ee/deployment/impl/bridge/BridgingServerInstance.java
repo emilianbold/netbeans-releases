@@ -52,20 +52,25 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerInstanceLookup;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.CustomizerAction;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.spi.server.ServerInstanceFactory;
-import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.netbeans.api.server.CommonServerUIs;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
  * @author Petr Hejl
  */
-public class BridgingServerInstance implements ServerInstanceImplementation, Node.Cookie {
+public class BridgingServerInstance implements ServerInstanceImplementation, Lookup.Provider, Node.Cookie {
 
     private final org.netbeans.modules.j2ee.deployment.impl.ServerInstance instance;
 
@@ -135,12 +140,23 @@ public class BridgingServerInstance implements ServerInstanceImplementation, Nod
         instance.remove();
     }
 
+    @Override
+    public Lookup getLookup() {
+        // FIXME why is the platform written in such strange way ?
+        J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(instance.getUrl());
+
+        if (platform == null) { // can happen when J2EE is activated and J2SE is not !?@#
+            return Lookups.singleton(instance.getInstanceProperties());
+        } else {
+            return new ProxyLookup(Lookups.fixed(platform, instance.getInstanceProperties()), Lookups.proxy(platform));
+        }
+    }
+
     public ServerInstance getCommonInstance() {
         synchronized (this) {
             return commonInstance;
         }
     }
-    
 
     @Override
     public boolean equals(Object obj) {

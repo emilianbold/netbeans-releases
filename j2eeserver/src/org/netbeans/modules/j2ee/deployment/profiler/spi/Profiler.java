@@ -81,7 +81,10 @@ public interface Profiler {
      *
      * @return  required settings or <code>null</code> if user cancelled starting 
      *          the server.
+     * 
+     * @deprecated 
      */
+    @Deprecated
     ProfilerServerSettings getSettings(String serverInstanceID);
 
     /**
@@ -94,7 +97,10 @@ public interface Profiler {
      *
      * @return  required settings or <code>null</code> if user cancelled starting
      *          the server.
+     * 
+     * @deprecated
      */
+    @Deprecated
     ProfilerServerSettings getSettings(String serverInstanceID, boolean verbose);
     
     /**
