@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.Collection;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -70,8 +71,6 @@ import org.openide.util.test.MockLookup;
  */
 public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
 
-    private static final boolean ALLOW_TCK = Boolean.getBoolean("run.test.RandomlyFails");
-    
     private ExecutionEnvironment execEnv = null;
     private String tmpDir;
     private FileObject root;
@@ -113,16 +112,6 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
         junit.textui.TestRunner.run(suite());
     }
 
-    public static Test suite() {
-        NbTestSuite suite = new NbTestSuite();
-        if (ALLOW_TCK) {
-            suite.addTestSuite(VCSOwnerTestCase.class);
-            suite.addTestSuite(VCSInterceptorTestCase.class);
-            suite.addTestSuite(VCSAnnotationProviderTestCase.class);
-        }
-        return new RemoteVCSTCKTest(suite);
-    }
-    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -208,6 +197,38 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
         ExitStatus res = ProcessUtils.executeInDir(getRootPath(), execEnv, "chmod", "444", getRootPath()+"/"+path);
         if (res.exitCode != 0) {
             throw new IOException("chmod failed: " + res.error);
+        }
+    }
+    
+    public static Test suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTestSuite(VCSOwnerTestCase_.class);
+        suite.addTestSuite(VCSInterceptorTestCase_.class);
+        suite.addTestSuite(VCSAnnotationProviderTestCase_.class);
+        return new RemoteVCSTCKTest(suite);
+    }
+    
+    @RandomlyFails
+    public static final class VCSOwnerTestCase_ extends VCSOwnerTestCase {
+
+        public VCSOwnerTestCase_(String testName) {
+            super(testName);
+        }
+    }
+    
+    @RandomlyFails
+    public static final class VCSInterceptorTestCase_ extends VCSInterceptorTestCase {
+
+        public VCSInterceptorTestCase_(String testName) {
+            super(testName);
+        }
+    }
+    
+    @RandomlyFails
+    public static final class VCSAnnotationProviderTestCase_ extends VCSAnnotationProviderTestCase {
+
+        public VCSAnnotationProviderTestCase_(String testName) {
+            super(testName);
         }
     }
 }
