@@ -170,10 +170,10 @@ public abstract class RemoteLinkBase extends RemoteFileObjectFile implements Fil
     }
 
     @Override
-    public FileLock lock() throws IOException {
+    protected FileLock lockImpl(RemoteFileObjectBase orig) throws IOException {
         RemoteFileObjectBase delegate = getDelegate();
         if (delegate != null) {
-            return delegate.lock();
+            return delegate.lockImpl(orig);
         } else {
             throw fileNotFoundException("lock"); //NOI18N
         }
@@ -181,16 +181,16 @@ public abstract class RemoteLinkBase extends RemoteFileObjectFile implements Fil
 
     @SuppressWarnings("deprecation")
     @Override
-    public boolean isReadOnly() {
+    protected boolean isReadOnlyImpl(RemoteFileObjectBase orig) {
         RemoteFileObjectBase delegate = getDelegate();
-        return (delegate == null) ? true : delegate.isReadOnly();
+        return (delegate == null) ? true : delegate.isReadOnlyImpl(orig);
     }
 
     @Override
-    public OutputStream getOutputStream(FileLock lock) throws IOException {
+    protected OutputStream getOutputStreamImpl(FileLock lock, RemoteFileObjectBase orig) throws IOException {
         RemoteFileObjectBase delegate = getDelegate();
         if (delegate != null) {
-            return delegate.getOutputStream(lock);
+            return delegate.getOutputStreamImpl(lock, orig);
         } else {
             throw fileNotFoundException("write"); //NOI18N
         }
@@ -242,9 +242,9 @@ public abstract class RemoteLinkBase extends RemoteFileObjectFile implements Fil
     }
 
     @Override
-    public boolean canWrite() {
+    public boolean canWriteImpl(RemoteFileObjectBase orig) {
         RemoteFileObjectBase delegate = getDelegate();
-        return (delegate == null) ? false : delegate.canWrite();
+        return (delegate == null) ? false : delegate.canWriteImpl(orig);
     }
    
         
