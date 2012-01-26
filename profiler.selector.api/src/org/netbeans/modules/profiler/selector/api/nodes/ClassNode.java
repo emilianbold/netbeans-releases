@@ -152,6 +152,10 @@ public class ClassNode extends ContainerNode {
     final public boolean isAnonymous() {
         return cInfo.isAnonymous();
     }
+    
+    final public SourceClassInfo getClassInfo() {
+        return cInfo;
+    }
 
     /**
      * The implementation will take care of generating the appropriate {@linkplain ConstructorsNode} instance
