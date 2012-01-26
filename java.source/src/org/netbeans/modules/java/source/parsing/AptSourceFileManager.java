@@ -71,18 +71,22 @@ public class AptSourceFileManager extends SourceFileManager {
 
     private final ClassPath userRoots;
     private final SiblingProvider siblings;
-
-
+    /**
+     * Transactional support, makes files visible at the end of scanning
+     */
+    private final FileManagerTransaction fileTx;
 
     public AptSourceFileManager (
             final @NonNull ClassPath userRoots,
             final @NonNull ClassPath aptRoots,
-            final @NonNull SiblingProvider siblings) {
+            final @NonNull SiblingProvider siblings,
+            final @NonNull FileManagerTransaction fileTx) {
         super(aptRoots, true);
         assert userRoots != null;
         assert siblings != null;
         this.userRoots = userRoots;
         this.siblings = siblings;
+        this.fileTx = fileTx;
     }
 
     @Override
@@ -100,8 +104,7 @@ public class AptSourceFileManager extends SourceFileManager {
             pkgName.replace('.', File.separatorChar) + File.separatorChar + relativeName;    //NOI18N
         //Always on master fs -> file is save.
         File rootFile = FileUtil.toFile(aptRoot);
-        final javax.tools.FileObject result = FileObjects.nbFileObject( new File(rootFile,nameStr).toURI().toURL(), aptRoot);
-        return result;
+        return fileTx.createFileObject(new File(rootFile,nameStr), rootFile, null, null);
     }
 
 
@@ -118,7 +121,7 @@ public class AptSourceFileManager extends SourceFileManager {
         final String nameStr = className.replace('.', File.separatorChar) + kind.extension;    //NOI18N
         //Always on master fs -> file is save.
         File rootFile = FileUtil.toFile(aptRoot);
-        final JavaFileObject result = FileObjects.nbFileObject(new File(rootFile,nameStr).toURI().toURL(), aptRoot);
+        final JavaFileObject result = fileTx.createFileObject(new File(rootFile,nameStr), rootFile, null, null);
         return result;
     }
 

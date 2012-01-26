@@ -45,15 +45,12 @@ package org.netbeans.modules.web.struts.editor;
 
 import java.awt.Toolkit;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.Hashtable;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.editor.BaseDocument;
@@ -241,7 +238,10 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
             if (wm != null) {
                 ClasspathInfo cpi = ClasspathInfo.create(wm.getDocumentBase());
                 ClassSeekerTask classSeekerTask = new ClassSeekerTask(cpi, fqn);
-                ScanDialog.runWhenScanFinished(classSeekerTask, Bundle.title_go_to_class_action());
+                runClassSeekerUserTask(classSeekerTask);
+                if (!classSeekerTask.wasElementFound() && SourceUtils.isScanInProgress()) {
+                    ScanDialog.runWhenScanFinished(classSeekerTask, Bundle.title_go_to_class_action());
+                }
             }
         }
     }
@@ -391,8 +391,20 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
         }
     }
 
+    private void runClassSeekerUserTask(ClassSeekerTask csTask) {
+        JavaSource js = JavaSource.create(csTask.getClasspathInfo());
+        if (js != null) {
+            try {
+                js.runUserActionTask(csTask, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
     private class ClassSeekerTask implements Runnable, CancellableTask<CompilationController> {
 
+        private final AtomicBoolean elementFound = new AtomicBoolean(false);
         private final ClasspathInfo cpi;
         private final String fqn;
 
@@ -401,16 +413,17 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
             this.fqn = fqn;
         }
 
+        public ClasspathInfo getClasspathInfo() {
+            return cpi;
+        }
+
+        public boolean wasElementFound() {
+            return elementFound.get();
+        }
+
         @Override
         public void run() {
-            JavaSource js = JavaSource.create(cpi);
-            if (js != null) {
-                try {
-                    js.runUserActionTask(this, true);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
+            runClassSeekerUserTask(this);
         }
 
         @Override
@@ -426,13 +439,16 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
             cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
             TypeElement element = cc.getElements().getTypeElement(fqn.trim());
             if (element != null) {
+                elementFound.set(true);
                 if (!ElementOpen.open(cpi, element)) {
                     StatusDisplayer.getDefault().setStatusText(Bundle.lbl_goto_source_not_found(fqn));
                     Toolkit.getDefaultToolkit().beep();
                 }
             } else {
-                StatusDisplayer.getDefault().setStatusText(Bundle.lbl_class_not_found(fqn));
-                Toolkit.getDefaultToolkit().beep();
+                if (!SourceUtils.isScanInProgress()) {
+                    StatusDisplayer.getDefault().setStatusText(Bundle.lbl_class_not_found(fqn));
+                    Toolkit.getDefaultToolkit().beep();
+                }
             }
         }
 
