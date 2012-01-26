@@ -53,6 +53,7 @@ import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.WizardOperator;
 
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.DialogOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
@@ -129,7 +130,7 @@ public class ValidationTest extends JellyTestCase {
 
         new JRadioButtonOperator(ajpw, "Java ME MIDP Platform Emulator").clickMouse();
 
-        (new JButtonOperator(ajpw, "Next")).pushNoBlock();
+        ajpw.next();
         ajpw.stepsWaitSelectedValue("Platform Folders");
         //System.out.println("current step: " + ajpw.stepsGetSelectedIndex() + " - " + ajpw.stepsGetSelectedValue());
         
@@ -145,7 +146,7 @@ public class ValidationTest extends JellyTestCase {
         sfjmep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         sfjmep.waitClosed();
 
-        (new JButtonOperator(ajpw, "Next")).pushNoBlock();
+        ajpw.next();
         ajpw.stepsWaitSelectedValue("Detected Platforms");
         //System.out.println("current step: " + ajpw.stepsGetSelectedIndex() + " - " + ajpw.stepsGetSelectedValue());
 
@@ -153,7 +154,7 @@ public class ValidationTest extends JellyTestCase {
         djmep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         djmep.waitClosed();
         
-        (new JButtonOperator(ajpw, "Finish")).pushNoBlock();
+        ajpw.finish();
         ajpw.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         ajpw.waitClosed();
         
@@ -161,6 +162,7 @@ public class ValidationTest extends JellyTestCase {
     }
 
     public String createNewFile(String category, String template, String name, String packageName) {
+        new EventTool().waitNoEvent(3000);
         NewFileWizardOperator newFile = NewFileWizardOperator.invoke();
         newFile.selectCategory(category);
         newFile.selectFileType(template);
@@ -183,7 +185,8 @@ public class ValidationTest extends JellyTestCase {
         createNewFile(CATEGORY_MIDP, ITEM_MIDLET, "NewMIDlet", "myPackage"); // NOI18N
         createNewFile(CATEGORY_MIDP, ITEM_MIDPCANVAS, "MIDPCanvas", "myPackage"); // NOI18N
 
-
+        new EventTool().waitNoEvent(2000);
+        
         //test that files are created and opened in editor
         new TopComponentOperator("NewVisualMidlet.java").close(); // NOI18N
         new EditorOperator("NewMIDlet.java").close(); // NOI18N
@@ -201,10 +204,10 @@ public class ValidationTest extends JellyTestCase {
         NewJavaProjectNameLocationStepOperator step = new NewJavaProjectNameLocationStepOperator();
         step.txtProjectLocation().setText(getWorkDirPath());
         step.txtProjectName().setText(PROJECT_TO_BE_CREATED);//NOI18N
-//        String projectLocation = step.txtProjectFolder().getText();
-//        sleep(1000);
         step.finish();
 
+        new EventTool().waitNoEvent(10000);
+        
         new ProjectsTabOperator().getProjectRootNode(PROJECT_TO_BE_CREATED);
 
     }
