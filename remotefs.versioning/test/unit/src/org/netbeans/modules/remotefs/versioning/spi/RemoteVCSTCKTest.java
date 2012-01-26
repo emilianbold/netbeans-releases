@@ -43,13 +43,11 @@ package org.netbeans.modules.remotefs.versioning.spi;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.concurrent.Future;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -72,15 +70,8 @@ import org.openide.util.test.MockLookup;
  */
 public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
 
-    private static final boolean ALLOW_TCK;
-    static {
-        String property = System.getProperty("run.test.RandomlyFails");
-        if ("false".equals(property)) {
-            ALLOW_TCK = false;
-        } else {
-            ALLOW_TCK = true;
-        }
-    }
+    private static final boolean ALLOW_TCK = Boolean.getBoolean("run.test.RandomlyFails");
+    
     private ExecutionEnvironment execEnv = null;
     private String tmpDir;
     private FileObject root;
