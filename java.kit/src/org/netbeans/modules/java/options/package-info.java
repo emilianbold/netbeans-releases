@@ -42,6 +42,8 @@
     iconBase = "org/netbeans/modules/java/options/java_logo.png",
     keywords = "#OptionsCategory_Keywords_Java",
     keywordsCategory = "Java")
+@Messages({"OptionsCategory_Keywords_Java=Java Options","OptionsCategory_Name_Java=Java"})
 package org.netbeans.modules.java.options;
 
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle.Messages;
