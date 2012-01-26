@@ -82,6 +82,10 @@ public class LogsComponent extends TopComponent {
     public LogsComponent(OracleInstance oi) {
         this.oi = oi;
         initComponents();
+        
+        // disable for now:
+        showAlljCheckBox.setVisible(true);
+        
         setName(NbBundle.getMessage(LogsComponent.class, "CTL_LogsTopComponent", oi.getName()));
         setToolTipText(NbBundle.getMessage(LogsComponent.class, "HINT_LogsTopComponent"));
         this.am = oi.getApplicationManager();
@@ -270,9 +274,6 @@ public class LogsComponent extends TopComponent {
         refreshButton = new javax.swing.JButton();
         closeButton = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
-        jPanel4 = new javax.swing.JPanel();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        appLogs = new javax.swing.JTextArea();
         jSplitPane1 = new javax.swing.JSplitPane();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -283,6 +284,9 @@ public class LogsComponent extends TopComponent {
         jScrollPane2 = new javax.swing.JScrollPane();
         logs = new javax.swing.JTextArea();
         jLabel2 = new javax.swing.JLabel();
+        jPanel4 = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        appLogs = new javax.swing.JTextArea();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4));
 
@@ -299,21 +303,6 @@ public class LogsComponent extends TopComponent {
                 closeButtonActionPerformed(evt);
             }
         });
-
-        jScrollPane3.setViewportView(appLogs);
-
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
-        );
-
-        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(LogsComponent.class, "LogsComponent.jPanel4.TabConstraints.tabTitle"), jPanel4); // NOI18N
 
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane1.setResizeWeight(0.2);
@@ -375,21 +364,36 @@ public class LogsComponent extends TopComponent {
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(LogsComponent.class, "LogsComponent.jSplitPane1.TabConstraints.tabTitle"), jSplitPane1); // NOI18N
 
+        jScrollPane3.setViewportView(appLogs);
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
+        );
+
+        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(LogsComponent.class, "LogsComponent.jPanel4.TabConstraints.tabTitle"), jPanel4); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(267, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(refreshButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(closeButton))
-            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE)
+            .addComponent(jTabbedPane1)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(closeButton)
