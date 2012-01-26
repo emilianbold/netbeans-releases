@@ -82,6 +82,20 @@ public class TestUtil {
         copyFiles(getDataDir(), destDir, resourceNames);
     }
     
+    public static void copyContents(File sourceDir, File destDir) throws IOException {
+        File[] files = sourceDir.listFiles();
+        for (File f : files) {
+            if (f.isDirectory()) {
+                File newDir = new File(destDir, f.getName());
+                newDir.mkdirs();
+                
+                copyContents(f, newDir);
+            } else {
+                    copyFiles(sourceDir, destDir, f.getName());
+            }
+        }
+    }
+    
     public static void copyFiles( File sourceDir, File destDir, String... resourceNames ) throws IOException {
 
         for( String resourceName : resourceNames ) {

@@ -289,15 +289,24 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (source == null)
                         source = Source.create(doc);
                     if (source != null) {
-                        Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singletonList(source), getTask());
-                        if (!f.isDone()) {
-                            component.putClientProperty("completion-active", Boolean.FALSE); //NOI18N
-                            resultSet.setWaitText(NbBundle.getMessage(JavaCompletionProvider.class, "scanning-in-progress")); //NOI18N
-                            f.get();
-                        }
+                        ParserManager.parse(Collections.singletonList(source), getTask());
                         if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
-                            if (results != null)
+                            if (results != null) {
+                                if (results.isEmpty() && SourceUtils.isScanInProgress() && (hasAdditionalItems == 0 || queryType == COMPLETION_ALL_QUERY_TYPE)) {
+                                    Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singletonList(source), getTask());
+                                    if (!f.isDone()) {
+                                        component.putClientProperty("completion-active", Boolean.FALSE); //NOI18N
+                                        resultSet.setWaitText(NbBundle.getMessage(JavaCompletionProvider.class, "scanning-in-progress")); //NOI18N
+                                        while (!isTaskCancelled()) {
+                                            try {
+                                                f.get(250, TimeUnit.MILLISECONDS);
+                                                break;
+                                            } catch (TimeoutException timeOut) {/*retry*/}
+                                        }
+                                    }
+                                }
                                 resultSet.addAllItems(results);
+                            }
                             resultSet.setHasAdditionalItems(hasAdditionalItems > 0);
                             if (hasAdditionalItems == 1)
                                 resultSet.setHasAdditionalItemsText(NbBundle.getMessage(JavaCompletionProvider.class, "JCP-imported-items")); //NOI18N
@@ -314,8 +323,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                         resultSet.setDocumentation(documentation);
                                         break;
                                     } catch (TimeoutException timeOut) {/*retry*/}
-                                }
-                                
+                                }                                
                             } else if (documentation != null) {
                                 resultSet.setDocumentation(documentation);
                             }

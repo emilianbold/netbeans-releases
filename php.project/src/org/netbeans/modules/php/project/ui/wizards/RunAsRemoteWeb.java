@@ -366,11 +366,6 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         remoteConnectionLabel.setLabelFor(remoteConnectionComboBox);
         Mnemonics.setLocalizedText(remoteConnectionLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_RemoteConnection")); // NOI18N
-        manageRemoteConnectionButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                manageRemoteConnectionButtonActionPerformed(evt);
-            }
-        });
         Mnemonics.setLocalizedText(manageRemoteConnectionButton, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Manage")); // NOI18N
         manageRemoteConnectionButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {

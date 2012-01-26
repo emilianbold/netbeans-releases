@@ -2,7 +2,7 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+  Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
   Oracle and Java are registered trademarks of Oracle and/or its affiliates.
   Other names may be trademarks of their respective owners.
@@ -158,7 +158,7 @@
     <target name="-pre-package">        
 
         <set property="wtk.directory"       value="WTK2.5.2"/>
-        <set property="javamesdk.directory" value="Java_ME_platform_SDK_3.0"/>
+        <set property="javamesdk.directory" value="Java_ME_platform_SDK_3.0.5"/>
 
 
         <set property="mobility.cluster"    value="mobility"/>

@@ -58,4 +58,9 @@ public class LuceneIndexFactory implements IndexFactory {
         return LuceneIndex.create(cacheFolder, analyzer);
     }
 
+    @Override
+    public Index createMemoryIndex(Analyzer analyzer) throws IOException {
+        return MemoryIndex.create(analyzer);
+    }
+
 }

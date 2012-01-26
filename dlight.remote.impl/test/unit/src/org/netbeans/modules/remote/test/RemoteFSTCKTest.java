@@ -44,7 +44,6 @@ package org.netbeans.modules.remote.test;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.remote.impl.fs.RemoteFSTCKTestCase;
-import org.openide.filesystems.AttributesTestHidden;
 import org.openide.filesystems.FileObjectTestHid;
 import org.openide.filesystems.FileSystemTestHid;
 import org.openide.filesystems.FileUtilTestHidden;
@@ -55,15 +54,7 @@ import org.openide.filesystems.URLMapperTestHidden;
  * @author vv159170
  */
 public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
-    private static final boolean ALLOW_TCK;
-    static {
-        String property = System.getProperty("run.test.RandomlyFails");
-        if ("false".equals(property)) {
-            ALLOW_TCK = false;
-        } else {
-            ALLOW_TCK = true;
-        }
-    }
+    private static final boolean ALLOW_TCK = Boolean.getBoolean("run.test.RandomlyFails");
     
     public RemoteFSTCKTest(Test test) {
         super(test);
