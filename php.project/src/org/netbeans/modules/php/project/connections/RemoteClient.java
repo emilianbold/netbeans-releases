@@ -171,6 +171,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         this.remoteClient = client;
     }
 
+    @Override
     public String getBaseRemoteDirectory() {
         return baseRemoteDirectory;
     }
@@ -261,9 +262,9 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
             }
             List<TransferFile> transferFiles = new ArrayList<TransferFile>(remoteFiles.size());
             for (RemoteFile remoteFile : remoteFiles) {
-                if (isVisible(remoteFile.getName())) {
+                if (isVisible(getLocalFile(new File(file.getBaseLocalDirectoryPath()), file, remoteFile))) {
                     LOGGER.log(Level.FINE, "File {0} added to download queue", remoteFile);
-                    TransferFile transferFile = TransferFile.fromRemoteFile(file, remoteFile, this);
+                    TransferFile transferFile = TransferFile.fromRemoteFile(file, remoteFile, this, file.getBaseLocalDirectoryPath());
                     getOperationMonitor().operationProcess(Operation.LIST, transferFile);
                     transferFiles.add(transferFile);
                 } else {
@@ -295,7 +296,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
             }
             if (isVisible(f)) {
                 LOGGER.log(Level.FINE, "File {0} added to upload queue", fo);
-                queue.offer(TransferFile.fromFileObject(null, fo, baseLocalAbsolutePath));
+                queue.offer(TransferFile.fromFileObject(null, fo, baseLocalAbsolutePath, baseRemoteDirectory));
             } else {
                 LOGGER.log(Level.FINE, "File {0} NOT added to upload queue [invisible]", fo);
             }
@@ -325,7 +326,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                     for (File child : children) {
                         if (isVisible(child)) {
                             LOGGER.log(Level.FINE, "File {0} added to upload queue", child);
-                            queue.offer(TransferFile.fromFile(file, child, baseLocalAbsolutePath));
+                            queue.offer(TransferFile.fromFile(file, child, baseLocalAbsolutePath, baseRemoteDirectory));
                         } else {
                             LOGGER.log(Level.FINE, "File {0} NOT added to upload queue [invisible]", child);
                         }
@@ -576,10 +577,10 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 LOGGER.log(Level.FINE, "File {0} added to download queue", f);
                 TransferFile tf;
                 if (f.exists()) {
-                    tf = TransferFile.fromFile(null, f, baseLocalAbsolutePath);
+                    tf = TransferFile.fromFile(null, f, baseLocalAbsolutePath, baseRemoteDirectory);
                 } else {
                     // assume folder for non-existing file => recursive fetch
-                    tf = TransferFile.fromDirectory(null, f, baseLocalAbsolutePath);
+                    tf = TransferFile.fromDirectory(null, f, baseLocalAbsolutePath, baseRemoteDirectory);
                 }
                 baseFiles.add(tf);
             } else {
@@ -616,7 +617,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                     for (RemoteFile child : remoteFiles) {
                         if (isVisible(getLocalFile(baseLocalDir, file, child))) {
                             LOGGER.log(Level.FINE, "File {0} added to download queue", child);
-                            files.add(TransferFile.fromRemoteFile(file, child, this));
+                            files.add(TransferFile.fromRemoteFile(file, child, this, baseLocalAbsolutePath));
                         } else {
                             LOGGER.log(Level.FINE, "File {0} NOT added to download queue [invisible]", child);
                         }
