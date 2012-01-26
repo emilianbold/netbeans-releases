@@ -72,6 +72,6 @@ public class SearchSuite {
                          "testRegularExpression",
                          "testFindNext",
                          "testFindPrev")
-                .addTest(ReplaceTest.class));
+                .addTest(ReplaceTest.class).enableModules(".*").clusters(".*"));
     }
 }

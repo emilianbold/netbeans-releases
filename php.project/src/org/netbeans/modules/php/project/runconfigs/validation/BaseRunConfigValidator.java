@@ -41,21 +41,52 @@
  */
 package org.netbeans.modules.php.project.runconfigs.validation;
 
-public class RunConfigValidatorTest extends TestBase {
+import java.io.File;
+import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
-    public RunConfigValidatorTest(String name) {
-        super(name);
+/**
+ * Validator for {@link org.netbeans.modules.php.project.runconfigs.BaseRunConfig}.
+ */
+public final class BaseRunConfigValidator {
+
+    private BaseRunConfigValidator() {
     }
 
-    public void testValidateIndexFile() throws Exception {
-        assertNull(RunConfigValidator.validateIndexFile(getWorkDir(), INDEX_NAME));
-        // errors
-        assertNotNull(RunConfigValidator.validateIndexFile(getWorkDir(), null));
-        assertNotNull(RunConfigValidator.validateIndexFile(getWorkDir(), "abc.php"));
-        assertNotNull(RunConfigValidator.validateIndexFile(getWorkDir(), "/abc.php"));
-        assertNotNull(RunConfigValidator.validateIndexFile(getWorkDir(), "\\abc.php"));
-        assertNotNull(RunConfigValidator.validateIndexFile(getWorkDir(), "../" + getWorkDir().getName() + "/" + INDEX_NAME));
-        assertNotNull(RunConfigValidator.validateIndexFile(getWorkDir(), "a/../" + INDEX_NAME));
+    @NbBundle.Messages("BaseRunConfigValidator.error.index.label=Index File")
+    public static String validateIndexFile(File rootDirectory, String indexFile) {
+        return validateRelativeFile(rootDirectory, indexFile, Bundle.BaseRunConfigValidator_error_index_label());
+    }
+
+    @NbBundle.Messages({
+        "BaseRunConfigValidator.error.relativeFile.missing={0} must be specified in order to run or debug project in command line.",
+        "BaseRunConfigValidator.error.relativeFile.invalid={0} must be a valid relative URL."
+    })
+    static String validateRelativeFile(File rootDirectory, String relativeFile, String errSource) {
+        assert rootDirectory != null;
+        if (!StringUtils.hasText(relativeFile)) {
+            return Bundle.BaseRunConfigValidator_error_relativeFile_missing(errSource);
+        }
+        boolean error = false;
+        if (relativeFile.startsWith("/") // NOI18N
+                || relativeFile.startsWith("\\")) { // NOI18N
+            error = true;
+        } else if (Utilities.isWindows() && relativeFile.contains(File.separator)) {
+            error = true;
+        } else {
+            File index = PhpProjectUtils.resolveFile(rootDirectory, relativeFile);
+            if (!index.isFile()
+                    || !index.equals(FileUtil.normalizeFile(index))) {
+                error = true;
+            }
+        }
+        if (error) {
+            return Bundle.BaseRunConfigValidator_error_relativeFile_invalid(errSource);
+        }
+        return null;
     }
 
 }

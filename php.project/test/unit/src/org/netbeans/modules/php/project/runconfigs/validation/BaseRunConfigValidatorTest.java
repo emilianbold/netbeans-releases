@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,34 +37,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javafx2.editor.fxml;
+package org.netbeans.modules.php.project.runconfigs.validation;
 
-import java.awt.Image;
-import org.openide.loaders.DataNode;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Children;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
+public class BaseRunConfigValidatorTest extends TestBase {
 
-/**
- *
- * @author Jaroslav Bachorik <jaroslav.bachorik@oracle.com>
- */
-public class FXMLDataNode extends DataNode {
-
-    public FXMLDataNode(DataObject obj, Children ch, Lookup lookup) {
-        super(obj, ch, lookup);
+    public BaseRunConfigValidatorTest(String name) {
+        super(name);
     }
 
-    @Override
-    public Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/javafx2/editor/resources/fxmlObject.gif"); // NOI18N
+    public void testValidateRelativeFile() throws Exception {
+        assertNull(BaseRunConfigValidator.validateRelativeFile(getWorkDir(), INDEX_NAME, "Index.php"));
+        // errors
+        assertNotNull(BaseRunConfigValidator.validateRelativeFile(getWorkDir(), null, "myfile"));
+        assertNotNull(BaseRunConfigValidator.validateRelativeFile(getWorkDir(), "abc.php", "myfile"));
+        assertNotNull(BaseRunConfigValidator.validateRelativeFile(getWorkDir(), "/abc.php", "myfile"));
+        assertNotNull(BaseRunConfigValidator.validateRelativeFile(getWorkDir(), "\\abc.php", "myfile"));
+        assertNotNull(BaseRunConfigValidator.validateRelativeFile(getWorkDir(), "../" + getWorkDir().getName() + "/" + INDEX_NAME, "myfile"));
+        assertNotNull(BaseRunConfigValidator.validateRelativeFile(getWorkDir(), "a/../" + INDEX_NAME, "myfile"));
     }
 
-    @Override
-    public Image getOpenedIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/javafx2/editor/resources/fxmlObject.gif"); // NOI18N
-    }
 }

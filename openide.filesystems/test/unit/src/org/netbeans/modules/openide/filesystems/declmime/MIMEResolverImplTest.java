@@ -210,8 +210,7 @@ public class MIMEResolverImplTest extends NbTestCase {
     }
 
     /** Test possible cascading of pattern elements. */
-    public void testPatternElementValidity() {
-        MIMEResolver declarativeResolver = MIMEResolverImpl.forDescriptor(resolversRoot.getFileObject("pattern-resolver-valid.xml"));
+    private void doTestPatternElementValidity(String resolver, boolean fails) {
         final AtomicBoolean failed = new AtomicBoolean(false);
         Handler handler = new Handler() {
 
@@ -234,20 +233,21 @@ public class MIMEResolverImplTest extends NbTestCase {
         };
         Logger.getLogger(DefaultParser.class.getName()).setLevel(Level.ALL);
         Logger.getLogger(DefaultParser.class.getName()).addHandler(handler);
+        MIMEResolver declarativeResolver = MIMEResolverImpl.forDescriptor(resolversRoot.getFileObject(resolver));
         declarativeResolver.findMIMEType(root.getFileObject("empty.dtd"));
-        assertFalse("Pattern elements in patternValid.xml not parsed.", failed.get());
+        assertFalse(resolver, failed.get() ^ fails);
+    }
 
-        failed.set(false);
-        LOG.info("Clearing the flag");
-        declarativeResolver = MIMEResolverImpl.forDescriptor(resolversRoot.getFileObject("pattern-resolver-invalid1.xml"));
-        declarativeResolver.findMIMEType(root.getFileObject("empty.dtd"));
-        LOG.info("Verify");
-        assertTrue("Pattern elements in patternInvalid1.xml should not be parsed.", failed.get());
+    public void testPatternElementValidityValid() throws Exception {
+        doTestPatternElementValidity("pattern-resolver-valid.xml", false);
+    }
 
-        failed.set(false);
-        declarativeResolver = MIMEResolverImpl.forDescriptor(resolversRoot.getFileObject("pattern-resolver-invalid2.xml"));
-        declarativeResolver.findMIMEType(root.getFileObject("empty.dtd"));
-        assertTrue("Pattern elements in patternInvalid2.xml should not be parsed.", failed.get());
+    public void testPatternElementValidityInvalid1() throws Exception {
+        doTestPatternElementValidity("pattern-resolver-invalid1.xml", true);
+    }
+
+    public void testPatternElementValidityInvalid2() throws Exception {
+        doTestPatternElementValidity("pattern-resolver-invalid2.xml", true);
     }
 
     private void assertMimeType(MIMEResolver resolver, String expectedMimeType, String... filenames) {

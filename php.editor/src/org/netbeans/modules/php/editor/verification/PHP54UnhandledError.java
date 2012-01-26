@@ -105,6 +105,14 @@ public class PHP54UnhandledError extends DefaultVisitor {
         }
     }
 
+    @Override
+    public void visit(StaticMethodInvocation node) {
+        Expression name = node.getMethod().getFunctionName().getName();
+        if (name instanceof ReflectionVariable) {
+            createError(name);
+        }
+    }
+
     private  void createError(int startOffset, int endOffset){
         PHPVersionError error = new PHP54VersionError(fileObject, startOffset, endOffset);
         errors.add(error);

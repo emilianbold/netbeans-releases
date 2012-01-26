@@ -59,7 +59,7 @@ import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.windows.nativeaccess.NativeWindowSystem;
 import org.netbeans.core.windows.options.WinSysPrefs;
-import org.netbeans.core.windows.view.ui.Tabbed;
+import org.netbeans.swing.tabcontrol.customtabs.Tabbed;
 
 /**
  *
@@ -131,16 +131,9 @@ public class DragAndDropFeedbackVisualizer {
 
         DragWindow tmp = createDragWindow( tabIndex );
         if( null != tmp ) {
-            dragOffset = new Point( e.getDragOrigin() );
-            if( prefs.getBoolean(WinSysPrefs.DND_SMALLWINDOWS, true) ) {
-                dragOffset.x -= tabRect.x;
-                int maxWidth = prefs.getInt(WinSysPrefs.DND_SMALLWINDOWS_WIDTH, 250);
-                if( e.getDragOrigin().x - tabRect.x > maxWidth ) {
-                    dragOffset.x = maxWidth - 20;
-                }
-            }
+            dragOffset = new Point( 0, 0 );
             Point loc = new Point( e.getDragOrigin() );
-            SwingUtilities.convertPointToScreen(loc, source.getComponent());
+            SwingUtilities.convertPointToScreen(loc, e.getComponent());
             tmp.setLocation( loc.x-dragOffset.x, loc.y-dragOffset.y );
             //let the JNA transparency stuff to kick in
             try {

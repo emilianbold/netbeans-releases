@@ -47,8 +47,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Retention(RetentionPolicy.SOURCE)
-@Target(ElementType.PACKAGE)
 /**
  * Registers a help set.
  * A help set reference according to {@code -//NetBeans//DTD JavaHelp Help Set Reference 1.0//EN} is created.
@@ -56,6 +54,8 @@ import java.lang.annotation.Target;
  * all {@code *.html} and {@code *.htm} in the package containing the help set, and its subpackages, will be indexed.
  * @since org.netbeans.modules.javahelp/1 2.20
  */
+@Retention(RetentionPolicy.SOURCE)
+@Target(ElementType.PACKAGE)
 public @interface HelpSetRegistration {
 
     /**

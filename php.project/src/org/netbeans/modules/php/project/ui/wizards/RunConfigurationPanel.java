@@ -60,12 +60,14 @@ import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.environment.PhpEnvironment.DocumentRoot;
+import org.netbeans.modules.php.project.runconfigs.RunConfigInternal;
 import org.netbeans.modules.php.project.runconfigs.RunConfigLocal;
 import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
 import org.netbeans.modules.php.project.runconfigs.validation.RunConfigLocalValidator;
 import org.netbeans.modules.php.project.runconfigs.validation.RunConfigRemoteValidator;
 import org.netbeans.modules.php.project.runconfigs.validation.RunConfigScriptValidator;
-import org.netbeans.modules.php.project.runconfigs.validation.RunConfigValidator;
+import org.netbeans.modules.php.project.runconfigs.validation.BaseRunConfigValidator;
+import org.netbeans.modules.php.project.runconfigs.validation.RunConfigInternalValidator;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServer.ComboBoxModel;
 import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
@@ -99,6 +101,9 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     static final String REMOTE_CONNECTION = "remoteConnection"; // NOI18N
     static final String REMOTE_DIRECTORY = "remoteDirectory"; // NOI18N
     static final String REMOTE_UPLOAD = "remoteUpload"; // NOI18N
+    static final String HOSTNAME = "hostname"; // NOI18N
+    static final String PORT = "port"; // NOI18N
+    static final String ROUTER = "router"; // NOI18N
 
     static final String[] CFG_PROPS = new String[] {
         RUN_AS,
@@ -107,6 +112,9 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         REMOTE_CONNECTION,
         REMOTE_DIRECTORY,
         REMOTE_UPLOAD,
+        HOSTNAME,
+        PORT,
+        ROUTER,
     };
 
     private final String[] steps;
@@ -123,6 +131,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     private RunAsLocalWeb runAsLocalWeb = null;
     private RunAsRemoteWeb runAsRemoteWeb = null;
     private RunAsScript runAsScript = null;
+    private RunAsInternalServer runAsInternalServer = null;
     private String defaultLocalUrl = null;
     private String originalProjectName = null;
 
@@ -147,6 +156,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             runAsLocalWeb = new RunAsLocalWeb(configManager, sourcesFolderProvider);
             runAsRemoteWeb = new RunAsRemoteWeb(configManager, sourcesFolderProvider);
             runAsScript = new RunAsScript(configManager, sourcesFolderProvider);
+            runAsInternalServer = new RunAsInternalServer(configManager, sourcesFolderProvider);
             switch (wizardType) {
                 case NEW:
                     runAsLocalWeb.setIndexFile(DEFAULT_INDEX_FILE);
@@ -155,6 +165,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                     runAsLocalWeb.hideIndexFile();
                     runAsRemoteWeb.hideIndexFile();
                     runAsScript.hideIndexFile();
+                    runAsInternalServer.hideRouter();
                     break;
                 case REMOTE:
                     runAsRemoteWeb.setIndexFile(DEFAULT_INDEX_FILE);
@@ -173,6 +184,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                         runAsLocalWeb,
                         runAsRemoteWeb,
                         runAsScript,
+                        runAsInternalServer,
                     };
                     break;
                 case REMOTE:
@@ -246,6 +258,9 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         runAsLocalWeb.setCopyFiles(getCopyFiles());
 
         runAsRemoteWeb.setUploadDirectory(getUploadDirectory());
+
+        runAsInternalServer.setHostname(getHostname());
+        runAsInternalServer.setPort(getPort());
     }
 
     @Override
@@ -271,6 +286,9 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                 break;
             case SCRIPT:
                 storeRunAsScript(settings);
+                break;
+            case INTERNAL:
+                storeRunAsInternalServer(settings);
                 break;
             default:
                 assert false : "Unhandled RunAsType type: " + runAs;
@@ -328,6 +346,22 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         return "/" + getProjectName(); // NOI18N
     }
 
+    private String getHostname() {
+        String hostname = (String) descriptor.getProperty(HOSTNAME);
+        if (hostname != null) {
+            return hostname;
+        }
+        return RunConfigInternal.DEFAULT_HOSTNAME;
+    }
+
+    private String getPort() {
+        String port = (String) descriptor.getProperty(PORT);
+        if (port != null) {
+            return port;
+        }
+        return String.valueOf(RunConfigInternal.DEFAULT_PORT);
+    }
+
     private void findIndexFile() {
         // index file for existing sources - if index file is empty, try to find existing index.php
         String indexFile = (String) descriptor.getProperty(INDEX_FILE);
@@ -360,6 +394,14 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         settings.putProperty(INDEX_FILE, runAsScript.createRunConfig().getIndexRelativePath());
     }
 
+    private void storeRunAsInternalServer(WizardDescriptor settings) {
+        RunConfigInternal config = runAsInternalServer.createRunConfig();
+        settings.putProperty(URL, config.getUrlHint());
+        settings.putProperty(HOSTNAME, config.getHostname());
+        settings.putProperty(PORT, config.getPort());
+        settings.putProperty(ROUTER, config.getRouterRelativePath());
+    }
+
     @Override
     public boolean isValid() {
         getComponent();
@@ -383,6 +425,10 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                 error = validateRunAsScript();
                 indexFile = runAsScript.createRunConfig().getIndexRelativePath();
                 break;
+            case INTERNAL:
+                error = validateRunAsInternalServer();
+                indexFile = null;
+                break;
             default:
                 assert false : "Unhandled RunAsType type: " + getRunAsType();
                 break;
@@ -393,7 +439,10 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             return false;
         }
         // index file is just warning
-        String warning = RunConfigValidator.validateIndexFile(sourcesFolderProvider.getSourcesFolder(), indexFile);
+        String warning = null;
+        if (indexFile != null) {
+            warning = BaseRunConfigValidator.validateIndexFile(sourcesFolderProvider.getSourcesFolder(), indexFile);
+        }
         if (wizardType == WizardType.EXISTING
                 && warning != null) {
             descriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, warning);
@@ -433,6 +482,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         runAsLocalWeb.addRunAsLocalWebListener(this);
         runAsRemoteWeb.addRunAsRemoteWebListener(this);
         runAsScript.addRunAsScriptListener(this);
+        runAsInternalServer.addRunAsInternalServerListener(this);
     }
 
     private boolean areOtherStepsValid() {
@@ -475,6 +525,10 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
 
     private String validateRunAsScript() {
         return RunConfigScriptValidator.validateNewProject(runAsScript.createRunConfig());
+    }
+
+    private String validateRunAsInternalServer() {
+        return RunConfigInternalValidator.validateNewProject(runAsInternalServer.createRunConfig());
     }
 
     private String validateServerLocation() {
@@ -533,10 +587,11 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             case SCRIPT:
                 // do not validate anything
                 return;
-                //break;
+            case INTERNAL:
+                RunConfigInternal configInternal = runAsInternalServer.createRunConfig();
+                url = configInternal.getUrlHint();
+                break;
         }
-        assert url != null;
-        assert indexFile != null;
 
         String warning = Utils.validateAsciiText(url, NbBundle.getMessage(ConfigureProjectPanel.class, "LBL_ProjectUrlPure"));
         if (warning != null) {

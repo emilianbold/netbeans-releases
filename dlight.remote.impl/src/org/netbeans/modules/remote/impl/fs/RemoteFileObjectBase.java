@@ -84,7 +84,8 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     private volatile String remotePath;
     private final File cache;
     private CopyOnWriteArrayList<FileChangeListener> listeners = new CopyOnWriteArrayList<FileChangeListener>();
-    private final FileLock lock = new FileLock();
+    private FileLock lock;
+    private final Object instanceLock = new Object();
     static final long serialVersionUID = 1931650016889811086L;
     public static final boolean USE_VCS;
     public static final boolean DEFER_WRITES = Boolean.getBoolean("cnd.remote.defer.writes"); //NOI18Ns
@@ -107,7 +108,6 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     protected RemoteFileObjectBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             RemoteFileObjectBase parent, String remotePath, File cache) {
-        this.lock.releaseLock();
         RemoteLogger.assertTrue(execEnv.isRemote());        
         //RemoteLogger.assertTrue(cache.exists(), "Cache should exist for " + execEnv + "@" + remotePath); //NOI18N
         this.fileSystem = fileSystem;
@@ -213,6 +213,9 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     
     @Override
     public void delete(FileLock lock) throws IOException {
+        if (!checkLock(lock)) {
+            throw new IOException("Wrong lock"); //NOI18N
+        }
         FilesystemInterceptor interceptor = null;
         if (USE_VCS) {
             interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
@@ -455,11 +458,43 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     @Override
     public FileLock lock() throws IOException {
+        synchronized(instanceLock) {
+            if (lock != null && lock.isValid()) {
+                throw new FileAlreadyLockedException(getPath());
+            }
+            lock =  new FileLock();
+        }
         return lock;
     }
 
     @Override
+    public boolean isLocked() {
+        boolean res = false;
+        synchronized(instanceLock) {
+            if (lock != null) {
+                res = lock.isValid();
+                if (!res) {
+                    lock = null;
+                }
+            }
+        }
+        return res;
+    }
+    
+    protected boolean checkLock(FileLock aLock) throws IOException {
+        if (aLock != null) {
+            synchronized(instanceLock) {
+                return lock == aLock;
+            }
+        }
+        return true;
+    }
+
+    @Override
     public void rename(FileLock lock, String name, String ext) throws IOException {
+        if (!checkLock(lock)) {
+            throw new IOException("Wrong lock"); //NOI18N
+        }
         RemoteFileObjectBase p = getParent();
         if (p != null) {
             String newNameExt = composeName(name, ext);
@@ -535,6 +570,9 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     @Override
     public FileObject move(FileLock lock, FileObject target, String name, String ext) throws IOException {
+        if (!checkLock(lock)) {
+            throw new IOException("Wrong lock"); //NOI18N
+        }
         if (USE_VCS) {
             FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
             if (interceptor != null) {
@@ -595,6 +633,15 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         }
         if (RETURN_JAVA_IO_FILE && attrName.equals("java.io.File")) { // NOI18N
             return new FileObjectBasedFile(getExecutionEnvironment(), this);
+        }
+        if (attrName.startsWith("ProvidedExtensions")) {  //NOI18N
+            // #158600 - delegate to ProvidedExtensions if attrName starts with ProvidedExtensions prefix
+            if (USE_VCS) {
+                FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
+                if (interceptor != null) {
+                    return interceptor.getAttribute(FilesystemInterceptorProvider.toFileProxy(this), attrName);
+                }
+            }
         }
         return getFileSystem().getAttribute(this, attrName);
     }
@@ -672,12 +719,14 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 11 * hash + (this.getFileSystem() != null ? this.getFileSystem().hashCode() : 0);
-        hash = 11 * hash + (this.getExecutionEnvironment() != null ? this.getExecutionEnvironment().hashCode() : 0);
-        String thisPath = this.getPath();
-        hash = 11 * hash + (thisPath != null ? thisPath.hashCode() : 0);
-        return hash;
+        // hash code should not be counted by volatale field.
+        //int hash = 3;
+        //hash = 11 * hash + (this.getFileSystem() != null ? this.getFileSystem().hashCode() : 0);
+        //hash = 11 * hash + (this.getExecutionEnvironment() != null ? this.getExecutionEnvironment().hashCode() : 0);
+        //String thisPath = this.getPath();
+        //hash = 11 * hash + (thisPath != null ? thisPath.hashCode() : 0);
+        //return hash;
+        return super.hashCode();
     }
     
     protected static String composeName(String name, String ext) {

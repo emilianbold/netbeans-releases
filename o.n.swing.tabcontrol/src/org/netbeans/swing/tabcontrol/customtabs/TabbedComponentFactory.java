@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,51 +40,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javafx2.editor.fxml;
 
-import java.io.IOException;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.UniFileLoader;
-import org.openide.util.NbBundle;
+package org.netbeans.swing.tabcontrol.customtabs;
+
+import org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer;
 
 /**
+ * Service interface used by the Window System for creating NetBeans specific
+ * Tabbed Containers. Use this if you want to provide an alternative implementation
+ * e.g. based on JTabbedPane:
+        <pre>
+            class MyTabbedPane extends JTabbedPane implements Tabbed.Accessor {
+                private final Tabbed tabbedImpl = new Tabbed() {
+                    //implement abstract methods while delegating most of them to JTabbedPane
+                };
+
+                public Tabbed getTabbed() {
+                    return tabbedImpl;
+                }
+            }
+        </pre>
+
+        <p>Then inject your new implementation to the window system by registering
+        your own TabbedComponentFactory:</p>
+        <pre>
+            &#64;ServiceProvider(service=TabbedComponentFactory.class,position=1000)
+            public class MyTabbedPaneFactory implements TabbedComponentFactory {
+                public Tabbed createTabbedComponent( TabbedType type, WinsysInfoForTabbedContainer info ) {
+                    return new MyTabbedPane().getTabbed();
+                }
+            }
+        </pre>
  *
- * @author Jaroslav Bachorik <jaroslav.bachorik@oracle.com>
+ * @since 1.33
+ * @author S. Aubrecht
  */
-public class FXMLDataLoader extends UniFileLoader {
-
-    public static final String REQUIRED_MIME = "text/x-fxml+xml";
-    private static final long serialVersionUID = 1L;
-
-    public FXMLDataLoader() {
-        super("org.netbeans.modules.javafx2.editor.fxml.FXMLDataObject");
-    }
-
-    @Override
-    protected String defaultDisplayName() {
-        return NbBundle.getMessage(FXMLDataLoader.class, "LBL_FXML_loader_name");
-    }
-
-    @Override
-    protected void initialize() {
-        super.initialize();
-        getExtensions().addMimeType(REQUIRED_MIME);
-    }
-
-    @Override
-    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        return new FXMLDataObject(primaryFile, this);
-    }
-
-    @Override
-    protected String actionsContext() {
-        return "Loaders/" + REQUIRED_MIME + "/Actions";
-    }
+public interface TabbedComponentFactory {
+    /**
+     * Create Tabbed implementation for given type.
+     *
+     * @param type Type of the container to be created.
+     * @param info Information from the window system that may affect the look
+     * and feel of the tab control.
+     * @return New Tabbed instance.
+     */
+    public Tabbed createTabbedComponent( TabbedType type, WinsysInfoForTabbedContainer info );
 }
