@@ -137,7 +137,7 @@ public class SpecialRemoteFileObject extends RemoteFileObjectFile {
     }
 
     @Override
-    public OutputStream getOutputStream(FileLock lock) throws IOException {
+    protected OutputStream getOutputStreamImpl(FileLock lock, RemoteFileObjectBase orig) throws IOException {
         if (!isValid()) {
             throw new FileNotFoundException("FileObject " + this + " is not valid."); //NOI18N
         }
