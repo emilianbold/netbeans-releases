@@ -44,19 +44,19 @@ package org.netbeans.modules.profiler.j2ee.impl;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.api.extexecution.startup.StartupArguments.StartMode;
+import org.netbeans.api.extexecution.startup.StartupExtender.StartMode;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
-import org.netbeans.spi.extexecution.startup.StartupArgumentsProvider;
+import org.netbeans.spi.extexecution.startup.StartupExtenderImplementation;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author Jaroslav Bachorik <jaroslav.bachorik@oracle.com>
  */
-@StartupArgumentsProvider.Registration(position=100, displayName="#DESC_Profiler",
+@StartupExtenderImplementation.Registration(position=100, displayName="#DESC_Profiler",
         startMode=StartMode.PROFILE)
-public class ProfilerArgsProvider implements StartupArgumentsProvider {
+public class ProfilerArgsProvider implements StartupExtenderImplementation {
 
     @Override
     public List<String> getArguments(Lookup context, StartMode mode) {

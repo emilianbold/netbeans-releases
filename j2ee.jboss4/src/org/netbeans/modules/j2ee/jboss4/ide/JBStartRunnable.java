@@ -62,7 +62,7 @@ import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.extexecution.startup.StartupArguments;
+import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.modules.j2ee.deployment.plugins.api.CommonServerBridge;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
@@ -222,7 +222,7 @@ class JBStartRunnable implements Runnable {
             }
         }
 
-        for (StartupArguments args : StartupArguments.getStartupArguments(
+        for (StartupExtender args : StartupExtender.getExtenders(
                 CommonServerBridge.getCommonInstance(ip.getProperty("url")).getLookup(), getMode(startServer.getMode()))) {
             for (String singleArg : args.getArguments()) {
                 javaOptsBuilder.append(' ').append(singleArg);
@@ -242,13 +242,13 @@ class JBStartRunnable implements Runnable {
         return envp;
     }
 
-    private static StartupArguments.StartMode getMode(JBStartServer.MODE jbMode) {
+    private static StartupExtender.StartMode getMode(JBStartServer.MODE jbMode) {
         if (JBStartServer.MODE.PROFILE.equals(jbMode)) {
-            return StartupArguments.StartMode.PROFILE;
+            return StartupExtender.StartMode.PROFILE;
         } else if (JBStartServer.MODE.DEBUG.equals(jbMode)) {
-            return StartupArguments.StartMode.DEBUG;
+            return StartupExtender.StartMode.DEBUG;
         } else {
-            return StartupArguments.StartMode.NORMAL;
+            return StartupExtender.StartMode.NORMAL;
         }
     }
 

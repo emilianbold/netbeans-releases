@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,66 +37,26 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.spi.extexecution.startup;
+package org.netbeans.api.extexecution.startup;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.Arrays;
 import java.util.List;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.extexecution.startup.StartupArguments;
+import org.netbeans.api.extexecution.startup.StartupExtender.StartMode;
+import org.netbeans.spi.extexecution.startup.StartupExtenderImplementation;
 import org.openide.util.Lookup;
 
 /**
- * Provides additional JVM arguments to be used when starting a server or user program.
- * Typically the server plugin
- * implementor or project will query the arguments via API counterpart
- * {@link StartupArguments}. Of course it is not mandatory to use such
- * arguments and there is no way to force it.
  *
  * @author Petr Hejl
- * @since 1.30
- * @see StartupArguments
  */
-public interface StartupArgumentsProvider {
+@StartupExtenderImplementation.Registration(displayName="Test", startMode=StartMode.NORMAL)
+public class TestStartupExtender implements StartupExtenderImplementation {
 
-    /**
-     * Returns the list of arguments to pass to the server VM for the given
-     * start mode.
-     *
-     * @param context the lookup providing the contract between client
-     *             and provider (see {@link StartupArguments#getStartupArguments} for details)
-     * @param mode the VM mode the client is going to use
-     * @return the list of arguments to pass to the server VM
-     */
-    @NonNull
-    List<String> getArguments(@NonNull Lookup context, @NonNull StartupArguments.StartMode mode);
-
-    /**
-     * Annotation used to properly register the SPI implementations.
-     */
-    @Retention(RetentionPolicy.SOURCE)
-    @Target({ElementType.TYPE, ElementType.METHOD})
-    public @interface Registration {
-
-        /**
-         * The human readable description of the provider. May be a bundle key.
-         * For example this might be "JRebel", "Profiler" etc.
-         */
-        String displayName();
-
-        /**
-         * Modes to which the provider will respond.
-         */
-        StartupArguments.StartMode[] startMode();
-
-        /**
-         * Position of the provider in the list of providers.
-         */
-        int position() default Integer.MAX_VALUE;
-
+    @Override
+    public List<String> getArguments(Lookup context, StartMode mode) {
+        return Arrays.asList("arg1", "arg2");
     }
+
 }

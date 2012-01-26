@@ -117,19 +117,19 @@ is the proper place.
 
         <change>
             <api name="extexecution_api_startup"/>
-            <summary>SPI to allow passing additional startup arguments to VM</summary>
+            <summary>SPI to allow extending process startup</summary>
             <version major="1" minor="30"/>
             <date day="24" month="1" year="2012"/>
             <author login="phejl"/>
             <compatibility addition="yes"/>
             <description>
                 This API/SPI allow third party plugins (such as JRebel) to
-                register providers of VM arguments. The interested clients
-                such as projects or servers may optionaly query for such
-                arguments and pass them to server VM.
+                register extenders of process startup. The interested clients
+                such as projects or servers may optionaly query such
+                extenders and pass additional arguments to the process.
             </description>
-            <class package="org.netbeans.api.extexecution.startup" name="StartupArguments"/>
-            <class package="org.netbeans.spi.extexecution.startup" name="StartupArgumentsProvider"/>
+            <class package="org.netbeans.api.extexecution.startup" name="StartupExtender"/>
+            <class package="org.netbeans.spi.extexecution.startup" name="StartupExtenderImplementation"/>
             <issue number="206196"/>
         </change>
         <change>

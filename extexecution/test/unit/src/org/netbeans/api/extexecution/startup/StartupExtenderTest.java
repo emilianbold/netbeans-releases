@@ -39,68 +39,48 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.extexecution.startup;
+package org.netbeans.api.extexecution.startup;
 
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.api.extexecution.startup.StartupArguments.StartMode;
-import org.netbeans.spi.extexecution.startup.StartupArgumentsProvider;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.extexecution.startup.ProxyStartupExtender;
+import org.netbeans.modules.extexecution.startup.StartupExtenderRegistrationProcessor;
+import org.netbeans.spi.extexecution.startup.StartupExtenderImplementation;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Petr Hejl
  */
-public class ProxyStartupArgumentsProvider implements StartupArgumentsProvider {
+public class StartupExtenderTest extends NbTestCase {
 
-    private final Map<String,?> attributes;
-
-    private final Set<StartMode> startMode;
-
-    private StartupArgumentsProvider delegate;
-
-    public ProxyStartupArgumentsProvider(Map<String,?> attributes) {
-        this.attributes = attributes;
-
-        String startModeValue = (String) attributes.get(
-                StartupArgumentsRegistrationProcessor.START_MODE_ATTRIBUTE);
-        startMode = EnumSet.noneOf(StartMode.class);
-        if (startModeValue != null) {
-            for (String value : startModeValue.split(",")) {
-                startMode.add(StartMode.valueOf(value));
-            }
-        }
+    public StartupExtenderTest(String name) {
+        super(name);
     }
 
-    @Override
-    public List<String> getArguments(Lookup context, StartMode mode) {
-        if (startMode.contains(mode)) {
-            return getDelegate().getArguments(context, mode);
-        }
-        return Collections.emptyList();
+    public void testLaziness() {
+        Lookup lookup = Lookups.forPath(StartupExtenderRegistrationProcessor.PATH);
+        assertTrue(lookup.lookup(StartupExtenderImplementation.class) instanceof ProxyStartupExtender);
     }
 
-    private StartupArgumentsProvider getDelegate() {
-        synchronized (this) {
-            if (delegate != null) {
-                return delegate;
-            }
-        }
+    public void testArguments() {
+        Lookup context = Lookup.EMPTY;
 
-        StartupArgumentsProvider provider = (StartupArgumentsProvider) attributes.get(
-                StartupArgumentsRegistrationProcessor.DELEGATE_ATTRIBUTE);
-        if (provider == null) {
-            throw new IllegalStateException("Delegate must not be null");
-        }
+        List<StartupExtender> argsDebug =
+                StartupExtender.getExtenders(context, StartupExtender.StartMode.DEBUG);
+        assertEquals(1, argsDebug.size());
+        assertTrue(argsDebug.get(0).getArguments().isEmpty());
 
-        synchronized (this) {
-            if (delegate == null) {
-                delegate = provider;
-            }
-            return delegate;
-        }
+        List<StartupExtender> argsNormal =
+                StartupExtender.getExtenders(context, StartupExtender.StartMode.NORMAL);
+        assertEquals(1, argsNormal.size());
+
+        StartupExtender args = argsNormal.get(0);
+        assertEquals("Test", args.getDescription());
+        assertEquals(2, args.getArguments().size());
+
+        assertEquals("arg1", args.getArguments().get(0));
+        assertEquals("arg2", args.getArguments().get(1));
     }
 }

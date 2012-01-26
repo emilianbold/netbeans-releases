@@ -84,7 +84,7 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.extexecution.startup.StartupArguments;
+import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -582,24 +582,24 @@ public abstract class BaseActionProvider implements ActionProvider {
             }
 
             private List<String> runJvmargsIde() {
-                StartupArguments.StartMode mode;
+                StartupExtender.StartMode mode;
                 if (command.equals(COMMAND_RUN) || command.equals(COMMAND_RUN_SINGLE)) {
-                    mode = StartupArguments.StartMode.NORMAL;
+                    mode = StartupExtender.StartMode.NORMAL;
                 } else if (command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE) || command.equals(COMMAND_DEBUG_STEP_INTO)) {
-                    mode = StartupArguments.StartMode.DEBUG;
+                    mode = StartupExtender.StartMode.DEBUG;
                 } else if (command.equals("profile")) {
-                    mode = StartupArguments.StartMode.PROFILE;
+                    mode = StartupExtender.StartMode.PROFILE;
                 } else if (command.equals(COMMAND_TEST) || command.equals(COMMAND_TEST_SINGLE)) {
-                    mode = StartupArguments.StartMode.TEST_NORMAL;
+                    mode = StartupExtender.StartMode.TEST_NORMAL;
                 } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
-                    mode = StartupArguments.StartMode.TEST_DEBUG;
+                    mode = StartupExtender.StartMode.TEST_DEBUG;
                 } else if (command.equals("profile-test-single")) {
-                    mode = StartupArguments.StartMode.TEST_PROFILE;
+                    mode = StartupExtender.StartMode.TEST_PROFILE;
                 } else {
                     return Collections.emptyList();
                 }
                 List<String> args = new ArrayList<String>();
-                for (StartupArguments group : StartupArguments.getStartupArguments(Lookups.singleton(project), mode)) {
+                for (StartupExtender group : StartupExtender.getExtenders(Lookups.singleton(project), mode)) {
                     args.addAll(group.getArguments());
                 }
                 return args;

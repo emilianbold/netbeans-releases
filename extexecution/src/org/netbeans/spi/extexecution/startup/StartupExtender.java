@@ -39,24 +39,21 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.api.extexecution.startup;
+package org.netbeans.spi.extexecution.startup;
 
-import java.util.Arrays;
-import java.util.List;
-import org.netbeans.api.extexecution.startup.StartupArguments.StartMode;
-import org.netbeans.spi.extexecution.startup.StartupArgumentsProvider;
-import org.openide.util.Lookup;
+import java.util.Map;
+import org.netbeans.modules.extexecution.startup.ProxyStartupExtender;
 
 /**
  *
  * @author Petr Hejl
  */
-@StartupArgumentsProvider.Registration(displayName="Test", startMode=StartMode.NORMAL)
-public class TestArgumentsProvider implements StartupArgumentsProvider {
+final class StartupExtender {
 
-    @Override
-    public List<String> getArguments(Lookup context, StartMode mode) {
-        return Arrays.asList("arg1", "arg2");
+    static StartupExtenderImplementation createProxy(Map<String,?> map) {
+        return new ProxyStartupExtender(map);
     }
+
+    private StartupExtender() {}
 
 }

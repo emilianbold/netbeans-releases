@@ -49,8 +49,8 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.extexecution.startup.StartupArguments.StartMode;
-import org.netbeans.spi.extexecution.startup.StartupArgumentsProvider;
+import org.netbeans.api.extexecution.startup.StartupExtender.StartMode;
+import org.netbeans.spi.extexecution.startup.StartupExtenderImplementation;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
@@ -60,12 +60,12 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Petr Hejl
  */
-@SupportedAnnotationTypes("org.netbeans.spi.extexecution.startup.StartupArgumentsProvider.Registration")
+@SupportedAnnotationTypes("org.netbeans.spi.extexecution.startup.StartupExtenderImplementation.Registration")
 @ServiceProvider(service = Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-public class StartupArgumentsRegistrationProcessor extends LayerGeneratingProcessor {
+public class StartupExtenderRegistrationProcessor extends LayerGeneratingProcessor {
 
-    public static final String PATH = "StartupArgumentProviders"; // NOI18N
+    public static final String PATH = "StartupExtender"; // NOI18N
 
     public static final String DELEGATE_ATTRIBUTE = "delegate"; // NOI18N
 
@@ -78,9 +78,9 @@ public class StartupArgumentsRegistrationProcessor extends LayerGeneratingProces
         }
 
         for (Element element : roundEnv.getElementsAnnotatedWith(
-                StartupArgumentsProvider.Registration.class)) {
+                StartupExtenderImplementation.Registration.class)) {
 
-            StartupArgumentsProvider.Registration annotation = element.getAnnotation(StartupArgumentsProvider.Registration.class);
+            StartupExtenderImplementation.Registration annotation = element.getAnnotation(StartupExtenderImplementation.Registration.class);
             if (annotation == null) {
                 continue;
             }
@@ -92,11 +92,11 @@ public class StartupArgumentsRegistrationProcessor extends LayerGeneratingProces
                 builder.setLength(builder.length() - 1);
             }
             File f = layer(element).instanceFile(PATH, null)
-                    .instanceAttribute(DELEGATE_ATTRIBUTE, StartupArgumentsProvider.class, annotation, null)
+                    .instanceAttribute(DELEGATE_ATTRIBUTE, StartupExtenderImplementation.class, annotation, null)
                     .stringvalue(START_MODE_ATTRIBUTE, builder.toString())
-                    .bundlevalue("displayName", element.getAnnotation(StartupArgumentsProvider.Registration.class).displayName()) // NOI18N
-                    .methodvalue("instanceCreate", "org.netbeans.spi.extexecution.startup.StartupArguments", "createProxy") // NOI18N
-                    .position(element.getAnnotation(StartupArgumentsProvider.Registration.class).position()); // NOI18N
+                    .bundlevalue("displayName", element.getAnnotation(StartupExtenderImplementation.Registration.class).displayName()) // NOI18N
+                    .methodvalue("instanceCreate", "org.netbeans.spi.extexecution.startup.StartupExtender", "createProxy") // NOI18N
+                    .position(element.getAnnotation(StartupExtenderImplementation.Registration.class).position()); // NOI18N
             f.write();
         }
         return true;

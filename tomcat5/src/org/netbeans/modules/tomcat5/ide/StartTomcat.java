@@ -69,7 +69,7 @@ import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.extexecution.startup.StartupArguments;
+import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.modules.j2ee.deployment.plugins.api.CommonServerBridge;
 import org.netbeans.modules.tomcat5.progress.ProgressEventSupport;
 import org.netbeans.modules.tomcat5.progress.Status;
@@ -399,7 +399,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                 }
 
 
-                for (StartupArguments args : StartupArguments.getStartupArguments(
+                for (StartupExtender args : StartupExtender.getExtenders(
                         CommonServerBridge.getCommonInstance(tm.getUri()).getLookup(), getMode(mode))) {
                     for (String singleArg : args.getArguments()) {
                         sb.append(' ').append(singleArg);
@@ -532,14 +532,14 @@ public final class StartTomcat extends StartServer implements ProgressObject {
             }
         }
 
-        private StartupArguments.StartMode getMode(int mode) {
+        private StartupExtender.StartMode getMode(int mode) {
             switch (mode) {
                 case MODE_PROFILE:
-                    return StartupArguments.StartMode.PROFILE;
+                    return StartupExtender.StartMode.PROFILE;
                 case MODE_DEBUG:
-                    return StartupArguments.StartMode.DEBUG;
+                    return StartupExtender.StartMode.DEBUG;
                 default:
-                    return StartupArguments.StartMode.NORMAL;
+                    return StartupExtender.StartMode.NORMAL;
             }
         }
 

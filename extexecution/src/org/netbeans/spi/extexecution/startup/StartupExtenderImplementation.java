@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,23 +37,66 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 package org.netbeans.spi.extexecution.startup;
 
-import java.util.Map;
-import org.netbeans.modules.extexecution.startup.ProxyStartupArgumentsProvider;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.extexecution.startup.StartupExtender;
+import org.openide.util.Lookup;
 
 /**
+ * Defines the interface for plugins providing additional arguments for process
+ * startup. Typically the server plugin implementor or project will query
+ * the arguments via API counterpart {@link StartupExtender}. Of course it is
+ * not mandatory to use such arguments and there is no way to force it.
  *
  * @author Petr Hejl
+ * @since 1.30
+ * @see StartupExtender
  */
-final class StartupArguments {
+public interface StartupExtenderImplementation {
 
-    static StartupArgumentsProvider createProxy(Map<String,?> map) {
-        return new ProxyStartupArgumentsProvider(map);
+    /**
+     * Returns the list of arguments to pass to the process for the given
+     * start mode.
+     *
+     * @param context the lookup providing the contract between client
+     *             and provider (see {@link StartupExtender#getStartupExtender}
+     *             for details)
+     * @param mode the startup mode the client is going to use
+     * @return the list of arguments to pass to the process
+     */
+    @NonNull
+    List<String> getArguments(@NonNull Lookup context, @NonNull StartupExtender.StartMode mode);
+
+    /**
+     * Annotation used to properly register the SPI implementations.
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE, ElementType.METHOD})
+    public @interface Registration {
+
+        /**
+         * The human readable description of the implementation. May be
+         * a bundle key. For example this might be "JRebel", "Profiler" etc.
+         */
+        String displayName();
+
+        /**
+         * Modes to which the provider will respond.
+         */
+        StartupExtender.StartMode[] startMode();
+
+        /**
+         * Position of the provider in the list of providers.
+         */
+        int position() default Integer.MAX_VALUE;
+
     }
-
-    private StartupArguments() {}
-
 }

@@ -43,9 +43,9 @@
  */
 
 /**
- * The support SPI for registration of startup arguments providers.
+ * The support SPI for registration of startup extenders.
  *
- * @see org.netbeans.spi.extexecution.startup.StartupArgumentsProvider
+ * @see org.netbeans.spi.extexecution.startup.StartupExtenderImplementation
  */
 package org.netbeans.spi.extexecution.startup;
 

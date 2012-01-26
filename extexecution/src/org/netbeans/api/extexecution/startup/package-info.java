@@ -43,9 +43,9 @@
  */
 
 /**
- * The support API allowing client to query for additional startup arguments.
+ * The support API allowing client to query the startup extenders.
  *
- * @see org.netbeans.api.extexecution.startup.StartupArguments
+ * @see org.netbeans.api.extexecution.startup.StartupExtender
  */
 package org.netbeans.api.extexecution.startup;
 

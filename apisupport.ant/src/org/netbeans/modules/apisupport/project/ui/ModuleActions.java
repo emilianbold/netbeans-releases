@@ -63,7 +63,7 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.extexecution.startup.StartupArguments;
+import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.java.source.ElementHandle;
@@ -72,7 +72,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleType;
-import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.spi.ExecProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
@@ -483,24 +482,24 @@ public final class ModuleActions implements ActionProvider, ExecProject {
 
     static void setRunArgsIde(Project project, String command, Properties p, File testUserDirLockFile) {
         StringBuilder runArgsIde = new StringBuilder();
-        StartupArguments.StartMode mode;
+        StartupExtender.StartMode mode;
         if (command.equals(COMMAND_RUN) || command.equals(COMMAND_RUN_SINGLE)) {
-            mode = StartupArguments.StartMode.NORMAL;
+            mode = StartupExtender.StartMode.NORMAL;
         } else if (command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE) || command.equals(COMMAND_DEBUG_STEP_INTO)) {
-            mode = StartupArguments.StartMode.DEBUG;
+            mode = StartupExtender.StartMode.DEBUG;
         } else if (command.equals("profile")) {
-            mode = StartupArguments.StartMode.PROFILE;
+            mode = StartupExtender.StartMode.PROFILE;
         } else if (command.equals(COMMAND_TEST) || command.equals(COMMAND_TEST_SINGLE)) {
-            mode = StartupArguments.StartMode.TEST_NORMAL;
+            mode = StartupExtender.StartMode.TEST_NORMAL;
         } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
-            mode = StartupArguments.StartMode.TEST_DEBUG;
+            mode = StartupExtender.StartMode.TEST_DEBUG;
         } else if (command.equals("profile-test-single-nb")) {
-            mode = StartupArguments.StartMode.TEST_PROFILE;
+            mode = StartupExtender.StartMode.TEST_PROFILE;
         } else {
             mode = null;
         }
         if (mode != null) {
-            for (StartupArguments group : StartupArguments.getStartupArguments(Lookups.singleton(project), mode)) {
+            for (StartupExtender group : StartupExtender.getExtenders(Lookups.singleton(project), mode)) {
                 for (String arg : group.getArguments()) {
                     runArgsIde.append("-J").append(arg).append(' ');
                 }

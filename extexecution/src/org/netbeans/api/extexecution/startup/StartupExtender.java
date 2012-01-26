@@ -44,8 +44,8 @@ package org.netbeans.api.extexecution.startup;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.extexecution.startup.StartupArgumentsRegistrationProcessor;
-import org.netbeans.spi.extexecution.startup.StartupArgumentsProvider;
+import org.netbeans.modules.extexecution.startup.StartupExtenderRegistrationProcessor;
+import org.netbeans.spi.extexecution.startup.StartupExtenderImplementation;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -53,58 +53,60 @@ import org.openide.util.lookup.Lookups;
 
 /**
  * The API class allowing clients, typically server plugins or project,
- * to query additional groups of arguments it may pass to VM.
+ * to query process startup extenders.
  *
  * @author Petr Hejl
  * @since 1.30
- * @see StartupArgumentsProvider
+ * @see StartupExtenderImplementation
  */
-public final class StartupArguments {
+public final class StartupExtender {
 
     private final String description;
 
     private final List<String> arguments;
 
-    private StartupArguments(String description, List<String> arguments) {
+    private StartupExtender(String description, List<String> arguments) {
         this.description = description;
         this.arguments = arguments;
     }
 
     /**
-     * Returns the groups of arguments provided by all registered
-     * {@link StartupArgumentsProvider} for the given start mode.
-     * <p>The contents of the {@code context} parameter will depend on the kind of execution.
-     * For a simple Java SE program being run in the Java launcher,
+     * Returns all registered {@link StartupExtender}s for the given start mode.
+     * <p>
+     * The contents of the {@code context} parameter will depend on the kind of
+     * execution. For a simple Java SE program being run in the Java launcher,
      * a {@code org.netbeans.api.project.Project} can be expected.
-     * For a Java EE program being run in an application server, the context may correspond to
-     * {@code org.netbeans.api.server.ServerInstance.getLookup()}.
-     * Other kinds of API objects may be present according to contracts not specified here.
+     * For a Java EE program being run in an application server, the context
+     * may correspond to {@code org.netbeans.api.server.ServerInstance.getLookup()}.
+     * Other kinds of API objects may be present according to contracts not
+     * specified here.
+     *
      * @param context the lookup providing the contract between client
      *             and provider
-     * @param mode the VM mode the client is going to use
-     * @return the groups of arguments provided by all registered
-     *             {@link StartupArgumentsProvider}
+     * @param mode the startup mode the client is going to use
+     * @return the extenders representing all registered
+     *             {@link StartupExtenderImplementation}
      */
     @NonNull
-    public static List<StartupArguments> getStartupArguments(
+    public static List<StartupExtender> getExtenders(
             @NonNull Lookup context, @NonNull StartMode mode) {
         Parameters.notNull("context", context);
         Parameters.notNull("mode", mode);
 
-        Lookup lkp = Lookups.forPath(StartupArgumentsRegistrationProcessor.PATH);
+        Lookup lkp = Lookups.forPath(StartupExtenderRegistrationProcessor.PATH);
 
-        List<StartupArguments> res = new ArrayList<StartupArguments>();
-        for (Lookup.Item<StartupArgumentsProvider> item : lkp.lookupResult(StartupArgumentsProvider.class).allItems()) {
-            res.add(new StartupArguments(item.getDisplayName(),
+        List<StartupExtender> res = new ArrayList<StartupExtender>();
+        for (Lookup.Item<StartupExtenderImplementation> item : lkp.lookupResult(StartupExtenderImplementation.class).allItems()) {
+            res.add(new StartupExtender(item.getDisplayName(),
                     item.getInstance().getArguments(context, mode)));
         }
         return res;
     }
 
     /**
-     * Returns the description of group of arguments.
+     * Returns the description of the extender.
      *
-     * @return the description of group of arguments
+     * @return the description of the extender
      */
     @NonNull
     public String getDescription() {
@@ -112,9 +114,9 @@ public final class StartupArguments {
     }
 
     /**
-     * The list of the VM arguments.
+     * The list of arguments.
      *
-     * @return list of the VM arguments
+     * @return list of arguments
      */
     @NonNull
     public List<String> getArguments() {
@@ -122,7 +124,7 @@ public final class StartupArguments {
     }
 
     /**
-     * Class representing the startup mode of the VM.
+     * Class representing the startup mode of the process.
      */
     public static enum StartMode {
 

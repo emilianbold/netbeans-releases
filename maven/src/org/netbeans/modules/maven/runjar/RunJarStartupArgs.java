@@ -45,7 +45,7 @@ package org.netbeans.modules.maven.runjar;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.api.extexecution.startup.StartupArguments;
+import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
@@ -63,13 +63,13 @@ public class RunJarStartupArgs implements LateBoundPrerequisitesChecker {
 
     @Override public boolean checkRunConfig(RunConfig config, ExecutionContext con) {
         String actionName = config.getActionName();
-        StartupArguments.StartMode mode;
+        StartupExtender.StartMode mode;
         if (ActionProvider.COMMAND_RUN.equals(actionName) || RUN_MAIN.equals(actionName)) {
-            mode = StartupArguments.StartMode.NORMAL;
+            mode = StartupExtender.StartMode.NORMAL;
         } else if (ActionProvider.COMMAND_DEBUG.equals(actionName) || DEBUG_MAIN.equals(actionName)) {
-            mode = StartupArguments.StartMode.DEBUG;
+            mode = StartupExtender.StartMode.DEBUG;
         } else if ("profile".equals(actionName)) {
-            mode = StartupArguments.StartMode.PROFILE;
+            mode = StartupExtender.StartMode.PROFILE;
         } else {
             // XXX could also set argLine for COMMAND_TEST and relatives (StartMode.TEST_*); need not be specific to TYPE_JAR
             return true;
@@ -77,7 +77,7 @@ public class RunJarStartupArgs implements LateBoundPrerequisitesChecker {
         for (Map.Entry<? extends String, ? extends String> entry : config.getProperties().entrySet()) {
             if (entry.getKey().equals("exec.args")) {
                 List<String> args = new ArrayList<String>();
-                for (StartupArguments group : StartupArguments.getStartupArguments(Lookups.singleton(config.getProject()), mode)) {
+                for (StartupExtender group : StartupExtender.getExtenders(Lookups.singleton(config.getProject()), mode)) {
                     args.addAll(group.getArguments());
                 }
                 if (!args.isEmpty()) {

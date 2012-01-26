@@ -69,7 +69,7 @@ import org.netbeans.api.extexecution.ExternalProcessSupport;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.InputReaderTask;
 import org.netbeans.api.extexecution.input.InputReaders;
-import org.netbeans.api.extexecution.startup.StartupArguments;
+import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.modules.j2ee.deployment.plugins.api.CommonServerBridge;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
@@ -410,8 +410,8 @@ public final class WLStartServer extends StartServer {
                 javaOptsBuilder.append( javaOpts.trim() );
             }
 
-            for (StartupArguments args : StartupArguments.getStartupArguments(
-                        CommonServerBridge.getCommonInstance(dm.getUri()).getLookup(), StartupArguments.StartMode.PROFILE)) {
+            for (StartupExtender args : StartupExtender.getExtenders(
+                        CommonServerBridge.getCommonInstance(dm.getUri()).getLookup(), StartupExtender.StartMode.PROFILE)) {
                 for (String singleArg : args.getArguments()) {
                     javaOptsBuilder.append(' ').append(singleArg);
                 }
@@ -464,8 +464,8 @@ public final class WLStartServer extends StartServer {
             javaOptsBuilder.append("-Xdebug -Xnoagent -Djava.compiler=none ");  // NOI18N
             javaOptsBuilder.append("-Xrunjdwp:server=y,suspend=n,transport=dt_socket,address=");// NOI18N
             javaOptsBuilder.append( debugPort );
-            for (StartupArguments args : StartupArguments.getStartupArguments(
-                        CommonServerBridge.getCommonInstance(dm.getUri()).getLookup(), StartupArguments.StartMode.DEBUG)) {
+            for (StartupExtender args : StartupExtender.getExtenders(
+                        CommonServerBridge.getCommonInstance(dm.getUri()).getLookup(), StartupExtender.StartMode.DEBUG)) {
                 for (String singleArg : args.getArguments()) {
                     javaOptsBuilder.append(' ').append(singleArg);
                 }
@@ -653,8 +653,8 @@ public final class WLStartServer extends StartServer {
             String javaOpts = dm.getInstanceProperties().getProperty(WLPluginProperties.JAVA_OPTS);
             StringBuilder sb = new StringBuilder((javaOpts!= null && javaOpts.trim().length() > 0)
                     ? javaOpts.trim() : "");
-            for (StartupArguments args : StartupArguments.getStartupArguments(
-                        CommonServerBridge.getCommonInstance(dm.getUri()).getLookup(), StartupArguments.StartMode.NORMAL)) {
+            for (StartupExtender args : StartupExtender.getExtenders(
+                        CommonServerBridge.getCommonInstance(dm.getUri()).getLookup(), StartupExtender.StartMode.NORMAL)) {
                 for (String singleArg : args.getArguments()) {
                     sb.append(' ').append(singleArg);
                 }
