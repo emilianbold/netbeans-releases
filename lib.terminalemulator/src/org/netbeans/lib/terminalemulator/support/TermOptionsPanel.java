@@ -46,9 +46,7 @@ package org.netbeans.lib.terminalemulator.support;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dialog;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.*;
@@ -366,7 +364,6 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(foregroundLabel, gridBagConstraints);
 
-        foregroundComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         foregroundComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 foregroundComboBoxActionPerformed(evt);
@@ -388,7 +385,6 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(backgroundLabel, gridBagConstraints);
 
-        backgroundComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         backgroundComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 backgroundComboBoxActionPerformed(evt);
@@ -410,7 +406,6 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(selectionLabel, gridBagConstraints);
 
-        selectionComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         selectionComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectionComboBoxActionPerformed(evt);
