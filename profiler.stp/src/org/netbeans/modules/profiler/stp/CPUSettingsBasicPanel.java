@@ -166,7 +166,6 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
         this.project = project;
         this.profilingPointsDisplayer = profilingPointsDisplayer;
         this.preferredInstrFilters = preferredInstrFilters;
-        profilingPointsCheckbox.setEnabled(project != null);
     }
 
     public HelpCtx getHelpCtx() {
@@ -189,6 +188,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
         profileAppRadio.setSelected(profilingType == ProfilingSettings.PROFILE_CPU_ENTIRE ||
                                        profilingType == ProfilingSettings.PROFILE_CPU_PART);
         stopwatchRadio.setSelected(profilingType == ProfilingSettings.PROFILE_CPU_STOPWATCH);
+        profilingPointsCheckbox.setEnabled(project != null && profileAppRadio.isSelected());
     }
 
     public int getProfilingType() {
@@ -219,7 +219,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
     }
 
     public void setUseProfilingPoints(boolean use) {
-        profilingPointsCheckbox.setSelected(use);
+        profilingPointsCheckbox.setSelected(use && profilingPointsCheckbox.isEnabled());
         updateEnabling();
     }
 

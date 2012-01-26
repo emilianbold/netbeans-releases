@@ -424,9 +424,10 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                     }
                 }
                 result = new Configuration(project, settings, null);
-            } else {
-                spt.cleanup(result != null);
+                
             }
+            
+            spt.cleanup(result != null);
             
             return result;
         } catch (InterruptedException e) {
