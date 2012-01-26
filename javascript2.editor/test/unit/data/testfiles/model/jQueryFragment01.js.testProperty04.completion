@@ -1,0 +1,11 @@
+Code completion result for source line:
+jQuery.event.customEvent.|test();
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+CLASS      class                           [PUBLIC]   jQueryFragment01
+CLASS      martin                          [PUBLIC]   jQueryFragment01
+METHOD     test()                          [PUBLIC]   jQueryFragment01
+FIELD      changeData                      [PUBLIC]   jQueryFragment01
+FIELD      getData                         [PUBLIC]   jQueryFragment01
+FIELD      petr                            [PUBLIC]   jQueryFragment01
+FIELD      setData                         [PUBLIC]   jQueryFragment01
