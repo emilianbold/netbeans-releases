@@ -411,6 +411,9 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                     LOG.log(Level.FINE, "Installing bundle {0}", loc);
                     b = bc.installBundle(loc);
                     int startLevel = m.getStartLevel();
+                    if (startLevel == -1) {
+                        startLevel = defaultStartLevel();
+                    }
                     if (startLevel > 0) {
                         setBundleStartLevel(bc, b, startLevel);
                     }
