@@ -251,7 +251,7 @@ final class RemoteOperationFactory extends FileOperationFactory {
         FileObject sourceRoot = getSources();
         Set<TransferFile> transferFiles = client.prepareUpload(sourceRoot, source);
         if (transferFiles.size() > 0) {
-            TransferInfo transferInfo = client.upload(sourceRoot, transferFiles);
+            TransferInfo transferInfo = client.upload(transferFiles);
             if (!transferInfo.hasAnyFailed()
                     && !transferInfo.hasAnyPartiallyFailed()
                     && !transferInfo.hasAnyIgnored()) {

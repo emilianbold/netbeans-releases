@@ -168,7 +168,7 @@ public class UploadCommand extends RemoteCommand implements Displayable {
                         NbBundle.getMessage(UploadCommand.class, "MSG_UploadingFiles", getProject().getName()), remoteClient);
                 DefaultOperationMonitor uploadOperationMonitor = new DefaultOperationMonitor(progressHandle, forUpload);
                 remoteClient.setOperationMonitor(uploadOperationMonitor);
-                transferInfo = remoteClient.upload(sources, forUpload);
+                transferInfo = remoteClient.upload(forUpload);
                 remoteClient.setOperationMonitor(null);
                 StatusDisplayer.getDefault().setStatusText(
                         NbBundle.getMessage(UploadCommand.class, "MSG_UploadFinished", getProject().getName()));
