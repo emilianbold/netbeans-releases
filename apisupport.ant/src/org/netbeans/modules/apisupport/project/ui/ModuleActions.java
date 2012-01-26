@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.apisupport.project.ui;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -62,6 +63,7 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.java.source.ElementHandle;
@@ -102,10 +104,11 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
+import org.openide.util.lookup.Lookups;
 
 public final class ModuleActions implements ActionProvider, ExecProject {
-    static final String TEST_USERDIR_LOCK_PROP_NAME = "run.args.ide";    // NOI18N
-    static final String TEST_USERDIR_LOCK_PROP_VALUE = "--test-userdir-lock-with-invalid-arg";    // NOI18N
+    private static final String RUN_ARGS_IDE = "run.args.ide";    // NOI18N
+    private static final String TEST_USERDIR_LOCK_PROP_VALUE = "--test-userdir-lock-with-invalid-arg";    // NOI18N
 
     static final Set<String> bkgActions = new HashSet<String>(Arrays.asList(
         COMMAND_RUN_SINGLE,
@@ -453,11 +456,8 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                     promptForPublicPackagesToDocument();
                     return;
                 } else {
-                    if ((command.equals(ActionProvider.COMMAND_RUN) || command.equals(ActionProvider.COMMAND_DEBUG)) // #63652
-                            && project.getTestUserDirLockFile().isFile()) {
-                        // #141069: lock file exists, run with bogus option
-                        p.setProperty(TEST_USERDIR_LOCK_PROP_NAME, TEST_USERDIR_LOCK_PROP_VALUE);
-                    }
+                    // XXX consider passing PM.fP(FU.toFO(SuiteUtils.suiteDirectory(project))) instead for a suite component project:
+                    setRunArgsIde(project, command, p, project.getTestUserDirLockFile());
                     if (command.equals(ActionProvider.COMMAND_REBUILD)) {
                         p.setProperty("do.not.clean.module.config.xml", "true"); // #196192
                     }
@@ -478,6 +478,41 @@ public final class ModuleActions implements ActionProvider, ExecProject {
             RP.post(runnable);
         } else
             runnable.run();
+    }
+
+    static void setRunArgsIde(Project project, String command, Properties p, File testUserDirLockFile) {
+        StringBuilder runArgsIde = new StringBuilder();
+        StartupExtender.StartMode mode;
+        if (command.equals(COMMAND_RUN) || command.equals(COMMAND_RUN_SINGLE)) {
+            mode = StartupExtender.StartMode.NORMAL;
+        } else if (command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE) || command.equals(COMMAND_DEBUG_STEP_INTO)) {
+            mode = StartupExtender.StartMode.DEBUG;
+        } else if (command.equals("profile")) {
+            mode = StartupExtender.StartMode.PROFILE;
+        } else if (command.equals(COMMAND_TEST) || command.equals(COMMAND_TEST_SINGLE)) {
+            mode = StartupExtender.StartMode.TEST_NORMAL;
+        } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
+            mode = StartupExtender.StartMode.TEST_DEBUG;
+        } else if (command.equals("profile-test-single-nb")) {
+            mode = StartupExtender.StartMode.TEST_PROFILE;
+        } else {
+            mode = null;
+        }
+        if (mode != null) {
+            for (StartupExtender group : StartupExtender.getExtenders(Lookups.singleton(project), mode)) {
+                for (String arg : group.getArguments()) {
+                    runArgsIde.append("-J").append(arg).append(' ');
+                }
+            }
+        }
+        if ((command.equals(ActionProvider.COMMAND_RUN) || command.equals(ActionProvider.COMMAND_DEBUG)) // #63652
+                && testUserDirLockFile.isFile()) {
+            // #141069: lock file exists, run with bogus option
+            runArgsIde.append(TEST_USERDIR_LOCK_PROP_VALUE);
+        }
+        if (runArgsIde.length() > 0) {
+            p.setProperty(RUN_ARGS_IDE, runArgsIde.toString());
+        }
     }
 
     @Messages({

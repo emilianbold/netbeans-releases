@@ -48,11 +48,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -84,13 +86,14 @@ import org.openide.util.LookupListener;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.InputOutput;
 
 /**
  *
  * @author Peter Williams
  */
-public class GlassfishInstance implements ServerInstanceImplementation, LookupListener {
+public class GlassfishInstance implements ServerInstanceImplementation, Lookup.Provider, LookupListener {
 
     // Reasonable default values for various server parameters.  Note, don't use
     // these unless the server's actual setting cannot be determined in any way.
@@ -111,6 +114,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
     private transient CommonServerSupport commonSupport;
     private transient InstanceContent ic;
     private transient Lookup lookup;
+    private transient Lookup full;
     final private transient Lookup.Result<GlassfishModuleFactory> lookupResult = Lookups.forPath(Util.GF_LOOKUP_PATH).lookupResult(GlassfishModuleFactory.class);;
     private transient Collection<? extends GlassfishModuleFactory> currentFactories = Collections.emptyList();
     
@@ -123,6 +127,7 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
         try {
             ic = new InstanceContent();
             lookup = new AbstractLookup(ic);
+            full = lookup;
             this.instanceProvider = instanceProvider;
             String domainDirPath = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR);
             String domainName = ip.get(GlassfishModule.DOMAIN_NAME_ATTR);
@@ -144,12 +149,12 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
 
                 ic.add(commonSupport); // Common action support, e.g start/stop, etc.
                 commonInstance = ServerInstanceFactory.createServerInstance(this);
-                if (updateNow) {
-                    updateModuleSupport();
-                }
 
                 // make this instance publicly accessible
                 instanceProvider.addServerInstance(this);
+            }
+            if (updateNow) {
+                updateModuleSupport();
             }
         } finally {
             if(deployerUri != null) {
@@ -189,6 +194,8 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
             added.removeAll(currentFactories);
             currentFactories = factories;
 
+            List<Lookup> proxies = new ArrayList<Lookup>();
+            proxies.add(lookup);
             for (GlassfishModuleFactory moduleFactory : added) {
                 if(moduleFactory.isModuleSupported(homeFolder, asenvProps)) {
                     Object t = moduleFactory.createModule(lookup);
@@ -196,10 +203,18 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
                         Logger.getLogger("glassfish").log(Level.WARNING, "{0} created a null module", moduleFactory); // NOI18N
                     } else {
                         ic.add(t);
+                        if (t instanceof Lookup.Provider) {
+                            proxies.add(Lookups.proxy((Lookup.Provider) t));
+                        }
                     }
                 }
             }
+
+            if (!proxies.isEmpty()) {
+                full = new ProxyLookup(proxies.toArray(new Lookup[proxies.size()]));
+            }
         }
+
     }
     
     void updateModuleSupport() {
@@ -279,7 +294,9 @@ public class GlassfishInstance implements ServerInstanceImplementation, LookupLi
     }
     
     public Lookup getLookup() {
-        return lookup;
+        synchronized (lookupResult) {
+            return full;
+        }
     }
     
     public void addChangeListener(final ChangeListener listener) {

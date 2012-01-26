@@ -179,6 +179,11 @@ public final class J2EEProjectProfilingSupportProvider extends JavaProjectProfil
     public static int getLastAgentPort() {
         return lastAgentPort;
     }
+    
+    public static void resetLastValues() {
+        lastAgentID = -1;
+        lastAgentPort = -1;
+    }
 
     public static String getServerInstanceID(final Project project) {
         J2eeModuleProvider serverInstanceModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
