@@ -676,7 +676,7 @@ public final class NbModuleProject implements Project {
                     Element pkgrootEl = XMLUtil.findElement(ecu, "package-root", NbModuleProject.NAMESPACE_SHARED); // NOI18N
                     String pkgrootS = XMLUtil.findText(pkgrootEl);
                     String pkgrootEval = evaluator().evaluate(pkgrootS);
-                    FileObject pkgroot = getHelper().resolveFileObject(pkgrootEval);
+                    FileObject pkgroot = pkgrootEval != null ? getHelper().resolveFileObject(pkgrootEval) : null;
                     if (pkgroot == null) {
                         Util.err.log(ErrorManager.WARNING, "Could not find package-root " + pkgrootEval + " for " + getCodeNameBase());
                         continue;
@@ -1050,7 +1050,7 @@ public final class NbModuleProject implements Project {
             throw new UnsupportedOperationException();  // currently not needed
         }
 
-        @Override public Map<String, String> getProperties() {
+        @Override @NonNull public Map<String, String> getProperties() {
             if (cache == null) {
                 cache = new HashMap<String, String>();
                 ProjectXMLManager pxm = new ProjectXMLManager(NbModuleProject.this);
@@ -1059,10 +1059,12 @@ public final class NbModuleProject implements Project {
                     addFileRef(cache, cpe);
                 }
                 Map<String, String> prjProps = evaluator().getProperties();
+                if (prjProps != null) {
                 for (Map.Entry<String, String> entry : prjProps.entrySet()) {
                     if (entry.getKey().startsWith(SOURCE_START) || entry.getKey().startsWith(JAVADOC_START)) {
                         cache.put(entry.getKey(), entry.getValue());
                     }
+                }
                 }
             }
             return cache;
