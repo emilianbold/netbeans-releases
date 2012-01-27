@@ -113,9 +113,7 @@ public class JsIndexer extends EmbeddingIndexer {
 
         @Override
         public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {
-            System.out.println("indexer created??");
             if (isIndexable(indexable, snapshot)) {
-                System.out.println("created");
                 return new JsIndexer();
             } else {
                 return null;

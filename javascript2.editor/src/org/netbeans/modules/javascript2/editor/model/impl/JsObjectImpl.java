@@ -136,7 +136,6 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     }
     
     public void addAssignment(String typeName, int offset){
-        System.out.println("addingSignment: " + typeName + ", " + offset + " to object " + this.getName());
         Collection<String> types = assignments.get(offset);
         if (types == null) {
             types = new ArrayList<String>();

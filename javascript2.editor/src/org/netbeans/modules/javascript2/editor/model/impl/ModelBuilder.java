@@ -86,7 +86,6 @@ public final class ModelBuilder {
     void setCurrentObject(JsObjectImpl object) {
         this.stack.push(object);
         if (object instanceof DeclarationScopeImpl) {
-            System.out.println("adding declaration scope: " + object.getName());
             this.functionStack.push((DeclarationScopeImpl)object);
         }
     }
@@ -95,8 +94,6 @@ public final class ModelBuilder {
         if (!stack.empty()) {
             if (stack.pop() instanceof DeclarationScopeImpl && !functionStack.empty()) {
                 JsObject object = (JsObject)functionStack.pop();
-                System.out.println("removing declaration scope: " + object.getName());
-                
             }
         }
     }
