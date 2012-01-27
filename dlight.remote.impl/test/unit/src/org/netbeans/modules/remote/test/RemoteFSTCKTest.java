@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.remote.test;
 
+import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.RandomlyFails;
@@ -71,7 +72,6 @@ public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
         return new RemoteFSTCKTest(suite);
     }
     
-    @RandomlyFails
     public static class FileSystemTestHid_ extends FileSystemTestHid {
 
         public FileSystemTestHid_(String testName) {
@@ -79,15 +79,98 @@ public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
         }
     }
 
-    @RandomlyFails
     public static class FileObjectTestHid_ extends FileObjectTestHid {
 
         public FileObjectTestHid_(String testName) {
             super(testName);
         }
+
+        @RandomlyFails
+        @Override
+        public void testWriteReadExclusion() throws Exception {
+            super.testWriteReadExclusion();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testWriteReadExclusionDeadlock() throws Exception {
+            super.testWriteReadExclusionDeadlock();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testFireFileDeletedEvent() throws IOException {
+            super.testFireFileDeletedEvent();
+        }
+        
+        @RandomlyFails
+        @Override
+        public void testFireFileDeletedEvent2() throws IOException {
+            super.testFireFileDeletedEvent2();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testFireFileAttributeChangedEvent() {
+            super.testFireFileAttributeChangedEvent();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testFireFileAttributeChangedEvent_FS() {
+            super.testFireFileAttributeChangedEvent_FS();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testDefaultMimeTypeForBinaryFiles() throws Exception {
+            super.testDefaultMimeTypeForBinaryFiles();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testRecursiveListener() throws IOException {
+            super.testRecursiveListener();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testBigFileAndAsString() throws Exception {
+            super.testBigFileAndAsString();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testAddFileChangeListener() {
+            super.testAddFileChangeListener();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testAddFileChangeListener_FS() {
+            super.testAddFileChangeListener_FS();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testRemoveFileChangeListener() throws IOException {
+            super.testRemoveFileChangeListener();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testRemoveFileChangeListener_FS() throws IOException {
+            super.testRemoveFileChangeListener_FS();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testToURL() throws Exception {
+            super.testToURL();
+        }
+        
     }
 
-    @RandomlyFails
     public static class URLMapperTestHidden_ extends URLMapperTestHidden {
 
         public URLMapperTestHidden_(String testName) {
@@ -95,11 +178,34 @@ public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
         }
     }
 
-    @RandomlyFails
     public static class FileUtilTestHidden_ extends FileUtilTestHidden {
 
         public FileUtilTestHidden_(String testName) {
             super(testName);
+        }
+
+        @RandomlyFails
+        @Override
+        public void testRunAtomicAction() throws Exception {
+            super.testRunAtomicAction();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testToFile() throws Exception {
+            super.testToFile();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testToFileObject() throws Exception {
+            super.testToFileObject();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testIsParentOf() throws Exception {
+            super.testIsParentOf();
         }
     }
 }
