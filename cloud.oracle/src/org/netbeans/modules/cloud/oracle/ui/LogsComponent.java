@@ -84,7 +84,7 @@ public class LogsComponent extends TopComponent {
         initComponents();
         
         // disable for now:
-        showAlljCheckBox.setVisible(true);
+        showAlljCheckBox.setVisible(false);
         
         setName(NbBundle.getMessage(LogsComponent.class, "CTL_LogsTopComponent", oi.getName()));
         setToolTipText(NbBundle.getMessage(LogsComponent.class, "HINT_LogsTopComponent"));
