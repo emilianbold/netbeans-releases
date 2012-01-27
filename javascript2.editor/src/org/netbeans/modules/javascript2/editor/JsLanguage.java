@@ -37,16 +37,20 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import java.util.Collections;
+import java.util.Set;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
+import org.netbeans.modules.javascript2.editor.index.JsIndexer;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.navigation.DeclarationFinderImpl;
 import org.netbeans.modules.javascript2.editor.navigation.OccurrencesFinderImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParser;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
@@ -122,5 +126,9 @@ public class JsLanguage extends DefaultLanguageConfig {
         return new JsCodeCompletion();
     }
     
+    @Override
+    public EmbeddingIndexerFactory getIndexerFactory() {
+        return new JsIndexer.Factory();
+    }
     
 }
