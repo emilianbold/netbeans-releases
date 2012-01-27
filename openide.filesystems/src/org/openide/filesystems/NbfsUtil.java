@@ -90,9 +90,7 @@ final class NbfsUtil {
                 new PrivilegedExceptionAction<URL>() {
                     public URL run() throws Exception {
                         // #30397: the fsPart name cannot be null
-                        URL u = new URL(FileURL.PROTOCOL, host, -1, file, new FileURL.Handler());
-                        assert !u.toString().equals("nbfs://nbhost//") : host + " + " + file + " for " + fo;
-                        return u;
+                        return new URL(FileURL.PROTOCOL, host, -1, file, new FileURL.Handler());
                     }
                 }
             );
@@ -155,6 +153,9 @@ final class NbfsUtil {
         FileSystem fs = fo.getFileSystem();
         assert fs != null : "File object " + fo + " returns null from getFileSystem()";
         String n = fs.isDefault() ? SYSTEM_FILE_SYSTEM_NAME : fs.getSystemName();
+        if (n.isEmpty()) {
+            n = String.format("%s.%h", fs.getClass().getName(), fs);
+        }
         return encoder(n);
     }
 
