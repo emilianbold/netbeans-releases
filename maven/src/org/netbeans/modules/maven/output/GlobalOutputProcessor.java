@@ -55,6 +55,7 @@ import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.netbeans.modules.maven.options.MavenOptionController;
 import static org.netbeans.modules.maven.output.Bundle.*;
+import org.netbeans.modules.options.java.api.JavaOptions;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -112,7 +113,7 @@ public class GlobalOutputProcessor implements OutputProcessor {
             visitor.setOutputListener(new OutputListener() {
                 @Override public void outputLineSelected(OutputEvent ev) {}
                 @Override public void outputLineAction(OutputEvent ev) {
-                    OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/" + MavenOptionController.OPTIONS_SUBPATH); //NOI18N
+                    OptionsDisplayer.getDefault().open(JavaOptions.JAVA + "/" + MavenOptionController.OPTIONS_SUBPATH); //NOI18N
                 }
                 @Override public void outputLineCleared(OutputEvent ev) {}
             });

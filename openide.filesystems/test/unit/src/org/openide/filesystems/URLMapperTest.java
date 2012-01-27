@@ -132,6 +132,7 @@ public class URLMapperTest extends NbTestCase {
         check(d);
         FileObject f = d.createData("file #1");
         check(f);
+        new XMLFileSystem().getRoot().toURI(); // anonymous, cannot round-trip
     }
     private static void check(FileObject f) throws Exception {
         URL u = f.toURL();

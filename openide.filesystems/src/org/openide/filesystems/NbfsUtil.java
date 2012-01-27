@@ -53,7 +53,6 @@ import java.net.URLEncoder;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.StringTokenizer;
 
 /**
  * @author Radek Matous
@@ -70,7 +69,7 @@ final class NbfsUtil {
      * @param fo
      * @return url with nbfs protocol
      */
-    static URL getURL(FileObject fo) {
+    static URL getURL(final FileObject fo) {
         String fsPart;
         try {
             fsPart = encodeFsPart(fo);
@@ -154,6 +153,9 @@ final class NbfsUtil {
         FileSystem fs = fo.getFileSystem();
         assert fs != null : "File object " + fo + " returns null from getFileSystem()";
         String n = fs.isDefault() ? SYSTEM_FILE_SYSTEM_NAME : fs.getSystemName();
+        if (n.isEmpty()) {
+            n = String.format("%s.%h", fs.getClass().getName(), fs);
+        }
         return encoder(n);
     }
 
