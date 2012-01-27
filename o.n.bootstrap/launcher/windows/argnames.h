@@ -52,6 +52,7 @@
 #define ARG_NAME_LA_START_AU "--la_start_au"
 #define ARG_NAME_LA_PPID "--la_ppid"
 #define ARG_NAME_USER_DIR "--userdir"
+#define ARG_DEFAULT_USER_DIR_ROOT "--default_userdir_root"
 #define ARG_NAME_CACHE_DIR "--cachedir"
 #define ARG_NAME_CLUSTERS "--clusters"
 #define ARG_NAME_BOOTCLASS "--bootclass"

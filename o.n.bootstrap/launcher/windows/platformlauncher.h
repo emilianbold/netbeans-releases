@@ -69,6 +69,7 @@ class PlatformLauncher {
     static const char *OPT_NB_PLATFORM_HOME;
     static const char *OPT_NB_CLUSTERS;
     static const char *OPT_NB_USERDIR;
+    static const char *OPT_DEFAULT_USERDIR_ROOT;
     static const char *OPT_HTTP_PROXY;
     static const char *OPT_HTTP_NONPROXY;
     static const char *OPT_SOCKS_PROXY;
@@ -121,6 +122,7 @@ private:
     bool exiting;
     std::string platformDir;
     std::string userDir;
+    std::string defaultUserDirRoot;
     std::string clusters;
     std::string bootclass;
     std::string jdkhome;
