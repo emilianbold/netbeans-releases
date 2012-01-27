@@ -50,6 +50,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
@@ -58,13 +59,9 @@ import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.apigen.options.ApiGenOptions;
 import org.netbeans.modules.php.apigen.ui.ApiGenPreferences;
 import org.netbeans.modules.php.apigen.ui.options.ApiGenOptionsPanelController;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
 
 /**
  * Represents <a href="http://apigen.org/">apigen</a> command line tool.
@@ -155,9 +152,6 @@ public final class ApiGenScript extends PhpProgram {
             return;
         }
 
-        // XXX can be removed once #206254 is fixed
-        final String ioTitle = Bundle.ApiGenScript_api_generating(phpModule.getDisplayName());
-        final InputOutput output = IOProvider.getDefault().getIO(ioTitle, false);
         ExternalProcessBuilder processBuilder = getProcessBuilder()
                 .workingDirectory(FileUtil.toFile(phpModule.getProjectDirectory()));
         for (String param : getParams(phpModule)) {
@@ -165,7 +159,6 @@ public final class ApiGenScript extends PhpProgram {
                     .addArgument(param);
         }
         ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
-                .inputOutput(output)
                 .frontWindow(true)
                 .optionsPath(ApiGenOptionsPanelController.getOptionsPath());
 
@@ -173,7 +166,7 @@ public final class ApiGenScript extends PhpProgram {
             int status = executeAndWait(
                     processBuilder,
                     executionDescriptor,
-                    ioTitle);
+                    Bundle.ApiGenScript_api_generating(phpModule.getDisplayName()));
             File targetDir = new File(target);
             if (status == 0) {
                 if (targetDir.isDirectory()) {
@@ -183,11 +176,6 @@ public final class ApiGenScript extends PhpProgram {
                         HtmlBrowser.URLDisplayer.getDefault().showURL(index.toURI().toURL());
                     }
                 }
-            } else {
-                // error?
-                DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
-                        Bundle.ApiGenScript_error_generating(phpModule.getDisplayName()), NotifyDescriptor.ERROR_MESSAGE));
-                output.select();
             }
             // refresh fs
             if (targetDir.isDirectory()) {
@@ -202,6 +190,20 @@ public final class ApiGenScript extends PhpProgram {
         } catch (MalformedURLException ex) {
             LOGGER.log(Level.WARNING, ex.getLocalizedMessage(), ex);
         }
+    }
+
+    @Override
+    public ExternalProcessBuilder getProcessBuilder() {
+        if (getProgram().endsWith(".php")) { // NOI18N
+            // run *.php file via php interpreter
+            try {
+                return PhpInterpreter.getDefault().getProcessBuilder()
+                        .addArgument(getProgram());
+            } catch (InvalidPhpProgramException ex) {
+                // ignored
+            }
+        }
+        return super.getProcessBuilder();
     }
 
     private List<String> getParams(PhpModule phpModule) {
