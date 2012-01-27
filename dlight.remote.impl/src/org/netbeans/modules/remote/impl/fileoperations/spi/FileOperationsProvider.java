@@ -313,7 +313,7 @@ abstract public class FileOperationsProvider {
             }
             for(RemoteFileObjectBase fo : roots) {
                 if (fo.isValid()) {
-                    fo.refresh();
+                    fo.refresh(true);
                 }
             }
         }

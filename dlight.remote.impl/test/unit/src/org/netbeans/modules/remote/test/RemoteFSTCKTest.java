@@ -99,38 +99,8 @@ public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
 
         @RandomlyFails
         @Override
-        public void testFireFileDeletedEvent() throws IOException {
-            super.testFireFileDeletedEvent();
-        }
-        
-        @RandomlyFails
-        @Override
         public void testFireFileDeletedEvent2() throws IOException {
             super.testFireFileDeletedEvent2();
-        }
-
-        @RandomlyFails
-        @Override
-        public void testFireFileAttributeChangedEvent() {
-            super.testFireFileAttributeChangedEvent();
-        }
-
-        @RandomlyFails
-        @Override
-        public void testFireFileAttributeChangedEvent_FS() {
-            super.testFireFileAttributeChangedEvent_FS();
-        }
-
-        @RandomlyFails
-        @Override
-        public void testDefaultMimeTypeForBinaryFiles() throws Exception {
-            super.testDefaultMimeTypeForBinaryFiles();
-        }
-
-        @RandomlyFails
-        @Override
-        public void testRecursiveListener() throws IOException {
-            super.testRecursiveListener();
         }
 
         @RandomlyFails
@@ -141,34 +111,9 @@ public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
 
         @RandomlyFails
         @Override
-        public void testAddFileChangeListener() {
-            super.testAddFileChangeListener();
-        }
-
-        @RandomlyFails
-        @Override
-        public void testAddFileChangeListener_FS() {
-            super.testAddFileChangeListener_FS();
-        }
-
-        @RandomlyFails
-        @Override
-        public void testRemoveFileChangeListener() throws IOException {
-            super.testRemoveFileChangeListener();
-        }
-
-        @RandomlyFails
-        @Override
-        public void testRemoveFileChangeListener_FS() throws IOException {
-            super.testRemoveFileChangeListener_FS();
-        }
-
-        @RandomlyFails
-        @Override
         public void testToURL() throws Exception {
             super.testToURL();
         }
-        
     }
 
     public static class URLMapperTestHidden_ extends URLMapperTestHidden {
@@ -200,12 +145,6 @@ public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
         @Override
         public void testToFileObject() throws Exception {
             super.testToFileObject();
-        }
-
-        @RandomlyFails
-        @Override
-        public void testIsParentOf() throws Exception {
-            super.testIsParentOf();
         }
     }
 }
