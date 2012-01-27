@@ -49,6 +49,8 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -136,8 +138,11 @@ public class MultiViewProcessorTest extends NbTestCase {
         
         CloneableTopComponent cmv = MultiViews.createCloneableMultiView("text/context", new LP(lookup));
         assertNotNull("MultiViewComponent created", cmv);
+        cmv.open();
         TopComponent mvc = cmv.cloneTopComponent();
         doCheck(mvc, ic);
+        
+        assertTrue("First component can be closed without any questions", cmv.close());
         
         CntAction accept = new CntAction();
         CntAction discard = new CntAction();
