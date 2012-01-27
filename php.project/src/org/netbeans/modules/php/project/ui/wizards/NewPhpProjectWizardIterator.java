@@ -521,7 +521,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
     private void downloadRemoteFiles(PhpProject project, Set<TransferFile> forDownload, ProjectProperties projectProperties, PhpProjectGenerator.Monitor monitor) {
         assert wizardType == WizardType.REMOTE : "Download not allowed for: " + wizardType;
-        assert monitor instanceof RemoteProgressMonitor;
+        assert monitor instanceof RemoteProgressMonitor : "RemoteProgressMonitor expected but is: " + monitor;
         assert forDownload != null;
         assert !forDownload.isEmpty();
 
