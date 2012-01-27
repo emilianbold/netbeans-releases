@@ -57,12 +57,12 @@ import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.SftpIOExce
 import org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
-import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.extexecution.ProcessBuilderFactory;
 import org.netbeans.spi.extexecution.ProcessBuilderImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -82,11 +82,13 @@ abstract public class FileOperationsProvider {
     abstract public static class FileOperations {
 
         private final ExecutionEnvironment env;
+        private final RequestProcessor RP;;
 
         protected FileOperations(FileSystem fs) {
             FileObject root = fs.getRoot();
             if (root instanceof RemoteFileObjectBase) {
                 env = ((RemoteFileObjectBase)root).getExecutionEnvironment();
+                RP = new RequestProcessor("Refresh for "+env); //NOI18N
             } else {
                 throw new IllegalArgumentException();
             }
@@ -302,29 +304,31 @@ abstract public class FileOperationsProvider {
         }
         
         protected void refreshFor(FileProxyO ... files) {
-            List<String> paths = new ArrayList<String>();
+            List<RemoteFileObjectBase> roots = new ArrayList<RemoteFileObjectBase>();
             for(FileProxyO f : files) {
-                String path = findExistingParent(f.getPath());
-                if (path != null) {
-                    paths.add(path);
+                RemoteFileObjectBase fo = findExistingParent(f.getPath());
+                if (fo != null) {
+                    roots.add(fo);
                 }
             }
-            FileSystemProvider.scheduleRefresh(env, paths);
-            // TODO wait finishing
+            for(RemoteFileObjectBase fo : roots) {
+                if (fo.isValid()) {
+                    fo.refresh();
+                }
+            }
         }
         
-        private String findExistingParent(String path) {
+        private RemoteFileObjectBase findExistingParent(String path) {
             while(true) {
                 RemoteFileObjectBase fo = RemoteFileSystemManager.getInstance().getFileSystem(env).findResource(path);
                 if (fo != null) {
-                    break;
+                    return fo;
                 }
                 path = PathUtilities.getDirName(path);
                 if (path == null) {
                     return null;
                 }
             }
-            return path;
         }
 
         private ExecutionEnvironment getExecutionEnvironment() {
