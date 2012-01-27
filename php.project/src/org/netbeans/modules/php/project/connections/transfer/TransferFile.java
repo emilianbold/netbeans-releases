@@ -254,7 +254,7 @@ public abstract class TransferFile {
      * @return base remote directory
      * @see #getBaseLocalDirectoryPath()
      */
-    public String getBaseRemoteDirectoryPath() {
+    public final String getBaseRemoteDirectoryPath() {
         return baseRemoteDirectoryPath;
     }
 
