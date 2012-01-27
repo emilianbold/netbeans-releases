@@ -42,6 +42,7 @@
 package org.netbeans.modules.remote.impl.fileoperations.spi;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -56,6 +57,7 @@ import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.SftpIOExce
 import org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.extexecution.ProcessBuilderFactory;
 import org.netbeans.spi.extexecution.ProcessBuilderImplementation;
 import org.openide.filesystems.FileObject;
@@ -68,6 +70,7 @@ import org.openide.util.Lookup;
  */
 abstract public class FileOperationsProvider {
     public static final String ATTRIBUTE = "FileProxyOperations"; // NOI18N
+    private static final int LINK_DEPTH = 5;
         
     private static FileOperationsProvider defaultProvider;
 
@@ -108,7 +111,7 @@ abstract public class FileOperationsProvider {
         }
 
         protected boolean isDirectory(FileProxyO file) {
-            return isDirectory(file, 5);
+            return isDirectory(file, LINK_DEPTH);
         }
         
         private boolean isDirectory(FileProxyO file, int deep) {
@@ -147,10 +150,10 @@ abstract public class FileOperationsProvider {
         }
 
         protected boolean isFile(FileProxyO file) {
-            return isFile(file, 5);
+            return isFile(file, LINK_DEPTH);
         }
         
-        protected boolean isFile(FileProxyO file, int deep) {
+        private boolean isFile(FileProxyO file, int deep) {
             if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                 return false;
             }
@@ -202,19 +205,38 @@ abstract public class FileOperationsProvider {
         }
         
         protected boolean canWrite(FileProxyO file) {
+            return canWrite(file, LINK_DEPTH);
+        }
+        
+        private boolean canWrite(FileProxyO file, int deep) {
             if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                 return false;
             }
-            Future<FileInfoProvider.StatInfo> stat = FileInfoProvider.stat(getExecutionEnvironment(), file.getPath());
-            try {
-                FileInfoProvider.StatInfo statInfo = stat.get();
-                return statInfo.canWrite(env);
-            } catch (InterruptedException ex) {
-            } catch (ExecutionException ex) {
-                if (notExist(ex)) {
-                    return false;
+            if (deep > 0) {
+                deep--;
+                Future<FileInfoProvider.StatInfo> stat = FileInfoProvider.stat(getExecutionEnvironment(), file.getPath());
+                try {
+                    FileInfoProvider.StatInfo statInfo = stat.get();
+                    switch (statInfo.getFileType()) {
+                        case SymbolicLink:
+                            String linkTarget = statInfo.getLinkTarget();
+                            if (linkTarget.startsWith("/")) { // NOI18N
+                                return canWrite(toFileProxy(linkTarget), deep);
+                            } else {
+                                String path = PathUtilities.getDirName(file.getPath())+"/"+linkTarget; // NOI18N
+                                path = PathUtilities.normalizeUnixPath(path);
+                                return canWrite(toFileProxy(path), deep);
+                            }
+                        default:
+                            return statInfo.canWrite(env);
+                    }
+                } catch (InterruptedException ex) {
+                } catch (ExecutionException ex) {
+                    if (notExist(ex)) {
+                        return false;
+                    }
+                    ex.printStackTrace(System.err);
                 }
-                ex.printStackTrace(System.err);
             }
             return false;
         }
@@ -277,6 +299,32 @@ abstract public class FileOperationsProvider {
 
         protected ProcessBuilder createProcessBuilder(FileProxyO file) {
             return ProcessBuilderFactory.createProcessBuilder(new ProcessBuilderImplementationImpl(env), "RFS Process Builder"); // NOI18N
+        }
+        
+        protected void refreshFor(FileProxyO ... files) {
+            List<String> paths = new ArrayList<String>();
+            for(FileProxyO f : files) {
+                String path = findExistingParent(f.getPath());
+                if (path != null) {
+                    paths.add(path);
+                }
+            }
+            FileSystemProvider.scheduleRefresh(env, paths);
+            // TODO wait finishing
+        }
+        
+        private String findExistingParent(String path) {
+            while(true) {
+                RemoteFileObjectBase fo = RemoteFileSystemManager.getInstance().getFileSystem(env).findResource(path);
+                if (fo != null) {
+                    break;
+                }
+                path = PathUtilities.getDirName(path);
+                if (path == null) {
+                    return null;
+                }
+            }
+            return path;
         }
 
         private ExecutionEnvironment getExecutionEnvironment() {

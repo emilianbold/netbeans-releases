@@ -67,7 +67,7 @@ public class RemoteFileObjectFactory {
 
     private final WeakCache<String, RemoteFileObjectBase> fileObjectsCache = new WeakCache<String, RemoteFileObjectBase>();
 
-    /** lock for both fileObjectsCache and pendingListeners */
+    /** lockImpl for both fileObjectsCache and pendingListeners */
     private final Object lock = new Object();
 
     private final Map<String, List<FileChangeListener>> pendingListeners = 

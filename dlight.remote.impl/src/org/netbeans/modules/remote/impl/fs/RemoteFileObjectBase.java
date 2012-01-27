@@ -206,13 +206,37 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     protected void fireFileChangedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
         super.fireFileChangedEvent(en, fe);
     }
-    
+
+    @Override
+    public final FileObject createData(String name) throws IOException {
+        return createDataImpl(name, "", this);
+    }
+
+    @Override
+    public final FileObject createData(String name, String ext) throws IOException {
+        return createDataImpl(name, ext, this);
+    }
+
+    abstract protected FileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException;
+
+    @Override
+    public final FileObject createFolder(String name) throws IOException {
+        return createFolderImpl(name, this);
+    }
+
+    abstract protected FileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException;
+
     protected abstract boolean deleteImpl(FileLock lock) throws IOException;
 
     protected abstract void postDeleteChild(FileObject child);
     
+    
     @Override
-    public void delete(FileLock lock) throws IOException {
+    public final void delete(FileLock lock) throws IOException {
+        deleteImpl(lock, this);
+    }
+    
+    protected void deleteImpl(FileLock lock, RemoteFileObjectBase orig) throws IOException {
         if (!checkLock(lock)) {
             throw new IOException("Wrong lock"); //NOI18N
         }
@@ -221,7 +245,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
             interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
         }
         if (interceptor != null) {
-            FileProxyI fileProxy = FilesystemInterceptorProvider.toFileProxy(this);
+            FileProxyI fileProxy = FilesystemInterceptorProvider.toFileProxy(orig);
             IOHandler deleteHandler = interceptor.getDeleteHandler(fileProxy);
             boolean result;
             if (deleteHandler != null) {
@@ -273,7 +297,11 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     }
 
     @Override
-    public OutputStream getOutputStream(FileLock lock) throws IOException {
+    public final OutputStream getOutputStream(FileLock lock) throws IOException {
+        return getOutputStreamImpl(lock, this);
+    }
+    
+    protected OutputStream getOutputStreamImpl(FileLock lock, RemoteFileObjectBase orig) throws IOException {
         throw new ReadOnlyException();
     }
 
@@ -311,11 +339,15 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     @Override
     @Deprecated
-    public boolean isReadOnly() {
+    public final boolean isReadOnly() {
+        return isReadOnlyImpl(this);
+    }
+    
+    protected boolean isReadOnlyImpl(RemoteFileObjectBase orig) {
         if (USE_VCS) {
             FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
             if (interceptor != null) {
-                return !canWrite() && isValid();
+                return !canWriteImpl(orig) && isValid();
             }
         }
         return !canRead();
@@ -361,7 +393,11 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     }
     
     @Override
-    public boolean canWrite() {
+    public final boolean canWrite() {
+        return canWriteImpl(this);
+    }
+    
+    protected boolean canWriteImpl(RemoteFileObjectBase orig) {
         setFlag(CHECK_CAN_WRITE, true);
         if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
             getFileSystem().addReadOnlyConnectNotification(this);
@@ -376,7 +412,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
                 if (!result && USE_VCS) {
                     FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
                     if (interceptor != null) {
-                        result = interceptor.canWriteReadonlyFile(FilesystemInterceptorProvider.toFileProxy(this));
+                        result = interceptor.canWriteReadonlyFile(FilesystemInterceptorProvider.toFileProxy(orig));
                     }
                 }
                 if (!result) {
@@ -457,7 +493,11 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     }
 
     @Override
-    public FileLock lock() throws IOException {
+    public final FileLock lock() throws IOException {
+        return lockImpl(this);
+    }
+
+    protected FileLock lockImpl(RemoteFileObjectBase orig) throws IOException {
         synchronized(instanceLock) {
             if (lock != null && lock.isValid()) {
                 throw new FileAlreadyLockedException(getPath());
@@ -466,7 +506,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         }
         return lock;
     }
-
+    
     @Override
     public boolean isLocked() {
         boolean res = false;
@@ -491,7 +531,11 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     }
 
     @Override
-    public void rename(FileLock lock, String name, String ext) throws IOException {
+    public final void rename(FileLock lock, String name, String ext) throws IOException {
+        renameImpl(lock, name, ext, this);
+    }
+
+    protected void renameImpl(FileLock lock, String name, String ext, RemoteFileObjectBase orig) throws IOException {
         if (!checkLock(lock)) {
             throw new IOException("Wrong lock"); //NOI18N
         }
@@ -519,7 +563,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
             }
             try {
                 Map<String, Object> map = getAttributesMap();
-                p.renameChild(lock, this, newNameExt);
+                p.renameChild(lock, this, newNameExt, orig);
                 setAttributeMap(map, this);
             } catch (ConnectException ex) {
                 throw new IOException("No connection: Can not rename in " + p.getPath(), ex); //NOI18N
@@ -536,12 +580,16 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     }
 
     @Override
-    public FileObject copy(FileObject target, String name, String ext) throws IOException {
+    public final FileObject copy(FileObject target, String name, String ext) throws IOException {
+        return copyImpl(target, name, ext, this);
+    }
+
+    protected FileObject copyImpl(FileObject target, String name, String ext, RemoteFileObjectBase orig) throws IOException {
         if (USE_VCS) {
             FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
             if (interceptor != null) {
                 FileProxyI to = FilesystemInterceptorProvider.toFileProxy(target, name, ext);
-                FileProxyI from = FilesystemInterceptorProvider.toFileProxy(this);
+                FileProxyI from = FilesystemInterceptorProvider.toFileProxy(orig);
                 interceptor.beforeCopy(from, to);
                 FileObject result = null;
                 try {
@@ -569,7 +617,11 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     }
 
     @Override
-    public FileObject move(FileLock lock, FileObject target, String name, String ext) throws IOException {
+    public final FileObject move(FileLock lock, FileObject target, String name, String ext) throws IOException {
+        return moveImpl(lock, target, name, ext, this);
+    }
+    
+    protected FileObject moveImpl(FileLock lock, FileObject target, String name, String ext, RemoteFileObjectBase orig) throws IOException {
         if (!checkLock(lock)) {
             throw new IOException("Wrong lock"); //NOI18N
         }
@@ -577,7 +629,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
             FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
             if (interceptor != null) {
                 FileProxyI to = FilesystemInterceptorProvider.toFileProxy(target, name, ext);
-                FileProxyI from = FilesystemInterceptorProvider.toFileProxy(this);
+                FileProxyI from = FilesystemInterceptorProvider.toFileProxy(orig);
                 FileObject result = null;
                 try {
                     final IOHandler moveHandler = interceptor.getMoveHandler(from, to);
@@ -664,7 +716,7 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
 
     public abstract FileType getType();
     
-    protected abstract void renameChild(FileLock lock, RemoteFileObjectBase toRename, String newNameExt) 
+    protected abstract void renameChild(FileLock lock, RemoteFileObjectBase toRename, String newNameExt, RemoteFileObjectBase orig) 
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
 
     final void renamePath(String newPath) {
