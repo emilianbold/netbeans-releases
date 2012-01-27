@@ -319,7 +319,7 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
     }
     
     public String getUserName() {
-        return userNameTextField.getText();
+        return userNameTextField.getText().trim();
     }
     
     public static String getPrefixedUserName(String prefix, String username) {
@@ -339,15 +339,15 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
     }
     
     public String getPassword() {
-        return new String(passwordField.getPassword());
+        return new String(passwordField.getPassword()).trim();
     }
     
     public String getIdentityDomain() {
-        return identityDomainTextField.getText();
+        return identityDomainTextField.getText().trim();
     }
 
     public String getServiceInstance() {
-        return serviceInstanceTextField.getText();
+        return serviceInstanceTextField.getText().trim();
     }
 
     public String getSDKFolder() {

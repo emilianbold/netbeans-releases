@@ -60,9 +60,12 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import org.netbeans.libs.oracle.cloud.sdkwrapper.api.ApplicationManager;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.exception.SDKException;
 import org.netbeans.libs.oracle.cloud.sdkwrapper.model.Job;
 import org.netbeans.libs.oracle.cloud.sdkwrapper.model.Log;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -405,7 +408,13 @@ public class LogsComponent extends TopComponent {
     }// </editor-fold>//GEN-END:initComponents
 
     public static void showJobsDialog(OracleInstance oi) {
-        LogsComponent p = new LogsComponent(oi);
+        LogsComponent p;
+        try {
+            p = new LogsComponent(oi);
+        } catch (SDKException ex) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(LogsComponent.class, "MSG_SDKMisconfigured")));
+            return;
+        }
         p.open();
         p.requestActive();
     }
