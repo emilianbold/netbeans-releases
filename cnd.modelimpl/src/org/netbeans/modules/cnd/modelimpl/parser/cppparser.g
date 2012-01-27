@@ -791,7 +791,8 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
 			{if (statementTrace>=1) 
 				printf("external_declaration_template_1b[%d]: Class template definition\n",
 					LT(1).getLine());
-			}                           
+			}
+                        {action.class_declaration(LT(1));}                           
 			declaration[declOther]
 			{ #external_declaration_template = #(#[CSM_TEMPLATE_CLASS_DECLARATION, "CSM_TEMPLATE_CLASS_DECLARATION"], #external_declaration_template); }
 		|
@@ -937,11 +938,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
 		|   cv_qualifier 
 		|   LITERAL_typedef
 		)* class_head) =>
-
-		{if (statementTrace>=1) 
-			printf("external_declaration_1a[%d]: Class definition\n",
-				LT(1).getLine());
-		}
+                {action.class_declaration(LT(1));}
 		(LITERAL___extension__!)? declaration[declOther]
 		{ #external_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #external_declaration); }
 
@@ -1308,7 +1305,7 @@ member_declaration
 		|   cv_qualifier 
 		|   LITERAL_typedef
 		)* class_head) =>
-
+                {action.class_declaration(LT(1));}
 		{if (statementTrace>=1) 
 			printf("member_declaration_1[%d]: Class definition\n",
 				LT(1).getLine());
@@ -1800,7 +1797,8 @@ qualified_type
 
 		s = scope_override
                 id:ID
-                {if(s.isEmpty()) {action.id(id);} }
+                {if(s.isEmpty()) {action.simple_type_id(id);} }
+//                {if(s.isEmpty()) {action.id(id);} }
 		(options {warnWhenFollowAmbig = false;}:
 		 LESSTHAN template_argument_list GREATERTHAN
 		)?
@@ -1808,7 +1806,9 @@ qualified_type
 
 class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
     {String saveClass = ""; String id = ""; StorageClass sc = scInvalid;}
-    :   (   LITERAL_class  {ts = tsCLASS;}
+    :   
+        {action.class_kind(LT(1));}
+        (   LITERAL_class  {ts = tsCLASS;}
         |   LITERAL_struct {ts = tsSTRUCT;}
         |   LITERAL_union  {ts = tsUNION;}
         )
@@ -1829,6 +1829,7 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
         		{endClassDefinition();}
                 {enclosingClass = saveClass;}
                 {action.end_class_body(LT(1));}
+                {action.end_class_declaration(LT(1));}
                 ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
                 | RCURLY )
             |
@@ -1842,6 +1843,7 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
             (member_declaration)*
             {endClassDefinition();}
             {action.end_class_body(LT(1));}
+            {action.end_class_declaration(LT(1));}
             ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
             | RCURLY )
             {enclosingClass = saveClass;}

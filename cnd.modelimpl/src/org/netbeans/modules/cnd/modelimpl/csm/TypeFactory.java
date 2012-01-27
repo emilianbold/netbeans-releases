@@ -359,6 +359,17 @@ public class TypeFactory {
         return type;
     }
 
+    public static CsmType createSimpleType(CsmClassifier cls, CsmFile file, int startOffset, int endOffset) {
+        TypeImpl type = new TypeImpl(file, 0, false, 0, false, startOffset, endOffset);
+        type.setClassifierText(cls.getName());
+        List<CharSequence> l = new ArrayList<CharSequence>();
+        l.add(cls.getName());
+        type.setQName(l.toArray(new CharSequence[l.size()]));
+        type.initClassifier(cls);
+        return type;
+    }
+    
+    
     private static class TypeWrapper implements CsmType {
         protected CsmType type;
         protected int pointerDepth;

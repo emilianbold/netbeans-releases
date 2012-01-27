@@ -116,12 +116,29 @@ public class AstRenderer {
                     break;
                 case CPPTokenTypes.CSM_CLASS_DECLARATION:
                 case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION: {
-                    ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ?
-                                        ClassImplSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext(), container) :
-                                        ClassImpl.create(token, currentNamespace, file, !isRenderingLocalContext(), container);
-                    container.addDeclaration(cls);
-                    addTypedefs(renderTypedef(token, cls, currentNamespace).typedefs, currentNamespace, container, cls);
-                    renderVariableInClassifier(token, cls, currentNamespace, container);
+                    boolean planB = false;
+                    if(objects != null) {
+                        CsmObject o = objects.get(OffsetableBase.getStartOffset(token));
+                        if(o instanceof ClassImpl) {
+                            ClassImpl cls = (ClassImpl)o;
+                            cls.render(token, isRenderingLocalContext());
+                            container.addDeclaration(cls);
+                            addTypedefs(renderTypedef(token, cls, currentNamespace).typedefs, currentNamespace, container, cls);
+                            renderVariableInClassifier(token, cls, currentNamespace, container);
+                        } else {
+                            planB = true;
+                        }
+                    } else {
+                        planB = true;
+                    }                    
+                    if(planB) {
+                        ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ?
+                                            ClassImplSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext(), container) :
+                                            ClassImpl.create(token, currentNamespace, file, !isRenderingLocalContext(), container);
+                        container.addDeclaration(cls);
+                        addTypedefs(renderTypedef(token, cls, currentNamespace).typedefs, currentNamespace, container, cls);
+                        renderVariableInClassifier(token, cls, currentNamespace, container);
+                    }
                     break;
                 }
                 case CPPTokenTypes.CSM_ENUM_DECLARATION: {
@@ -1072,12 +1089,27 @@ public class AstRenderer {
                             case CPPTokenTypes.COMMA:
                             case CPPTokenTypes.SEMICOLON:
                                 TypeImpl typeImpl = null;
-                                if (cfdi != null) {
-                                    typeImpl = TypeFactory.createType(classifier, cfdi, file, ptrOperator, arrayDepth, null, scope, false, true);
-                                } else if (classifier != null) {
-                                    typeImpl = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth, null, scope, false, true);
-                                } else if (results.getEnclosingClassifier() != null) {
-                                    typeImpl = TypeFactory.createType(results.getEnclosingClassifier(), ptrOperator, arrayDepth, ast, file);
+                                boolean planB = false;
+                                if(objects != null) {
+                                    AST token = firstChild.getNextSibling();
+                                    CsmObject o = objects.get(OffsetableBase.getStartOffset(token));
+                                    if(o instanceof TypeImpl) {
+                                        typeImpl = (TypeImpl) o;
+                                        System.out.println("Type found!!!");
+                                    } else {
+                                        planB = true;
+                                    }
+                                } else {
+                                    planB = true;
+                                }                    
+                                if(planB) {
+                                    if (cfdi != null) {
+                                        typeImpl = TypeFactory.createType(classifier, cfdi, file, ptrOperator, arrayDepth, null, scope, false, true);
+                                    } else if (classifier != null) {
+                                        typeImpl = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth, null, scope, false, true);
+                                    } else if (results.getEnclosingClassifier() != null) {
+                                        typeImpl = TypeFactory.createType(results.getEnclosingClassifier(), ptrOperator, arrayDepth, ast, file);
+                                    }
                                 }
                                 if (typeImpl != null) {
                                     typeImpl.setTypeOfTypedef();
