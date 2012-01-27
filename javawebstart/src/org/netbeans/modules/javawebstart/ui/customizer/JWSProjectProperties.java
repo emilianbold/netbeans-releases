@@ -274,8 +274,8 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
                     final InputStream in = jnlpImlpFO.getInputStream();
                     if(in != null) {
                         try {
-                            String crc = JWSProjectPropertiesUtils.computeCrc32( in );
-                            jnlpImplOldOrModified = !JWSProjectPropertiesUtils.isJnlpImplCurrentVer(crc);
+                            String crc = JWSCompositeCategoryProvider.computeCrc32( in );
+                            jnlpImplOldOrModified = !JWSCompositeCategoryProvider.isJnlpImplCurrentVer(crc);
                         } finally {
                             in.close();
                         }
