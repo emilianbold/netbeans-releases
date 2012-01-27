@@ -36,14 +36,15 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 @OptionsPanelController.ContainerRegistration(
-    id = "Java",
+    id = JavaOptions.JAVA,
     position = 610, //Keymap Container is at position 600 and PHP Container is at position 650
     categoryName = "#OptionsCategory_Name_Java",
-    iconBase = "org/netbeans/modules/java/options/java_logo.png",
+    iconBase = "org/netbeans/modules/options/java/resources/java_logo.png",
     keywords = "#OptionsCategory_Keywords_Java",
     keywordsCategory = "Java")
 @Messages({"OptionsCategory_Keywords_Java=Java Options","OptionsCategory_Name_Java=Java"})
-package org.netbeans.modules.java.options;
+package org.netbeans.modules.options.java.resources;
 
+import org.netbeans.modules.options.java.api.JavaOptions;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle.Messages;

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+            <code-name-base>org.netbeans.modules.options.java</code-name-base>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.options.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.25</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>8.22</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
+            <friend-packages>
+                <friend>org.apache.tools.ant.module</friend>
+                <friend>org.netbeans.modules.debugger.jpda.ui</friend>
+                <friend>org.netbeans.modules.form</friend>
+                <friend>org.netbeans.modules.javacard.project</friend>
+                <friend>org.netbeans.modules.maven</friend>
+                <friend>org.netbeans.modules.profiler.options</friend>
+                <friend>org.netbeans.modules.vmd.componentssupport</friend>
+                <package>org.netbeans.modules.options.java.api</package>
+            </friend-packages>
+        </data>
+    </configuration>
+</project>
