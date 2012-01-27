@@ -254,25 +254,27 @@ public final class NbModuleProject implements Project {
         return "NbModuleProject[" + getProjectDirectory() + "]"; // NOI18N
     }
     
-    public Lookup getLookup() {
+    @Override public Lookup getLookup() {
         return lookup;
     }
 
     public void refreshLookup() {
         if (getModuleType() == NbModuleType.SUITE_COMPONENT) {
-            if (lookup.lookup(SuiteProvider.class) == null)
+            if (lookup.lookup(SuiteProvider.class) == null) {
                 ic.add(new SuiteProviderImpl());
+            }
         } else {
             SuiteProvider sp = lookup.lookup(SuiteProvider.class);
-            if (sp != null)
+            if (sp != null) {
                 ic.remove(sp);
+            }
         }
     }
 
     private Lookup createLookup(ProjectInformation info, AuxiliaryConfiguration aux, AntProjectHelper helper, FileBuiltQueryImplementation fileBuilt, final SourcesHelper sourcesHelper) {
         Sources srcs = sourcesHelper.createSources();
         srcs.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
+            @Override public void stateChanged(ChangeEvent e) {
                 // added source root, probably via SourceGroupModifiedImplementation
                 getLookup().lookup(ModuleActions.class).refresh();
             }
@@ -300,7 +302,7 @@ public final class NbModuleProject implements Project {
         ic.add(fileBuilt);
         ic.add(new AccessibilityQueryImpl(this));
         ic.add(new SourceLevelQueryImpl(this));
-        ic.add(helper.createSharabilityQuery(evaluator(), new String[0], new String[]{
+        ic.add(helper.createSharabilityQuery2(evaluator(), new String[0], new String[]{
                     "${build.dir}", // NOI18N
                 }));
         ic.add(srcs);
@@ -329,7 +331,7 @@ public final class NbModuleProject implements Project {
 
 
 
-    public FileObject getProjectDirectory() {
+    @Override public FileObject getProjectDirectory() {
         return helper.getProjectDirectory();
     }
     
@@ -354,7 +356,7 @@ public final class NbModuleProject implements Project {
      */
     public Element getPrimaryConfigurationData() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Element>() {
-            public Element run() {
+            @Override public Element run() {
                 AuxiliaryConfiguration ac = helper.createAuxiliaryConfiguration();
                 Element data = ac.getConfigurationFragment(NbModuleProject.NAME_SHARED, NbModuleProject.NAMESPACE_SHARED_2, true);
                 if (data != null) {
@@ -372,7 +374,7 @@ public final class NbModuleProject implements Project {
      */
     public void putPrimaryConfigurationData(final Element data) {
         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
-            public Void run() {
+            @Override public Void run() {
                 AuxiliaryConfiguration ac = helper.createAuxiliaryConfiguration();
                 if (ac.getConfigurationFragment(NbModuleProject.NAME_SHARED, NbModuleProject.NAMESPACE_SHARED_2, true) != null) {
                     ac.putConfigurationFragment(XMLUtil.translateXML(data, NbModuleProject.NAMESPACE_SHARED_2), true);
@@ -696,10 +698,10 @@ public final class NbModuleProject implements Project {
     private ClassPath[] boot, source, compile;
     private final class OpenedHook extends ProjectOpenedHook {
         OpenedHook() {}
-        protected void projectOpened() {
+        @Override protected void projectOpened() {
             open();
         }
-        protected void projectClosed() {
+        @Override protected void projectClosed() {
             try {
                 ProjectManager.getDefault().saveProject(NbModuleProject.this);
             } catch (IOException e) {
@@ -728,7 +730,7 @@ public final class NbModuleProject implements Project {
             // XXX skip this in case nbplatform.active is not defined
             final Project p = this; // XXX workaround for NB editor bug
             ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
-                public Void run() {
+                @Override public Void run() {
                     String path = "nbproject/private/platform-private.properties"; // NOI18N
                     EditableProperties ep = getHelper().getProperties(path);
                     File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
@@ -780,13 +782,15 @@ public final class NbModuleProject implements Project {
 
     /** See issue #69440 for more details. */
     public synchronized void setRunInAtomicAction(boolean runInAtomicAction) {
-        if (atomicActionCounter == 0 && ! runInAtomicAction)
-            throw new IllegalArgumentException("Not in atomic action");    // NOI18N
+        if (atomicActionCounter == 0 && ! runInAtomicAction) {
+            throw new IllegalArgumentException("Not in atomic action");
+        }    // NOI18N
         atomicActionCounter += runInAtomicAction ? 1 : -1;
-        if (runInAtomicAction && atomicActionCounter == 1)
+        if (runInAtomicAction && atomicActionCounter == 1) {
             eval.setRunInAtomicAction(true);
-        else if (! runInAtomicAction && atomicActionCounter == 0)
+        } else if (! runInAtomicAction && atomicActionCounter == 0) {
             eval.setRunInAtomicAction(false);
+        }
     }
     
     /** See issue #69440 for more details. */
@@ -806,11 +810,11 @@ public final class NbModuleProject implements Project {
             name = cnb != null ? cnb : /* #70490 */getProjectDirectory().toString();
         }
         
-        public String getName() {
+        @Override public String getName() {
             return name;
         }
         
-        public String getDisplayName() {
+        @Override public String getDisplayName() {
             if (displayName == null) {
                 LocalizedBundleInfo bundleInfo = getBundleInfo();
                 if (bundleInfo != null) {
@@ -830,19 +834,19 @@ public final class NbModuleProject implements Project {
             firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, oldDisplayName, displayName);
         }
         
-        public Icon getIcon() {
+        @Override public Icon getIcon() {
             return NB_PROJECT_ICON;
         }
         
-        public Project getProject() {
+        @Override public Project getProject() {
             return NbModuleProject.this;
         }
         
-        public void addPropertyChangeListener(PropertyChangeListener pchl) {
+        @Override public void addPropertyChangeListener(PropertyChangeListener pchl) {
             changeSupport.addPropertyChangeListener(pchl);
         }
         
-        public void removePropertyChangeListener(PropertyChangeListener pchl) {
+        @Override public void removePropertyChangeListener(PropertyChangeListener pchl) {
             changeSupport.removePropertyChangeListener(pchl);
         }
         
@@ -850,7 +854,7 @@ public final class NbModuleProject implements Project {
             changeSupport.firePropertyChange(propName, oldValue, newValue);
         }
 
-        public void propertyChange(PropertyChangeEvent evt) {
+        @Override public void propertyChange(PropertyChangeEvent evt) {
             if (ProjectInformation.PROP_DISPLAY_NAME.equals(evt.getPropertyName())) {
                 setDisplayName((String) evt.getNewValue());
             }
@@ -866,7 +870,7 @@ public final class NbModuleProject implements Project {
         
         SavedHook() {}
         
-        protected void projectXmlSaved() throws IOException {
+        @Override protected void projectXmlSaved() throws IOException {
             // refresh build.xml and build-impl.xml for external modules
             if (getModuleType() != NbModuleType.NETBEANS_ORG) {
                 refreshBuildScripts(false);
@@ -899,12 +903,12 @@ public final class NbModuleProject implements Project {
     
     private final class SuiteProviderImpl implements SuiteProvider {
 
-        public File getSuiteDirectory() {
+        @Override public File getSuiteDirectory() {
             String suiteDir = evaluator().getProperty("suite.dir"); // NOI18N
             return suiteDir == null ? null : helper.resolveFile(suiteDir);
         }
 
-        public File getClusterDirectory() {
+        @Override public File getClusterDirectory() {
             return getModuleJarLocation().getParentFile().getParentFile().getAbsoluteFile();
         }
         
@@ -942,11 +946,11 @@ public final class NbModuleProject implements Project {
             UIUtil.TEMPLATE_CATEGORY,
         };
         
-        public String[] getPrivilegedTemplates() {
+        @Override public String[] getPrivilegedTemplates() {
             return PRIVILEGED_NAMES;
         }
 
-        public String[] getRecommendedTypes() {
+        @Override public String[] getRecommendedTypes() {
             return RECOMMENDED_TYPES;
         }
     }    
@@ -957,7 +961,7 @@ public final class NbModuleProject implements Project {
         private FileObject manifestFO;
         private final FileChangeListener listener = FileUtil.weakFileChangeListener(this, null);
 
-        public LocalizedBundleInfo getLocalizedBundleInfo() {
+        @Override public LocalizedBundleInfo getLocalizedBundleInfo() {
             if (bundleInfo == null) {
                 Manifest mf = getManifest();
                 FileObject srcFO = getSourceDirectory();
@@ -1023,9 +1027,9 @@ public final class NbModuleProject implements Project {
         private static final String REF_START = "file.reference."; //NOI18N
         private static final String JAVADOC_START = "javadoc.reference."; //NOI18N
 
-        public ExtraSJQEvaluator() {
+        ExtraSJQEvaluator() {
             evaluator().addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
+                @Override public void propertyChange(PropertyChangeEvent evt) {
                     final String prop = evt.getPropertyName();
                     if (prop == null || prop.startsWith(SOURCE_START) || prop.startsWith(JAVADOC_START)) {
                         cache = null;
@@ -1038,15 +1042,15 @@ public final class NbModuleProject implements Project {
         PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         private HashMap<String, String> cache;
 
-        public String getProperty(String prop) {
+        @Override public String getProperty(String prop) {
             return getProperties().get(prop);
         }
 
-        public String evaluate(String text) {
+        @Override public String evaluate(String text) {
             throw new UnsupportedOperationException();  // currently not needed
         }
 
-        public Map<String, String> getProperties() {
+        @Override public Map<String, String> getProperties() {
             if (cache == null) {
                 cache = new HashMap<String, String>();
                 ProjectXMLManager pxm = new ProjectXMLManager(NbModuleProject.this);
@@ -1082,11 +1086,11 @@ public final class NbModuleProject implements Project {
             props.put(REF_START + fileID, path);
         }
 
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
+        @Override public void addPropertyChangeListener(PropertyChangeListener listener) {
             pcs.addPropertyChangeListener(listener);
         }
 
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
+        @Override public void removePropertyChangeListener(PropertyChangeListener listener) {
             pcs.removePropertyChangeListener(listener);
         }
 
