@@ -1273,9 +1273,9 @@ public class HgCommand {
         } catch (HgException ex) {
             HgUtils.notifyException(ex);
         } finally {
-             if(logger != null) {
-            logger.closeLog();
-        }
+            if(logger != null) {
+                logger.closeLog();
+            }
         }
 
         return messages.toArray(new HgLogMessage[0]);
@@ -1349,7 +1349,7 @@ public class HgCommand {
         } catch (HgException e) {
             Mercurial.LOG.log(Level.WARNING, "command: {0}", HgUtils.replaceHttpPassword(command)); // NOI18N
             Mercurial.LOG.log(e instanceof HgException.HgCommandCanceledException ? Level.FINE : Level.INFO, null, e); // NOI18N
-            throw new HgException(e.getMessage());
+            throw e;
         } finally {
             Utils.deleteRecursively(tempFolder);
         }
@@ -3684,7 +3684,7 @@ public class HgCommand {
             if (proc != null)  {
                 proc.destroy();
             }
-            throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_CANCELLED"));
+            throw new HgException.HgCommandCanceledException(NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_CANCELLED"));
         }catch(IOException e){
             // Hg does not seem to be returning error status != 0
             // even when it fails when for instance adding an already tracked file to
