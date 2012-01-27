@@ -86,6 +86,9 @@ public class LogsComponent extends TopComponent {
         // disable for now:
         showAlljCheckBox.setVisible(false);
         
+        // disable "Server Instance Logs" for now: content looks useless for end user
+        jTabbedPane1.removeTabAt(1);
+        
         setName(NbBundle.getMessage(LogsComponent.class, "CTL_LogsTopComponent", oi.getName()));
         setToolTipText(NbBundle.getMessage(LogsComponent.class, "HINT_LogsTopComponent"));
         this.am = oi.getApplicationManager();
@@ -98,7 +101,7 @@ public class LogsComponent extends TopComponent {
                 fetchLogs();
             }
         });
-        fetchApplicationLogs();
+        fetchServiceInstanceLogs();
         loadJobs();
     }
     
@@ -214,7 +217,7 @@ public class LogsComponent extends TopComponent {
 
     @NbBundle.Messages({"MSG_IgnoreEmpty=This log file is empty.",
             "MSG_IgnoreContentType=This log file is ignored because its content type is {0}"})
-    private void fetchApplicationLogs() {
+    private void fetchServiceInstanceLogs() {
         appLogs.setText(Bundle.MSG_Loading());
         
         OracleInstance.runAsynchronously(new Callable<Void>() {
@@ -408,8 +411,8 @@ public class LogsComponent extends TopComponent {
     }
     
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
-        if (jTabbedPane1.getSelectedIndex() == 0) {
-            fetchApplicationLogs();
+        if (jTabbedPane1.getSelectedIndex() == 1) {
+            fetchServiceInstanceLogs();
         } else {
             loadJobs();
         }
