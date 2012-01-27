@@ -62,6 +62,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveListener;
 import org.netbeans.modules.j2ee.deployment.impl.Server;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -86,6 +87,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.j2ee.deployment.impl.DeployOnSaveManager;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentDescriptorConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MessageDestinationConfiguration;
@@ -375,6 +377,18 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         if (libraryConfiguration != null) {
             libraryConfiguration.removeLibraryChangeListener(listener);
         }
+    }
+    
+    @Override
+    public void addDeployOnSaveListener( DeployOnSaveListener listener ) {
+        DeployOnSaveManager.getDefault().addDeployOnSaveListener(provider,
+                listener);
+    }
+
+    @Override
+    public void removeDeployOnSaveListener( DeployOnSaveListener listener ) {
+        DeployOnSaveManager.getDefault().removeDeployOnSaveListener(provider,
+                listener);
     }
 
     @Override

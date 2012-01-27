@@ -108,14 +108,12 @@ public class BrowserReload {
     
     public boolean canReload( FileObject fileObject ){
         Pair pair = communicationMap.get( fileObject );
-        if ( pair == null || pair.getId() == null ){
+        if ( pair == null || pair.getId() == null || pair.getSelectionKey()==null){
             return false;
         }
-        SelectionKey selectionKey = pair.getSelectionKey();
-        if ( selectionKey == null ){
-            return false;
+        else {
+            return true;
         }
-        return true;
     }
     
     public void reload( FileObject fileObject ){
