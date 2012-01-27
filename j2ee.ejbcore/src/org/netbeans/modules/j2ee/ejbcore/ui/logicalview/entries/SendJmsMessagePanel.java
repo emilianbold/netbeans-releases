@@ -74,23 +74,31 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
     private final J2eeModuleProvider provider;
     private final Set<MessageDestination> moduleDestinations;
     private final Set<MessageDestination> serverDestinations;
-    private final List<SendJMSMessageUiSupport.MdbHolder> mdbs;
     private final boolean isDestinationCreationSupportedByServerPlugin;
     private final ServiceLocatorStrategyPanel slPanel;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private List<SendJMSMessageUiSupport.MdbHolder> mdbs;
     private String errorMsg;
     private String warningMsg;
     
     // private because correct initialization is needed
     private SendJmsMessagePanel(J2eeModuleProvider provider, Set<MessageDestination> moduleDestinations,
-            Set<MessageDestination> serverDestinations, List<SendJMSMessageUiSupport.MdbHolder> mdbs,
-            String lastLocator, ClasspathInfo cpInfo) {
+            Set<MessageDestination> serverDestinations, String lastLocator, ClasspathInfo cpInfo) {
         initComponents();
         
         this.provider = provider;
         this.moduleDestinations = moduleDestinations;
         this.serverDestinations = serverDestinations;
-        this.mdbs = mdbs;
+        // get MDBs with listening on model updates
+        this.mdbs = SendJMSMessageUiSupport.getMdbs(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                // get new MDBs
+                mdbs = SendJMSMessageUiSupport.getMdbs(null);
+                populate();
+                verifyAndFire();
+            }
+        });
 
         changeSupport.addChangeListener(this);
         scanningLabel.setVisible(SourceUtils.isScanInProgress());
@@ -118,18 +126,15 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
      * @param provider Java EE module provider.
      * @param moduleDestinations project message destinations.
      * @param serverDestinations server message destinations.
-     * @param mdbs message-driven beans with their properties.
      * @param lastLocator name of the service locator.
      * @return SendJmsMessagePanel instance.
      */
     public static SendJmsMessagePanel newInstance(final J2eeModuleProvider provider, final Set<MessageDestination> moduleDestinations,
-            final Set<MessageDestination> serverDestinations, final List<SendJMSMessageUiSupport.MdbHolder> mdbs,
-            final String lastLocator, ClasspathInfo cpInfo) {
+            final Set<MessageDestination> serverDestinations, final String lastLocator, ClasspathInfo cpInfo) {
         SendJmsMessagePanel sjmp = new SendJmsMessagePanel(
                 provider,
                 moduleDestinations,
                 serverDestinations,
-                mdbs,
                 lastLocator,
                 cpInfo);
         sjmp.initialize();
