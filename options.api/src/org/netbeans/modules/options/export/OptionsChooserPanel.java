@@ -624,6 +624,7 @@ public final class OptionsChooserPanel extends JPanel {
             // fire an event to refresh parent or child nodes
             ((DefaultTreeModel) treeModel).nodeChanged((TreeNode) node);
             dialogDescriptor.setValid(isPanelValid());
+            scrollPaneOptions.repaint();
         }
     }
 
