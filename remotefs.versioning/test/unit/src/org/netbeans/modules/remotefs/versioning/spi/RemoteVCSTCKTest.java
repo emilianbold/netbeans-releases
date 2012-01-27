@@ -208,7 +208,6 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
         return new RemoteVCSTCKTest(suite);
     }
     
-    @RandomlyFails
     public static final class VCSOwnerTestCase_ extends VCSOwnerTestCase {
 
         public VCSOwnerTestCase_(String testName) {
@@ -216,19 +215,73 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
         }
     }
     
-    @RandomlyFails
     public static final class VCSInterceptorTestCase_ extends VCSInterceptorTestCase {
 
         public VCSInterceptorTestCase_(String testName) {
             super(testName);
         }
+
+        @RandomlyFails
+        @Override
+        public void testVCSDoesntOverrideReadOnly() throws IOException {
+            super.testVCSDoesntOverrideReadOnly();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testVCSOverridesReadOnly() throws IOException {
+            super.testVCSOverridesReadOnly();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testRefreshRecursively() throws IOException {
+            super.testRefreshRecursively();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testFileProtectedAndNotDeleted() throws IOException {
+            super.testFileProtectedAndNotDeleted();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testFileCopied() throws IOException {
+            super.testFileCopied();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testFolderTreeCopied() throws IOException {
+            super.testFolderTreeCopied();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testFileMoved() throws IOException {
+            super.testFileMoved();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testFolderTreeMoved() throws IOException {
+            super.testFolderTreeMoved();
+        }
+        
     }
     
-    @RandomlyFails
     public static final class VCSAnnotationProviderTestCase_ extends VCSAnnotationProviderTestCase {
 
         public VCSAnnotationProviderTestCase_(String testName) {
             super(testName);
         }
+
+        @RandomlyFails
+        @Override
+        public void testAnnotationChanged() throws Exception {
+            super.testAnnotationChanged();
+        }
+        
     }
 }
