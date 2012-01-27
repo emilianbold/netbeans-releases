@@ -261,7 +261,7 @@ public class CppParserActionImpl implements CppParserAction {
                 if(classEntry != null) {
                     classEntry.setAttribute(CppAttributes.DEFINITION, cls);
                 } else {
-                    System.out.println("classEntry is empty " + cls);
+//                    System.out.println("classEntry is empty " + cls);
                 }
             }
             builderContext.pop();
