@@ -342,8 +342,17 @@ public final class OptionsChooserPanel extends JPanel {
             } else if (getOptionsExportModel().getState() == OptionsExportModel.State.DISABLED) {
                 dialogDescriptor.getNotificationLineSupport().setWarningMessage(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.nooption.warning"));
             } else {
-                dialogDescriptor.getNotificationLineSupport().clearMessages();
-                return true;
+                File parent = new File(txtFile.getText()).getParentFile();
+                if(parent == null) {
+                    dialogDescriptor.getNotificationLineSupport().setWarningMessage(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.noparent.warning"));
+                } else {
+                    if(parent.canWrite()) {
+                        dialogDescriptor.getNotificationLineSupport().clearMessages();
+                        return true;
+                    } else {
+                        dialogDescriptor.getNotificationLineSupport().setWarningMessage(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.nowrite.warning"));
+                    }
+                }                
             }
         }
         return false;
