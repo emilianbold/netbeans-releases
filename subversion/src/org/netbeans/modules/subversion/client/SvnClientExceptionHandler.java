@@ -712,7 +712,13 @@ public class SvnClientExceptionHandler {
     public static boolean isUnversionedResource(String msg) {
         msg = msg.toLowerCase();
         return msg.indexOf("(not a versioned resource)") > -1 ||                            // NOI18N
-               msg.indexOf("is not a working copy") > -1;                                   // NOI18N
+               msg.indexOf("is not a working copy") > -1 ||                                 //NOI18N
+               msg.contains("some targets are not versioned");                              //NOI18N
+    }
+    
+    public static boolean hasNoBaseRevision (String msg) {
+        msg = msg.toLowerCase();
+        return msg.contains("has no base revision until it is committed"); //NOI18N
     }
 
     public static boolean isTooOldClientForWC(String msg) {
