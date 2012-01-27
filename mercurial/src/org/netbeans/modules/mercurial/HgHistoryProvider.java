@@ -113,14 +113,15 @@ public class HgHistoryProvider implements VCSHistoryProvider {
         }
 
         for (File file : files) {
-            FileInformation info = Mercurial.getInstance().getFileStatusCache().getStatus(file);
+            FileInformation info = Mercurial.getInstance().getFileStatusCache().refresh(file);
             int status = info.getStatus();
             if ((status & FileInformation.STATUS_VERSIONED) == 0) {
                 continue;
             }
+            File repositoryRoot = repositories.iterator().next();
             HgLogMessage[] history = 
                     HgCommand.getLogMessages(
-                        repositories.iterator().next(), 
+                        repositoryRoot,
                         new HashSet(Arrays.asList(files)), 
                         fromRevision, 
                         toRevision, 
@@ -128,8 +129,8 @@ public class HgHistoryProvider implements VCSHistoryProvider {
                         false, // get files info
                         false, // get parents
                         -1,    // limit 
-                        Collections.<String>emptyList(), // branch names
-                        null, // logger
+                        Collections.<String>emptyList(),                          // branch names
+                        OutputLogger.getLogger(repositoryRoot.getAbsolutePath()), // logger
                         false); // asc order
             for (HgLogMessage h : history) {
                 String r = h.getHgRevision().getRevisionNumber();
@@ -200,7 +201,11 @@ public class HgHistoryProvider implements VCSHistoryProvider {
             try {
                 // XXX fails for moved/renamed files
                 File file = VersionsCache.getInstance().getFileRevision(originalFile, hgRevision);
-                FileUtils.copyFile(file, revisionFile); // XXX lets be faster - LH should cache that somehow ...
+                if(file != null) {
+                    FileUtils.copyFile(file, revisionFile); // XXX lets be faster - LH should cache that somehow ...
+                } else {
+                    Mercurial.LOG.log(Level.WARNING, "File {0} not found in revision {1}", new Object[]{originalFile, hgRevision});
+                }
             } catch (IOException e) {
                 if(e.getCause() instanceof HgException.HgCommandCanceledException)  {
                     Mercurial.LOG.log(Level.FINE, null, e);
