@@ -57,25 +57,30 @@ made subject to such option by the copyright holder.
 <mapID target="dbexpovew" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_runtime.html" />
 -->
 
+<!-- ================================ begin TOC IDs ================================ -->
+
 <mapID target="adddriver" url="adddriver.html" />
 <mapID target="connectdb" url="connectdb.html" />
 <mapID target="derbydb" url="derbydb.html" />
 <mapID target="delobj" url="delobj.html" />
 <mapID target="oracledb" url="oracledb.html" />
-
-
 <mapID target="addcopycols" url="addcopycols.html" />
 <mapID target="createtables" url="createtables.html" />
 <mapID target="createviews" url="createviews.html" />
 <mapID target="manipsql" url="manipsql.html" />
-
 <!--<mapID target="db.explorer.misc" url="misc.html" />-->
-
-
 <mapID target="browstruct" url="browstruct.html" />
 <mapID target="viewdata" url="viewdata.html" />
-
 <mapID target="dbmod" url="dbmod.html" />
+<mapID target="usemysql" url="mysql.html" />
+
+<!-- SQL specific topcs -->
+<mapID target="sql_history" url="sql_history.html" />
+<!-- SQL editor context specific help -->
+<mapID target="text.x-sql" url="dbmod.html" />
+
+
+<!-- ================================ begin CSH IDs ================================ -->
 
 <!--CSH nodes in Runtime window for DB drivers-->
 <mapID target="org.netbeans.modules.db.explorer.nodes.DriverNode" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_runtime.html" />
@@ -84,34 +89,22 @@ made subject to such option by the copyright holder.
 <!--menu items-->
 <mapID target="org.netbeans.modules.derby.CreateDatabaseAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
 <mapID target="org.netbeans.modules.derby.DerbySettingsAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
-
 <!-- add driver dialog -->
 <mapID target="org.netbeans.modules.db.explorer.dlg.AddDriverDialog" url="csh_driver.html" />
-
-
 <!-- connect to db dialog: second and third steps -->
 <mapID target="db_save_password" url="csh_connectdb.html" />
 <mapID target="org.netbeans.modules.db.explorer.dlg.ConnectionPanel" url="csh_newconnectdb.html" />
 <mapID target="org.netbeans.modules.db.explorer.action.ConnectAction" url="csh_connectdb.html" />
 <mapID target="org.netbeans.modules.db.explorer.dlg.ChoosingSchemaPanel" url="csh_chooseschema.html" />
-
 <!-- create table dialog box csh -->
 <mapID target="org.netbeans.modules.db.explorer.actions.CreateTableAction" url="create-table-db.html" />
-
-<!-- MySQL topics -->
-
-<mapID target="org.netbeans.modules.db.mysql.ServerNode" url="mysql.html" />
-<mapID target="org.netbeans.modules.db.mysql.ui.PropertiesDialog" url="csh_mysql_props.html" />
-
-<!-- SQL specific topcs -->
-
-<mapID target="sql_history" url="sql_history.html" />
-
-<!-- SQL editor context specific help -->
-<mapID target="text.x-sql" url="dbmod.html" />
-
 <!-- SQL History CSH -->
-
 <mapID target="org.netbeans.modules.db.sql.editor.ui.actions.SQLHistoryAction" url="sql_history.html" />
+<!-- MySQL server properties dialog -->
+<mapID target="org.netbeans.modules.db.mysql.ui.PropertiesDialog" url="csh_mysql_props.html" />
+<!-- not sure where this one is invoked -->
+<!--<mapID target="org.netbeans.modules.db.mysql.ServerNode" url="mysql.html" />-->
+
+
 
 </map>
