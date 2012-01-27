@@ -53,7 +53,6 @@ import java.net.URLEncoder;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.StringTokenizer;
 
 /**
  * @author Radek Matous
@@ -70,7 +69,7 @@ final class NbfsUtil {
      * @param fo
      * @return url with nbfs protocol
      */
-    static URL getURL(FileObject fo) {
+    static URL getURL(final FileObject fo) {
         String fsPart;
         try {
             fsPart = encodeFsPart(fo);
@@ -91,7 +90,9 @@ final class NbfsUtil {
                 new PrivilegedExceptionAction<URL>() {
                     public URL run() throws Exception {
                         // #30397: the fsPart name cannot be null
-                        return new URL(FileURL.PROTOCOL, host, -1, file, new FileURL.Handler());
+                        URL u = new URL(FileURL.PROTOCOL, host, -1, file, new FileURL.Handler());
+                        assert !u.toString().equals("nbfs://nbhost//") : host + " + " + file + " for " + fo;
+                        return u;
                     }
                 }
             );
