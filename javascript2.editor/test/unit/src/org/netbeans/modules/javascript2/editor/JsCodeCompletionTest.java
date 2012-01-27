@@ -91,4 +91,10 @@ public class JsCodeCompletionTest extends JsTestBase {
         checkCompletion("testfiles/completion/typeInferenceNew.js", "formatter.^println(\"town: \" + object.town);", false);
     }
     
+    public void test129036() throws Exception {
+        // needs to be displayed also return types
+        checkCompletion("testfiles/completion/test129036.js", "my^ //Foo", false);
+    }
+
+    
 }
