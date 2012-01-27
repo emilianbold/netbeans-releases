@@ -50,6 +50,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
@@ -189,6 +190,20 @@ public final class ApiGenScript extends PhpProgram {
         } catch (MalformedURLException ex) {
             LOGGER.log(Level.WARNING, ex.getLocalizedMessage(), ex);
         }
+    }
+
+    @Override
+    public ExternalProcessBuilder getProcessBuilder() {
+        if (getProgram().endsWith(".php")) { // NOI18N
+            // run *.php file via php interpreter
+            try {
+                return PhpInterpreter.getDefault().getProcessBuilder()
+                        .addArgument(getProgram());
+            } catch (InvalidPhpProgramException ex) {
+                // ignored
+            }
+        }
+        return super.getProcessBuilder();
     }
 
     private List<String> getParams(PhpModule phpModule) {
