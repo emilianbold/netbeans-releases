@@ -154,7 +154,6 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
                     provider,
                     holder.getModuleDestinations(),
                     holder.getServerDestinations(),
-                    SendJMSMessageUiSupport.getMdbs(),
                     erc.getServiceLocatorName(),
                     ClasspathInfo.create(srcFile));
             final DialogDescriptor dialogDescriptor = new DialogDescriptor(
