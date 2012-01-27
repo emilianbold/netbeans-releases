@@ -323,7 +323,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
         }
         for (ModelProblem problem : problems) {
             if (!problem.getSource().equals(pom.getAbsolutePath())) {
-                LOG.log(Level.WARNING, "found problem not in {0}: {1}", new Object[] {pom, problem.getSource()});
+                LOG.log(Level.FINE, "found problem not in {0}: {1}", new Object[] {pom, problem.getSource()});
                 continue;
             }
             int line = problem.getLineNumber();
