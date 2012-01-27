@@ -202,7 +202,9 @@ public class ApisupportAntUtils {
             return null;
         }
         String src = p.evaluator().getProperty("src.dir"); // NOI18N
-        assert src != null : "Cannot evaluate src.dir property for " + p;
+        if (src == null) {
+            return null;
+        }
         File srcF = FileUtil.normalizeFile(new File(projectDir, src));
         FileObject sourceDir = FileUtil.toFileObject(srcF);
         FileObject manifestFO = FileUtil.toFileObject(FileUtil.normalizeFile(new File(projectDir, "manifest.mf"))); // NOI18N
