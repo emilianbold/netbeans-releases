@@ -102,14 +102,6 @@
                 <include name="engine/**/*.*"/>
             </fileset>
         </copy>
-        <mkdir dir="${nbi.all.dir}/reglib"/>
-        <copy todir="${nbi.all.dir}/reglib">
-            <fileset dir="${hg.root}/reglib">
-		<include name="src/**/*.*"/>
-                <exclude name="build/**/*.*"/>
-                <exclude name="dist/**/*.*"/>                
-            </fileset>
-        </copy>
     </target>
 
     <target name="-get-translatedfiles" if="use.hg.root.translatedfiles">
@@ -119,12 +111,6 @@
                <include name="*/other/installer/**/*.*"/>
             </fileset>
 	    <regexpmapper handledirsep="true" from="(.*)/other/(.*)" to="\2"/>
-        </copy>
-	<copy todir="${nbi.all.dir}/translatedfiles/src/installer/engine/src">
-            <fileset dir="${hg.root.translatedfiles}/src">
-               <include name="*/nb*/reglib/reglib/**/*.*"/>
-            </fileset>
-	    <regexpmapper handledirsep="true" from="(.*)/nb.*/reglib/reglib/(.*)" to="\2"/>
         </copy>
     </target>
 

@@ -59,6 +59,20 @@ done
 
 progdir=`dirname "$PRG"`
 
+case "`uname`" in
+    Darwin*)
+        # set default userdir and cachedir on MacOS
+        DEFAULT_USERDIR_ROOT=${HOME}/Library/Application Support/NetBeans
+        DEFAULT_CACHEDIR_ROOT=${HOME}/Library/Caches/NetBeans
+        ;;
+    *) 
+        # set default userdir and cachedir on unix systems
+        DEFAULT_USERDIR_ROOT=${HOME}/.netbeans
+        DEFAULT_CACHEDIR_ROOT=${HOME}/.cache/netbeans
+        ;;
+esac
+
+
 if [ -f "$progdir"/../etc/netbeans.conf ] ; then
     . "$progdir"/../etc/netbeans.conf
 fi
@@ -68,9 +82,12 @@ fi
 #     . /etc/netbeans.conf
 # fi
 
+export DEFAULT_USERDIR_ROOT
 
 # #68373: look for userdir, but do not modify "$@"
 userdir="${netbeans_default_userdir}"
+cachedir="${netbeans_default_cachedir}"
+
 founduserdir=""
 for opt in "$@"; do
     if [ "${founduserdir}" = "yes" ]; then
@@ -78,6 +95,15 @@ for opt in "$@"; do
         break
     elif [ "$opt" = "--userdir" ]; then
         founduserdir="yes"
+    fi
+done
+foundcachedir=""
+for opt in "$@"; do
+    if [ "${foundcachedir}" = "yes" ]; then
+        cachedir="$opt"
+        break
+    elif [ "$opt" = "--cachedir" ]; then
+        foundcachedir="yes"
     fi
 done
 
@@ -178,7 +204,11 @@ launchNbexec() {
     if [ "${founduserdir}" = "yes" ]; then
         exec $sh "$nbexec" "$@"
     else
-        exec $sh "$nbexec" --userdir "${userdir}" "$@"
+        if [ "${foundcachedir}" = "yes" ]; then
+            exec $sh "$nbexec" --userdir "${userdir}" "$@"
+        else
+            exec $sh "$nbexec" --userdir "${userdir}" --cachedir "${cachedir}" "$@"
+        fi
     fi
 }
 

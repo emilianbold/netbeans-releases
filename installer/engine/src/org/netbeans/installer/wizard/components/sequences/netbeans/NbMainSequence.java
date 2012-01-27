@@ -55,8 +55,6 @@ import org.netbeans.installer.wizard.components.actions.DownloadInstallationData
 import org.netbeans.installer.wizard.components.actions.InstallAction;
 import org.netbeans.installer.wizard.components.actions.UninstallAction;
 import org.netbeans.installer.wizard.components.actions.netbeans.NbMetricsAction;
-import org.netbeans.installer.wizard.components.actions.netbeans.NbRegistrationAction;
-import org.netbeans.installer.wizard.components.actions.netbeans.NbServiceTagCreateAction;
 import org.netbeans.installer.wizard.components.actions.netbeans.NbShowUninstallationSurveyAction;
 import org.netbeans.installer.wizard.components.panels.LicensesPanel;
 import org.netbeans.installer.wizard.components.panels.netbeans.NbJUnitLicensePanel;
@@ -79,8 +77,6 @@ public class NbMainSequence extends WizardSequence {
     private InstallAction installAction;
     private NbPostInstallSummaryPanel nbPostInstallSummaryPanel;
     private NbMetricsAction metricsAction;
-    private NbServiceTagCreateAction serviceTagAction;
-    private NbRegistrationAction nbRegistrationAction;
     private NbShowUninstallationSurveyAction showUninstallationSurveyAction;
     private Map<Product, ProductWizardSequence> productSequences;
 
@@ -94,8 +90,6 @@ public class NbMainSequence extends WizardSequence {
         installAction = new InstallAction();
         nbPostInstallSummaryPanel = new NbPostInstallSummaryPanel();
         metricsAction = new NbMetricsAction();
-        serviceTagAction = new NbServiceTagCreateAction();
-        nbRegistrationAction = new NbRegistrationAction();
         showUninstallationSurveyAction = new NbShowUninstallationSurveyAction();
         productSequences = new HashMap<Product, ProductWizardSequence>();
 
@@ -145,13 +139,11 @@ public class NbMainSequence extends WizardSequence {
         if (toInstall.size() > 0) {
             addChild(downloadInstallationDataAction);
             addChild(installAction);
-            addChild(serviceTagAction);
         }
 
         addChild(nbPostInstallSummaryPanel);
         if (toInstall.size() > 0) {
             addChild(metricsAction);
-            addChild(nbRegistrationAction);
         }
         if (toUninstall.size() > 0) {
             addChild(showUninstallationSurveyAction);

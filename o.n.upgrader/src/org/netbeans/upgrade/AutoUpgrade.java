@@ -45,8 +45,6 @@
 package org.netbeans.upgrade;
 import java.beans.PropertyVetoException;
 import java.io.*;
-import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -55,7 +53,6 @@ import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import org.netbeans.upgrade.systemoptions.Importer;
-
 import org.netbeans.util.Util;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
@@ -75,29 +72,19 @@ public final class AutoUpgrade {
     private static final Logger LOGGER = Logger.getLogger(AutoUpgrade.class.getName());
 
     public static void main (String[] args) throws Exception {
-        String[] version = new String[1];
-        File sourceFolder = checkPrevious (version, VERSION_TO_CHECK);
+        // try new place
+        File sourceFolder = checkPreviousOnOsSpecificPlace (NEWER_VERSION_TO_CHECK);
+        if (sourceFolder == null) {
+            // try former place
+            sourceFolder = checkPrevious (VERSION_TO_CHECK);
+        }
         if (sourceFolder != null) {
             if (!showUpgradeDialog (sourceFolder)) {
                 throw new org.openide.util.UserCancelException ();
             }
-            if (version[0].compareTo("6.5") < 0) {  //NOI18N
-                // less than 6.5
-
-                // TODO - this branch can be removed when only import from 6.5 and newer is supported
-                doUpgrade (sourceFolder, version[0]);
-                doNonStandardUpgrade(sourceFolder, version[0]);
-                //#75324 NBplatform settings are not imported
-                upgradeBuildProperties(sourceFolder, version);
-                //migrates SystemOptions, converts them as a Preferences
-                Importer.doImport();
-            } else {
-                //equal or greater than 6.5
-                
-                copyToUserdir(sourceFolder);
-                //migrates SystemOptions, converts them as a Preferences
-                Importer.doImport();
-            }
+            copyToUserdir(sourceFolder);
+            //migrates SystemOptions, converts them as a Preferences
+            Importer.doImport();
         }
     }
 
@@ -117,9 +104,28 @@ public final class AutoUpgrade {
     // the first one will be choosen for import
     final static private List<String> VERSION_TO_CHECK = 
             Arrays.asList (new String[] { ".netbeans/7.1", ".netbeans/7.0", ".netbeans/6.9" });//NOI18N
+    
+    // userdir on OS specific root of userdir (see issue 196075)
+    static final List<String> NEWER_VERSION_TO_CHECK =
+            Arrays.asList (/*"7.2, ..."*/); //NOI18N
 
             
-    static private File checkPrevious (String[] version, final List<String> versionsToCheck) {        
+    private static File checkPreviousOnOsSpecificPlace (final List<String> versionsToCheck) {
+        String defaultUserdirRoot = System.getProperty ("netbeans.default_userdir_root"); // NOI18N
+        File sourceFolder;
+        if (defaultUserdirRoot != null) {
+            File userHomeFile = new File (defaultUserdirRoot);
+            for (String ver : versionsToCheck) {
+                sourceFolder = new File (userHomeFile.getAbsolutePath (), ver);
+                if (sourceFolder.exists () && sourceFolder.isDirectory ()) {
+                    return sourceFolder;
+                }
+            }
+        }
+        return null;
+    }
+
+    static private File checkPrevious (final List<String> versionsToCheck) {        
         String userHome = System.getProperty ("user.home"); // NOI18N
         File sourceFolder = null;
         
@@ -132,7 +138,6 @@ public final class AutoUpgrade {
                 sourceFolder = new File (userHomeFile.getAbsolutePath (), ver);
                 
                 if (sourceFolder.isDirectory ()) {
-                    version[0] = sourceFolder.getName();
                     break;
                 }
                 sourceFolder = null;
