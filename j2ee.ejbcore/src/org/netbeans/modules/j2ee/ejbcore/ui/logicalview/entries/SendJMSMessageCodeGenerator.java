@@ -166,16 +166,24 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
                     DialogDescriptor.DEFAULT_ALIGN,
                     new HelpCtx(SendJMSMessageCodeGenerator.class),
                     null);
-            NotificationLineSupport statusLine = dialogDescriptor.createNotificationLineSupport();
-            sendJmsMessagePanel.setNotificationLine(statusLine);
+            final NotificationLineSupport notificationSupport = dialogDescriptor.createNotificationLineSupport();
             
-            sendJmsMessagePanel.addPropertyChangeListener(SendJmsMessagePanel.IS_VALID,
-                    new PropertyChangeListener() {
+            sendJmsMessagePanel.addPropertyChangeListener(SendJmsMessagePanel.IS_VALID, new PropertyChangeListener() {
                         @Override
                         public void propertyChange(PropertyChangeEvent evt) {
                             Object newvalue = evt.getNewValue();
                             if ((newvalue != null) && (newvalue instanceof Boolean)) {
-                                dialogDescriptor.setValid(((Boolean)newvalue).booleanValue());
+                                boolean isValid = ((Boolean) newvalue).booleanValue();
+                                dialogDescriptor.setValid(isValid);
+                                if (isValid) {
+                                    if (sendJmsMessagePanel.getWarningMessage() == null) {
+                                        notificationSupport.clearMessages();
+                                    } else {
+                                        notificationSupport.setWarningMessage(sendJmsMessagePanel.getWarningMessage());
+                                    }
+                                } else {
+                                    notificationSupport.setErrorMessage(sendJmsMessagePanel.getErrorMessage());
+                                }
                             }
                         }
                     });
