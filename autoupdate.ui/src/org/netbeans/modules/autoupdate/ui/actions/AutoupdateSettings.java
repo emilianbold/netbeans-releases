@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -338,7 +338,7 @@ public class AutoupdateSettings {
         File superFile = getSuperFileOsSpecific();
         err.log (Level.FINE, "Does OS specific " + superFile + " exist? " + superFile.exists ());
         
-        if (superFile.exists()) {
+        if (superFile != null && superFile.exists()) {
             return superFile;
         }
         
@@ -361,8 +361,11 @@ public class AutoupdateSettings {
 
     
     private static File getSuperFileOsSpecific () {
-        String defaultUserdirRoot = System.getProperty ("netbeans.default_userdir_root"); // NOI18N
+        String defaultUserdirRoot = System.getProperty ("netbeans.default_userdir_root", null); // NOI18N
         err.log (Level.FINER, "netbeans.default_userdir_root: " + defaultUserdirRoot);
+        if (defaultUserdirRoot == null) {
+            return null;
+        }
         File nbDir = new File (defaultUserdirRoot);
         nbDir.mkdirs ();
         return new File (nbDir, SUPER_IDENTITY_FILE_NAME);
