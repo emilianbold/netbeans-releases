@@ -331,7 +331,6 @@ public final class ScanUtils {
      *
      */
     public static void signalIncompleteData(@NonNull CompilationInfo ci, @NullAllowed ElementHandle handle) {
-        assert ci != null;
         checkRetryContext();
         if (shouldSignal()) {
             throw new RetryWhenScanFinished(ci, handle);
@@ -543,7 +542,9 @@ public final class ScanUtils {
         private Source          source;
 
         public RetryWhenScanFinished(CompilationInfo ci, ElementHandle elHandle) {
-            source = ci.getSnapshot().getSource();
+            if (ci != null && ci.getSnapshot() != null) {
+               source = ci.getSnapshot().getSource();
+            }
             this.elHandle = elHandle;
         }
 

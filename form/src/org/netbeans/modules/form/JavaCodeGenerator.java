@@ -4153,6 +4153,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 Integer.class,
                 FormUtils.getBundleString("PROP_VARIABLES_MODIFIER"), // NOI18N
                 FormUtils.getBundleString("HINT_VARIABLES_MODIFIER")); // NOI18N
+            setValue("changeImmediate", Boolean.FALSE); // NOI18N
         }
             
         @Override
