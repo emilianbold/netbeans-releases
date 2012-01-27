@@ -67,6 +67,7 @@ import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -400,7 +401,8 @@ public final class NbModuleProject implements Project {
     }
     
     public @CheckForNull FileObject getManifestFile() {
-        return helper.resolveFileObject(evaluator().getProperty("manifest.mf")); // NOI18N
+        String v = evaluator().getProperty("manifest.mf");
+        return v != null ? helper.resolveFileObject(v) : null;
     }
     
     public @CheckForNull Manifest getManifest() {
@@ -438,14 +440,14 @@ public final class NbModuleProject implements Project {
         return dir != null ? helper.resolveFile(dir) : null;
     }
     
-    public File getClassesDirectory() {
+    public @NonNull File getClassesDirectory() {
         String classesDir = evaluator().getProperty("build.classes.dir"); // NOI18N
-        return classesDir != null ? helper.resolveFile(classesDir) : null;
+        return helper.resolveFile(classesDir != null ? classesDir : "unknown");
     }
     
-    public File getTestClassesDirectory(String type) {
+    public @NonNull File getTestClassesDirectory(String type) {
         String testClassesDir = evaluator().getProperty("build.test." + type + ".classes.dir"); // NOI18N
-        return testClassesDir != null ? helper.resolveFile(testClassesDir) : null;
+        return helper.resolveFile(testClassesDir != null ? testClassesDir : "unknown");
     }
 
     public File getGeneratedClassesDirectory() {
@@ -468,13 +470,15 @@ public final class NbModuleProject implements Project {
         return helper.resolveFileObject("javahelp"); // NOI18N
     }
     
-    public File getModuleJarLocation() {
+    public @NonNull File getModuleJarLocation() {
+        String v = evaluator().evaluate("${cluster}/${module.jar}");
         // XXX could use ModuleList here instead
-        return helper.resolveFile(evaluator().evaluate("${cluster}/${module.jar}")); // NOI18N
+        return helper.resolveFile(v != null ? v : "unknown");
     }
     
-    public File getTestUserDirLockFile() {
-        return getHelper().resolveFile(evaluator().evaluate("${test.user.dir}/lock"));
+    public @NonNull File getTestUserDirLockFile() {
+        String v = evaluator().evaluate("${test.user.dir}/lock");
+        return getHelper().resolveFile(v != null ? v : "unknown");
     }
 
     public String getCodeNameBase() {
