@@ -127,9 +127,9 @@ class WebSocketHandler7 implements WebSocketChanelHandler {
     @Override
     public void read( ByteBuffer byteBuffer ) throws IOException {
         SocketChannel socketChannel = (SocketChannel) key.channel();
-        byteBuffer.clear();
-        byteBuffer.limit(1);
         while (true) {
+            byteBuffer.clear();
+            byteBuffer.limit(1);
             int size = socketChannel.read(byteBuffer);
             if (size == -1) {
                 close(key);
