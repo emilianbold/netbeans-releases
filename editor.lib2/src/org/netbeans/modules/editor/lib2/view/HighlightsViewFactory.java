@@ -45,7 +45,7 @@
 package org.netbeans.modules.editor.lib2.view;
 
 import java.awt.Font;
-import java.util.Collections;
+import java.awt.font.TextLayout;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -53,6 +53,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Element;
 import javax.swing.text.View;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib2.highlighting.DirectMergeContainer;
 import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
@@ -73,9 +74,36 @@ import org.openide.util.WeakListeners;
  */
 
 public final class HighlightsViewFactory extends EditorViewFactory implements HighlightsChangeListener {
+    
+    /**
+     * Length of the highlights view (text layout) above which the infrastructure will search
+     * for a whitespace in the text and if it finds one then it will end and create the view
+     * (even though the text layout could continue since the text attributes would allow it).
+     */
+    private static final int SPLIT_TEXT_LAYOUT_LENGTH = 1024;
+
+    /**
+     * Maximum Length of the highlights view (text layout). When reached the infrastructure will
+     * create the view regardless whitespace occurrence and whether text attributes would allow
+     * the view to continue.
+     */
+    private static final int MAX_TEXT_LAYOUT_LENGTH = SPLIT_TEXT_LAYOUT_LENGTH + 256;
+    
+    /**
+     * When view is considered long (it has a minimum length SPLIT_TEXT_LAYOUT_LENGTH - MODIFICATION_TOLERANCE)
+     * then the infrastructure will attempt to end current long view creation
+     * at a given nextOrigViewOffset parameter in order to save views creation and reuse
+     * existing text layouts (and their slit text layouts for line wrapping).
+     * <br/>
+     * The user would have to insert or remove LONG_VIEW_TOLERANCE of characters into long view
+     * in order to force the factory to not match to the given nextOrigViewOffset.
+     */
+    private static final int MODIFICATION_TOLERANCE = 100;
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.HighlightsViewFactory.level=FINE
     private static final Logger LOG = Logger.getLogger(HighlightsViewFactory.class.getName());
+    
+    private final DocumentView docView;
 
     private final HighlightingManager highlightingManager;
 
@@ -104,17 +132,21 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     
     private int nextTabOffset;
     
+    private boolean createViews;
+    
     private int usageCount = 0; // Avoid nested use of the factory
     
     public HighlightsViewFactory(View documentView) {
         super(documentView);
+        this.docView = (DocumentView) documentView;
         highlightingManager = HighlightingManager.getInstance(textComponent());
         highlightingManager.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) { // Layers in highlighting manager changed
                 notifyStaleCreation();
                 updateHighlightsContainer();
-                fireEvent(createSingleChange(0, document().getLength() + 1));
+                fireEvent(EditorViewFactoryChange.createList(0, document().getLength() + 1,
+                        EditorViewFactoryChange.Type.REBUILD));
             }
         });
         updateHighlightsContainer();
@@ -136,19 +168,23 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     }
 
     @Override
-    public void restart(int startOffset, int matchOffset) {
+    public void restart(int startOffset, int endOffset, boolean createViews) {
         if (usageCount != 0) {
             throw new IllegalStateException("Race condition: usageCount = " + usageCount); // NOI18N
         }
         usageCount++;
+        this.createViews = createViews;
         docText = DocumentUtilities.getText(document());
         lineElementRoot = document().getDefaultRootElement();
         assert (lineElementRoot != null) : "lineElementRoot is null."; // NOI18N
         lineIndex = lineElementRoot.getElementIndex(startOffset);
         lineEndOffset = lineElementRoot.getElement(lineIndex).getEndOffset();
         defaultFont = textComponent().getFont();
-        highlightsReader = new HighlightsReader(highlightsContainer, startOffset, Integer.MAX_VALUE);
         hlLineIndex = lineIndex - 1; // Make it different for updateTabsAndHighlights()
+        if (createViews) {
+            highlightsReader = new HighlightsReader(highlightsContainer, startOffset, endOffset);
+            highlightsReader.readUntil(endOffset);
+        }
     }
 
     @Override
@@ -159,7 +195,8 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     }
 
     @Override
-    public EditorView createView(int startOffset, int limitOffset) {
+    public EditorView createView(int startOffset, int limitOffset, boolean forcedLimit,
+    EditorView origView, int nextOrigViewOffset) {
         assert (startOffset < limitOffset) : "startOffset=" + startOffset + " >= limitOffset=" + limitOffset; // NOI18N
         // Possibly update lineEndOffset since updateHighlight() will read till it
         updateLineEndOffset(startOffset);
@@ -170,7 +207,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
         }
         if (startOffset == lineEndOffset - 1) {
             AttributeSet attrs = hList.cutSingleChar();
-            return new NewlineView(startOffset, attrs);
+            return new NewlineView(attrs);
         } else { // Regular view with possible highlight(s) or tab view
             if (startOffset == nextTabOffset) { // Create TabView
                 int tabsEndOffset;
@@ -192,40 +229,72 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
                         }
                     }
                 }
-                return new TabView(startOffset, limitOffset - startOffset, attrs);
+                return new TabView(limitOffset - startOffset, attrs);
 
             } else { // Create regular view
                 limitOffset = Math.min(limitOffset, Math.min(nextTabOffset, lineEndOffset - 1));
-                AttributeSet attrs = hList.cutSameFont(defaultFont, limitOffset);
+                int wsEndOffset = limitOffset;
+                if (limitOffset - startOffset > SPLIT_TEXT_LAYOUT_LENGTH - MODIFICATION_TOLERANCE) {
+                    if (nextOrigViewOffset <= limitOffset &&
+                        nextOrigViewOffset - startOffset >= SPLIT_TEXT_LAYOUT_LENGTH - MODIFICATION_TOLERANCE &&
+                        nextOrigViewOffset - startOffset <= MAX_TEXT_LAYOUT_LENGTH + MODIFICATION_TOLERANCE)
+                    { // Stick to existing bounds if possible
+                        limitOffset = nextOrigViewOffset;
+                        wsEndOffset = nextOrigViewOffset;
+                    } else {
+                        limitOffset = Math.min(limitOffset, startOffset + MAX_TEXT_LAYOUT_LENGTH);
+                        wsEndOffset = Math.min(wsEndOffset, startOffset + SPLIT_TEXT_LAYOUT_LENGTH);
+                    }
+                            
+                }
+                AttributeSet attrs = hList.cutSameFont(defaultFont, limitOffset, wsEndOffset, docText);
                 int length = hList.startOffset() - startOffset;
-                return createHighlightsView(startOffset, length, attrs);
+                HighlightsView view = new HighlightsView(length, attrs);
+                if (origView instanceof HighlightsView && origView.getLength() == length) { // Reuse
+                    HighlightsView origHView = (HighlightsView) origView;
+                    TextLayout origTextLayout = origHView.getTextLayout();
+                    if (origTextLayout != null) {
+                        if (ViewHierarchyImpl.CHECK_LOG.isLoggable(Level.FINE)) {
+                            String origText = docView.getTextLayoutVerifier().get(origTextLayout);
+                            if (origText != null) {
+                                CharSequence text = docText.subSequence(startOffset, startOffset + length);
+                                if (!CharSequenceUtilities.textEquals(text, origText)) {
+                                    throw new IllegalStateException("TextLayout text differs:\n current:" + // NOI18N
+                                            CharSequenceUtilities.debugText(text) + "\n!=\n" +
+                                            CharSequenceUtilities.debugText(origText) + "\n");
+                                }
+                            }
+                        }
+                        Font font = ViewUtils.getFont(attrs, defaultFont);
+                        Font origFont = ViewUtils.getFont(origView.getAttributes(), defaultFont);
+                        if (font != null && font.equals(origFont)) {
+                            float origWidth = origHView.getWidth();
+                            view.setTextLayout(origTextLayout, origWidth);
+                            view.setBreakInfo(origHView.getBreakInfo());
+                            ViewStats.incrementTextLayoutReused(length);
+                        }
+                    }
+                }
+                return view;
             }
         }
     }
 
     @Override
-    public int viewEndOffset(int startOffset, int limitOffset) {
+    public int viewEndOffset(int startOffset, int limitOffset, boolean forcedLimit) {
         updateLineEndOffset(startOffset);
         return Math.min(lineEndOffset, limitOffset);
     }
 
-    private EditorView createHighlightsView(int startOffset, int length, AttributeSet attrs) {
-        boolean tabs = (docText.charAt(startOffset) == '\t'); //NOI18N
-        for (int i = 1; i < length; i++) {
-            if (tabs != (docText.charAt(startOffset + i) == '\t')) { //NOI18N
-                length = i;
-                break;
-            }
+    @Override
+    public void continueCreation(int startOffset, int endOffset) {
+        if (createViews) {
+            highlightsReader = new HighlightsReader(highlightsContainer, startOffset, endOffset);
+            highlightsReader.readUntil(endOffset);
         }
-        return tabs
-                ? new TabView(startOffset, length, attrs)
-                : new HighlightsView(startOffset, length, attrs);
     }
 
     private void updateLineEndOffset(int offset) {
-        if (usageCount != 1) {
-            throw new IllegalStateException("Missing factory restart: usageCount=" + usageCount);
-        }
         // Several lines may be skipped at once in case there's e.g. a collapsed fold (FoldView gets created)
         while (offset >= lineEndOffset) {
             lineIndex++;
@@ -237,12 +306,12 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     private void updateTabsAndHighlights(int offset) {
         if (hlLineIndex != lineIndex) {
             hlLineIndex = lineIndex;
+            // Update nextTabOffset to point to nearest '\t'
             for (nextTabOffset = offset; nextTabOffset < lineEndOffset - 1; nextTabOffset++) {
                 if (docText.charAt(nextTabOffset) == '\t') {
                     break;
                 }
             }
-            highlightsReader.readUntil(lineEndOffset);
         }
     }
 
@@ -257,48 +326,56 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     }
 
     @Override
-    public void highlightChanged(HighlightsChangeEvent evt) {
-        int startOffset = evt.getStartOffset();
-        int endOffset = evt.getEndOffset();
-        if (evt.getSource() == highlightsContainer) {
-            if (usageCount != 0) { // When views are being created => notify stale creation
-                notifyStaleCreation();
-            }
-            int docTextLength = document().getLength() + 1;
-            assert (startOffset >= 0) : "startOffset=" + startOffset + " < 0"; // NOI18N
-            assert (endOffset >= 0) : "startOffset=" + endOffset + " < 0"; // NOI18N
-            startOffset = Math.min(startOffset, docTextLength);
-            endOffset = Math.min(endOffset, docTextLength);
-            if (ViewHierarchyImpl.CHANGE_LOG.isLoggable(Level.FINE)) {
-                HighlightsChangeEvent layerEvent = (highlightsContainer instanceof DirectMergeContainer)
-                        ? ((DirectMergeContainer) highlightsContainer).layerEvent()
-                        : null;
-                String layerInfo = (layerEvent != null)
-                        ? " " + highlightingManager.findLayer((HighlightsContainer)layerEvent.getSource()) // NOI18N
-                        : ""; // NOI18N
-                ViewUtils.log(ViewHierarchyImpl.CHANGE_LOG, "VIEW-REBUILD-HC:<" + // NOI18N
-                        startOffset + "," + endOffset + ">" + layerInfo + "\n"); // NOI18N
-            }
+    public void highlightChanged(final HighlightsChangeEvent evt) {
+        // Since still many highlighting layers fire changes without document lock acquired
+        // do an extra read lock so that view hierarchy surely operates under document lock
+        document().render(new Runnable() {
+            @Override
+            public void run() {
+                int startOffset = evt.getStartOffset();
+                int endOffset = evt.getEndOffset();
+                if (evt.getSource() == highlightsContainer) {
+                    if (usageCount != 0) { // When views are being created => notify stale creation
+                        notifyStaleCreation();
+                    }
+                    int docTextLength = document().getLength() + 1;
+                    assert (startOffset >= 0) : "startOffset=" + startOffset + " < 0"; // NOI18N
+                    assert (endOffset >= 0) : "startOffset=" + endOffset + " < 0"; // NOI18N
+                    startOffset = Math.min(startOffset, docTextLength);
+                    endOffset = Math.min(endOffset, docTextLength);
+                    if (ViewHierarchyImpl.CHANGE_LOG.isLoggable(Level.FINE)) {
+                        HighlightsChangeEvent layerEvent = (highlightsContainer instanceof DirectMergeContainer)
+                                ? ((DirectMergeContainer) highlightsContainer).layerEvent()
+                                : null;
+                        String layerInfo = (layerEvent != null)
+                                ? " " + highlightingManager.findLayer((HighlightsContainer)layerEvent.getSource()) // NOI18N
+                                : ""; // NOI18N
+                        ViewUtils.log(ViewHierarchyImpl.CHANGE_LOG, "VIEW-REBUILD-HC:<" + // NOI18N
+                                startOffset + "," + endOffset + ">" + layerInfo + "\n"); // NOI18N
+                    }
 
-            if (startOffset <= endOffset) { // May possibly be == e.g. for cut-line action
-                fireEvent(Collections.singletonList(createChange(startOffset, endOffset)));
-            }
+                    if (startOffset <= endOffset) { // May possibly be == e.g. for cut-line action
+                        fireEvent(EditorViewFactoryChange.createList(startOffset, endOffset,
+                                EditorViewFactoryChange.Type.CHARACTER_CHANGE));
+                    }
 
-        } else { // Paint highlights change
-            assert (evt.getSource() == paintHighlightsContainer);
-            if (ViewHierarchyImpl.CHANGE_LOG.isLoggable(Level.FINE)) {
-                HighlightsChangeEvent layerEvent = (paintHighlightsContainer instanceof DirectMergeContainer)
-                        ? ((DirectMergeContainer) paintHighlightsContainer).layerEvent()
-                        : null;
-                String layerInfo = (layerEvent != null)
-                        ? " " + highlightingManager.findLayer((HighlightsContainer) layerEvent.getSource()) // NOI18N
-                        : ""; // NOI18N
-                ViewUtils.log(ViewHierarchyImpl.CHANGE_LOG, "REPAINT-HC:<" + // NOI18N
-                        startOffset + "," + endOffset + ">" + layerInfo + "\n"); // NOI18N
-            }
+                } else { // Paint highlights change
+                    assert (evt.getSource() == paintHighlightsContainer);
+                    if (ViewHierarchyImpl.CHANGE_LOG.isLoggable(Level.FINE)) {
+                        HighlightsChangeEvent layerEvent = (paintHighlightsContainer instanceof DirectMergeContainer)
+                                ? ((DirectMergeContainer) paintHighlightsContainer).layerEvent()
+                                : null;
+                        String layerInfo = (layerEvent != null)
+                                ? " " + highlightingManager.findLayer((HighlightsContainer) layerEvent.getSource()) // NOI18N
+                                : ""; // NOI18N
+                        ViewUtils.log(ViewHierarchyImpl.CHANGE_LOG, "REPAINT-HC:<" + // NOI18N
+                                startOffset + "," + endOffset + ">" + layerInfo + "\n"); // NOI18N
+                    }
 
-            offsetRepaint(startOffset, endOffset);
-        }
+                    offsetRepaint(startOffset, endOffset);
+                }
+            }
+        });
     }
 
     public static final class HighlightsFactory implements EditorViewFactory.Factory {
@@ -309,7 +386,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
         }
 
         @Override
-        public int importance() {
+        public int weight() {
             return 0;
         }
 
