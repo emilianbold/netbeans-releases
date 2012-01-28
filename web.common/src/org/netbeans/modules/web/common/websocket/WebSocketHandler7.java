@@ -296,7 +296,8 @@ class WebSocketHandler7 implements WebSocketChanelHandler {
             if ( red ==0 ){
                 continue;
             }
-            if ( red%byteBuffer.capacity() ==0){
+            redBytes += red;
+            if (redBytes%byteBuffer.capacity() == 0){
                 byteBuffer.flip();
                 byteBuffer.get( result , fullBufferCount*byteBuffer.capacity(), 
                         byteBuffer.limit());
@@ -307,7 +308,6 @@ class WebSocketHandler7 implements WebSocketChanelHandler {
                     byteBuffer.limit( size -resultRed);
                 }
             }
-            redBytes+=red;
         }
         byteBuffer.flip();
         int savedBytes = byteBuffer.capacity()*fullBufferCount;
