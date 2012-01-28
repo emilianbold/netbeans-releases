@@ -239,7 +239,7 @@ class WebSocketHandler7 implements WebSocketChanelHandler {
             }
             while(size<2);
             byteBuffer.flip();
-            length = byteBuffer.getShort();
+            length = byteBuffer.getShort()&0xFFFF;
             return readData(key, byteBuffer, socketChannel, frameType, length);
         }
         else if ( length ==127 ){
