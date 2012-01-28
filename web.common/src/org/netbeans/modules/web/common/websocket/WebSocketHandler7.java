@@ -284,6 +284,9 @@ class WebSocketHandler7 implements WebSocketChanelHandler {
         int redBytes =0;
         byte[] result = new byte[ size ];
         int fullBufferCount =0;
+        if (size < byteBuffer.capacity()) {
+            byteBuffer.limit(size);
+        }
         while( redBytes <size ){
             int red = socketChannel.read( byteBuffer );
             if ( red == -1){
