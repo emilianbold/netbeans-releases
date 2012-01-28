@@ -48,6 +48,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
+import java.awt.geom.Rectangle2D;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.SwingConstants;
@@ -61,9 +62,10 @@ import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 
 
 /**
- * View of a visual line.
+ * View of a line typically spans a single textual line of a corresponding document
+ * but it may span several lines if it contains a fold view for collapsed code fold.
  * <br/>
- * It is capable to do a word-wrapping (see {@link ParagraphWrapView}.
+ * It is capable to do a word-wrapping.
  * <br/>
  * It is not tight to any element (its element is null).
  * Its contained views may span multiple lines (e.g. in case of code folding).
@@ -75,6 +77,41 @@ public final class ParagraphView extends EditorView implements EditorView.Parent
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.ParagraphView.level=FINE
     private static final Logger LOG = Logger.getLogger(ParagraphView.class.getName());
+
+    /**
+     * Whether children are non-null and contain up-to-date views.
+     * <br/>
+     * If false then either children == null (children not computed yet)
+     * or some (or all) child views are marked as invalid (they should be recomputed
+     * since some highlight factories reported particular text span as changed).
+     * <br/>
+     * The local offset range of invalid children can be obtained (if children != null)
+     * by children.getStartInvalidChildrenLocalOffset()
+     * and children.getEndInvalidChildrenLocalOffset()).
+     * <br/>
+     * When all children are dropped (children == null) then LAYOUT_VALID is cleared too.
+     */
+    private static final int CHILDREN_VALID = 1;
+
+    /**
+     * Whether layout information is valid for this paragraph view
+     * (note that layout may be valid even when some children were marked as invalid).
+     * <br/>
+     * Since span of child views is initialized upon views replace
+     * the layout updating means checking whether the pView is too wide
+     * and thus needs to compute wrap lines and building of those wrap lines.
+     * <br/>
+     * Whether particular operation (mainly model-to-view, view-to-model and painting operations)
+     * needs an up-to-date layout is upon decision of each operation
+     * (done in DocumentViewChildren).
+     */
+    private static final int LAYOUT_VALID = 2;
+    
+    /**
+     * Whether children contain any TabableView (in such case upon local modification
+     * rest of children views must be checked for update as well).
+     */
+    private static final int CONTAINS_TABABLE_VIEWS = 4;
     
     /**
      * Total preferred width of this view.
@@ -96,15 +133,21 @@ public final class ParagraphView extends EditorView implements EditorView.Parent
     private int length; // 36 + 4 = 40 bytes
     
     ParagraphViewChildren children; // 40 + 4 = 44 bytes
+    
+    private int statusBits; // 44 + 4 = 48 bytes
 
     public ParagraphView(Position startPos) {
         super(null);
-        this.startPos = startPos;
+        setStartPosition(startPos);
     }
 
     @Override
     public int getStartOffset() {
         return startPos.getOffset();
+    }
+
+    void setStartPosition(Position startPos) {
+        this.startPos = startPos;
     }
 
     @Override
@@ -137,13 +180,6 @@ public final class ParagraphView extends EditorView implements EditorView.Parent
     
     void setWidth(float width) {
         this.width = width;
-    }
-    
-    void resetWidth() {
-        this.width = 0f;
-        if (children != null) {
-            children.resetWidth();
-        }
     }
     
     float getHeight() {
@@ -199,28 +235,71 @@ public final class ParagraphView extends EditorView implements EditorView.Parent
         return null;
     }
 
-    void releaseChildren() {
-        children = null;
-    }
-    
     /*
      * Replaces child views.
      *
      * @param index the starting index into the child views >= 0
-     * @param length the number of existing views to replace >= 0
-     * @param views the child views to insert
+     * @param removeLength the number of existing views to remove >= 0
+     * @param addViews the child views to insert
      */
     @Override
-    public void replace(int index, int length, View[] views) {
-        replace(index, length, views, 0);
-    }
-
-    void replace(int index, int length, View[] views, int offsetDelta) {
+    public void replace(int index, int removeLength, View[] addViews) {
         if (children == null) {
-            assert (length == 0) : "Attempt to remove from null children length=" + length; // NOI18N
-            children = new ParagraphViewChildren(views.length);
+            assert (removeLength == 0) : "Attempt to remove from null children length=" + removeLength; // NOI18N
+            children = new ParagraphViewChildren(addViews.length);
+            getDocumentView().op.getTextLayoutCache().activate(this);
         }
-        children.replace(this, index, length, views, offsetDelta);
+        children.replace(this, index, removeLength, addViews);
+    }
+    
+    /**
+     * Check whether layout must be updated.
+     * <br/>
+     * It should only be called when children != null.
+     *
+     * @return true if layout update was necessary or false otherwise.
+     */
+    boolean checkLayoutUpdate(int pIndex, Shape pAlloc) {
+        if (!isLayoutValid()) {
+            return updateLayoutAndScheduleRepaint(pIndex, pAlloc);
+        }
+        return false;
+    }
+    
+    /**
+     * Update layout - assumes children != null.
+     *
+     * @param pViewRect 
+     * @return whether any modification in total span was done.
+     */
+    boolean updateLayoutAndScheduleRepaint(int pIndex, Shape pAlloc) {
+        Rectangle2D pViewRect = ViewUtils.shapeAsRect(pAlloc);
+        DocumentView docView = getDocumentView();
+        children.updateLayout(docView, this);
+        boolean spanUpdated = false;
+        float newWidth = children.width();
+        float newHeight = children.height();
+        float origWidth = getWidth();
+        float origHeight = getHeight();
+        if (newWidth != origWidth) {
+            spanUpdated = true;
+            setWidth(newWidth);
+            docView.children.childWidthUpdated(docView, pIndex, newWidth);
+        }
+        boolean repaintHeightChange = false;
+        double deltaY = newHeight - origHeight;
+        if (deltaY != 0d) {
+            spanUpdated = true;
+            repaintHeightChange = true;
+            setHeight(newHeight);
+            docView.children.childHeightUpdated(docView, pIndex, newHeight, pViewRect);
+        }
+        // Repaint full pView [TODO] can be improved
+        Rectangle visibleRect = docView.op.getVisibleRect();
+        docView.op.notifyRepaint(pViewRect.getX(), pViewRect.getY(), visibleRect.getMaxX(),
+                repaintHeightChange ? visibleRect.getMaxY() : pViewRect.getMaxY());
+        markLayoutValid();
+        return spanUpdated;
     }
 
     /**
@@ -283,6 +362,14 @@ public final class ParagraphView extends EditorView implements EditorView.Parent
         checkChildrenNotNull();
         return children.getViewIndex(this, offset);
     }
+    
+    int getViewIndexLocalOffset(int localOffset) {
+        return children.viewIndexFirst(localOffset);
+    }
+    
+    int getLocalOffset(int index) {
+        return children.startOffset(index);
+    }
 
     @Override
     public int getViewIndexChecked(double x, double y, Shape alloc) {
@@ -294,9 +381,8 @@ public final class ParagraphView extends EditorView implements EditorView.Parent
     public Shape modelToViewChecked(int offset, Shape alloc, Bias bias) {
         checkChildrenNotNull();
         return children.modelToViewChecked(this, offset, alloc, bias);
-        
     }
-
+    
     @Override
     public int viewToModelChecked(double x, double y, Shape alloc, Bias[] biasReturn) {
         checkChildrenNotNull();
@@ -325,30 +411,6 @@ public final class ParagraphView extends EditorView implements EditorView.Parent
     @Override
     public HighlightsSequence getPaintHighlights(EditorView view, int shift) {
         return getDocumentView().getPaintHighlights(view, shift);
-    }
-
-    @Override
-    public void notifyChildWidthChange() {
-        View parent = getParent();
-        if (parent instanceof EditorView.Parent) {
-            ((EditorView.Parent) parent).notifyChildWidthChange(); // Forward to parent
-        }
-    }
-
-    @Override
-    public void notifyChildHeightChange() {
-        View parent = getParent();
-        if (parent instanceof EditorView.Parent) {
-            ((EditorView.Parent) parent).notifyChildHeightChange(); // Forward to parent
-        }
-    }
-
-    @Override
-    public void notifyRepaint(double x0, double y0, double x1, double y1) {
-        View parent = getParent();
-        if (parent instanceof EditorView.Parent) {
-            ((EditorView.Parent) parent).notifyRepaint(x0, y0, x1, y1); // Forward to parent
-        }
     }
 
     @Override
@@ -410,13 +472,72 @@ public final class ParagraphView extends EditorView implements EditorView.Parent
     }
     
     void releaseTextLayouts() {
-        children.lowerMeasuredEndIndex(0);
+        dropChildren(); // In fact it means releasing whole children
     }
     
+    void dropChildren() {
+        children = null;
+        markChildrenInvalid();
+    }
+    
+    boolean isChildrenNull() {
+        return (children == null);
+    }
+    
+    boolean isChildrenValid() {
+        return isAnyStatusBit(CHILDREN_VALID);
+    }
+    
+    void markChildrenValid() {
+        setStatusBits(CHILDREN_VALID);
+    }
+    
+    void markChildrenInvalid() {
+        clearStatusBits(CHILDREN_VALID);
+    }
+    
+    boolean containsTabableViews() {
+        return isAnyStatusBit(CONTAINS_TABABLE_VIEWS);
+    }
+    
+    void markContainsTabableViews() {
+        setStatusBits(CONTAINS_TABABLE_VIEWS);
+    }
+
+    boolean isLayoutValid() {
+        return isAnyStatusBit(LAYOUT_VALID);
+    }
+    
+    void markLayoutValid() {
+        setStatusBits(LAYOUT_VALID);
+    }
+    
+    void markLayoutInvalid() {
+        clearStatusBits(LAYOUT_VALID);
+    }
+
     private void checkChildrenNotNull() {
         if (children == null) {
             throw new IllegalStateException("Null children in " + getDumpId()); // NOI18N
         }
+    }
+
+    /**
+     * Set given status bits to 1.
+     */
+    private void setStatusBits(int bits) {
+        statusBits |= bits;
+    }
+    
+    /**
+     * Set given status bits to 0.
+     */
+    private void clearStatusBits(int bits) {
+        statusBits &= ~bits;
+    }
+    
+    private boolean isAnyStatusBit(int bits) {
+        return (statusBits & bits) != 0;
     }
 
     @Override
@@ -425,11 +546,14 @@ public final class ParagraphView extends EditorView implements EditorView.Parent
         if (err == null && children != null) {
             int childrenLength = children.getLength();
             if (getLength() != childrenLength) {
-                return "length=" + getLength() + " != childrenLength=" + childrenLength; // NOI18N
+                err = "length=" + getLength() + " != childrenLength=" + childrenLength; // NOI18N
+            }
+            if (err == null) {
+                err = children.findIntegrityError(this);
             }
         }
         if (err != null) {
-            err = getDumpName() + ":" + err; // NOI18N
+            err = getDumpName() + ": " + err; // NOI18N
         }
         return err;
     }

@@ -56,11 +56,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.View;
+import javax.swing.text.*;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib2.highlighting.CompoundAttributes;
@@ -167,7 +163,7 @@ public final class ViewUtils {
                 if (fontName == null) {
                     fontName = defaultFont.getFontName();
                 }
-                int fontStyle = defaultFont.getStyle();
+                int fontStyle = (defaultFont != null) ? defaultFont.getStyle() : Font.PLAIN;
                 if (bold != null) {
                     fontStyle &= ~Font.BOLD;
                     if (bold) {
@@ -411,6 +407,24 @@ public final class ViewUtils {
             r.run();
         } else {
             SwingUtilities.invokeLater(r);
+        }
+    }
+    
+    /**
+     * Create position for the given offset.
+     * This method is 
+     * 
+     * @param doc document in which the position should be created.
+     * @param offset offset at which the position should be created.
+     * @return non-null position
+     * @throws IndexOutOfBoundsException in case the {@link Document#createPosition(int)}
+     *   throws {@link BadLocationException}.
+     */
+    public static Position createPosition(Document doc, int offset) {
+        try {
+            return doc.createPosition(offset);
+        } catch (BadLocationException ex) {
+            throw new IndexOutOfBoundsException(ex.getMessage());
         }
     }
 

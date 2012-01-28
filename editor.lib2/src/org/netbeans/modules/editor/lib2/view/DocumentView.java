@@ -50,7 +50,10 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -155,27 +158,35 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
 
     private PriorityMutex pMutex;
     
-    DocumentViewChildren children;
+    final DocumentViewChildren children;
 
     private JTextComponent textComponent;
-
-    /**
-     * Non-null position in case the document view does not cover the whole document
-     * but starts at certain position instead.
-     * It can be influenced by textComponent.putClientProperty(START_POSITION_PROPERTY).
-     * The position may be corrected (moved back) explicitly when inserting upon it.
-     */
-    private Position startPos;
-
-    /**
-     * Non-null end bound in case the document view does not cover the whole document
-     * but ends at certain position instead.
-     * It can be influenced by textComponent.putClientProperty(END_POSITION_PROPERTY).
-     * The view factories can however refuse to end the last created view right at this boundary
-     * so the real ending offset of the currently present views (docView.getEndOffset()) may be higher.
-     */
-    private Position endPos;
     
+    /**
+     * Start offset of the document view after last processed modification.
+     * <br/>
+     * This is used during updating of the document view by document modification.
+     * For undo of removal the position of first paragraph may restore inside the inserted area
+     * and holding integer offset allows to know the original start offset.
+     */
+    private int startOffset;
+
+    /**
+     * Start offset of the document view.
+     * <br/>
+     * This is used during updating of the document view by document modification.
+     * For undo of removal the position of last paragraph may restore inside the inserted area
+     * and holding integer offset allows to know the original end offset of the document view.
+     */
+    private int endOffset;
+    
+    /**
+     * Preferred width of the whole view is set by updatePreferredWidth().
+     */
+    private float preferredWidth;
+    
+    private float preferredHeight;
+
     /**
      * Current allocation of document view.
      */
@@ -193,12 +204,17 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
      */
     private ViewHierarchyChange change;
 
-
+    private Map<TextLayout,String> textLayoutVerifier;
+    
+    static Runnable testRun; // Used for testing - controlling proper values in ViewBuilder etc.
+    static Object[] testValues; // Complete state to be tested (depends on situation)
+    
     public DocumentView(Element elem) {
         super(elem);
         assert (elem != null) : "Expecting non-null element"; // NOI18N
         this.op = new DocumentViewOp(this);
         this.tabExpander = new EditorTabExpander(this);
+        this.children = new DocumentViewChildren(1);
     }
 
     /**
@@ -243,9 +259,9 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
                 }
                 float span;
                 if (axis == View.X_AXIS) {
-                    span = allocation.width;
+                    span = preferredWidth;
                 } else { // Y_AXIS
-                    span = allocation.height + extraVirtualHeight;
+                    span = preferredHeight + extraVirtualHeight;
                 }
                 return span;
             } finally {
@@ -259,7 +275,16 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     boolean lock() {
         if (pMutex != null) {
             pMutex.lock();
-            return true;
+            boolean success = false;
+            try {
+                op.lockCheck();
+                success = true;
+            } finally {
+                if (!success) {
+                    pMutex.unlock();
+                }
+            }
+            return success;
         }
         return false;
     }
@@ -280,36 +305,60 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
 
     @Override
     public int getStartOffset() {
-        return (startPos == null) ? super.getStartOffset() : startPos.getOffset();
+        return startOffset;
+    }
+    
+    void setStartOffset(int startOffset) {
+        this.startOffset = startOffset;
     }
     
     @Override
     public int getEndOffset() {
-        if (endPos == null) {
-            return super.getEndOffset();
-        } else { // Custom ending position
-            // Get end offset of the last view since that may differ from endPos
-            int viewCount = getViewCount();
-            return (viewCount > 0)
-                    ? getView(viewCount - 1).getEndOffset()
-                    : getStartOffset();
-        }
+        return endOffset;
     }
-
+    
+    void setEndOffset(int endOffset) {
+        this.endOffset = endOffset;
+    }
+    
     @Override
     public int getViewCount() {
-        return (children != null) ? children.size() : 0;
+        return children.size();
     }
 
     @Override
     public View getView(int index) {
         checkDocumentLockedIfLogging();
         checkMutexAcquiredIfLogging();
-        return (children != null) ? children.get(index) : null;
+        return (index < children.size()) ? children.get(index) : null;
     }
 
     public ParagraphView getParagraphView(int index) {
+        if (index >= getViewCount()) {
+            throw new IndexOutOfBoundsException("View index=" + index + " >= " + getViewCount()); // NOI18N
+        }
         return children.get(index);
+    }
+    
+    void ensureLayoutValidForInitedChildren() { // For tests to ensure layout update for all pViews with valid children
+        runReadLockTransaction(new Runnable() {
+            @Override
+            public void run() {
+                op.checkViewsInited(); // First check whether pViews are valid
+                children.ensureLayoutValidForInitedChildren(DocumentView.this);
+            }
+        });
+    }
+
+    void ensureAllParagraphsChildrenAndLayoutValid() { // For tests to initialize all pViews
+        runReadLockTransaction(new Runnable() {
+            @Override
+            public void run() {
+                op.checkViewsInited(); // First check whether pViews are valid
+                children.ensureParagraphsChildrenAndLayoutValid(DocumentView.this, 0, getViewCount(), 0, 0);
+            }
+        });
+
     }
 
     Shape getChildAllocation(int index) {
@@ -374,36 +423,9 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     }
     
     double[] replaceViews(int index, int length, View[] views) {
-        if (children == null) {
-            children = new DocumentViewChildren(views.length);
-        }
         return children.replace(this, index, length, views);
     }
     
-    boolean hasExtraStartBound() {
-        return (startPos != null);
-    }
-    
-    Position getStartPosition() {
-        return startPos;
-    }
-    
-    void setStartPosition(Position startPosition) {
-        this.startPos = startPosition;
-    }
-
-    boolean hasExtraEndBound() {
-        return (endPos != null);
-    }
-    
-    public int getEndBoundOffset() {
-        return (endPos != null) ? endPos.getOffset() : getDocument().getLength() + 1;
-    }
-
-    boolean hasExtraBounds() {
-        return hasExtraStartBound() || hasExtraEndBound();
-    }
-
     @Override
     public int getRawEndOffset() {
         return -1;
@@ -417,7 +439,20 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     @Override
     public void setSize(float width, float height) {
         // Currently the view is not designed to possibly shrink/extend its size according to the given size.
-        // Do not update this.width and this.height here (they are updated in preferenceChanged()
+        if (width != allocation.width) {
+            op.markAllocationWidthChange(width);
+        }
+        if (height != allocation.height) {
+            op.markAllocationHeightChange(height);
+        }
+    }
+    
+    void setAllocationWidth(float width) {
+        allocation.width = width;
+    }
+    
+    void setAllocationHeight(float height) {
+        allocation.height = height;
     }
 
     /**
@@ -432,7 +467,10 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         return allocation;
     }
     
-    public Rectangle2D.Double getAllocationMutable() {
+    /**
+     * Get mutable document view allocation rectangle.
+     */
+    public Rectangle2D.Double getAllocationCopy() {
         return new Rectangle2D.Double(0d, 0d, allocation.getWidth(), allocation.getHeight());
     }
 
@@ -472,16 +510,6 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     }
 
     @Override
-    public void notifyChildWidthChange() {
-        op.notifyChildWidthChange();
-    }
-    
-    @Override
-    public void notifyChildHeightChange() {
-        op.notifyChildHeightChange();
-    }
-
-    @Override
     public void preferenceChanged(View childView, boolean widthChange, boolean heightChange) {
         if (childView == null) { // This docView
             if (widthChange) {
@@ -490,19 +518,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
             if (heightChange) {
                 op.notifyHeightChange();
             }
-        } else { // Individual view
-            if (children != null) {
-                int index = getViewIndex(childView.getStartOffset());
-                if (widthChange) {
-                    notifyChildWidthChange();
-                }
-                if (heightChange) {
-                    notifyChildHeightChange();
-                }
-                children.checkChildrenSpanChange(this, index);
-                Shape childAlloc = getChildAllocation(index, getAllocation());
-                op.notifyRepaint(op.extendToVisibleWidth(ViewUtils.shape2Bounds(childAlloc)));
-            }
+        } else { // pViews should not notify here (they should make appropriate changes by themselves)
         }
     }
     
@@ -510,37 +526,30 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         super.preferenceChanged(this, widthChange, heightChange);
     }
 
-    boolean assignChildrenWidth() {
+    boolean updatePreferredWidth() {
         float newWidth = children.width();
-        if (newWidth != allocation.width) {
-            allocation.width = newWidth;
+        if (newWidth != preferredWidth) {
+            preferredWidth = newWidth;
             return true;
         }
         return false;
     }
 
-    boolean assignChildrenHeight() {
+    boolean updatePreferredHeight() {
         float newHeight = children.height();
-        if (newHeight != allocation.height) {
-            allocation.height = newHeight;
+        if (newHeight != preferredHeight) {
+            preferredHeight = newHeight;
             return true;
         }
         return false;
     }
 
-    void recomputeChildrenWidths() {
-        if (children != null) {
-            if (ViewHierarchyImpl.SPAN_LOG.isLoggable(Level.FINE)) {
-                ViewUtils.log(ViewHierarchyImpl.SPAN_LOG,
-                        "Component width differs => children.recomputeChildrenWidths()\n"); // NOI18N
-            }
-            children.recomputeChildrenWidths();
+    void markChildrenLayoutInvalid() {
+        if (ViewHierarchyImpl.SPAN_LOG.isLoggable(Level.FINE)) {
+            ViewUtils.log(ViewHierarchyImpl.SPAN_LOG,
+                    "Component width differs => children.recomputeChildrenWidths()\n"); // NOI18N
         }
-    }
-
-    @Override
-    public void notifyRepaint(double x0, double y0, double x1, double y1) {
-        op.notifyRepaint(x0, y0, x1, y1);
+        children.markChildrenLayoutInvalid();
     }
 
     @Override
@@ -557,22 +566,26 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
                 }
                 if (op.isActive() && startOffset < endOffset && getViewCount() > 0) {
                     Rectangle2D repaintRect;
-                    Rectangle2D.Double docViewRect = getAllocationMutable();
-                    int pViewIndex = getViewIndex(startOffset);
-                    ParagraphView pView = getParagraphView(pViewIndex);
+                    Rectangle2D.Double docViewRect = getAllocationCopy();
+                    int pIndex = getViewIndex(startOffset);
+                    ParagraphView pView = getParagraphView(pIndex);
                     if (endOffset <= pView.getEndOffset()) {
-                        Shape pViewAlloc = getChildAllocation(pViewIndex, docViewRect);
+                        Shape pAlloc = getChildAllocation(pIndex, docViewRect);
                         if (pView.children != null) { // Do local repaint
+                            if (pView.checkLayoutUpdate(pIndex, pAlloc)) {
+                                pAlloc = getChildAllocation(pIndex, docViewRect);
+                            }
                             Shape s = pView.modelToViewChecked(startOffset, Bias.Forward,
-                                    endOffset, Bias.Forward, pViewAlloc);
+                                    endOffset, Bias.Forward, pAlloc);
                             repaintRect = ViewUtils.shapeAsRect(s);
-                            children.checkChildrenSpanChange(this, pViewIndex);
                             
                         } else { // Repaint single paragraph
-                            repaintRect = op.extendToVisibleWidth(ViewUtils.shape2Bounds(pViewAlloc));
+                            Rectangle2D.Double r = ViewUtils.shape2Bounds(pAlloc);
+                            op.extendToVisibleWidth(r);
+                            repaintRect = r;
                         }
                     } else { // Spans paragraphs
-                        docViewRect.y = getY(pViewIndex);
+                        docViewRect.y = getY(pIndex);
                         int endIndex = getViewIndex(endOffset) + 1;
                         docViewRect.height = getY(endIndex) - docViewRect.y;
                         op.extendToVisibleWidth(docViewRect);
@@ -606,7 +619,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
                     super.setParent(parent);
                     textComponent = tc;
                     op.parentViewSet();
-                    updateStartEndPos();
+                    updateStartEndOffsets();
                 } finally {
                     unlock();
                 }
@@ -628,18 +641,20 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         }
     }
     
-    void updateStartEndPos() {
-        startPos = (Position) textComponent.getClientProperty(START_POSITION_PROPERTY);
-        endPos = (Position) textComponent.getClientProperty(END_POSITION_PROPERTY);
-        int startOffset = 0;
-        if (startPos != null && (startOffset = startPos.getOffset()) == 0) {
-            startPos = null;
-        }
-        if (endPos != null && (endPos.getOffset() == getDocument().getEndPosition().getOffset() ||
-                endPos.getOffset() < startOffset)) // For invalid endPos value make endPos=null
-        {
-            endPos = null;
-        }
+    Position getExtraStartPosition() {
+        return (Position) textComponent.getClientProperty(START_POSITION_PROPERTY);
+    }
+    
+    Position getExtraEndPosition() {
+        return (Position) textComponent.getClientProperty(END_POSITION_PROPERTY);
+    }
+    
+    void updateStartEndOffsets() {
+        Position startPos = getExtraStartPosition();
+        Position endPos = getExtraEndPosition();
+        startOffset = (startPos != null) ? startPos.getOffset() : 0;
+        endOffset = Math.max(startOffset,
+                (endPos != null) ? endPos.getOffset() : getDocument().getEndPosition().getOffset());
     }
     
     @Override
@@ -697,7 +712,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     public Shape modelToViewChecked(int offset, Shape alloc, Bias bias) {
         if (lock()) {
             try {
-                return modelToViewUnlocked(offset, alloc, bias);
+                return modelToViewNeedsLock(offset, alloc, bias);
             } finally {
                 unlock();
             }
@@ -705,14 +720,14 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         return null;
     }
 
-    public Shape modelToViewUnlocked(int offset, Shape alloc, Bias bias) {
+    public Shape modelToViewNeedsLock(int offset, Shape alloc, Bias bias) {
         Rectangle2D.Double rect = ViewUtils.shape2Bounds(alloc);
         Shape retShape = null;
         checkDocumentLockedIfLogging();
         op.checkViewsInited();
         if (op.isActive()) {
             retShape = children.modelToViewChecked(this, offset, alloc, bias);
-        } else if (children != null) {
+        } else {
             // Not active but attempt to find at least a reasonable y
             // The existing line views may not be updated for a longer time
             // but the binary search should find something and end in finite time.
@@ -742,7 +757,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         if (lock()) {
             try {
                 checkDocumentLockedIfLogging();
-                return modelToYUnlocked(offset);
+                return modelToYNeedsLock(offset);
             } finally {
                 unlock();
             }
@@ -750,7 +765,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         return 0d;
     }
     
-    public double modelToYUnlocked(int offset) {
+    public double modelToYNeedsLock(int offset) {
         double retY = 0d;
         op.checkViewsInited();
         if (op.isActive()) {
@@ -765,7 +780,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         return retY;
     }
     
-    public double[] modelToYUnlocked(int[] offsets) {
+    public double[] modelToYNeedsLock(int[] offsets) {
         double[] retYs = new double[offsets.length];
         op.checkViewsInited();
         if (op.isActive()) { // Otherwise leave 0d for all retYs
@@ -796,7 +811,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     public int viewToModelChecked(double x, double y, Shape alloc, Bias[] biasReturn) {
         if (lock()) {
             try {
-                return viewToModelUnlocked(x, y, alloc, biasReturn);
+                return viewToModelNeedsLock(x, y, alloc, biasReturn);
             } finally {
                 unlock();
             }
@@ -804,7 +819,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         return 0;
     }
     
-    public int viewToModelUnlocked(double x, double y, Shape alloc, Bias[] biasReturn) {
+    public int viewToModelNeedsLock(double x, double y, Shape alloc, Bias[] biasReturn) {
         int retOffset = 0;
         checkDocumentLockedIfLogging();
         op.checkViewsInited();
@@ -907,8 +922,12 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     }
     
     void checkDocumentLocked() {
-        if (!DocumentUtilities.isReadLocked(getDocument())) {
-            ViewHierarchyImpl.CHECK_LOG.log(Level.INFO, "Document not locked", new Exception("Document not locked")); // NOI18N
+        Document doc = getDocument();
+        if (!DocumentUtilities.isReadLocked(doc)) {
+            String msg = "Document " + // NOI18N
+                    doc.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(doc)) + // NOI18N
+                    " not locked"; // NOI18N
+            ViewHierarchyImpl.CHECK_LOG.log(Level.INFO, msg, new Exception(msg)); // NOI18N
         }
     }
     
@@ -935,6 +954,13 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         PriorityMutex mutex = pMutex;
         return (mutex != null && mutex.getLockThread() == Thread.currentThread());
     }
+    
+    public Map<TextLayout,String> getTextLayoutVerifier() {
+        if (textLayoutVerifier == null) {
+            textLayoutVerifier = new WeakHashMap<TextLayout, String>(256);
+        }
+        return textLayoutVerifier;
+    }
 
     @Override
     protected String getDumpName() {
@@ -944,27 +970,36 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     @Override
     public String findIntegrityError() {
         String err = super.findIntegrityError();
+        if (err == null) {
+            int viewCount = getViewCount();
+            if (viewCount > 0) {
+                ParagraphView firstView = getParagraphView(0);
+                if (firstView.getStartOffset() != startOffset) {
+                    err = "firstView.getStartOffset()=" + firstView.getStartOffset() + // NOI18N
+                            " != startOffset=" + startOffset; // NOI18N
+                }
+                ParagraphView lastView = getParagraphView(viewCount - 1);
+                int lastViewEndOffset = lastView.getEndOffset();
+                if (err == null && lastViewEndOffset != endOffset) {
+                    err = "lastView.endOffset=" + lastViewEndOffset + " != endOffset=" + endOffset; // NOI18N
+                }
+                int docTextEndOffset = getDocument().getLength() + 1;
+                if (err == null && lastViewEndOffset > docTextEndOffset) {
+                    err = "lastViewEndOffset=" + lastViewEndOffset + " > docTextEndOffset=" + docTextEndOffset; // NOI18N
+                }
+                if (err == null) {
+                    err = children.findIntegrityError(this);
+                }
+            } // else { do not check startOffset == endOffset since they may differ (pViews not created yet)
+            if (err == null && startOffset > endOffset) {
+                err = "startOffset=" + startOffset + " > endOffset=" + endOffset; // NOI18N
+            }
+        }
+
         if (err != null) {
-            return err;
+            err = getDumpName() +  ": " + err;
         }
-        int startOffset = getStartOffset();
-        int endOffset = getEndOffset();
-        int viewCount = getViewCount();
-        if (viewCount > 0) {
-            ParagraphView firstView = getParagraphView(0);
-            if (firstView.getStartOffset() != startOffset) {
-                return "firstView.getStartOffset()=" + firstView.getStartOffset() + // NOI18N
-                        " != startOffset=" + startOffset; // NOI18N
-            }
-            ParagraphView lastView = getParagraphView(viewCount - 1);
-            if (lastView.getEndOffset() != endOffset) {
-                return "lastView.endOffset=" + lastView.getEndOffset() + " != endOffset=" + endOffset; // NOI18N
-            }
-            if (endOffset < getEndBoundOffset()) {
-                return "endOffset=" + endOffset + " < endBoundOffset=" + getEndBoundOffset(); // NOI18N
-            }
-        }
-        return null;
+        return err;
     }
 
     @Override
@@ -973,7 +1008,9 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         runReadLockTransaction(new Runnable() {
             @Override
             public void run() {
-                ret[0] = DocumentView.super.findTreeIntegrityError();
+                ret[0] = op.isChildrenValid()
+                        ? DocumentView.super.findTreeIntegrityError()
+                        : null; // No checks when children are invalid (likely startOffset != firstPView.getStartOffset() etc.)
             }
         });
         return ret[0];
@@ -982,20 +1019,28 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     @Override
     protected StringBuilder appendViewInfo(StringBuilder sb, int indent, String xyInfo, int importantChildIndex) {
         DocumentView.super.appendViewInfo(sb, indent, xyInfo, importantChildIndex);
-        sb.append("; Bounds:<");
-        sb.append(hasExtraStartBound() ? startPos.getOffset() : "DOC-START");
-        sb.append(","); // NOI18N
-        sb.append(hasExtraEndBound() ? endPos.getOffset() : "DOC-END");
-        sb.append(">, ");
+        if (getParent() == null) {
+            sb.append("; NULL-PARENT");
+        }
+        if (!op.isChildrenValid()) {
+            sb.append("; INVALID-CHILDREN");
+        }
+        Position startPos = getExtraStartPosition();
+        Position endPos = getExtraEndPosition();
+        if (startPos != null || endPos != null) {
+            sb.append("; ExtraBounds:<");
+            sb.append((startPos != null) ? startPos.getOffset() : "START");
+            sb.append(","); // NOI18N
+            sb.append((endPos != null) ? endPos.getOffset() : "END");
+            sb.append(">, ");
+        }
         op.appendInfo(sb);
         if (LOG_SOURCE_TEXT) {
             Document doc = getDocument();
             sb.append("\nDoc: ").append(ViewUtils.toString(doc)); // NOI18N
         }
-        if (children != null) {
-            if (importantChildIndex != -1) {
-                children.appendChildrenInfo(DocumentView.this, sb, indent, importantChildIndex);
-            }
+        if (importantChildIndex != -1) {
+            children.appendChildrenInfo(DocumentView.this, sb, indent, importantChildIndex);
         }
         return sb;
     }
@@ -1006,13 +1051,13 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         runReadLockTransaction(new Runnable() {
             @Override
             public void run() {
-                s[0] = toStringUnlocked();
+                s[0] = toStringNeedsLock();
             }
         });
         return s[0];
     }
     
-    public String toStringUnlocked() {
+    public String toStringNeedsLock() {
         return appendViewInfo(new StringBuilder(200), 0, "", -1).toString();
     }
 
@@ -1021,13 +1066,13 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         runReadLockTransaction(new Runnable() {
             @Override
             public void run() {
-                s[0] = toStringDetailUnlocked();
+                s[0] = toStringDetailNeedsLock();
             }
         });
         return s[0];
     }
     
-    public String toStringDetailUnlocked() { // Dump everything
+    public String toStringDetailNeedsLock() { // Dump everything
         return appendViewInfo(new StringBuilder(200), 0, "", -2).toString();
     }
 

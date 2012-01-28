@@ -61,6 +61,8 @@ import org.netbeans.spi.editor.highlighting.HighlightsSequence;
  * @author mmetelka
  */
 class ViewPaintHighlights implements HighlightsSequence {
+    
+    private static final HighlightItem[] EMPTY = new HighlightItem[0];
 
     /** All paint highlights in the area being painted. */
     private final HighlightsList paintHighlights;
@@ -68,30 +70,38 @@ class ViewPaintHighlights implements HighlightsSequence {
     /** Current index in paint highlights. */
     private int phIndex;
     
+    /** Current paint highlight (the one pointed by phIndex) start offset. */
     private int phStartOffset;
     
+    /** Current paint highlight (the one pointed by phIndex) end offset. */
     private int phEndOffset;
     
+    /** Current paint highlight (the one pointed by phIndex) attributes (or null). */
     private AttributeSet phAttrs;
     
     private int viewEndOffset;
     
     /** Items of view's compound attributes. */
-    private HighlightItem[] vaItems;
+    private HighlightItem[] cahItems;
     
     /** Index of current compoundAttrs highlight. It's -1 for regular attrs or no attrs. */
-    private int vaIndex;
+    private int cahIndex;
     
-    private int vaEndOffset;
+    /** End offset of current compoundAttrs highlight. */
+    private int cahEndOffset;
     
-    private AttributeSet vaAttrs;
+    /** Attributes (or null) of current compoundAttrs highlight. */
+    private AttributeSet cahAttrs;
     
     private int offsetDiff;
     
+    /** Start offset of highlight currently provided by this highlights sequence. */
     private int hiStartOffset;
     
+    /** End offset of highlight currently provided by this highlights sequence. */
     private int hiEndOffset;
     
+    /** Attributes (or null) of highlight currently provided by this highlights sequence. */
     private AttributeSet hiAttrs;
 
     ViewPaintHighlights(HighlightsList paintHighlights) {
@@ -99,33 +109,52 @@ class ViewPaintHighlights implements HighlightsSequence {
         updatePH(0);
     }
     
+    /**
+     * Reset paint highlights for the given view.
+     *
+     * @param view child view for which the highlights are obtained.
+     * @param shift shift inside the view where the computed highlights should start.
+     */
     void reset(EditorView view, int shift) {
         assert (shift >= 0) : "shift=" + shift + " < 0"; // NOI18N
         int viewStartOffset = view.getStartOffset();
-        viewEndOffset = viewStartOffset + view.getLength();
+        int viewLength = view.getLength();
+        assert (shift < viewLength) : "shift=" + shift + " >= viewLength=" + viewLength; // NOI18N
+        viewEndOffset = viewStartOffset + viewLength;
         AttributeSet attrs = view.getAttributes();
         int startOffset = viewStartOffset + shift;
         if (ViewUtils.isCompoundAttributes(attrs)) {
             CompoundAttributes cAttrs = (CompoundAttributes) attrs;
             offsetDiff = viewStartOffset - cAttrs.startOffset();
-            vaItems = cAttrs.highlightItems();
+            cahItems = cAttrs.highlightItems();
             if (shift == 0) {
-                vaIndex = 0;
+                cahIndex = 0;
             } else {
-                vaIndex = findCAHIndex(startOffset);
+                int cahOffset = startOffset - offsetDiff; // Orig offset inside cAttrs
+                cahIndex = findCAHIndex(cahOffset); // Search in orig.offsets
             }
-            HighlightItem cahItem = vaItems[vaIndex];
-            vaEndOffset = cahItem.getEndOffset() + offsetDiff;
-            vaAttrs = cahItem.getAttributes();
+            if (cahIndex >= cahItems.length) {
+                throw new IllegalStateException("offsetDiff=" + offsetDiff + // NOI18N
+                        ", view=" + view + ", shift=" + shift + ", viewStartOffset+shift=" + startOffset + // NOI18N
+                        "\ncAttrs:\n" + cAttrs + // NOI18N
+                        "\n" + this + "docView:\n" + // NOI18N
+                        ((DocumentView) view.getParent().getParent()).toStringDetail());
+            }
+            HighlightItem cahItem = cahItems[cahIndex];
+            cahEndOffset = cahItem.getEndOffset() + offsetDiff;
+//            assert (startOffset < cahEndOffset) : "startOffset=" + startOffset + // NOI18N
+//                    " >= cahEndOffset=" + cahEndOffset + "\n" + this; // NOI18N
+            cahAttrs = cahItem.getAttributes();
+
         } else { // Either regular or no attrs
             // offsetDiff will not be used
-            vaItems = null;
-            vaIndex = -1;
-            vaEndOffset = viewEndOffset;
+            cahItems = EMPTY;
+            cahIndex = -1;
+            cahEndOffset = viewEndOffset;
             if (attrs == null) {
-                vaAttrs = null;
+                cahAttrs = null;
             } else { // regular attrs
-                vaAttrs = attrs;
+                cahAttrs = attrs;
             }
         }
         // Update paint highlight if necessary
@@ -133,6 +162,12 @@ class ViewPaintHighlights implements HighlightsSequence {
             updatePH(findPHIndex(startOffset));
         } else if (startOffset >= phEndOffset) { // Must fetch further
             // Should be able to fetch since it should not fetch beyond requested area size
+//            if (startOffset >= paintHighlights.endOffset()) {
+//                throw new IllegalStateException("startOffset=" + startOffset + // NOI18N
+//                        " >= paintHighlights.endOffset()=" + paintHighlights.endOffset() + // NOI18N
+//                        "\n" + this + "docView:\n" + // NOI18N
+//                        ((DocumentView)view.getParent().getParent()).toStringDetail());
+//            }
             fetchNextPH();
             if (startOffset >= phEndOffset) {
                 updatePH(findPHIndex(startOffset));
@@ -149,26 +184,26 @@ class ViewPaintHighlights implements HighlightsSequence {
         if (hiEndOffset >= phEndOffset) {
             fetchNextPH();
         }
-        if (hiEndOffset >= vaEndOffset) {
+        if (hiEndOffset >= cahEndOffset) {
             // Fetch next CAH
-            vaIndex++;
-            if (vaIndex >= vaItems.length) {
+            cahIndex++;
+            if (cahIndex >= cahItems.length) {
                 return false;
             }
-            HighlightItem hItem = vaItems[vaIndex];
-            vaEndOffset = hItem.getEndOffset() + offsetDiff;
-            vaAttrs = hItem.getAttributes();
+            HighlightItem hItem = cahItems[cahIndex];
+            cahEndOffset = hItem.getEndOffset() + offsetDiff;
+            cahAttrs = hItem.getAttributes();
         }
         // There will certainly be a next highlight
         hiStartOffset = hiEndOffset;
         // Decide whether paint highlight ends lower than compound attrs' one
-        if (phEndOffset < vaEndOffset) {
+        if (phEndOffset < cahEndOffset) {
             hiEndOffset = Math.min(phEndOffset, viewEndOffset);
         } else {
-            hiEndOffset = vaEndOffset;
+            hiEndOffset = cahEndOffset;
         }
         // Merge (possibly null) attrs (ph over cah)
-        hiAttrs = vaAttrs;
+        hiAttrs = cahAttrs;
         if (phAttrs != null) {
             hiAttrs = (hiAttrs != null) ? AttributesUtilities.createComposite(phAttrs, hiAttrs) : phAttrs;
         }
@@ -190,15 +225,20 @@ class ViewPaintHighlights implements HighlightsSequence {
         return hiAttrs;
     }
 
-    private int findCAHIndex(int offset) {
+    /**
+     * Find index of cAttrs' item "containing" the cahOffset.
+     * @param cahOffset offset in original offset space of cAttrs.
+     * @return index of hItem.
+     */
+    private int findCAHIndex(int cahOffset) {
         int low = 0;
-        int high = vaItems.length - 1;
+        int high = cahItems.length - 1;
         while (low <= high) {
             int mid = (low + high) >>> 1; // mid in the binary search
-            int hEndOffset = vaItems[mid].getEndOffset() + offsetDiff;
-            if (hEndOffset < offset) {
+            int hEndOffset = cahItems[mid].getEndOffset();
+            if (hEndOffset < cahOffset) {
                 low = mid + 1;
-            } else if (hEndOffset > offset) {
+            } else if (hEndOffset > cahOffset) {
                 high = mid - 1;
             } else { // hEndOffset == offset
                 low = mid + 1;
@@ -219,8 +259,13 @@ class ViewPaintHighlights implements HighlightsSequence {
     }
 
     private void fetchNextPH() {
-        phStartOffset = phEndOffset;
         phIndex++;
+        if (phIndex >= paintHighlights.size()) {
+            throw new IllegalStateException("phIndex=" + phIndex + // NOI18N
+                    " >= paintHighlights.size()=" + paintHighlights.size() + // NOI18N
+                    "\n" + this); // NOI18N
+        }
+        phStartOffset = phEndOffset;
         HighlightItem hItem = paintHighlights.get(phIndex);
         phEndOffset = hItem.getEndOffset();
         phAttrs = hItem.getAttributes();
@@ -242,6 +287,21 @@ class ViewPaintHighlights implements HighlightsSequence {
             }
         }
         return low;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(200);
+        sb.append("ViewPaintHighlights: ph[").append(phIndex). // NOI18N
+                append("]<").append(phStartOffset). // NOI18N
+                append(",").append(phEndOffset). // NOI18N
+                append("> attrs=").append(phAttrs).append('\n');
+        sb.append("cah[").append(cahIndex).append("]#").append(cahItems.length);
+        sb.append(" <?,").append(cahEndOffset).append("> attrs=").append(cahAttrs);
+        sb.append(", viewEndOffset=").append(viewEndOffset).
+                append(", offsetDiff=").append(offsetDiff);
+        sb.append("\npaintHighlights:").append(paintHighlights);
+        return sb.toString();
     }
     
 }

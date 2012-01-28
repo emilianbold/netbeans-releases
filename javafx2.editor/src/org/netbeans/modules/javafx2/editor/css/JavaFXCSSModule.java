@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,33 +37,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javafx2.editor.css;
 
-package org.netbeans.modules.editor.lib2.view;
-
-import java.util.EventObject;
-import java.util.List;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Event fired by editor view factories upon change.
+ * Java FX CSS editor
  *
- * @author Miloslav Metelka
+ * @author Anton Chechel <anton.chechel@oracle.com>
+ * @version 1.0
  */
-public final class EditorViewFactoryEvent extends EventObject {
-    
-    private final List<EditorViewFactoryChange> changes;
-    
-    EditorViewFactoryEvent(EditorViewFactory factory, List<EditorViewFactoryChange> changes) {
-        super(factory);
-        this.changes = changes;
-    }
-
-    /**
-     * @return changes that occurred in the view factory.
-     */
-    public List<EditorViewFactoryChange> getChanges() {
-        return changes;
-    }
-
+//@ServiceProvider(service = CssEditorModule.class)
+public class JavaFXCSSModule {
 }
