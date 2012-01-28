@@ -54,7 +54,6 @@ import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.log.LogAction;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
-import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.util.FileUtils;
@@ -84,6 +83,8 @@ public class HgHistoryProvider implements VCSHistoryProvider {
         }
     }
     
+    
+    private Map<File, List<HgLogMessage>> paths = new HashMap<File, List<HgLogMessage>>();
     @Override
     public synchronized HistoryEntry[] getHistory(File[] files, Date fromDate) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
@@ -119,19 +120,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
                 continue;
             }
             File repositoryRoot = repositories.iterator().next();
-            HgLogMessage[] history = 
-                    HgCommand.getLogMessages(
-                        repositoryRoot,
-                        new HashSet(Arrays.asList(files)), 
-                        fromRevision, 
-                        toRevision, 
-                        false, // show merges
-                        false, // get files info
-                        false, // get parents
-                        -1,    // limit 
-                        Collections.<String>emptyList(),                          // branch names
-                        OutputLogger.getLogger(repositoryRoot.getAbsolutePath()), // logger
-                        false); // asc order
+            HgLogMessage[] history = HistoryRegistry.getInstance().getLogs(repositoryRoot, files, fromRevision, toRevision);
             for (HgLogMessage h : history) {
                 String r = h.getHgRevision().getRevisionNumber();
                 rev2LMMap.put(r, h);
@@ -188,7 +177,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
         });
     }
 
-    private static class RevisionProviderImpl implements RevisionProvider {
+    private class RevisionProviderImpl implements RevisionProvider {
         private HgRevision hgRevision;
 
         public RevisionProviderImpl(HgRevision hgRevision) {
@@ -198,13 +187,45 @@ public class HgHistoryProvider implements VCSHistoryProvider {
         @Override
         public void getRevisionFile(File originalFile, File revisionFile) {
             assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
+            
+            if(!isClientAvailable()) {
+                Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable");
+                return;
+            }
+
             try {
-                // XXX fails for moved/renamed files
-                File file = VersionsCache.getInstance().getFileRevision(originalFile, hgRevision);
+                FileInformation info = Mercurial.getInstance().getFileStatusCache().refresh(originalFile);
+                if (info != null && (info.getStatus() & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) != 0
+                        && info.getStatus(null) != null && info.getStatus(null).getOriginalFile() != null) 
+                {
+                    originalFile = info.getStatus(null).getOriginalFile();
+                }
+                
+                Set<File> repositories = getRepositoryRoots(originalFile);
+                if(repositories == null || repositories.isEmpty()) {
+                    Mercurial.LOG.log(Level.WARNING, "Repository root not found for file {0}", originalFile);
+                    return;
+                }
+                File repository = repositories.iterator().next();
+                File historyFile = HistoryRegistry.getInstance().getHistoryFile(repository, originalFile, hgRevision.getRevisionNumber(), true);
+                if(historyFile != null) {
+                    // ah! we already now the file was moved in the history,
+                    // so lets look for contents by using its previous name
+                    originalFile= historyFile;
+                }
+                File file = VersionsCache.getInstance().getFileRevision(originalFile, hgRevision, false);
                 if(file != null) {
                     FileUtils.copyFile(file, revisionFile); // XXX lets be faster - LH should cache that somehow ...
-                } else {
-                    Mercurial.LOG.log(Level.WARNING, "File {0} not found in revision {1}", new Object[]{originalFile, hgRevision});
+                } else if(historyFile == null) {
+                    // well then, lets try to find out if the file was move at some point in the history
+                    Mercurial.LOG.log(Level.WARNING, "File {0} not found in revision {1}. Will make a guess ...", new Object[]{originalFile, hgRevision});
+                    historyFile = HistoryRegistry.getInstance().getHistoryFile(repository, originalFile, hgRevision.getRevisionNumber(), false);
+                    if(historyFile != null) {
+                        file = VersionsCache.getInstance().getFileRevision(historyFile, hgRevision, false);
+                        if(file != null) {
+                            FileUtils.copyFile(file, revisionFile); // XXX lets be faster - LH should cache that somehow ...
+                        }
+                    }
                 }
             } catch (IOException e) {
                 if(e.getCause() instanceof HgException.HgCommandCanceledException)  {
@@ -311,7 +332,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
         return org.netbeans.modules.mercurial.Mercurial.getInstance().isAvailable(true, notifyUI);
     }
 
-    private static Set<File> getRepositoryRoots(File[] files) {
+    private static Set<File> getRepositoryRoots(File... files) {
         Set<File> repositories = HgUtils.getRepositoryRoots(new HashSet<File>(Arrays.asList(files)));
         if (repositories.size() != 1) {
             org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "History requested for {0} repositories", repositories.size()); // NOI18N

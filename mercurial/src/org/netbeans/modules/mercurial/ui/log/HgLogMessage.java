@@ -171,7 +171,7 @@ public class HgLogMessage {
         }
     }
 
-    HgLogMessageChangedPath [] getChangedPaths(){
+    public HgLogMessageChangedPath [] getChangedPaths(){
         return paths.toArray(new HgLogMessageChangedPath[paths.size()]);
     }
 

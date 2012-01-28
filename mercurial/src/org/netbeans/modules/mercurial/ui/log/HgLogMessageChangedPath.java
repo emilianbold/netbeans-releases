@@ -46,7 +46,7 @@ package org.netbeans.modules.mercurial.ui.log;
  *
  * @author jr140578
  */
-class HgLogMessageChangedPath {
+public class HgLogMessageChangedPath {
     private String path;
     private String copyPath;
     private char action;
