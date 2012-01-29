@@ -728,7 +728,7 @@ public final class Resolver3 implements Resolver {
                         if (CsmKindUtilities.isNamespace(val)) {
                             CsmNamespace ns = (CsmNamespace)val;
                             if (!nsp.contains(ns.getQualifiedName())) {
-                                fqn = ns.getQualifiedName().toString() + "::" + name;
+                                fqn = ns.getQualifiedName().toString() + "::" + name; // NOI18N
                                 result = findClassifierUsedInFile(fqn);
                             }
                             if (result == null) {
