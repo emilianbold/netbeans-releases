@@ -47,14 +47,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFriend;
-import org.netbeans.modules.cnd.api.model.CsmInheritance;
-import org.netbeans.modules.cnd.api.model.CsmMember;
-import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -70,7 +63,7 @@ public final class ForwardClass extends ClassImpl {
         super(name, ast, file, start, end);
     }
 
-    public static boolean isForwardClass(CsmDeclaration cls) {
+    public static boolean isForwardClass(CsmObject cls) {
         return cls instanceof ForwardClass;
     }
 
