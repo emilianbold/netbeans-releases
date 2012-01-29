@@ -48,6 +48,7 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 
 import java.io.File;
+import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 
@@ -62,6 +63,7 @@ public class TestVCS extends VersioningSystem {
     private static TestVCS instance;
     private VCSInterceptor interceptor;
     private VCSAnnotator annotator;
+    private VCSHistoryProvider historyProvider;
     private VCSVisibilityQuery vq;
     private TestVCSCollocationQuery vcq;
 
@@ -75,6 +77,7 @@ public class TestVCS extends VersioningSystem {
         instance = this;
         interceptor = new TestVCSInterceptor();
         annotator = new TestVCSAnnotator();
+        historyProvider = new TestVCSHistoryProvider();
         vq = new TestVCSVisibilityQuery();
         vcq = new TestVCSCollocationQuery();
     }
@@ -107,4 +110,8 @@ public class TestVCS extends VersioningSystem {
         return vcq;
     }
     
+    @Override
+    public VCSHistoryProvider getVCSHistoryProvider() {
+        return historyProvider;
+    }
 }
