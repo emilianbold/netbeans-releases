@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.java.hints.test.api;
 
-import org.netbeans.modules.java.hints.test.TestLookup;
 import com.sun.source.util.TreePath;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,7 +71,11 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.tools.Diagnostic;
 import junit.framework.Assert;
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNotSame;
+import static junit.framework.Assert.assertTrue;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -80,6 +84,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.hints.providers.code.CodeHintProviderImpl;
@@ -91,6 +96,7 @@ import org.netbeans.modules.java.hints.spiimpl.MessageImpl;
 import org.netbeans.modules.java.hints.spiimpl.hints.HintsInvoker;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.modules.java.hints.test.SourceUtilsTestUtil;
+import org.netbeans.modules.java.hints.test.TestLookup;
 import org.netbeans.modules.java.hints.test.TestUtilities;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
@@ -155,6 +161,7 @@ public class HintTest {
     private final Preferences testPreferences;
     private final List<FileObject> checkCompilable = new ArrayList<FileObject>();
     private String sourceLevel = "1.5";
+    private Character caretMarker;
     private FileObject testFile;
     private FileObject[] extraClassPath = new FileObject[0];
 
@@ -269,6 +276,17 @@ public class HintTest {
         return new HintTest();
     }
 
+    /**A character to use as a marker of a caret in the input code. The caret position
+     * during the run method will be set to the position of this character in the first input file.
+     *
+     * @param c a caret marker
+     * @return itself
+     */
+    public HintTest setCaretMarker(char c) {
+        this.caretMarker = c;
+        return this;
+    }
+
     /**Create a test file. Equivalent to calling {@code input("test/Test.java", code, true)}.
      *
      * @param code the content of the newly created test file
@@ -309,6 +327,16 @@ public class HintTest {
      * @return itself
      */
     public HintTest input(String fileName, String code, boolean compilable) throws Exception {
+        int caret = -1;
+
+        if (caretMarker != null) {
+            caret = code.indexOf(caretMarker);
+
+            assertNotSame(-1, caret);
+
+            code = code.substring(0, caret) + code.substring(caret + 1);
+        }
+
         FileObject file = FileUtil.createData(sourceRoot, fileName);
 
         TestUtilities.copyStringToFile(file, code);
@@ -319,6 +347,10 @@ public class HintTest {
 
         if (testFile == null) {
             testFile = file;
+            Method m = CaretAwareJavaSourceTaskFactory.class.getDeclaredMethod("setLastPosition", FileObject.class, int.class);
+
+            m.setAccessible(true);
+            m.invoke(null, testFile, caret);
         }
         
         return this;
