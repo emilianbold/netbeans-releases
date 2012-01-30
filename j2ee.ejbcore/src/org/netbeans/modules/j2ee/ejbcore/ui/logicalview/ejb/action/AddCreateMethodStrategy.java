@@ -46,10 +46,15 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizerFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
@@ -134,30 +139,46 @@ public class AddCreateMethodStrategy extends AbstractAddMethodStrategy {
 
     public boolean supportsEjb(FileObject fileObject,final String className) {
 
-        boolean isEntityOrStateful = false;
+        final AtomicBoolean isEntityOrStateful = new AtomicBoolean(false);
 
         EjbJar ejbModule = getEjbModule(fileObject);
         if (ejbModule != null) {
-            MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
             try {
-                isEntityOrStateful = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Boolean>() {
-                    public Boolean run(EjbJarMetadata metadata) throws Exception {
-                        Ejb ejb = metadata.findByEjbClass(className);
-                        if (ejb instanceof Entity) {
-                            return true;
-                        } else if (ejb instanceof Session) {
-                            return Session.SESSION_TYPE_STATEFUL.equals(((Session) ejb).getSessionType());
+                MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
+                if (metadataModel.isReady()) {
+                    isEntityOrStateful.set(metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Boolean>() {
+                        @Override
+                        public Boolean run(EjbJarMetadata metadata) throws Exception {
+                            Ejb ejb = metadata.findByEjbClass(className);
+                            if (ejb instanceof Entity) {
+                                return true;
+                            } else if (ejb instanceof Session) {
+                                return Session.SESSION_TYPE_STATEFUL.equals(((Session) ejb).getSessionType());
+                            }
+                            return Boolean.FALSE;
                         }
-                        return Boolean.FALSE;
-                    }
-                });
+                    }));
+                } else {
+                    JavaSource javaSource = JavaSource.forFileObject(fileObject);
+                    javaSource.runUserActionTask(new Task<CompilationController>() {
+                        @Override
+                        public void run(CompilationController cc) throws Exception {
+                            cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                            TypeElement te = cc.getElements().getTypeElement(className);
+                            if (te == null) {
+                                return;
+                            }
+
+                            isEntityOrStateful.set(AddBusinessMethodStrategy.isEntity(cc, te)
+                                    || AddBusinessMethodStrategy.isStateful(cc, te));
+                        }
+                    }, true);
+                }
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
         }
-
-        return isEntityOrStateful;
-
+        return isEntityOrStateful.get();
     }
 
 }
