@@ -46,11 +46,7 @@ package org.netbeans.modules.masterfs.filebasedfs;
 
 import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
-import org.openide.filesystems.FileObjectTestHid;
-import org.openide.filesystems.FileSystemTestHid;
-import org.openide.filesystems.FileUtilTestHidden;
-import org.openide.filesystems.TestBaseHid;
-import org.openide.filesystems.URLMapperTestHidden;
+import org.openide.filesystems.*;
 import org.openide.filesystems.test.StatFiles;
 
 /**
@@ -80,6 +76,7 @@ public class FileBasedFileSystemTestStat extends FileBasedFileSystemTest {
         suite.addTestSuite(FileObjectTestHid.class);
         suite.addTestSuite(URLMapperTestHidden.class);
         suite.addTestSuite(FileUtilTestHidden.class);                
+        suite.addTestSuite(FileUtilJavaIOFileHidden.class);                
         suite.addTestSuite(BaseFileObjectTestHid.class);                
         return new FileBasedFileSystemTestStat(suite);
     }
