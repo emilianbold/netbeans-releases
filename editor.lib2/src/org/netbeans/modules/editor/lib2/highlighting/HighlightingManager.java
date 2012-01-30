@@ -50,6 +50,7 @@ import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -152,6 +153,17 @@ public final class HighlightingManager {
     public void removeChangeListener(ChangeListener listener) {
         highlighting.changeListeners.remove(listener);
     }
+    
+    /**
+     * Called in tests to quickly replace all existing layers with a single testing container
+     * to get controlled attribute set chunking for view hierarchy tests.
+     * 
+     * @param testSingleContainer non-null testing container or null to return to regular behavior.
+     */
+    public void testSetSingleContainer(HighlightsContainer testSingleContainer) {
+        highlighting.testSingleContainer = testSingleContainer;
+        highlighting.rebuildAllLayers();
+    }
 
     // ----------------------------------------------------------------------
     //  Private implementation
@@ -200,6 +212,10 @@ public final class HighlightingManager {
         private DirectMergeContainer topHighlights;
         List<ChangeListener> changeListeners = new CopyOnWriteArrayList<ChangeListener>();
         
+        /**
+         * Single container for unit testing of view hierarchy.
+         */
+        HighlightsContainer testSingleContainer;
         
         @SuppressWarnings("LeakingThisInConstructor")
         public Highlighting(HighlightingManager manager, JTextComponent pane) {
@@ -261,15 +277,7 @@ public final class HighlightingManager {
             }
 
             if (PROP_HL_INCLUDES.equals(evt.getPropertyName()) || PROP_HL_EXCLUDES.equals(evt.getPropertyName())) {
-                Document doc = pane.getDocument();
-                if (doc != null) {
-                    doc.render(new Runnable() {
-                        @Override
-                        public void run() {
-                            rebuildAllLayers();
-                        }
-                    });
-                }
+                rebuildAllLayers();
             }
         }
         
@@ -358,7 +366,19 @@ public final class HighlightingManager {
             }
         }
         
-        private synchronized void rebuildAllLayers() {
+        synchronized void rebuildAllLayers() {
+            Document doc = pane.getDocument();
+            if (doc != null) {
+                doc.render(new Runnable() {
+                    @Override
+                    public void run() {
+                        rebuildAllLayersImpl();
+                    }
+                });
+            }
+        }
+        
+        void rebuildAllLayersImpl() {
             if (inRebuildAllLayers) {
                 return;
             }
@@ -429,6 +449,11 @@ public final class HighlightingManager {
                     LOG.finer(sb.toString());
                 }
                 
+                if (testSingleContainer != null) { // Use just the one single container
+                    bottomContainers = Collections.singletonList(testSingleContainer);
+                    topContainers = Collections.emptyList();
+                }
+
                 bottomHighlights = new DirectMergeContainer(bottomContainers.toArray(
                         new HighlightsContainer[bottomContainers.size()]));
                 topHighlights = new DirectMergeContainer(topContainers.toArray(

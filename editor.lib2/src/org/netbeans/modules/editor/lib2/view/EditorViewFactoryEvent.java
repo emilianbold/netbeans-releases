@@ -52,25 +52,18 @@ import java.util.List;
  */
 public final class EditorViewFactoryEvent extends EventObject {
     
-    private final List<EditorViewFactory.Change> changes;
+    private final List<EditorViewFactoryChange> changes;
     
-    private final int priority;
-
-    EditorViewFactoryEvent(EditorViewFactory factory, List<EditorViewFactory.Change> changes, int priority) {
+    EditorViewFactoryEvent(EditorViewFactory factory, List<EditorViewFactoryChange> changes) {
         super(factory);
         this.changes = changes;
-        this.priority = priority;
     }
 
     /**
      * @return changes that occurred in the view factory.
      */
-    public List<EditorViewFactory.Change> getChanges() {
+    public List<EditorViewFactoryChange> getChanges() {
         return changes;
     }
 
-    public int getPriority() {
-        return priority;
-    }
-    
 }

@@ -136,10 +136,6 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         return copySupport;
     }
 
-    public void setSuspended(boolean suspended) {
-        proxyOperationFactory.setSuspended(suspended);
-    }
-
     private static RequestProcessor.Task createCopyTask() {
         return COPY_SUPPORT_RP.create(new Runnable() {
             @Override
@@ -405,9 +401,6 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
 
     private static class ProxyOperationFactory extends FileOperationFactory {
 
-        // #202673
-        private static final ThreadLocal<Boolean> SUSPENDED = new ThreadLocal<Boolean>();
-
         final FileOperationFactory localFactory;
         final FileOperationFactory remoteFactory;
 
@@ -415,10 +408,6 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
             super(project);
             this.localFactory = new LocalOperationFactory(project);
             this.remoteFactory = new RemoteOperationFactory(project);
-        }
-
-        void setSuspended(boolean suspended) {
-            SUSPENDED.set(suspended);
         }
 
         @Override
@@ -468,13 +457,6 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
 
         @Override
         protected boolean isValid(FileEvent fileEvent) {
-            Boolean suspended = SUSPENDED.get();
-            if (suspended != null && suspended) {
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "Copy support suspended, ignoring FS event: {0}", fileEvent);
-                }
-                return false;
-            }
             return true;
         }
 

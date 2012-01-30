@@ -47,6 +47,7 @@ package org.netbeans.modules.editor.lib2.view;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import org.netbeans.lib.editor.util.random.DocumentTesting;
 import org.netbeans.lib.editor.util.random.RandomTestContainer;
@@ -60,35 +61,36 @@ import org.netbeans.lib.editor.util.random.RandomText;
  */
 public class RootViewRandomTesting {
     
-    public static final String CREATE_ROOT_VIEW = "create-root-view";
+    public static final String CREATE_PANE = "create-pane";
     
-    public static final String DESTROY_ROOT_VIEW = "destroy-root-view";
+    public static final String RELEASE_PANE = "release-pane";
 
     public static RandomTestContainer createContainer() throws Exception {
+        ViewUpdatesTesting.registerTestFactory();
         RandomTestContainer container = new RandomTestContainer();
         DocumentTesting.initContainer(container);
         DocumentTesting.initUndoManager(container);
         DocumentTesting.setSameThreadInvoke(container.context(), true);
-        container.putProperty(RootViewList.class, new RootViewList());
-        container.addOp(new RootViewOp(CREATE_ROOT_VIEW));
-        container.addOp(new RootViewOp(DESTROY_ROOT_VIEW));
-        container.addCheck(new RootViewCheck());
+        container.putProperty(PaneList.class, new PaneList());
+        container.addOp(new PaneOp(CREATE_PANE));
+        container.addOp(new PaneOp(RELEASE_PANE));
+        container.addCheck(new MultiPaneCheck());
         return container;
     }
     
-    static List<TestRootView> rootViewList(Context context) {
-        return context.getInstance(RootViewList.class).rootViewList;
+    static List<JEditorPane> getPaneList(Context context) {
+        return context.getInstance(PaneList.class).paneList;
     }
     
-    static TestRootView addNewRootView(Context context) {
-        TestRootView rootView = new TestRootView(DocumentTesting.getDocument(context));
-        rootViewList(context).add(rootView);
-        return rootView;
+    static JEditorPane addNewPane(Context context) {
+        JEditorPane pane = ViewUpdatesTesting.createPane(DocumentTesting.getDocument(context));
+        getPaneList(context).add(pane);
+        return pane;
     }
     
     public static void initRandomText(RandomTestContainer container) throws Exception {
 //        container.addOp(new Op());
-        container.addCheck(new RootViewCheck());
+        container.addCheck(new MultiPaneCheck());
         RandomText randomText = RandomText.join(
                 RandomText.lowerCaseAZ(3),
                 RandomText.spaceTabNewline(1),
@@ -108,52 +110,54 @@ public class RootViewRandomTesting {
         round.setRatio(DocumentTesting.REMOVE_TEXT, 1);
         round.setRatio(DocumentTesting.UNDO, 1);
         round.setRatio(DocumentTesting.REDO, 1);
-        round.setRatio(CREATE_ROOT_VIEW, 2);
-        round.setRatio(DESTROY_ROOT_VIEW, 1);
+        round.setRatio(CREATE_PANE, 2);
+        round.setRatio(RELEASE_PANE, 1);
         return round;
     }
     
     public static void checkIntegrity(Context context) {
-        List<TestRootView> rootViewList = rootViewList(context);
-        int rootViewListSize = rootViewList.size();
-        for (int i = 0; i < rootViewListSize; i++) {
-            TestRootView rootView = rootViewList.get(i);
-            String err = rootView.documentView().findTreeIntegrityError();
+        List<JEditorPane> paneList = getPaneList(context);
+        int paneListSize = paneList.size();
+        for (int i = 0; i < paneListSize; i++) {
+            JEditorPane pane = paneList.get(i);
+            DocumentView docView = DocumentView.get(pane);
+            String err = docView.findTreeIntegrityError();
+            int id = ViewUpdatesTesting.getId(pane);
             if (err != null) {
-                throw new IllegalStateException("VH(" + rootView.id() + ") integrity ERROR:\n" +
-                        err + rootView.documentView().toStringDetailUnlocked());
+                throw new IllegalStateException("VH(" + id + ") integrity ERROR:\n" +
+                        err + "\n" + docView.toStringDetailNeedsLock());
             }
             if (context.isLogOp()) {
-                context.logOpBuilder().append("\nVH(").append(rootView.id()).append("):\n").
-                        append(rootView).append("\n");
+                context.logOpBuilder().append("\nVH(").append(id).append("):\n").
+                        append(pane).append("\n");
             }
 
         }
     }
 
-    final static class RootViewOp extends RandomTestContainer.Op {
+    final static class PaneOp extends RandomTestContainer.Op {
 
-        public RootViewOp(String name) {
+        public PaneOp(String name) {
             super(name);
         }
 
         @Override
         protected void run(Context context) throws Exception {
-            List<TestRootView> rootViewList = rootViewList(context);
+            List<JEditorPane> paneList = getPaneList(context);
             Random random = context.container().random();
             StringBuilder log = context.logOpBuilder();
-            if (log != null) {
-                log.append("CREATE_ROOT_VIEW");
-            }
-            if (CREATE_ROOT_VIEW == name()) { // Just use ==
-                boolean createBounded = !rootViewList.isEmpty();
-                TestRootView rootView = new TestRootView(DocumentTesting.getDocument(context));
-                rootViewList.add(rootView);
+            if (CREATE_PANE == name()) { // Just use ==
+                if (log != null) {
+                    log.append("CREATE_ROOT_VIEW");
+                }
+                boolean createBounded = !paneList.isEmpty();
+                JEditorPane pane = ViewUpdatesTesting.createPane(DocumentTesting.getDocument(context));
+                paneList.add(pane);
                 if (createBounded) {
-                    Document doc = rootView.getDocument();
+                    Document doc = pane.getDocument();
                     int startOffset = random.nextInt(doc.getLength());
                     int endOffset = startOffset + random.nextInt(doc.getLength() - startOffset) + 1;
-                    rootView.setBounds(startOffset, endOffset);
+                    ViewUpdatesTesting.setViewBounds(pane, startOffset, endOffset);
                     if (log != null) {
                         log.append("(").append(startOffset).append(",").append(endOffset).append(")");
                     }
@@ -162,12 +166,12 @@ public class RootViewRandomTesting {
                     log.append("\n");
                     context.logOp(log);
                 }
-                rootView.modelToView(0);
+                pane.modelToView(0);
 
-            } else if (DESTROY_ROOT_VIEW == name()) { // Just use ==
-                if (!rootViewList.isEmpty()) {
-                    int index = random.nextInt(rootViewList.size());
-                    rootViewList.remove(index);
+            } else if (RELEASE_PANE == name()) { // Just use ==
+                if (!paneList.isEmpty()) {
+                    int index = random.nextInt(paneList.size());
+                    paneList.remove(index);
                     if (log != null) {
                         log.append("DESTROY_ROOT_VIEW[" + index + "]\n");
                     }
@@ -177,13 +181,13 @@ public class RootViewRandomTesting {
 
     }
 
-    private static final class RootViewList {
+    private static final class PaneList {
         
-        List<TestRootView> rootViewList = new ArrayList<TestRootView>();
+        List<JEditorPane> paneList = new ArrayList<JEditorPane>();
 
     }
 
-    private static final class RootViewCheck extends RandomTestContainer.Check {
+    private static final class MultiPaneCheck extends RandomTestContainer.Check {
 
         @Override
         protected void check(Context context) throws Exception {

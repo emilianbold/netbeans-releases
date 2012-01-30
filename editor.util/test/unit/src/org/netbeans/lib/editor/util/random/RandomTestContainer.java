@@ -486,7 +486,7 @@ public final class RandomTestContainer extends PropertyProvider {
         
         private StringBuilder logOpBuilder = new StringBuilder(256);
 
-        private int maxOpsLogged = 3;
+        private int maxOpsLogged = 10;
 
         private final Map<Object,Object> properties;
 

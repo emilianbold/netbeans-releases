@@ -108,7 +108,6 @@ public class FoldView extends EditorView {
         int offset = fold.getStartOffset();
         int len = fold.getEndOffset() - offset;
         assert (len > 0) : "length=" + len + " <= 0"; // NOI18N
-        this.rawEndOffset = offset + len;
         this.length = len;
         this.textComponent = textComponent;
         this.fold = fold;

@@ -42,36 +42,72 @@
 package org.netbeans.modules.editor.lib2.view;
 
 import java.util.List;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.View;
+import junit.framework.Assert;
+import junit.framework.TestCase;
 
 /**
  *
  * @author Miloslav Metelka
  */
 final class TestHighlightsViewFactory extends EditorViewFactory {
+    
+    static TestHighlightsViewFactory get(JTextComponent c) {
+        return (TestHighlightsViewFactory) c.getClientProperty(TestHighlightsViewFactory.class);
+    }
 
     List<TestHighlight> highlights;
     
     int highlightIndex;
     
     TestHighlight highlight;
+    
+    int expectedContinueCreationStartOffset = -1;
+    
+    int expectedContinueCreationEndOffset;
 
     TestHighlightsViewFactory(View documentView) {
         super(documentView);
-        TestRootView testRootView = (TestRootView) textComponent().getClientProperty(TestRootView.class);
-        testRootView.updateFactory(this);
+        textComponent().putClientProperty(TestHighlightsViewFactory.class, this);
     }
 
     void fireChange(int fireStartOffset, int fireEndOffset) {
-        super.fireEvent(EditorViewFactory.createSingleChange(fireStartOffset, fireEndOffset));
+        super.fireEvent(EditorViewFactoryChange.createList(fireStartOffset, fireEndOffset,
+                EditorViewFactoryChange.Type.CHARACTER_CHANGE));
+    }
+
+    public List<TestHighlight> getHighlights() {
+        return highlights;
+    }
+    
+    public void setHighlights(List<TestHighlight> highlights) {
+        this.highlights = highlights;
+    }
+    
+    public void setContinueCreationRange(int startOffset, int endOffset) {
+        this.expectedContinueCreationStartOffset = startOffset;
+        this.expectedContinueCreationEndOffset = endOffset;
+    }
+    
+    public boolean isContinueCreationUnset() {
+        return expectedContinueCreationStartOffset == -1;
     }
 
     @Override
-    public void restart(int startOffset, int matchOffset) {
-        highlights = TestRootView.getHighlights(textComponent());
+    public void restart(int startOffset, int matchOffset,boolean createViews) {
         fetchHighlightContaining(startOffset);
     }
 
+    @Override
+    public void continueCreation(int startOffset, int endOffset) {
+        if (expectedContinueCreationStartOffset != -1) {
+            TestCase.assertEquals("continueCreation(): Start offset", expectedContinueCreationStartOffset, startOffset);
+            TestCase.assertEquals("continueCreation(): End offset", expectedContinueCreationEndOffset, endOffset);
+            expectedContinueCreationStartOffset = -1;
+        }
+    }
+    
     private void fetchHighlightContaining(int offset) {
         while (highlights != null && highlightIndex < highlights.size()) {
             highlight = highlights.get(highlightIndex++);
@@ -94,13 +130,22 @@ final class TestHighlightsViewFactory extends EditorViewFactory {
     }
 
     @Override
-    public EditorView createView(int startOffset, int limitOffset) {
+    public EditorView createView(int startOffset, int limitOffset, boolean forceLimit,
+    EditorView origView, int nextOrigViewOffset) {
+        int endOffset = highlight.endOffset();
+        if (endOffset > limitOffset && forceLimit) {
+            endOffset = limitOffset;
+        }
         return new TestHighlightsView(startOffset, highlight.endOffset() - startOffset, highlight.attrs);
     }
 
     @Override
-    public int viewEndOffset(int startOffset, int limitOffset) {
-        return highlight.endOffset();
+    public int viewEndOffset(int startOffset, int limitOffset, boolean forceLimit) {
+        int endOffset = highlight.endOffset();
+        if (endOffset > limitOffset && forceLimit) {
+            endOffset = limitOffset;
+        }
+        return limitOffset;
     }
 
     @Override
@@ -117,7 +162,7 @@ final class TestHighlightsViewFactory extends EditorViewFactory {
         }
 
         @Override
-        public int importance() {
+        public int weight() {
             return 10;
         }
         

@@ -190,11 +190,11 @@ AtomicLockListener, FoldHierarchyListener {
     */
     Point magicCaretPosition;
 
-    /** Draw mark designating the position of the caret.  */
-    MarkFactory.ContextMark caretMark = new MarkFactory.ContextMark(Position.Bias.Forward, false);
+    /** Position of caret. */
+    Position caretPos;
 
-    /** Draw mark that supports caret mark in creating selection */
-    MarkFactory.ContextMark selectionMark = new MarkFactory.ContextMark(Position.Bias.Forward, false);
+    /** Position of selection mark. */
+    Position markPos;
 
     /** Is the caret visible */
     boolean caretVisible;
@@ -542,12 +542,8 @@ AtomicLockListener, FoldHierarchyListener {
                     oldDoc, this, DocumentListenerPriority.CARET_UPDATE);
             oldDoc.removeAtomicLockListener(this);
 
-            try {
-                caretMark.remove();
-                selectionMark.remove();
-            } catch (InvalidMarkException e) {
-                Utilities.annotateLoggable(e);
-            }
+            caretPos = null;
+            markPos = null;
 
             listenDoc = null;
             if (prefs != null && weakPrefsListener != null) {
@@ -563,15 +559,7 @@ AtomicLockListener, FoldHierarchyListener {
             listenDoc = newDoc;
             newDoc.addAtomicLockListener(this);
 
-            try {
-                Utilities.insertMark(newDoc, caretMark, 0);
-                Utilities.insertMark(newDoc, selectionMark, 0);
-            } catch (InvalidMarkException e) {
-                Utilities.annotateLoggable(e);
-            } catch (BadLocationException e) {
-                Utilities.annotateLoggable(e);
-            }
-
+            // Leave caretPos and markPos null => offset==0
             prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(newDoc)).lookup(Preferences.class);
             if (prefs != null) {
                 weakPrefsListener = WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs);
@@ -1073,10 +1061,8 @@ AtomicLockListener, FoldHierarchyListener {
                 @Override
                 public void run() {
                     try {
-                        ui.getEditorUI().repaintBlock(caretMark.getOffset(), selectionMark.getOffset());
+                        ui.getEditorUI().repaintBlock(getDot(), getMark());
                     } catch (BadLocationException e) {
-                        Utilities.annotateLoggable(e);
-                    } catch (InvalidMarkException e) {
                         Utilities.annotateLoggable(e);
                     }
                 }
@@ -1142,10 +1128,7 @@ AtomicLockListener, FoldHierarchyListener {
     /** Gets the current position of the caret */
     public @Override int getDot() {
         if (component != null) {
-            try {
-                return caretMark.getOffset();
-            } catch (InvalidMarkException e) {
-            }
+            return (caretPos != null) ? caretPos.getOffset() : 0;
         }
         return 0;
     }
@@ -1156,11 +1139,8 @@ AtomicLockListener, FoldHierarchyListener {
     */
     public @Override int getMark() {
         if (component != null) {
-                try {
-                    return selectionMark.getOffset();
-                } catch (InvalidMarkException e) {
-                }
-            }
+            return (markPos != null) ? markPos.getOffset() : 0;
+        }
         return 0;
     }
 
@@ -1228,8 +1208,8 @@ AtomicLockListener, FoldHierarchyListener {
                 if (doc != null && offset >= 0 && offset <= doc.getLength()) {
                     dotChanged = true;
                     try {
-                        Utilities.moveMark(doc, caretMark, offset);
-                        Utilities.moveMark(doc, selectionMark, offset);
+                        caretPos = doc.createPosition(offset);
+                        markPos = doc.createPosition(offset);
 
                         FoldHierarchy hierarchy = FoldHierarchy.get(c);
                         // hook the listener if not already done
@@ -1255,9 +1235,6 @@ AtomicLockListener, FoldHierarchyListener {
                     } catch (BadLocationException e) {
                         throw new IllegalStateException(e.toString());
                         // setting the caret to wrong position leaves it at current position
-                    } catch (InvalidMarkException e) {
-                        throw new IllegalStateException(e.toString());
-                        // Caret not installed or inside the initial-read
                     }
                 }
             } finally {
@@ -1327,7 +1304,7 @@ AtomicLockListener, FoldHierarchyListener {
                     if (offset == oldCaretPos) { // no change
                         return;
                     }
-                    Utilities.moveMark(doc, caretMark, offset);
+                    caretPos = doc.createPosition(offset);
                     if (selectionVisible) { // selection already visible
                         Utilities.getEditorUI(c).repaintBlock(oldCaretPos, offset);
                     }
@@ -1344,8 +1321,6 @@ AtomicLockListener, FoldHierarchyListener {
                 } catch (BadLocationException e) {
                     throw new IllegalStateException(e.toString());
                     // position is incorrect
-                } catch (InvalidMarkException e) {
-                    throw new IllegalStateException(e.toString());
                 } finally {
                     doc.readUnlock();
                 }
@@ -1365,18 +1340,14 @@ AtomicLockListener, FoldHierarchyListener {
                 // Insert at offset 0 the marks would stay at offset == 0
                 if (getMark() == 0) {
                     try {
-                        selectionMark.move(listenDoc, endOffset);
-                    } catch (InvalidMarkException ex) {
-                        Exceptions.printStackTrace(ex);
+                        markPos = listenDoc.createPosition(endOffset);
                     } catch (BadLocationException ex) {
                         Exceptions.printStackTrace(ex);
                     }
                 }
                 if (getDot() == 0) {
                     try {
-                        caretMark.move(listenDoc, endOffset);
-                    } catch (InvalidMarkException ex) {
-                        Exceptions.printStackTrace(ex);
+                        caretPos = listenDoc.createPosition(endOffset);
                     } catch (BadLocationException ex) {
                         Exceptions.printStackTrace(ex);
                     }
