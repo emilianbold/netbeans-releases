@@ -65,6 +65,6 @@ public class MIMEResolverMarshallTest extends MIMEResolverImplTest {
             // not serializable
             return orig;
         }
-        return MIMEResolverImpl.forStream(arr);
+        return MIMEResolverImpl.forStream(fo, arr);
     }
 }

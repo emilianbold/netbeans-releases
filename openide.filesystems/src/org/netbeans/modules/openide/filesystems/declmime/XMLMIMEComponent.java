@@ -48,6 +48,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
@@ -80,6 +81,18 @@ final class XMLMIMEComponent extends DefaultParser {
     
     public XMLMIMEComponent(DataInput in) throws IOException {
         template.readExternal(in);
+    }
+    
+    public XMLMIMEComponent(String elemName, List<String> elemNSs, List<String> dtds) {
+        if (!elemName.isEmpty()) {
+            template.addElementName(elemName);
+        }
+        for (String  s : elemNSs) {
+            template.addElementNS(s);
+        }
+        for (String s : dtds) {
+            template.addDoctype(s);
+        }
     }
 
     // FileObjectFilter ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -45,16 +45,6 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
-    <folder name="Services">
-        <!-- Recognize text/struts+xml: -->
-        <folder name="MIMEResolver">
-            <file name="org-netbeans-modules-web-struts-resources-mime-resolver.xml" url="struts-mime-resolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/struts/resources/StrutsConfigIcon.png"/>
-                <attr name="position" intvalue="410"/>
-            </file>
-        </folder>
-    </folder>
     <folder name="Plugins">
         <!-- Register XML module catalog plugin -->
         <folder name="XML">

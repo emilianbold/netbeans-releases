@@ -55,7 +55,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
-import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
@@ -100,8 +99,8 @@ public final class MIMEResolverImpl {
         }
         return new Impl(fo);
     }
-    
-    private static MIMEResolver forStream(FileObject def, byte[] serialData) throws IOException {
+
+    static MIMEResolver forStream(FileObject def, byte[] serialData) throws IOException {
         return new Impl(def, serialData);
     }
     
@@ -218,7 +217,7 @@ public final class MIMEResolverImpl {
             return false;
         }
         FileUtil.runAtomicAction(new Runnable() {
-
+            @Override
             public void run() {
                 Document document = XMLUtil.createDocument("MIME-resolver", null, "-//NetBeans//DTD MIME Resolver 1.1//EN", "http://www.netbeans.org/dtds/mime-resolver-1_1.dtd");  //NOI18N
                 for (String mimeType : mimeToExtensions.keySet()) {
@@ -290,13 +289,37 @@ public final class MIMEResolverImpl {
         return orderedResolvers.values();
     }
 
-    private static MIMEResolver forExts(FileObject def, String mimeType, List<String> exts) throws IOException {
+    private static FileElement extensionElem(List<String> exts, String mimeType) {
         FileElement e = new FileElement();
         for (String ext : exts) {
             e.fileCheck.addExt(ext);
         }
         e.setMIME(mimeType);
+        return e;
+    }
+
+
+    private static MIMEResolver forExts(FileObject def, String mimeType, List<String> exts) throws IOException {
+        FileElement[] e = { extensionElem(exts, mimeType) };
         return new Impl(def, e, mimeType);
+    }
+
+    private static MIMEResolver forXML(FileObject def, 
+        String mimeType, List<String> exts, List<String> acceptExts,
+        String elem, List<String> namespace, List<String> dtds
+    ) throws IOException {
+        FileElement e = new FileElement();
+        for (String ext : exts) {
+            e.fileCheck.addExt(ext);
+        }
+        e.rule = new XMLMIMEComponent(elem, namespace, dtds);
+        e.setMIME(mimeType);
+        if (acceptExts.isEmpty()) {
+            return new Impl(def, new FileElement[] { e }, mimeType);
+        } else {
+            FileElement direct = extensionElem(acceptExts, mimeType);
+            return new Impl(def, new FileElement[] { e, direct }, mimeType);
+        }
     }
 
     /** factory method for {@link MIMEResolver.Registration} */
@@ -305,21 +328,35 @@ public final class MIMEResolverImpl {
         if (arr != null) {
             return forStream(fo, arr);
         }
-        String mimeType = (String) fo.getAttribute("mimeType");
-        List<String> exts = new ArrayList<String>();
-        int cnt = 0;
-        for (;;) {
-            String ext = (String) fo.getAttribute("ext." + cnt++);
-            if (ext == null) {
-                break;
-            }
-            exts.add(ext);
+        String mimeType = (String) fo.getAttribute("mimeType"); // NOI18Ns
+        String element = (String) fo.getAttribute("element"); // NOI18N
+        List<String> exts = readArray(fo, "ext."); // NOI18N
+        if (element != null) {
+            List<String> accept = readArray(fo, "accept."); // NOI18N
+            List<String> nss = readArray(fo, "ns."); // NOI18N
+            List<String> dtds = readArray(fo, "doctype."); // NOI18N
+            return forXML(fo, mimeType, exts, accept, element, nss, dtds);
         }
+        
         if (!exts.isEmpty()) {
             return forExts(fo, mimeType, exts);
         }
         throw new IllegalArgumentException("" + fo);
     }
+
+    private static List<String> readArray(FileObject fo, final String prefix) {
+        List<String> exts = new ArrayList<String>();
+        int cnt = 0;
+        for (;;) {
+            String ext = (String) fo.getAttribute(prefix + cnt++);
+            if (ext == null) {
+                break;
+            }
+            exts.add(ext);
+        }
+        return exts;
+    }
+    
 
     // MIMEResolver ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -345,7 +382,7 @@ public final class MIMEResolverImpl {
 
         @SuppressWarnings("deprecation")
         Impl(FileObject obj) {
-            if (ERR.isLoggable(Level.FINE)) ERR.fine("MIMEResolverImpl.Impl.<init>(" + obj + ")");  // NOI18N
+            if (ERR.isLoggable(Level.FINE)) ERR.log(Level.FINE, "MIMEResolverImpl.Impl.<init>({0})", obj);  // NOI18N
             state = DescParser.INIT;
             data = obj;
             data.addFileChangeListener(FileUtil.weakFileChangeListener(listener, data));
@@ -361,10 +398,10 @@ public final class MIMEResolverImpl {
 
         }
         @SuppressWarnings("deprecation")
-        private Impl(FileObject def, FileElement e, String... mimes) throws IOException {
+        private Impl(FileObject def, FileElement[] arr, String... mimeType) throws IOException {
             this.data = def;
-            this.implResolvableMIMETypes = mimes;
-            this.smell = new FileElement[] { e };
+            this.implResolvableMIMETypes = mimeType;
+            this.smell = arr;
             this.state = DefaultParser.PARSED;
         }
 
@@ -390,7 +427,7 @@ public final class MIMEResolverImpl {
                         // if file matches conditions and exit element is present, do not continue in loop and return null
                         return null;
                     }
-                    if (ERR.isLoggable(Level.FINE)) ERR.fine("MIMEResolverImpl.findMIMEType(" + fo + ")=" + s);  // NOI18N
+                    if (ERR.isLoggable(Level.FINE)) ERR.log(Level.FINE, "MIMEResolverImpl.findMIMEType({0})={1}", new Object[]{fo, s});  // NOI18N
                     return s;
                 }
             }
@@ -416,7 +453,7 @@ public final class MIMEResolverImpl {
                 if (parser.state == DescParser.ERROR) {
                     ERR.fine("MIMEResolverImpl.Impl parsing error!");
                 } else {
-                    StringBuffer buf = new StringBuffer();
+                    StringBuilder buf = new StringBuilder();
                     buf.append("Parse: ");
                     for (int i = 0; i<smell.length; i++)
                         buf.append('\n').append(smell[i]);

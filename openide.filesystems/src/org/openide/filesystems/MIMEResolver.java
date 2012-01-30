@@ -194,6 +194,9 @@ public abstract class MIMEResolver {
     /** Often a mime type can be deduced just by looking at a file extension.
      * If that is your case, this annotation is for you. It associates
      * extension(s) with provided mime type.
+     * <p>
+     * If this kind of registration seems to trivial you can try 
+     * {@link MIMEResolver.NamespaceRegistration} or {@link MIMEResolver.Registration}.
      * @since 7.58
      */
     @Retention(RetentionPolicy.SOURCE)
@@ -214,13 +217,91 @@ public abstract class MIMEResolver {
         public int position() default Integer.MAX_VALUE;
     }
 
+    /** Recognize mime type by looking into header of XML files. The
+     * file will be recognized by following rules:
+     * <ul>
+     * <li>If the actual extension is 
+     *   among {@link #acceptedExtension()} list, then the recognition
+     *   is over and {@link #mimeType()} is assigned to the file.
+     * </li>
+     * <li>If the extension is not among the list of {@link #checkedExtension()
+     * extensions to check} (which by default contains <code>"xml"</code>), then
+     * the recognition is over without recognizing any mime type.
+     * </li>
+     * <li>
+     * If the document contains one of requested {@link #doctypePublicId public ID},
+     * then the mime type is recognized and the recognition ends.
+     * </li>
+     * <li>
+     * If the root element is not equal to specified {@link #elementName()},
+     * then the recognition is over without recognizing the mime type.
+     * </li>
+     * <li>
+     * If the list of {@link #elementNS()} namespaces is specified and the
+     * namespace of the root element is not among the list, then the recognition
+     * is over and no mime type is recognized.
+     * </li>
+     * <li>
+     * If all the above, passed OK, the {@link #mimeType()} is recognized.
+     * </li>
+     * </ul>
+     * If you want to recognize file just by its extension consider
+     * using {@link MIMEResolver.ExtensionRegistration}.
+     * @since 7.58
+     */
+    @Retention(RetentionPolicy.SOURCE)
     public @interface NamespaceRegistration {
+        /** Display name to present this type of objects to the user.
+         */
+        public String displayName();
+        /** Mime type to be assigned to files that match description of this
+         * annotation.
+         */
         public String mimeType();
-        public String[] namespace();
+        /** In case ordering of mime resolvers is important, one can 
+         * specify it by defining their {@link LayerBuilder#position() position}.
+         */        
+        public int position() default Integer.MAX_VALUE;
+        
+        /** The extension that is automatically accepted. If specified,
+         * then a file with such extension automatically leads to recognition
+         * of defined {@link #mimeType()}.
+         */
+        public String[] acceptedExtension() default {};
+        /** The extension of the file to check. By default only <em>.xml</em>
+         * files are tested for content. One can change the extension of the file
+         * by changing the value of this attribute. Assigning an empty array
+         * to attribute turns the content check on every file
+         */
+        public String[] checkedExtension() default { "xml" };
+        
+        /** Name of root element. If at least one of the provided element names matches
+         * the real element name, this condition is satisfied.
+         * @return one or more element name. May be left empty, if element
+         *      name should not be checked at all.
+         */
+        public String elementName() default "";
+        /** Accept only elements that have specific namespace. If this 
+         * attribute is specified, then only such {@link #elementName() elements} 
+         * are accepted that have the right namespace.
+         */
+        public String[] elementNS() default {};
+        
+        /** If this attribute is specified, the system will check whether
+         * at least one of the specified doctype's public ids, is used in
+         * the document.
+         */
+        public String[] doctypePublicId() default {};
     }
     
     /** Registration that allows effective, declarative registration of 
-     * complex {@link MIMEResolver mime resolvers}. The <code>value</code>
+     * complex {@link MIMEResolver mime resolvers}. 
+     * For simpler cases rather consider using
+     * {@link MIMEResolver.NamespaceRegistration} or 
+     * {@link MIMEResolver.ExtensionRegistration}.
+     * 
+     * <p>
+     * The <code>value</code>
      * attribute of the annotation should be a relative reference to
      * an XML like <a href="doc-files/HOWTO-MIME.html">document</a> describing
      * the rules that will be interpreted by the mime recognizing infrastructure.

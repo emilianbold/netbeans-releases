@@ -94,6 +94,7 @@ import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.openide.awt.MouseUtils.PopupMouseAdapter;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
@@ -108,6 +109,12 @@ import org.openide.windows.TopComponent;
  *
  * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
+@MIMEResolver.ExtensionRegistration(
+    displayName="",
+    extension="hql",
+    mimeType="text/x-hql",
+    position=1650
+)
 public final class HQLEditorTopComponent extends TopComponent {
 
     /** path to the icon used by the component and its open action */

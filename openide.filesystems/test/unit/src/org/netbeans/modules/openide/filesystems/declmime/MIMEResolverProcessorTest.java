@@ -41,16 +41,18 @@
  */
 package org.netbeans.modules.openide.filesystems.declmime;
 
+import java.io.IOException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MIMEResolver;
-import org.openide.filesystems.XMLFileSystem;
+import org.openide.filesystems.*;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Item;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -59,12 +61,22 @@ import org.openide.util.NbBundle;
 @MIMEResolver.Registration(resource="mime-resolver-rule.xml", displayName="#MYNAME")
 @NbBundle.Messages({
     "MYNAME=My Name",
-    "EXTNAME=XYZ extension"
+    "EXTNAME=XYZ extension",
+    "SPACENAME=Cosmic space"
 })
 @MIMEResolver.ExtensionRegistration(
     displayName="#EXTNAME", 
     extension={"abc", "xyz"}, 
     mimeType="text/x-yz"
+)
+@MIMEResolver.NamespaceRegistration(
+    displayName="#SPACENAME",
+    checkedExtension={ "axml", "bxml", "cxml" },
+    acceptedExtension="jarda",
+    mimeType="text/x-my+xml",
+    doctypePublicId={ "-//My/Type/EN", "-//Your/Type/EN" },
+    elementName="myandyour",
+    elementNS="http://some.org/ns/123"
 )
 public class MIMEResolverProcessorTest extends NbTestCase {
     private FileObject root;
@@ -75,11 +87,13 @@ public class MIMEResolverProcessorTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         clearWorkDir();
+        LocalFileSystem lfs = new LocalFileSystem();
+        lfs.setRootDirectory(getWorkDir());
         
         URL u = this.getClass().getResource("data-fs.xml");
         XMLFileSystem fs = new XMLFileSystem(u);
-
-        root = fs.getRoot().getFileObject("root");        
+        MultiFileSystem mfs = new MultiFileSystem(lfs, fs);
+        root = mfs.getRoot().getFileObject("root");        
     }
     
     
@@ -129,5 +143,38 @@ public class MIMEResolverProcessorTest extends NbTestCase {
         assertEquals("One extension", 2, arr.size());
         assertTrue("contains abc", arr.contains("abc"));
         assertTrue("contains xyz", arr.contains("xyz"));
+    }
+    
+    public void testNameElement() throws Exception {
+        MIMEResolver resolver = findResolver("Cosmic space");
+        assertMimeType(resolver, "text/x-my+xml", "namespace.axml", "namespace.bxml");
+        assertMimeType(resolver, null, "nodtd.axml");
+        assertMimeType(resolver, null, "pid.xml");        assertMimeType(resolver, null, "noelem.bxml");
+        assertMimeType(resolver, "text/x-my+xml", "namespace.cxml");
+    }
+    public void testAcceptedExtension() throws Exception {
+        MIMEResolver resolver = findResolver("Cosmic space");
+        FileObject fo = root.createData("my.jarda");
+        assertMimeType(resolver, "text/x-my+xml", "my.jarda");
+        assertEquals("Is empty", 0, fo.getSize());
+    }
+    private void assertMimeType(MIMEResolver resolver, String expectedMimeType, String... filenames) throws IOException {
+        for (String filename : filenames) {
+            final FileObject fo = root.getFileObject(filename);
+            assertNotNull("Original found: " + filename, fo);
+            String mimeType = resolver.findMIMEType(fo);
+            assertEquals("File " + filename + " not properly resolved by " + resolver + ".", expectedMimeType, mimeType);
+        }
+    }
+    
+    private static MIMEResolver findResolver(String name) {
+        final Collection<? extends Item<MIMEResolver>> arr = Lookups.forPath("Services/MIMEResolver").lookupResult(MIMEResolver.class).allItems();
+        for (Lookup.Item<MIMEResolver> i : arr) {
+            if (i.getDisplayName().equals(name)) {
+                return i.getInstance();
+            }
+        }
+        fail("Cannot find resolver name: " + name + " but found " + arr);
+        return null;
     }
 }

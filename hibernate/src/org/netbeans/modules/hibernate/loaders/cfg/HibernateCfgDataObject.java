@@ -74,6 +74,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
@@ -87,6 +88,12 @@ import org.openide.windows.TopComponent;
  * 
  * @author Dongmei Cao
  */
+@MIMEResolver.NamespaceRegistration(
+    mimeType=HibernateCfgDataLoader.REQUIRED_MIME,
+    displayName="org.netbeans.modules.hibernate.resources.Bundle#HibernateCfgResolver",
+    doctypePublicId="-//Hibernate/Hibernate Configuration DTD 3.0//EN",
+    position=1500
+)
 public class HibernateCfgDataObject extends XmlMultiViewDataObject {
 
     private static final int TYPE_TOOLBAR = 0;
