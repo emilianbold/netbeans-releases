@@ -212,13 +212,13 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
                     .addComponent(cloudLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(instanceURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                    .addComponent(adminURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                    .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                    .addComponent(userNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                    .addComponent(identityDomainTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                    .addComponent(serviceInstanceTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                    .addComponent(cloudURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
+                    .addComponent(instanceURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
+                    .addComponent(adminURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
+                    .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
+                    .addComponent(userNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
+                    .addComponent(identityDomainTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
+                    .addComponent(serviceInstanceTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
+                    .addComponent(cloudURLTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE))
@@ -319,7 +319,7 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
     }
     
     public String getUserName() {
-        return userNameTextField.getText();
+        return userNameTextField.getText().trim();
     }
     
     public static String getPrefixedUserName(String prefix, String username) {
@@ -339,15 +339,15 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
     }
     
     public String getPassword() {
-        return new String(passwordField.getPassword());
+        return new String(passwordField.getPassword()).trim();
     }
     
     public String getIdentityDomain() {
-        return identityDomainTextField.getText();
+        return identityDomainTextField.getText().trim();
     }
 
     public String getServiceInstance() {
-        return serviceInstanceTextField.getText();
+        return serviceInstanceTextField.getText().trim();
     }
 
     public String getSDKFolder() {

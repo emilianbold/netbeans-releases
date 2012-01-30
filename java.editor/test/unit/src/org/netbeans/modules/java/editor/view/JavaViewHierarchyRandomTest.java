@@ -120,8 +120,13 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
 //        includes.add("testNewlineInsertUndo");
 //        includes.add("testNewlineLineOne");
 //        includes.add("testSimple1");
+//        includes.add("testRandomModsJava");
 //        includes.add("testRandomModsJavaSeed1");
 //        includes.add("testLengthyEdit");
+//        includes.add("testDeleteAterInsertBreak");
+//        includes.add("testTwoDeletes");
+//        includes.add("testSelectionAndInsertTab");
+//        includes.add("testRemoveAtBegining");
 //        filterTests(includes);
     }
     
@@ -138,6 +143,9 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
     private static void loggingOn() {
         Level LOG_LEVEL = Level.FINE;
         // FINEST throws ISE for integrity error in EditorView
+        Logger.getLogger("org.netbeans.editor.view.check").setLevel(Level.FINEST);
+        assert (Logger.getLogger("org.netbeans.editor.view.check").isLoggable(Level.FINEST));
+        Logger.getLogger("org.netbeans.editor.view.build").setLevel(Level.FINE);
         Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorView").setLevel(Level.FINEST);
         Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewBuilder").setLevel(LOG_LEVEL);
         Logger.getLogger("org.netbeans.modules.editor.lib2.view.ViewUpdates").setLevel(LOG_LEVEL);
@@ -702,6 +710,79 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         DocumentTesting.undo(context, 1);
     }
 
+    public void testDeleteAterInsertBreak() throws Exception {
+        loggingOn();
+        RandomTestContainer container = createContainer();
+        JEditorPane pane = container.getInstance(JEditorPane.class);
+        Document doc = pane.getDocument();
+        doc.putProperty("mimeType", "text/plain");
+        ViewHierarchyRandomTesting.initRandomText(container);
+        RandomTestContainer.Context context = container.context();
+        DocumentTesting.insert(context, 0,
+" osen   \n\n\n  esl\t\ta \t\t \n\n\nabcd\td  m\t\tabcdef\te\t\tab\tcdef\tef\tkojd \t\t \n\n\n        t\t vpjm\ta\ngooywzmj           q\tugos\tdefy\t   i  xs    us tg z"
+        );
+
+        EditorPaneTesting.setCaretOffset(context, 70);
+        DocumentTesting.remove(context, 50, 10);
+        EditorPaneTesting.performAction(context, pane, DefaultEditorKit.insertBreakAction);
+        EditorPaneTesting.performAction(context, pane, DefaultEditorKit.deleteNextCharAction);
+    }
+
+    public void testTwoDeletes() throws Exception {
+        loggingOn();
+        RandomTestContainer container = createContainer();
+        JEditorPane pane = container.getInstance(JEditorPane.class);
+        Document doc = pane.getDocument();
+        doc.putProperty("mimeType", "text/plain");
+        ViewHierarchyRandomTesting.initRandomText(container);
+        RandomTestContainer.Context context = container.context();
+        DocumentTesting.insert(context, 0,
+" osen   \n\n\nbs\tmn\nziil  esl\t\ta \t\t \n\n\nabc \n\n\nd\td  m\t\ta\nbcdef\te\t\tab\tcdef\tef\tkojd \t\t \n\n\net\t vpjm\ta\ngooywzmj           q\tugos\tdefy\t   i xs    us ttl\tg z"
+        );
+
+        EditorPaneTesting.setCaretOffset(context, 115);
+        EditorPaneTesting.performAction(context, pane, DefaultEditorKit.deletePrevCharAction);
+        EditorPaneTesting.performAction(context, pane, DefaultEditorKit.deleteNextCharAction);
+    }
+
+    public void testSelectionAndInsertTab() throws Exception {
+        loggingOn();
+        RandomTestContainer container = createContainer();
+        JEditorPane pane = container.getInstance(JEditorPane.class);
+        Document doc = pane.getDocument();
+        doc.putProperty("mimeType", "text/plain");
+        ViewHierarchyRandomTesting.initRandomText(container);
+        RandomTestContainer.Context context = container.context();
+        DocumentTesting.insert(context, 0,
+" osen   \n\n\n  esl\t\ta \t\t \n\n\nabcd\td  m\t\tabcdef\te\t\tab\tcdef\tef\tkojd p\t\t \n\n\n        t\t vpjm\ta\ngooywzmj           q\tugos\tdefy\t   i  xs    us tg z"
+        );
+        EditorPaneTesting.setCaretOffset(context, 64);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, false);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.SOUTH, true);
+        DocumentTesting.insert(context, 19, "g");
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.EAST, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.NORTH, true);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.WEST, true);
+        EditorPaneTesting.performAction(context, pane, DefaultEditorKit.deletePrevCharAction);
+        EditorPaneTesting.performAction(context, pane, DefaultEditorKit.insertTabAction);
+        EditorPaneTesting.moveOrSelect(context, SwingConstants.EAST, false);
+        EditorPaneTesting.typeChar(context, 'f');
+    }
+
+    public void testRemoveAtBegining() throws Exception {
+        loggingOn();
+        RandomTestContainer container = createContainer();
+        JEditorPane pane = container.getInstance(JEditorPane.class);
+        Document doc = pane.getDocument();
+        doc.putProperty("mimeType", "text/plain");
+        ViewHierarchyRandomTesting.initRandomText(container);
+        RandomTestContainer.Context context = container.context();
+        DocumentTesting.insert(context, 0,
+" \t\tabcdef\ta\nebxsu"
+        );
+        DocumentTesting.remove(context, 0, 1);
+    }
+
     public void testLengthyEdit() throws Exception {
         loggingOn();
         RandomTestContainer container = createContainer();
@@ -810,7 +891,6 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
     }
 
     public void testRandomModsJava() throws Exception {
-        loggingOn();
         RandomTestContainer container = createContainer();
         final JEditorPane pane = container.getInstance(JEditorPane.class);
         final Document doc = pane.getDocument();
@@ -818,8 +898,14 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         doc.putProperty("mimeType", "text/x-java");
         ViewHierarchyRandomTesting.initRandomText(container);
         ViewHierarchyRandomTesting.addRound(container).setOpCount(OP_COUNT);
+        loggingOn();
+        container.setLogOp(true);
+        DocumentTesting.setLogDoc(container, true);
         ViewHierarchyRandomTesting.testFixedScenarios(container);
-        container.run(1271946202898L);
+        assert (Logger.getLogger("org.netbeans.editor.view.check").isLoggable(Level.FINEST));
+        Logger.getLogger("org.netbeans.editor.view.build").setLevel(Level.FINE);
+        container.runInit(1271946202898L);
+        container.runOps(0);
         
         // Simulate tooltip pane
         final JEditorPane[] toolTipPaneRef = new JEditorPane[1];

@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.remotefs.versioning.spi;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -181,7 +183,16 @@ public class FileProxyProviderImpl extends FileOperationsProvider {
             softEDTAssert();
             return createProcessBuilder(toFileProxy(file));
         }
-        
+
+        @Override
+        public void refreshFor(VCSFileProxy... files) {
+            List<FileProxyO> list = new ArrayList<FileProxyO>();
+            for(VCSFileProxy f : files) {
+                list.add(toFileProxy(f));
+            }
+            refreshFor(list.toArray(new FileProxyO[list.size()]));
+        }
+
         private void softEDTAssert() {
             if (assertIt) {
                 if (SwingUtilities.isEventDispatchThread()) {

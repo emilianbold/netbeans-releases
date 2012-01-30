@@ -405,7 +405,7 @@ public final class GitModuleConfig {
         // before we contact keyring, check the cache:
         ConnectionSettings cachedSetting = cachedConnectionSettings.get(uriString);
         if (cachedSetting != null && (username == null || cachedSetting.getUser() == null || username.equals(cachedSetting.getUser()))) {
-            return cachedSetting;
+            return cachedSetting.copy();
         }
         
         Preferences prefs = getPreferences();

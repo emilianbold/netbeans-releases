@@ -44,11 +44,14 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
+import java.awt.Font;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.TextHitInfo;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.text.Bidi;
 
 /**
  * Utilities related to text layout and TextLayoutPart.
@@ -71,29 +74,38 @@ final class TextLayoutUtils {
         return (float) Math.ceil(height);
     }
     
-    public static float getWidth(TextLayout textLayout) {
-        // Since textLayout.getAdvance() includes some extra blank space for italic fonts
-        // we instead use getCaretInfo() which seems to produce more appropriate result.
+    /**
+     * Compute a most appropriate width of the given text layout.
+     */
+    public static float getWidth(TextLayout textLayout, String textLayoutText, Font font) {
+        // For italic fonts the textLayout.getAdvance() includes some extra horizontal space.
+        // On the other hand index2X() for TL.getCharacterCount() is width along baseline
+        // so when TL ends with e.g. 'd' char the end of 'd' char is cut off.
+        float width;
+        int tlLen = textLayoutText.length();
+        if (!font.isItalic() ||
+            tlLen == 0 ||
+            Character.isWhitespace(textLayoutText.charAt(tlLen - 1)) ||
+            Bidi.requiresBidi(textLayoutText.toCharArray(), 0, textLayoutText.length()))
+        {
+            width = textLayout.getAdvance();
+        } else { // Compute pixel bounds (with frc equal to textLayout's frc and default bounds)
+            Rectangle pixelBounds = textLayout.getPixelBounds(null, 0, 0);
+            width = (float) pixelBounds.getMaxX();
+        }
+//        width = textLayout.getPixelBounds(null, 0f, 0f).getMaxX();
+//        width = Math.abs(textLayout.getAdvance());
+        
         //
         // For RTL text the hit-info of the first char is above the hit-info of ending char.
         // However textLayout.isLeftToRight() returns true in case of mixture of LTR and RTL text
-        // in a single textLayout so it can't be used easily.
-        // Therefore both indices for zero and character-count are computed
-        // and compared and their absolute difference returned.
-        float x0 = index2X(textLayout, 0);
-        float x1 = index2X(textLayout, textLayout.getCharacterCount());
-        float width = Math.abs(x1 - x0); // Could be negative for RTL text => abs()
-        // Ceil the width to whole number to prevent horizontal white bars inside selection.
-        width = (float) Math.ceil(x1 - x0);
+        // in a single textLayout.
+        
+        // Ceil the width to avoid rendering artifacts.
+        width = (float) Math.ceil(width);
         return width;
     }
     
-    public static float index2X(TextLayout textLayout, int index) {
-        TextHitInfo hit = TextHitInfo.leading(index);
-        float[] info = textLayout.getCaretInfo(hit);
-        return info[0];
-    }
-
     /**
      * Get real allocation (possibly not rectangular) of a part of layout.
      * <br/>
@@ -106,6 +118,9 @@ final class TextLayoutUtils {
     public static Shape getRealAlloc(TextLayout textLayout, Rectangle2D textLayoutRect,
             TextHitInfo startHit, TextHitInfo endHit)
     {
+        // Quick-fix to eliminate missing line in rendering italic "d" - more elaborate fix is needed
+        textLayoutRect = new Rectangle2D.Double(textLayoutRect.getX(), textLayoutRect.getY(),
+                textLayoutRect.getWidth() + 2, textLayoutRect.getHeight());
         Rectangle2D.Double zeroBasedRect = ViewUtils.shape2Bounds(textLayoutRect);
         zeroBasedRect.x = 0;
         zeroBasedRect.y = 0;
@@ -121,7 +136,7 @@ final class TextLayoutUtils {
     }
     
     public static String toStringShort(TextLayout textLayout) {
-        return "[" + textLayout.getCharacterCount() + "]W=" + getWidth(textLayout); // NOI18N
+        return "[" + textLayout.getCharacterCount() + "]W=" + textLayout.getAdvance(); // NOI18N
     }
 
     public static String toString(TextLayout textLayout) {

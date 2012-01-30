@@ -309,7 +309,8 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
 
     String getJarFile() {
-        return getHelper().resolveFile(getEvaluator().evaluate("${cluster}/${module.jar}")).getAbsolutePath(); // NOI18N
+        String v = getEvaluator().evaluate("${cluster}/${module.jar}");
+        return getHelper().resolveFile(v != null ? v : "unknown").getAbsolutePath(); // NOI18N
     }
 
     @CheckForNull String getSuiteDirectoryPath() {
@@ -1109,7 +1110,8 @@ public final class SingleModuleProperties extends ModuleProperties {
 
     // package provide for unit test
     File getManifestFile() {
-        return getHelper().resolveFile(getEvaluator().getProperty("manifest.mf")); // NOI18N
+        String v = getEvaluator().getProperty("manifest.mf");
+        return getHelper().resolveFile(v != null ? v : "unknown");
     }
 
     /**
