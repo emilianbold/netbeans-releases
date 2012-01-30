@@ -1,0 +1,8 @@
+Code completion result for source line:
+formatter.println("color: " + object.|getColor());
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     getColor()                      [PUBLIC]   typeInferenceNew
+METHOD     getMaker()                      [PUBLIC]   typeInferenceNew
+FIELD      color                           [PUBLIC]   typeInferenceNew
+FIELD      maker                           [PUBLIC]   typeInferenceNew

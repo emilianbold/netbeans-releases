@@ -1,0 +1,9 @@
+Code completion result for source line:
+|formatter.println("Car:");
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+CONSTRUCTO Address                         [PUBLIC]   typeInferenceNew
+CONSTRUCTO Car                             [PUBLIC]   typeInferenceNew
+CLASS      Context                         [PUBLIC]   typeInferenceNew
+CLASS      formatter                       [PUBLIC]   typeInferenceNew
+VARIABLE   object                          [PUBLIC]   typeInferenceNew
