@@ -51,38 +51,51 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
+import static org.netbeans.modules.java.project.Bundle.*;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.Mnemonics;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.actions.Presenter;
 
 /**
  * Popup menu in Projects tab permitting you to change the package view type.
  * @author Jesse Glick
  */
+@ActionID(id="org.netbeans.modules.java.project.ChangePackageViewTypeAction", category="Project")
+@ActionRegistration(lazy=false, displayName="#ChangePackageViewTypeAction_NAME")
+@ActionReference(path=/* ProjectsRootNode.ACTIONS_FOLDER */"ProjectsTabActions", position=1600)
+@Messages("ChangePackageViewTypeAction_NAME=Change Package View Type")
 public final class ChangePackageViewTypeAction extends AbstractAction implements Presenter.Popup {
     
     public ChangePackageViewTypeAction() {
-        putValue(Action.NAME, NbBundle.getMessage(ChangePackageViewTypeAction.class, "ChangePackageViewTypeAction_NAME")); // NOI18N
+        putValue(Action.NAME, ChangePackageViewTypeAction_NAME()); // NOI18N
     }
 
-    public void actionPerformed(ActionEvent e) {
+    @Override public void actionPerformed(ActionEvent e) {
         assert false : e;
     }
 
-    public JMenuItem getPopupPresenter() {
+    @Messages({
+        "LBL_change_package_type=&View Java Packages as",
+        "ChangePackageViewTypeAction_list=&List",
+        "ChangePackageViewTypeAction_tree=&Tree"
+    })
+    @Override public JMenuItem getPopupPresenter() {
         JMenu menu = new JMenu();
-        Mnemonics.setLocalizedText(menu, NbBundle.getMessage(ChangePackageViewTypeAction.class, "LBL_change_package_type"));
-        menu.add(createChoice(JavaProjectSettings.TYPE_PACKAGE_VIEW, NbBundle.getMessage(ChangePackageViewTypeAction.class, "ChangePackageViewTypeAction_list")));
-        menu.add(createChoice(JavaProjectSettings.TYPE_TREE, NbBundle.getMessage(ChangePackageViewTypeAction.class, "ChangePackageViewTypeAction_tree")));
+        Mnemonics.setLocalizedText(menu, LBL_change_package_type());
+        menu.add(createChoice(JavaProjectSettings.PackageViewType.PACKAGES, ChangePackageViewTypeAction_list()));
+        menu.add(createChoice(JavaProjectSettings.PackageViewType.TREE, ChangePackageViewTypeAction_tree()));
         return menu;
     }
     
-    private JMenuItem createChoice(final int type, String label) {
+    private JMenuItem createChoice(final JavaProjectSettings.PackageViewType type, String label) {
         JRadioButtonMenuItem item = new JRadioButtonMenuItem();
         Mnemonics.setLocalizedText(item, label);
         item.setSelected(JavaProjectSettings.getPackageViewType() == type);
         item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            @Override public void actionPerformed(ActionEvent e) {
                 JavaProjectSettings.setPackageViewType(type);
             }
         });

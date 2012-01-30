@@ -47,6 +47,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.test.RemoteApiTest;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -81,7 +82,9 @@ public class RenameTestCase extends RemoteFileTestBase  {
             assertNotNull(tmpDirFO);
             FileObject oldFO = tmpDirFO.createData("file_1");
             String newName = "file_1_renamed";
-            oldFO.rename(oldFO.lock(), newName, null);
+            FileLock lock = oldFO.lock();
+            oldFO.rename(lock, newName, null);
+            lock.releaseLock();
             FileObject newFO = tmpDirFO.getFileObject(newName);
             assertNotNull(newFO);
             assertTrue(newFO == oldFO);

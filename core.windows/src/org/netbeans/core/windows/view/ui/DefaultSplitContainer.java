@@ -46,6 +46,7 @@
 package org.netbeans.core.windows.view.ui;
 
 
+import org.netbeans.swing.tabcontrol.customtabs.Tabbed;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ModeView;
@@ -59,6 +60,9 @@ import javax.swing.*;
 import java.awt.*;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
+import org.netbeans.swing.tabcontrol.customtabs.TabbedComponentFactory;
+import org.netbeans.swing.tabcontrol.customtabs.TabbedType;
+import org.openide.util.Lookup;
 import org.openide.windows.Mode;
 
 
@@ -96,14 +100,11 @@ public final class DefaultSplitContainer extends AbstractModeContainer {
         return panel;
     }
     
+    @Override
     protected Tabbed createTabbed() {
-        Tabbed tabbed;
-        if(getKind() == Constants.MODE_KIND_EDITOR) {
-            tabbed = new TabbedAdapter(Constants.MODE_KIND_EDITOR);
-        } else {
-            tabbed = new TabbedAdapter(Constants.MODE_KIND_VIEW);
-        }
-        return tabbed;    
+        TabbedComponentFactory factory = Lookup.getDefault().lookup(TabbedComponentFactory.class);
+        TabbedType type = getKind() == Constants.MODE_KIND_EDITOR ? TabbedType.EDITOR : TabbedType.VIEW;
+        return factory.createTabbedComponent( type, new TabbedAdapter.WinsysInfo(getKind()));
     }    
     
     protected void updateTitle(String title) {

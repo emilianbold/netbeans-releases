@@ -44,6 +44,8 @@ package org.netbeans.libs.oracle.cloud;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.lang.model.element.ElementKind;
@@ -56,6 +58,7 @@ import org.netbeans.api.whitelist.WhiteListQuery.Result;
 import org.netbeans.api.whitelist.WhiteListQuery.RuleDescription;
 import org.netbeans.libs.oracle.cloud.api.CloudSDKHelper;
 import org.netbeans.libs.oracle.cloud.scanningwrapper.IClassConfiguration;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.exception.SDKException;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -69,6 +72,8 @@ import org.openide.util.lookup.ServiceProvider;
     path="org-netbeans-api-java/whitelists/")
 public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSelectable, PreferenceChangeListener {
 
+    private static final Logger LOG = Logger.getLogger(WhiteListQueryImpl.class.getSimpleName());
+    
     private IClassConfiguration icc;
     private static final String WHITELIST_ID = "oracle";
 
@@ -80,13 +85,17 @@ public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSele
     private void initialize() {
         String folder = CloudSDKHelper.getSDKFolder();
         if (folder.length() > 0) {
-            icc = CloudSDKHelper.createScanningConfiguration(folder);
-            assert icc != null;
+            try {
+                icc = CloudSDKHelper.createScanningConfiguration(folder);
+            } catch (SDKException ex) {
+                LOG.log(Level.INFO, "SDK folder "+folder+ " is not valid.");
+            }
         }
     }
     
+    @Override
     public WhiteListImplementation getWhiteList(FileObject file) {
-        return new WhiteListImpl(icc);
+        return icc != null ? new WhiteListImpl(icc) : null;
     }
     
     @Override

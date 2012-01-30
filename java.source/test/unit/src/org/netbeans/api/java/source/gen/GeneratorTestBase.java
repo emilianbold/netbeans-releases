@@ -61,8 +61,13 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.ClassIndexTestCase;
+import org.netbeans.modules.java.source.indexing.TransactionContext;
+import org.netbeans.modules.java.source.usages.ClassIndexEventsTransaction;
+import org.netbeans.modules.java.source.usages.ClassIndexImpl.State;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
+import org.netbeans.modules.java.source.usages.PersistentClassIndex;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -74,11 +79,13 @@ import org.openide.util.SharedClassObject;
  *
  * @author Pavel Flaska
  */
-public abstract class GeneratorTestBase extends NbTestCase {
+public abstract class GeneratorTestBase extends ClassIndexTestCase {
 
     private FileObject dataDir;
     
     File testFile = null;
+    
+    private TransactionContext testTx;
     
     public GeneratorTestBase(String aName) {
         super(aName);
@@ -97,6 +104,7 @@ public abstract class GeneratorTestBase extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
+        super.setUp();
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
         dataDir = SourceUtilsTestUtil.makeScratchDir(this);
         FileObject dataTargetPackage = FileUtil.createFolder(dataDir, getSourcePckg());
@@ -129,7 +137,7 @@ public abstract class GeneratorTestBase extends NbTestCase {
         File cacheFolder = new File(getWorkDir(), "var/cache/index");
         cacheFolder.mkdirs();
         IndexUtil.setCacheFolder(cacheFolder);
-        ClassIndexManager.getDefault().createUsagesQuery(dataDir.getURL(), true);
+        ensureRootValid(dataDir.getURL());
     }
     
     public <R, P> void process(final Transformer<R, P> transformer) throws IOException {

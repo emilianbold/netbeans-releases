@@ -99,6 +99,7 @@ made subject to such option by the copyright holder.
             <public-packages>
                 <package>org.netbeans.swing.popupswitcher</package>
                 <package>org.netbeans.swing.tabcontrol</package>
+                <package>org.netbeans.swing.tabcontrol.customtabs</package>
                 <package>org.netbeans.swing.tabcontrol.event</package>
                 <package>org.netbeans.swing.tabcontrol.plaf</package>
             </public-packages>

@@ -158,22 +158,16 @@ public abstract class RemoteLinkBase extends RemoteFileObjectFile implements Fil
     }
 
     @Override
-    public FileObject createData(String name) throws IOException {
-        RemoteFileObjectBase delegate = getDelegate();
-        return (delegate == null) ? null : delegate.createData(name);
-    }
-
-    @Override
     public boolean canRead() {
         RemoteFileObjectBase delegate = getDelegate();
         return (delegate == null) ? false : delegate.canRead();
     }
 
     @Override
-    public FileLock lock() throws IOException {
+    protected FileLock lockImpl(RemoteFileObjectBase orig) throws IOException {
         RemoteFileObjectBase delegate = getDelegate();
         if (delegate != null) {
-            return delegate.lock();
+            return delegate.lockImpl(orig);
         } else {
             throw fileNotFoundException("lock"); //NOI18N
         }
@@ -181,23 +175,23 @@ public abstract class RemoteLinkBase extends RemoteFileObjectFile implements Fil
 
     @SuppressWarnings("deprecation")
     @Override
-    public boolean isReadOnly() {
+    protected boolean isReadOnlyImpl(RemoteFileObjectBase orig) {
         RemoteFileObjectBase delegate = getDelegate();
-        return (delegate == null) ? true : delegate.isReadOnly();
+        return (delegate == null) ? true : delegate.isReadOnlyImpl(orig);
     }
 
     @Override
-    public OutputStream getOutputStream(FileLock lock) throws IOException {
+    protected OutputStream getOutputStreamImpl(FileLock lock, RemoteFileObjectBase orig) throws IOException {
         RemoteFileObjectBase delegate = getDelegate();
         if (delegate != null) {
-            return delegate.getOutputStream(lock);
+            return delegate.getOutputStreamImpl(lock, orig);
         } else {
             throw fileNotFoundException("write"); //NOI18N
         }
     }
 
     @Override
-    protected final void refreshImpl(boolean recursive, Set<String> antiLoop) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    protected final void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (antiLoop == null) {
             antiLoop = new HashSet<String>();
         }
@@ -208,67 +202,73 @@ public abstract class RemoteLinkBase extends RemoteFileObjectFile implements Fil
         }
         RemoteFileObjectBase delegate = getDelegate();
         if (delegate != null) {
-            delegate.refreshImpl(recursive, antiLoop);
+            delegate.refreshImpl(recursive, antiLoop, expected);
         } else {
             RemoteLogger.log(Level.FINEST, "Null delegate for link {0}", this); //NOI18N
         }
     }
     
     @Override
-    protected void renameChild(FileLock lock, RemoteFileObjectBase toRename, String newNameExt) 
+    protected void renameChild(FileLock lock, RemoteFileObjectBase toRename, String newNameExt, RemoteFileObjectBase orig) 
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         // all work in it's wrapped delegate
         RemoteLogger.assertTrueInConsole(false, "renameChild is not supported on " + this.getClass() + " path=" + getPath()); // NOI18N
     }
     
     @Override
-    public FileObject createFolder(String name) throws IOException {
+    protected FileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException {
         RemoteFileObjectBase delegate = getDelegate();
         if (delegate != null) {
-            return delegate.createFolder(name);
+            // TODO return right object
+            return delegate.createFolderImpl(name, orig);
         } else {
             throw fileNotFoundException("create a folder in"); //NOI18N
         }
     }
 
     @Override
-    public FileObject createData(String name, String ext) throws IOException {
+    protected FileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException {
         RemoteFileObjectBase delegate = getDelegate();
         if (delegate != null) {
-            return delegate.createData(name, ext);
+            // TODO return right object
+            return delegate.createDataImpl(name, ext, orig);
         } else {
             throw fileNotFoundException("create a file in"); //NOI18N
         }
     }
 
     @Override
-    public boolean canWrite() {
+    public boolean canWriteImpl(RemoteFileObjectBase orig) {
         RemoteFileObjectBase delegate = getDelegate();
-        return (delegate == null) ? false : delegate.canWrite();
+        return (delegate == null) ? false : delegate.canWriteImpl(orig);
     }
-   
-        
 
+    @Override
     public void fileAttributeChanged(FileAttributeEvent fe) {
         fireFileAttributeChangedEvent(getListeners(), (FileAttributeEvent)transform(fe));
     }
 
+    @Override
     public void fileChanged(FileEvent fe) {
         fireFileChangedEvent(getListeners(), transform(fe));
     }
 
+    @Override
     public void fileDataCreated(FileEvent fe) {
         fireFileDataCreatedEvent(getListeners(), transform(fe));
     }
 
+    @Override
     public void fileDeleted(FileEvent fe) {
         fireFileDeletedEvent(getListeners(), transform(fe));
     }
 
+    @Override
     public void fileFolderCreated(FileEvent fe) {
         fireFileFolderCreatedEvent(getListeners(), transform(fe));
     }
 
+    @Override
     public void fileRenamed(FileRenameEvent fe) {
         fireFileRenamedEvent(getListeners(), (FileRenameEvent)transform(fe));
     }

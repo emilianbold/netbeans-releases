@@ -46,6 +46,7 @@
 package org.netbeans.core.windows.view.ui;
 
 
+import org.netbeans.swing.tabcontrol.customtabs.Tabbed;
 import java.text.MessageFormat;
 import javax.swing.plaf.basic.BasicHTML;
 import org.netbeans.core.windows.Constants;
@@ -68,6 +69,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.core.windows.options.WinSysPrefs;
 import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
+import org.netbeans.swing.tabcontrol.customtabs.TabbedComponentFactory;
+import org.netbeans.swing.tabcontrol.customtabs.TabbedType;
+import org.openide.util.Lookup;
 import org.openide.windows.WindowManager;
 
 
@@ -118,13 +122,9 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
     
     @Override
     protected Tabbed createTabbed() {
-        Tabbed tabbed;
-        if(getKind() == Constants.MODE_KIND_EDITOR) {
-            tabbed = new TabbedAdapter(Constants.MODE_KIND_EDITOR);
-        } else {
-            tabbed = new TabbedAdapter(Constants.MODE_KIND_VIEW);
-        }
-        return tabbed;    
+        TabbedComponentFactory factory = Lookup.getDefault().lookup(TabbedComponentFactory.class);
+        TabbedType type = getKind() == Constants.MODE_KIND_EDITOR ? TabbedType.EDITOR : TabbedType.VIEW;
+        return factory.createTabbedComponent( type, new TabbedAdapter.WinsysInfo(getKind()));
     }    
     
     @Override

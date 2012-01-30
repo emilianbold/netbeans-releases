@@ -49,6 +49,8 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -162,7 +164,7 @@ public class EjbsNodeFactory implements NodeFactory {
                 public void run() {
                     Boolean isEmpty = Boolean.TRUE;
                     try {
-                        isEmpty = project.getAPIEjbJar().getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Boolean>() {
+                        final Future<Boolean> becomesIsEmpty = project.getAPIEjbJar().getMetadataModel().runReadActionWhenReady(new MetadataModelAction<EjbJarMetadata, Boolean>() {
                             public Boolean run(EjbJarMetadata metadata) {
                                 org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = metadata.getRoot();
                                 if (ejbJar != null) {
@@ -178,8 +180,13 @@ public class EjbsNodeFactory implements NodeFactory {
                                 return Boolean.TRUE;
                             }
                         });
+                        isEmpty = becomesIsEmpty.get();
                     } catch (IOException ioe) {
                         Exceptions.printStackTrace(ioe);
+                    } catch (InterruptedException ie) {
+                        Exceptions.printStackTrace(ie);
+                    } catch (ExecutionException ee) {
+                        Exceptions.printStackTrace(ee);
                     }
                             
                     if (isEmpty^isViewEmpty){

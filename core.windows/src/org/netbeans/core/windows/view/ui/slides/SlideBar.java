@@ -44,33 +44,13 @@
 
 package org.netbeans.core.windows.view.ui.slides;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import javax.swing.BorderFactory;
-import javax.swing.ButtonModel;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSeparator;
-import javax.swing.JToggleButton;
-import javax.swing.SingleSelectionModel;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import java.util.*;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -79,14 +59,9 @@ import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.WindowManagerImpl;
-import org.netbeans.core.windows.view.ui.Tabbed;
 import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
-import org.netbeans.swing.tabcontrol.SlideBarDataModel;
-import org.netbeans.swing.tabcontrol.SlidingButton;
-import org.netbeans.swing.tabcontrol.TabData;
-import org.netbeans.swing.tabcontrol.TabDisplayer;
-import org.netbeans.swing.tabcontrol.TabbedContainer;
-import org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer;
+import org.netbeans.swing.tabcontrol.*;
+import org.netbeans.swing.tabcontrol.customtabs.Tabbed;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
@@ -407,7 +382,7 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
     public Tabbed getTabbed () {
         return tabbed;
     }
-    
+
     /********* implementation of WinsysInfoForTabbedContainer **************/
     
     public WinsysInfoForTabbedContainer createWinsysInfo() {

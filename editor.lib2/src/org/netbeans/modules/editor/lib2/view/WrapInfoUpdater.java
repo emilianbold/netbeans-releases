@@ -80,45 +80,58 @@ final class WrapInfoUpdater {
     /** Index of child view being currently processed. */
     private int childIndex;
     
-    /** X on a current wrap-line */
+    /** Current X on a wrap-line being just built. */
     private float x;
 
-    /** Child view being currently processed. */
-    private EditorView childView;
+    /** Child view being currently processed or its part if it was fragmented. */
+    private EditorView childViewOrPart;
 
     /**
      * In case childView was fragmented by breakView() and createFragment()
      * this is the remaining part that is currently being processed.
      */
-    private EditorView childViewPart;
+    private boolean childViewFragmented;
     
     /**
-     * Measured width of the childViewPart.
+     * Equivalent of childViewPart.getPreferredSpan(X_AXIS).
      */
-    private float childViewPartWidth;
+    private float childViewOrPartWidth;
 
-    /** Offset on x-coordinate of childView measured from the first child (without wrapping). */
+    /**
+     * Offset on x-coordinate of childView measured from the first child in ParagraphViewChildren (no wrapping involved).
+     * This is useful to quickly get (non-wrapped) child views' width without calling child.getPreferredSpan(X_AXIS).
+     */
     private double childX;
     
-    /** Offset on x-coordinate of a next childView measured from the first child (without wrapping). */
+    /**
+     * Offset on x-coordinate of a next childView measured from the first child (without wrapping).
+     * (nextChildX - childX) is childWidth which should be equivalent to child.getPreferredSpan(X_AXIS).
+     */
     private double nextChildX;
 
-    /** Relative visual shift of the current childViewPart (if any) against visualOffset of childView.
+    /** Relative X of the current childViewPart (if any) against childX.
      * <br>
-     * When creating a second and following parts of a view then this is an x-shift
-     * for an 'x' parameter to breakView().
+     * When creating a second and following parts of a child view then this is a value 'x' parameter to breakView().
      */
-    private float visualOffsetPartShift;
+    private float childViewPartRelX;
     
-    /** Assigned by breakView() and createFragment(). */
+    /** breakView() and createFragment() set the width of the start part of fragmenting. */
     private float startPartWidth;
     
-    /** End part of the fragmenting returned from certain methods. */
+    /** End part of the fragmenting set by breakView() and createFragment() methods (they return start part
+     * and end part is set here).
+     */
     private EditorView endPart;
     
+    /**
+     * Total width that may be occupied by wrap line's content.
+     */
     private float availableWidth;
     
-    private float maxLineWidth;
+    /**
+     * Maximum width from all created wrap lines.
+     */
+    private float maxWrapLineWidth;
 
     private boolean wrapLineNonEmpty;
 
@@ -141,7 +154,7 @@ final class WrapInfoUpdater {
         TextLayout lineContinuationTextLayout = docView.op.getLineContinuationCharTextLayout();
         // Make reasonable minimum width so that the number of visual lines does not double suddenly
         // when user would minimize the width too much. Also have enough space for line continuation mark
-        availableWidth = Math.max(visibleWidth - TextLayoutUtils.getWidth(lineContinuationTextLayout),
+        availableWidth = Math.max(visibleWidth - lineContinuationTextLayout.getAdvance(),
                 docView.op.getDefaultCharWidth() * 4);
         logMsgBuilder = LOG.isLoggable(Level.FINE) ? new StringBuilder(100) : null;
         if (logMsgBuilder != null) {
@@ -152,29 +165,40 @@ final class WrapInfoUpdater {
         try {
             initChildVars(0, 0d); // At least one child should exist 
             do {
-                if (widthFits()) { // Within available width
-                    addAndFetchNext();
+                if (x + childViewOrPartWidth <= availableWidth) { // Within available width
+                    addCurrentAndFetchNextView();
                 } else { // Exceeds available width => must break the child view
                     boolean regularBreak = false;
                     if (wrapTypeWords) {
-                        EditorView wrapLineStartView = wrapLineStartView();
-                        int wrapLineStartOffset = wrapLineStartView.getStartOffset();
-                        int childStartOffset = childView.getStartOffset();
-                        int childEndOffset = childView.getEndOffset();
-                        WordInfo wordInfo = getWordInfo(childStartOffset, wrapLineStartOffset);
+                        int currentStartOffset = childViewOrPart.getStartOffset();
+                        int currentEndOffset = childViewOrPart.getEndOffset();
+                        int startOffset;
+                        if (wrapLine != null) {
+                            EditorView wrapLineStartView = (wrapLine.startPart != null)
+                                    ? wrapLine.startPart
+                                    : pView.getEditorView(wrapLine.firstViewIndex);
+                            startOffset = wrapLineStartView.getStartOffset();
+                        } else {
+                            startOffset = currentStartOffset;
+                        }
+                        WordInfo wordInfo = getWordInfo(startOffset, currentStartOffset);
                         if (wordInfo != null) {
                             // Attempt to break the view (at word boundary) so that it fits.
                             EditorView startPart = breakView(false);
                             if (startPart != null) {
-                                useStartPart(startPart);
-                                addAndFetchNext();
+                                childViewFragmented = true;
+                                childViewOrPart = startPart;
+                                childViewOrPartWidth = startPartWidth;
+                                addCurrentAndFetchNextView();
                                 finishWrapLine();
                             } else { // Does not fit or cannot break
                                 int wordEndOffset = wordInfo.wordEndOffset();
-                                if (wrapLineStartOffset == wordInfo.wordStartOffset()) {
+                                if (startOffset == wordInfo.wordStartOffset()) {
                                     // Do not attempt fragmenting since breakView() did not succeed
-                                    while (addAndFetchNext() && wordEndOffset > childEndOffset) {
-                                        childEndOffset = childView.getEndOffset();
+                                    addCurrentAndFetchNextView();
+                                    while (childViewOrPart != null && wordEndOffset > currentEndOffset) {
+                                        currentEndOffset = childViewOrPart.getEndOffset();
+                                        addCurrentAndFetchNextView();
                                     } // Continue with next child
                                 } else {
                                     removeViewsToWordStart(wordInfo.wordStartOffset());
@@ -191,12 +215,14 @@ final class WrapInfoUpdater {
                     if (regularBreak) {
                         EditorView startPart = breakView(false);
                         if (startPart != null) {
-                            useStartPart(startPart);
-                            addAndFetchNext();
+                            childViewFragmented = true;
+                            childViewOrPart = startPart;
+                            childViewOrPartWidth = startPartWidth;
+                            addCurrentAndFetchNextView();
                             finishWrapLine();
                         } else { // break failed
                             if (!wrapLineNonEmpty) {
-                                addAndFetchNext();
+                                addCurrentAndFetchNextView();
                             }
                             finishWrapLine();
                         }
@@ -216,50 +242,13 @@ final class WrapInfoUpdater {
         if (logMsgBuilder != null) {
             LOG.fine("Resulting wrapInfo:" + wrapInfo.toString(pView) + "\n");
         }
-        wrapInfo.setWidth(maxLineWidth);
+        wrapInfo.setWidth(maxWrapLineWidth);
     }
     
-    private void initChildVars(int childIndex, double visualOffset) {
-        this.childIndex = childIndex;
-        this.childX = visualOffset;
-        nextChildX = pView.children.startVisualOffset(childIndex + 1);
-        childView = pView.getEditorView(childIndex);
-        childViewPart = null;
-        checkLogChild();
-    }
-    
-    private boolean fetchNextChild() {
-        childViewPart = null;
-        childIndex++; // Possibly get >view-count for multiple calls but does not matter
-        if (childIndex < pView.getViewCount()) {
-            childX = nextChildX;
-            nextChildX = pView.children.startVisualOffset(childIndex + 1);
-            childView = pView.getEditorView(childIndex);
-            checkLogChild();
-            return false;
-        } else {
-            return true; // Finished
-        }
-    }
-    
-    private void checkLogChild() {
-        if (logMsgBuilder != null) {
-            logMsgBuilder.append("child[").append(childIndex).append("]:").append(childView.getDumpId()); // NOI18N
-            int startOffset = childView.getStartOffset();
-            logMsgBuilder.append(" <").append(startOffset).append(",").append(startOffset + childView.getLength()); // NOI18N
-            logMsgBuilder.append("> W=").append(width()); // NOI18N
-            logMsgBuilder.append(":\n"); // NOI18N
-        }
-    }
-
     private WrapLine wrapLine() {
         if (wrapLine == null) {
-            // If a view is being currently broken then it should not be included in the wrapLine
+            // If a view is being currently broken then it should not be included into the wrapLine
             wrapLine = new WrapLine();
-//            if (logMsgBuilder != null) {
-//                logMsgBuilder.append("WL[").append(wrapLines.size());
-//                logMsgBuilder.append("]{");
-//            }
         }
         return wrapLine;
     }
@@ -267,12 +256,9 @@ final class WrapInfoUpdater {
     private void finishWrapLine() {
         if (wrapLine != null) {
             if (wrapLineNonEmpty) {
-                if (x > maxLineWidth) {
-                    maxLineWidth = x;
+                if (x > maxWrapLineWidth) {
+                    maxWrapLineWidth = x;
                 }
-//                if (logMsgBuilder != null) {
-//                    logMsgBuilder.append("};");
-//                }
                 wrapLines.add(wrapLine);
             }
             wrapLine = null;
@@ -281,9 +267,50 @@ final class WrapInfoUpdater {
         }
     }
     
-    private boolean addAndFetchNext() {
-        if (childViewPart == null) {
-            double childWidth = nextChildX - childX;
+    private void initChildVars(int childIndex, double childX) {
+        this.childIndex = childIndex;
+        this.childX = childX;
+        assignChild();
+    }
+    
+    /**
+     * Move next child view into childViewOrPart variable (or set it to null if there's no more children).
+     */
+    private void fetchNextChild() {
+        childIndex++; // Possibly get >view-count for multiple calls but does not matter
+        if (childIndex < pView.getViewCount()) {
+            childX = nextChildX;
+            assignChild();
+        } else {
+            //not-necessary childViewFragmented = false;
+            childViewOrPart = null;
+        }
+    }
+    
+    private void assignChild() {
+        nextChildX = pView.children.startVisualOffset(childIndex + 1);
+        childViewFragmented = false;
+        childViewOrPart = pView.getEditorView(childIndex);
+        childViewOrPartWidth = (float) (nextChildX - childX);
+        checkLogChild();
+    }
+    
+    private void checkLogChild() {
+        if (logMsgBuilder != null) {
+            logMsgBuilder.append("child[").append(childIndex).append("]:").append(childViewOrPart.getDumpId()); // NOI18N
+            int startOffset = childViewOrPart.getStartOffset();
+            logMsgBuilder.append(" <").append(startOffset).append(",").append(startOffset + childViewOrPart.getLength()); // NOI18N
+            logMsgBuilder.append("> W=").append(childViewOrPartWidth); // NOI18N
+            logMsgBuilder.append(":\n"); // NOI18N
+        }
+    }
+
+    /**
+     * Add current child view or its part to current wrap line and fetch next view.
+     * @return 
+     */
+    private void addCurrentAndFetchNextView() {
+        if (!childViewFragmented) {
             WrapLine wl = wrapLine();
             if (!wl.hasFullViews()) {
                 wl.firstViewIndex = childIndex;
@@ -292,32 +319,25 @@ final class WrapInfoUpdater {
             wrapLineNonEmpty = true;
             if (logMsgBuilder != null) {
                 logMsgBuilder.append("  added"); // NOI18N
-                logWrapLineAndX(x, x + childWidth);
+                logWrapLineAndX(x, x + childViewOrPartWidth);
             }
-            x += childWidth;
-            return fetchNextChild();
-        } else { // A part is active
+            x += childViewOrPartWidth;
+            fetchNextChild();
+
+        } else { // Fragmented
             if (wrapLineNonEmpty) {
-                addEndPart(childViewPart);
+                addCurrentAsEndPart();
             } else {
-                addStartPart(childViewPart);
+                addCurrentAsStartPart();
             }
             if (endPart != null) {
-                useEndPart();
-                return false;
+                childViewOrPart = endPart; // (Already fragmented childViewFragmented == true)
+                childViewOrPartWidth = endPart.getPreferredSpan(View.X_AXIS);
+                endPart = null;
             } else {
-                return fetchNextChild();
+                fetchNextChild();
             }
         }
-    }
-    
-    private boolean widthFits() {
-        return x + width() <= availableWidth;
-    }
-    
-    private double width() {
-        double width = (childViewPart != null) ? childViewPartWidth : (nextChildX - childX);
-        return width;
     }
     
     private void removeChildren(int startIndex) {
@@ -325,26 +345,26 @@ final class WrapInfoUpdater {
         assert (wrapLine.endPart == null);
         assert (wrapLine.firstViewIndex <= startIndex && startIndex < wrapLine.endViewIndex)
                 : "startIndex=" + startIndex + " not in WL " + wrapLine;
-        double startVisualOffset = pView.children.startVisualOffset(startIndex);
-        x -= (childX - startVisualOffset);
+        double startChildX = pView.children.startVisualOffset(startIndex);
+        x -= (childX - startChildX);
         wrapLine.endViewIndex = startIndex;
         if (!wrapLine.hasFullViews()) {
             if (wrapLine.startPart == null) {
                 wrapLineNonEmpty = false;
             }
         }
-        initChildVars(startIndex, startVisualOffset);
+        initChildVars(startIndex, startChildX);
     }
     
-    private void addStartPart(EditorView newStartPart) {
+    private void addCurrentAsStartPart() {
         assert (!wrapLineNonEmpty);
         assert (wrapLine().startPart == null);
         assert !wrapLine().hasFullViews();
         assert (x == 0f);
-        wrapLine().startPart = newStartPart;
-        wrapLine().firstViewX = childViewPartWidth;
-        x += childViewPartWidth;
-        visualOffsetPartShift += childViewPartWidth;
+        wrapLine().startPart = childViewOrPart;
+        wrapLine().firstViewX = childViewOrPartWidth;
+        x += childViewOrPartWidth;
+        childViewPartRelX += childViewOrPartWidth;
         wrapLineNonEmpty = true;
         if (logMsgBuilder != null) {
             logMsgBuilder.append("  WrapLine's startViewPart "); // NOI18N
@@ -352,28 +372,32 @@ final class WrapInfoUpdater {
         }
     }
     
-    private void removeStartPart() {
+    /**
+     * Clear wrapLine.startPart and return it into childViewOrPart.
+     */
+    private void undoStartPart() {
         assert (wrapLine.startPart != null);
         assert (!wrapLine.hasFullViews());
         if (logMsgBuilder != null) {
             logMsgBuilder.append("  Removed startViewPart x=" + x + " => 0."); // NOI18N
             logWrapLineAndX(0f, x);
         }
-        childViewPart = wrapLine.startPart;
-        childViewPartWidth = wrapLine.firstViewX;
-        visualOffsetPartShift -= wrapLine.firstViewX;
+        childViewFragmented = true;
+        childViewOrPart = wrapLine.startPart;
+        childViewOrPartWidth = wrapLine.firstViewX;
+        childViewPartRelX -= wrapLine.firstViewX;
         wrapLine.startPart = null;
         wrapLine.firstViewX = 0f;
         x = 0f;
         wrapLineNonEmpty = false;
     }
     
-    private void addEndPart(EditorView endPart) {
+    private void addCurrentAsEndPart() {
         assert (wrapLine().endPart == null);
-        wrapLine().endPart = endPart;
+        wrapLine().endPart = childViewOrPart;
         float oldX = x;
-        x += childViewPartWidth;
-        visualOffsetPartShift += childViewPartWidth;
+        x += childViewOrPartWidth;
+        childViewPartRelX += childViewOrPartWidth;
         wrapLineNonEmpty = true;
         if (logMsgBuilder != null) {
             logMsgBuilder.append("  WrapLine's endViewPart "); // NOI18N
@@ -399,11 +423,13 @@ final class WrapInfoUpdater {
                     if (wordStartOffset > viewStartOffset) { // Break inside child view
                         EditorView startPart = createFragment(wordStartOffset, true);
                         if (startPart != null) {
-                            useStartPart(startPart);
-                            addAndFetchNext();
+                            childViewFragmented = true;
+                            childViewOrPart = startPart;
+                            childViewOrPartWidth = startPartWidth;
+                            addCurrentAndFetchNextView();
                         } else { // Fragmentation failed
                             // In order to avoid infinite loop add the complete child
-                            addAndFetchNext();
+                            addCurrentAndFetchNextView();
                         }
                     }
                     break;
@@ -413,56 +439,32 @@ final class WrapInfoUpdater {
             removeInStartPart = true;
         }
         if (removeInStartPart) {
-            removeStartPart();
+            undoStartPart();
             EditorView startPart = createFragment(wordStartOffset, true);
             if (startPart != null) {
-                useStartPart(startPart);
-                addAndFetchNext();
+                childViewFragmented = true;
+                childViewOrPart = startPart;
+                childViewOrPartWidth = startPartWidth;
+                addCurrentAndFetchNextView();
             } else { // Fragmentation failed
                 // In order to avoid infinite loop add the complete child
-                addAndFetchNext();
+                addCurrentAndFetchNextView();
             }
         }
-    }
-    
-    private EditorView wrapLineStartView() {
-        EditorView startView = (wrapLine != null)
-            ? ((wrapLine.startPart != null)
-                ? wrapLine.startPart
-                : pView.getEditorView(wrapLine.firstViewIndex))
-            : currentViewOrPart();
-        return startView;
-    }
-
-    private EditorView currentViewOrPart() {
-        EditorView view = (childViewPart != null) ? childViewPart : childView;
-        return view;
-    }
-    
-    private void useStartPart(EditorView startPart) {
-        childViewPart = startPart;
-        childViewPartWidth = startPartWidth;
-    }
-    
-    private void useEndPart() {
-        childViewPart = endPart;
-        childViewPartWidth = childViewPart.getPreferredSpan(View.X_AXIS);
-        endPart = null;
     }
     
     private EditorView breakView(boolean allowWider) {
         // Do breaking by first having a fragment starting at end offset of the previous broken part.
         // This is compatible with the FlowView way of views breaking
         assert (endPart == null) : "Non-null endPart";
-        EditorView view = currentViewOrPart();
+        EditorView view = childViewOrPart;
         int viewStartOffset = view.getStartOffset();
-        float breakViewX = (float) (childX + visualOffsetPartShift);
+        float breakViewX = (float) (childX + childViewPartRelX);
         if (logMsgBuilder != null) {
             logMsgBuilder.append("  breakView<").append(viewStartOffset). // NOI18N
                     append(",").append(viewStartOffset + view.getLength()).append("> x="). // NOI18N
                     append(breakViewX).append(" W=").append(availableWidth - x).append(" => "); // NOI18N
         }
-        // Use visual offset as "x" for breaking so that '\t' behavior is not affected by wrapping
         EditorView startPart = (EditorView) view.breakView(View.X_AXIS, viewStartOffset,
                 breakViewX,
                 availableWidth - x);
@@ -516,14 +518,14 @@ final class WrapInfoUpdater {
     }
     
     /**
-     * Attempt to fragment view. Successful 
+     * Attempt to fragment view.
      * @param breakOffset offset where the start fragment will end and end part fragment will start.
      * @return start fragment (end fragment will be in "endPart") or null.
      */
     private EditorView createFragment(int breakOffset, boolean allowWider) {
-        EditorView view = currentViewOrPart();
+        EditorView view = childViewOrPart;
         int viewStartOffset = view.getStartOffset();
-        int viewEndOffset = view.getEndOffset();
+        int viewEndOffset = viewStartOffset + view.getLength();
         assert (viewStartOffset < breakOffset) : "viewStartOffset=" + viewStartOffset + // NOI18N
                 " >= breakOffset" + breakOffset; // NOI18N
         assert (breakOffset < viewEndOffset) : "breakOffset=" + breakOffset + // NOI18N
@@ -558,7 +560,6 @@ final class WrapInfoUpdater {
      * @param boundaryOffset there must be word's char before and after this offset
      *  to return non-null result.
      * @param startOffset start offset of inspected area.
-     * @param endOffset end offset of inspected area.
      * @return word info or null.
      */
     private WordInfo getWordInfo(int boundaryOffset, int startOffset) {

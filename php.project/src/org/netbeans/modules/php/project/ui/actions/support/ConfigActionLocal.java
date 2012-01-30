@@ -94,7 +94,7 @@ class ConfigActionLocal extends ConfigAction {
         return isValid(RunConfigLocalValidator.validateConfigAction(RunConfigLocal.forProject(project), false) == null);
     }
 
-    private boolean isValid(boolean valid) {
+    protected boolean isValid(boolean valid) {
         if (!valid) {
             showCustomizer();
         }

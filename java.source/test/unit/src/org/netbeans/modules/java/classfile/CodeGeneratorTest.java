@@ -54,7 +54,7 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.source.ClassIndexTestCase;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -63,7 +63,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Jan Lahoda
  */
-public class CodeGeneratorTest extends NbTestCase {
+public class CodeGeneratorTest extends ClassIndexTestCase {
 
     public CodeGeneratorTest(String name) {
         super(name);
@@ -148,7 +148,7 @@ public class CodeGeneratorTest extends NbTestCase {
 
     private void performTest(String test, final String golden) throws Exception {
         clearWorkDir();
-
+        beginTx();
         FileObject wd = FileUtil.toFileObject(getWorkDir());
 
         assertNotNull(wd);

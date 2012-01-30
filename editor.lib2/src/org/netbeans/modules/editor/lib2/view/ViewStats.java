@@ -58,13 +58,17 @@ public final class ViewStats {
     // -J-Dorg.netbeans.modules.editor.lib2.view.ViewStats.level=FINE
     private static final Logger LOG = Logger.getLogger(ViewStats.class.getName());
     
-    private static final int TEXT_LAYOUT_CREATED_THRESHOLD = 200;
+    private static final int TEXT_LAYOUT_CREATED_OR_REUSED_THRESHOLD = 200;
+    
+    private static final int STALE_VIEW_CREATION_TIMEOUT = 10;
     
     private static int textLayoutCreatedCount;
     
-    private static int textLayoutCharCount;
+    private static int textLayoutCreatedCharCount;
     
-    private static int initTextLayoutsCount;
+    private static int textLayoutReusedCount;
+    
+    private static int textLayoutReusedCharCount;
     
     private static int staleViewCreationCount;
 
@@ -73,23 +77,45 @@ public final class ViewStats {
     
     public static void incrementTextLayoutCreated(int charCount) {
         textLayoutCreatedCount++;
-        textLayoutCharCount += charCount;
-        if (LOG.isLoggable(Level.FINE) && (textLayoutCreatedCount % TEXT_LAYOUT_CREATED_THRESHOLD) == 0) {
-            LOG.fine(stats());
+        textLayoutCreatedCharCount += charCount;
+        if (LOG.isLoggable(Level.FINE)) {
+            if (LOG.isLoggable(Level.FINEST) ||
+                    (textLayoutCreatedCount % TEXT_LAYOUT_CREATED_OR_REUSED_THRESHOLD) == 0)
+            {
+                LOG.fine(stats());
+            }
+        }
+    }
+
+    public static void incrementTextLayoutReused(int charCount) {
+        textLayoutReusedCount++;
+        textLayoutReusedCharCount += charCount;
+        if (LOG.isLoggable(Level.FINE)) {
+            if (LOG.isLoggable(Level.FINEST) ||
+                    (textLayoutReusedCount % TEXT_LAYOUT_CREATED_OR_REUSED_THRESHOLD) == 0)
+            {
+                LOG.fine(stats());
+            }
         }
     }
 
     public static void incrementStaleViewCreations() {
         staleViewCreationCount++;;
-        if (LOG.isLoggable(Level.FINE) && (staleViewCreationCount % 10) == 0) {
-            LOG.fine(stats());
+        if (LOG.isLoggable(Level.FINE)) {
+            if (LOG.isLoggable(Level.FINEST) ||
+                (staleViewCreationCount % STALE_VIEW_CREATION_TIMEOUT) == 0)
+            {
+                LOG.fine(stats());
+            }
         }
     }
     
     public static String stats() {
-        return "TextLayouts:\n  created-count: " + textLayoutCreatedCount + // NOI18N
-                "\n  char-count: " + textLayoutCharCount + // NOI18N
-                "\nInitTextLayouts: " + initTextLayoutsCount + // NOI18N
+        return "TextLayouts:" + // NOI18N
+                "\n  Created:\tcount: " + textLayoutCreatedCount + // NOI18N
+                "\tchar-count: " + textLayoutCreatedCharCount + // NOI18N
+                "\n  Reused:\tcount: " + textLayoutReusedCount + // NOI18N
+                "\tchar-count: " + textLayoutReusedCharCount + // NOI18N
                 "\nStaleCreations: " + staleViewCreationCount + // NOI18N
                 "\n"; // NOI18N
     }

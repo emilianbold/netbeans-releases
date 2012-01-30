@@ -91,6 +91,10 @@ public final class CompoundAttributes implements AttributeSet {
         return startOffset;
     }
     
+    public int endOffset() {
+        return highlightItems[highlightItems.length - 1].getEndOffset();
+    }
+    
     public HighlightItem[] highlightItems() {
         return highlightItems;
     }

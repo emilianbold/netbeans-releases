@@ -71,18 +71,39 @@ import org.openide.util.Utilities;
  * @author Petr Hrebejk, Tomas Zezula
  */
 public abstract class ClassIndexImpl {
-        
+
     public static enum State {
         NEW,
         INITIALIZED,
     }
-    
+
     public static enum UsageType {
         SUPER_CLASS,
         SUPER_INTERFACE,
         FIELD_REFERENCE,
         METHOD_REFERENCE,
         TYPE_REFERENCE;
+    }
+
+    /**
+     * Type of ClassIndexImpl
+     */
+    public static enum Type {
+        /**
+         * Index does not exist yet or
+         * it's broken
+         */
+        EMPTY,
+
+        /**
+         * Index for source root
+         */
+        SOURCE,
+
+        /**
+         * Index for binary root
+         */
+        BINARY;
     }
 
     public static final ThreadLocal<AtomicBoolean> cancel = new ThreadLocal<AtomicBoolean> ();       
@@ -106,7 +127,11 @@ public abstract class ClassIndexImpl {
             @NonNull Convertor<? super Document, T> convertor,
             @NonNull Set<? super T> result) throws IOException, InterruptedException;
 
-    public abstract <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, Convertor<? super Document, T> convertor, Map<T,Set<String>> result) throws IOException, InterruptedException;
+    public abstract <T> void getDeclaredElements (
+            String ident,
+            ClassIndex.NameKind kind,
+            Convertor<? super Document, T> convertor,
+            Map<T,Set<String>> result) throws IOException, InterruptedException;
     
     public abstract void getPackageNames (String prefix, boolean directOnly, Set<String> result) throws IOException, InterruptedException;
     
@@ -114,7 +139,7 @@ public abstract class ClassIndexImpl {
    
     public abstract BinaryAnalyser getBinaryAnalyser ();
     
-    public abstract SourceAnalyser getSourceAnalyser ();
+    public abstract SourceAnalyzerFactory.StorableAnalyzer getSourceAnalyser ();
     
     public abstract String getSourceName (String binaryName) throws IOException, InterruptedException;
     
@@ -122,10 +147,8 @@ public abstract class ClassIndexImpl {
     
     public abstract boolean isValid ();
 
-    public abstract boolean isSource ();
+    public abstract Type getType();
 
-    public abstract boolean isEmpty ();   
-            
     protected abstract void close () throws IOException;    
     
     public void addClassIndexImplListener (final ClassIndexImplListener listener) {
@@ -145,15 +168,18 @@ public abstract class ClassIndexImpl {
             }
         }
     }
-    
-    public void typesEvent (final Collection<? extends ElementHandle<TypeElement>> added, final Collection<? extends ElementHandle<TypeElement>> removed, final Collection<? extends ElementHandle<TypeElement>> changed) {
+
+    void typesEvent (
+            @NonNull final Collection<? extends ElementHandle<TypeElement>> added,
+            @NonNull final Collection<? extends ElementHandle<TypeElement>> removed,
+            @NonNull final Collection<? extends ElementHandle<TypeElement>> changed) {
         final ClassIndexImplEvent a = added == null || added.isEmpty() ? null : new ClassIndexImplEvent(this, added);
         final ClassIndexImplEvent r = removed == null || removed.isEmpty() ? null : new ClassIndexImplEvent(this, removed);
         final ClassIndexImplEvent ch = changed == null || changed.isEmpty() ? null : new ClassIndexImplEvent(this, changed);
         typesEvent(a, r, ch);
     }
 
-    public void typesEvent (final ClassIndexImplEvent added, final ClassIndexImplEvent removed, final ClassIndexImplEvent changed) {
+    private void typesEvent (final ClassIndexImplEvent added, final ClassIndexImplEvent removed, final ClassIndexImplEvent changed) {
         WeakReference<ClassIndexImplListener>[] _listeners;
         synchronized (this.listeners) {
             _listeners = this.listeners.toArray(new WeakReference[this.listeners.size()]);
@@ -174,11 +200,11 @@ public abstract class ClassIndexImpl {
         }
     }
 
-    public State getState() {
+    public final State getState() {
         return this.state;
     }
 
-    public void setState(final State state) {
+    public final void setState(final State state) {
         assert state != null;
         assert this.state != null;
         if (state.ordinal() < this.state.ordinal()) {
@@ -209,6 +235,22 @@ public abstract class ClassIndexImpl {
         void clear() throws IOException;
         void deleteEnclosedAndStore (final List<Pair<Pair<String,String>, Object[]>> refs, final Set<Pair<String,String>> topLevels) throws IOException;
         void deleteAndStore(final List<Pair<Pair<String,String>, Object[]>> refs, final Set<Pair<String,String>> toDelete) throws IOException;
+        /**
+         * Different from deleteAndStore in that the data is NOT committed, but just flushed. Make sure, deleteAndStore is called from the
+         * indexer's finish!
+         * 
+         * @param refs
+         * @param toDelete
+         * @throws IOException 
+         */
+        void deleteAndFlush(final List<Pair<Pair<String,String>, Object[]>> refs, final Set<Pair<String,String>> toDelete) throws IOException;
+        
+        /**
+         * Flushes any pending data from deleteAndFlush as if deleteAndStore was called with empty collections
+         */
+        void commit() throws IOException;
+        
+        void rollback() throws IOException;
     }
     
     private class Ref extends WeakReference<ClassIndexImplListener> implements Runnable {

@@ -209,47 +209,45 @@ public class AddWsOperationHelper {
         handle.start(100);
         final AddOperationTask modificationTask = 
             new AddOperationTask(handle, methodModel );
-        final String seiClass = modificationTask.getSeiClass();
         
         if (SwingUtilities.isEventDispatchThread()) {
             executeInRequestProcessor(implClassFo, targetSource, handle,
-                    modificationTask, seiClass);
+                    modificationTask);
         } else {
             executeModificationTask(implClassFo, targetSource, handle,
-                    modificationTask, seiClass);            
+                    modificationTask);            
         }
 
     }
 
     private void executeInRequestProcessor( final FileObject implClassFo,
             final JavaSource targetSource, final ProgressHandle handle,
-            final AddOperationTask modificationTask, final String seiClass )
+            final AddOperationTask modificationTask )
     {
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
                 executeModificationTask(implClassFo, targetSource, handle,
-                        modificationTask, seiClass);                 
+                        modificationTask);                 
             }
         });
     }
 
     private void executeModificationTask( final FileObject implClassFo,
             final JavaSource targetSource, final ProgressHandle handle,
-            final AddOperationTask modificationTask,
-            final String seiClass )
+            final AddOperationTask modificationTask )
     {
         try {
             ModificationResult result = targetSource.runModificationTask(modificationTask);
             if ( modificationTask.isIncomplete() && 
                     org.netbeans.api.java.source.SourceUtils.isScanInProgress() )
             {
-                Runnable runnable = new Runnable(){
+                final Runnable runnable = new Runnable(){
 
                     @Override
                     public void run() {
                         executeInRequestProcessor(implClassFo, targetSource, 
-                                handle, modificationTask, seiClass);
+                                handle, modificationTask);
                     }
                     
                 };
@@ -257,26 +255,27 @@ public class AddWsOperationHelper {
 
                     @Override
                     public void run() {
-                        ScanDialog.runWhenScanFinished(this, getTitle());
+                        ScanDialog.runWhenScanFinished(runnable, getTitle());
                     }
                 });
             }
             else {
                 result.commit();
-            }
-            // add method to SEI class
-            if (seiClass != null) {
-                ClassPath sourceCP = ClassPath.getClassPath(implClassFo, 
-                        ClassPath.SOURCE);
-                FileObject seiFo = sourceCP.findResource(
-                        seiClass.replace('.', '/')+".java"); //NOI18N
-                if (seiFo != null) {
-                    JavaSource seiSource = JavaSource.forFileObject(seiFo);
-                    seiSource.runModificationTask(modificationTask).commit();
-                    saveFile(seiFo);
+                // add method to SEI class
+                String seiClass = modificationTask.getSeiClass();
+                if (seiClass != null) {
+                    ClassPath sourceCP = ClassPath.getClassPath(implClassFo, 
+                            ClassPath.SOURCE);
+                    FileObject seiFo = sourceCP.findResource(
+                            seiClass.replace('.', '/')+".java"); //NOI18N
+                    if (seiFo != null) {
+                        JavaSource seiSource = JavaSource.forFileObject(seiFo);
+                        seiSource.runModificationTask(modificationTask).commit();
+                        saveFile(seiFo);
+                    }
                 }
+                saveFile(implClassFo);
             }
-            saveFile(implClassFo);
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         } finally {
