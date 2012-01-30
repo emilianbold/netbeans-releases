@@ -84,6 +84,7 @@ import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase.WeakContainer;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
@@ -380,7 +381,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (startFile != null && startFile != this) {
             return startFile.getLanguageFilter(null);
         } else {
-            return APTLanguageSupport.getInstance().getFilter(getFileLanguage());
+            return APTLanguageSupport.getInstance().getFilter(getFileLanguage(), getFileLanguageFlavor());
         }
     }
 
@@ -388,6 +389,17 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return Utils.getLanguage(fileType, getAbsolutePath().toString());
     }
 
+    public String getFileLanguageFlavor() {
+        if(CndTraceFlags.LANGUAGE_FLAVOR_CPP11) {
+            return APTLanguageSupport.FLAVOR_CPP11;
+        }
+        NativeFileItem nativeFileItem = getNativeFileItem();
+        if(nativeFileItem != null) {
+            return Utils.getLanguageFlavor(nativeFileItem.getLanguageFlavor());
+        }
+        return APTLanguageSupport.FLAVOR_UNKNOWN;
+    }
+    
     public APTPreprocHandler getPreprocHandler(int offset) {
         PreprocessorStatePair bestStatePair = getContextPreprocStatePair(offset, offset);
         return getPreprocHandler(bestStatePair);

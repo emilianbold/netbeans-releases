@@ -703,7 +703,7 @@ template_explicit_specialization
     (LITERAL___extension__!)? LITERAL_template LESSTHAN GREATERTHAN
     (
         // Template explicit specialisation function definition (VK 30/05/06)
-        (declaration_specifiers[false, false] function_declarator[true, false, false] (LCURLY | LITERAL_try))=>
+        (declaration_specifiers[false, false] function_declarator[true, false, false] (LCURLY | LITERAL_try | ASSIGNEQUAL (LITERAL_default | LITERAL_delete)))=>
         {if(statementTrace >= 1) printf("external_declaration_0a[%d]: template " + "explicit-specialisation function definition\n", LT(1).getLine());}
         function_definition
         { #template_explicit_specialization = #(#[CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
@@ -712,6 +712,7 @@ template_explicit_specialization
         (   ctor_decl_spec ctor_declarator[true]
             ( COLON         // DEFINITION :ctor_initializer
             | LCURLY        // DEFINITION (compound Statement) ?
+            | ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
             )
         ) =>
         {if(statementTrace >= 1) printf("template_explicit_specialization_0b[%d]: template " + "explicit-specialisation ctor definition\n", LT(1).getLine());}
@@ -861,7 +862,7 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
 			{ #external_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DECLARATION, "CSM_FUNCTION_TEMPLATE_DECLARATION"], #external_declaration_template); }
     |
         // Templated function definition
-        ((template_head)? declaration_specifiers[false, false] function_declarator[true, false, false] (LCURLY | LITERAL_try))=>
+        ((template_head)? declaration_specifiers[false, false] function_declarator[true, false, false] (LCURLY | LITERAL_try | ASSIGNEQUAL (LITERAL_default | LITERAL_delete)))=>
         {if (statementTrace>=1) printf("external_declaration_template_11d[%d]: Function template " + "definition\n", LT(1).getLine());}
         (template_head)? function_definition
         { #external_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"], #external_declaration_template); }
@@ -1062,7 +1063,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
             (options {greedy=true;} :function_attribute_specification!)?
             declaration_specifiers[false, false]
             (options {greedy=true;} :function_attribute_specification!)? 
-            function_declarator[true, false, false] (LCURLY | LITERAL_try)
+            function_declarator[true, false, false] (LCURLY | LITERAL_try | ASSIGNEQUAL (LITERAL_default | LITERAL_delete))
         ) =>
         {if (statementTrace>=1) printf("external_declaration_8[%d]: Function definition\n", LT(1).getLine());}
         (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? function_definition
@@ -1239,6 +1240,7 @@ member_declaration_template
 			 ctor_declarator[true]
 			 ( COLON        // DEFINITION :ctor_initializer
 			  |LCURLY       // DEFINITION (compound Statement) ?
+                          | ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
 			 )
 			)=>
 			{if (statementTrace>=1) 
@@ -1259,7 +1261,7 @@ member_declaration_template
     |
         // Templated function definition
         // Function definition DW 2/6/97
-        (declaration_specifiers[false, false] function_declarator[true, false, false] (LCURLY | LITERAL_try))=>
+        (declaration_specifiers[false, false] function_declarator[true, false, false] (LCURLY | LITERAL_try | ASSIGNEQUAL (LITERAL_default | LITERAL_delete)))=>
         {if (statementTrace>=1) printf("member_declaration_13c[%d]: Function template " + "definition\n", LT(1).getLine());}
         function_definition
         { #member_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"], #member_declaration_template); }
@@ -1363,13 +1365,17 @@ member_declaration
             (COLON        // DEFINITION :ctor_initializer
             |LCURLY       // DEFINITION (compound Statement) ?
             |LITERAL_try  // DEFINITION try ... catch ...
+            | ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
             )
         )=>
         {if (statementTrace>=1) printf("member_declaration_4[%d]: Constructor or no-ret type fun definition\n", LT(1).getLine());}
         friend = ctor_decl_spec
         {ctrName = qualifiedItemIsOneOf(qiCtor);}
         ctor_declarator[true]
-        ctor_body
+        (   ctor_body
+        |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
+        )
+
         {if (ctrName && !friend) { #member_declaration = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #member_declaration);}
          else { #member_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #member_declaration);}}
     |
@@ -1409,7 +1415,7 @@ member_declaration
         (   (LITERAL___extension__)?
             declaration_specifiers[false, false]
             function_declarator[true, false, false]
-            (LCURLY | LITERAL_try)
+            (LCURLY | LITERAL_try | ASSIGNEQUAL (LITERAL_default | LITERAL_delete))
         ) =>
         {beginFieldDeclaration(); if(statementTrace>=1) printf("member_declaration_7[%d]: Function definition\n", LT(1).getLine());}
         function_definition
@@ -1507,6 +1513,7 @@ member_declaration
 		}
 		SEMICOLON! //{end_of_stmt();}
 	|	using_declaration
+        |       static_assert_declaration
 	)
 	;	// end member_declaration
 
@@ -1582,7 +1589,8 @@ function_definition
         (function_K_R_parameter_list)?
         {in_parameter_list = false;}
     )?
-    (   compound_statement
+    (   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
+    |   compound_statement
     |   function_try_block[false]
     )
     //	|	// Next line is equivalent to guarded predicate in PCCTS
@@ -1637,6 +1645,8 @@ declaration[int kind]
 	using_declaration	// DW 19/04/04
     |
         namespace_alias_definition
+    |
+        static_assert_declaration
     ;
 
 linkage_specification
@@ -1675,11 +1685,13 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
         |   literal_inline {ds = dsINLINE;}
         |   LITERAL_virtual {ds = dsVIRTUAL;}
         |   LITERAL_explicit {ds = dsEXPLICIT;}
+        |   LITERAL_final
         |   LITERAL_enum
         |   {if (statementTrace>=1) printf("declaration_specifiers_1[%d]: Typedef\n", LT(1).getLine());}                        
             {allowTypedef}? LITERAL_typedef (options {greedy=true;} : LITERAL_typename)? {td=true;} 
         |   LITERAL_typename
         |   LITERAL_friend {fd=true;}
+        |   LITERAL_constexpr
         |   literal_stdcall
         |   (options {greedy=true;} : type_attribute_specification!)
         )*
@@ -1722,6 +1734,7 @@ storage_class_specifier returns [CPPParser.StorageClass sc = scInvalid]
     |   LITERAL___symbolic {sc = scOTHER;}
     |   LITERAL___global {sc = scOTHER;}
     |   LITERAL___hidden {sc = scOTHER;}
+    |   LITERAL_thread_local {sc = scOTHER;}
 	;
 
 cv_qualifier returns [CPPParser.TypeQualifier tq = tqInvalid] // aka cv_qualifier
@@ -1769,6 +1782,8 @@ builtin_type[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old
     :
 	  LITERAL_char          {ts |= tsCHAR;}
         | LITERAL_wchar_t       {ts |= tsWCHAR_T;}  
+        | LITERAL_char16_t      {ts |= tsOTHER;}
+        | LITERAL_char32_t      {ts |= tsOTHER;}
         | LITERAL_bool          {ts |= tsBOOL;}
         | LITERAL_short         {ts |= tsSHORT;}
         | LITERAL_int           {ts |= tsINT;}
@@ -1784,6 +1799,8 @@ builtin_type[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old
         | LITERAL__Imaginary    {ts |= tsIMAGINARY;}
         | LITERAL_bit           {ts |= tsBOOL;}
         | LITERAL__BUILT_IN_TYPE__ {ts |= tsOTHER;}
+        | LITERAL_decltype LPAREN expression RPAREN {ts |= tsOTHER;}
+
     ;
 
 qualified_type
@@ -1820,6 +1837,7 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
                     saveClass = enclosingClass;
                     enclosingClass = id;
                 }
+                (LITERAL_final | LITERAL_explicit)?
                 (base_clause)?
                 {action.class_body(LT(1));}
                 LCURLY
@@ -2048,6 +2066,7 @@ class_head
 
             ID	
 		(LESSTHAN template_argument_list GREATERTHAN)?
+                (LITERAL_final | LITERAL_explicit)?
 		(base_clause)? 
 	)? LCURLY
 	;
@@ -2068,6 +2087,7 @@ class_forward_declaration
 
             ID
 		(LESSTHAN template_argument_list GREATERTHAN)?
+                (LITERAL_final | LITERAL_explicit)?
 		(base_clause)?
 	)? SEMICOLON
 	;
@@ -2115,7 +2135,7 @@ member_declarator
 	:	
 		((ID)? COLON constant_expression)=>(ID)? COLON constant_expression
 	|  
-		declarator[declOther, 0]
+		declarator[declOther, 0] (LITERAL_override | LITERAL_final | LITERAL_new)?
 	;
 
 conversion_function_decl_or_def returns [boolean definition = false]
@@ -2330,7 +2350,7 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
         )?
 		//{functionEndParameterList(definition);}
 		(exception_specification)?
-		(ASSIGNEQUAL OCTALINT)?	// The value of the octal must be 0
+		(( ASSIGNEQUAL ~(LITERAL_default | LITERAL_delete)) => ASSIGNEQUAL OCTALINT)?	// The value of the octal must be 0
                 (options {greedy=true;} :function_attribute_specification)?
                 (asm_block!)?
                 (options {greedy=true;} :function_attribute_specification)?
@@ -2404,11 +2424,13 @@ function_params
         ;
 
 ctor_definition 
-	:
-	ctor_head
-	ctor_body
-	//{endConstructorDefinition();}
-	;
+    :
+    ctor_head
+    (   ctor_body
+    |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
+    )
+    //{endConstructorDefinition();}
+    ;
 
 ctor_head 
 {boolean friend = false;}
@@ -2677,12 +2699,14 @@ abstract_declarator_suffix
 	;
 
 exception_specification
-	{String so;}
-	:	LITERAL_throw 
-		LPAREN 
-		(exception_type_id (COMMA exception_type_id)* )? 
-		RPAREN
-	;
+    {String so;}
+    :   LITERAL_throw 
+        LPAREN 
+        (exception_type_id (COMMA exception_type_id)* )? 
+        RPAREN
+    |   
+        LITERAL_noexcept (options {greedy=true;} : LPAREN constant_expression RPAREN )?
+    ;
 
 // simplified version of type_id that is used in exception specification
 protected 
@@ -2714,7 +2738,8 @@ declspec!
 protected
 type_attribute_specification!
         :
-            attribute_specification_list | declspec
+            attribute_specification_list | declspec | LITERAL_alignas LPAREN balanceParens RPAREN
+
         ;
 
 protected
@@ -2981,7 +3006,7 @@ statement
 		// TODO: external_declaration is too generic here. Refactor this!
 		external_declaration
         |
-                ( is_declaration | LITERAL_namespace ) =>
+                ( is_declaration | LITERAL_namespace | LITERAL_static_assert ) =>
                 {if (statementTrace>=1) 
 			printf("statement_1[%d]: declaration\n", LT(1).getLine());
 		}
@@ -3338,6 +3363,11 @@ asm_block
 //		{balanceBraces(CPPTokenTypes.LPAREN, CPPTokenTypes.RPAREN);}
     )
     {#asm_block = #(#[CSM_ASM_BLOCK, "CSM_ASM_BLOCK"], #asm_block);}
+    ;
+
+static_assert_declaration
+    :
+        LITERAL_static_assert LPAREN constant_expression COMMA STRING_LITERAL RPAREN SEMICOLON
     ;
 
 pro_c_statement
@@ -3764,17 +3794,18 @@ scope_override_part[int level] returns [String s = ""]
     ;
 
 constant
-	:	OCTALINT
-	|	DECIMALINT
-	|	HEXADECIMALINT
-	|	BINARYINT
-	|	CHAR_LITERAL
-	|	(options {warnWhenFollowAmbig = false;}: STRING_LITERAL)+
-	|	FLOATONE
-	|	FLOATTWO
-	|	LITERAL_true
-	|	LITERAL_false
-	;
+:       OCTALINT
+    |   DECIMALINT
+    |   HEXADECIMALINT
+    |   BINARYINT
+    |   CHAR_LITERAL
+    |   (options {warnWhenFollowAmbig = false;}: STRING_LITERAL)+
+    |   FLOATONE
+    |   FLOATTWO
+    |   LITERAL_true
+    |   LITERAL_false
+    |   LITERAL_nullptr
+    ;
 
 optor 
 	:

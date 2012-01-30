@@ -37,17 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debug;
+package org.netbeans.modules.cnd.modelimpl.trace;
 
 /**
- *
- * @author Vladimir Voskresensky
+ * Just a continuation of the FileModelTest
+ * (which became too large)
+ * @author Vladimir Kvashin
  */
-public interface CndTraceFlags {
-    public static final boolean TRACE_SLICE_DISTIBUTIONS = DebugUtils.getBoolean("cnd.slice.trace", false); // NOI18N
+public class FileModelCpp11Test extends TraceModelTestBase {
 
-    public static final boolean LANGUAGE_FLAVOR_CPP11 = DebugUtils.getBoolean("cnd.language.flavor.cpp11", false); // NOI18N
+    public FileModelCpp11Test(String testName) {
+        super(testName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        System.setProperty("cnd.modelimpl.tracemodel.project.name", "DummyProject"); // NOI18N
+        System.setProperty("parser.report.errors", "true");
+        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
+        System.setProperty("cnd.language.flavor.cpp11", "true"); 
+        super.setUp();
+    }
+
+    @Override
+    protected void postSetUp() {
+        // init flags needed for file model tests
+        getTraceModel().setDumpModel(true);
+        getTraceModel().setDumpPPState(true);
+    }
+
+    @Override
+    protected void postTest(String[] args, Object... params) throws Exception {
+        System.setProperty("cnd.language.flavor.cpp11", "false"); 
+    }
+    
+    public void testCpp11() throws Exception {
+        performTest("cpp11.cpp");
+    }
+    
 }
