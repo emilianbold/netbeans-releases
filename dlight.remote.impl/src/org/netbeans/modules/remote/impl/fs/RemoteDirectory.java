@@ -1315,22 +1315,6 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 child.refreshImpl(true, antiLoop, expected);
             }
         }
-        if (USE_VCS) {
-            FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
-            if (interceptor != null) {
-                LinkedList<FilesystemInterceptorProvider.FileProxyI> arr = new LinkedList<FilesystemInterceptorProvider.FileProxyI>();
-                long ts = interceptor.listFiles(FilesystemInterceptorProvider.toFileProxy(this), -1, arr);
-                for (FilesystemInterceptorProvider.FileProxyI proxy : arr) {
-                    DirEntry entry = getEntry(PathUtilities.getBaseName(proxy.getPath()));
-                    if (entry != null && !entry.isDirectory()) {
-                        long lm = entry.getLastModified().getTime();
-                        if (lm > ts) {
-                            ts = lm;
-                        }
-                    }
-                }
-            }
-        }
     }
     
     private void trace(String message, Object... args) {

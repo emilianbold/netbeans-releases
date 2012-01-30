@@ -75,6 +75,10 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     }
     
     public static<T> FunctionDefinitionImpl<T> create(AST ast, CsmFile file, CsmScope scope, boolean global) throws AstRendererException {
+        return create(ast, file, scope, global, null);
+    }
+        
+    public static<T> FunctionDefinitionImpl<T> create(AST ast, CsmFile file, CsmScope scope, boolean global, Map<Integer, CsmObject> objects) throws AstRendererException {
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
         
@@ -100,7 +104,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
         
         functionDefinitionImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
-        functionDefinitionImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, functionDefinitionImpl, file));
+        functionDefinitionImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, functionDefinitionImpl, file, objects));
         functionDefinitionImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionDefinitionImpl, file, global), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));        
         

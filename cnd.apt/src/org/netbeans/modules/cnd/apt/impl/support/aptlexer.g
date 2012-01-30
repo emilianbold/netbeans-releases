@@ -303,6 +303,17 @@ tokens {
     LITERAL_bit="bit"; // NOI18N
     LITERAL___symbolic="__symbolic"; // NOI18N
     LITERAL___hidden="__hidden"; // NOI18N
+    LITERAL_final="final"; // NOI18N
+    LITERAL_override="override"; // NOI18N
+    LITERAL_constexpr="constexpr"; // NOI18N
+    LITERAL_decltype="decltype"; // NOI18N
+    LITERAL_nullptr="nullptr"; // NOI18N
+    LITERAL_thread_local="thread_local"; // NOI18N
+    LITERAL_static_assert="static_assert"; // NOI18N
+    LITERAL_alignas="alignas"; // NOI18N
+    LITERAL_char16_t="char16_t"; // NOI18N
+    LITERAL_char32_t="char32_t"; // NOI18N
+    LITERAL_noexcept="noexcept"; // NOI18N
 
     // Extension points
     LITERAL__BUILT_IN_TYPE__; // extra built-in type name
