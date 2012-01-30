@@ -68,6 +68,9 @@ import org.netbeans.modules.localhistory.ui.actions.FileNode.PlainFileNode;
 import org.netbeans.modules.localhistory.ui.actions.FileNode.StoreEntryNode;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -79,6 +82,9 @@ import org.openide.util.actions.NodeAction;
 /**
  * @author Tomas Stupka
  */
+@ActionID(id = "org.netbeans.modules.localhistory.ui.actions.RevertDeletedAction", category = "History")
+@ActionRegistration(lazy = false, displayName = "#CTL_ShowRevertDeleted")
+@ActionReference(path = "OptionsDialog/Actions/History", name = "RevertDeletedAction")
 public class RevertDeletedAction extends NodeAction {
     
     /** Creates a new instance of ShowLocalHistoryAction */
