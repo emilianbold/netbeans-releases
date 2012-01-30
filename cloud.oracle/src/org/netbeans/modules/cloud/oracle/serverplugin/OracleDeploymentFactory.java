@@ -41,10 +41,14 @@
  */
 package org.netbeans.modules.cloud.oracle.serverplugin;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import org.netbeans.libs.oracle.cloud.api.CloudSDKHelper;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.api.ApplicationManager;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.exception.SDKException;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.util.NbBundle;
@@ -53,6 +57,8 @@ import org.openide.util.NbBundle;
  *
  */
 public class OracleDeploymentFactory implements DeploymentFactory {
+
+    private static final Logger LOG = Logger.getLogger(OracleDeploymentFactory.class.getSimpleName());
 
     public static final String ORACLE_URI = "oracle:";  // NOI18N
 
@@ -71,12 +77,20 @@ public class OracleDeploymentFactory implements DeploymentFactory {
     public DeploymentManager getDeploymentManager(String uri, String username,
             String password) throws DeploymentManagerCreationException {
         InstanceProperties props = InstanceProperties.getInstanceProperties(uri);
-        return new OracleDeploymentManager(props.getProperty(IP_INSTANCE_URL), 
-                OracleInstance.createApplicationManager(
+        ApplicationManager am;
+        try {
+            am = OracleInstance.createApplicationManager(
                     props.getProperty(IP_ADMIN_URL), 
                     username,
                     password,
-                    CloudSDKHelper.getSDKFolder()),
+                    CloudSDKHelper.getSDKFolder());
+        } catch (SDKException e) {
+            LOG.log(Level.FINE, "cannot access SDK", e);
+            am = null;
+        }
+
+        return new OracleDeploymentManager(props.getProperty(IP_INSTANCE_URL), 
+                am,
                 props.getProperty(IP_SERVICE_GROUP),
                 props.getProperty(IP_SERVICE_INSTANCE),
                 props.getProperty(InstanceProperties.DISPLAY_NAME_ATTR),

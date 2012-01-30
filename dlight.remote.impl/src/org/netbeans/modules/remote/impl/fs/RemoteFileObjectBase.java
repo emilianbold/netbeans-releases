@@ -208,6 +208,16 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
     }
 
     @Override
+    protected void fireFileDeletedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
+        super.fireFileDeletedEvent(en, fe);
+    }
+
+    @Override
+    protected void fireFileAttributeChangedEvent(Enumeration<FileChangeListener> en, FileAttributeEvent fe) {
+        super.fireFileAttributeChangedEvent(en, fe);
+    }
+
+    @Override
     public final FileObject createData(String name) throws IOException {
         return createDataImpl(name, "", this);
     }
@@ -244,10 +254,10 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         if (USE_VCS) {
             interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
         }
+        boolean result;
         if (interceptor != null) {
             FileProxyI fileProxy = FilesystemInterceptorProvider.toFileProxy(orig);
             IOHandler deleteHandler = interceptor.getDeleteHandler(fileProxy);
-            boolean result;
             if (deleteHandler != null) {
                 deleteHandler.handle();
                 result = true;
@@ -262,7 +272,13 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
             // TODO fireFileDeletedEvent()?
             interceptor.deleteSuccess(fileProxy);
         } else {
-            deleteImpl(lock);
+            result = deleteImpl(lock);
+            if (!result) {
+                throw new IOException("Cannot delete "+getPath()); // NOI18N
+            }
+        }
+        for(Map.Entry<String, Object> entry : getAttributesMap().entrySet()) {
+            fireFileAttributeChangedEvent(getListenersWithParent(), new FileAttributeEvent(this, this, entry.getKey(), entry.getValue(), null));
         }
         invalidate();
         RemoteFileObjectBase p = getParent();
@@ -428,13 +444,13 @@ public abstract class RemoteFileObjectBase extends FileObject implements Seriali
         }
     }
 
-    protected void refreshImpl(boolean recursive, Set<String> antiLoop) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {        
+    protected void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {        
     }
 
     @Override
     public void refresh(boolean expected) {
         try {
-            refreshImpl(true, null);
+            refreshImpl(true, null, expected);
         } catch (ConnectException ex) {
             RemoteLogger.finest(ex, this);
         } catch (IOException ex) {

@@ -191,7 +191,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectFile implements Fil
     }
 
     @Override
-    protected final void refreshImpl(boolean recursive, Set<String> antiLoop) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    protected final void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (antiLoop == null) {
             antiLoop = new HashSet<String>();
         }
@@ -202,7 +202,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectFile implements Fil
         }
         RemoteFileObjectBase delegate = getDelegate();
         if (delegate != null) {
-            delegate.refreshImpl(recursive, antiLoop);
+            delegate.refreshImpl(recursive, antiLoop, expected);
         } else {
             RemoteLogger.log(Level.FINEST, "Null delegate for link {0}", this); //NOI18N
         }
