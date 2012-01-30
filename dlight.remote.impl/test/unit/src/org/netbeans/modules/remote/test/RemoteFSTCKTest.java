@@ -125,12 +125,6 @@ public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
 
         @RandomlyFails
         @Override
-        public void testRunAtomicAction() throws Exception {
-            super.testRunAtomicAction();
-        }
-
-        @RandomlyFails
-        @Override
         public void testToFile() throws Exception {
             super.testToFile();
         }
