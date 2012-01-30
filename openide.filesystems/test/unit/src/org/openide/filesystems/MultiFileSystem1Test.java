@@ -78,6 +78,7 @@ public class MultiFileSystem1Test extends FileSystemFactoryHid {
         suite.addTestSuite(URLMapperTestHidden.class);        
         suite.addTestSuite(URLMapperTestInternalHidden.class);                        
         suite.addTestSuite(FileUtilTestHidden.class);                        
+        suite.addTestSuite(FileUtilJavaIOFileHidden.class);                        
 
         return new MultiFileSystem1Test (suite);
     }

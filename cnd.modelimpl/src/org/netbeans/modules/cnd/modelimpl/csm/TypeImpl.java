@@ -766,7 +766,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         return classifier;
     }
 
-    private void initClassifier(CsmClassifier classifier) {
+    public void initClassifier(CsmClassifier classifier) {
         this.classifierUID = UIDCsmConverter.declarationToUID(classifier);
         assert (classifierUID != null || classifier == null);
     }

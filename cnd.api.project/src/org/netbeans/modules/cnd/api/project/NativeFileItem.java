@@ -56,7 +56,7 @@ public interface NativeFileItem {
     public enum LanguageFlavor {
     	UNKNOWN,
         C, C89, C99,
-        CPP,
+        CPP, CPP11,
         F77, F90, F95
     }
     

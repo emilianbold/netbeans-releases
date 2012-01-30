@@ -238,37 +238,6 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
         public void testRefreshRecursively() throws IOException {
             super.testRefreshRecursively();
         }
-
-        @RandomlyFails
-        @Override
-        public void testFileProtectedAndNotDeleted() throws IOException {
-            super.testFileProtectedAndNotDeleted();
-        }
-
-        @RandomlyFails
-        @Override
-        public void testFileCopied() throws IOException {
-            super.testFileCopied();
-        }
-
-        @RandomlyFails
-        @Override
-        public void testFolderTreeCopied() throws IOException {
-            super.testFolderTreeCopied();
-        }
-
-        @RandomlyFails
-        @Override
-        public void testFileMoved() throws IOException {
-            super.testFileMoved();
-        }
-
-        @RandomlyFails
-        @Override
-        public void testFolderTreeMoved() throws IOException {
-            super.testFolderTreeMoved();
-        }
-        
     }
     
     public static final class VCSAnnotationProviderTestCase_ extends VCSAnnotationProviderTestCase {

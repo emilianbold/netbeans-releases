@@ -385,6 +385,8 @@ public final class ProjectImpl implements ProjectProperties {
                     return LanguageStandard.C99;
                 case CPP:
                     return LanguageStandard.CPP;
+                case CPP11:
+                    return LanguageStandard.CPP11;
                 case F77:
                     return LanguageStandard.F77;
                 case F90:
