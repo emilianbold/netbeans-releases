@@ -13,7 +13,7 @@
                         <release-version>1</release-version>
                         <specification-version>1.24</specification-version>
                     </run-dependency>
-                </dependency>                
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
                     <build-prerequisite/>
@@ -22,7 +22,7 @@
                         <release-version>1</release-version>
                         <specification-version>1.23</specification-version>
                     </run-dependency>
-                </dependency>                
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.options.api</code-name-base>
                     <build-prerequisite/>
@@ -74,7 +74,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
