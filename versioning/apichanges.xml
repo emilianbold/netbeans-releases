@@ -112,8 +112,8 @@ is the proper place.
         <change>
             <api name="versioning_spi"/>
             <summary>Added VCSHistoryProvider</summary>
-            <version major="1" minor="26"/>
-            <date day="19" month="1" year="2012"/>
+            <version major="1" minor="29"/>
+            <date day="30" month="1" year="2012"/>
             <author login="tstupka"/>
             <compatibility addition="yes"/>
             <description>

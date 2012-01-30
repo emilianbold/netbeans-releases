@@ -52,7 +52,7 @@ import javax.swing.Action;
  * 
  * @author Tomas Stupka
  * 
- * @since 1.26
+ * @since 1.29
  */
 public interface VCSHistoryProvider {
     
@@ -65,7 +65,7 @@ public interface VCSHistoryProvider {
      * 
      * @return a list of HistoryEntries
      * 
-     * @since 1.26
+     * @since 1.29
      */
     public abstract HistoryEntry[] getHistory(File[] files, Date fromDate);
     
@@ -77,7 +77,7 @@ public interface VCSHistoryProvider {
      * 
      * @return an action opening the history view or null if not available
      * 
-     * @since 1.26
+     * @since 1.29
      */
     public abstract Action createShowHistoryAction(File[] files);
     
@@ -110,7 +110,7 @@ public interface VCSHistoryProvider {
      * </table>
      * </p> 
      * 
-     * @since 1.26
+     * @since 1.29
      */
     public static final class HistoryEntry {
         private Date dateTime;
@@ -137,7 +137,7 @@ public interface VCSHistoryProvider {
          * @param actions actions which might be called in regard with this revision
          * @param revisionProvider a RevisionProvider to get access to a files contents in this revision
          *
-         * @since 1.26
+         * @since 1.29
          */
         public HistoryEntry(
                 File[] files, 
@@ -179,7 +179,7 @@ public interface VCSHistoryProvider {
          * @param revisionProvider a RevisionProvider to get access to a files contents in this revision
          * @param messageEditProvider a MessageEditProvider to change a revisions message
          * 
-         * @since 1.26
+         * @since 1.29
          */
         public HistoryEntry(
                 File[] files, 
@@ -202,7 +202,7 @@ public interface VCSHistoryProvider {
          * 
          * @return true if it is possible to access setter methods in this instance
          * 
-         * @since 1.26
+         * @since 1.29
          */
         public boolean canEdit() {
             return messageEditProvider != null;
@@ -213,7 +213,7 @@ public interface VCSHistoryProvider {
          * 
          * @return the date and time
          * 
-         * @since 1.26
+         * @since 1.29
          */
         public Date getDateTime() {
             return dateTime;
@@ -224,7 +224,7 @@ public interface VCSHistoryProvider {
          * 
          * @return the message describing the HistoryEntry. 
          * 
-         * @since 1.26
+         * @since 1.29
          */
         public String getMessage() {
             return message;
@@ -240,7 +240,7 @@ public interface VCSHistoryProvider {
          * 
          * @throws IllegalStateException if no {@link #MessageEditProvider} was passed to this HistoryEntry instance
          *
-         * @since 1.26
+         * @since 1.29
          */
         public void setMessage(String message) throws IOException {
             if(!canEdit()) throw new IllegalStateException("This entry is read-only");
@@ -253,7 +253,7 @@ public interface VCSHistoryProvider {
          * 
          * @return a fields of files
          * 
-         * @since 1.26
+         * @since 1.29
          */
         public File[] getFiles() {
             return files;
@@ -264,7 +264,7 @@ public interface VCSHistoryProvider {
          *
          * @return the full form of the users name
          * 
-         * @since 1.26
+         * @since 1.29
          */
         public String getUsername() {
             return username;
@@ -275,7 +275,7 @@ public interface VCSHistoryProvider {
          * 
          * @return 
          * 
-         * @since 1.26
+         * @since 1.29
          */
         public String getUsernameShort() {
             return usernameShort;
@@ -287,7 +287,7 @@ public interface VCSHistoryProvider {
          * 
          * @return 
          * 
-         * @since 1.26
+         * @since 1.29
          */
         public String getRevision() {
             return revision;
@@ -299,7 +299,7 @@ public interface VCSHistoryProvider {
          * 
          * @return 
          * 
-         * @since 1.26
+         * @since 1.29
          */
         public String getRevisionShort() {
             return revisionShort;
@@ -310,7 +310,7 @@ public interface VCSHistoryProvider {
          * 
          * @return a field of actions
          * 
-         * @since 1.26
+         * @since 1.29
          */
         public Action[] getActions() {
             return actions;
@@ -323,7 +323,7 @@ public interface VCSHistoryProvider {
          * @param originalFile placeholder File for the original (unmodified) copy of the working file
          * @param revisionFile a File in the working copy  
          * 
-         * @since 1.26
+         * @since 1.29
          */
         public void getRevisionFile(File originalFile, File revisionFile) {
             if(revisionProvider != null) {
@@ -353,7 +353,7 @@ public interface VCSHistoryProvider {
      * 
      * @param l listener
      * 
-     * @since 1.26
+     * @since 1.29
      */
     public void addHistoryChangeListener(HistoryChangeListener l);
     
@@ -362,7 +362,7 @@ public interface VCSHistoryProvider {
      * 
      * @param l listener
      * 
-     * @since 1.26
+     * @since 1.29
      */
     public void removeHistoryChangeListener(HistoryChangeListener l);
 
@@ -373,7 +373,7 @@ public interface VCSHistoryProvider {
      * 
      * @see HistoryEntry#getRevisionFile(java.io.File, java.io.File) 
      * 
-     * @since 1.26
+     * @since 1.29
      */
     public interface RevisionProvider {
        
@@ -387,7 +387,7 @@ public interface VCSHistoryProvider {
         * @param originalFile placeholder File for the original (unmodified) copy of the working file
         * @param revisionFile a File in the working copy  
         *
-        * @since 1.26
+        * @since 1.29
         */
         void getRevisionFile(File originalFile, File revisionFile);
     }
@@ -398,7 +398,7 @@ public interface VCSHistoryProvider {
      * is expected to work.
      * 
      * @see HistoryEntry#setMessage(java.lang.String) 
-     * @since 1.26
+     * @since 1.29
      */
     public interface MessageEditProvider {
         
@@ -409,7 +409,7 @@ public interface VCSHistoryProvider {
          * 
          * @throws IOException in case it wasn't possible to change the message by the versioning system.
          * 
-         * @since 1.26 
+         * @since 1.29 
          * 
          */
         void setMessage(String message) throws IOException;
@@ -418,14 +418,14 @@ public interface VCSHistoryProvider {
     /**
      * Listener to changes in a versioning history
      * 
-     * @since 1.26
+     * @since 1.29
      */
     public interface HistoryChangeListener {
         /** 
          * Notifies listener about a change in the history of a few files.
          * @param evt event describing the change
          * 
-         * @since 1.26
+         * @since 1.29
          */        
         public void fireHistoryChanged(HistoryEvent evt);
     }
@@ -433,7 +433,7 @@ public interface VCSHistoryProvider {
     /**
      * Event notifying a change in the history of some files.
      * 
-     * @since 1.26
+     * @since 1.29
      */
     public static final class HistoryEvent {
         private final File[] files;
@@ -445,7 +445,7 @@ public interface VCSHistoryProvider {
          * @param source {@VCSHistoryProvider} representing the versioning system in which a history change happened. 
          * @param files the files which history has changed
          * 
-         * @since 1.26
+         * @since 1.29
          */
         public HistoryEvent(VCSHistoryProvider source, File[] files) {
             this.files = files;
@@ -457,7 +457,7 @@ public interface VCSHistoryProvider {
          * 
          * @return files
          * 
-         * @since 1.26
+         * @since 1.29
          */
         public File[] getFiles() {
             return files;
@@ -468,7 +468,7 @@ public interface VCSHistoryProvider {
          * 
          * @return {@VCSHistoryProvider} representing the versioning system in which a history change happened. 
          * 
-         * @since 1.26
+         * @since 1.29
          */
         public VCSHistoryProvider getSource() {
             return source;

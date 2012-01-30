@@ -177,6 +177,12 @@ public abstract class VersioningSystem {
         return null;
     }
 
+    /**
+     * Retrieves a VCSHistoryProvider implementation if this versioning system provides one.
+     * 
+     * @return a VCSHistoryProvider implementation or null
+     * @since 1.29
+     */
     public VCSHistoryProvider getVCSHistoryProvider() {
         return null;
     }
