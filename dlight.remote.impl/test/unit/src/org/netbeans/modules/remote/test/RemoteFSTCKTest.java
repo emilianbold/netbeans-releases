@@ -108,18 +108,6 @@ public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
         public void testBigFileAndAsString() throws Exception {
             super.testBigFileAndAsString();
         }
-
-        @RandomlyFails
-        @Override
-        public void testDefaultMimeTypeForBinaryFiles() throws Exception {
-            super.testDefaultMimeTypeForBinaryFiles();
-        }
-
-        @RandomlyFails
-        @Override
-        public void testToURL() throws Exception {
-            super.testToURL();
-        }
     }
 
     public static class URLMapperTestHidden_ extends URLMapperTestHidden {
