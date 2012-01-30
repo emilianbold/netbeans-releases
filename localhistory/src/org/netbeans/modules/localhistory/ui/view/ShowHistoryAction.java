@@ -57,9 +57,11 @@ import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
-import org.netbeans.modules.localhistory.LocalHistory;
-import org.netbeans.modules.localhistory.utils.Utils;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
+import org.netbeans.modules.versioning.spi.VersioningSystem;
+import org.netbeans.modules.versioning.ui.history.History;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -77,10 +79,10 @@ import org.openide.windows.TopComponent.Registry;
  *
  * @author Tomas Stupka
  */
-public class ShowLocalHistoryAction extends NodeAction {
+public class ShowHistoryAction extends NodeAction {
     
-    /** Creates a new instance of ShowLocalHistoryAction */
-    public ShowLocalHistoryAction() {
+    /** Creates a new instance of ShowHistoryAction */
+    public ShowHistoryAction() {
         setIcon(null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
@@ -103,7 +105,7 @@ public class ShowLocalHistoryAction extends NodeAction {
             try {
                 dataObject = DataObject.find(fo);
             } catch (DataObjectNotFoundException ex) {
-                LocalHistory.LOG.log(Level.WARNING, null, ex);
+                History.LOG.log(Level.WARNING, null, ex);
             }
             if(dataObject != null) {
                 
@@ -135,9 +137,9 @@ public class ShowLocalHistoryAction extends NodeAction {
                             // open the Local History Top Component
                             hasEditorPanes = Utils.hasOpenedEditorPanes(tcDataObject);
                         } catch (InterruptedException ex) {
-                            LocalHistory.LOG.log(Level.WARNING, null, ex);
+                            History.LOG.log(Level.WARNING, null, ex);
                         } catch (InvocationTargetException ex) {
-                            LocalHistory.LOG.log(Level.WARNING, null, ex);
+                            History.LOG.log(Level.WARNING, null, ex);
                         }
                     }
                 }
@@ -162,15 +164,15 @@ public class ShowLocalHistoryAction extends NodeAction {
     }
 
     private void openLocalHistoryTC(final File[] files) {
+        final VersioningSystem vs = VersioningSupport.getOwner(files[0]);
         // fallback opening a LHTopComponent
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                final LocalHistoryTopComponent tc = new LocalHistoryTopComponent();
+                final HistoryTopComponent tc = new HistoryTopComponent(vs, files);
                 tc.setName(NbBundle.getMessage(this.getClass(), "CTL_LocalHistoryTopComponent", files[0].getName())); // NOI18N
                 tc.open();
                 tc.requestActive();                                
-                tc.init(files);
             }
         });
     }
@@ -189,7 +191,7 @@ public class ShowLocalHistoryAction extends NodeAction {
         if (descs.size() > 1) {
             // LH is registred for every mimetype, so we need at least two
             for (MultiViewDescription desc : descs) {
-                if (desc.preferredID().equals(LocalHistoryTopComponent.PREFERRED_ID)) {
+                if (desc.preferredID().equals(HistoryTopComponent.PREFERRED_ID)) {
                     return true;
                 } 
             } 
@@ -201,7 +203,7 @@ public class ShowLocalHistoryAction extends NodeAction {
         if (handler != null) {
             MultiViewPerspective[] perspectives = handler.getPerspectives();
             for (final MultiViewPerspective p : perspectives) {
-                if(p.preferredID().equals(LocalHistoryTopComponent.PREFERRED_ID)) {
+                if(p.preferredID().equals(HistoryTopComponent.PREFERRED_ID)) {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -237,12 +239,12 @@ public class ShowLocalHistoryAction extends NodeAction {
     
     @Override
     public String getName() {
-        return NbBundle.getMessage(this.getClass(), "CTL_ShowLocalHistory");    // NOI8N    
+        return NbBundle.getMessage(this.getClass(), "CTL_ShowHistory");    // NOI8N    
     }
     
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ShowLocalHistoryAction.class);
+        return new HelpCtx(ShowHistoryAction.class);
     }
 
     private class TCOpenedListener implements PropertyChangeListener {
