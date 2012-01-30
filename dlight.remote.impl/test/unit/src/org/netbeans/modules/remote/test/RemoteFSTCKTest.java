@@ -111,6 +111,12 @@ public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
 
         @RandomlyFails
         @Override
+        public void testDefaultMimeTypeForBinaryFiles() throws Exception {
+            super.testDefaultMimeTypeForBinaryFiles();
+        }
+
+        @RandomlyFails
+        @Override
         public void testToURL() throws Exception {
             super.testToURL();
         }
