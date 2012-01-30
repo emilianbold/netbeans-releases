@@ -526,6 +526,10 @@ public final class FoldHierarchyTransactionImpl {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("addFold: " + fold + '\n'); // NOI18N
         }
+        
+        if (getOperation(fold).isReleased()) {
+            throw new IllegalStateException("The manager has been already released");
+        }
 
         return addFold(fold, null, 0);
     }
