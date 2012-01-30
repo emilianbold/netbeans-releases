@@ -75,7 +75,8 @@ import org.xml.sax.InputSource;
 @MIMEResolver.ExtensionRegistration(
     displayName="org.netbeans.modules.xml.resources.Bundle#ENTResolver",
     extension="ent",
-    mimeType="text/xml-external-parsed-entity"
+    mimeType="text/xml-external-parsed-entity",
+    position=60003
 )
 public final class EntityDataObject extends MultiDataObject implements XMLDataObjectLook {
     /** Serial Version UID */

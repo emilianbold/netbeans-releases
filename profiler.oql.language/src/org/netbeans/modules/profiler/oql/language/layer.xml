@@ -27,12 +27,4 @@
             </folder>
         </folder>
     </folder>
-    <folder name="Services">
-        <folder name="MIMEResolver">
-            <file name="text-x-oql-mime-resolver.xml" url="text-x-oql-mime-resolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.oql.language.Bundle"/>
-                <attr name="position" intvalue="945"/>
-            </file>
-        </folder>
-    </folder>
 </filesystem>

@@ -48,6 +48,7 @@ import java.io.IOException;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
@@ -62,6 +63,13 @@ import org.openide.windows.TopComponent;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
+@Messages("NeonResolver=Neon Files")
+@MIMEResolver.ExtensionRegistration(
+    displayName="#NeonResolver",
+    position=135,
+    extension="neon",
+    mimeType="text/x-neon"
+)
 public class NeonDataObject extends MultiDataObject {
 
     public NeonDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {

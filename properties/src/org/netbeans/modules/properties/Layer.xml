@@ -155,15 +155,4 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    
-    <folder name="Services">
-        <folder name="MIMEResolver">
-            <file name="org-netbeans-modules-properties-mime-resolver.xml" url="res-mime-resolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.properties.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/properties/propertiesObject.png"/>
-                <attr name="position" intvalue="120"/>
-            </file>
-        </folder>
-    </folder>
-
 </filesystem>
