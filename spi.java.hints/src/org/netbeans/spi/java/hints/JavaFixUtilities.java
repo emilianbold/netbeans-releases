@@ -116,27 +116,17 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 
-/**
+/**Factory methods for various predefined {@link JavaFix} implementations.
  *
  * @author lahvac
  */
 public class JavaFixUtilities {
 
-    public static final String ENSURE_DEPENDENCY = "ensure-dependency";
-    
     public static Fix rewriteFix(HintContext ctx, String displayName, TreePath what, final String to, String... imports) {
-        return rewriteFix(ctx, displayName, what, to, Collections.<String, TypeMirror>emptyMap(), imports);
+        return rewriteFix(ctx.getInfo(), displayName, what, to, ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames(), Collections.<String, TypeMirror>emptyMap(), Collections.<String, String>emptyMap(), imports);
     }
 
-    private static Fix rewriteFix(HintContext ctx, String displayName, TreePath what, final String to, Map<String, TypeMirror> constraints, String... imports) {
-        return rewriteFix(ctx.getInfo(), displayName, what, to, ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames(), constraints, imports);
-    }
-
-    private static Fix rewriteFix(CompilationInfo info, String displayName, TreePath what, final String to, Map<String, TreePath> parameters, Map<String, Collection<? extends TreePath>> parametersMulti, final Map<String, String> parameterNames, Map<String, TypeMirror> constraints, String... imports) {
-        return rewriteFix(info, displayName, what, to, parameters, parametersMulti, parameterNames, constraints, Collections.<String, String>emptyMap(), imports);
-    }
-
-    public static Fix rewriteFix(CompilationInfo info, String displayName, TreePath what, final String to, Map<String, TreePath> parameters, Map<String, Collection<? extends TreePath>> parametersMulti, final Map<String, String> parameterNames, Map<String, TypeMirror> constraints, Map<String, String> options, String... imports) {
+    static Fix rewriteFix(CompilationInfo info, String displayName, TreePath what, final String to, Map<String, TreePath> parameters, Map<String, Collection<? extends TreePath>> parametersMulti, final Map<String, String> parameterNames, Map<String, TypeMirror> constraints, Map<String, String> options, String... imports) {
         final Map<String, TreePathHandle> params = new HashMap<String, TreePathHandle>();
 
         for (Entry<String, TreePath> e : parameters.entrySet()) {

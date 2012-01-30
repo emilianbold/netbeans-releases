@@ -43,11 +43,13 @@
 package org.netbeans.spi.java.hints;
 
 import com.sun.source.util.TreePath;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -56,8 +58,12 @@ import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
 
-/**
+/**A base class for fixes that modify Java source code. Using this class
+ * as a base class makes creating the fix somewhat simpler, but also supports
+ * running the hint in the Inspect&Transform dialog. The fix can be converted
+ * to {@link Fix} by means of the {@link #toEditorFix() } method.
  *
+ * @see JavaFixUtilities for various predefined fixes.
  * @author Jan Lahoda
  */
 public abstract class JavaFix {
@@ -65,31 +71,52 @@ public abstract class JavaFix {
     private final TreePathHandle handle;
     private final Map<String, String> options;
 
+    /**Create JavaFix with the given base {@link TreePath}. The base {@link TreePath}
+     * will be passed back to the real implementation of the fix.
+     *
+     * @param info a {@link CompilationInfo} from which the given {@link TreePath} originates
+     * @param tp a {@link TreePath} that will be passed back to the
+     *           {@link #performRewrite(org.netbeans.spi.java.hints.JavaFix.TransformationContext) } method
+     */
     protected JavaFix(CompilationInfo info, TreePath tp) {
         this(info, tp, Collections.<String, String>emptyMap());
     }
 
-    protected JavaFix(CompilationInfo info, TreePath tp, Map<String, String> options) {
+    JavaFix(CompilationInfo info, TreePath tp, Map<String, String> options) {
         this.handle = TreePathHandle.create(tp, info);
         this.options = Collections.unmodifiableMap(new HashMap<String, String>(options));
     }
 
+    /**Create JavaFix with the given base {@link TreePathHandle}. The base {@link TreePathHandle}
+     * will be resolved and passed back to the real implementation of the fix.
+     *
+     * @param handle a {@link TreePathHandle} that will be resolved and passed back to the
+     *              {@link #performRewrite(org.netbeans.spi.java.hints.JavaFix.TransformationContext) } method
+     */
     protected JavaFix(TreePathHandle handle) {
         this(handle, Collections.<String, String>emptyMap());
     }
 
-    protected JavaFix(TreePathHandle handle, Map<String, String> options) {
+    JavaFix(TreePathHandle handle, Map<String, String> options) {
         this.handle = handle;
         this.options = Collections.unmodifiableMap(new HashMap<String, String>(options));
     }
 
+    /**The display text of the fix.
+     *
+     * @return the display text of the fix.
+     */
     protected abstract String getText();
 
+    /**Do the transformations needed to implement the hint's function.
+     *
+     * @param ctx a context over which the fix should operate
+     */
     protected abstract void performRewrite(TransformationContext ctx);
 
     /**Convert this {@link JavaFix} into the Editor Hints {@link Fix}.
      *
-     * @return a {@link Fix}, that when invoked, will invoke {@link #performRewrite(org.netbeans.api.java.source.WorkingCopy, com.sun.source.util.TreePath, boolean) }
+     * @return a {@link Fix}, that when invoked, will invoke {@link #performRewrite(org.netbeans.spi.java.hints.JavaFix.TransformationContext) }
      * method on this {@link JavaFix}.
      */
     public final Fix toEditorFix() {
@@ -123,9 +150,18 @@ public abstract class JavaFix {
             public Map<String, String> getOptions(JavaFix jf) {
                 return jf.options;
             }
+
+            @Override
+            public Fix rewriteFix(CompilationInfo info, String displayName, TreePath what, String to, Map<String, TreePath> parameters, Map<String, Collection<? extends TreePath>> parametersMulti, Map<String, String> parameterNames, Map<String, TypeMirror> constraints, Map<String, String> options, String... imports) {
+                return JavaFixUtilities.rewriteFix(info, displayName, what, to, parameters, parametersMulti, parameterNames, constraints, options, imports);
+            }
         };
     }
 
+    /**A context that contains a reference to a {@link WorkingCopy} through which
+     * modifications of Java source code can be made.
+     *
+     */
     public static final class TransformationContext {
         private final WorkingCopy workingCopy;
         private final TreePath path;
@@ -136,14 +172,21 @@ public abstract class JavaFix {
             this.canShowUI = canShowUI;
         }
 
-        public boolean isCanShowUI() {
+        boolean isCanShowUI() {
             return canShowUI;
         }
 
+        /**Returns the {@link TreePath} that was passed to a {@link JavaFix} constructor.
+         *
+         * @return the {@link TreePath} that was passed to a {@link JavaFix} constructor.
+         */
         public TreePath getPath() {
             return path;
         }
 
+        /**A {@link WorkingCopy} over which the transformation should operate.
+         * @return {@link WorkingCopy} over which the transformation should operate.
+         */
         public WorkingCopy getWorkingCopy() {
             return workingCopy;
         }

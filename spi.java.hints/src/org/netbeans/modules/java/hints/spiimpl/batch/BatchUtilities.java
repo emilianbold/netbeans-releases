@@ -299,11 +299,13 @@ public class BatchUtilities {
         return result;
     }
 
+    public static final String ENSURE_DEPENDENCY = "ensure-dependency";
+
     public static boolean fixDependencies(FileObject file, List<JavaFix> toProcess, Map<Project, Set<String>> alreadyProcessed) {
         boolean modified = false;
 //        for (FileObject file : toProcess.keySet()) {
             for (JavaFix fix : toProcess) {
-                String updateTo = Accessor.INSTANCE.getOptions(fix).get(JavaFixUtilities.ENSURE_DEPENDENCY);
+                String updateTo = Accessor.INSTANCE.getOptions(fix).get(ENSURE_DEPENDENCY);
 
                 if (updateTo != null) {
                     Project p = FileOwnerQuery.getOwner(file);

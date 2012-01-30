@@ -57,7 +57,16 @@ public @interface ConstraintVariableType {
      */
     public String variable();
 
-    /**The required type of the section of source code.
+    /**The required type of the section of source code. The value must be a type
+     * per JLS 4.1, i.e. a primitive type (JLS 4.2), or a reference type (JLS 4.3).
+     * All elements of the type must be resolvable when written to any Java file,
+     * they may not contain e.g. references to type variables, simple names, etc.
+     *
+     * The type may include any actual type arguments, including wildcard.
+     *
+     * While matching, the type of the tree that corresponds to the variable in
+     * the actual occurrence candidate is accepted if it is assignable into the
+     * variable defined by the attribute.
      */
     public String type();
     
