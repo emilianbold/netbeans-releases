@@ -55,7 +55,7 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.persistence</code-name-base>
                     <run-dependency>
-                        <specification-version>1.3</specification-version>
+                        <specification-version>1.27.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
