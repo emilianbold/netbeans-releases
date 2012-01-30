@@ -76,16 +76,13 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="900"/>
             </file>
         </folder>
-    </folder> 
+    </folder>   
     
+    <!-- History -->
     <folder name="VersioningOptionsDialog">
         <file name="General.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.ui.options.GeneralAdvancedOption"/>
         </file>
-    </folder>    
-    
-    <!-- History -->
-    <folder name="VersioningOptionsDialog">
         <file name="History.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.ui.options.HistoryOptions"/>
         </file>
@@ -99,15 +96,4 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>        
-    
-    <folder name="OptionsDialog">
-        <folder name="Actions">
-            <folder name="History">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.versioning.ui.resources.Bundle"/>
-                <file name="ShowLocalHistoryAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/LocalHistory/org-netbeans-modules-localhistory-ui-view-ShowLocalHistoryAction.instance"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
 </filesystem>
