@@ -55,6 +55,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
@@ -87,6 +88,16 @@ public final class MIMEResolverImpl {
     private static final int USER_DEFINED_MIME_RESOLVER_POSITION = 10;
 
     public static MIMEResolver forDescriptor(FileObject fo) {
+        if (!isUserDefined(fo)) {
+            ERR.log(Level.WARNING, "Ineffective registration of resolver {0} use @MIMEResolver.Registration! See bug #191777.", fo.getPath());
+            if (ERR.isLoggable(Level.FINE)) {
+                try {
+                    ERR.fine(fo.asText());
+                } catch (IOException ex) {
+                    ERR.log(Level.FINE, null, ex);
+                }
+            }
+        }
         return new Impl(fo);
     }
     
