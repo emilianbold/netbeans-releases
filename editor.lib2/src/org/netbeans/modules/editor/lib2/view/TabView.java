@@ -91,10 +91,9 @@ public final class TabView extends EditorView implements TabableView {
     /** Total span of the view */
     private float width; // 44 + 4 = 48 bytes
 
-    public TabView(int offset, int length, AttributeSet attributes) {
+    public TabView(int length, AttributeSet attributes) {
         super(null);
         assert (length > 0) : "Length == 0"; // NOI18N
-        this.rawEndOffset = offset + length;
         this.length = length;
         this.attributes = attributes;
     }

@@ -238,7 +238,7 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements Docume
                     .addComponent(adminUrlField)
                     .addComponent(instanceUrlField)
                     .addComponent(serviceInstanceField)
-                    .addComponent(identityDomainField, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
+                    .addComponent(identityDomainField, javax.swing.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(usernameField, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)

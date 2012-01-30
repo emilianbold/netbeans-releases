@@ -67,8 +67,8 @@ final class WrapLine {
     EditorView endPart;
 
     /*
-     * X corresponding to the start view on the line (right next to startViewPart).
-     * If there's an existing startViewPart then the value is its width otherwise
+     * X corresponding to the start view on the line (right next to startPart).
+     * If there's an existing startPart then the value is its width otherwise
      * it's value is zero.
      */
     float firstViewX;
@@ -76,20 +76,20 @@ final class WrapLine {
     /**
      * Index of a first view located at this line.
      * <br/>
-     * Logically if there's a non-null startViewPart then it comes from view
-     * at (startViewIndex - 1).
+     * Logically if there's a non-null startPart then it comes from view
+     * at (firstViewIndex - 1).
      */
     int firstViewIndex;
 
     /**
      * Index that follows last view located at this line.
      * <br/>
-     * It should be >= startViewIndex.
+     * It should be >= firstViewIndex.
      */
     int endViewIndex;
 
     WrapLine() {
-        // Leave startViewIndex == endViewIndex which means no full views
+        // Leave firstViewIndex == endViewIndex which means no full views
     }
 
     boolean hasFullViews() {
