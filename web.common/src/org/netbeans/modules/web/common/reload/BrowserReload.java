@@ -42,21 +42,11 @@
  */
 package org.netbeans.modules.web.common.reload;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.channels.SelectionKey;
-import java.nio.charset.Charset;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.web.common.reload.Message.MessageType;
-import org.netbeans.modules.web.common.websocket.WebSocketReadHandler;
-import org.netbeans.modules.web.common.websocket.WebSocketServer;
+
+import org.netbeans.core.IDESettings;
+import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.filesystems.FileObject;
 
 
@@ -66,36 +56,9 @@ import org.openide.filesystems.FileObject;
  */
 public class BrowserReload {
     
-    private static final int PORT = 8008;
-    
-    private static final Logger LOG = Logger.getLogger( 
-            BrowserReload.class.getCanonicalName());
     
     private BrowserReload(){
-        try {
-            server = new WebSocketServer(new InetSocketAddress(PORT)){
-              
-                protected void chanelClosed(SelectionKey key) {
-                    removeKey( key );
-                }
-            };
-            server.setWebSocketReadHandler( new BrowserPluginHandler() );
-            new Thread( server ).start();
-            
-            Thread shutdown = new Thread(){
-                @Override
-                public void run() {
-                    server.stop();
-                }
-            };
-            Runtime.getRuntime().addShutdownHook( shutdown);
-            
-            communicationMap = new ConcurrentHashMap<FileObject, Pair>();
-            url2File = new ConcurrentHashMap<String, FileObject>();
-        }
-        catch (IOException e) {
-            LOG.log( Level.WARNING , null , e);
-        }
+        pluginMap =new ConcurrentHashMap<FileObject, Couple<BrowserPlugin,? extends Couple>>();
     }
     
     public void register( FileObject localFileObject, String browserUrl ){
@@ -103,169 +66,61 @@ public class BrowserReload {
         if ( browserUrl == null || localFileObject == null ){
             return;
         }
-        url2File.put( browserUrl, localFileObject );
+        BrowserPlugin plugin = getPlugin();
+        if ( plugin == null ){
+            return;
+        }
+        plugin.register(localFileObject, browserUrl);
     }
     
     public boolean canReload( FileObject fileObject ){
-        Pair pair = communicationMap.get( fileObject );
-        if ( pair == null || pair.getId() == null || pair.getSelectionKey()==null){
+        Couple<BrowserPlugin, ? extends Couple> couple = getPluginMap().get( fileObject );
+        if ( couple == null ){
             return false;
         }
-        else {
-            return true;
-        }
+        return  couple.getStart()!= null && couple.getEnd()!= null ;
     }
     
     public void reload( FileObject fileObject ){
-        Pair pair = communicationMap.get( fileObject );
-        if ( pair == null || pair.getId() == null ){
+        Couple<BrowserPlugin, ? extends Couple> couple = getPluginMap().get( fileObject );
+        if ( couple == null  ){
             return;
         }
-        SelectionKey selectionKey = pair.getSelectionKey();
-        if ( selectionKey == null ){
-            return;
-        }
-            
-        server.sendMessage(selectionKey, createReloadMessage(pair.getId()) );
+        couple.getStart().reload( fileObject );
     }
     
     public void clear( FileObject fileObject ){
         if ( fileObject == null ){
             return;
         }
-        communicationMap.remove( fileObject );
+        Couple<BrowserPlugin, ? extends Couple> couple = pluginMap.get( fileObject );
+        if ( couple!= null ){
+            couple.getStart().clear(fileObject);
+        }
+        pluginMap.remove( fileObject );
+    }
+    
+    private BrowserPlugin getPlugin(){
+        Factory wwwBrowser = IDESettings.getWWWBrowser();
+        // TODO: handle only known accessors
+        if ( wwwBrowser != null && "org.netbeans.core.browser.webview.BrowserFactory".
+                equals( wwwBrowser.getClass().getCanonicalName()))
+        {
+            return webViewAccessor.getPlugin();
+        }            
+        return defaultAccessor.getPlugin();
+    }
+    
+    Map<FileObject,Couple<BrowserPlugin,? extends Couple>> getPluginMap(){
+        return pluginMap;
     }
     
     public static BrowserReload getInstance(){
         return INSTANCE;
     }
     
-    private String createReloadMessage(String tabId) {
-        Message msg = new Message( MessageType.RELOAD, 
-                Collections.singletonMap( Message.TAB_ID, tabId ));
-        return msg.toString();
-    }
-    
-    private void removeKey( SelectionKey key ) {
-        for( Iterator<Entry<FileObject,Pair>> iterator = communicationMap.entrySet().iterator(); 
-            iterator.hasNext() ; )
-        {
-            Entry<FileObject, Pair> pair = iterator.next();
-            if ( key.equals( pair.getValue().getSelectionKey() )){
-                iterator.remove();
-            }
-        }
-        
-    }
-    
-    public class BrowserPluginHandler implements WebSocketReadHandler {
-
-        private static final String URL = "url";        // NOI18N
-
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.web.common.websocket.WebSocketReadHandler#read(java.nio.channels.SelectionKey, byte[], java.lang.Integer)
-         */
-        @Override
-        public void read( SelectionKey key, byte[] data, Integer dataType ) {
-            if ( dataType != null && dataType != 1 ){
-                return;
-            }
-            String message = new String( data , Charset.forName( WebSocketServer.UTF_8));
-            Message msg = Message.parse(message);
-            if ( msg == null ){
-                return;
-            }
-            MessageType type = msg.getType();
-            switch (type) {
-                case INIT:
-                    handleInit(msg, key );
-                    break;
-                case CLOSE:
-                    handleClose( msg , key );
-                    break;
-                default:
-                    assert false;
-            }
-            
-        }
-        
-        private void handleInit( Message message , SelectionKey key ){
-            String url = message.getValue(URL);
-            String tabId = message.getValue(Message.TAB_ID);
-            if ( url == null || tabId == null ){
-                return;
-            }
-            FileObject localFile = url2File.remove( url );
-            if ( localFile == null ){
-                Map<String,String> map = new HashMap<String, String>();
-                map.put( Message.TAB_ID, tabId );
-                map.put("status","notaccepted");       // NOI18N
-                Message msg = new Message( MessageType.INIT , map );
-                server.sendMessage(key, msg.toString());
-            }
-            else  {
-                communicationMap.put( localFile , new Pair(key , tabId) );
-                Map<String,String> map = new HashMap<String, String>();
-                map.put( Message.TAB_ID, tabId );
-                map.put("status","accepted");       // NOI18N
-                Message msg = new Message( MessageType.INIT , map );
-                server.sendMessage(key, msg.toString());
-            }
-        }
-        
-        private void handleClose( Message message, SelectionKey key  ){
-            String tabId = message.getValue( Message.TAB_ID );
-            if ( tabId == null ){
-                return;
-            }
-            for (Iterator<Entry<FileObject,Pair>> iterator = communicationMap.entrySet().iterator(); 
-                iterator.hasNext() ; ) 
-            {
-                Entry<FileObject, Pair> entry = iterator.next();
-                String id = entry.getValue().getId();
-                if ( tabId.equals( id )){
-                    try {
-                        server.close(entry.getValue().getSelectionKey());
-                    }
-                    catch(IOException e){
-                        LOG.log( Level.INFO, null , e );
-                    }
-                    iterator.remove();
-                    break;
-                }
-            }
-        }
-
-        @Override
-        public void accepted(SelectionKey key) {
-        }
-
-        @Override
-        public void closed(SelectionKey key) {
-        }
-        
-    }
-    
-    public static class Pair {
-        Pair( SelectionKey key , String tabId){
-            this.key = key;
-            this.tabId = tabId;
-        }
-        
-        public SelectionKey getSelectionKey(){
-            return key;
-        }
-        
-        public String getId(){
-            return tabId;
-        }
-        
-        private SelectionKey key;
-        private String tabId;
-    }
-
-    private WebSocketServer server;
     private static final BrowserReload INSTANCE = new BrowserReload();
-    private Map<String, FileObject> url2File;
-    private Map<FileObject,Pair> communicationMap;
+    private Map<FileObject,Couple<BrowserPlugin,? extends Couple>> pluginMap;
+    private PluginAccessor webViewAccessor = new WebViewAccessor();
+    private PluginAccessor defaultAccessor = new ExternalBrowserAccessor();
 }
