@@ -73,7 +73,6 @@ import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
-import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -267,26 +266,18 @@ public class JavaBinaryIndexer extends BinaryIndexer {
         public boolean scanStarted(final Context context) {
             try {
                 TransactionContext.beginStandardTransaction(false, context.getRootURI());
-                return IndexManager.writeAccess(new IndexManager.Action<Boolean>() {
-                    @Override
-                    public Boolean run() throws IOException, InterruptedException {
-                        final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), false);
-                        if (uq == null) {
-                            //Closing...
-                            return true;
-                        }
-                        if (uq.getState() != ClassIndexImpl.State.NEW) {
-                            //Already checked
-                            return true;
-                        }
-                        return uq.isValid();
-                    }
-                });
+                final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), false);
+                if (uq == null) {
+                    //Closing...
+                    return true;
+                }
+                if (uq.getState() != ClassIndexImpl.State.NEW) {
+                    //Already checked
+                    return true;
+                }
+                return uq.isValid();
             } catch (IOException ioe) {
                 JavaIndex.LOG.log(Level.WARNING, "Exception while checking cache validity for root: "+context.getRootURI(), ioe); //NOI18N
-                return false;
-            } catch (InterruptedException ie) {
-                JavaIndex.LOG.log(Level.WARNING, "Exception while checking cache validity for root: "+context.getRootURI(), ie); //NOI18N
                 return false;
             }
         }
