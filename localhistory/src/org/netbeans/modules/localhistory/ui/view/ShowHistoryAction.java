@@ -62,6 +62,9 @@ import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.ui.history.History;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -79,6 +82,9 @@ import org.openide.windows.TopComponent.Registry;
  *
  * @author Tomas Stupka
  */
+@ActionID(id = "org.netbeans.modules.localhistory.ui.view.ShowHistoryAction", category = "History")
+@ActionRegistration(lazy = false, displayName = "CTL_ShowHistory")
+@ActionReference(path = "OptionsDialog/Actions/History", name = "ShowHistoryAction")
 public class ShowHistoryAction extends NodeAction {
     
     /** Creates a new instance of ShowHistoryAction */
