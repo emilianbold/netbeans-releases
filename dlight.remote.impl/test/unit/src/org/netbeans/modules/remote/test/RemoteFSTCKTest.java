@@ -63,22 +63,15 @@ public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
     
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(FileSystemTestHid_.class);
+        suite.addTestSuite(FileSystemTestHid.class);
         suite.addTestSuite(FileObjectTestHid_.class);
         // it seems AttributesTestHidden does not belong to FS TCK
         //suite.addTestSuite(AttributesTestHidden.class);
-        suite.addTestSuite(URLMapperTestHidden_.class);
-        suite.addTestSuite(FileUtilTestHidden_.class);
+        suite.addTestSuite(URLMapperTestHidden.class);
+        suite.addTestSuite(FileUtilTestHidden.class);
         return new RemoteFSTCKTest(suite);
     }
     
-    public static class FileSystemTestHid_ extends FileSystemTestHid {
-
-        public FileSystemTestHid_(String testName) {
-            super(testName);
-        }
-    }
-
     public static class FileObjectTestHid_ extends FileObjectTestHid {
 
         public FileObjectTestHid_(String testName) {
@@ -107,44 +100,6 @@ public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
         @Override
         public void testBigFileAndAsString() throws Exception {
             super.testBigFileAndAsString();
-        }
-
-        @RandomlyFails
-        @Override
-        public void testToURL() throws Exception {
-            super.testToURL();
-        }
-    }
-
-    public static class URLMapperTestHidden_ extends URLMapperTestHidden {
-
-        public URLMapperTestHidden_(String testName) {
-            super(testName);
-        }
-    }
-
-    public static class FileUtilTestHidden_ extends FileUtilTestHidden {
-
-        public FileUtilTestHidden_(String testName) {
-            super(testName);
-        }
-
-        @RandomlyFails
-        @Override
-        public void testRunAtomicAction() throws Exception {
-            super.testRunAtomicAction();
-        }
-
-        @RandomlyFails
-        @Override
-        public void testToFile() throws Exception {
-            super.testToFile();
-        }
-
-        @RandomlyFails
-        @Override
-        public void testToFileObject() throws Exception {
-            super.testToFileObject();
         }
     }
 }

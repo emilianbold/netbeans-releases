@@ -48,4 +48,6 @@ package org.netbeans.modules.cnd.debug;
  */
 public interface CndTraceFlags {
     public static final boolean TRACE_SLICE_DISTIBUTIONS = DebugUtils.getBoolean("cnd.slice.trace", false); // NOI18N
+
+    public static final boolean LANGUAGE_FLAVOR_CPP11 = DebugUtils.getBoolean("cnd.language.flavor.cpp11", false); // NOI18N
 }

@@ -41,39 +41,80 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.openide.filesystems;
 
-import junit.framework.*;
-import java.io.*;
-import org.netbeans.junit.*;
+import java.io.File;
 
-public class LocalFileSystemTest extends FileSystemFactoryHid {
-    public LocalFileSystemTest (Test test) {
-        super(test);
-    }
+/**
+ * Subset of FileUtilTestHidden tests that are applicable only for local FS 
+ * @author Alexander Simon
+ */
+public class FileUtilJavaIOFileHidden extends TestBaseHid {
 
-    public static Test suite() {
-        NbTestSuite suite = new NbTestSuite();
+    private FileObject root = null;
 
-        suite.addTestSuite(AttributesTestHidden.class);
-        suite.addTestSuite(RepositoryTestHid.class);                
-        suite.addTestSuite(FileSystemTestHid.class);                         
-        suite.addTestSuite(FileObjectTestHid.class);        
-        suite.addTestSuite(LocalFileSystemTestHid.class);
-        suite.addTestSuite(URLMapperTestHidden.class);        
-        suite.addTestSuite(URLMapperTestInternalHidden.class);                        
-        suite.addTestSuite(FileUtilTestHidden.class);                        
-        suite.addTestSuite(FileUtilJavaIOFileHidden.class);                        
-
-        return new LocalFileSystemTest(suite);
+    @Override
+    protected String[] getResources(String testName) {
+        return new String[]{
+                    "fileutildir/tofile.txt",
+                    "fileutildir/tofileobject.txt",
+                    "fileutildir/isParentOf.txt",
+                    "fileutildir/fileutildir2/fileutildir3",
+                    "fileutildir/fileutildir2/folder/file"
+                };
     }
 
     @Override
-    protected void destroyFileSystem (String testName) throws IOException {}
-    
+    @SuppressWarnings("deprecation")
+    protected void setUp() throws Exception {
+        super.setUp();
+        Repository.getDefault().addFileSystem(testedFS);
+        root = testedFS.findResource(getResourcePrefix());
+    }
+
     @Override
-    protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException {
-        return new FileSystem[] {TestUtilHid.createLocalFileSystem(testName, resources)};
+    @SuppressWarnings("deprecation")
+    protected void tearDown() throws Exception {
+        Repository.getDefault().removeFileSystem(testedFS);
+        super.tearDown();
+    }
+
+    /** Creates new FileObjectTestHidden */
+    public FileUtilJavaIOFileHidden(String name) {
+        super(name);
+    }
+
+    public void testToFile() throws Exception {
+        if (this.testedFS instanceof JarFileSystem) {
+            return;
+        }
+        assertNotNull(root);
+        FileObject testFo = root.getFileObject("fileutildir/tofile.txt");
+        assertNotNull(testFo);
+
+        File testFile = FileUtil.toFile(testFo);
+        assertNotNull(testFile);
+        assertTrue(testFile.exists());
+    }
+
+    public void testToFileObject() throws Exception {
+        if (this.testedFS instanceof JarFileSystem) {
+            return;
+        }
+        assertNotNull(root);
+        FileObject testFo = root.getFileObject("fileutildir/tofileobject.txt");
+        assertNotNull(testFo);
+
+        File rootFile = FileUtil.toFile(root);
+        assertNotNull(rootFile);
+        assertTrue(rootFile.exists());
+
+        File testFile = new File(rootFile, "fileutildir/tofileobject.txt");
+        assertNotNull(testFile);
+        assertTrue(testFile.exists());
+
+        FileObject testFo2 = FileUtil.toFileObject(testFile);
+        assertNotNull(testFo2);
+        assertEquals(testFo2, testFo);
     }
 }

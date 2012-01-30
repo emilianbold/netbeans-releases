@@ -181,19 +181,6 @@ public class FileUtilTestHidden extends TestBaseHid {
         root.createFolder(name);
     }
 
-    public void testToFile() throws Exception {
-        if (this.testedFS instanceof JarFileSystem) {
-            return;
-        }
-        assertNotNull(root);
-        FileObject testFo = root.getFileObject("fileutildir/tofile.txt");
-        assertNotNull(testFo);
-
-        File testFile = FileUtil.toFile(testFo);
-        assertNotNull(testFile);
-        assertTrue(testFile.exists());
-    }
-
     public void testIsArchiveFile() throws Exception {
         final String base = getWorkDir().toURI().toURL().toExternalForm();
         URL url = new URL(base + "test.jar");    //NOI18N
@@ -208,27 +195,6 @@ public class FileUtilTestHidden extends TestBaseHid {
         assertFalse(".hidden cannot to be an archive", FileUtil.isArchiveFile(url));  //NOI18N
         url = new URL(base + ".hidden/");   //NOI18N
         assertFalse(".hidden cannot to be an archive", FileUtil.isArchiveFile(url));  //NOI18N
-    }
-
-    public void testToFileObject() throws Exception {
-        if (this.testedFS instanceof JarFileSystem) {
-            return;
-        }
-        assertNotNull(root);
-        FileObject testFo = root.getFileObject("fileutildir/tofileobject.txt");
-        assertNotNull(testFo);
-
-        File rootFile = FileUtil.toFile(root);
-        assertNotNull(rootFile);
-        assertTrue(rootFile.exists());
-
-        File testFile = new File(rootFile, "fileutildir/tofileobject.txt");
-        assertNotNull(testFile);
-        assertTrue(testFile.exists());
-
-        FileObject testFo2 = FileUtil.toFileObject(testFile);
-        assertNotNull(testFo2);
-        assertEquals(testFo2, testFo);
     }
 
     public void testIsParentOf() throws Exception {
