@@ -58,7 +58,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.remote.impl.RemoteLogger;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -79,6 +78,10 @@ public class RefreshManager {
     private static final boolean REFRESH_ON_CONNECT = getBoolean("cnd.remote.refresh.on.connect", true); //NOI18N
 
     private final class RefreshWorker implements Runnable {
+        private final boolean expected;
+        private RefreshWorker(boolean expected) {
+            this.expected = expected;
+        }
         public void run() {
             long time = System.currentTimeMillis();
             int cnt = 0;
@@ -93,7 +96,7 @@ public class RefreshManager {
                    set.remove(fo);
                 }
                 try {
-                    fo.refreshImpl(false, null);
+                    fo.refreshImpl(false, null, expected);
                 } catch (ConnectException ex) {
                     clear();
                     break;
@@ -143,7 +146,7 @@ public class RefreshManager {
     public RefreshManager(ExecutionEnvironment env, RemoteFileObjectFactory factory) {
         this.env = env;
         this.factory = factory;
-        updateTask = new RequestProcessor("Remote File System RefreshManager " + env.getDisplayName(), 1).create(new RefreshWorker()); //NOI18N
+        updateTask = new RequestProcessor("Remote File System RefreshManager " + env.getDisplayName(), 1).create(new RefreshWorker(false)); //NOI18N
     }        
     
     public void scheduleRefreshOnFocusGained(Collection<RemoteFileObjectBase> fileObjects) {

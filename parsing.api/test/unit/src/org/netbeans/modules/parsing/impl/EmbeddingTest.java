@@ -53,6 +53,7 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.IndexingAwareTestCase;
 import org.netbeans.modules.parsing.api.MyScheduler;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
@@ -76,7 +77,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author hanz
  */
-public class EmbeddingTest extends NbTestCase {
+public class EmbeddingTest extends IndexingAwareTestCase {
     
     public EmbeddingTest (String testName) {
         super (testName);

@@ -189,27 +189,31 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
     }
 
     @Override
-    public FileObject createData(String name, String ext) throws IOException {
+    public FileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException {
         throw new IOException("Plain file can not have children"); // NOI18N
     }
 
     @Override
-    public FileObject createFolder(String name) throws IOException {
+    public FileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException {
         throw new IOException("Plain file can not have children"); // NOI18N
     }
     
     @Override
-    public FileLock lock() throws IOException {
+    protected FileLock lockImpl(RemoteFileObjectBase orig) throws IOException {
+        FilesystemInterceptorProvider.FilesystemInterceptor interceptor = null;
         if (USE_VCS) {
-            FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
+            interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
             if (interceptor != null) {
-                if (!canWrite()) {
+                if (!canWriteImpl(orig)) {
                     throw new IOException("Cannot lock "+this); // NOI18N
                 }
-                interceptor.fileLocked(FilesystemInterceptorProvider.toFileProxy(this));
             }
         }
-        return super.lock();
+        FileLock lock = super.lockImpl(orig);
+        if (interceptor != null) {
+            interceptor.fileLocked(FilesystemInterceptorProvider.toFileProxy(orig));
+        }
+        return lock;
     }
 
     @Override
@@ -223,14 +227,14 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
     }
 
     @Override
-    protected void renameChild(FileLock lock, RemoteFileObjectBase toRename, String newNameExt) 
+    protected void renameChild(FileLock lock, RemoteFileObjectBase toRename, String newNameExt, RemoteFileObjectBase orig) 
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         // plain file can not be container of children
         RemoteLogger.assertTrueInConsole(false, "renameChild is not supported on " + this.getClass() + " path=" + getPath()); // NOI18N
     }
 
     @Override
-    public OutputStream getOutputStream(FileLock lock) throws IOException {
+    protected OutputStream getOutputStreamImpl(FileLock lock, RemoteFileObjectBase orig) throws IOException {
         if (!isValid()) {
             throw new FileNotFoundException("FileObject " + this + " is not valid."); //NOI18N
         }
@@ -238,7 +242,7 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
         if (USE_VCS) {
            interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
         }
-        return new DelegateOutputStream(interceptor);
+        return new DelegateOutputStream(interceptor, orig);
     }
 
     // Fixing #206726 - If a remote file is saved frequently, "File modified externally" message appears, user changes are lost
@@ -262,9 +266,9 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
 
         private final FileOutputStream delegate;
 
-        public DelegateOutputStream(FilesystemInterceptorProvider.FilesystemInterceptor interceptor) throws IOException {
+        public DelegateOutputStream(FilesystemInterceptorProvider.FilesystemInterceptor interceptor, RemoteFileObjectBase orig) throws IOException {
             if (interceptor != null) {
-                interceptor.beforeChange(FilesystemInterceptorProvider.toFileProxy(RemotePlainFile.this));
+                interceptor.beforeChange(FilesystemInterceptorProvider.toFileProxy(orig));
             }
             delegate = new FileOutputStream(getCache());
         }

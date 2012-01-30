@@ -71,7 +71,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.usages.ClassIndexFactory;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexImplEvent;
@@ -84,13 +83,8 @@ import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.Index;
-import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.openide.util.Mutex;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
@@ -343,10 +337,10 @@ public final class ClassIndex {
             element,
             searchKind,
             scope,
-            new Convertor<ClassIndexImpl, Convertor<? super Document,ElementHandle<TypeElement>>>(){
+            new Convertor<ClassIndexImpl, Convertor<Document,ElementHandle<TypeElement>>>(){
                 @NonNull
                 @Override
-                public Convertor<? super Document, ElementHandle<TypeElement>> convert(@NonNull final ClassIndexImpl p) {
+                public Convertor<Document, ElementHandle<TypeElement>> convert(@NonNull final ClassIndexImpl p) {
                     return DocumentUtil.elementHandleConvertor();
                 }
             });
@@ -370,10 +364,10 @@ public final class ClassIndex {
             element,
             searchKind,
             scope,
-            new Convertor<ClassIndexImpl, Convertor<? super Document,ElementHandle<TypeElement>>>(){
+            new Convertor<ClassIndexImpl, Convertor<Document,ElementHandle<TypeElement>>>(){
                 @NonNull
                 @Override
-                public Convertor<? super Document, ElementHandle<TypeElement>> convert(@NonNull final ClassIndexImpl p) {
+                public Convertor<Document, ElementHandle<TypeElement>> convert(@NonNull final ClassIndexImpl p) {
                     return DocumentUtil.elementHandleConvertor();
                 }
             });
@@ -396,7 +390,7 @@ public final class ClassIndex {
             element,
             searchKind,
             scope,
-            new Convertor<ClassIndexImpl, Convertor<? super Document,FileObject>>() {
+            new Convertor<ClassIndexImpl, Convertor<Document,FileObject>>() {
                 @NonNull
                 @Override
                 public Convertor<Document, FileObject> convert(@NonNull final ClassIndexImpl p) {
@@ -423,7 +417,7 @@ public final class ClassIndex {
             element,
             searchKind,
             scope,
-            new Convertor<ClassIndexImpl, Convertor<? super Document,FileObject>>() {
+            new Convertor<ClassIndexImpl, Convertor<Document,FileObject>>() {
                 @NonNull
                 @Override
                 public Convertor<Document, FileObject> convert(@NonNull final ClassIndexImpl p) {
@@ -437,7 +431,7 @@ public final class ClassIndex {
             @NonNull final ElementHandle<? extends Element> element,
             @NonNull final Set<SearchKind> searchKind,
             @NonNull final Set<? extends SearchScopeType> scope,
-            @NonNull final Convertor<? super ClassIndexImpl,Convertor<? super Document, T>> convertor) {
+            @NonNull final Convertor<? super ClassIndexImpl,Convertor<Document, T>> convertor) {
         Parameters.notNull("element", element); //NOI18N
         Parameters.notNull("element.signatue", element.getSignature()[0]);  //NOI18N
         Parameters.notNull("searchKind", searchKind);   //NOI18N
@@ -486,7 +480,7 @@ public final class ClassIndex {
         assert kind != null;
         final Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();        
         final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);        
-        final Convertor<? super Document, ElementHandle<TypeElement>> thConvertor = DocumentUtil.elementHandleConvertor();
+        final Convertor<Document, ElementHandle<TypeElement>> thConvertor = DocumentUtil.elementHandleConvertor();
         try {
             for (ClassIndexImpl query : queries) {
                 try {
@@ -926,24 +920,23 @@ public final class ClassIndex {
                         //trying to access javac lock in this thread may cause deadlock with Java Worker Thread
                         //because the classpath events are fired under the project mutex and it's legal to
                         //aquire project mutex in the CancellableTask.run()
-                        JavaSourceAccessor.getINSTANCE().runSpecialTask(new Mutex.ExceptionAction<Void>() {
-                            
-                            public Void run() {
+                        fireByWorker(new Runnable() {
+                            @Override
+                            public void run() {
                                 assertParserEventThread();
                                 if (ae != null) {
                                     for (ClassIndexListener l : listeners) {
                                         l.rootsAdded(ae);
-                                    }                        
+                                    }
                                 }
                                 if (re != null) {
                                     for (ClassIndexListener l : listeners) {
                                         l.rootsRemoved(re);
                                     }
                                 }
-                                return null;
-                            }                            
-                        }, JavaSource.Priority.MAX);                        
-                    }                    
+                            }
+                        });
+                    }
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
@@ -955,31 +948,8 @@ public final class ClassIndex {
         assert action != null;
         if (Utilities.isTaskProcessorThread(Thread.currentThread())) {
             action.run();
-        }
-        else {
-            Utilities.scheduleSpecialTask(
-                new ParserResultTask() {
-                    @Override
-                    public int getPriority() {
-                        return 0;
-                    }
-
-                    @Override
-                    public Class<? extends Scheduler> getSchedulerClass() {
-                        return null;
-                    }
-
-                    @Override
-                    public void cancel() {
-                        //Firing not cancallable
-                    }
-
-                    @Override
-                    public void run(Result _null, SchedulerEvent event) {
-                        action.run();
-                    }
-
-                });
+        } else {
+            Utilities.scheduleSpecialTask(action, 0);
         }
     }
 

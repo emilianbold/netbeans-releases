@@ -295,9 +295,9 @@ public class PackageView {
                 return new AbstractNode (Children.LEAF);
             }
             switch (JavaProjectSettings.getPackageViewType()) {
-                case JavaProjectSettings.TYPE_PACKAGE_VIEW:
+                case PACKAGES:
                     return new PackageRootNode(group);
-                case JavaProjectSettings.TYPE_TREE:
+                case TREE:
                     return new TreeRootNode(group);
                 default:
                     assert false : "Unknown PackageView Type"; //NOI18N

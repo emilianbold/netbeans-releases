@@ -187,13 +187,19 @@ public final class UndoManager extends FileChangeAdapter implements DocumentList
             if (SwingUtilities.isEventDispatchThread()) {
                 registerListeners();
             } else {
-                    SwingUtilities.invokeLater(new Runnable() {
+                try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
 
                         @Override
                         public void run() {
                             registerListeners();
                         }
                     });
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
             fireStateChange();
         }

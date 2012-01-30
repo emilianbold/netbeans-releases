@@ -748,28 +748,28 @@ public final class ProjectUtilities {
      * @param messageType type of dialog -1 when the main class is not set, -2 when the main class in not valid
      * @return true if user selected main class
      */
+    @NbBundle.Messages({
+        "LBL_MainClassWarning_ChooseMainClass_OK=OK",
+        "LBL_MainClassNotFound=Project {0} does not have a main class set correctly.",
+        "CTL_MainClassWarning_Title=Profile Project",
+        "AD_MainClassWarning_ChooseMainClass_OK=N/A",
+        "LBL_MainClassWrong=Main class of Project {0} is incorrect."
+    })
     public static String selectMainClass(Project project, String mainClass, String projectName, int messageType) {
         boolean canceled;
-        final JButton okButton = new JButton(NbBundle.getMessage(MainClassWarning.class, "LBL_MainClassWarning_ChooseMainClass_OK") //NOI18N
-        ); // NOI18N
-        okButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MainClassWarning.class,
-                                                                                     "AD_MainClassWarning_ChooseMainClass_OK") //NOI18N
-        ); // NOI18N
+        final JButton okButton = new JButton(Bundle.LBL_MainClassWarning_ChooseMainClass_OK());
+        okButton.getAccessibleContext().setAccessibleDescription(Bundle.AD_MainClassWarning_ChooseMainClass_OK());
 
         // main class goes wrong => warning
         String message;
 
         switch (messageType) {
             case -1:
-                message = MessageFormat.format(NbBundle.getMessage(MainClassWarning.class, "LBL_MainClassNotFound"),
-                                               new Object[] {  // NOI18N
-                    projectName });
+                message = Bundle.LBL_MainClassNotFound(projectName);
 
                 break;
             case -2:
-                message = MessageFormat.format(NbBundle.getMessage(MainClassWarning.class, "LBL_MainClassWrong"),
-                                               new Object[] {  // NOI18N
-                    mainClass, projectName });
+                message = Bundle.LBL_MainClassWrong(projectName);
 
                 break;
             default:
@@ -793,9 +793,7 @@ public final class ProjectUtilities {
         okButton.setEnabled(false);
 
         DialogDescriptor desc = new DialogDescriptor(panel,
-                                                     NbBundle.getMessage(MainClassWarning.class, "CTL_MainClassWarning_Title",
-                                                                         ProjectUtils.getInformation(project).getDisplayName() //NOI18N
-        ), // NOI18N
+                                                     Bundle.CTL_MainClassWarning_Title(),
                                                      true, options, options[0], DialogDescriptor.BOTTOM_ALIGN, null, null);
         desc.setMessageType(DialogDescriptor.INFORMATION_MESSAGE);
 

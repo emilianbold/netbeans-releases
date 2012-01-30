@@ -60,6 +60,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
+import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.netbeans.modules.spellchecker.spi.language.TokenList;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
@@ -273,7 +274,7 @@ public class JavaSemanticTokenList implements TokenList {
     public static final class FactoryImpl extends EditorAwareJavaSourceTaskFactory {
 
         public FactoryImpl() {
-            super(Phase.PARSED, Priority.LOW);
+            super(Phase.PARSED, Priority.LOW, TaskIndexingMode.ALLOWED_DURING_SCAN);
         }
 
         @Override

@@ -704,19 +704,7 @@ made subject to such option by the copyright holder.
             <folder name="system_with_project"/>
         </folder>
     </folder>
-    <folder name="OptionsDialog">
-        <folder name="Advanced">
-            <file name="FormEditor.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
-
-                <attr name="displayName" bundlevalue="org.netbeans.modules.form.Bundle#Form_Editor"/>
-                <attr name="toolTip" bundlevalue="org.netbeans.modules.form.Bundle#Form_Editor_Tooltip"/>
-                <attr name="controller" newvalue="org.netbeans.modules.form.FormEditorPanelController"/>
-                <attr name="keywords" bundlevalue="org.netbeans.modules.form.Bundle#KW_FormOptions"/>
-                <attr name="keywordsCategory" stringvalue="Advanced/FormEditor"/>
-            </file>
-        </folder>
-    </folder>
+    
 
     <folder name="OptionsExport">
         <folder name="Advanced">

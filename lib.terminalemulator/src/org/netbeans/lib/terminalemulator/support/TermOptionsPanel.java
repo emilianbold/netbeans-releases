@@ -46,19 +46,10 @@ package org.netbeans.lib.terminalemulator.support;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dialog;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JColorChooser;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.border.Border;
 import org.netbeans.lib.terminalemulator.LineDiscipline;
 import org.netbeans.lib.terminalemulator.Term;
@@ -67,43 +58,6 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
 
     private TermOptions termOptions;
     private final Term term;
-    private Action act;
-
-    private class ColorAction extends AbstractAction {
-        private final String name;
-        private final JButton button;
-
-        public ColorAction(JButton button, String name) {
-            this.button = button;
-            this.name = name;
-        }
-
-	@Override
-        public void actionPerformed(ActionEvent a) {
-	    Color initialColor = null;
-	    if (button == foregroundButton)
-		initialColor = termOptions.getForeground();
-	    else if (button == backgroundButton)
-		initialColor = termOptions.getBackground();
-	    else if (button == selectionButton)
-		initialColor = termOptions.getSelectionBackground();
-
-            Color newColor = JColorChooser.showDialog(
-                SwingUtilities.getAncestorOfClass(Dialog.class, button),
-                name,
-                initialColor);
-
-            if (newColor != null) {
-                button.setBackground(newColor);
-                if (button == foregroundButton)
-                    termOptions.setForeground(newColor);
-                else if (button == backgroundButton)
-                    termOptions.setBackground(newColor);
-                else if (button == selectionButton)
-                    termOptions.setSelectionBackground(newColor);
-            }
-        }
-    }
 
     // Why variables???
     // These are used in gui-builder-generated code
@@ -149,7 +103,11 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
 
     /** Creates new form TermOptionsPanel */
     public TermOptionsPanel() {
-        initComponents();
+        initComponents();        
+        
+	ColorComboBox.init (foregroundComboBox);
+        ColorComboBox.init (backgroundComboBox);
+        ColorComboBox.init (selectionComboBox);
 
         term = new Term();
         final String line1String = Catalog.get("MSG_Hello") + "\r\n";	// NOI18N
@@ -215,9 +173,9 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         fontText.setText(termOptions.getFont().getFamily() +
 		         " " +					// NOI18N
 			 termOptions.getFont().getSize());
-        foregroundButton.setBackground(termOptions.getForeground());
-        backgroundButton.setBackground(termOptions.getBackground());
-        selectionButton.setBackground(termOptions.getSelectionBackground());
+        ColorComboBox.setColor(foregroundComboBox, termOptions.getForeground());
+        ColorComboBox.setColor(backgroundComboBox, termOptions.getBackground());
+        ColorComboBox.setColor(selectionComboBox, termOptions.getSelectionBackground());
         historySizeSpinner.setValue(termOptions.getHistorySize());
         tabSizeSpinner.setValue(termOptions.getTabSize());
         clickToTypeCheckBox.setSelected(termOptions.getClickToType());
@@ -299,17 +257,11 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         fontSizeLabel = new javax.swing.JLabel();
         fontSizeSpinner = new javax.swing.JSpinner();
         foregroundLabel = new javax.swing.JLabel();
-        foregroundButton = new javax.swing.JButton();
-        act = new ColorAction(foregroundButton, LBL_ChooseForegroundColor);
-        foregroundButton.setAction(act);
+        foregroundComboBox = new javax.swing.JComboBox();
         backgroundLabel = new javax.swing.JLabel();
-        backgroundButton = new javax.swing.JButton();
-        act = new ColorAction(backgroundButton, LBL_ChooseBackgroundColor);
-        backgroundButton.setAction(act);
+        backgroundComboBox = new javax.swing.JComboBox();
         selectionLabel = new javax.swing.JLabel();
-        selectionButton = new javax.swing.JButton();
-        act = new ColorAction(selectionButton, LBL_ChooseSelectionBackgroundColor);
-        selectionButton.setAction(act);
+        selectionComboBox = new javax.swing.JComboBox();
         historySizeLabel = new javax.swing.JLabel();
         historySizeSpinner = new javax.swing.JSpinner();
         tabSizeLabel = new javax.swing.JLabel();
@@ -404,7 +356,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         add(fontSizeSpinner, gridBagConstraints);
 
         foregroundLabel.setDisplayedMnemonic(MNM_ForegroundColor);
-        foregroundLabel.setLabelFor(foregroundButton);
+        foregroundLabel.setLabelFor(foregroundComboBox);
         foregroundLabel.setText(LBL_ForegroundColor);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -412,16 +364,20 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(foregroundLabel, gridBagConstraints);
 
-        foregroundButton.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
-        foregroundButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        foregroundComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                foregroundComboBoxActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
-        add(foregroundButton, gridBagConstraints);
+        add(foregroundComboBox, gridBagConstraints);
 
         backgroundLabel.setDisplayedMnemonic(MNM_BackgroundColor);
-        backgroundLabel.setLabelFor(backgroundButton);
+        backgroundLabel.setLabelFor(backgroundComboBox);
         backgroundLabel.setText(LBL_BackgroundColor);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -429,22 +385,20 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(backgroundLabel, gridBagConstraints);
 
-        backgroundButton.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
-        backgroundButton.setPreferredSize(new java.awt.Dimension(20, 20));
-        backgroundButton.addActionListener(new java.awt.event.ActionListener() {
+        backgroundComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                backgroundButtonActionPerformed(evt);
+                backgroundComboBoxActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
-        add(backgroundButton, gridBagConstraints);
+        add(backgroundComboBox, gridBagConstraints);
 
         selectionLabel.setDisplayedMnemonic(MNM_SelectionBackgroundColor);
-        selectionLabel.setLabelFor(selectionButton);
+        selectionLabel.setLabelFor(selectionComboBox);
         selectionLabel.setText(LBL_SelectionBackgroundColor);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -452,14 +406,17 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(selectionLabel, gridBagConstraints);
 
-        selectionButton.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
-        selectionButton.setPreferredSize(new java.awt.Dimension(20, 20));
+        selectionComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectionComboBoxActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
-        add(selectionButton, gridBagConstraints);
+        add(selectionComboBox, gridBagConstraints);
 
         historySizeLabel.setDisplayedMnemonic(MNM_HistorySize);
         historySizeLabel.setLabelFor(historySizeSpinner);
@@ -478,6 +435,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
@@ -682,17 +640,34 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_chooseFont
 
-    private void backgroundButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backgroundButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_backgroundButtonActionPerformed
-
     private void ignoreKeymapCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ignoreKeymapCheckBoxActionPerformed
         termOptions.setIgnoreKeymap(ignoreKeymapCheckBox.isSelected());
     }//GEN-LAST:event_ignoreKeymapCheckBoxActionPerformed
 
+    private void foregroundComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_foregroundComboBoxActionPerformed
+        Color c = ColorComboBox.getColor(foregroundComboBox);
+	if (c != null) {
+	    termOptions.setForeground(c);
+	}
+    }//GEN-LAST:event_foregroundComboBoxActionPerformed
+
+    private void backgroundComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backgroundComboBoxActionPerformed
+        Color c = ColorComboBox.getColor(backgroundComboBox);
+	if (c != null) {
+	    termOptions.setBackground(c);
+	}
+    }//GEN-LAST:event_backgroundComboBoxActionPerformed
+
+    private void selectionComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectionComboBoxActionPerformed
+        Color c = ColorComboBox.getColor(selectionComboBox);
+	if (c != null) {
+	    termOptions.setSelectionBackground(c);
+	}
+    }//GEN-LAST:event_selectionComboBoxActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton backgroundButton;
+    private javax.swing.JComboBox backgroundComboBox;
     private javax.swing.JLabel backgroundLabel;
     private javax.swing.JCheckBox clickToTypeCheckBox;
     private javax.swing.JLabel descriptionLabel;
@@ -702,7 +677,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel fontSizeLabel;
     private javax.swing.JSpinner fontSizeSpinner;
     private javax.swing.JTextField fontText;
-    private javax.swing.JButton foregroundButton;
+    private javax.swing.JComboBox foregroundComboBox;
     private javax.swing.JLabel foregroundLabel;
     private javax.swing.JLabel historySizeLabel;
     private javax.swing.JSpinner historySizeSpinner;
@@ -713,7 +688,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JButton restoreButton;
     private javax.swing.JCheckBox scrollOnInputCheckBox;
     private javax.swing.JCheckBox scrollOnOutputCheckBox;
-    private javax.swing.JButton selectionButton;
+    private javax.swing.JComboBox selectionComboBox;
     private javax.swing.JLabel selectionLabel;
     private javax.swing.JLabel tabSizeLabel;
     private javax.swing.JSpinner tabSizeSpinner;

@@ -220,9 +220,9 @@ public class EditorPaneTesting {
     private static StringBuilder debugCaret(StringBuilder sb, JEditorPane pane) throws Exception {
         int caretOffset = pane.getCaretPosition();
         Document doc = pane.getDocument();
-        sb.append("caret[").append(caretOffset).append(',');
+        sb.append("caret[").append(caretOffset).append("]sel<");
         sb.append(pane.getSelectionStart()).append(',');
-        sb.append(pane.getSelectionEnd()).append(']');
+        sb.append(pane.getSelectionEnd()).append('>');
         int startTextOffset = Math.max(0, caretOffset - 2);
         int endTextOffset = Math.min(caretOffset + 2, doc.getLength() + 1);
         sb.append(" \"");

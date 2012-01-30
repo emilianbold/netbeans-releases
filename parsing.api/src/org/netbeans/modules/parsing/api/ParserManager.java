@@ -52,11 +52,7 @@ import java.util.concurrent.Future;
 import org.netbeans.api.annotations.common.NonNull;
 
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.modules.parsing.impl.ParserAccessor;
-import org.netbeans.modules.parsing.impl.ResultIteratorAccessor;
-import org.netbeans.modules.parsing.impl.SourceAccessor;
-import org.netbeans.modules.parsing.impl.SourceCache;
-import org.netbeans.modules.parsing.impl.TaskProcessor;
+import org.netbeans.modules.parsing.impl.*;
 import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -128,9 +124,9 @@ public final class ParserManager {
         Parameters.notNull("sources", sources);     //NOI18N
         Parameters.notNull("userTask", userTask);   //NOI18N
         if (sources.size () == 1)
-            return TaskProcessor.runWhenScanFinished (new UserTaskAction (sources.iterator ().next (), userTask), sources);
+            return RunWhenScanFinishedSupport.runWhenScanFinished (new UserTaskAction (sources.iterator ().next (), userTask), sources);
         else
-            return TaskProcessor.runWhenScanFinished (new MultiUserTaskAction (sources, userTask), sources);
+            return RunWhenScanFinishedSupport.runWhenScanFinished (new MultiUserTaskAction (sources, userTask), sources);
     }
 
     //where
@@ -353,7 +349,7 @@ public final class ParserManager {
         Parameters.notNull("mimeType", mimeType);   //NOI18N
         Parameters.notNull("userTask", userTask);   //NOI18N
         final Parser pf = findParser(mimeType);
-        return TaskProcessor.runWhenScanFinished(new MimeTaskAction(pf, userTask), Collections.<Source>emptyList ());
+        return RunWhenScanFinishedSupport.runWhenScanFinished(new MimeTaskAction(pf, userTask), Collections.<Source>emptyList ());
 
     }
 

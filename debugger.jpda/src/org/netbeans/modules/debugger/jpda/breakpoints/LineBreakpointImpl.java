@@ -727,10 +727,8 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         JavaSource js = JavaSource.forFileObject(fileObj);
         if (js == null) return lineNumber;
         final int[] result = new int[] {lineNumber};
-        final Future<Void> scanFinished;
         try {
-            scanFinished = js.runWhenScanFinished(new CancellableTask<CompilationController>() {
-                @Override
+            js.runUserActionTask(new CancellableTask<CompilationController>() {
                 public void cancel() {
                 }
                 @Override
@@ -781,20 +779,6 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                     result[0] = outerLineNumber;
                 }
             }, true);
-            if (!scanFinished.isDone()) {
-                if (java.awt.EventQueue.isDispatchThread()) {
-                    return lineNumber;
-                } else {
-                    try {
-                        scanFinished.get();
-                    } catch (InterruptedException iex) {
-                        return lineNumber;
-                    } catch (java.util.concurrent.ExecutionException eex) {
-                        ErrorManager.getDefault().notify(eex);
-                        return lineNumber;
-                    }
-                }
-            }
         } catch (IOException ioex) {
             ErrorManager.getDefault().notify(ioex);
             return lineNumber;

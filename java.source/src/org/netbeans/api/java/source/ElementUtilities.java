@@ -557,6 +557,34 @@ public final class ElementUtilities {
         return findUnimplementedMethods(impl, impl);
     }
 
+
+    /**
+     * Checks whether 'e' contains error or is missing. If the passed element is null
+     * it's assumed the element could not be resolved and this method returns true. Otherwise,
+     * the element's type kind is checked against error constants and finally the erroneous
+     * state of the element is checked. 
+     * 
+     * @param e Element to check or {@code null}
+     * @return true, if the element is missing (is {@code null}) or contains errors.
+     */
+    public boolean isErroneous(@NullAllowed Element e) {
+        if (e == null) {
+            return true;
+        }
+        final TypeMirror type = e.asType();
+        if (type == null) {
+            return false;
+        }
+        if (type.getKind() == TypeKind.ERROR || type.getKind() == TypeKind.OTHER) {
+            return true;
+        }
+        if (type instanceof Type) {
+            if (((Type)type).isErroneous()) {
+                return true;
+            }
+        }
+        return false;
+    }
     // private implementation --------------------------------------------------
 
 

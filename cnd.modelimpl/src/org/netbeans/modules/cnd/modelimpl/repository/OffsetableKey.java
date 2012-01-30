@@ -163,7 +163,8 @@ import org.openide.util.CharSequences;
         assert CharSequences.isCompact(name);
         assert CharSequences.isCompact(other.name);
         return this.startOffset == other.startOffset &&
-                /*this.endOffset == other.endOffset &&*/
+                ((this.endOffset == other.endOffset) || 
+                 (this.endOffset == KeyUtilities.NON_INITIALIZED || other.endOffset == KeyUtilities.NON_INITIALIZED)) &&
                 this.getKind() == other.getKind() &&
                 this.name.equals(other.name);
     }

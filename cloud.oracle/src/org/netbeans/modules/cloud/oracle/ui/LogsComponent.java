@@ -60,9 +60,12 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import org.netbeans.libs.oracle.cloud.sdkwrapper.api.ApplicationManager;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.exception.SDKException;
 import org.netbeans.libs.oracle.cloud.sdkwrapper.model.Job;
 import org.netbeans.libs.oracle.cloud.sdkwrapper.model.Log;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -82,6 +85,7 @@ public class LogsComponent extends TopComponent {
     public LogsComponent(OracleInstance oi) {
         this.oi = oi;
         initComponents();
+        
         setName(NbBundle.getMessage(LogsComponent.class, "CTL_LogsTopComponent", oi.getName()));
         setToolTipText(NbBundle.getMessage(LogsComponent.class, "HINT_LogsTopComponent"));
         this.am = oi.getApplicationManager();
@@ -94,7 +98,7 @@ public class LogsComponent extends TopComponent {
                 fetchLogs();
             }
         });
-        fetchApplicationLogs();
+        //fetchServiceInstanceLogs();
         loadJobs();
     }
     
@@ -114,11 +118,7 @@ public class LogsComponent extends TopComponent {
             public Void call() throws Exception {
                 final List<Job> jobs_;
                 try {
-                    if (showAlljCheckBox.isSelected()) {
-                        jobs_ = am.listJobs();
-                    } else {
-                        jobs_ = am.listJobs(oi.getIdentityDomain(), oi.getServiceInstance());
-                    }
+                    jobs_ = am.listJobs(oi.getIdentityDomain(), oi.getServiceInstance());
                 } catch (Throwable t) {
                     LOG.log(Level.INFO, "cannot fetch jobs", t);
                     jobs = new ArrayList<Job>();
@@ -208,55 +208,55 @@ public class LogsComponent extends TopComponent {
         });
     }
 
-    @NbBundle.Messages({"MSG_IgnoreEmpty=This log file is empty.",
-            "MSG_IgnoreContentType=This log file is ignored because its content type is {0}"})
-    private void fetchApplicationLogs() {
-        appLogs.setText(Bundle.MSG_Loading());
-        
-        OracleInstance.runAsynchronously(new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                final StringBuffer sb = new StringBuffer();
-                List<Log> logs = am.listServiceInstanceLogs(oi.getIdentityDomain(), oi.getServiceInstance());
-                sb.append(""+logs.size()+ " log file(s) found:\n\n");
-                for (Log lt : logs) {
-                    sb.append("==================== Log file: "+lt.getName()+"==========================\n\n");
-                    if (!"text/plain".equals(lt.getContentType())) {
-                        sb.append(Bundle.MSG_IgnoreContentType(lt.getContentType()));
-                        sb.append("\n");
-                    }
-                    ByteArrayOutputStream os = new ByteArrayOutputStream(8000);
-                    try {
-                        am.fetchServiceInstanceLog(oi.getIdentityDomain(), oi.getServiceInstance(), lt.getName(), os);
-                    } catch (Throwable t) {
-                        sb.append("Exception occured while retrieving the log:\n"+t.toString());
-                        continue;
-                    }
-                    try {
-                        String s = os.toString(Charset.defaultCharset().name());
-                        if (s.trim().length() == 0) {
-                            sb.append(Bundle.MSG_IgnoreEmpty());
-                            sb.append("\n");
-                        } else {
-                            sb.append(s);
-                        }
-                    } catch (UnsupportedEncodingException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-                if (logs.size() == 0) {
-                    sb.replace(0, sb.length(), Bundle.MSG_NoLogs());
-                }
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        LogsComponent.this.appLogs.setText(sb.toString());
-                    }
-                });
-                return null;
-            }
-        });
-    }
+//    @NbBundle.Messages({"MSG_IgnoreEmpty=This log file is empty.",
+//            "MSG_IgnoreContentType=This log file is ignored because its content type is {0}"})
+//    private void fetchServiceInstanceLogs() {
+//        appLogs.setText(Bundle.MSG_Loading());
+//        
+//        OracleInstance.runAsynchronously(new Callable<Void>() {
+//            @Override
+//            public Void call() throws Exception {
+//                final StringBuffer sb = new StringBuffer();
+//                List<Log> logs = am.listServiceInstanceLogs(oi.getIdentityDomain(), oi.getServiceInstance());
+//                sb.append(""+logs.size()+ " log file(s) found:\n\n");
+//                for (Log lt : logs) {
+//                    sb.append("==================== Log file: "+lt.getName()+"==========================\n\n");
+//                    if (!"text/plain".equals(lt.getContentType())) {
+//                        sb.append(Bundle.MSG_IgnoreContentType(lt.getContentType()));
+//                        sb.append("\n");
+//                    }
+//                    ByteArrayOutputStream os = new ByteArrayOutputStream(8000);
+//                    try {
+//                        am.fetchServiceInstanceLog(oi.getIdentityDomain(), oi.getServiceInstance(), lt.getName(), os);
+//                    } catch (Throwable t) {
+//                        sb.append("Exception occured while retrieving the log:\n"+t.toString());
+//                        continue;
+//                    }
+//                    try {
+//                        String s = os.toString(Charset.defaultCharset().name());
+//                        if (s.trim().length() == 0) {
+//                            sb.append(Bundle.MSG_IgnoreEmpty());
+//                            sb.append("\n");
+//                        } else {
+//                            sb.append(s);
+//                        }
+//                    } catch (UnsupportedEncodingException ex) {
+//                        Exceptions.printStackTrace(ex);
+//                    }
+//                }
+//                if (logs.size() == 0) {
+//                    sb.replace(0, sb.length(), Bundle.MSG_NoLogs());
+//                }
+//                SwingUtilities.invokeLater(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        LogsComponent.this.appLogs.setText(sb.toString());
+//                    }
+//                });
+//                return null;
+//            }
+//        });
+//    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -269,16 +269,12 @@ public class LogsComponent extends TopComponent {
 
         refreshButton = new javax.swing.JButton();
         closeButton = new javax.swing.JButton();
-        jTabbedPane1 = new javax.swing.JTabbedPane();
-        jPanel4 = new javax.swing.JPanel();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        appLogs = new javax.swing.JTextArea();
+        jPanel3 = new javax.swing.JPanel();
         jSplitPane1 = new javax.swing.JSplitPane();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jobsTable = new javax.swing.JTable();
         jLabel1 = new javax.swing.JLabel();
-        showAlljCheckBox = new javax.swing.JCheckBox();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         logs = new javax.swing.JTextArea();
@@ -300,21 +296,6 @@ public class LogsComponent extends TopComponent {
             }
         });
 
-        jScrollPane3.setViewportView(appLogs);
-
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
-        );
-
-        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(LogsComponent.class, "LogsComponent.jPanel4.TabConstraints.tabTitle"), jPanel4); // NOI18N
-
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane1.setResizeWeight(0.2);
         jSplitPane1.setContinuousLayout(true);
@@ -323,31 +304,21 @@ public class LogsComponent extends TopComponent {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(LogsComponent.class, "LogsComponent.jLabel1.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(showAlljCheckBox, org.openide.util.NbBundle.getMessage(LogsComponent.class, "LogsComponent.showAlljCheckBox.text")); // NOI18N
-        showAlljCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                showAlljCheckBoxActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 197, Short.MAX_VALUE)
-                .addComponent(showAlljCheckBox))
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(showAlljCheckBox))
-                .addGap(0, 0, 0)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 51, Short.MAX_VALUE))
+                .addComponent(jLabel1)
+                .addGap(3, 3, 3)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE))
         );
 
         jSplitPane1.setTopComponent(jPanel1);
@@ -361,35 +332,48 @@ public class LogsComponent extends TopComponent {
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jLabel2)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE))
         );
 
         jSplitPane1.setRightComponent(jPanel2);
 
-        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(LogsComponent.class, "LogsComponent.jSplitPane1.TabConstraints.tabTitle"), jSplitPane1); // NOI18N
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE))
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 290, Short.MAX_VALUE)
+            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(267, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap(223, Short.MAX_VALUE)
                 .addComponent(refreshButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(closeButton))
-            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE)
+            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(closeButton)
@@ -398,44 +382,38 @@ public class LogsComponent extends TopComponent {
     }// </editor-fold>//GEN-END:initComponents
 
     public static void showJobsDialog(OracleInstance oi) {
-        LogsComponent p = new LogsComponent(oi);
+        LogsComponent p;
+        try {
+            p = new LogsComponent(oi);
+        } catch (SDKException ex) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(LogsComponent.class, "MSG_SDKMisconfigured")));
+            return;
+        }
         p.open();
         p.requestActive();
     }
     
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
-        if (jTabbedPane1.getSelectedIndex() == 0) {
-            fetchApplicationLogs();
-        } else {
-            loadJobs();
-        }
+        loadJobs();
     }//GEN-LAST:event_refreshButtonActionPerformed
 
     private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
         close();
     }//GEN-LAST:event_closeButtonActionPerformed
 
-private void showAlljCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showAlljCheckBoxActionPerformed
-    loadJobs();
-}//GEN-LAST:event_showAlljCheckBoxActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextArea appLogs;
     private javax.swing.JButton closeButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSplitPane jSplitPane1;
-    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTable jobsTable;
     private javax.swing.JTextArea logs;
     private javax.swing.JButton refreshButton;
-    private javax.swing.JCheckBox showAlljCheckBox;
     // End of variables declaration//GEN-END:variables
 
     private static class JobsModel implements TableModel {

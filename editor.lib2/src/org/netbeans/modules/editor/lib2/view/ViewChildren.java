@@ -77,17 +77,11 @@ class ViewChildren<V extends EditorView> extends GapList<V> {
     }
 
     int raw2Offset(int rawEndOffset) {
-        // Use <= so that only views that follow the one with particular raw end offset satisfy the condition.
-        return (gapStorage == null || rawEndOffset <= gapStorage.offsetGapStart)
-                ? rawEndOffset
-                : rawEndOffset - gapStorage.offsetGapLength;
+        return (gapStorage == null) ? rawEndOffset : gapStorage.raw2Offset(rawEndOffset);
     }
 
     int offset2Raw(int offset) {
-        // Use <= so that only views that follow the one with particular raw end offset satisfy the condition.
-        return (gapStorage == null || offset <= gapStorage.offsetGapStart)
-                ? offset
-                : offset + gapStorage.offsetGapLength;
+        return (gapStorage == null) ? offset : gapStorage.offset2Raw(offset);
     }
     
     int startOffset(int index) {
@@ -167,27 +161,15 @@ class ViewChildren<V extends EditorView> extends GapList<V> {
     }
     
     int getLength() { // Total offset length of contained child views
-        int size = size();
-        if (size > 0) {
-            V lastChildView = get(size - 1);
-            return raw2Offset(lastChildView.getRawEndOffset());
-        } else {
-            return 0;
-        }
+        return startOffset(size());
     }
 
     double raw2VisualOffset(double rawVisualOffset) {
-        // Use <= so that only views that follow the one with particular raw end visual offset satisfy the condition.
-        return (gapStorage == null || rawVisualOffset <= gapStorage.visualGapStart)
-                ? rawVisualOffset
-                : rawVisualOffset - gapStorage.visualGapLength;
+        return (gapStorage == null) ? rawVisualOffset : gapStorage.raw2VisualOffset(rawVisualOffset);
     }
 
     double visualOffset2Raw(double visualOffset) {
-        // Use <= so that only views that follow the one with particular raw end visual offset satisfy the condition.
-        return (gapStorage == null || visualOffset <= gapStorage.visualGapStart)
-                ? visualOffset
-                : visualOffset + gapStorage.visualGapLength;
+        return (gapStorage == null) ? visualOffset : gapStorage.visualOffset2Raw(visualOffset);
     }
 
     /**
@@ -266,95 +248,86 @@ class ViewChildren<V extends EditorView> extends GapList<V> {
         }
     }
 
-    void checkVisualGapIfLoggable() {
-        if (gapStorage != null && ViewHierarchyImpl.CHECK_LOG.isLoggable(Level.FINE)) {
-            String error = null;
-            int visualGapIndex = gapStorage.visualGapIndex;
-            for (int i = 0; i < size(); i++) {
-                V view = get(i);
-                double rawVisualOffset = view.getRawEndVisualOffset();
-                double visualOffset = raw2VisualOffset(rawVisualOffset);
-                // Check visual offset
-                if (i < visualGapIndex) {
-                    if (rawVisualOffset >= gapStorage.visualGapStart) {
-                        error = "Not below visual-gap: rawVisualOffset=" + rawVisualOffset + // NOI18N
-                                " >= visualGapStart=" + gapStorage.visualGapStart; // NOI18N
-                    }
-                } else { // Above gap
-                    if (rawVisualOffset < gapStorage.visualGapStart) {
-                        error = "Not above visual-gap: rawVisualOffset=" + rawVisualOffset + // NOI18N
-                                " < visualGapStart=" + gapStorage.visualGapStart; // NOI18N
-                    }
-                    if (i == visualGapIndex) {
-                        if (visualOffset != gapStorage.visualGapStart) {
-                            error = "visualOffset=" + visualOffset + " != gapStorage.visualGapStart=" + // NOI18N
-                                    gapStorage.visualGapStart;
-                        }
-                    }
-
-                }
-                if (error != null) {
-                    break;
-                }
-            }
-            if (error != null) {
-                throw new IllegalStateException("gapStorage INTEGRITY ERROR!!!\n" + error);
-            }
-        }
-    }
-
-    void checkIntegrityIfLoggable(EditorView parent) {
-        if (gapStorage != null && ViewHierarchyImpl.CHECK_LOG.isLoggable(Level.FINE)) {
-            String err = findIntegrityError(parent);
-            if (err != null) {
-                throw new IllegalStateException("ViewChildren ERROR!!!\n" + err);
-            }
-        }
-    }
-
     protected String findIntegrityError(EditorView parent) {
         String err = null;
         int lastRawEndOffset = 0;
-        int lastOffset = 0;
+        int lastLocalEndOffset = 0;
+        int lastEndOffset = parent.getStartOffset();
         double lastRawEndVisualOffset = 0d;
-        double lastVisualOffset = 0d;
+        double lastEndVisualOffset = 0d;
         for (int i = 0; i < size(); i++) {
             V view = get(i);
             View p = view.getParent();
             if (err == null && p != parent) {
-                err = "p=" + p + " != parent=" + parent;
+                err = "view.getParent()=" + p + " != parent=" + parent;
             }
+            int viewLength = view.getLength();
             int rawEndOffset = view.getRawEndOffset();
             int childStartOffset = view.getStartOffset();
             int childEndOffset = view.getEndOffset();
             double rawEndVisualOffset = view.getRawEndVisualOffset();
-            double visualOffset = raw2VisualOffset(rawEndVisualOffset);
+            double endVisualOffset = raw2VisualOffset(rawEndVisualOffset);
             // Check textual offset
-            if (err == null && rawEndOffset < lastRawEndOffset) {
+            // rawEndOffset == -1 means that the raw offsets mechanism not being actively used (for pViews)
+            if (err == null && rawEndOffset != -1 && rawEndOffset < lastRawEndOffset) {
                 err = "rawEndOffset=" + rawEndOffset + " < lastRawEndOffset=" + lastRawEndOffset; // NOI18N
             }
-            if (err == null && childStartOffset < lastOffset) {
-                err = "childStartOffset=" + childStartOffset + " < lastEndOffset=" + lastOffset; // NOI18N
+            if (err == null && childStartOffset != lastEndOffset) {
+                err = "childStartOffset=" + childStartOffset + " != lastEndOffset=" + lastEndOffset; // NOI18N
             }
             if (err == null && childEndOffset < childStartOffset) {
                 err = "childEndOffset=" + childEndOffset + " < childStartOffset=" + childStartOffset; // NOI18N
             }
-            lastOffset = childEndOffset;
+            if (err == null && childEndOffset - childStartOffset != viewLength) {
+                err = "(childEndOffset-childStartOffset)=" + (childEndOffset - childStartOffset) + // NOI18N
+                        " != view.getLength()=" + viewLength; // NOI18N
+            }
+            lastEndOffset = childEndOffset;
 
             // Check visual offset
             if (err == null && rawEndVisualOffset < lastRawEndVisualOffset) {
                 err = "rawEndVisualOffset=" + rawEndVisualOffset + " < lastRawEndVisualOffset=" + // NOI18N
                         lastRawEndVisualOffset;
             }
-            if (err == null && visualOffset < lastVisualOffset) {
-                err = "visualOffset=" + visualOffset + " < lastVisualOffset=" + lastVisualOffset; // NOI18N
+            if (err == null && endVisualOffset < lastEndVisualOffset) {
+                err = "visualOffset=" + endVisualOffset + " < lastVisualOffset=" + lastEndVisualOffset; // NOI18N
             }
+            if (err == null) {
+                err = checkSpanIntegrity((endVisualOffset - lastEndVisualOffset), view);
+            }
+            lastEndVisualOffset = endVisualOffset;
+
+            if (err == null && gapStorage != null && rawEndOffset != -1) {
+                int localEndOffset = gapStorage.raw2Offset(rawEndOffset);
+                if (lastLocalEndOffset + viewLength != localEndOffset) {
+                    err = "lastLocalEndOffset=" + lastLocalEndOffset + " + viewLength=" + viewLength + // NOI18N
+                            " != localEndOffset=" + localEndOffset; // NOI18N
+                }
+                if (i < gapStorage.visualGapIndex) {
+                    if (err == null && !gapStorage.isBelowVisualGap(rawEndVisualOffset)) {
+                        err = "Not below visual-gap: rawEndVisualOffset=" + rawEndVisualOffset + // NOI18N
+                                "(minus gap: " + (rawEndVisualOffset-gapStorage.visualGapLength) + // NOI18N
+                                "), gap:" + gapStorage; // NOI18N
+                    }
+                } else { // Index above visual gap
+                    if (err == null && gapStorage.isBelowVisualGap(rawEndVisualOffset)) {
+                        err = "Not above visual-gap: rawEndVisualOffset=" + rawEndVisualOffset + // NOI18N
+                                ", gap:" + gapStorage; // NOI18N
+                    }
+                }
+                lastLocalEndOffset = localEndOffset;
+            }
+
             if (err != null) {
-                err = "EBVC[" + i + "]: "; // NOI18N
+                err = "ViewChildren[" + i + "]: " + err; // NOI18N
                 break;
             }
         }
         return err;
+    }
+    
+    protected String checkSpanIntegrity(double span, V view) {
+        return null; // By default do not check
     }
 
     /**

@@ -60,7 +60,6 @@ import java.util.WeakHashMap;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -93,13 +92,13 @@ public abstract class LayerGeneratingProcessor extends AbstractProcessor {
     private static final String LOCAL_DTD_RESOURCE = "/org/openide/filesystems/filesystem1_2.dtd";
 
     private static final ErrorHandler ERROR_HANDLER = new ErrorHandler() {
-        public void warning(SAXParseException exception) throws SAXException {throw exception;}
-        public void error(SAXParseException exception) throws SAXException {throw exception;}
-        public void fatalError(SAXParseException exception) throws SAXException {throw exception;}
+        @Override public void warning(SAXParseException exception) throws SAXException {throw exception;}
+        @Override public void error(SAXParseException exception) throws SAXException {throw exception;}
+        @Override public void fatalError(SAXParseException exception) throws SAXException {throw exception;}
     };
 
     private static final EntityResolver ENTITY_RESOLVER = new EntityResolver() {
-        public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+        @Override public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
             if (PUBLIC_DTD_ID.equals(publicId)) {
                 return new InputSource(LayerGeneratingProcessor.class.getResource(LOCAL_DTD_RESOURCE).toString());
             } else {
@@ -108,8 +107,8 @@ public abstract class LayerGeneratingProcessor extends AbstractProcessor {
         }
     };
 
-    private static final Map<ProcessingEnvironment,Document> generatedLayerByProcessor = new WeakHashMap<ProcessingEnvironment,Document>();
-    private static final Map<ProcessingEnvironment,List<Element>> originatingElementsByProcessor = new WeakHashMap<ProcessingEnvironment,List<Element>>();
+    private static final Map<Filer,Document> generatedLayerByProcessor = new WeakHashMap<Filer,Document>();
+    private static final Map<Filer,List<Element>> originatingElementsByProcessor = new WeakHashMap<Filer,List<Element>>();
 
     /** For access by subclasses. */
     protected LayerGeneratingProcessor() {}
@@ -135,8 +134,9 @@ public abstract class LayerGeneratingProcessor extends AbstractProcessor {
             return false;
         }
         if (roundEnv.processingOver()) {
-            Document doc = generatedLayerByProcessor.remove(processingEnv);
-            List<Element> originatingElementsL = originatingElementsByProcessor.remove(processingEnv);
+            Filer filer = processingEnv.getFiler();
+            Document doc = generatedLayerByProcessor.remove(filer);
+            List<Element> originatingElementsL = originatingElementsByProcessor.remove(filer);
             if (doc != null && !roundEnv.errorRaised()) {
                 Element[] originatingElementsA = new Element[0];
                 if (originatingElementsL != null) {
@@ -159,7 +159,7 @@ public abstract class LayerGeneratingProcessor extends AbstractProcessor {
                     ser.write(doc, output);
                     byte[] data = baos.toByteArray();
                     XMLUtil.parse(new InputSource(new ByteArrayInputStream(data)), true, true, ERROR_HANDLER, ENTITY_RESOLVER);
-                    FileObject layer = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", GENERATED_LAYER, originatingElementsA);
+                    FileObject layer = filer.createResource(StandardLocation.CLASS_OUTPUT, "", GENERATED_LAYER, originatingElementsA);
                     OutputStream os = layer.openOutputStream();
                     try {
                         os.write(data);
@@ -223,16 +223,17 @@ public abstract class LayerGeneratingProcessor extends AbstractProcessor {
     }
 
     private Document layerDocument(Element... originatingElements) {
-        List<Element> originatingElementsL = originatingElementsByProcessor.get(processingEnv);
+        Filer filer = processingEnv.getFiler();
+        List<Element> originatingElementsL = originatingElementsByProcessor.get(filer);
         if (originatingElementsL == null) {
             originatingElementsL = new ArrayList<Element>();
-            originatingElementsByProcessor.put(processingEnv, originatingElementsL);
+            originatingElementsByProcessor.put(filer, originatingElementsL);
         }
         originatingElementsL.addAll(Arrays.asList(originatingElements));
-        Document doc = generatedLayerByProcessor.get(processingEnv);
+        Document doc = generatedLayerByProcessor.get(filer);
         if (doc == null) {
             try {
-                FileObject layer = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", GENERATED_LAYER);
+                FileObject layer = filer.getResource(StandardLocation.CLASS_OUTPUT, "", GENERATED_LAYER);
                 InputStream is = layer.openInputStream();
                 try {
                     doc = XMLUtil.parse(new InputSource(is), true, true, ERROR_HANDLER, ENTITY_RESOLVER);
@@ -249,7 +250,7 @@ public abstract class LayerGeneratingProcessor extends AbstractProcessor {
             if (doc == null) {
                 doc = XMLUtil.createDocument("filesystem", null, PUBLIC_DTD_ID, NETWORK_DTD_URL);
             }
-            generatedLayerByProcessor.put(processingEnv, doc);
+            generatedLayerByProcessor.put(filer, doc);
         }
         return doc;
     }

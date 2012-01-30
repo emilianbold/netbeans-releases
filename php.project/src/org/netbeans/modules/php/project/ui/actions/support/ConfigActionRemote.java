@@ -72,13 +72,6 @@ class ConfigActionRemote extends ConfigActionLocal {
         return isValid(RunConfigRemoteValidator.validateConfigAction(RunConfigRemote.forProject(project), false) == null);
     }
 
-    private boolean isValid(boolean valid) {
-        if (!valid) {
-            showCustomizer();
-        }
-        return valid;
-    }
-
     @Override
     public void runProject() {
         eventuallyUploadFiles();
