@@ -146,7 +146,11 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
                     return LanguageFlavor.C99;
                 }
             } else if (compiler.getKind() == PredefinedToolKind.CCCompiler) {
-                return LanguageFlavor.CPP;
+                if (options.indexOf("-xc99") >= 0) { // NOI18N
+                    return LanguageFlavor.CPP11;
+                } else {
+                    return LanguageFlavor.CPP;
+                }
             } else if (compiler.getKind() == PredefinedToolKind.FortranCompiler) {
                 // TODO
             }
