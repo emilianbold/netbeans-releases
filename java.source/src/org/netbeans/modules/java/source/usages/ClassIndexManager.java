@@ -57,8 +57,6 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
-import org.netbeans.modules.parsing.lucene.support.IndexManager;
-import org.netbeans.modules.parsing.lucene.support.IndexManager.Action;
 import org.openide.util.Exceptions;
 
 /**
@@ -89,12 +87,6 @@ public final class ClassIndexManager {
     public void removeClassIndexManagerListener (final ClassIndexManagerListener listener) {
         assert listener != null;
         this.listeners.remove(listener);
-    }
-
-    @Deprecated
-    public <T> T writeLock (final Action<T> r) throws IOException, InterruptedException {
-        //Ugly, in scala much more cleaner.
-        return IndexManager.writeAccess(r);
     }
 
     @CheckForNull
