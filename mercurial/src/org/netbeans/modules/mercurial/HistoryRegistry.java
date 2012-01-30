@@ -131,7 +131,7 @@ public class HistoryRegistry {
     private String getRepositoryPathIntern(List<HgLogMessage> history, String revision, Map<String, List<HgLogMessageChangedPath>> fileChangesets, File repository, File originalFile, String path, boolean dryTry, HgProgressSupport support) {
         int count = 0;
         Iterator<HgLogMessage> it = history.iterator();
-        while(it.hasNext() && !revision.equals(it.next().getHgRevision().getRevisionNumber())) {
+        while(it.hasNext() && !revision.equals(it.next().getHgRevision().getChangesetId())) {
             count++;
         }
         support.getProgressHandle().switchToDeterminate(count);
@@ -139,7 +139,7 @@ public class HistoryRegistry {
         // XXX try dry first, might be it will lead to the in in the revision
         for (int i = 0; i < history.size() ; i ++) {
             HgLogMessage lm = history.get(i);
-            String historyRevision = lm.getHgRevision().getRevisionNumber();
+            String historyRevision = lm.getHgRevision().getChangesetId();
             if(historyRevision.equals(revision)) {
                 break;
             }

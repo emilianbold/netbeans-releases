@@ -207,7 +207,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
                     return;
                 }
                 File repository = repositories.iterator().next();
-                File historyFile = HistoryRegistry.getInstance().getHistoryFile(repository, originalFile, hgRevision.getRevisionNumber(), true);
+                File historyFile = HistoryRegistry.getInstance().getHistoryFile(repository, originalFile, hgRevision.getChangesetId(), true);
                 if(historyFile != null) {
                     // ah! we already now the file was moved in the history,
                     // so lets look for contents by using its previous name
@@ -219,7 +219,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
                 } else if(historyFile == null) {
                     // well then, lets try to find out if the file was move at some point in the history
                     Mercurial.LOG.log(Level.WARNING, "File {0} not found in revision {1}. Will make a guess ...", new Object[]{originalFile, hgRevision});
-                    historyFile = HistoryRegistry.getInstance().getHistoryFile(repository, originalFile, hgRevision.getRevisionNumber(), false);
+                    historyFile = HistoryRegistry.getInstance().getHistoryFile(repository, originalFile, hgRevision.getChangesetId(), false);
                     if(historyFile != null) {
                         file = VersionsCache.getInstance().getFileRevision(historyFile, hgRevision, false);
                         if(file != null) {

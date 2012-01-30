@@ -93,16 +93,19 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
         private RepositoryRevision revision;
         private List events = new ArrayList<SvnLogEvent>(10);
+        private List<Event> dummyEvents;
         private SearchHistoryPanel master;
         private final PropertyChangeListener list;
     
         public SvnLogEntry (RepositoryRevision revision, SearchHistoryPanel master) {
             this.revision = revision;
             this.master = master;
+            this.dummyEvents = Collections.<Event>emptyList();
             if (revision.isEventsInitialized()) {
                 refreshEvents();
                 list = null;
             } else {
+                prepareDummyEvents();
                 revision.addPropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list = WeakListeners.propertyChange(this, revision));
             }
         }
@@ -110,6 +113,11 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         @Override
         public Collection<AbstractSummaryView.LogEntry.Event> getEvents () {
             return events;
+        }
+
+        @Override
+        public Collection<Event> getDummyEvents () {
+            return dummyEvents;
         }
 
         @Override
@@ -194,6 +202,14 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             return revision;
         }
 
+        void prepareDummyEvents () {
+            ArrayList<Event> evts = new ArrayList<Event>(revision.getDummyEvents().size());
+            for (RepositoryRevision.Event event : revision.getDummyEvents()) {
+                evts.add(new SvnLogEvent(master, event));
+            }
+            dummyEvents = evts;
+        }
+
         void refreshEvents () {
             ArrayList<SvnLogEvent> evts = new ArrayList<SvnLogEvent>(revision.getEvents().size());
             for (RepositoryRevision.Event event : revision.getEvents()) {
@@ -202,6 +218,7 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             List<SvnLogEvent> oldEvents = new ArrayList<SvnLogEvent>(events);
             List<SvnLogEvent> newEvents = new ArrayList<SvnLogEvent>(evts);
             events = evts;
+            dummyEvents.clear();
             eventsChanged(oldEvents, newEvents);
         }
 

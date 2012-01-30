@@ -157,7 +157,7 @@ public class HgLogMessage {
         }
         this.dummyPaths = new ArrayList<HgLogMessageChangedPath>(filesShortPaths.size());
         for (String fileSP : filesShortPaths) {
-            dummyPaths.add(new HgLogMessageChangedPath(fileSP, null, ' '));
+            dummyPaths.add(new HgLogMessageChangedPath(fileSP, null, '?'));
         }
         if (branches.isEmpty()) {
             this.branches = new String[0];
