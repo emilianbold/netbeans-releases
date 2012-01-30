@@ -122,17 +122,5 @@ public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
         public FileUtilTestHidden_(String testName) {
             super(testName);
         }
-
-        @RandomlyFails
-        @Override
-        public void testToFile() throws Exception {
-            super.testToFile();
-        }
-
-        @RandomlyFails
-        @Override
-        public void testToFileObject() throws Exception {
-            super.testToFileObject();
-        }
     }
 }
