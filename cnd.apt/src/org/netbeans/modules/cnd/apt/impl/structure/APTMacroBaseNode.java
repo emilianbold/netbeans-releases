@@ -147,6 +147,26 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
     public APTToken getName() {
         return macroName;
     }
+
+    @Override
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) {
+            return false;
+        }
+        final APTMacroBaseNode other = (APTMacroBaseNode) obj;
+        if (this.macroName != other.macroName && (this.macroName == null || !this.macroName.equals(other.macroName))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = super.hashCode();
+        hash = 37 * hash + (this.macroName != null ? this.macroName.hashCode() : 0);
+        return hash;
+    }
     
     private static final NotHandledMacroName EMPTY_NAME = new NotHandledMacroName();
     

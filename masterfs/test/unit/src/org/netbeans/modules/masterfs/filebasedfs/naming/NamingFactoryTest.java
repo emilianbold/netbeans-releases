@@ -42,7 +42,10 @@
 package org.netbeans.modules.masterfs.filebasedfs.naming;
 
 import java.io.File;
+import java.security.Permission;
+import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -51,9 +54,16 @@ import org.openide.filesystems.FileUtil;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class NamingFactoryTest extends NbTestCase {
-    
     public NamingFactoryTest(String n) {
         super(n);
+    }
+    
+    public static Test suite() {
+        NbTestSuite s = new NbTestSuite();
+        s.addTestSuite(NamingFactoryTest.class);
+        s.addTest(new NamingFactoryTest("registerSecurityManager"));
+        s.addTestSuite(NamingFactoryTest.class);
+        return s;
     }
 
     @Override
@@ -61,7 +71,9 @@ public class NamingFactoryTest extends NbTestCase {
         clearWorkDir();
     }
     
-    
+    public void registerSecurityManager() {
+        System.setSecurityManager(new AssertNoLockManager(NamingFactory.class));
+    }
 
     public void testDontForciblyUnregisterFileName() throws Exception {
         File f = new File(getWorkDir(), "child.txt");
@@ -87,6 +99,7 @@ public class NamingFactoryTest extends NbTestCase {
         f.mkdir();
         
         FileObject dir = FileUtil.toFileObject(f);
+        assertNotNull("Fileobject for " +f, dir);
         assertTrue("It is a directory", dir.isFolder());
 
         f.delete();
@@ -114,5 +127,30 @@ public class NamingFactoryTest extends NbTestCase {
         assertFalse("Middle file object is no longer valid", file.isValid());
         assertTrue("Newest is valid", newDir.isValid());
         
+    }
+
+    private static class AssertNoLockManager extends SecurityManager {
+        private final Object LOCK;
+        
+        public AssertNoLockManager(Object lock) {
+            LOCK = lock;
+        }
+        @Override
+        public void checkRead(String string) {
+            assertFalse("No lock", Thread.holdsLock(LOCK));
+        }
+
+        @Override
+        public void checkRead(String string, Object o) {
+            checkRead(string);
+        }
+
+        @Override
+        public void checkPermission(Permission prmsn) {
+        }
+
+        @Override
+        public void checkPermission(Permission prmsn, Object o) {
+        }
     }
 }
