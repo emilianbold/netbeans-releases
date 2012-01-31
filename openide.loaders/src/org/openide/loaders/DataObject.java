@@ -49,6 +49,10 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.beans.*;
 import java.io.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.text.DateFormat;
 import java.util.*;
 import java.util.logging.Level;
@@ -1165,6 +1169,35 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         public void removePropertyChangeListener (PropertyChangeListener l);
     }
 
+    /** Registers a DataObject factory.
+      * Type level Annotation. Type must extends either (@link org.openide.loaders.DataObject.Factory) or 
+      * (@link org.openide.loaders.DataObject).
+      * @since 7.36
+      */
+      @Retention(RetentionPolicy.SOURCE)
+      @Target({ElementType.TYPE})
+      public static @interface Registration {
+            /**
+             * List of mimeTypes to register to.
+             */
+           String[] mimeType();
+             
+             /**
+              * Label of the Dataloader.
+              */
+           String label() default "";
+             
+             /**
+              * Optional icon to illustrate Dataloader.
+              */
+           String icon() default "";
+             
+             /**
+              * Optional position.
+              */
+           int position() default Integer.MAX_VALUE;
+                         
+        }
     /** Registry of modified data objects.
      * The registry permits attaching of a change listener
     * to be informed when the count of modified objects changes.

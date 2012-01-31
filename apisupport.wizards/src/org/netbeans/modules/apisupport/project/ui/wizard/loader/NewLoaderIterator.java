@@ -217,12 +217,15 @@ public final class NewLoaderIterator extends BasicWizardIterator {
 
         boolean loaderlessObject;
         boolean lookupReadyObject;
+        boolean annotationReadyObject;
         try {
             SpecificationVersion current = model.getModuleInfo().getDependencyVersion("org.openide.loaders"); // NOI18N
+            annotationReadyObject = current == null || current.compareTo(new SpecificationVersion("7.36")) >= 0; // NOI18N
             loaderlessObject = current == null || current.compareTo(new SpecificationVersion("7.1")) >= 0; // NOI18N
             lookupReadyObject = current == null || current.compareTo(new SpecificationVersion("6.0")) >= 0; // NOI18N
         } catch (IOException ex) {
             Logger.getLogger(NewLoaderIterator.class.getName()).log(Level.INFO, null, ex);
+            annotationReadyObject = false;
             loaderlessObject = false;
             lookupReadyObject = false;
         }
@@ -279,6 +282,26 @@ public final class NewLoaderIterator extends BasicWizardIterator {
             replaceTokens.put("EDITOR_SUPPORT_SNIPPET", "");//NOI18N
             replaceTokens.put("EDITOR_SUPPORT_IMPORT", "");//NOI18N
         }
+        // Annotation
+        if (annotationReadyObject) {
+             StringBuilder annotation= new StringBuilder();
+             annotation.append("@DataObject.Registration(");//NOI18N
+             annotation.append("mimeType = \"");//NOI18N
+             annotation.append(mime);
+             annotation.append("\"");//NOI18N
+             if (relativeIconPath != null) {
+                annotation.append(", icon = \"");//NOI18N
+                annotation.append(relativeIconPath); //NOI18N
+                annotation.append("\"");//NOI18N
+             }
+             annotation.append("/*, label = \"loadername\", position=300*/");//NOI18N
+             annotation.append(")");//NOI18N
+             replaceTokens.put("DATAOBJET_REGISTRATION", annotation.toString());//NOI18N
+             replaceTokens.put("DATAOBJET_REGISTRATION_IMPORT","import org.openide.loaders.DataObject;");//NOI18N
+        } else {
+             replaceTokens.put("DATAOBJET_REGISTRATION", "");//NOI18N
+             replaceTokens.put("DATAOBJET_REGISTRATION_IMPORT", "");//NOI18N
+        }
         
         String doName = model.getDefaultPackagePath(namePrefix + "DataObject.java", false); // NOI18N
         template = null;
@@ -296,6 +319,8 @@ public final class NewLoaderIterator extends BasicWizardIterator {
         if (template == null) {
             template = CreatedModifiedFiles.getTemplate("templateDataObject.java");//NOI18N
         }
+        
+        
         fileChanges.add(fileChanges.createFileWithSubstitutions(doName, template, replaceTokens));
         if (model.isUseMultiview()) {
             String formName = model.getDefaultPackagePath(namePrefix + "VisualElement.form", false); // NOI18N
@@ -345,9 +370,9 @@ public final class NewLoaderIterator extends BasicWizardIterator {
         fileChanges.add(fileChanges.bundleKey(bundlePath, "LBL_" + namePrefix + "_loader_name",  // NOI18N
                 namePrefix + " Files")); //NOI18N
         }
-        
         if (loaderlessObject) {
             // 7. register in layer
+            if (!annotationReadyObject) {
             String path = "Loaders/" + mime + "/Factories/" + namePrefix + "DataLoader.instance";
             Map<String,Object> attrs = new HashMap<String, Object>();
             attrs.put("instanceCreate", "methodvalue:org.openide.loaders.DataLoaderPool.factory"); //NOI18N
@@ -359,7 +384,7 @@ public final class NewLoaderIterator extends BasicWizardIterator {
             fileChanges.add(
                 fileChanges.createLayerEntry(path, null, null, null, attrs)
             );
-            
+            }
         } else {
             // 7. register manifest entry
             boolean isXml = Pattern.matches("(application/([a-zA-Z0-9_.-])*\\+xml|text/([a-zA-Z0-9_.-])*\\+xml)", //NOI18N
