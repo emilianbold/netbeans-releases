@@ -47,10 +47,7 @@ package org.netbeans.modules.javafx2.editor;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
@@ -70,13 +67,14 @@ import org.netbeans.modules.editor.completion.CompletionItemComparator;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.TreeLoader;
+import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.lucene.support.IndexManager.Action;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater.IndexingState;
 import org.netbeans.modules.xml.text.structure.XMLDocumentModelProvider;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -175,7 +173,12 @@ public class FXMLCompletionTestBase extends NbTestCase {
         final ClassPath sourcePath = ClassPathSupport.createClassPath(new FileObject[] {FileUtil.toFileObject(getDataDir())});
         final ClassIndexManager mgr  = ClassIndexManager.getDefault();
         for (ClassPath.Entry entry : sourcePath.entries()) {
-            mgr.createUsagesQuery(entry.getURL(), true);
+            TransactionContext tx = TransactionContext.beginStandardTransaction(true, entry.getURL());
+            try {
+                mgr.createUsagesQuery(entry.getURL(), true);
+            } finally {
+                tx.commit();
+            }
         }
         final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, fxPath, sourcePath);
         assertNotNull(cpInfo);
@@ -188,20 +191,25 @@ public class FXMLCompletionTestBase extends NbTestCase {
                 entries.addAll(fxPath.entries());
                 for (ClassPath.Entry entry : entries) {
                     final URL url = entry.getURL();
-                    final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);
-                    ClassIndexManager.getDefault().writeLock(new Action<Void>() {
-                        @Override
-                        public Void run() throws IOException, InterruptedException {
-                            BinaryAnalyser ba = cii.getBinaryAnalyser();
-                            ba.start(url, new AtomicBoolean(false), new AtomicBoolean(false));
-                            ba.finish();
-                            return null;
-                        }
-                    });
+                    TransactionContext.beginStandardTransaction(false, entry.getURL());
+                    try {
+                        final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);
+                        BinaryAnalyser ba = cii.getBinaryAnalyser();
+                        ba.start(url, new AtomicBoolean(false), new AtomicBoolean(false));
+                        ba.finish();
+                    } finally {
+                        TransactionContext.get().commit();
+                    }
                 }
             }
         }, true);
         Utilities.setCaseSensitive(true);
+        org.netbeans.modules.parsing.impl.Utilities.setIndexingStatus(new org.netbeans.modules.parsing.impl.Utilities.IndexingStatus() {
+            @Override
+            public Set<? extends IndexingState> getIndexingState() {
+                return EnumSet.<IndexingState>noneOf(IndexingState.class);
+            }
+        });
     }
 
     private URL getFxrtJarURL() throws IOException {
