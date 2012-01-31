@@ -49,6 +49,7 @@ import javax.swing.ImageIcon;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.CompletionContextFinder.CompletionContext;
+import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
@@ -198,6 +199,11 @@ public class JsCompletionItem implements CompletionProposal {
                 default:
                     result = new JsCompletionItem(object, request);
             }
+            return result;
+        }
+        
+        public static JsCompletionItem create(IndexedElement element, CompletionRequest request) {
+            JsCompletionItem result = new JsCompletionItem(element, request);
             return result;
         }
     }

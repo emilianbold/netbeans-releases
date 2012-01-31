@@ -49,9 +49,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -72,7 +74,6 @@ public class JsIndexer extends EmbeddingIndexer {
     private static final Logger LOG = Logger.getLogger(JsIndexer.class.getName());
     private static final Collection<String> INDEXABLE_EXTENSIONS = Arrays.asList("js");
 
-    public static final String FIELD_GLOBAL_VARIABLE = "gvar"; //NOI18N
     
     @Override
     protected void index(Indexable indexable, Result result, Context context) {
@@ -92,20 +93,22 @@ public class JsIndexer extends EmbeddingIndexer {
         IndexDocument reverseIdxDocument = support.createDocument(indexable);
 
         JsObject globalObject = model.getGlobalObject();
-        
-        IndexDocument globalVarDocument = support.createDocument(indexable);
-        documents.add(globalVarDocument);
-        for(JsObject property : globalObject.getProperties().values()) {
-            if (property.getJSKind() == JsElement.Kind.VARIABLE) {
-                globalVarDocument.addPair(FIELD_GLOBAL_VARIABLE, property.getName(), true, true);
-            }
-        }
-        
-        for (IndexDocument d : documents) {
-            support.addDocument(d);
+        for(JsObject object : globalObject.getProperties().values()) {
+            storeObject(object, support, indexable);
         }
     }
 
+    private void storeObject(JsObject object, IndexingSupport support, Indexable indexable) {
+        if (object.isDeclared()) {
+            support.addDocument(IndexedElement.createDocument(object, support, indexable));
+            for (JsObject property : object.getProperties().values()) {
+                storeObject(property, support, indexable);
+            }
+        }
+    }
+   
+    
+    
     public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "js"; // NOI18N

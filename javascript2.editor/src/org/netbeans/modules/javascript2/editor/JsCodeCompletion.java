@@ -60,11 +60,15 @@ import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.javascript2.editor.JsCompletionItem.CompletionRequest;
+import org.netbeans.modules.javascript2.editor.index.IndexedElement;
+import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -228,6 +232,13 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 resultList.add(JsCompletionItem.Factory.create(object, request));
             }
         }
+        FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+        JsIndex index = JsIndex.get(fo);
+        Collection<IndexedElement> fromIndex = index.getGlobalVar();
+        for (IndexedElement indexedElement : fromIndex) {
+            resultList.add(JsCompletionItem.Factory.create(indexedElement, request));
+        }
+        
     }
     
     private void completeObjectProperty(CompletionRequest request, List<CompletionProposal> resultList) {
@@ -311,6 +322,19 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     }
                 }
                 
+            } else {
+                // try to look into index
+                StringBuilder fqn = new StringBuilder();
+                // resolving the first part in the chain
+                part = expression.get(expression.size() - 1);
+                if (part.size() == 1) {
+                    FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+                    fqn.append(part.get(0).text().toString());
+                    Collection<IndexedElement> properties = JsIndex.get(fo).getProperties(fqn.toString()); 
+                    for(IndexedElement indexedElement : properties) {
+                        resultList.add(JsCompletionItem.Factory.create(indexedElement, request));
+                    }
+                }
             }
         }
     }

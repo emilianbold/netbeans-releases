@@ -109,4 +109,15 @@ public class ModelUtils {
         }
         return result;
     }
+    
+    public static String createFQN(JsObject object) {
+        StringBuilder result = new StringBuilder();
+        result.append(object.getName());
+        JsObject parent = object;
+        while((parent = parent.getParent()).getJSKind() != JsElement.Kind.FILE) {
+            result.insert(0, ".");
+            result.insert(0, parent.getName());
+        }
+        return result.toString();
+    }
 }
