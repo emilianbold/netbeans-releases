@@ -6166,3 +6166,23 @@ org.eclipse.osgi.framework.util.ObjectPool
 org.eclipse.osgi.internal.resolver.ReadOnlyState
 org.eclipse.osgi.internal.resolver.StateReader
 
+# OK on Jan 30, 2012
+org.netbeans.swing.tabcontrol.customtabs.Tabbed
+org.netbeans.swing.tabcontrol.customtabs.Tabbed$Accessor
+org.netbeans.swing.tabcontrol.customtabs.Tabbed
+org.netbeans.swing.tabcontrol.customtabs.Tabbed$Accessor
+org.netbeans.swing.tabcontrol.customtabs.TabbedComponentFactory
+org.netbeans.swing.tabcontrol.customtabs.TabbedType
+org.netbeans.spi.queries.CollocationQueryImplementation2
+org.netbeans.spi.queries.SharabilityQueryImplementation2
+org.netbeans.modules.progress.spi.TaskModel$TaskListener
+org.netbeans.core.startup.NbProblemDisplayer$1Report
+org.netbeans.core.windows.view.ui.DefaultTabbedComponentFactory
+org.netbeans.core.windows.view.ui.tabcontrol.AbstractTabbedImpl
+org.netbeans.core.windows.view.ui.tabcontrol.AbstractTabbedImpl$ToolTipListener
+org.netbeans.modules.openide.explorer.ExplorerActionsImpl
+org.netbeans.modules.openide.explorer.ExplorerActionsImpl$ActionStateUpdater
+org.netbeans.modules.openide.explorer.ExplorerActionsImpl$BaseAction
+org.netbeans.modules.openide.explorer.ExplorerActionsImpl$CopyCutActionPerformer
+org.netbeans.modules.openide.explorer.ExplorerActionsImpl$DeleteActionPerformer
+org.netbeans.modules.openide.explorer.ExplorerActionsImpl$OwnPaste
