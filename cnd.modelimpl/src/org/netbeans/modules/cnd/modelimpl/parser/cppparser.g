@@ -1996,8 +1996,10 @@ init_declarator[int kind]
 		(	
 			ASSIGNEQUAL 
                         (cast_array_initializer_head) => initializer
-                        |	
+                |	
 			LPAREN expression_list RPAREN
+                |
+                        array_initializer
 		)?
 	;
 
@@ -2047,7 +2049,7 @@ array_initializer:
 // only for predicates
 cast_array_initializer_head
 :
-    (AMPERSAND)? (balanceParensInExpression)+ LCURLY
+    (AMPERSAND)? (balanceParensInExpression)* LCURLY
     ;
 
 // so far this one is used in predicates only
@@ -2497,7 +2499,12 @@ ctor_initializer
 superclass_init
 	{String q;} 
 	: 
-	q = qualified_id LPAREN! (expression_list)? RPAREN!
+	q = qualified_id 
+        (
+            LPAREN! (expression_list)? RPAREN!
+        |
+            array_initializer
+        )
 
         {#superclass_init = #(#[CSM_CTOR_INITIALIZER, "CSM_CTOR_INITIALIZER"], #superclass_init);}
 	;
@@ -3176,7 +3183,9 @@ condition_declaration {int ts = tsInvalid;}
         ts=type_specifier[dsInvalid, false]
         (postfix_cv_qualifier)? 
         declarator[declStatement, 0]
-        ASSIGNEQUAL assignment_expression
+        (   ASSIGNEQUAL assignment_expression
+        |   array_initializer 
+        )
     ;
 
 //	(declaration)=> declaration|	expression
@@ -3229,7 +3238,7 @@ for_statement
     LITERAL_for LPAREN!
     (
         (for_range_init_statement COLON) =>
-        for_range_init_statement COLON expression
+        for_range_init_statement COLON (expression | array_initializer)
     |
         for_init_statement
         (
