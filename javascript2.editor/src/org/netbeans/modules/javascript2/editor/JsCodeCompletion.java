@@ -258,7 +258,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
             List<List<Token<? extends JsTokenId>>> expression = new ArrayList<List<Token<? extends JsTokenId>>>();
             List<Token<? extends JsTokenId>> part = null;
             Token<? extends JsTokenId> token = ts.token();
-            while (token.id() != JsTokenId.WHITESPACE && token.id() != JsTokenId.OPERATOR_SEMICOLON) {
+            while (token.id() != JsTokenId.WHITESPACE && token.id() != JsTokenId.OPERATOR_SEMICOLON
+                    && token.id() != JsTokenId.BRACKET_RIGHT_CURLY && token.id() != JsTokenId.BRACKET_LEFT_CURLY) {
                 
                 if (token.id() != JsTokenId.EOL) {
                     if (token.id() == JsTokenId.OPERATOR_DOT) {

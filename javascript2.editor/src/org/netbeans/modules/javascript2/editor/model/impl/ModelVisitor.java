@@ -90,7 +90,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (accessNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)accessNode.getBase()).getName())) { //NOI18N
                     if (accessNode.getProperty() instanceof IdentNode) {
                         IdentNode iNode = (IdentNode)accessNode.getProperty();
-                        JsObject current = modelBuilder.getCurrentObject();
+                        JsObject current = modelBuilder.getCurrentDeclarationScope();
                         JsObject property = current.getProperty(iNode.getName());
                         if (property == null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
                                 || current.getParent().getJSKind() == JsElement.Kind.OBJECT)) {
