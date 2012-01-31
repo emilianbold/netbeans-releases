@@ -205,14 +205,9 @@ public class CompletionTestBase extends NbTestCase {
                     TransactionContext.beginStandardTransaction(false, entry.getURL());
                     try {
                         final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);
-                        ClassIndexManager.getDefault().writeLock(new Action<Void>() {
-                            public Void run() throws IOException, InterruptedException {
-                                BinaryAnalyser ba = cii.getBinaryAnalyser();
-                                ba.start(url, new AtomicBoolean(false), new AtomicBoolean(false));
-                                ba.finish();
-                                return null;
-                            }
-                        });
+                        BinaryAnalyser ba = cii.getBinaryAnalyser();
+                        ba.start(url, new AtomicBoolean(false), new AtomicBoolean(false));
+                        ba.finish();
                     } finally {
                         TransactionContext.get().commit();
                     }

@@ -57,8 +57,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
-import org.netbeans.modules.parsing.lucene.support.IndexManager;
-import org.netbeans.modules.parsing.lucene.support.IndexManager.Action;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -91,63 +90,64 @@ public final class ClassIndexManager {
         this.listeners.remove(listener);
     }
 
-    @Deprecated
-    public <T> T writeLock (final Action<T> r) throws IOException, InterruptedException {
-        //Ugly, in scala much more cleaner.
-        return IndexManager.writeAccess(r);
-    }
-
     @CheckForNull
     public ClassIndexImpl getUsagesQuery (@NonNull final URL root, final boolean beforeCreateAllowed) {
-        synchronized (internalLock) {
-            assert root != null;
-            if (invalid) {
-                return null;
-            }
-            Pair<ClassIndexImpl,Boolean> pair = getClassIndex(root, beforeCreateAllowed, false);
-            ClassIndexImpl index = pair.first;
-            if (index != null) {
-                return index;
-            }
-            URL translatedRoot = AptCacheForSourceQuery.getSourceFolder(root);
-            if (translatedRoot != null) {
-                pair = getClassIndex(translatedRoot, beforeCreateAllowed, false);
-                index = pair.first;
-                if (index != null) {
-                    return index;
-                }
-            } else {
-                translatedRoot = root;
-            }
-            if (beforeCreateAllowed) {
-                try {
-                    final String typeAttr = JavaIndex.getAttribute(translatedRoot, PROP_SOURCE_ROOT, null);
-                    final String dirtyAttr = JavaIndex.getAttribute(translatedRoot, PROP_DIRTY_ROOT, null);
-                    if (Boolean.TRUE.toString().equals(typeAttr)) {
-                        index = PersistentClassIndex.create (
-                                root,
-                                JavaIndex.getIndex(root),
-                                ClassIndexImpl.Type.SOURCE,
-                                ClassIndexImpl.Type.SOURCE);
-                        this.transientInstances.put(root,index);
-                    } else if (Boolean.FALSE.toString().equals(typeAttr)) {
-                        index = PersistentClassIndex.create (
-                                root,
-                                JavaIndex.getIndex(root),
-                                ClassIndexImpl.Type.BINARY,
-                                ClassIndexImpl.Type.BINARY);
-                        this.transientInstances.put(root,index);
+        final ClassIndexImpl[] index = new ClassIndexImpl[] {null};
+        FileUtil.runAtomicAction(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (internalLock) {
+                    assert root != null;
+                    if (invalid) {
+                        return;
                     }
-                } catch(IOException ioe) {/*Handled bellow by return null*/
-                } catch(IllegalStateException ise) {
-                  /* Required by some wrongly written tests
-                   * which access ClassIndex without setting the cache dir
-                   * Handled bellow by return null
-                   */
+                    Pair<ClassIndexImpl,Boolean> pair = getClassIndex(root, beforeCreateAllowed, false);
+                    index[0] = pair.first;
+                    if (index[0] != null) {
+                        return;
+                    }
+                    URL translatedRoot = AptCacheForSourceQuery.getSourceFolder(root);
+                    if (translatedRoot != null) {
+                        pair = getClassIndex(translatedRoot, beforeCreateAllowed, false);
+                        index[0] = pair.first;
+                        if (index[0] != null) {
+                            return;
+                        }
+                    } else {
+                        translatedRoot = root;
+                    }
+                    if (beforeCreateAllowed) {
+                        try {
+                            final String typeAttr = JavaIndex.getAttribute(translatedRoot, PROP_SOURCE_ROOT, null);
+                            final String dirtyAttr = JavaIndex.getAttribute(translatedRoot, PROP_DIRTY_ROOT, null);
+                            if (Boolean.TRUE.toString().equals(typeAttr)) {
+                                index[0] = PersistentClassIndex.create (
+                                        root,
+                                        JavaIndex.getIndex(root),
+                                        ClassIndexImpl.Type.SOURCE,
+                                        ClassIndexImpl.Type.SOURCE);
+                                transientInstances.put(root,index[0]);
+                            } else if (Boolean.FALSE.toString().equals(typeAttr)) {
+                                index[0] = PersistentClassIndex.create (
+                                        root,
+                                        JavaIndex.getIndex(root),
+                                        ClassIndexImpl.Type.BINARY,
+                                        ClassIndexImpl.Type.BINARY);
+                                transientInstances.put(root,index[0]);
+                            }
+                        } catch(IOException ioe) {
+                            /*Handled bellow by return null*/
+                        } catch(IllegalStateException ise) {
+                          /* Required by some wrongly written tests
+                           * which access ClassIndex without setting the cache dir
+                           * Handled bellow by return null
+                           */
+                        }
+                    }
                 }
             }
-            return index;
-        }
+        });
+        return index[0];
     }
 
     public ClassIndexImpl createUsagesQuery (
