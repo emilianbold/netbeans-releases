@@ -41,6 +41,14 @@
  */
 package org.netbeans.modules.javafx2.editor.css;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.css.editor.module.spi.*;
+import org.netbeans.modules.css.lib.api.model.Namespace;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -49,6 +57,125 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Anton Chechel <anton.chechel@oracle.com>
  * @version 1.0
  */
+// XXX uncomment when properties will be parsable
+// TODO acceptors?
 //@ServiceProvider(service = CssEditorModule.class)
-public class JavaFXCSSModule {
+public class JavaFXCSSModule extends CssEditorModule implements CssModule {
+
+    private static final String NAMESPACE_KEYWORD = "@namespace"; // NOI18N
+    static ElementKind JFX_CSS_ELEMENT_KIND = ElementKind.GLOBAL;
+
+    private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/javafx2/editor/css/javafx2"; // NOI18N
+    private static Collection<Property> propertyDescriptors;
+
+    @Override
+    public synchronized Collection<Property> getProperties() {
+        if (propertyDescriptors == null) {
+            propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH, this);
+        }
+        return propertyDescriptors;
+    }
+
+//    @Override
+//    public List<org.netbeans.modules.csl.api.CompletionProposal> getCompletionProposals(CompletionContext context) {
+//        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+//        Node activeNode = context.getActiveNode();
+//        boolean isError = activeNode.type() == NodeType.error;
+//        if (isError) {
+//            activeNode = activeNode.parent();
+//        }
+//
+//        switch (activeNode.type()) {
+//            case namespace_prefix:
+//            case elementName:
+//                //already in the prefix
+//
+//                //todo: rewrite to use index later
+//                Stylesheet model = context.getParserResult().getModel();
+//                for (Namespace ns : model.getNamespaces()) {
+//                    proposals.add(new JavaFXCSSCompletionItem(ns.getPrefix().toString(), ns.getResourceIdentifier().toString(), context.getAnchorOffset()));
+//                }
+//                break;
+//
+//            case root:
+//            case styleSheet:
+//            case bodylist:
+//                CompletionProposal nsKeywordProposal =
+//                        CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false);
+//                proposals.add(nsKeywordProposal);
+//
+//            case bodyset:
+//            case media:
+//            case combinator:
+//            case selector:
+//                proposals.addAll(getJavaFXCSSCompletionProposals(context));
+//                break;
+//
+//            case elementSubsequent: //after element selector
+//            case typeSelector: //after class or id selector
+//                CssTokenId tokenNodeTokenId = context.getActiveTokenNode().type() == NodeType.token ? NodeUtil.getTokenNodeTokenId(context.getActiveTokenNode()) : null;
+//                if (tokenNodeTokenId == CssTokenId.WS) {
+//                    proposals.addAll(getJavaFXCSSCompletionProposals(context));
+//                }
+//                break;
+//
+//            case namespace:
+//                CssTokenId tokenId = context.getTokenSequence().token().id();
+//                if (tokenId == CssTokenId.NAMESPACE_SYM) {
+//                    nsKeywordProposal =
+//                            CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false);
+//                    proposals.add(nsKeywordProposal);
+//                }
+//
+//            case simpleSelectorSequence:
+//                if (isError) {
+//                    Token<CssTokenId> token = context.getTokenSequence().token();
+//                    switch (token.id()) {
+//                        case IDENT:
+//                            if (JavaFXEditorUtils.followsToken(context.getTokenSequence(), EnumSet.of(CssTokenId.LBRACKET, CssTokenId.COMMA), true, true, CssTokenId.WS) != null) {
+//                                proposals.addAll(getJavaFXCSSCompletionProposals(context));
+//                            }
+//                            break;
+//                        case LBRACKET:
+//                        case WS:
+//                            proposals.addAll(getJavaFXCSSCompletionProposals(context));
+//                            break;
+//
+//                    }
+//                }
+//                break;
+//
+//            case attrib:
+//            case attrib_name:
+//            case namespace_wqname_prefix:
+//                proposals.addAll(getJavaFXCSSCompletionProposals(context));
+//                break;
+//        }
+//
+//        return JavaFXEditorUtils.filterCompletionProposals(proposals, context.getPrefix(), true);
+//    }
+    
+    private static List<CompletionProposal> getJavaFXCSSCompletionProposals(CompletionContext context) {
+        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        for (Namespace ns : context.getParserResult().getModel().getNamespaces()) {
+            proposals.add(new JavaFXCSSCompletionItem(ns.getPrefix().toString(), ns.getResourceIdentifier().toString(), context.getAnchorOffset()));
+        }
+        return proposals;
+    }
+
+    @Override
+    public String getName() {
+        return "javafx2_css"; //NOI18N
+    }
+
+    @Override
+    public String getDisplayName() {
+        return NbBundle.getMessage(this.getClass(), "css-module-displayname-" + getName()); // NOI18N
+    }
+
+    @Override
+    public String getSpecificationURL() {
+        return "http://docs.oracle.com/javafx/2.0/api/javafx/scene/doc-files/cssref.html"; // NOI18N
+    }
+    
 }
