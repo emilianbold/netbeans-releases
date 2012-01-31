@@ -392,6 +392,34 @@ public class ModelTest extends JsTestBase {
         
     }
     
+    public void testSimleObject01() throws Exception {
+        Model model = getModel("testfiles/model/simpleObject.js");
+        assertNotNull(model);
+        
+        JsObject  global = model.getGlobalObject();
+        assertEquals(2, global.getProperties().size());
+        
+        JsObject object = global.getProperty("Carrot");
+        assertEquals(true, object.isDeclared());
+        assertNotNull(object.getProperty("called"));
+        assertNotNull(object.getProperty("color"));
+        assertNotNull(object.getProperty("getColor"));
+        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        
+        JsObject property = object.getProperty("called");
+        assertEquals(true, property.isDeclared());
+        assertEquals(JsElement.Kind.PROPERTY, property.getJSKind());
+        
+        property = object.getProperty("color");
+        assertEquals(true, property.isDeclared());
+        assertEquals(JsElement.Kind.PROPERTY, property.getJSKind());
+        
+        property = object.getProperty("getColor");
+        assertEquals(true, property.isDeclared());
+        assertEquals(JsElement.Kind.METHOD, property.getJSKind());
+        
+    }
+    
 //    public void testPrivateMethod01() throws Exception {
 //        Model model = getModel("testfiles/model/privateMethod.js");
 //        assertNotNull(model);

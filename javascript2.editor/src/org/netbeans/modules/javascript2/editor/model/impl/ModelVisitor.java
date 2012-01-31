@@ -138,7 +138,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     && !(binaryNode.rhs() instanceof ReferenceNode || binaryNode.rhs() instanceof ObjectNode)
                     && (binaryNode.lhs() instanceof AccessNode || binaryNode.lhs() instanceof IdentNode)) {
                 // TODO probably not only assign                
-                JsObjectImpl parent = modelBuilder.getCurrentObject();
+                JsObjectImpl parent = modelBuilder.getCurrentDeclarationScope();
                 if (binaryNode.lhs() instanceof AccessNode) {
                     List<Identifier> name = getName(binaryNode);
 //                    System.out.println("in binarynode: " + binaryNode.lhs());
@@ -147,7 +147,8 @@ public class ModelVisitor extends PathNodeVisitor {
                         // a usage of field
                         String fieldName = aNode.getProperty().getName();
                         if(!ModelUtils.isGlobal(parent.getParent()) && 
-                            parent.getParent() instanceof JsFunctionImpl) {
+                            (parent.getParent() instanceof JsFunctionImpl
+                                || isInPropertyNode())) {
                             parent = (JsObjectImpl)parent.getParent();
                         }
                         if(parent.getProperty(fieldName) == null) {
@@ -533,4 +534,20 @@ public class ModelVisitor extends PathNodeVisitor {
 //        return result;
 //    }
     
+    private boolean isInPropertyNode() {
+        boolean inFunction = false;
+        for (int i = getPath().size() - 1; i > 0 ; i--) {
+            final Node node = getPath().get(i);
+            if(node instanceof FunctionNode) {
+                if (!inFunction) {
+                    inFunction = true;
+                } else {
+                    return false;
+                }
+            } else if (node instanceof PropertyNode) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
