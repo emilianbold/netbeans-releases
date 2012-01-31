@@ -43,6 +43,8 @@
 package org.netbeans.modules.java.editor.javadoc;
 
 import javax.swing.text.JTextComponent;
+
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -52,6 +54,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
  *
  * @author Jan Pokorsky
  */
+@MimeRegistration(mimeType = "text/x-java", service = CompletionProvider.class, position = 200) //NOI18N
 public final class JavadocCompletionProvider implements CompletionProvider {
     // complete @TAG, {@TAG}, @param NAME, @see LINK, {@link LINK}
 
