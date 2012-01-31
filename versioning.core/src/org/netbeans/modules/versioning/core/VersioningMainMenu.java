@@ -96,8 +96,8 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
             VersioningSystem [] vs = VersioningManager.getInstance().getOwners(ctx);
 
             if (vs.length == 1) {
-                if (vs[0].getAnnotator() != null) {
-                    List<JComponent> systemItems = actionsToItems(vs[0].getAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.MainMenu));
+                if (vs[0].getVCSAnnotator() != null) {
+                    List<JComponent> systemItems = actionsToItems(vs[0].getVCSAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.MainMenu));
                     items.addAll(systemItems);
                 }
                 items.addAll(actionsToItems(appendAdditionalActions(ctx, vs[0], new Action[0])));
@@ -140,7 +140,11 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
 
     private JMenu createVersioningSystemMenu(final VersioningSystem system, final boolean isRegularVCS) {
         final JMenu menu = new JMenu();
-        Mnemonics.setLocalizedText(menu, system.getMenuLabel());
+        String menuText = 
+                VersioningManager.getInstance().isLocalHistory(system) ? 
+                NbBundle.getMessage(VersioningMainMenu.class, "CTL_LocalHistoryMenuNameLoc") : 
+                system.getMenuLabel();
+        Mnemonics.setLocalizedText(menu, menuText);
         menu.addMenuListener(new MenuListener() {
             @Override
             public void menuSelected(MenuEvent e) {
@@ -163,8 +167,8 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
 
     private void constructMenu (JMenu menu, VersioningSystem system, VCSContext ctx, boolean isRegularVCS) {
         Action[] actions = null;
-        if (system.getAnnotator() != null) {
-            actions = system.getAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.MainMenu);
+        if (system.getVCSAnnotator() != null) {
+            actions = system.getVCSAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.MainMenu);
         }
         if (isRegularVCS) {
             actions = appendAdditionalActions(ctx, system, actions);

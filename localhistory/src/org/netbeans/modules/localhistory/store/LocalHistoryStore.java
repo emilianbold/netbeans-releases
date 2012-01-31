@@ -120,7 +120,7 @@ public interface LocalHistoryStore {
      * @param ts timestamp
      * @param label the label to be set 
      */ 
-    public void setLabel(File file, long ts, String label);    
+    public StoreEntry setLabel(File file, long ts, String label);    
     
     /**
      * Adds a property change listener

@@ -99,12 +99,12 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
                 VersioningSystem owner = owners.iterator().next();
                 VersioningSystem localHistory = getLocalHistory(nodes);
 
-                if (owner == null || owner.getAnnotator() != null) {
+                if (owner == null || owner.getVCSAnnotator() != null) {
                     // prepare a lazy menu, it's items will be properly created at the time the menu is expanded
                     JMenu menu = new LazyMenu(nodes, owner);
                     popups.add(menu);
                 }
-                if(localHistory != null && localHistory.getAnnotator() != null) {
+                if(localHistory != null && localHistory.getVCSAnnotator() != null) {
                     // prepare a lazy menu for the local history, it's items will be properly created at the time the menu is expanded
                     JMenu menu = new LazyMenu(nodes, localHistory);
                     popups.add(menu);
@@ -167,7 +167,7 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
             if (owner instanceof DelegatingVCS) {
                 actions = ((DelegatingVCS) owner).getInitActions(ctx);
             } else {
-                VCSAnnotator an = owner.getAnnotator();
+                VCSAnnotator an = owner.getVCSAnnotator();
                 if (an == null) return null; 
                 actions = an.getActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
             }
@@ -245,7 +245,7 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
 
         private LazyMenu(Node[] nodes, VersioningSystem owner) {
             // owner == null ? 'default versioning menu' : 'specific menu of a versioning system'
-            super(owner == null ? NbBundle.getMessage(ProjectMenuItem.class, "CTL_MenuItem_VersioningMenu") : owner.getDisplayName());
+            super(owner == null ? NbBundle.getMessage(ProjectMenuItem.class, "CTL_MenuItem_VersioningMenu") : Utils.getSystemMenuName(owner));
             this.nodes = nodes;
             this.owner = owner;
         }
