@@ -95,7 +95,7 @@ public class ${PREFIX}DataObject extends MultiDataObject {
 
     public ${PREFIX}DataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        registerEditor("${MIMETYPE}", true);
+        registerEditor("${MIMETYPE}", <#if MULTIVIEW??>true<#else>false</#if>);
     }
 
     @Override
