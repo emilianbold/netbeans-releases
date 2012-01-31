@@ -57,7 +57,7 @@ public class Namespace extends Item {
     }
     
     public CharSequence getPrefix() {
-        Node prefixNode = NodeUtil.getChildByType(node, NodeType.namespace_prefix);
+        Node prefixNode = NodeUtil.getChildByType(node, NodeType.namespacePrefixName);
         return prefixNode != null ? prefixNode.image() : null;
     }
     

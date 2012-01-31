@@ -43,181 +43,202 @@ package org.netbeans.modules.css.lib.api;
 
 /**
  * This enum must keep in sync with the ANTLR grammar set of rules.
- * 
+ *
  * @author mfukala@netbeans.org
  */
 public enum NodeType {
+
+    /**
+     * A list of bodyItem-s
+     */
+    body,
     
-        /**
-         * Attribute name - value pair in selectors h1[attr=value] {}
-         */
-        attrib, 
+    /**
+     * rule | media | page | counterStyle | fontFace | moz_document
+     */
+    bodyItem,
     
-        /**
-         * Attribute name in selectors h1[attr=value] {}
-         */
-        attrib_name,
-        
-        /**
-         * Attribute value in selectors h1[attr=value] {}
-         */
-        attrib_value,
-        
-        /**
-         * Attribute name - value pair in a css function: h1 { -moz-xxx: draw(shape="rect") }
-         */
-        attribute, 
-        
-        /**
-         * Attribute name in a css function: h1 { -moz-xxx: draw(shape="rect") }
-         */
-        attrname, 
-        /**
-         * Attribute value in a css function: h1 { -moz-xxx: draw(shape="rect") }
-         */
-        attrvalue, 
-        
-        bodylist, 
-        bodyset, 
-        combinator, 
-        
-        /** 
-         * @counter-style <counter-name> { ... }
-         */
-        counterStyle,
-        
-        cssId, 
-        cssClass, 
-        declaration, 
-        declarations, 
-        elementSubsequent, 
-        elementName, 
-        esPred, 
-        expr, 
-        
-        /**
-         * @font-face { ... }
-         */
-        fontFace,
-        
-        function, 
-        function_name, 
-        charSet, 
-        imports, 
-        invalidRule, 
-        hexColor, 
-        
-        margin,
-        margin_sym,
-        
-        media, 
-        media_expression,
-        media_feature,
-        media_query_list,
-        media_query,
-        media_type,
-        medium, 
-        
-        /** 
-         * Mozilla specific at rule @-moz-document 
-         * See https://developer.mozilla.org/en/CSS/@-moz-document
-         */
-        moz_document,
-        
-        /**
-         * Mozilla @-moz-document at rule argument
-         * See https://developer.mozilla.org/en/CSS/@-moz-document
-         */
-        moz_document_function,
-        
-        /**
-         * Namespace declaration: @namespace prefix "http://myns";
-         */
-        namespace, 
-        
-        /**
-         * Namespace prefix or wildcard prefix of the css qualified name: myns|E {} || *|E {}
-         */
-        namespace_wqname_prefix,
-        
-        /**
-         * The namespace prefix
-         */
-        namespace_prefix,
-        
-        /**
-         * The wildcard namespace prefix
-         */
-        namespace_wildcard_prefix,
-        
-        /**
-         * syntactic predicate
-         */
-        nsPred, 
-        operator, 
-        page, 
-        pseudoPage, 
-        property, 
-        prio, 
-        pseudo, 
-        
-        /**
-         * String or URI, used in namespace and import rules
-         */
-        resourceIdentifier,
-        ruleSet, 
-        selector, 
-        simpleSelectorSequence, 
-        
-        /**
-         * error recovery rule
-         */
-        syncToFollow,
-        /**
-         * error recovery rule
-         */
-        syncTo_IDENT_RBRACE,
-        /**
-         * error recovery rule
-         */
-        syncTo_IDENT_RBRACKET_LBRACE,
-        
-        synpred2_Css3, 
-        selectorsGroup, 
-        styleSheet, 
-        /**
-         * syntactic predicate
-         */
-        synpred1_Css3, 
-        /**
-         * syntactic predicate
-         */
-        synpred3_Css3, 
-        term, 
-        typeSelector, 
-                
-        //following node types don't correspond to any of the grammar rules (do not remove them!):
-        
-        /**
-         * an artificial root node of each parse tree
-         */
-        root,
-        
-        /**
-         * an error node
-         */
-        error, 
-        
-        /** 
-         * an error node, but for errors recovered - skipped (resynced) content by syncToBitSet(...)
-         */
-        recovery, 
-        
-        /**
-         * a token node (each lexer token has its node in the parse tree)
-         */
-        token,
-        
-        unaryOperator;
-        
+    combinator,
+    /**
+     * @counter-style <counter-name> { ... }
+     */
+    counterStyle,
+    cssId,
+    cssClass,
+    declaration,
+    declarations,
+    elementSubsequent,
+    elementName,
+    esPred,
+    expr,
+    /**
+     * @font-face { ... }
+     */
+    fontFace,
+    /**
+     * Attribute name - value pair in a css function: h1 { -moz-xxx:
+     * draw(shape="rect") }
+     */
+    fnAttribute,
+    /**
+     * Attribute name in a css function: h1 { -moz-xxx: draw(shape="rect") }
+     */
+    fnAttributeName,
+    /**
+     * Attribute value in a css function: h1 { -moz-xxx: draw(shape="rect") }
+     */
+    fnAttributeValue,
+    function,
+    functionName,
+    /**
+     * @charset "..." rule
+     */
+    charSet,
+    /**
+     * The charset string in the @charset rule
+     */
+    charSetValue,
+    invalidRule,
+    hexColor,
+    margin,
+    margin_sym,
+    media,
+    mediaExpression,
+    mediaFeature,
+    mediaQueryList,
+    mediaQuery,
+    
+    /**
+     * NOT | ONLY prefix of the media query
+     */
+    mediaQueryOperator,
+    
+    
+    mediaType,
+    
+    /**
+     * Mozilla specific at rule @-moz-document See
+     * https://developer.mozilla.org/en/CSS/@-moz-document
+     */
+    moz_document,
+    /**
+     * Mozilla @-moz-document at rule argument See
+     * https://developer.mozilla.org/en/CSS/@-moz-document
+     */
+    moz_document_function,
+    /**
+     * Namespace declaration: @namespace prefix "http://myns";
+     */
+    namespace,
+    
+    /**
+     * List of namespace-s
+     */
+    namespaces,
+    /**
+     * Namespace prefix or wildcard prefix of the css qualified name: myns|E {}
+     * || *|E {}
+     */
+    namespacePrefix,
+    /**
+     * The namespace prefix
+     */
+    namespacePrefixName,
+    /**
+     * syntactic predicate
+     */
+    nsPred,
+    operator,
+    page,
+    pseudoPage,
+    property,
+    prio,
+    pseudo,
+    /**
+     * String or URI, used in namespace and import rules
+     */
+    resourceIdentifier,
+    /**
+     * @import ... rule
+     */
+    importItem,
+    
+    /**
+     * list of importItem-s
+     */
+    imports,
+    /**
+     * a CSS rule: div { ... }
+     */
+    rule,
+    selector,
+    simpleSelectorSequence,
+    /**
+     * Attribute name - value pair in selectors h1[attr=value] {}
+     */
+    slAttribute,
+    /**
+     * Attribute name in selectors h1[attr=value] {}
+     */
+    slAttributeName,
+    /**
+     * Attribute value in selectors h1[attr=value] {}
+     */
+    slAttributeValue,
+    /**
+     * error recovery rule
+     */
+    syncToFollow,
+    /**
+     * error recovery rule
+     */
+    syncTo_IDENT_RBRACE,
+    /**
+     * error recovery rule
+     */
+    syncTo_IDENT_RBRACKET_LBRACE,
+    synpred2_Css3,
+    selectorsGroup,
+    styleSheet,
+    /**
+     * syntactic predicate
+     */
+    synpred1_Css3,
+    /**
+     * syntactic predicate
+     */
+    synpred3_Css3,
+    term,
+    typeSelector,
+
+    /**
+     * an artificial root node of each parse tree
+     * 
+     * The node types doesn't correspond to any of the grammar rules (do not remove it!)
+     */
+    root,
+    /**
+     * an error node
+     * 
+     * The node types doesn't correspond to any of the grammar rules (do not remove it!)
+     */
+    error,
+    /**
+     * an error node, but for errors recovered - skipped (resynced) content by
+     * syncToBitSet(...)
+     * 
+     * The node types doesn't correspond to any of the grammar rules (do not remove it!)
+     */
+    recovery,
+    /**
+     * a token node (each lexer token has its node in the parse tree)
+     * 
+     * The node types doesn't correspond to any of the grammar rules (do not remove it!)
+     */
+    token,
+    unaryOperator,
+    /**
+     * whitespace, new line or comment tokens
+     */
+    ws;
 }

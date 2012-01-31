@@ -46,11 +46,7 @@ package org.netbeans.modules.css.lib.api.model;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.css.lib.api.CssTokenId;
-import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.NodeType;
-import org.netbeans.modules.css.lib.api.NodeUtil;
-import org.netbeans.modules.css.lib.api.NodeVisitor;
+import org.netbeans.modules.css.lib.api.*;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -67,7 +63,7 @@ public class Rule extends Item {
 
     public Rule(Snapshot snapshot, Node node) {
         super(snapshot, node);
-        assert node.type() == NodeType.ruleSet;
+        assert node.type() == NodeType.rule;
     }
     
     public List<Declaration> items() {
@@ -92,11 +88,11 @@ public class Rule extends Item {
         return NodeUtil.getChildByType(node, NodeType.selectorsGroup);
     }
     
-    /** @return the css rule name */
-    @Override
-    public String name() {
-        return getSelectorsGroup().image().toString().trim();
-    }
+//    /** @return the css rule name */
+//    @Override
+//    public String name() {
+//        return getSelectorsGroup().image().toString().trim();
+//    }
 
     /** @return offset of the rule name in the model's document. */
     public int getRuleNameOffset() {
@@ -118,7 +114,7 @@ public class Rule extends Item {
 
     @Override
     public String toString() {
-        return "Rule[" + name() + "; " + getRuleOpenBracketOffset() + " - " + getRuleCloseBracketOffset() + "]"; //NOI18N
+        return "Rule[" + image() + "; " + getRuleOpenBracketOffset() + " - " + getRuleCloseBracketOffset() + "]"; //NOI18N
     }
     
 }

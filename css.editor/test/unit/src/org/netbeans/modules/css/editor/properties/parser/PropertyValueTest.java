@@ -384,16 +384,16 @@ public class PropertyValueTest extends CssModuleTestBase {
 
     }
     
-    public void testGetFullParseTree() {
+    public void testGetSimpltParseTree2() {
         PropertyModel p = CssModuleSupport.getPropertyModel("font-family");
         PropertyValue pv = new PropertyValue(p, "fantasy, monospace");
         
         Node root = pv.getSimpleParseTree();
-//        dumpTree(root);
+        dumpTree(root);
         
         assertNotNull(root);
         assertNull(root.parent()); //root node has no parent
-        assertEquals("[S0|font-family]", root.toString());
+        assertEquals("font-family", root.toString());
         
         Collection<Node> ch = root.children();
         assertEquals(1, ch.size());
@@ -402,7 +402,7 @@ public class PropertyValueTest extends CssModuleTestBase {
         Node ch1 = i.next();
         assertNotNull(ch1);
         assertTrue(ch1 instanceof Node.GroupNode);
-        assertEquals("[S3|@family-name]", ch1.toString());
+        assertEquals("@family-name", ch1.toString());
         assertEquals(root, ch1.parent());
         
         ch = ch1.children();
@@ -415,28 +415,6 @@ public class PropertyValueTest extends CssModuleTestBase {
         assertEquals("fantasy(IDENT;0-7)", ch2.toString());
         assertEquals(ch1, ch2.parent());
         
-    }
-
-    private void dumpTree(Node node) {
-        PrintWriter pw = new PrintWriter(System.out);
-        dumpTree(node, pw);
-        pw.flush();
-    }
-
-    private void dumpTree(Node node, PrintWriter pw) {
-        dump(node, 0, pw);
-
-    }
-
-    private void dump(Node tree, int level, PrintWriter pw) {
-        for (int i = 0; i < level; i++) {
-            pw.print("    ");
-        }
-        pw.print(tree.toString());
-        pw.println();
-        for (Node c : tree.children()) {
-            dump(c, level + 1, pw);
-        }
     }
 
     public void testPerformance_Parse_Resolve() {

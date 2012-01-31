@@ -153,6 +153,9 @@ public class CssCompletion implements CodeCompletionHandler {
         CssTokenId tokenNodeTokenId = tokenNode.type() == NodeType.token ? NodeUtil.getTokenNodeTokenId(tokenNode) : null;
 
         Node node = NodeUtil.findNonTokenNodeAtOffset(root, astCaretOffset);
+        if(node.type() == NodeType.ws) {
+            node = node.parent();
+        }
 //        if (node.type() == NodeType.error) {
 //            node = node.parent();
 //            if (node == null) {
@@ -760,8 +763,8 @@ public class CssCompletion implements CodeCompletionHandler {
         int offset = context.getAnchorOffset();
         NodeType nodeType = node.type();
 
-        if (NodeUtil.isOfType(node, NodeType.root, NodeType.styleSheet, NodeType.bodylist)
-                || nodeType == NodeType.error && NodeUtil.isOfType(node.parent(), NodeType.root, NodeType.styleSheet, NodeType.bodylist)) {
+        if (NodeUtil.isOfType(node, NodeType.root, NodeType.styleSheet, NodeType.body)
+                || nodeType == NodeType.error && NodeUtil.isOfType(node.parent(), NodeType.root, NodeType.styleSheet, NodeType.body)) {
             /*
              * somewhere between rules, in an empty or very broken file, between
              * rules
@@ -798,7 +801,7 @@ public class CssCompletion implements CodeCompletionHandler {
             case selectorsGroup:
             case combinator:
             case selector:
-            case bodyset:
+            case body:
                 //complete selector list without prefix in selector list e.g. BODY, | { ... }
                 completionProposals.addAll(completeHtmlSelectors(prefix, caretOffset));
                 break;
@@ -860,7 +863,7 @@ public class CssCompletion implements CodeCompletionHandler {
         //2. in a garbage (may be for example a dash prefix in a ruleset
         if (nodeType == NodeType.recovery || nodeType == NodeType.error) {
             Node parent = cc.getActiveNode().parent();
-            if (parent != null && (parent.type() == NodeType.ruleSet || parent.type() == NodeType.moz_document)) {
+            if (parent != null && (parent.type() == NodeType.rule || parent.type() == NodeType.moz_document)) {
                 Collection<Property> possibleProps = filterProperties(CssModuleSupport.getProperties(), cc.getPrefix());
                 completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getCaretOffset()));
             }
@@ -873,7 +876,7 @@ public class CssCompletion implements CodeCompletionHandler {
         //h1 { color:red; | font: bold }
         //
         //should be no prefix 
-        if (nodeType == NodeType.ruleSet
+        if (nodeType == NodeType.rule
                 || nodeType == NodeType.moz_document
                 || nodeType == NodeType.declarations) {
             completionProposals.addAll(Utilities.wrapProperties(CssModuleSupport.getProperties(), cc.getCaretOffset()));

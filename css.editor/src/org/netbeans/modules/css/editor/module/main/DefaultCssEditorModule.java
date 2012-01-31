@@ -258,8 +258,8 @@ public class DefaultCssEditorModule extends CssEditorModule {
 
                         }
                         break;
-                    case attrib_name: //attribute name in selector
-                    case attrname: //attribute name in css function
+                    case slAttributeName: //attribute name in selector
+                    case fnAttributeName: //attribute name in css function
                         OffsetRange range = Css3Utils.getDocumentOffsetRange(node, snapshot);
                         if (Css3Utils.isValidOffsetRange(range)) {
                             getResult().put(range, ColoringAttributes.CUSTOM1_SET);
@@ -344,7 +344,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
             @Override
             public boolean visit(Node node) {
                 int from = -1, to = -1;
-                if (node.type() == NodeType.ruleSet) {
+                if (node.type() == NodeType.rule) {
                     //find the ruleSet curly brackets and create the fold between them inclusive
                     Node[] tokenNodes = NodeUtil.getChildrenByType(node, NodeType.token);
                     for (Node leafNode : tokenNodes) {
@@ -475,7 +475,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
                     case selectorsGroup: //rules
                         //get parent - ruleSet to obtain the { ... } range 
                         Node ruleNode = node.parent();
-                        assert ruleNode.type() == NodeType.ruleSet;
+                        assert ruleNode.type() == NodeType.rule;
 
                         int so = snapshot.getOriginalOffset(ruleNode.from());
                         int eo = snapshot.getOriginalOffset(ruleNode.to());
@@ -503,7 +503,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
                         Node tokenNode = NodeUtil.getChildTokenNode(node, CssTokenId.FONT_FACE_SYM);
                         atrules.add(new CssRuleStructureItem(tokenNode.image(), CssNodeElement.createElement(node), snapshot));
                         break;
-                    case media_query_list:
+                    case mediaQueryList:
                         Node mediaNode = node.parent();
                         assert mediaNode.type() == NodeType.media;
                         StringBuilder image = new StringBuilder();

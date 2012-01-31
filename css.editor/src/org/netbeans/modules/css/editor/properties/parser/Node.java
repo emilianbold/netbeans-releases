@@ -57,12 +57,16 @@ public interface Node {
 //    public int to();
 
 //    public String type();
+    
+    public String getName();
 
     public Collection<Node> children();
 
     public Node parent();
+    
+    public void accept(NodeVisitor visitor);
 
-//    public CharSequence image();
+    public CharSequence image();
     
     static abstract class AbstractNode implements Node {
         
@@ -75,6 +79,15 @@ public interface Node {
         @Override
         public Node parent() {
             return parent;
+        }
+
+        @Override
+        public void accept(NodeVisitor visitor) {
+            visitor.visit(this);
+            for(Node child : children()) {
+                child.accept(visitor);
+            }
+            visitor.unvisit(this);
         }
 
     }
@@ -91,7 +104,12 @@ public interface Node {
         public Collection<Node> children() {
             return Collections.emptyList();
         }
+        
+        public Token getToken() {
+            return resolvedToken.token();
+        }
 
+        @Override
         public CharSequence image() {
             return resolvedToken.token().image();
         }
@@ -122,12 +140,17 @@ public interface Node {
             hash = 53 * hash + (this.resolvedToken != null ? this.resolvedToken.hashCode() : 0);
             return hash;
         }
+
+        @Override
+        public String getName() {
+            return resolvedToken.getGrammarElement().value();
+        }
         
     }
     
     static class GroupNode extends AbstractNode {
         
-        private GroupGrammarElement group;
+        GroupGrammarElement group;
         
         private Map<Node, Node> children = new LinkedHashMap<Node, Node>();
 
@@ -149,6 +172,10 @@ public interface Node {
             node.setParent(this);
             
             return node;
+        }
+        
+        public String getName() {
+            return group.getName();
         }
         
         @Override
@@ -181,6 +208,15 @@ public interface Node {
             int hash = 7;
             hash = 17 * hash + (this.group != null ? this.group.hashCode() : 0);
             return hash;
+        }
+
+        @Override
+        public CharSequence image() {
+            StringBuilder sb = new StringBuilder();
+            for(Node child : children()) {
+                sb.append(child.image());
+            }
+            return sb.toString();
         }
 
         

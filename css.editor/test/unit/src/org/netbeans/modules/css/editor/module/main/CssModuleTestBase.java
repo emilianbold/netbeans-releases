@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
+import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
@@ -414,6 +415,23 @@ public class CssModuleTestBase extends CslTestBase {
 
         assertEquals(expectedContent.toString(), doc.getText(0, doc.getLength()));
 
+    }
+    
+    protected void dumpTree(Node node) {
+        PrintWriter pw = new PrintWriter(System.out);
+        dump(node, 0, pw);
+        pw.flush();
+    }
+
+    private void dump(Node tree, int level, PrintWriter pw) {
+        for (int i = 0; i < level; i++) {
+            pw.print("    ");
+        }
+        pw.print(tree.toString());
+        pw.println();
+        for (Node c : tree.children()) {
+            dump(c, level + 1, pw);
+        }
     }
 
     //--- utility methods ---

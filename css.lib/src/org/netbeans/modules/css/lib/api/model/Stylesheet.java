@@ -171,10 +171,10 @@ public final class Stylesheet {
                 @Override
                 public boolean visit(Node node) {
                     switch (node.type()) {
-                        case ruleSet:
+                        case rule:
                             rules.add(new Rule(snapshot, node));
                             break;
-                        case imports:
+                        case importItem:
                             Node importedFile = NodeUtil.query(node, "resourceIdentifier"); //NOI18N
                             if (importedFile != null) {
                                 imported_files.add(WebUtils.unquotedValue(importedFile.image()));

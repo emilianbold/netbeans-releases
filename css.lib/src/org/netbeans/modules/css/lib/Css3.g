@@ -253,104 +253,100 @@ package org.netbeans.modules.css.lib;
 // of imports, and then the main body of style rules.
 //
 styleSheet  
-    :   charSet?
-    	WS*
-        (imports WS*)*  
-        namespace*
-        bodylist
+    :   
+    	ws?
+    	( charSet ws? )?
+        imports?
+        namespaces? 
+        body?
      EOF
     ;
 
+namespaces
+	:
+	( namespace ws? )+
+	;
+
 namespace
-  : NAMESPACE_SYM WS* (namespace_prefix WS*)? (resourceIdentifier) WS* ';' WS*
+  : NAMESPACE_SYM ws? (namespacePrefixName ws?)? resourceIdentifier ws? ';'
   ;
 
-namespace_prefix
+namespacePrefixName
   : IDENT
   ;
     
 resourceIdentifier
-  : STRING|URI
+  : STRING | URI
   ;
 
-// -----------------
-// Character set.   Picks up the user specified character set, should it be present.
-//
 charSet
-    :   CHARSET_SYM WS* STRING WS* SEMI
+    :   CHARSET_SYM ws? charSetValue ws? SEMI
     ;
 
-// ---------
-// Import.  Location of an external style sheet to include in the ruleset.
-//
+charSetValue
+	: STRING
+	;
+
 imports
-    :   IMPORT_SYM WS* (resourceIdentifier) WS* media_query_list SEMI
+	:
+	( importItem ws? )+
+	;
+	
+importItem
+    :   IMPORT_SYM ws? resourceIdentifier ws? mediaQueryList SEMI
     ;
-
-// ---------
-// Media.   Introduce a set of rules that are to be used if the consumer indicates
-//          it belongs to the signified medium.
-//
 media
-    : MEDIA_SYM WS* media_query_list
-        LBRACE WS*
-            ( ( ruleSet | page ) WS*)*
+    : MEDIA_SYM ws? mediaQueryList
+        LBRACE ws?
+            ( ( rule | page ) ws?)*
          RBRACE
     ;
 
-//mediaList
-//        : medium (COMMA WS* medium)*
-//	;
-
-media_query_list
- : ( media_query ( COMMA WS* media_query )* )?
+mediaQueryList
+ : ( mediaQuery ( COMMA ws? mediaQuery )* )?
  ;
  
-media_query
- : ((ONLY | NOT) WS* )?  media_type WS* ( AND WS* media_expression )*
- | media_expression ( AND WS* media_expression )*
+mediaQuery
+ : (mediaQueryOperator ws? )?  mediaType ws? ( AND ws? mediaExpression )*
+ | mediaExpression ( AND ws? mediaExpression )*
  ;
  
-media_type
+mediaQueryOperator
+ 	: ONLY | NOT 		
+ 	;
+ 
+mediaType
  : IDENT | GEN
  ;
  
-media_expression
- : '(' WS* media_feature WS* ( ':' WS* expr )? ')' WS*
+mediaExpression
+ : '(' ws? mediaFeature ws? ( ':' ws? expr )? ')' ws?
  ;
-media_feature
+ 
+mediaFeature
  : IDENT
  ;
-
-// ---------    
-// Medium.  The name of a medim that are particulare set of rules applies to.
-//
-medium
-    : ( IDENT | GEN ) WS*
-    ;
-    
-
-bodylist
-    : bodyset*
-    ;
-    
-bodyset
-    : (
-    	ruleSet
+ 
+ body	:	
+	( bodyItem ws? )+
+	;
+ 
+bodyItem
+    : 
+    	rule
         | media
         | page
         | counterStyle
         | fontFace
         | moz_document
-      )
-      WS*
+      
     ;
     
 moz_document
 	: 
-	MOZ_DOCUMENT_SYM WS* ( moz_document_function WS*) ( COMMA WS* moz_document_function WS* )*
-	LBRACE WS*
-	 ( ( ruleSet | page ) WS*)*
+	MOZ_DOCUMENT_SYM ws? ( moz_document_function ws?) ( COMMA ws? moz_document_function ws? )*
+	LBRACE ws?
+	 ( ( rule | page ) ws?)*
 	RBRACE
 	;
 
@@ -360,33 +356,31 @@ moz_document_function
 	;
     
 page
-    : PAGE_SYM WS* ( IDENT WS* )? (pseudoPage WS*)?
-        LBRACE WS*
+    : PAGE_SYM ws? ( IDENT ws? )? (pseudoPage ws?)?
+        LBRACE ws?
             //the grammar in the http://www.w3.org/TR/css3-page/ says the declaration/margins should be delimited by the semicolon,
             //but there's no such char in the examples => making it arbitrary
             //the original rule:
-            //( declaration | margin WS*)? ( SEMI WS* (declaration | margin WS*)? )* 
-            (declaration|margin WS*)? (SEMI WS* (declaration|margin WS*)?)*
+            (declaration|margin ws?)? (SEMI ws? (declaration|margin ws?)?)*
         RBRACE
     ;
     
 counterStyle
-    : COUNTER_STYLE_SYM WS* IDENT WS*
-        LBRACE WS* syncTo_IDENT_RBRACE
+    : COUNTER_STYLE_SYM ws? IDENT ws?
+        LBRACE ws? syncTo_IDENT_RBRACE
 		declarations
         RBRACE
     ;
     
 fontFace
-    : FONT_FACE_SYM WS*
-        LBRACE WS* syncTo_IDENT_RBRACE
+    : FONT_FACE_SYM ws?
+        LBRACE ws? syncTo_IDENT_RBRACE
 		declarations
         RBRACE
     ;
-    
 
 margin	
-	: margin_sym WS* LBRACE WS* syncTo_IDENT_RBRACE declarations RBRACE
+	: margin_sym ws? LBRACE ws? syncTo_IDENT_RBRACE declarations RBRACE
        ;
        
 margin_sym 
@@ -414,15 +408,15 @@ pseudoPage
     ;
     
 operator
-    : SOLIDUS WS*
-    | COMMA WS*
+    : SOLIDUS ws?
+    | COMMA ws?
     |
     ;
     
 combinator
-    : PLUS WS*
-    | GREATER WS*
-    | TILDE WS*//use this rule preferably
+    : PLUS ws?
+    | GREATER ws?
+    | TILDE ws?//use this rule preferably
     | 
     ;
     
@@ -432,24 +426,24 @@ unaryOperator
     ;  
     
 property
-    : (IDENT | GEN) WS*
+    : (IDENT | GEN) ws?
     ;
     
-ruleSet 
+rule 
     :   selectorsGroup
-        LBRACE WS* syncTo_IDENT_RBRACE
+        LBRACE ws? syncTo_IDENT_RBRACE
             declarations
         RBRACE
     ;
     
 declarations
     :
-        //Allow empty rule. Allows multiple semicolons
-        declaration? (SEMI WS* declaration?)*
+        //Allow empty rule. Allows? multiple semicolons
+        declaration? (SEMI ws? declaration?)*
     ;
     
 selectorsGroup
-    :	selector (COMMA WS* selector)*
+    :	selector (COMMA ws? selector)*
     ;
     
 selector
@@ -458,67 +452,47 @@ selector
  
 
 simpleSelectorSequence
-	/* typeSelector and universal are ambiguous for lookahead==1 since namespace name and element name both starts with IDENT */
 	:   
-//	(  ( typeSelector | universal ) ((esPred)=>elementSubsequent)* )
-	
         //using typeSelector even for the universal selector since the lookahead would have to be 3 (IDENT PIPE (IDENT|STAR) :-(
 	(  typeSelector ((esPred)=>elementSubsequent)* )
 	| 
 	( ((esPred)=>elementSubsequent)+ )
 	;
 	catch[ RecognitionException rce] {
-        reportError(rce);
-        consumeUntil(input, BitSet.of(LBRACE)); 
-    }
-    
-/*simpleSelector
-    : elementName 
-        ((esPred)=>elementSubsequent)*
+            reportError(rce);
+            consumeUntil(input, BitSet.of(LBRACE)); 
+        }
         
-    | ((esPred)=>elementSubsequent)+
-    ;
- */
-   
+//predicate
+esPred
+    : '#' | HASH | DOT | LBRACKET | COLON | DCOLON
+    ;        
+       
 typeSelector 
 	options { k = 2; }
- 	:  ((nsPred)=>namespace_wqname_prefix)? ( elementName WS* )
+ 	:  ((nsPred)=>namespacePrefix)? ( elementName ws? )
  	;
- 	 	 
- nsPred
+
+//predicate
+nsPred
  	:	
  	(IDENT | STAR)? PIPE
  	;
-    
- /*
-qname_prefix
-  : ( namespace_prefix WS*)?  PIPE
-  ;
-*/
-      
- namespace_wqname_prefix
-  : ( namespace_prefix WS*)?  PIPE
-   | namespace_wildcard_prefix WS* PIPE
+
+namespacePrefix
+  : ( namespacePrefixName | STAR)? PIPE
   ;  
-  
-namespace_wildcard_prefix
-  	:	
-  	STAR
-  	;
-       
-esPred
-    : '#' | HASH | DOT | LBRACKET | COLON | DCOLON
-    ;
+
     
 elementSubsequent
     : 
     (
     	cssId
     	| cssClass
-        | attrib
+        | slAttribute
         | pseudo
     )
-    WS*
+    ws?
     ;
     
 //Error Recovery: Allow the parser to enter the cssId rule even if there's just hash char.
@@ -542,11 +516,11 @@ cssClass
 elementName
     : ( IDENT | GEN ) | '*'
     ;
-    
-attrib
+
+slAttribute
     : LBRACKET
-    	namespace_wqname_prefix? WS*
-        attrib_name WS*
+    	namespacePrefix? ws?
+        slAttributeName ws?
         
             (
                 (
@@ -557,9 +531,9 @@ attrib
                     | ENDS
                     | CONTAINS
                 )
-                WS*
-                attrib_value
-                WS*
+                ws?
+                slAttributeValue
+                ws?
             )?
     
       RBRACKET
@@ -569,19 +543,12 @@ catch[ RecognitionException rce] {
         consumeUntil(input, BitSet.of(IDENT, LBRACE)); 
     }
 
-syncTo_IDENT_RBRACKET_LBRACE
-    @init {
-        syncToSet(BitSet.of(IDENT, RBRACKET, LBRACE));
-    }
-    	:	
-    	;
-
 //bit similar naming to attrvalue, attrname - but these are different - for functions
-attrib_name
+slAttributeName
 	: IDENT
 	;
 	
-attrib_value
+slAttributeValue
 	: 
 	(
   	      IDENT
@@ -595,18 +562,18 @@ pseudo
                 ( 
                     ( IDENT | GEN )
                     ( // Function
-                        WS* LPAREN WS* ( expr | '*' )? RPAREN
+                        ws? LPAREN ws? ( expr | '*' )? RPAREN
                     )?
                 )
                 |
-                ( NOT WS* LPAREN WS* simpleSelectorSequence? RPAREN )
+                ( NOT ws? LPAREN ws? simpleSelectorSequence? RPAREN )
              )
     ;
 
 declaration
     : 
     //syncToIdent //recovery: this will sync the parser the identifier (property) if there's a gargabe in front of it
-    property COLON WS* expr prio?
+    property COLON ws? expr prio?
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
@@ -632,9 +599,8 @@ syncToFollow
     	:	
     	;
     
-    
 prio
-    : IMPORTANT_SYM WS*
+    : IMPORTANT_SYM ws?
     ;
     
 expr
@@ -663,17 +629,17 @@ term
     | hexColor
     | function
     )
-    WS*
+    ws?
     ;
 
 function
-	: 	function_name WS*
-		LPAREN WS*
+	: 	functionName ws?
+		LPAREN ws?
 		( 
 			expr
 		| 
 		  	(
-				attribute (COMMA WS* attribute )*				
+				fnAttribute (COMMA ws? fnAttribute )*				
 			) 
 		)
 		RPAREN
@@ -683,27 +649,31 @@ catch[ RecognitionException rce] {
         consumeUntil(input, BitSet.of(RPAREN, SEMI, RBRACE)); 
 }
     
-function_name
-        //css spec allows here just IDENT, 
+functionName
+        //css spec allows? here just IDENT, 
         //but due to some nonstandart MS extension like progid:DXImageTransform.Microsoft.gradien
         //the function name can be a bit more complicated
 	: (IDENT COLON)? IDENT (DOT IDENT)*
     	;
     	
-attribute
-	: attrname WS* OPEQ WS* attrvalue
+fnAttribute
+	: fnAttributeName ws? OPEQ ws? fnAttributeValue
 	;
     
-attrname
+fnAttributeName
 	: IDENT (DOT IDENT)*
 	;
 	
-attrvalue
+fnAttributeValue
 	: expr
 	;
     
 hexColor
     : HASH
+    ;
+    
+ws
+    : ( WS | NL | COMMENT )+
     ;
     
 // ==============================================================
@@ -974,18 +944,6 @@ fragment    Z   :   ('z'|'Z')
                 ;
 
 
-// -------------
-// Comments.    Comments may not be nested, may be multilined and are delimited
-//              like C comments: /* ..... */
-//              COMMENTS are hidden from the parser which simplifies the parser 
-//              grammar a lot.
-//
-COMMENT         : '/*' ( options { greedy=false; } : .*) '*/'
-    
-                    {
-                        $channel = 2;   // Comments on channel 2 in case we want to find them
-                    }
-                ;
 
 // ---------------------
 // HTML comment open.   HTML/XML comments may be placed around style sheets so that they
@@ -1080,7 +1038,7 @@ COUNTER_STYLE_SYM   : '@counter-style';
 FONT_FACE_SYM       : '@font-face';
 
 
-IMPORTANT_SYM   : '!' (WS|COMMENT)* I M P O R T A N T   ;
+IMPORTANT_SYM   : '!' WS* I M P O R T A N T   ;
 
 TOPLEFTCORNER_SYM     :'@top-left-corner';
 TOPLEFT_SYM           :'@top-left';
@@ -1240,7 +1198,7 @@ MOZ_REGEXP
             ((WS)=>WS)? STRING WS?
         ')'
     
-    	;
+        	;
 
 
 
@@ -1249,10 +1207,24 @@ MOZ_REGEXP
 //              that process the whitespace within the parser, ANTLR does not
 //              need to deal with the whitespace directly in the parser.
 //
-//WS      : (' '|'\t')+           { $channel = HIDDEN;    }   ;
 WS      : (' '|'\t')+;
-NL      : ('\r' '\n'? | '\n')   { $channel = HIDDEN;    }   ;
 
+NL      : ('\r' '\n'? | '\n')   { 
+	//$channel = HIDDEN;    
+}   ;
+
+// ------------- 
+// Comments.    Comments may not be nested, may be multilined and are delimited
+//              like C comments: /* ..... */
+//              COMMENTS are hidden from the parser which simplifies the parser 
+//              grammar a lot.
+//
+COMMENT         : '/*' ( options { greedy=false; } : .*) '*/'
+    
+                    {
+//                        $channel = 2;   // Comments on channel 2 in case we want to find them
+                    }
+                ;
 
 // -------------
 //  Illegal.    Any other character shoudl not be allowed.

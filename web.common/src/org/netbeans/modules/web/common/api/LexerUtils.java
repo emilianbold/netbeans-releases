@@ -93,6 +93,41 @@ public class LexerUtils {
         //for position just at the length of the text
         return line;
     }
+    
+    /**
+     * Note: The input text must contain only \n as line terminators.
+     * This is compatible with the netbeans document which never contains \r\n
+     * line separators.
+     *
+     * @param text
+     * @param line line number
+     * @return offset of the beginning of the line
+     */
+    public static int getLineBeginningOffset(CharSequence text, int line) throws BadLocationException {
+        if(text == null) {
+            throw new NullPointerException();
+        }
+
+        if(line < 0) {
+            throw new IllegalArgumentException("Line number must be >= 0!");
+        }
+        int linecount = 0; 
+        for(int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if(c == '\r') {
+                throw new IllegalArgumentException("The input text cannot contain carriage return char \\r"); //NOI18N
+            }
+            if(linecount == line) {
+                return i;
+            }
+            if(c == '\n') {
+                linecount++;
+            }
+        }
+
+        //for position just at the length of the text
+        return linecount;
+    }
 
     public static Token followsToken(TokenSequence ts, TokenId searchedId, boolean backwards, boolean repositionBack, TokenId... skipIds) {
         return followsToken(ts, Collections.singletonList(searchedId), backwards, repositionBack, skipIds);

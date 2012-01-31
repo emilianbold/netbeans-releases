@@ -147,8 +147,15 @@ public class PropertyValue {
      * group nodes. If false the parse tree contains only named nodes (references)
      * 
      */
-    private Node generateParseTree(boolean fullParseTree) {
-        Node.GroupNode root = new Node.GroupNode(getGroupGrammarElement());
+    private Node generateParseTree(final boolean fullParseTree) {
+        Node.GroupNode root = new Node.GroupNode(getGroupGrammarElement()) {
+
+            @Override
+            public String toString() {
+                return fullParseTree ? super.toString() : group.getName();
+            }
+            
+        };
         
         for(ResolvedToken token : getResolvedTokens()) {
             Node.GroupNode current = root; //each path starts with the root element
@@ -163,7 +170,14 @@ public class PropertyValue {
                     }
                 }
                 
-                Node.GroupNode newGroupNode = new Node.GroupNode(groupElement);
+                Node.GroupNode newGroupNode = new Node.GroupNode(groupElement) {
+
+                    @Override
+                    public String toString() {
+                        return fullParseTree ? super.toString() : group.getName();
+                    }
+                    
+                };
                 Node.GroupNode child = current.addChild(newGroupNode); //either returns the given node or an existing one equal to it.
                 current = child;
             }
