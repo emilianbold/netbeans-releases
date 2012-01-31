@@ -46,15 +46,14 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerPatterns;
-import org.netbeans.spi.java.hints.HintContext;
-import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.java.hints.support.FixFactory;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.java.hints.Hint.Options;
 import org.openide.util.NbBundle;
 
 /**
@@ -87,7 +86,6 @@ public class CallFinalize {
                 }
             }
         }
-        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), NbBundle.getMessage(CallFinalize.class, "TXT_CallFinalize"),
-               FixFactory.createSuppressWarningsFix(ctx.getInfo(), ctx.getPath(), "FinalizeCalledExplicitly"));   //NOI18N
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), NbBundle.getMessage(CallFinalize.class, "TXT_CallFinalize"));   //NOI18N
     }
 }

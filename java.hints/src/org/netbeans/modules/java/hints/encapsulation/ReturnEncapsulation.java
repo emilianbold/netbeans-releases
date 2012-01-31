@@ -62,19 +62,17 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.spi.java.hints.ConstraintVariableType;
-import org.netbeans.spi.java.hints.Hint;
-import org.netbeans.spi.java.hints.TriggerPattern;
-import org.netbeans.spi.java.hints.TriggerPatterns;
-import org.netbeans.spi.java.hints.HintContext;
-import org.netbeans.spi.java.hints.JavaFix;
-import org.netbeans.spi.java.hints.MatcherUtilities;
-import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.java.hints.support.FixFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.spi.java.hints.MatcherUtilities;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.openide.util.NbBundle;
 
 /**
@@ -242,7 +240,6 @@ public class ReturnEncapsulation {
         if (enclMethod == null || enclMethod.getEnclosingElement() != exprElement.getEnclosingElement()) {
             return null;
         }
-        final Fix swFix = FixFactory.createSuppressWarningsFix(info, tp, suppressWarnings);
         List<Fix> fixes = new ArrayList<Fix>(providers.length + 1);
         for (int i=0; i<providers.length; i++) {
             Fix f = providers[i].fixFor(ctx,(ExecutableElement) enclMethod,exprPath);
@@ -250,7 +247,6 @@ public class ReturnEncapsulation {
                 fixes.add(f);
             }
         }
-        fixes.add(swFix);
         return ErrorDescriptionFactory.forTree(ctx, tp,
             description,
             fixes.toArray(new Fix[0]));

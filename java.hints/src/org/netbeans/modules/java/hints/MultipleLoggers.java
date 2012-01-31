@@ -54,13 +54,12 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import org.netbeans.spi.java.hints.Hint;
-import org.netbeans.spi.java.hints.TriggerTreeKind;
-import org.netbeans.spi.java.hints.HintContext;
-import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.java.hints.support.FixFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
@@ -122,8 +121,7 @@ public final class MultipleLoggers {
             for(VariableElement f : loggerFields) {
                 Tree path = ctx.getInfo().getTrees().getTree(f);
                 ErrorDescription ed = ErrorDescriptionFactory.forName(ctx, path,
-                    NbBundle.getMessage(MultipleLoggers.class, "MSG_MultipleLoggers_checkMultipleLoggers", loggers, cls), //NOI18N
-                    FixFactory.createSuppressWarningsFix(ctx.getInfo(), ctx.getPath(), "ClassWithMultipleLoggers")); //NOI18N
+                    NbBundle.getMessage(MultipleLoggers.class, "MSG_MultipleLoggers_checkMultipleLoggers", loggers, cls)); //NOI18N
                 errors.add(ed);
             }
             return errors;

@@ -42,16 +42,14 @@
 
 package org.netbeans.modules.java.hints.perf;
 
-import org.netbeans.spi.java.hints.ConstraintVariableType;
-import org.netbeans.spi.java.hints.Hint;
-import org.netbeans.spi.java.hints.TriggerPattern;
-import org.netbeans.spi.java.hints.HintContext;
-import org.netbeans.spi.java.hints.JavaFix;
-import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.java.hints.support.FixFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.spi.java.hints.TriggerPattern;
 import org.openide.util.NbBundle;
 
 /**
@@ -86,6 +84,6 @@ public class NoBooleanConstructor {
         Fix f = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), fix);
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_NoBooleanConstructor");
 
-        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, f, FixFactory.createSuppressWarningsFix(ctx.getInfo(), ctx.getPath(), "BooleanConstructorCall"));
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, f);
     }
 }

@@ -58,14 +58,12 @@ import java.util.List;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
-import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
-import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.java.hints.support.FixFactory;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
@@ -93,8 +91,7 @@ public class FinalizeDoesNotCallSuper {
             return null;
         }
         return ErrorDescriptionFactory.forName(ctx, method, NbBundle.getMessage(FinalizeDoesNotCallSuper.class, "TXT_FinalizeDoesNotCallSuper"),
-                new FixImpl(TreePathHandle.create(ctx.getPath(), ctx.getInfo())).toEditorFix(),
-                FixFactory.createSuppressWarningsFix(ctx.getInfo(), tp, "FinalizeDoesntCallSuperFinalize"));
+                new FixImpl(TreePathHandle.create(ctx.getPath(), ctx.getInfo())).toEditorFix());
     }
 
     static final class FindSuper extends TreeScanner<Void, Void> {

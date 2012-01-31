@@ -47,15 +47,14 @@ import com.sun.source.util.Trees;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerPatterns;
-import org.netbeans.spi.java.hints.HintContext;
-import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.java.hints.support.FixFactory;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.java.hints.Hint.Options;
 import org.openide.util.NbBundle;
 
 /**
@@ -206,7 +205,6 @@ public class ParamEncapsulation {
             return null;
         }
         return ErrorDescriptionFactory.forName(ctx, varPath,
-            description,
-            FixFactory.createSuppressWarningsFix(ctx.getInfo(), varPath, suppressWarnings));
+            description);
     }
 }

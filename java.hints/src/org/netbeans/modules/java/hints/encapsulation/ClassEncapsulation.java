@@ -62,14 +62,13 @@ import org.netbeans.modules.java.hints.errors.Utilities.Visibility;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.BooleanOption;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.netbeans.spi.java.hints.UseOptions;
-import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.java.hints.support.FixFactory;
 import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -133,8 +132,7 @@ public class ClassEncapsulation {
             }
         }
         return ErrorDescriptionFactory.forName(ctx, tp, description,
-            new FixImpl(TreePathHandle.create(tp, ctx.getInfo())),
-            FixFactory.createSuppressWarningsFix(ctx.getInfo(), tp, suppressWarnings));
+            new FixImpl(TreePathHandle.create(tp, ctx.getInfo())));
     }
 
     private static class FixImpl implements Fix {

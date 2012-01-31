@@ -78,14 +78,13 @@ import org.netbeans.modules.java.hints.errors.Utilities.Visibility;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.BooleanOption;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.netbeans.spi.java.hints.UseOptions;
-import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.java.hints.support.FixFactory;
 import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -110,8 +109,7 @@ public class FieldEncapsulation {
     public static ErrorDescription protectedField(final HintContext ctx) {
         return create(ctx,
             Visibility.PROTECTED,
-            NbBundle.getMessage(FieldEncapsulation.class, "TXT_ProtectedField"),
-            "ProtectedField");  //NOI18N
+            NbBundle.getMessage(FieldEncapsulation.class, "TXT_ProtectedField"));
     }
 
     @Hint(category="encapsulation", suppressWarnings={"PublicField"}, enabled=false, options=Options.QUERY) //NOI18N
@@ -120,8 +118,7 @@ public class FieldEncapsulation {
     public static ErrorDescription publicField(final HintContext ctx) {
         return create(ctx,
             Visibility.PUBLIC,
-            NbBundle.getMessage(FieldEncapsulation.class, "TXT_PublicField"),
-            "PublicField"); //NOI18N
+            NbBundle.getMessage(FieldEncapsulation.class, "TXT_PublicField"));
     }
 
     @Hint(category="encapsulation", suppressWarnings={"PackageVisibleField"}, enabled=false, options=Options.QUERY) //NOI18N
@@ -130,8 +127,7 @@ public class FieldEncapsulation {
     public static ErrorDescription packageField(final HintContext ctx) {
         return create(ctx,
             Visibility.PACKAGE_PRIVATE,
-            NbBundle.getMessage(FieldEncapsulation.class, "TXT_PackageField"),
-            "PackageVisibleField"); //NOI18N
+            NbBundle.getMessage(FieldEncapsulation.class, "TXT_PackageField"));
     }
 
     @Hint(category="encapsulation", suppressWarnings={"AccessingNonPublicFieldOfAnotherObject"}, enabled=false, options=Options.QUERY) //NOI18N
@@ -158,8 +154,7 @@ public class FieldEncapsulation {
         }
         SourceUtils.getOutermostEnclosingTypeElement(selectElement);
         return ErrorDescriptionFactory.forName(ctx, tp,
-                NbBundle.getMessage(FieldEncapsulation.class, "TXT_OtherPrivateField"),
-                FixFactory.createSuppressWarningsFix(ctx.getInfo(), tp, "AccessingNonPublicFieldOfAnotherObject")); //NOI18N
+                NbBundle.getMessage(FieldEncapsulation.class, "TXT_OtherPrivateField"));
     }
 
     private static TypeElement getEnclosingClass (TreePath path, final Trees trees) {
@@ -174,11 +169,9 @@ public class FieldEncapsulation {
 
     private static ErrorDescription create (final HintContext ctx,
                                             final Visibility visibility,
-                                            final String message,
-                                            final String suppressWarnings) {
+                                            final String message) {
         assert ctx != null;
         assert message != null;
-        assert suppressWarnings != null;
         final TreePath tp = ctx.getPath();
         final Tree parent = tp.getParentPath().getLeaf();
         if (!TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()) ||
@@ -201,8 +194,7 @@ public class FieldEncapsulation {
             return null;
         }
         return ErrorDescriptionFactory.forName(ctx, tp, message,
-                new FixImpl(TreePathHandle.create(tp, ctx.getInfo())),
-                FixFactory.createSuppressWarningsFix(ctx.getInfo(), tp, suppressWarnings)); //NOI18N
+                new FixImpl(TreePathHandle.create(tp, ctx.getInfo())));
     }
 
     private static boolean hasRequiredVisibility(final Set<Modifier> mods, final Modifier reqMod) {

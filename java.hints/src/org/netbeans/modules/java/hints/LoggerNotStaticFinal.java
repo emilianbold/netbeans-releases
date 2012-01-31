@@ -50,18 +50,15 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
-
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
-import org.netbeans.spi.java.hints.TriggerPattern;
-import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
-import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.java.hints.support.FixFactory;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.openide.util.NbBundle;
 
 /**
@@ -85,8 +82,7 @@ public class LoggerNotStaticFinal {
                     ctx,
                     ctx.getPath(),
                     NbBundle.getMessage(LoggerNotStaticFinal.class, "MSG_LoggerNotStaticFinal_checkLoggerDeclaration", e), //NOI18N
-                    new LoggerNotStaticFinalFix(NbBundle.getMessage(LoggerNotStaticFinal.class, "MSG_LoggerNotStaticFinal_checkLoggerDeclaration_fix", e), TreePathHandle.create(e, ctx.getInfo())).toEditorFix(), //NOI18N
-                    FixFactory.createSuppressWarningsFix(ctx.getInfo(), ctx.getPath(), "NonConstantLogger") //NOI18N
+                    new LoggerNotStaticFinalFix(NbBundle.getMessage(LoggerNotStaticFinal.class, "MSG_LoggerNotStaticFinal_checkLoggerDeclaration_fix", e), TreePathHandle.create(e, ctx.getInfo())).toEditorFix() //NOI18N
             );
         } else {
             return null;

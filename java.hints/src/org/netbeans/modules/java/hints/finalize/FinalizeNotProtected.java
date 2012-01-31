@@ -51,14 +51,12 @@ import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
-import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
-import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.java.hints.support.FixFactory;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
@@ -78,8 +76,7 @@ public class FinalizeNotProtected {
             if (modifiers.contains(Modifier.PUBLIC)) {
                 return ErrorDescriptionFactory.forName(ctx, tp,
                         NbBundle.getMessage(FinalizeNotProtected.class, "TXT_FinalizeNotProtected"),
-                        new FixImpl(TreePathHandle.create(tp, ctx.getInfo())).toEditorFix(),
-                        FixFactory.createSuppressWarningsFix(ctx.getInfo(), ctx.getPath(), "FinalizeNotProtected"));    //NOI18N
+                        new FixImpl(TreePathHandle.create(tp, ctx.getInfo())).toEditorFix());    //NOI18N
             }
         }
         return null;

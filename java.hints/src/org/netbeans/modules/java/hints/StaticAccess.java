@@ -55,13 +55,12 @@ import javax.swing.JComponent;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
-import org.netbeans.spi.java.hints.support.FixFactory;
+import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.spi.java.hints.JavaFix;
 import org.openide.util.NbBundle;
 
 /**

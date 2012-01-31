@@ -63,22 +63,15 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
-import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
-import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.java.hints.support.FixFactory;
-import org.netbeans.spi.editor.hints.ChangeInfo;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
@@ -126,8 +119,7 @@ public final class NoLoggers {
                     ctx,
                     ctx.getPath(),
                     NbBundle.getMessage(NoLoggers.class, "MSG_NoLoggers_checkNoLoggers", cls), //NOI18N
-                    new NoLoggersFix(NbBundle.getMessage(NoLoggers.class, "MSG_NoLoggers_checkNoLoggers_Fix", cls), TreePathHandle.create(cls, ctx.getInfo())).toEditorFix(), //NOI18N
-                    FixFactory.createSuppressWarningsFix(ctx.getInfo(), ctx.getPath(), "ClassWithoutLogger") //NOI18N
+                    new NoLoggersFix(NbBundle.getMessage(NoLoggers.class, "MSG_NoLoggers_checkNoLoggers_Fix", cls), TreePathHandle.create(cls, ctx.getInfo())).toEditorFix() //NOI18N
             ));
         } else {
             return null;

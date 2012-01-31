@@ -71,15 +71,14 @@ import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.editor.overridden.ComputeOverriding;
 import org.netbeans.modules.java.editor.overridden.ElementDescription;
+import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
-import org.netbeans.spi.java.hints.TriggerTreeKind;
+import org.netbeans.spi.java.hints.Hint.Options;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
-import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.netbeans.spi.java.hints.support.FixFactory;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.java.hints.Hint.Options;
-import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -94,8 +93,7 @@ public class ClassStructure {
         final ClassTree cls = (ClassTree) context.getPath().getLeaf();
         if (cls.getModifiers().getFlags().contains(Modifier.FINAL)) {
             return ErrorDescriptionFactory.forName(context, cls, NbBundle.getMessage(ClassStructure.class, "MSG_FinalClass", cls.getSimpleName()), //NOI18N
-                    FixFactory.removeModifiersFix(context.getInfo(), TreePath.getPath(context.getPath(), cls.getModifiers()), EnumSet.of(Modifier.FINAL), NbBundle.getMessage(ClassStructure.class, "FIX_RemoveFinalFromClass", cls.getSimpleName())), //NOI18N
-                    FixFactory.createSuppressWarningsFix(context.getInfo(), context.getPath(), "FinalClass")); //NOI18N
+                    FixFactory.removeModifiersFix(context.getInfo(), TreePath.getPath(context.getPath(), cls.getModifiers()), EnumSet.of(Modifier.FINAL), NbBundle.getMessage(ClassStructure.class, "FIX_RemoveFinalFromClass", cls.getSimpleName()))); //NOI18N
         }
         return null;
     }
@@ -106,8 +104,7 @@ public class ClassStructure {
         final MethodTree mth = (MethodTree) context.getPath().getLeaf();
         if (mth.getModifiers().getFlags().contains(Modifier.FINAL)) {
             return ErrorDescriptionFactory.forName(context, mth, NbBundle.getMessage(ClassStructure.class, "MSG_FinalMethod", mth.getName()), //NOI18N
-                    FixFactory.removeModifiersFix(context.getInfo(), TreePath.getPath(context.getPath(), mth.getModifiers()), EnumSet.of(Modifier.FINAL), NbBundle.getMessage(ClassStructure.class, "FIX_RemoveFinalFromMethod", mth.getName())), //NOI18N
-                    FixFactory.createSuppressWarningsFix(context.getInfo(), context.getPath(), "FinalMethod")); //NOI18N
+                    FixFactory.removeModifiersFix(context.getInfo(), TreePath.getPath(context.getPath(), mth.getModifiers()), EnumSet.of(Modifier.FINAL), NbBundle.getMessage(ClassStructure.class, "FIX_RemoveFinalFromMethod", mth.getName()))); //NOI18N
         }
         return null;
     }
@@ -118,8 +115,7 @@ public class ClassStructure {
         final MethodTree mth = (MethodTree) context.getPath().getLeaf();
         if (mth.getModifiers().getFlags().containsAll(EnumSet.of(Modifier.FINAL, Modifier.PRIVATE))) {
             return ErrorDescriptionFactory.forName(context, mth, NbBundle.getMessage(ClassStructure.class, "MSG_FinalPrivateMethod", mth.getName()), //NOI18N
-                    FixFactory.removeModifiersFix(context.getInfo(), TreePath.getPath(context.getPath(), mth.getModifiers()), EnumSet.of(Modifier.FINAL), NbBundle.getMessage(ClassStructure.class, "FIX_RemoveFinalFromMethod", mth.getName())), //NOI18N
-                    FixFactory.createSuppressWarningsFix(context.getInfo(), context.getPath(), "FinalPrivateMethod")); //NOI18N
+                    FixFactory.removeModifiersFix(context.getInfo(), TreePath.getPath(context.getPath(), mth.getModifiers()), EnumSet.of(Modifier.FINAL), NbBundle.getMessage(ClassStructure.class, "FIX_RemoveFinalFromMethod", mth.getName()))); //NOI18N
         }
         return null;
     }
@@ -130,8 +126,7 @@ public class ClassStructure {
         final MethodTree mth = (MethodTree) context.getPath().getLeaf();
         if (mth.getModifiers().getFlags().containsAll(EnumSet.of(Modifier.FINAL, Modifier.STATIC))) {
             return ErrorDescriptionFactory.forName(context, mth, NbBundle.getMessage(ClassStructure.class, "MSG_FinalStaticMethod", mth.getName()), //NOI18N
-                    FixFactory.removeModifiersFix(context.getInfo(), TreePath.getPath(context.getPath(), mth.getModifiers()), EnumSet.of(Modifier.FINAL), NbBundle.getMessage(ClassStructure.class, "FIX_RemoveFinalFromMethod", mth.getName())), //NOI18N
-                    FixFactory.createSuppressWarningsFix(context.getInfo(), context.getPath(), "FinalStaticMethod")); //NOI18N
+                    FixFactory.removeModifiersFix(context.getInfo(), TreePath.getPath(context.getPath(), mth.getModifiers()), EnumSet.of(Modifier.FINAL), NbBundle.getMessage(ClassStructure.class, "FIX_RemoveFinalFromMethod", mth.getName()))); //NOI18N
         }
         return null;
     }
@@ -143,8 +138,7 @@ public class ClassStructure {
         final Tree parent = context.getPath().getParentPath().getLeaf();
         if (TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()) && mth.getModifiers().getFlags().contains(Modifier.FINAL) && ((ClassTree) parent).getModifiers().getFlags().contains(Modifier.FINAL)) {
             return ErrorDescriptionFactory.forName(context, mth, NbBundle.getMessage(ClassStructure.class, "MSG_FinalMethodInFinalClass", mth.getName()), //NOI18N
-                    FixFactory.removeModifiersFix(context.getInfo(), TreePath.getPath(context.getPath(), mth.getModifiers()), EnumSet.of(Modifier.FINAL), NbBundle.getMessage(ClassStructure.class, "FIX_RemoveFinalFromMethod", mth.getName())), //NOI18N
-                    FixFactory.createSuppressWarningsFix(context.getInfo(), context.getPath(), "FinalMethodInFinalClass")); //NOI18N
+                    FixFactory.removeModifiersFix(context.getInfo(), TreePath.getPath(context.getPath(), mth.getModifiers()), EnumSet.of(Modifier.FINAL), NbBundle.getMessage(ClassStructure.class, "FIX_RemoveFinalFromMethod", mth.getName()))); //NOI18N
         }
         return null;
     }
@@ -157,8 +151,7 @@ public class ClassStructure {
         if (TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()) && ((ClassTree) parent).getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
             final BlockTree body = mth.getBody();
             if (body != null && body.getStatements().isEmpty()) {
-                return ErrorDescriptionFactory.forName(context, mth, NbBundle.getMessage(ClassStructure.class, "MSG_NoopMethodInAbstractClass", mth.getName()), //NOI18N
-                        FixFactory.createSuppressWarningsFix(context.getInfo(), context.getPath(), "NoopMethodInAbstractClass")); //NOI18N
+                return ErrorDescriptionFactory.forName(context, mth, NbBundle.getMessage(ClassStructure.class, "MSG_NoopMethodInAbstractClass", mth.getName())); //NOI18N
             }
         }
         return null;
@@ -172,8 +165,7 @@ public class ClassStructure {
         if (TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()) && mth.getReturnType() == null && "<init>".contentEquals(mth.getName()) && //NOI18N
                 mth.getModifiers().getFlags().contains(Modifier.PUBLIC) && !((ClassTree) parent).getModifiers().getFlags().contains(Modifier.PUBLIC)) {
             return ErrorDescriptionFactory.forName(context, mth, NbBundle.getMessage(ClassStructure.class, "MSG_PublicConstructorInNonPublicClass", mth.getName()), //NOI18N
-                    FixFactory.removeModifiersFix(context.getInfo(), TreePath.getPath(context.getPath(), mth.getModifiers()), EnumSet.of(Modifier.PUBLIC), NbBundle.getMessage(ClassStructure.class, "FIX_RemovePublicFromConstructor")), //NOI18N
-                    FixFactory.createSuppressWarningsFix(context.getInfo(), context.getPath(), "PublicConstructorInNonPublicClass")); //NOI18N
+                    FixFactory.removeModifiersFix(context.getInfo(), TreePath.getPath(context.getPath(), mth.getModifiers()), EnumSet.of(Modifier.PUBLIC), NbBundle.getMessage(ClassStructure.class, "FIX_RemovePublicFromConstructor"))); //NOI18N
         }
         return null;
     }
@@ -204,15 +196,13 @@ public class ClassStructure {
                         }
                     }
                     return ErrorDescriptionFactory.forName(context, mth, NbBundle.getMessage(ClassStructure.class, "MSG_ProtectedMethodInFinalClass", mth.getName()), //NOI18N
-                            FixFactory.removeModifiersFix(context.getInfo(), TreePath.getPath(context.getPath(), mth.getModifiers()), EnumSet.of(Modifier.PROTECTED), NbBundle.getMessage(ClassStructure.class, "FIX_RemoveProtectedFromMethod", mth.getName())), //NOI18N
-                            FixFactory.createSuppressWarningsFix(context.getInfo(), context.getPath(), "ProtectedMemberInFinalClass")); //NOI18N
+                            FixFactory.removeModifiersFix(context.getInfo(), TreePath.getPath(context.getPath(), mth.getModifiers()), EnumSet.of(Modifier.PROTECTED), NbBundle.getMessage(ClassStructure.class, "FIX_RemoveProtectedFromMethod", mth.getName()))); //NOI18N
                 }
             } else {
                 final VariableTree var = (VariableTree) tree;
                 if (var.getModifiers().getFlags().contains(Modifier.PROTECTED) && ((ClassTree) parent).getModifiers().getFlags().contains(Modifier.FINAL)) {
                     return ErrorDescriptionFactory.forName(context, var, NbBundle.getMessage(ClassStructure.class, "MSG_ProtectedFieldInFinalClass", var.getName()), //NOI18N
-                            FixFactory.removeModifiersFix(context.getInfo(), TreePath.getPath(context.getPath(), var.getModifiers()), EnumSet.of(Modifier.PROTECTED), NbBundle.getMessage(ClassStructure.class, "FIX_RemoveProtectedFromField", var.getName())), //NOI18N
-                            FixFactory.createSuppressWarningsFix(context.getInfo(), context.getPath(), "ProtectedMemberInFinalClass")); //NOI18N
+                            FixFactory.removeModifiersFix(context.getInfo(), TreePath.getPath(context.getPath(), var.getModifiers()), EnumSet.of(Modifier.PROTECTED), NbBundle.getMessage(ClassStructure.class, "FIX_RemoveProtectedFromField", var.getName()))); //NOI18N
                 }
             }
         }
@@ -224,8 +214,7 @@ public class ClassStructure {
     public static ErrorDescription markerInterface(HintContext context) {
         final ClassTree cls = (ClassTree) context.getPath().getLeaf();
         if (context.getInfo().getTreeUtilities().isInterface(cls) && cls.getMembers().isEmpty() && cls.getImplementsClause().size() < 2) {
-            return ErrorDescriptionFactory.forName(context, cls, NbBundle.getMessage(ClassStructure.class, "MSG_MarkerInterface", cls.getSimpleName()), //NOI18N
-                    FixFactory.createSuppressWarningsFix(context.getInfo(), context.getPath(), "MarkerInterface")); //NOI18N
+            return ErrorDescriptionFactory.forName(context, cls, NbBundle.getMessage(ClassStructure.class, "MSG_MarkerInterface", cls.getSimpleName())); //NOI18N
         }
         return null;
     }
@@ -237,8 +226,7 @@ public class ClassStructure {
         final TreeUtilities treeUtilities = context.getInfo().getTreeUtilities();
         if (treeUtilities.isClass(cls) && testClassMayBeInterface(context.getInfo().getTrees(), treeUtilities, context.getPath())) {
             return ErrorDescriptionFactory.forName(context, cls, NbBundle.getMessage(ClassStructure.class, "MSG_ClassMayBeInterface", cls.getSimpleName()), //NOI18N
-                    new ConvertClassToInterfaceFixImpl(TreePathHandle.create(context.getPath(), context.getInfo()), NbBundle.getMessage(ClassStructure.class, "FIX_ConvertClassToInterface", cls.getSimpleName())).toEditorFix(), //NOI18N
-                    FixFactory.createSuppressWarningsFix(context.getInfo(), context.getPath(), "ClassMayBeInterface")); //NOI18N
+                    new ConvertClassToInterfaceFixImpl(TreePathHandle.create(context.getPath(), context.getInfo()), NbBundle.getMessage(ClassStructure.class, "FIX_ConvertClassToInterface", cls.getSimpleName())).toEditorFix()); //NOI18N
         }
         return null;
     }
@@ -254,8 +242,7 @@ public class ClassStructure {
                 if (it.next().getKind() == Kind.EMPTY_STATEMENT) it.remove();
             }
             if (typeDecls.size() > 1 && typeDecls.get(0) != cls) {
-                return ErrorDescriptionFactory.forName(context, cls, NbBundle.getMessage(ClassStructure.class, "MSG_MultipleTopLevelClassesInFile"), //NOI18N
-                        FixFactory.createSuppressWarningsFix(context.getInfo(), context.getPath(), "MultipleTopLevelClassesInFile")); //NOI18N
+                return ErrorDescriptionFactory.forName(context, cls, NbBundle.getMessage(ClassStructure.class, "MSG_MultipleTopLevelClassesInFile")); //NOI18N
             }
         }
         return null;
