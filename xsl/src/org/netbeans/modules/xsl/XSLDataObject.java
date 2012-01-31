@@ -72,7 +72,7 @@ import org.openide.windows.TopComponent;
  * @author asgeir@dimonsoftware.com
  */
 @MIMEResolver.NamespaceRegistration(
-    displayName="org.netbeans.modules.xsl.resources.Bundle#XSLTResolvert",
+    displayName="org.netbeans.modules.xsl.resources.Bundle#XSLTResolver",
     acceptedExtension={"xsl", "xslt"},
     mimeType="application/xslt+xml",
     position=450,
