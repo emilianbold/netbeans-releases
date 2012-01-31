@@ -53,6 +53,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.openide.filesystems.FileObject;
 
@@ -385,9 +386,20 @@ public class ModelVisitor extends PathNodeVisitor {
             }
             
             if (name != null) {
-                JsObject property = new JsObjectImpl(scope, name, name.getOffsetRange());
-                ((JsObjectImpl)property).setDeclared(true);
+                JsObject property = scope.getProperty(name.getName());
+                if (property == null) {   
+                    property = new JsObjectImpl(scope, name, name.getOffsetRange());   
+                } else {
+                    // The property can be already defined, via a usage before declaration (see testfiles/model/simpleObject.js - called property)
+                    JsObjectImpl newProperty = new JsObjectImpl(scope, name, name.getOffsetRange());
+                    newProperty.addOccurrence(property.getDeclarationName().getOffsetRange());
+                    for(Occurrence occurrence : property.getOccurrences()) {
+                        newProperty.addOccurrence(occurrence.getOffsetRange());
+                    }
+                    property = newProperty;
+                }
                 scope.addProperty(name.getName(), property);
+                ((JsObjectImpl)property).setDeclared(true);
                 if(propertyNode.getValue() instanceof CallNode) {
                     // TODO for now, don't continue. There shoudl be handled cases liek
                     // in the testFiles/model/property02.js file

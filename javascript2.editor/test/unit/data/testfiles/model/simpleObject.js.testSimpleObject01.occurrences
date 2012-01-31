@@ -1,0 +1,2 @@
+var |>MARK_OCCURRENCES:Car^rot<| = {
+formatter.println(|>MARK_OCCURRENCES:Carrot<|.getColor());

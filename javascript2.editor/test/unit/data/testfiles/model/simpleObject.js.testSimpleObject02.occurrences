@@ -1,0 +1,2 @@
+    |>MARK_OCCURRENCES:col^or<|: "red",
+        var text = "color is " + this.|>MARK_OCCURRENCES:color<| + ". This function was called: " + this.called;

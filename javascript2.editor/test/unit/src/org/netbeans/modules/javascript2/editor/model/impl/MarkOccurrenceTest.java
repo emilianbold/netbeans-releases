@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
@@ -39,15 +39,41 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript2.editor.model.impl;
 
-var Carrot = {
-    color: "red",
-    getColor: function () {
-        this.called = this.called + 1;
-        var text = "color is " + this.color + ". This function was called: " + this.called;
-        return text;
-    },
-    called: 0
+import java.io.IOException;
+import org.netbeans.modules.javascript2.editor.JsTestBase;
+import org.openide.filesystems.FileObject;
+
+/**
+ *
+ * @author Petr Pisl
+ */
+public class MarkOccurrenceTest extends JsTestBase {
+
+    public MarkOccurrenceTest(String testName) {
+        super(testName);
+    }
+    
+    public void testSimpleObject01() throws Exception {
+        checkOccurrences("testfiles/model/simpleObject.js", "var Car^rot = {", true);
+    }
+    
+    public void testSimpleObject02() throws Exception {
+        checkOccurrences("testfiles/model/simpleObject.js", "col^or: \"red\",", true);
+    }
+    
+    public void testSimpleObject03() throws Exception {
+        checkOccurrences("testfiles/model/simpleObject.js", "this.call^ed = this.called + 1;", true);
+    }
+    
+    public void testSimpleObject04() throws Exception {
+        checkOccurrences("testfiles/model/simpleObject.js", "getCo^lor: function () {", true);
+    }
+    
+    @Override
+    protected void assertDescriptionMatches(FileObject fileObject,
+            String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
+        super.assertDescriptionMatches(fileObject, description, includeTestName, ext, true);
+    }
 }
-
-formatter.println(Carrot.getColor());
