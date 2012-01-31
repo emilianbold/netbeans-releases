@@ -62,7 +62,6 @@ import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription.Worker;
 import org.netbeans.modules.java.hints.providers.spi.HintDescriptionFactory;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
-import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.modules.java.hints.providers.spi.Trigger.Kinds;
 import org.netbeans.modules.java.hints.providers.spi.Trigger.PatternDescription;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
@@ -787,7 +786,7 @@ public class HintsInvokerTest extends TestBase {
             List<Fix> fixes = new LinkedList<Fix>();
 
             if (fix != null) {
-                fixes.add(JavaFixUtilities.rewriteFix(ctx.getInfo(), "Rewrite", ctx.getPath(), fix, ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames(), ctx.getConstraints(), Collections.<String, String>emptyMap(), imports.toArray(new String[0])));
+                fixes.add(JavaFixUtilities.rewriteFix(ctx, "Rewrite", ctx.getPath(), fix, imports.toArray(new String[0])));
             }
             
             return Collections.singletonList(ErrorDescriptionFactory.forName(ctx, ctx.getPath(), "HINT", fixes.toArray(new Fix[0])));
