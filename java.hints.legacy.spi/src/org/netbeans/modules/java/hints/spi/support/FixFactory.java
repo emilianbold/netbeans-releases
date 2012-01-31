@@ -39,6 +39,8 @@ import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.spiimpl.JavaFixImpl;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.openide.util.Exceptions;
 
 /** Factory for creating fixes, which add @SuppressWarnings to given Element
  *
@@ -115,6 +117,14 @@ public final class FixFactory {
     @Deprecated
     public static boolean isSuppressWarningsFix(Fix f) {
         return false;
+    }
+
+    static {
+        try {
+            Class.forName(JavaFix.class.getCanonicalName(), true, JavaFix.class.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
 }
