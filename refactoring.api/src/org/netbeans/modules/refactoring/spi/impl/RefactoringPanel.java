@@ -68,6 +68,7 @@ import javax.swing.tree.TreePath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.*;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringCustomUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -593,7 +594,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
 
     private void refresh(final boolean showParametersPanel) {
         checkEventThread();
-
+        boolean scanning = IndexingManager.getDefault().isIndexing();
         if (showParametersPanel) {
             // create parameters panel for refactoring
             if (parametersPanel == null) {
@@ -609,7 +610,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                     close();
                 }
                 return;
-            } else if (tempSession.getRefactoringElements().isEmpty()) {
+            } else if (tempSession.getRefactoringElements().isEmpty() && !scanning) {
                 DialogDescriptor nd = new DialogDescriptor(NbBundle.getMessage(ParametersPanel.class, "MSG_NoPatternsFound"),
                                         ui.getName(),
                                         true,

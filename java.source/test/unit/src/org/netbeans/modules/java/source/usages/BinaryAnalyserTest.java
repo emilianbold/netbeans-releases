@@ -52,13 +52,11 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.Query;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.junit.NbTestCase;
@@ -68,7 +66,6 @@ import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
 import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
-import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -89,28 +86,21 @@ public class BinaryAnalyserTest extends NbTestCase {
     }
 
     public void testAnnotationsIndexed() throws Exception {
-        ClassIndexManager.getDefault().writeLock(new IndexManager.Action<Void>() {
-            @Override
-            public Void run() throws IOException, InterruptedException {
-                FileObject workDir = SourceUtilsTestUtil.makeScratchDir(BinaryAnalyserTest.this);
-                FileObject indexDir = workDir.createFolder("index");
-                File binaryAnalyzerDataDir = new File(getDataDir(), "Annotations.jar");
+        FileObject workDir = SourceUtilsTestUtil.makeScratchDir(BinaryAnalyserTest.this);
+        FileObject indexDir = workDir.createFolder("index");
+        File binaryAnalyzerDataDir = new File(getDataDir(), "Annotations.jar");
 
-                final Index index = IndexManager.createIndex(FileUtil.toFile(indexDir), DocumentUtil.createAnalyzer());
-                BinaryAnalyser a = new BinaryAnalyser(new IndexWriter(index), getWorkDir());
+        final Index index = IndexManager.createIndex(FileUtil.toFile(indexDir), DocumentUtil.createAnalyzer());
+        BinaryAnalyser a = new BinaryAnalyser(new IndexWriter(index), getWorkDir());
 
-                assertEquals(Result.FINISHED, a.start(FileUtil.getArchiveRoot(binaryAnalyzerDataDir.toURI().toURL()), new AtomicBoolean(), new AtomicBoolean()));
+        assertEquals(Result.FINISHED, a.start(FileUtil.getArchiveRoot(binaryAnalyzerDataDir.toURI().toURL()), new AtomicBoolean(), new AtomicBoolean()));
 
-                a.finish();
+        a.finish();
 
-                assertReference(index, "annotations.NoArgAnnotation", "usages.ClassAnnotations", "usages.MethodAnnotations", "usages.FieldAnnotations");
-                assertReference(index, "annotations.ArrayOfStringArgAnnotation", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
-                assertReference(index, "annotations.TestEnum", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
-                assertReference(index, "java.util.List", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
-
-                return null;
-            }
-        });
+        assertReference(index, "annotations.NoArgAnnotation", "usages.ClassAnnotations", "usages.MethodAnnotations", "usages.FieldAnnotations");
+        assertReference(index, "annotations.ArrayOfStringArgAnnotation", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
+        assertReference(index, "annotations.TestEnum", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
+        assertReference(index, "java.util.List", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
     }
 
     @Override
@@ -122,45 +112,38 @@ public class BinaryAnalyserTest extends NbTestCase {
     private int flushCount = 0;
     
     public void testTransactionalFlush() throws Exception {
-        ClassIndexManager.getDefault().writeLock(new IndexManager.Action<Void>() {
-            @Override
-            public Void run() throws IOException, InterruptedException {
-                FileObject workDir = SourceUtilsTestUtil.makeScratchDir(BinaryAnalyserTest.this);
-                FileObject indexDir = workDir.createFolder("index");
-                File binaryAnalyzerDataDir = new File(getDataDir(), "Annotations.jar");
+        FileObject workDir = SourceUtilsTestUtil.makeScratchDir(BinaryAnalyserTest.this);
+        FileObject indexDir = workDir.createFolder("index");
+        File binaryAnalyzerDataDir = new File(getDataDir(), "Annotations.jar");
 
-                final Index index = IndexManager.createIndex(FileUtil.toFile(indexDir), DocumentUtil.createAnalyzer());
-                BinaryAnalyser a = new BinaryAnalyser(
-                    new IndexWriter(index) {
-                        @Override
-                        public void deleteAndFlush(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
-                            super.deleteAndFlush(refs, toDelete);
-                        try {
-                            dataFlushed(index);
-                        } catch (InterruptedException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                        }
-                    }, getWorkDir()
-                );
+        final Index index = IndexManager.createIndex(FileUtil.toFile(indexDir), DocumentUtil.createAnalyzer());
+        BinaryAnalyser a = new BinaryAnalyser(
+            new IndexWriter(index) {
+                @Override
+                public void deleteAndFlush(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
+                    super.deleteAndFlush(refs, toDelete);
+                try {
+                    dataFlushed(index);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                }
+            }, getWorkDir()
+        );
 
-                setLowMemory(true);
-                assertEquals(Result.FINISHED, 
-                        a.start(FileUtil.getArchiveRoot(binaryAnalyzerDataDir.toURI().toURL()), new AtomicBoolean(), new AtomicBoolean()));
+        setLowMemory(true);
+        assertEquals(Result.FINISHED, 
+                a.start(FileUtil.getArchiveRoot(binaryAnalyzerDataDir.toURI().toURL()), new AtomicBoolean(), new AtomicBoolean()));
 
-                a.finish();
-                
-                // at least one flush occured.
-                assertFalse(flushCount == 0);
+        a.finish();
 
-                assertReference(index, "annotations.NoArgAnnotation", "usages.ClassAnnotations", "usages.MethodAnnotations", "usages.FieldAnnotations");
-                assertReference(index, "annotations.ArrayOfStringArgAnnotation", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
-                assertReference(index, "annotations.TestEnum", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
-                assertReference(index, "java.util.List", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
+        // at least one flush occured.
+        assertFalse(flushCount == 0);
 
-                return null;
-            }
-        });
+        assertReference(index, "annotations.NoArgAnnotation", "usages.ClassAnnotations", "usages.MethodAnnotations", "usages.FieldAnnotations");
+        assertReference(index, "annotations.ArrayOfStringArgAnnotation", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
+        assertReference(index, "annotations.TestEnum", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
+        assertReference(index, "java.util.List", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
     }
     
     /**
