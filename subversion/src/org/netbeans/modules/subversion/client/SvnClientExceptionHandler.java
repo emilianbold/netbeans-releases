@@ -730,7 +730,8 @@ public class SvnClientExceptionHandler {
             return true;
         }
         idx = msg.indexOf("url");                                                           // NOI18N
-        return idx > -1 && msg.indexOf("non-existent in that revision", idx + 3) > -1;      // NOI18N        
+        return idx > -1 && (msg.indexOf("non-existent in that revision", idx + 3) > -1      //NOI18N
+                || msg.indexOf("non-existent in revision", idx + 3) > -1);                  //NOI18N
     }    
 
     private static boolean isHTTP405(String msg) {
