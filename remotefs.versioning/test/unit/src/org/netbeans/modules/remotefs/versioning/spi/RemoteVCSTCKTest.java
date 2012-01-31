@@ -198,6 +198,8 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
         if (res.exitCode != 0) {
             throw new IOException("chmod failed: " + res.error);
         }
+        FileObject fo = root.getFileObject(path);
+        fo.getParent().refresh(true);
     }
     
     public static Test suite() {
@@ -219,18 +221,6 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
 
         public VCSInterceptorTestCase_(String testName) {
             super(testName);
-        }
-
-        @RandomlyFails
-        @Override
-        public void testVCSDoesntOverrideReadOnly() throws IOException {
-            super.testVCSDoesntOverrideReadOnly();
-        }
-
-        @RandomlyFails
-        @Override
-        public void testVCSOverridesReadOnly() throws IOException {
-            super.testVCSOverridesReadOnly();
         }
 
         @RandomlyFails
