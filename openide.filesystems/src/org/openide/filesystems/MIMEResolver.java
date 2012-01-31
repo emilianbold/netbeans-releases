@@ -301,7 +301,7 @@ public abstract class MIMEResolver {
      * {@link MIMEResolver.ExtensionRegistration}.
      * 
      * <p>
-     * The <code>value</code>
+     * The <code>resource</code>
      * attribute of the annotation should be a relative reference to
      * an XML like <a href="doc-files/HOWTO-MIME.html">document</a> describing
      * the rules that will be interpreted by the mime recognizing infrastructure.
