@@ -314,7 +314,7 @@ public final class NodeUtil {
      * @param node representing a rule node
      */
     public static int[] getRuleBodyRange(Node node) {
-        if (node.type() != NodeType.ruleSet) {
+        if (node.type() != NodeType.rule) {
             throw new IllegalArgumentException("Only selector node is allowed as a parameter!"); //NOI18N
         }
 

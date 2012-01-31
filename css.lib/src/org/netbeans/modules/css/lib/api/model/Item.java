@@ -66,8 +66,4 @@ public class Item {
         return node.from();
     }
     
-    //compatibility - remove later
-    public String name() {
-        return image().toString();
-    }
 }

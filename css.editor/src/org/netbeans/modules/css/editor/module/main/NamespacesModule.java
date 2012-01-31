@@ -90,7 +90,7 @@ public class NamespacesModule extends CssEditorModule {
         }
 
         switch (activeNode.type()) {
-            case namespace_prefix:
+            case namespacePrefix:
             case elementName:
                 //already in the prefix
 
@@ -103,12 +103,12 @@ public class NamespacesModule extends CssEditorModule {
 
             case root:
             case styleSheet:
-            case bodylist:
+            case body:
                 CompletionProposal nsKeywordProposal =
                         CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false);
                 proposals.add(nsKeywordProposal);
 
-            case bodyset:
+            case bodyItem:
             case media:
             case combinator:
             case selector:
@@ -149,9 +149,9 @@ public class NamespacesModule extends CssEditorModule {
                 }
                 break;
 
-            case attrib:
-            case attrib_name:
-            case namespace_wqname_prefix:
+            case slAttribute:
+            case slAttributeName:
+            case namespacePrefixName:
                 proposals.addAll(getNamespaceCompletionProposals(context));
                 break;
         }
@@ -174,8 +174,7 @@ public class NamespacesModule extends CssEditorModule {
             @Override
             public boolean visit(Node node) {
                 switch (node.type()) {
-                    case namespace_prefix:
-                    case namespace_wildcard_prefix:
+                    case namespacePrefix:
                         getResult().put(Css3Utils.getOffsetRange(node), ColoringAttributes.CONSTRUCTOR_SET);
                         break;
                 }
@@ -186,7 +185,7 @@ public class NamespacesModule extends CssEditorModule {
 
     @Override
     public <T extends Set<OffsetRange>> NodeVisitor<T> getMarkOccurrencesNodeVisitor(EditorFeatureContext context, T result) {
-        return Utilities.createMarkOccurrencesNodeVisitor(context, result, NodeType.namespace_prefix);
+        return Utilities.createMarkOccurrencesNodeVisitor(context, result, NodeType.namespacePrefix);
     }
 
     @Override

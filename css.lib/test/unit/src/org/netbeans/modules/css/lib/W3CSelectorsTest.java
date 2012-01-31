@@ -2646,7 +2646,7 @@ public class W3CSelectorsTest extends CssTestBase {
                 + "  p { background: lime; }"
                 + "  [*=test] { background: red; }"
                 + "";
-        assertResult(TestUtil.parse(code), 2);
+        assertResult(TestUtil.parse(code), 1);
     }
 
     public void tests_css3_modsel_158_xml() throws BadLocationException, ParseException {

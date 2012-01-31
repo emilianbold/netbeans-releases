@@ -41,6 +41,11 @@
  */
 package org.netbeans.modules.css.lib.api.model;
 
+import org.netbeans.modules.css.lib.api.model.Item;
+import org.netbeans.modules.css.lib.api.model.Stylesheet;
+import org.netbeans.modules.css.lib.api.model.Namespace;
+import org.netbeans.modules.css.lib.api.model.Rule;
+import org.netbeans.modules.css.lib.api.model.Declaration;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.text.BadLocationException;
@@ -72,7 +77,7 @@ public class StylesheetTest extends NbTestCase {
 
         Rule rule = rules.get(0);
         assertNotNull(rule);
-        assertEquals("h1", rule.name());
+        assertEquals("h1 { color: red; }", rule.image().toString());
         assertEquals(3, rule.getRuleOpenBracketOffset());
         assertEquals(17, rule.getRuleCloseBracketOffset());
 
@@ -209,7 +214,10 @@ public class StylesheetTest extends NbTestCase {
         String content = " @namespace prefix \"uri\";";
         //                0123456789012345678
         //                0         1
-        Stylesheet model = TestUtil.parse(content).getModel();        
+        CssParserResult result = TestUtil.parse(content);
+        TestUtil.dumpResult(result);
+        
+        Stylesheet model = result.getModel();        
         assertNotNull(model);
 
         Collection<Namespace> names = model.getNamespaces();

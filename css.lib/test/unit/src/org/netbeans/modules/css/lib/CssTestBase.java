@@ -69,11 +69,26 @@ public class CssTestBase extends CslTestBase {
         if (problems != result.getDiagnostics().size()) {
             TestUtil.dumpResult(result);
         }
-        assertEquals(problems, result.getDiagnostics().size());
+        
+        int foundProblemsCount = result.getDiagnostics().size();
+        assertEquals(problems, foundProblemsCount);
 
+        if(foundProblemsCount == 0) {
+            //Check whether the parse tree covers the whole file only if it is not broken. 
+            //This doesn't mean an errorneous file should not produce parse tree
+            //fully covering the source. Just there're some cases where it doesn't work now.
+            //TODO: enable the parse tree tokens consistency check for all parse result, not just for the errorneous ones.
+            assertNoTokenNodeLost(result);
+        }
+        
         return result;
     }
-
+    
+    /**
+     * Checks whether the parser result covers every character in the source code.
+     * In another words ensure there are no lexer tokens which doesn't have a corresponding
+     * parse tree token node.
+     */
     protected void assertNoTokenNodeLost(CssParserResult result) {
         final StringBuilder sourceCopy = new StringBuilder(result.getSnapshot().getText());
 

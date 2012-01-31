@@ -58,47 +58,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
  * @author mfukala@netbeans.org
  */
 public class Declaration extends Item {
-
-    //XXX: hack for the terrible StyleBuilder logic. Must be fixed!!!
-    public static Declaration createArtificial(final String propertyName, final String expression) {
-        return new Declaration(null,null) {
-
-            @Override
-            public Item getProperty() {
-                return new Item(null,null) {
-
-                    @Override
-                    public String name() {
-                        return propertyName;
-                    }
-
-                    @Override
-                    public int offset() {
-                        return -1;
-                    }
-                    
-                };
-            }
-            
-            @Override
-            public Item getValue() {
-                return new Item(null,null) {
-
-                    @Override
-                    public String name() {
-                        return expression;
-                    }
-
-                    @Override
-                    public int offset() {
-                        return -1;
-                    }
-                    
-                };
-            }
-        };
-    }
-    
+ 
     Declaration(Snapshot snapshot, Node declarationNode) {
         super(snapshot, declarationNode);
     }

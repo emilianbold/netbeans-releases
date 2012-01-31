@@ -259,7 +259,7 @@ public class CssFileModel {
                 if (entry != null) {
                     getImportsCollectionInstance().add(entry);
                 }
-            } else if (node.type() == NodeType.ruleSet) {
+            } else if (node.type() == NodeType.rule) {
                 currentBodyRange = NodeUtil.getRuleBodyRange(node);
             } else if (NodeUtil.isSelectorNode(node)) {
 
