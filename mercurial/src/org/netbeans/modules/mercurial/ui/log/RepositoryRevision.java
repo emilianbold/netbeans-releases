@@ -50,6 +50,7 @@ import java.io.File;
 import java.util.*;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.mercurial.HgProgressSupport;
+import org.netbeans.modules.mercurial.HistoryRegistry;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.Utils;
@@ -237,6 +238,7 @@ public class RepositoryRevision {
         for (RepositoryRevision.Event event : logEvents) {
             String filePath = event.getChangedPath().getPath();
             File f = new File(repositoryRoot, filePath);
+            File cachedRename = HistoryRegistry.getInstance().getHistoryFile(repositoryRoot, f, message.getCSetShortID(), true);
             boolean underRoots = false;
             for (File selectionRoot : selectionRoots) {
                 if (VersioningSupport.isFlat(selectionRoot)) {
@@ -247,6 +249,9 @@ public class RepositoryRevision {
                 if (underRoots) {
                     break;
                 }
+            }
+            if (cachedRename != null) {
+                f = cachedRename;
             }
             event.setFile(f, underRoots);
             event.setOriginalFile(f);

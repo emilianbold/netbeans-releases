@@ -79,6 +79,10 @@ public class VersionsCache {
      * @return null if the file does not exist in given revision
      */
     public File getFileRevision(File base, HgRevision revision) throws IOException {
+        return getFileRevision(base, revision, true);
+    }
+    
+    public File getFileRevision(File base, HgRevision revision, boolean tryHard) throws IOException {
         String revisionNumber = revision.getRevisionNumber();
         if("-1".equals(revisionNumber)) return null; // NOI18N
         
@@ -100,7 +104,7 @@ public class VersionsCache {
                         String relativePath = HgUtils.getRelativePath(base);
                         File cachedFile = cachedVersions.getContent(relativePath, base.getName(), changesetId);
                         if (cachedFile.length() == 0) { // not yet cached
-                            HgCommand.doCat(repository, base, tempFile, revisionNumber, null);
+                            HgCommand.doCat(repository, base, tempFile, revisionNumber, null, tryHard);
                             if (tempFile.length() != 0) {
                                 cachedVersions.setContent(relativePath, changesetId, tempFile);
                             }

@@ -207,7 +207,9 @@ class SummaryCellRenderer implements ListCellRenderer {
         assert revision.revisionExpanded;
         assert EventQueue.isDispatchThread();
         
-        Collection<AbstractSummaryView.LogEntry.Event> events = revision.getUserData().getEvents();
+        Collection<AbstractSummaryView.LogEntry.Event> events = revision.getUserData().isEventsInitialized()
+                ? revision.getUserData().getEvents()
+                : revision.getUserData().getDummyEvents();
         int maxWidth = -1;
         for (AbstractSummaryView.LogEntry.Event event : events) {
             int i = 0;
