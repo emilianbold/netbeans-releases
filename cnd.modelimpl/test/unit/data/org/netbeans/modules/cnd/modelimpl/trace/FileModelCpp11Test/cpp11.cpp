@@ -228,15 +228,15 @@ union U {
 //    Core language functionality improvements
 //        Variadic templates
 
-//template<typename... Values> class tuple;
-//
-//template <typename... BaseClasses> class ClassName : public BaseClasses... {
-//public:
-//    ClassName (BaseClasses&&... base_classes) : BaseClasses(base_classes)... {}
-//};
-//template<typename ...Args> struct SomeStruct {
-//    static const int size = sizeof...(Args);
-//};
+template<typename... Values> class tuple;
+
+template <typename... BaseClasses> class ClassName : public BaseClasses... {
+public:
+    ClassName (BaseClasses&&... base_classes) : BaseClasses(base_classes)... {}
+};
+template<typename ...Args> struct SomeStruct {
+    static const int size = sizeof...(Args);
+};
 
 //        New string literals
 
