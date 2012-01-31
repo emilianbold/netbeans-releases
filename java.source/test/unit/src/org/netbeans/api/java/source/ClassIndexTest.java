@@ -260,32 +260,25 @@ public class ClassIndexTest extends NbTestCase {
     
     public void testholdsWriteLock () throws Exception {
         //Test basics
-        final ClassIndexManager m = ClassIndexManager.getDefault();
         IndexManager.readAccess(new IndexManager.Action<Void>() {
             public Void run() throws IOException, InterruptedException {
                 assertFalse(IndexManager.holdsWriteLock());
                 return null;
             }
         });
-        m.writeLock(new IndexManager.Action<Void>() {
-            public Void run() throws IOException, InterruptedException {
-                assertTrue(IndexManager.holdsWriteLock());
-                return null;
-            }
-        });
         //Test nesting of [write|read] lock in write lock
         //the opposite is forbidden
-        m.writeLock(new IndexManager.Action<Void>() {
+        IndexManager.writeAccess(new IndexManager.Action<Void>() {
             public Void run() throws IOException, InterruptedException {                           
                 assertTrue(IndexManager.holdsWriteLock());
-                m.writeLock(new IndexManager.Action<Void>() {
+                IndexManager.readAccess(new IndexManager.Action<Void>() {
                     public Void run() throws IOException, InterruptedException {                
                         assertTrue(IndexManager.holdsWriteLock());
                         return null;
                     }
                 });
                 assertTrue(IndexManager.holdsWriteLock());
-                m.writeLock(new IndexManager.Action<Void>() {
+                IndexManager.writeAccess(new IndexManager.Action<Void>() {
                     public Void run() throws IOException, InterruptedException {                
                         assertTrue(IndexManager.holdsWriteLock());
                         return null;

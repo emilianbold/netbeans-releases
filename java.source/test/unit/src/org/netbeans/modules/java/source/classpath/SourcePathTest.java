@@ -93,20 +93,10 @@ public class SourcePathTest extends ClassIndexTestCase {
         final ClassPath sp2 = ClassPathFactory.createClassPath(SourcePath.filtered(baseImpl, false));
         assertTrue (sp2.entries().isEmpty());
         
-        ClassIndexManager.getDefault().writeLock(new IndexManager.Action<Void>() {
-            public Void run() throws IOException, InterruptedException {
-                ensureRootValid(base.entries().get(0).getURL());
-                return null;
-            }
-        });
+        ensureRootValid(base.entries().get(0).getURL());
         assertEquals(1,sp2.entries().size());
         assertEquals(base.entries().get(0).getURL(), sp2.entries().get(0).getURL());
-        ClassIndexManager.getDefault().writeLock(new IndexManager.Action<Void>() {
-            public Void run() throws IOException, InterruptedException {
-                ensureRootValid(base.entries().get(1).getURL());
-                return null;
-            }
-        });
+        ensureRootValid(base.entries().get(1).getURL());
         assertEquals (base,sp2);
         
         final ClassPath sp3 = ClassPathFactory.createClassPath(SourcePath.filtered(baseImpl, false));
