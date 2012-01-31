@@ -640,7 +640,7 @@ implements java.io.Serializable {
      *   &lt;attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/&gt;
      *   &lt;attr name="dataObjectClass" stringvalue="org.your.pkg.YourDataObject"/&gt;
      *   &lt;attr name="mimeType" stringvalue="yourmime/type"/&gt;
-     *   &lt;attr name="SystemFileSystem.localizingIcon" stringvalue="org/your/pkg/YourDataObject.png"/&gt;
+     *   &lt;attr name="iconBase" stringvalue="org/your/pkg/YourDataObject.png"/&gt;
      * &lt;/file&gt;
      * </pre>
      * @param clazz the class of the data object to create. Must have appropriate
