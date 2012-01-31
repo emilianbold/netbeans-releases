@@ -49,13 +49,13 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.hints.declarative.Condition.Otherwise;
 import org.netbeans.modules.java.hints.declarative.conditionapi.Context;
-//import org.netbeans.modules.java.hints.spi.support.FixFactory;
+import org.netbeans.modules.java.hints.providers.spi.HintDescription.Worker;
+import org.netbeans.modules.java.hints.spiimpl.JavaFixImpl;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.HintContext.MessageKind;
-import org.netbeans.modules.java.hints.providers.spi.HintDescription.Worker;
-import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.JavaFixUtilities;
 
 /**
@@ -90,6 +90,7 @@ class DeclarativeHintsWorker implements Worker {
         return fixes;
     }
 
+    @Override
     public Collection<? extends ErrorDescription> createErrors(HintContext ctx) {
         Context context = new Context(ctx);
 
@@ -140,16 +141,16 @@ class DeclarativeHintsWorker implements Worker {
                     }
                     //not realizing empty fixes
                 } else {
-                    editorFixes.add(JavaFixUtilities.rewriteFix(ctx.getInfo(),
-                                                       fix.getDisplayName(),
-                                                       ctx.getPath(),
-                                                       fix.getPattern(),
-                                                       APIAccessor.IMPL.getVariables(context),
-                                                       APIAccessor.IMPL.getMultiVariables(context),
-                                                       APIAccessor.IMPL.getVariableNames(context),
-                                                       ctx.getConstraints(),
-                                                       fix.getOptions(),
-                                                       imports));
+                    editorFixes.add(JavaFixImpl.Accessor.INSTANCE.rewriteFix(ctx.getInfo(),
+                                                                             fix.getDisplayName(),
+                                                                             ctx.getPath(),
+                                                                             fix.getPattern(),
+                                                                             APIAccessor.IMPL.getVariables(context),
+                                                                             APIAccessor.IMPL.getMultiVariables(context),
+                                                                             APIAccessor.IMPL.getVariableNames(context),
+                                                                             ctx.getConstraints(),
+                                                                             fix.getOptions(),
+                                                                             imports));
                 }
             } finally {
                 context.leaveScope();
