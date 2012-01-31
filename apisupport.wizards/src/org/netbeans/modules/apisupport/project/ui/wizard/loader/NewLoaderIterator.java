@@ -296,11 +296,11 @@ public final class NewLoaderIterator extends BasicWizardIterator {
              }
              annotation.append("/*, label = \"loadername\", position=300*/");//NOI18N
              annotation.append(")");//NOI18N
-             replaceTokens.put("DATAOBJET_REGISTRATION", annotation.toString());//NOI18N
-             replaceTokens.put("DATAOBJET_REGISTRATION_IMPORT","import org.openide.loaders.DataObject;");//NOI18N
+             replaceTokens.put("DATAOBJECT_REGISTRATION", annotation.toString());//NOI18N
+             replaceTokens.put("DATAOBJECT_REGISTRATION_IMPORT","import org.openide.loaders.DataObject;");//NOI18N
         } else {
-             replaceTokens.put("DATAOBJET_REGISTRATION", "");//NOI18N
-             replaceTokens.put("DATAOBJET_REGISTRATION_IMPORT", "");//NOI18N
+             replaceTokens.put("DATAOBJECT_REGISTRATION", "");//NOI18N
+             replaceTokens.put("DATAOBJECT_REGISTRATION_IMPORT", "");//NOI18N
         }
         
         String doName = model.getDefaultPackagePath(namePrefix + "DataObject.java", false); // NOI18N
