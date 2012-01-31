@@ -41,13 +41,10 @@
  */
 package org.netbeans.modules.openide.loaders;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
@@ -71,13 +68,8 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedAnnotationTypes("org.openide.loaders.DataObject.Registration")
 public class DataObjectFactoryProcessor extends LayerGeneratingProcessor {
-
-    @Override
-    public Set<String> getSupportedAnnotationTypes() {
-        return new HashSet<String>(Arrays.asList(DataObject.Registration.class.getCanonicalName()));
-    }
-
     @Override
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
         if (roundEnv.processingOver()) {
