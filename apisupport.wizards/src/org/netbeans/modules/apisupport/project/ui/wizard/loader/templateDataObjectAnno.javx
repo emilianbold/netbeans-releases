@@ -28,11 +28,19 @@ import org.openide.windows.TopComponent;
 @Messages({
     "LBL_${PREFIX}_LOADER=Files of ${PREFIX}"
 })
+<#if NAMESPACES??>
+@MIMEResolver.NamespaceRegistration(
+    displayName="#LBL_${PREFIX}_LOADER",
+    mimeType="${MIMETYPE}",
+    elementNS=${NAMESPACES}
+)
+<#else>
 @MIMEResolver.ExtensionRegistration(
     displayName="#LBL_${PREFIX}_LOADER",
     mimeType="${MIMETYPE}",
     extension=${EXTENSIONS}
 )
+</#if>
 @DataObject.Registration(
     mimeType = "${MIMETYPE}", 
     iconBase = "${ICONPATH}",

@@ -237,12 +237,19 @@ public final class NewLoaderIterator extends BasicWizardIterator {
         replaceTokens.put("PREFIX", namePrefix);//NOI18N
         replaceTokens.put("PACKAGENAME", packageName);//NOI18N
         replaceTokens.put("MIMETYPE", mime);//NOI18N
-        if (annotationReadyObject) {
-            replaceTokens.put("EXTENSIONS", formatExtensionsToList(model.getExtension())); // NOI18N
+        if (model.isExtensionBased()) {
+            if (annotationReadyObject) {
+                replaceTokens.put("EXTENSIONS", formatToList(model.getExtension())); // NOI18N
+            } else {
+                replaceTokens.put("EXTENSIONS", formatExtensions(model.isExtensionBased(), model.getExtension(), mime));//NOI18N
+            }
         } else {
-            replaceTokens.put("EXTENSIONS", formatExtensions(model.isExtensionBased(), model.getExtension(), mime));//NOI18N
+            if (annotationReadyObject) {
+                replaceTokens.put("NAMESPACES", formatToList(model.getNamespace())); // NOI18N
+            } else {
+                replaceTokens.put("NAMESPACES", formatNameSpace(model.isExtensionBased(), model.getNamespace(), mime));//NOI18N
+            }
         }
-        replaceTokens.put("NAMESPACES", formatNameSpace(model.isExtensionBased(), model.getNamespace(), mime));//NOI18N
         
         // Copy action icon
         File origIconPath = model.getIconPath();
@@ -502,7 +509,7 @@ public final class NewLoaderIterator extends BasicWizardIterator {
         return buff.toString();
     }
 
-    private static String formatExtensionsToList(String ext) {
+    private static String formatToList(String ext) {
         StringBuilder buff = new StringBuilder();
         buff.append("{ ");
         StringTokenizer tokens = new StringTokenizer(ext, " ,"); // NOI18N
