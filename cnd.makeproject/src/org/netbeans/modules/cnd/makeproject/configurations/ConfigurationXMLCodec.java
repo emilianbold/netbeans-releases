@@ -154,7 +154,6 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     @Override
     public void start(Attributes atts) throws VersionException {
         String what = "project configuration"; // NOI18N
-        checkVersion(atts, what, CURRENT_VERSION);
         String versionString = atts.getValue("version");        // NOI18N
         if (versionString != null) {
             descriptorVersion = new Integer(versionString).intValue();
