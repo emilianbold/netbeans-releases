@@ -383,7 +383,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                     if (file == null) {
                         missingNonSibling = true;
                     } else {
-                        SourceForBinaryQuery.Result2 result = SourceForBinaryQuery.findSourceRoots2(FileUtil.urlForArchiveOrDir(file));
+                        SourceForBinaryQuery.Result2 result = SourceForBinaryQuery.findSourceRoots2(FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(file)));
                         if (!result.preferSources() || /* SourceForBinaryQuery.EMPTY_RESULT2.preferSources() so: */ result.getRoots().length == 0) {
                             missingNonSibling = true;
                         } // else #189442: typically a snapshot dep on another project
