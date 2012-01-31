@@ -91,6 +91,9 @@ public class DataObjectFactoryProcessor extends LayerGeneratingProcessor {
 
         for (Element e : roundEnv.getElementsAnnotatedWith(DataObject.Registration.class)) {
             DataObject.Registration dfr = e.getAnnotation(DataObject.Registration.class);
+            if (dfr == null) {
+                continue;
+            }
             LayerBuilder builder = layer(e);
             //need class name to generate id and factory dataObjectClass parameter
             String className = e.asType().toString();
