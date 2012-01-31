@@ -188,9 +188,9 @@ unsigned int k = Enum3::Val1;
 //        Right angle bracket
 
 //#include <vector>
-//template<bool Test> class SomeType {    
-//};
-//std::vector<SomeType<(1>2)>> x1;
+template<bool Test> class SomeType {    
+};
+std::vector<SomeType<(1>2)>> x1;
 
 //        Explicit conversion operators
 
