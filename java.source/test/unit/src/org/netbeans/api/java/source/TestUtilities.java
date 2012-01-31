@@ -252,15 +252,10 @@ public final class TestUtilities {
                 for (final URL url : urls) {
                     TransactionContext ctx = TransactionContext.beginStandardTransaction(false, url);
                     try {
-                        final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);            
-                        ClassIndexManager.getDefault().writeLock(new IndexManager.Action<Void>() {
-                            public Void run() throws IOException, InterruptedException {
-                                BinaryAnalyser ba = cii.getBinaryAnalyser();            
-                                ba.start(url, new AtomicBoolean(false), new AtomicBoolean(false));
-                                ba.finish();
-                                return null;
-                            }
-                        });            
+                        final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);
+                        final BinaryAnalyser ba = cii.getBinaryAnalyser();            
+                        ba.start(url, new AtomicBoolean(false), new AtomicBoolean(false));
+                        ba.finish();
                     } finally {
                         ctx.commit();
                     }

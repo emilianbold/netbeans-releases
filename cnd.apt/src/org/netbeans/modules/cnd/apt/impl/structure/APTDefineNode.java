@@ -382,6 +382,7 @@ public final class APTDefineNode extends APTMacroBaseNode
     }
 
     @Override
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     public boolean equals(Object obj) {
         if (!super.equals(obj)) {
             return false;

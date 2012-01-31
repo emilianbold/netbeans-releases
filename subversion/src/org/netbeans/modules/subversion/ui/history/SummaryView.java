@@ -49,11 +49,9 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
-import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.VersionsCache;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.update.RevertModifications;
 import org.netbeans.modules.subversion.ui.update.RevertModificationsAction;
@@ -66,12 +64,8 @@ import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.List;
 import java.io.File;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import org.netbeans.modules.subversion.FileStatusCache;
-import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.util.SvnUtils;
@@ -99,16 +93,19 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
         private RepositoryRevision revision;
         private List events = new ArrayList<SvnLogEvent>(10);
+        private List<Event> dummyEvents;
         private SearchHistoryPanel master;
         private final PropertyChangeListener list;
     
         public SvnLogEntry (RepositoryRevision revision, SearchHistoryPanel master) {
             this.revision = revision;
             this.master = master;
+            this.dummyEvents = Collections.<Event>emptyList();
             if (revision.isEventsInitialized()) {
                 refreshEvents();
                 list = null;
             } else {
+                prepareDummyEvents();
                 revision.addPropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list = WeakListeners.propertyChange(this, revision));
             }
         }
@@ -116,6 +113,11 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         @Override
         public Collection<AbstractSummaryView.LogEntry.Event> getEvents () {
             return events;
+        }
+
+        @Override
+        public Collection<Event> getDummyEvents () {
+            return dummyEvents;
         }
 
         @Override
@@ -200,6 +202,14 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             return revision;
         }
 
+        void prepareDummyEvents () {
+            ArrayList<Event> evts = new ArrayList<Event>(revision.getDummyEvents().size());
+            for (RepositoryRevision.Event event : revision.getDummyEvents()) {
+                evts.add(new SvnLogEvent(master, event));
+            }
+            dummyEvents = evts;
+        }
+
         void refreshEvents () {
             ArrayList<SvnLogEvent> evts = new ArrayList<SvnLogEvent>(revision.getEvents().size());
             for (RepositoryRevision.Event event : revision.getEvents()) {
@@ -208,6 +218,7 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             List<SvnLogEvent> oldEvents = new ArrayList<SvnLogEvent>(events);
             List<SvnLogEvent> newEvents = new ArrayList<SvnLogEvent>(evts);
             events = evts;
+            dummyEvents.clear();
             eventsChanged(oldEvents, newEvents);
         }
 
@@ -558,61 +569,16 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             @Override
             public void perform() {
                 for(RepositoryRevision.Event event : events) {
-                    rollback(event);
-                }
-            }
-
-            private void rollback (RepositoryRevision.Event event) {
-                File file = event.getFile();
-                if (event.getChangedPath().getAction() == 'D') {
-                    // it was deleted, lets delete it again
-                    if (file.exists()) {
-                        try {
-                            SvnClient client = Subversion.getInstance().getClient(false);
-                            client.remove(new File[]{file}, true);
-                        } catch (SVNClientException ex) {
-                            Subversion.LOG.log(Level.SEVERE, null, ex);
-                        }
-                        Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-                    }
-                    return;
-                }
-                File parent = file.getParentFile();
-                parent.mkdirs();
-                SVNUrl repoUrl = event.getLogInfoHeader().getRepositoryRootUrl();
-                SVNUrl fileUrl = repoUrl.appendPath(event.getChangedPath().getPath());
-                try {
-                    File oldFile = VersionsCache.getInstance().getFileRevision(repoUrl, fileUrl, Long.toString(event.getLogInfoHeader().getLog().getRevision().getNumber()), event.getFile().getName());
-                    for (int i = 1; i < 7; i++) {
-                        if (file.delete()) {
-                            break;
-                        }
-                        try {
-                            Thread.sleep(i * 34);
-                        } catch (InterruptedException e) {
-                        }
-                    }
-                    FileUtil.copyFile(FileUtil.toFileObject(oldFile), FileUtil.toFileObject(parent), file.getName(), "");
-                } catch (IOException e) {
-                    if (refersToDirectory(e)) {
-                        Subversion.LOG.log(Level.FINE, null, e);
-                        getLogger().logError(NbBundle.getMessage(SummaryView.class, "MSG_SummaryView.refersToDirectory", fileUrl)); //NOI18N
-                    } else {
-                        Subversion.LOG.log(Level.SEVERE, null, e);
-                    }
+                    File file = event.getFile();
+                    boolean wasDeleted = event.getChangedPath().getAction() == 'D';
+                    SVNUrl repoUrl = event.getLogInfoHeader().getRepositoryRootUrl();
+                    SVNUrl fileUrl = repoUrl.appendPath(event.getChangedPath().getPath());                    
+                    SVNRevision.Number revision = event.getLogInfoHeader().getLog().getRevision();
+                    SvnUtils.rollback(file, repoUrl, fileUrl, revision, wasDeleted, getLogger());
                 }
             }
         };
         support.start(rp, repository, NbBundle.getMessage(SummaryView.class, "MSG_Rollback_Progress")); // NOI18N
-    }
-
-    private static boolean refersToDirectory (Exception ex) {
-        Throwable t = ex;
-        boolean dir = false;
-        while (t != null && !(dir = t.getMessage().contains("refers to a directory"))) { //NOI18N
-            t = t.getCause();
-        }
-        return dir;
     }
 
     private static void revertModifications (SearchHistoryPanel master, Object[] selection) {

@@ -736,18 +736,30 @@ public final class FoldHierarchyExecution implements DocumentListener {
                     // will suspend document listening iff the component is not shown
                     // fixes some bugs, and even improves performance :)
                     getComponent().addHierarchyListener(new HierarchyListener() {
+                        private boolean updating;
+                        
                         @Override
                         public void hierarchyChanged(HierarchyEvent e) {
                             if ((e.getChangeFlags() & HierarchyEvent.PARENT_CHANGED) == 0) {
                                 return;
                             }
-                            
-
-                            if (e.getChanged().getParent() == null) {
-                                suspendDocumentChanges();
-                            }  else {
-                                resumeDocumentChanges();
+                            // the component may be reparented, usually in the same execution sequence
+                            // within an event. Let's update (suspend or resume) the changes depending on
+                            // the stabilized state in a next AWT event:
+                            if (updating) {
+                                return;
                             }
+                            updating = true;
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    updating = false;
+                                    if (getComponent().isDisplayable()) {
+                                        resumeDocumentChanges();
+                                    } else {
+                                        suspendDocumentChanges();
+                                    }
+                                }
+                            });
                         }
 
                     });

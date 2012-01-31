@@ -855,6 +855,7 @@ final class ViewBuilder {
                         if (creationOffset == bmReuseOffset) {
                             EditorView view = bmReusePView.getEditorView(bmReuseLocalIndex);
                             bmReuseOffset += view.getLength();
+                            bmReuseLocalIndex++;
                             if (bmReuseOffset <= modOffset) { // end of view below modOffset
                                 origView = view;
                                 nextOrigViewOffset = bmReuseOffset;

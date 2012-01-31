@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.apt.support.lang;
 
+import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 
 /**
@@ -55,6 +56,11 @@ class APTGnuCpp11Filter extends APTBaseLanguageFilter {
     public APTGnuCpp11Filter() {
         super(false);
         initialize();
+    }
+    
+    @Override
+    public TokenStream getFilteredStream(TokenStream origStream) {
+        return new APTGnuCpp11FilterEx().getFilteredStream(super.getFilteredStream(origStream));
     }
     
     private void initialize() {
