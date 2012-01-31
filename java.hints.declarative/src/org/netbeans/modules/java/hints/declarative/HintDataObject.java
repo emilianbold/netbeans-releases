@@ -40,6 +40,7 @@ package org.netbeans.modules.java.hints.declarative;
 
 import java.io.IOException;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
@@ -50,6 +51,9 @@ import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import org.openide.text.DataEditorSupport;
 
+@MIMEResolver.ExtensionRegistration(
+    mimeType="text/x-javahints", displayName="", extension="hint", position=2133
+)
 public class HintDataObject extends MultiDataObject {
 
     public HintDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {

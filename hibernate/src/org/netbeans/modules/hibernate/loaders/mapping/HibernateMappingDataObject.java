@@ -51,8 +51,6 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.hibernate.mapping.model.HibernateMapping;
 import org.netbeans.modules.hibernate.mapping.model.MyClass;
-import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
-import org.netbeans.modules.xml.multiview.XmlMultiViewElement;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
@@ -60,12 +58,11 @@ import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
-import org.openide.text.DataEditorSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -75,6 +72,12 @@ import org.openide.windows.TopComponent;
  * 
  * @author Dongmei Cao
  */
+@MIMEResolver.NamespaceRegistration(
+    mimeType=HibernateMappingDataLoader.REQUIRED_MIME,
+    displayName="org.netbeans.modules.hibernate.resources.Bundle#HibernateMappingResolver",
+    doctypePublicId="-//Hibernate/Hibernate Mapping DTD 3.0//EN",
+    position=1550
+)
 public class HibernateMappingDataObject extends MultiDataObject {
 
     private HibernateMapping mapping;

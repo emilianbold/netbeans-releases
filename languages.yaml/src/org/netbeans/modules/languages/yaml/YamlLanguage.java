@@ -51,12 +51,19 @@ import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.openide.filesystems.MIMEResolver;
 
 /**
  * GSF Configuration for YAML
  *
  * @author Tor Norbye
  */
+@MIMEResolver.ExtensionRegistration(
+    displayName="#YAMLResolver",
+    extension={ "yml", "yaml" },
+    mimeType="text/x-yaml",
+    position=280
+)
 @LanguageRegistration(mimeType="text/x-yaml") //NOI18N
 public class YamlLanguage extends DefaultLanguageConfig {
 

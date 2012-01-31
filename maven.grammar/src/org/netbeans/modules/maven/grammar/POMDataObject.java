@@ -63,6 +63,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
@@ -79,6 +80,11 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 @Messages("CTL_SourceTabCaption=&Source")
+@MIMEResolver.Registration(
+    displayName="#POMResolver",
+    position=309,
+    resource="POMResolver.xml"
+)
 public class POMDataObject extends MultiDataObject {
 
     public static final String SETTINGS_MIME_TYPE = "text/x-maven-settings+xml";

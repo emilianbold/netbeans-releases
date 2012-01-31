@@ -50,11 +50,18 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageProvider;
+import org.openide.filesystems.MIMEResolver;
 
 /**
  *
  * @author Jan Jancura
  */
+@MIMEResolver.ExtensionRegistration(
+    displayName="#OQLResolver",
+    extension="oql",
+    mimeType="text/x-oql",
+    position=945
+)
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.lexer.LanguageProvider.class)
 public class OQLLanguageProvider extends LanguageProvider {
     

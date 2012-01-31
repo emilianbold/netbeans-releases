@@ -44,7 +44,9 @@
 
 package org.netbeans.modules.openide.filesystems.declmime;
 
-import org.openide.util.Utilities;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
  *
@@ -96,4 +98,62 @@ class Util {
     static boolean contains(String[] where, String what, boolean caseInsensitiv) {                    
         return indexOf(where, what, caseInsensitiv) != -1;
     }    
+    
+    static void writeUTF(DataOutput os, String s) throws IOException {
+        if (s == null) {
+            s = "\u0000";
+        }
+        os.writeUTF(s);
+    }
+    
+    static String readUTF(DataInput in) throws IOException {
+        String s = in.readUTF();
+        if ("\u0000".equals(s)) {
+            return null;
+        }
+        return s;
+    }
+
+    static void writeStrings(DataOutput out, String[] arr) throws IOException {
+        if (arr == null) {
+            out.writeInt(-1);
+            return;
+        }
+        out.writeInt(arr.length);
+        for (String m : arr) {
+            writeUTF(out, m);
+        }
+    }
+
+    static String[] readStrings(DataInput in) throws IOException {
+        final int len = in.readInt();
+        if (len == -1) {
+            return null;
+        }
+        final String[] arr = new String[len];
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = readUTF(in);
+        }
+        return arr;
+    }
+
+    static void writeBytes(DataOutput out, byte[] arr) throws IOException {
+        if (arr == null) {
+            out.writeInt(-1);
+        } else {
+            out.writeInt(arr.length);
+            out.write(arr);
+        }
+    }
+    
+    static byte[] readBytes(DataInput is) throws IOException {
+        int len = is.readInt();
+        if (len == -1) {
+            return null;
+        } else {
+            byte[] arr = new byte[len];
+            is.readFully(arr);
+            return arr;
+        }
+    }
 }

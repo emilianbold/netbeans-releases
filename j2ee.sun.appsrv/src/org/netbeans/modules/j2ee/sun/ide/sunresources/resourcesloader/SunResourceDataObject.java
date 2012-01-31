@@ -82,17 +82,20 @@ import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.JavaMailSessionBeanD
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.PersistenceManagerBean;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.PersistenceManagerBeanDataNode;
 
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.*;
 import org.openide.util.WeakListeners;
 
 /** Represents a SunResource object in the Repository.
  *
  * @author nityad
  */
+@NbBundle.Messages("GlassfishRecognizer=GlassFish Resources Files")
+@MIMEResolver.ExtensionRegistration(
+    displayName="#GlassfishRecognizer",
+    extension="sun-resource",
+    position=890,
+    mimeType="text/x-sun-resource+xml"
+)
 public class SunResourceDataObject extends XMLDataObject implements FileChangeListener { // extends MultiDataObject{
     private static final Logger LOG = Logger.getLogger(SunResourceDataObject.class.getName());
 

@@ -71,6 +71,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 import static java.util.logging.Level.FINER;
+import org.openide.filesystems.MIMEResolver;
 
 
 /**
@@ -79,6 +80,12 @@ import static java.util.logging.Level.FINER;
  *
  * @author Ian Formanek
  */
+@MIMEResolver.ExtensionRegistration(
+    displayName="#PropertiesResolver",
+    extension="properties",
+    mimeType="text/x-properties",
+    position=120
+)
 public final class PropertiesDataObject extends MultiDataObject implements CookieSet.Factory {
 
     /** Generated Serialized Version UID. */

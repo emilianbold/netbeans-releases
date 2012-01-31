@@ -59,8 +59,15 @@ import org.netbeans.modules.dbschema.DBElementProvider;
 import org.netbeans.modules.dbschema.SchemaElement;
 import org.netbeans.modules.dbschema.SchemaElementUtil;
 import org.netbeans.modules.dbschema.nodes.SchemaRootChildren;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Lookup;
 
+@MIMEResolver.ExtensionRegistration(
+    displayName="org.netbeans.modules.dbschema.resources.Bundle#DBSchemaResolver",
+    extension="dbschema",
+    mimeType="text/x-dbschema+xml",
+    position=1010
+)
 public class DBschemaDataObject extends MultiDataObject {
   
     transient protected SchemaElement schemaElement;

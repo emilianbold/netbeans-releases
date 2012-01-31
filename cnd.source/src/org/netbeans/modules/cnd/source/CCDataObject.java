@@ -47,14 +47,17 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
 /** Represents a C++ object in the Repository */
+@MIMEResolver.Registration(displayName="#ExtResolver", position=214, resource="resources/mime-resolver-ext-based.xml")
 public class CCDataObject extends SourceDataObject {
 
+    @MIMEResolver.Registration(displayName="#ContentResolver", position=470, resource="resources/mime-resolver-content-based.xml")
     /** Serial version number */
     static final long serialVersionUID = -5855103267479484214L;
 

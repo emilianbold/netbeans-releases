@@ -50,10 +50,10 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
-import org.openide.nodes.CookieSet;
 
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.MultiDataObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
@@ -62,6 +62,8 @@ import org.openide.windows.TopComponent;
 /**
  *  Represents a Shell object in the Repository.
  */
+@Messages("ShellResolver=Common Shell Extensions")
+@MIMEResolver.Registration(displayName="#ShellResolver", position=139, resource="../resources/mime-resolver.xml")
 public class ShellDataObject extends MultiDataObject {
 
     /** Serial version number */

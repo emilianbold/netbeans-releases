@@ -103,6 +103,7 @@ import org.openide.util.lookup.Lookups;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.xml.multiview.XmlMultiViewElement;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
@@ -110,7 +111,16 @@ import org.openide.windows.TopComponent;
  *
  * @author Michal Skvor, Anton Chechel
  */
-@Messages("CTL_SourceTabCaption=Source") // NOI18N
+@Messages({
+    "CTL_SourceTabCaption=Source",
+    "WSClientResolver=Mobility End to End Files"
+}) // NOI18N
+@MIMEResolver.ExtensionRegistration(
+    displayName="#WSClientResolver",
+    extension="wsclient",
+    mimeType="text/x-wsclient",
+    position=1000
+)
 public class E2EDataObject extends XmlMultiViewDataObject {
     public static final String PROP_GENERATING = "generating"; // NOI18N
     public static final String ICON_BASE = "org/netbeans/modules/mobility/end2end/DDDataIcon.gif"; // NOI18N

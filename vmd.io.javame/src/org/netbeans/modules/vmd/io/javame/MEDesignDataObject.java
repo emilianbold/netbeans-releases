@@ -68,6 +68,12 @@ import org.openide.util.UserQuestionException;
 /**
  * @author David Kaspar
  */
+@MIMEResolver.ExtensionRegistration(
+    mimeType="text/x-vmd",
+    position=159,
+    displayName="#VMDResolver",
+    extension="vmd"
+)
 public final class MEDesignDataObject extends J2MEDataObject implements DataObjectInterface, FileChangeListener {
 
 //    private FileObject javaFile;
