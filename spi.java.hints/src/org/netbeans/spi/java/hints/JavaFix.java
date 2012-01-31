@@ -46,6 +46,7 @@ import com.sun.source.util.TreePath;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -154,6 +155,16 @@ public abstract class JavaFix {
             @Override
             public Fix rewriteFix(CompilationInfo info, String displayName, TreePath what, String to, Map<String, TreePath> parameters, Map<String, Collection<? extends TreePath>> parametersMulti, Map<String, String> parameterNames, Map<String, TypeMirror> constraints, Map<String, String> options, String... imports) {
                 return JavaFixUtilities.rewriteFix(info, displayName, what, to, parameters, parametersMulti, parameterNames, constraints, options, imports);
+            }
+
+            @Override
+            public Fix createSuppressWarningsFix(CompilationInfo compilationInfo, TreePath treePath, String... keys) {
+                return ErrorDescriptionFactory.createSuppressWarningsFix(compilationInfo, treePath, keys);
+            }
+
+            @Override
+            public List<Fix> createSuppressWarnings(CompilationInfo compilationInfo, TreePath treePath, String... keys) {
+                return ErrorDescriptionFactory.createSuppressWarnings(compilationInfo, treePath, keys);
             }
         };
     }

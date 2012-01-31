@@ -310,7 +310,7 @@ public class ErrorDescriptionFactory {
      * @throws IllegalArgumentException if keys are null or empty or id no suitable element
      *         to put the annotation on is found (e.g. if TreePath to CompilationUnit is given")
      */
-    public static Fix createSuppressWarningsFix(CompilationInfo compilationInfo, TreePath treePath, String... keys ) {
+    static Fix createSuppressWarningsFix(CompilationInfo compilationInfo, TreePath treePath, String... keys ) {
         Parameters.notNull("compilationInfo", compilationInfo);
         Parameters.notNull("treePath", treePath);
         Parameters.notNull("keys", keys);
@@ -344,7 +344,7 @@ public class ErrorDescriptionFactory {
      * @throws IllegalArgumentException if keys are null or empty or id no suitable element
      *         to put the annotation on is found (e.g. if TreePath to CompilationUnit is given")
      */
-    public static List<Fix> createSuppressWarnings(CompilationInfo compilationInfo, TreePath treePath, String... keys ) {
+    static List<Fix> createSuppressWarnings(CompilationInfo compilationInfo, TreePath treePath, String... keys ) {
         Parameters.notNull("compilationInfo", compilationInfo);
         Parameters.notNull("treePath", treePath);
         Parameters.notNull("keys", keys);
@@ -360,11 +360,6 @@ public class ErrorDescriptionFactory {
         } else {
             return Collections.emptyList();
         }
-    }
-
-    //XXX: probably should not be in the "SPI"
-    public static boolean isSuppressWarningsFix(Fix f) {
-        return f instanceof FixImpl;
     }
 
     private static boolean isSuppressWarningsSupported(CompilationInfo info) {

@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.spiimpl.JavaFixImpl;
 import org.netbeans.spi.editor.hints.Fix;
 
 /** Factory for creating fixes, which add @SuppressWarnings to given Element
@@ -91,7 +92,7 @@ public final class FixFactory {
      *         to put the annotation on is found (e.g. if TreePath to CompilationUnit is given")
      */
     public static Fix createSuppressWarningsFix(CompilationInfo compilationInfo, TreePath treePath, String... keys ) {
-        return org.netbeans.spi.java.hints.support.FixFactory.createSuppressWarningsFix(compilationInfo, treePath, keys);
+        return JavaFixImpl.Accessor.INSTANCE.createSuppressWarningsFix(compilationInfo, treePath, keys);
     }
 
     /** Creates a fix, which when invoked adds @SuppresWarnings(keys) to
@@ -105,14 +106,13 @@ public final class FixFactory {
      *         to put the annotation on is found (e.g. if TreePath to CompilationUnit is given")
      */ 
     public static List<Fix> createSuppressWarnings(CompilationInfo compilationInfo, TreePath treePath, String... keys ) {
-        return org.netbeans.spi.java.hints.support.FixFactory.createSuppressWarnings(compilationInfo, treePath, keys);
+        return JavaFixImpl.Accessor.INSTANCE.createSuppressWarnings(compilationInfo, treePath, keys);
     }
 
-    //XXX: probably should not be in the "SPI"
-    @Deprecated
     /**
      * Do not use.
      */
+    @Deprecated
     public static boolean isSuppressWarningsFix(Fix f) {
         return false;
     }

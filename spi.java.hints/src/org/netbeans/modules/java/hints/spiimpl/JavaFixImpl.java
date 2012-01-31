@@ -46,6 +46,7 @@ import com.sun.source.util.TreePath;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
@@ -106,5 +107,7 @@ public final class JavaFixImpl implements Fix {
         public abstract FileObject getFile(JavaFix jf);
         public abstract Map<String, String> getOptions(JavaFix jf);
         public abstract Fix rewriteFix(CompilationInfo info, String displayName, TreePath what, final String to, Map<String, TreePath> parameters, Map<String, Collection<? extends TreePath>> parametersMulti, final Map<String, String> parameterNames, Map<String, TypeMirror> constraints, Map<String, String> options, String... imports);
+        public abstract Fix createSuppressWarningsFix(CompilationInfo compilationInfo, TreePath treePath, String... keys);
+        public abstract List<Fix> createSuppressWarnings(CompilationInfo compilationInfo, TreePath treePath, String... keys);
     }
 }
