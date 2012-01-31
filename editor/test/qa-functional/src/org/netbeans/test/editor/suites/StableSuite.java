@@ -63,8 +63,8 @@ public class StableSuite {
                 .addTest(GeneralTypingTest.class, "testJavaEnterBeginAndEnd")
                 .addTest(MainMenuTest.class, "testMainMenu")
                 .addTest(IncrementalSearchTest.class,
-                         //"testSearchForward",  //failing on windows -> removing from stable suite
-                         //"testSearchBackwards",
+                         "testSearchForward",
+                         "testSearchBackwards",
                          "testMatchCase",
                          "testNextButton",
                          "testPrevButton",
@@ -72,12 +72,10 @@ public class StableSuite {
                          "testNotFound",
                          "testInvalidRegexp",
                          "testSearchForwardBackward",
-                         //"testWholeWords",
+                         "testWholeWords",
                          "testRegularExpression",
                          "testFindNext",
-                         "testFindPrev")
-                .addTest(ReplaceTest.class)
-                .addTest(KeyMapTest.class, "prepareFileInEditor")
+                         "testFindPrev")                                
                 .addTest(KeyMapTest.class, "testVerify")
                 .addTest(KeyMapTest.class, "testAddDuplicateCancel")
                 .addTest(KeyMapTest.class, "testAddShortcut")
@@ -85,9 +83,9 @@ public class StableSuite {
                 .addTest(KeyMapTest.class, "testAssignAlternativeShortcut")
                 //.addTest(KeyMapTest.class, "testProfileRestore")//fails due to issue 151254
                 .addTest(KeyMapTest.class, "testProfileDuplicte")
-                .addTest(KeyMapTest.class, "testHelp")
-                .addTest(KeyMapTest.class, "closeProject").clusters(".*").enableModules(".*")
+                .addTest(KeyMapTest.class, "testHelp")                  
                 //.addTest(AbbreviationsAddRemovePerformer.class) // unstable
+                .clusters(".*").enableModules(".*")
                 );
     }
 }
