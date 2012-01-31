@@ -96,7 +96,7 @@ public class DataObjectFactoryProcessor extends LayerGeneratingProcessor {
             }
             LayerBuilder builder = layer(e);
             //need class name to generate id and factory dataObjectClass parameter
-            String className = e.asType().toString();
+            String className = processingEnv.getElementUtils().getBinaryName((TypeElement)e).toString();
             String factoryId = className.replace(".", "-");
 
             boolean useFactory = true;
@@ -119,7 +119,7 @@ public class DataObjectFactoryProcessor extends LayerGeneratingProcessor {
                 }
                 // nothing is found 
                 if (ee.isEmpty()) {
-                    throw new LayerGenerationException("Usage of @DataObject.Registration on a DataObject subclass need a public constructor with FileObject and MultiFileLoader parameters", e, processingEnv, dfr); // NOI18N
+                    throw new LayerGenerationException("DataObject subclass with @DataObject.Registration needs a public constructor with FileObject and MultiFileLoader parameters", e, processingEnv, dfr); // NOI18N
                 } else {
                     useFactory = true;
                 }
@@ -134,14 +134,13 @@ public class DataObjectFactoryProcessor extends LayerGeneratingProcessor {
                     }
                 }
                 if (ee.isEmpty()) {
-                    throw new LayerGenerationException("Usage of @DataObject.Registration on a DataObject.Factory subclass need a public default constructor", e, processingEnv, dfr); // NOI18N
+                    throw new LayerGenerationException("DataObject.Factory subclass with @DataObject.Registration needs a public default constructor", e, processingEnv, dfr); // NOI18N
                 } else {
                     useFactory = false;
-                    factoryId = e.asType().toString().replace(".class", "").replace(".", "-");
+                    factoryId = className.replace(".class", "").replace(".", "-");
                 }
             } else {
-                throw new LayerGenerationException("Usage of @DataObject.Registration must be done on DataObject.Factory subclass or DataObject subclass", e, processingEnv, dfr); // NOI18N
-
+                throw new LayerGenerationException("Usage @DataObject.Registration only on DataObject.Factory subclass or DataObject subclass", e, processingEnv, dfr); // NOI18N
             }
 
             // check if mimeType annotation is set
