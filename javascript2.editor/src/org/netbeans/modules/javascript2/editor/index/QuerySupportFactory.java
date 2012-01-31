@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,57 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor.index;
 
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.csl.api.ElementHandle;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Petr Pisl
  */
-public interface JsElement extends ElementHandle {
-
-    public enum Kind {
-
-        FUNCTION(1),
-        METHOD(2),
-        CONSTRUCTOR(3),
-        OBJECT(4),
-        PROPERTY(5),
-        VARIABLE(6),
-        FIELD(7),
-        FILE(8),
-        PARAMETER(9);
-        
-        private final int id;
-        private static Map<Integer, Kind> lookup = new HashMap<Integer, Kind>();
-        
-        static {
-            for (Kind kind : EnumSet.allOf(Kind.class)) {
-                lookup.put(kind.getId(), kind);
-            }
+public class QuerySupportFactory {
+    
+    public static QuerySupport get(final Collection<FileObject> roots) {
+        try {
+            return QuerySupport.forRoots(JsIndexer.Factory.NAME,
+                    JsIndexer.Factory.VERSION,
+                    roots.toArray(new FileObject[roots.size()]));
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        
-        private Kind(int id) {
-            this.id = id;
-        }
-        
-        public int getId() {
-            return this.id;
-        }
-        
-        public static  Kind fromId(int id) {
-            return lookup.get(id);
-        }
-        
+        return null;
     }
-
-    int getOffset();
-
-    Kind getJSKind();
+    
+    public static QuerySupport get(final FileObject source) {
+        return get(QuerySupport.findRoots(source,
+                null,
+                null,
+                Collections.<String>emptySet()));
+    }
 }

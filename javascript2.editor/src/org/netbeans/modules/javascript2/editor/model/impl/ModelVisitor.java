@@ -81,9 +81,6 @@ public class ModelVisitor extends PathNodeVisitor {
     JsObjectImpl fromAN = null;
     @Override
     public Node visit(AccessNode accessNode, boolean onset) {
-        System.out.println("visiting AN: " + accessNode);
-        System.out.println("     base: " + accessNode.getBase() + " " + accessNode.getBase().getClass().getSimpleName());
-        System.out.println("     property: " + accessNode.getProperty());
         if(onset) {
 //            System.out.println("AccessNode: " + accessNode);
             BinaryNode node = getPath().get(getPath().size() - 1) instanceof BinaryNode
@@ -124,7 +121,6 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (property != null) {
                     property.addOccurrence(new OffsetRange(accessNode.getProperty().getStart(), accessNode.getProperty().getFinish()));
                     fromAN = property;
-                    System.out.println("add occurrence of " + accessNode.getProperty().getName() + " to object " + property.getName() + " parent object " + fromAN.getName());
                 }                
             }
             if (!(getPath().get(getPath().size() - 1) instanceof AccessNode)) {
@@ -211,7 +207,6 @@ public class ModelVisitor extends PathNodeVisitor {
                     for (int i = 1; i < name.size(); i++) {
                         Identifier iden = name.get(i);
                         property = parent.getProperty(iden.getName());
-                        System.out.println("parent: " + parent.isDeclared());
                         if (property == null) {
                             if(!parent.isDeclared()) {
                                 property = new JsObjectImpl(parent, iden, iden.getOffsetRange());
@@ -328,7 +323,6 @@ public class ModelVisitor extends PathNodeVisitor {
     @Override
     public Node visit(ObjectNode objectNode, boolean onset) {
         Node previousVisited = getPath().get(getPath().size() - (onset ? 1 : 2));
-        System.out.println("previous node : " + previousVisited.getClass().getSimpleName() + ", onset: " + onset);
         if (onset) {
             if(previousVisited instanceof CallNode) {
                 // TODO there should be handled anonymous object that are going as parameter to a funciton
@@ -420,7 +414,6 @@ public class ModelVisitor extends PathNodeVisitor {
             if (Token.descType(unaryNode.getToken()) == TokenType.NEW) {
                 if (unaryNode.rhs() instanceof CallNode
                         && ((CallNode)unaryNode.rhs()).getFunction() instanceof IdentNode) {
-                    System.out.println("pridan new assignment");
                     modelBuilder.getCurrentObject().addAssignment(
                             ((IdentNode)((CallNode)unaryNode.rhs()).getFunction()).getName(), unaryNode.getStart());
                 }
