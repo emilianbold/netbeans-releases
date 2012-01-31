@@ -234,7 +234,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         }
         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
         JsIndex index = JsIndex.get(fo);
-        Collection<IndexedElement> fromIndex = index.getGlobalVar();
+        Collection<IndexedElement> fromIndex = index.getGlobalVar(request.prefix);
         for (IndexedElement indexedElement : fromIndex) {
             resultList.add(JsCompletionItem.Factory.create(indexedElement, request));
         }

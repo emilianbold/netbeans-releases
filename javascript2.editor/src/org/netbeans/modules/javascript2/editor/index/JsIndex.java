@@ -104,12 +104,16 @@ public class JsIndex {
         return Collections.<IndexResult>emptySet();
     }
     
-    public Collection <IndexedElement> getGlobalVar() {
+    public Collection <IndexedElement> getGlobalVar(String prefix) {
         Collection<? extends IndexResult> results = query(
                 JsIndex.FIELD_IS_GLOBAL, "1", QuerySupport.Kind.EXACT, TERMS_BASIC_INFO); //NOI18N
         Collection<IndexedElement> result = new ArrayList<IndexedElement>();
+        prefix = prefix == null ? "" : prefix;
         for (IndexResult indexResult : results) {
-            result.add(IndexedElement.create(indexResult));
+            IndexedElement indexedElement = IndexedElement.create(indexResult);
+            if (indexedElement.getName().startsWith(prefix)) {
+                result.add(IndexedElement.create(indexResult));
+            }
         }
         return result;
     }
