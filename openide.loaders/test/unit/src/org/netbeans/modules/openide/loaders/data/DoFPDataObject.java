@@ -53,7 +53,7 @@ import org.openide.util.HelpCtx;
  * @see DataObjectFactoryProcessorTest
  * @author Eric Barboni <skygo@netbeans.org>
  */
-@DataObject.Registration(mimeType =  {"text/test1","text/test2"}, label = "labeltest", position = 3565, icon = "org/openide/loaders/unknow.gif")
+@DataObject.Registration(mimeType =  {"text/test1","text/test2"}, displayName = "labeltest", position = 3565, iconBase = "org/openide/loaders/unknow.gif")
 public class DoFPDataObject extends DataObject {
 
     public DoFPDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {

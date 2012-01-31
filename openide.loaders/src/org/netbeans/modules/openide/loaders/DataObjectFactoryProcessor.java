@@ -90,9 +90,6 @@ public class DataObjectFactoryProcessor extends LayerGeneratingProcessor {
 
 
         for (Element e : roundEnv.getElementsAnnotatedWith(DataObject.Registration.class)) {
-
-
-
             DataObject.Registration dfr = e.getAnnotation(DataObject.Registration.class);
             LayerBuilder builder = layer(e);
             //need class name to generate id and factory dataObjectClass parameter
@@ -159,16 +156,16 @@ public class DataObjectFactoryProcessor extends LayerGeneratingProcessor {
             for (String aMimeType : dfr.mimeType()) {
                 LayerBuilder.File f = builder.file("Loaders/" + aMimeType + "/Factories/" + factoryId + ".instance");
 
-                // icon is optional but if set then shoud be in classpath
-                if (dfr.icon().length() > 0) {
-                    builder.validateResource(dfr.icon(), e.getEnclosingElement(), dfr, "icon", true);
-                    f.stringvalue("iconBase", dfr.icon());
+                // iconBase is optional but if set then shoud be in classpath
+                if (dfr.iconBase().length() > 0) {
+                    builder.validateResource(dfr.iconBase(), e.getEnclosingElement(), dfr, "icon", true);
+                    f.stringvalue("iconBase", dfr.iconBase());
                 }
                 // position LayerBuilder 
                 f.position(dfr.position());
 
-                if (!dfr.label().isEmpty()) {
-                    f.bundlevalue("displayName", dfr.label(), dfr, "displayName");
+                if (!dfr.displayName().isEmpty()) {
+                    f.bundlevalue("displayName", dfr.displayName(), dfr, "displayName");
                 }
 
                 if (useFactory) {

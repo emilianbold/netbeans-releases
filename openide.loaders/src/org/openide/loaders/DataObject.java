@@ -1169,35 +1169,43 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         public void removePropertyChangeListener (PropertyChangeListener l);
     }
 
-    /** Registers a DataObject factory.
-      * Type level Annotation. Type must extends either (@link org.openide.loaders.DataObject.Factory) or 
-      * (@link org.openide.loaders.DataObject).
-      * @since 7.36
-      */
-      @Retention(RetentionPolicy.SOURCE)
-      @Target({ElementType.TYPE})
-      public static @interface Registration {
-            /**
-             * List of mimeTypes to register to.
-             */
-           String[] mimeType();
-             
-             /**
-              * Label of the Dataloader.
-              */
-           String label() default "";
-             
-             /**
-              * Optional icon to illustrate Dataloader.
-              */
-           String icon() default "";
-             
-             /**
-              * Optional position.
-              */
-           int position() default Integer.MAX_VALUE;
-                         
-        }
+    /** Registers new file type into the system.
+     * Apply this annotation to a class that extends either 
+     * (@link org.openide.loaders.DataObject.Factory) or 
+     *(@link org.openide.loaders.DataObject). This methods generates
+     * a layer registration as described by {@link DataLoaderPool#factory(java.lang.Class, java.lang.String, java.awt.Image)}.
+     * 
+     * @since 7.36
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE})
+    public static @interface Registration {
+        /**
+         * Mime type or list of mime types to recognize. Use 
+         * {@link MIMEResolver.ExtensionRegistration} and co. to assign
+         * a mime types to {@link FileObject files} in the system.
+         */
+        String[] mimeType();
+
+        /**
+         * Display name for the file type created by this registration.
+         */
+        String displayName() default "";
+
+        /**
+         * Path to icon to be used by default for nodes created by
+         * this registration. 
+         */
+        String iconBase() default "";
+
+        /**
+         * Position of the registration among other {@link DataObject.Factory 
+         * factories} registered for the given
+         * {@link #mimeType() mime type}.
+         */
+        int position() default Integer.MAX_VALUE;
+    }
+    
     /** Registry of modified data objects.
      * The registry permits attaching of a change listener
     * to be informed when the count of modified objects changes.
