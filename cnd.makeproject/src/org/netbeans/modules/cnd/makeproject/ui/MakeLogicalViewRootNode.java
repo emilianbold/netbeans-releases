@@ -147,9 +147,9 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 
         brokenLinks = provider.hasBrokenLinks();
         brokenIncludes = hasBrokenIncludes(provider.getProject());
-        if (provider.getMakeConfigurationDescriptor() != null) {
+        if (gotMakeConfigurationDescriptor()) {
             incorrectVersion = !isCorectVersion(provider.getMakeConfigurationDescriptor().getVersion());
-            if (incorrectVersion && children.getFolder() != null) {
+            if (incorrectVersion) {
                 EventQueue.invokeLater(new Runnable() {
 
                     @Override
