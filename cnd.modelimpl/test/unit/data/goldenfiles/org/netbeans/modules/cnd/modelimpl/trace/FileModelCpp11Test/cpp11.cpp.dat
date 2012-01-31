@@ -2,7 +2,7 @@
 State of macro map:
 Own Map:
 MACROS (sorted 1):
-<U>#define '["GREEKPI",<ID>,line=292,col=9],offset=6367,file=null'='["3.1415",<FLOATONE>,line=292,col=17],offset=6375,file=null'
+<U>#define '["GREEKPI",<ID>,line=292,col=9],offset=6359,file=null'='["3.1415",<FLOATONE>,line=292,col=17],offset=6367,file=null'
 System Map:
 MACROS (sorted 0):
 
@@ -11,7 +11,7 @@ MACROS (sorted 0):
 Includes:
     <no includes>
 Macros:
-#define 'GREEKPI' [292:1/6359-292:23/6381]
+#define 'GREEKPI' [292:1/6351-292:23/6373]
 CLASS A (A ) [5:1/105-8:2/150] lcurly=113 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
@@ -233,129 +233,130 @@ CLASS SomeType<bool Test> (SomeType ) [191:1/3653-192:2/3695] lcurly=3688 SCOPE:
     BASE CLASSES:
     MEMBERS:
 VARIABLE x1 [193:1/3697-193:33/3729]  TYPE: $unresolved$::std::vector TEXT=std::vector<SomeType<(1>2)> >  [193:1/3697-193:29/3725]  INIT: null  SCOPE: $Global$ 
-STRUCT Point (Point ) [211:1/4097-215:2/4186] lcurly=4111 SCOPE: $Global$ 
+CLASS_FORWARD_DECLARATION SomeType [200:1/3805-201:16/3874]
+STRUCT Point (Point ) [211:1/4089-215:2/4178] lcurly=4103 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        FUNCTION DEFINITION Point  [212:5/4117-212:15/4127] ConstructorDDImpl SCOPE: Point 
+        FUNCTION DEFINITION Point  [212:5/4109-212:15/4119] ConstructorDDImpl SCOPE: Point 
             SIGNATURE Point()
             UNIQUE NAME f:Point::Point()
-            DECLARATION: Point  [212:5/4117-212:15/4127]
+            DECLARATION: Point  [212:5/4109-212:15/4119]
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]
-            STATEMENT COMPOUND  [212:13/4125-212:15/4127] SCOPE: Point 
-        FUNCTION DEFINITION Point  [213:5/4132-213:41/4168] ConstructorDDImpl SCOPE: Point 
+            STATEMENT COMPOUND  [212:13/4117-212:15/4119] SCOPE: Point 
+        FUNCTION DEFINITION Point  [213:5/4124-213:41/4160] ConstructorDDImpl SCOPE: Point 
             SIGNATURE Point(int,int)
             UNIQUE NAME f:Point::Point(int,int)
-            DECLARATION: Point  [213:5/4132-213:41/4168]
+            DECLARATION: Point  [213:5/4124-213:41/4160]
             PARAMETERS:
-                x [213:11/4138-213:16/4143]  TYPE: int TEXT=int  [213:11/4138-213:14/4141]  INIT: null  SCOPE: Point 
-                y [213:18/4145-213:23/4150]  TYPE: int TEXT=int  [213:18/4145-213:21/4148]  INIT: null  SCOPE: Point 
+                x [213:11/4130-213:16/4135]  TYPE: int TEXT=int  [213:11/4130-213:14/4133]  INIT: null  SCOPE: Point 
+                y [213:18/4137-213:23/4142]  TYPE: int TEXT=int  [213:18/4137-213:21/4140]  INIT: null  SCOPE: Point 
             RETURNS <*no_classifier*> TEXT=  [null-null]
-            STATEMENT COMPOUND  [213:39/4166-213:41/4168] SCOPE: Point 
-        FIELD PUBLIC x_ [214:9/4177-214:11/4179]  TYPE: int TEXT=int  [214:5/4173-214:8/4176]  INIT: null  SCOPE: Point 
-        FIELD PUBLIC y_ [214:13/4181-214:15/4183]  TYPE: int TEXT=int  [214:5/4173-214:8/4176]  INIT: null  SCOPE: Point 
-UNION U (U ) [216:1/4188-222:2/4530] lcurly=4196 SCOPE: $Global$ 
+            STATEMENT COMPOUND  [213:39/4158-213:41/4160] SCOPE: Point 
+        FIELD PUBLIC x_ [214:9/4169-214:11/4171]  TYPE: int TEXT=int  [214:5/4165-214:8/4168]  INIT: null  SCOPE: Point 
+        FIELD PUBLIC y_ [214:13/4173-214:15/4175]  TYPE: int TEXT=int  [214:5/4165-214:8/4168]  INIT: null  SCOPE: Point 
+UNION U (U ) [216:1/4180-222:2/4522] lcurly=4188 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        FIELD PUBLIC z [217:5/4202-217:11/4208]  TYPE: int TEXT=int  [217:5/4202-217:8/4205]  INIT: null  SCOPE: U 
-        FIELD PUBLIC w [218:5/4213-218:14/4222]  TYPE: double TEXT=double  [218:5/4213-218:11/4219]  INIT: null  SCOPE: U 
-        FIELD PUBLIC p [219:5/4227-219:13/4235]  TYPE: Point TEXT=Point  [219:5/4227-219:10/4232]  INIT: null  SCOPE: U 
-        FUNCTION DEFINITION U  [220:5/4331-220:31/4357] ConstructorDDImpl SCOPE: U 
+        FIELD PUBLIC z [217:5/4194-217:11/4200]  TYPE: int TEXT=int  [217:5/4194-217:8/4197]  INIT: null  SCOPE: U 
+        FIELD PUBLIC w [218:5/4205-218:14/4214]  TYPE: double TEXT=double  [218:5/4205-218:11/4211]  INIT: null  SCOPE: U 
+        FIELD PUBLIC p [219:5/4219-219:13/4227]  TYPE: Point TEXT=Point  [219:5/4219-219:10/4224]  INIT: null  SCOPE: U 
+        FUNCTION DEFINITION U  [220:5/4323-220:31/4349] ConstructorDDImpl SCOPE: U 
             SIGNATURE U()
             UNIQUE NAME f:U::U()
-            DECLARATION: U  [220:5/4331-220:31/4357]
+            DECLARATION: U  [220:5/4323-220:31/4349]
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]
-            STATEMENT COMPOUND  [220:9/4335-220:31/4357] SCOPE: U 
-                STATEMENT EXPRESSION  [220:11/4337-220:28/4354] SCOPE: Stmt  [220:9/4335-220:31/4357] text: 'new( &p ) Point()'
-CLASS_FORWARD_DECLARATION tuple [231:1/4798-231:42/4839]
-CLASS ClassName<typename...BaseClasses> (ClassName ) [233:1/4841-236:2/5007] lcurly=4916 SCOPE: $Global$ 
+            STATEMENT COMPOUND  [220:9/4327-220:31/4349] SCOPE: U 
+                STATEMENT EXPRESSION  [220:11/4329-220:28/4346] SCOPE: Stmt  [220:9/4327-220:31/4349] text: 'new( &p ) Point()'
+CLASS_FORWARD_DECLARATION tuple [231:1/4790-231:42/4831]
+CLASS ClassName<typename...BaseClasses> (ClassName ) [233:1/4833-236:2/4999] lcurly=4908 SCOPE: $Global$ 
     BASE CLASSES:
         CLASS=ClassName::BaseClasses VISIBILITY==PUBLIC virtual==false text='public BaseClasses'
     MEMBERS:
-        FUNCTION DEFINITION ClassName  [235:5/4930-235:80/5005] ConstructorDDImpl SCOPE: ClassName 
+        FUNCTION DEFINITION ClassName  [235:5/4922-235:80/4997] ConstructorDDImpl SCOPE: ClassName 
             SIGNATURE ClassName(BaseClasses&)
             UNIQUE NAME f:ClassName::ClassName(BaseClasses&)
-            DECLARATION: ClassName  [235:5/4930-235:80/5005]
+            DECLARATION: ClassName  [235:5/4922-235:80/4997]
             PARAMETERS:
-                base_classes [235:16/4941-235:45/4970]  TYPE: &ClassName::BaseClasses TEXT=BaseClasses&  [235:16/4941-235:29/4954]  INIT: null  SCOPE: ClassName 
+                base_classes [235:16/4933-235:45/4962]  TYPE: &ClassName::BaseClasses TEXT=BaseClasses&  [235:16/4933-235:29/4946]  INIT: null  SCOPE: ClassName 
             RETURNS <*no_classifier*> TEXT=  [null-null]
-            STATEMENT COMPOUND  [235:78/5003-235:80/5005] SCOPE: ClassName 
-STRUCT SomeStruct<typename...Args> (SomeStruct ) [237:1/5009-239:2/5102] lcurly=5054 SCOPE: $Global$ 
+            STATEMENT COMPOUND  [235:78/4995-235:80/4997] SCOPE: ClassName 
+STRUCT SomeStruct<typename...Args> (SomeStruct ) [237:1/5001-239:2/5094] lcurly=5046 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        FIELD PUBLIC static size [238:5/5060-238:45/5100]  TYPE: const int TEXT=const int  [238:5/5060-238:21/5076]  INIT: text='sizeof...(Args)'  SCOPE: SomeStruct 
-STRUCT NonCopyable (NonCopyable ) [270:1/5969-274:2/6124] lcurly=5988 SCOPE: $Global$ 
+        FIELD PUBLIC static size [238:5/5052-238:45/5092]  TYPE: const int TEXT=const int  [238:5/5052-238:21/5068]  INIT: text='sizeof...(Args)'  SCOPE: SomeStruct 
+STRUCT NonCopyable (NonCopyable ) [270:1/5961-274:2/6116] lcurly=5980 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        FUNCTION DEFINITION operator =  [271:5/5994-271:57/6046] MethodDDImpl SCOPE: NonCopyable 
+        FUNCTION DEFINITION operator =  [271:5/5986-271:57/6038] MethodDDImpl SCOPE: NonCopyable 
             SIGNATURE operator =(const NonCopyable&)
             UNIQUE NAME f:NonCopyable::operator =(const NonCopyable&)
-            DECLARATION: operator =  [271:5/5994-271:57/6046]
+            DECLARATION: operator =  [271:5/5986-271:57/6038]
             PARAMETERS:
-                 [271:29/6018-271:47/6036]  TYPE: const &NonCopyable TEXT=const NonCopyable&  [271:29/6018-271:34/6023]  INIT: null  SCOPE: operator = 
-            RETURNS &NonCopyable TEXT=NonCopyable&  [271:5/5994-271:18/6007]
-            STATEMENT COMPOUND  [271:5/5994-271:57/6046] SCOPE: operator = 
-        FUNCTION DEFINITION NonCopyable  [272:5/6052-272:45/6092] ConstructorDDImpl SCOPE: NonCopyable 
+                 [271:29/6010-271:47/6028]  TYPE: const &NonCopyable TEXT=const NonCopyable&  [271:29/6010-271:34/6015]  INIT: null  SCOPE: operator = 
+            RETURNS &NonCopyable TEXT=NonCopyable&  [271:5/5986-271:18/5999]
+            STATEMENT COMPOUND  [271:5/5986-271:57/6038] SCOPE: operator = 
+        FUNCTION DEFINITION NonCopyable  [272:5/6044-272:45/6084] ConstructorDDImpl SCOPE: NonCopyable 
             SIGNATURE NonCopyable(const NonCopyable&)
             UNIQUE NAME f:NonCopyable::NonCopyable(const NonCopyable&)
-            DECLARATION: NonCopyable  [272:5/6052-272:45/6092]
+            DECLARATION: NonCopyable  [272:5/6044-272:45/6084]
             PARAMETERS:
-                 [272:17/6064-272:35/6082]  TYPE: const &NonCopyable TEXT=const NonCopyable&  [272:17/6064-272:22/6069]  INIT: null  SCOPE: NonCopyable 
+                 [272:17/6056-272:35/6074]  TYPE: const &NonCopyable TEXT=const NonCopyable&  [272:17/6056-272:22/6061]  INIT: null  SCOPE: NonCopyable 
             RETURNS <*no_classifier*> TEXT=  [null-null]
-            STATEMENT COMPOUND  [272:5/6052-272:45/6092] SCOPE: NonCopyable 
-        FUNCTION DEFINITION NonCopyable  [273:5/6098-273:28/6121] ConstructorDDImpl SCOPE: NonCopyable 
+            STATEMENT COMPOUND  [272:5/6044-272:45/6084] SCOPE: NonCopyable 
+        FUNCTION DEFINITION NonCopyable  [273:5/6090-273:28/6113] ConstructorDDImpl SCOPE: NonCopyable 
             SIGNATURE NonCopyable()
             UNIQUE NAME f:NonCopyable::NonCopyable()
-            DECLARATION: NonCopyable  [273:5/6098-273:28/6121]
+            DECLARATION: NonCopyable  [273:5/6090-273:28/6113]
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]
-            STATEMENT COMPOUND  [273:5/6098-273:28/6121] SCOPE: NonCopyable 
-STRUCT NoInt (NoInt ) [276:1/6127-279:2/6191] lcurly=6140 SCOPE: $Global$ 
+            STATEMENT COMPOUND  [273:5/6090-273:28/6113] SCOPE: NonCopyable 
+STRUCT NoInt (NoInt ) [276:1/6119-279:2/6183] lcurly=6132 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        FUNCTION f [277:5/6146-277:22/6163] MethodImpl SCOPE: NoInt 
-            DEFINITION: f  [278:5/6168-278:25/6188]
+        FUNCTION f [277:5/6138-277:22/6155] MethodImpl SCOPE: NoInt 
+            DEFINITION: f  [278:5/6160-278:25/6180]
             SIGNATURE f(double)
             UNIQUE NAME F:NoInt::f(double)
             PARAMETERS:
-                i [277:12/6153-277:20/6161]  TYPE: double TEXT=double  [277:12/6153-277:18/6159]  INIT: null  SCOPE: f 
-            RETURNS void TEXT=void  [277:5/6146-277:9/6150]
-        FUNCTION DEFINITION f  [278:5/6168-278:25/6188] MethodDDImpl SCOPE: NoInt 
+                i [277:12/6145-277:20/6153]  TYPE: double TEXT=double  [277:12/6145-277:18/6151]  INIT: null  SCOPE: f 
+            RETURNS void TEXT=void  [277:5/6138-277:9/6142]
+        FUNCTION DEFINITION f  [278:5/6160-278:25/6180] MethodDDImpl SCOPE: NoInt 
             SIGNATURE f(int)
             UNIQUE NAME f:NoInt::f(int)
-            DECLARATION: f  [278:5/6168-278:25/6188]
+            DECLARATION: f  [278:5/6160-278:25/6180]
             PARAMETERS:
-                 [278:12/6175-278:15/6178]  TYPE: int TEXT=int  [278:12/6175-278:15/6178]  INIT: null  SCOPE: f 
-            RETURNS void TEXT=void  [278:5/6168-278:9/6172]
-            STATEMENT COMPOUND  [278:5/6168-278:25/6188] SCOPE: f 
-STRUCT OnlyDouble (OnlyDouble ) [281:1/6194-284:2/6279] lcurly=6212 SCOPE: $Global$ 
+                 [278:12/6167-278:15/6170]  TYPE: int TEXT=int  [278:12/6167-278:15/6170]  INIT: null  SCOPE: f 
+            RETURNS void TEXT=void  [278:5/6160-278:9/6164]
+            STATEMENT COMPOUND  [278:5/6160-278:25/6180] SCOPE: f 
+STRUCT OnlyDouble (OnlyDouble ) [281:1/6186-284:2/6271] lcurly=6204 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        FUNCTION f [282:5/6218-282:22/6235] MethodImpl SCOPE: OnlyDouble 
+        FUNCTION f [282:5/6210-282:22/6227] MethodImpl SCOPE: OnlyDouble 
             DEFINITION: null
             SIGNATURE f(double)
             UNIQUE NAME F:OnlyDouble::f(double)
             PARAMETERS:
-                d [282:12/6225-282:20/6233]  TYPE: double TEXT=double  [282:12/6225-282:18/6231]  INIT: null  SCOPE: f 
-            RETURNS void TEXT=void  [282:5/6218-282:9/6222]
-        FUNCTION DEFINITION f  [283:5/6240-283:41/6276] MethodDDImpl SCOPE: OnlyDouble 
+                d [282:12/6217-282:20/6225]  TYPE: double TEXT=double  [282:12/6217-282:18/6223]  INIT: null  SCOPE: f 
+            RETURNS void TEXT=void  [282:5/6210-282:9/6214]
+        FUNCTION DEFINITION f  [283:5/6232-283:41/6268] MethodDDImpl SCOPE: OnlyDouble 
             SIGNATURE f<class>(T)
             UNIQUE NAME f:OnlyDouble::f<class>(T)
-            DECLARATION: f  [283:5/6240-283:41/6276]
+            DECLARATION: f  [283:5/6232-283:41/6268]
             PARAMETERS:
-                 [283:30/6265-283:31/6266]  TYPE: OnlyDouble::f::T TEXT=T  [283:30/6265-283:31/6266]  INIT: null  SCOPE: f 
-            RETURNS void TEXT=void  [283:23/6258-283:27/6262]
-            STATEMENT COMPOUND  [283:5/6240-283:41/6276] SCOPE: f 
-VARIABLE i [288:1/6312-288:17/6328]  TYPE: long long int TEXT=long long int  [288:1/6312-288:14/6325]  INIT: null  SCOPE: $Global$ 
-STRUCT Check<class T> (Check ) [295:1/6463-298:2/6568] lcurly=6495 SCOPE: $Global$ 
+                 [283:30/6257-283:31/6258]  TYPE: OnlyDouble::f::T TEXT=T  [283:30/6257-283:31/6258]  INIT: null  SCOPE: f 
+            RETURNS void TEXT=void  [283:23/6250-283:27/6254]
+            STATEMENT COMPOUND  [283:5/6232-283:41/6268] SCOPE: f 
+VARIABLE i [288:1/6304-288:17/6320]  TYPE: long long int TEXT=long long int  [288:1/6304-288:14/6317]  INIT: null  SCOPE: $Global$ 
+STRUCT Check<class T> (Check ) [295:1/6455-298:2/6560] lcurly=6487 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-STRUCT SomeType (SomeType ) [302:1/6652-302:32/6683] lcurly=6668 SCOPE: $Global$ 
+STRUCT SomeType (SomeType ) [302:1/6644-302:32/6675] lcurly=6660 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        FIELD PUBLIC member [302:19/6670-302:30/6681]  TYPE: int TEXT=int  [302:19/6670-302:22/6673]  INIT: null  SCOPE: SomeType 
-VARIABLE j [303:1/6685-303:34/6718]  TYPE: int TEXT=int  [303:1/6685-303:4/6688]  INIT: text='sizeof(SomeType::member)'  SCOPE: $Global$ 
+        FIELD PUBLIC member [302:19/6662-302:30/6673]  TYPE: int TEXT=int  [302:19/6662-302:22/6665]  INIT: null  SCOPE: SomeType 
+VARIABLE j [303:1/6677-303:34/6710]  TYPE: int TEXT=int  [303:1/6677-303:4/6680]  INIT: text='sizeof(SomeType::member)'  SCOPE: $Global$ 
 
 ========== Dumping model of PROJECT DummyProject
 CLASS A (A ) [5:1/105-8:2/150] lcurly=113 SCOPE: $Global$ 
@@ -560,129 +561,129 @@ CLASS SomeType<bool Test> (SomeType ) [191:1/3653-192:2/3695] lcurly=3688 SCOPE:
     BASE CLASSES:
     MEMBERS:
 VARIABLE x1 [193:1/3697-193:33/3729]  TYPE: $unresolved$::std::vector TEXT=std::vector<SomeType<(1>2)> >  [193:1/3697-193:29/3725]  INIT: null  SCOPE: $Global$ 
-STRUCT Point (Point ) [211:1/4097-215:2/4186] lcurly=4111 SCOPE: $Global$ 
+STRUCT Point (Point ) [211:1/4089-215:2/4178] lcurly=4103 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        FUNCTION DEFINITION Point  [212:5/4117-212:15/4127] ConstructorDDImpl SCOPE: Point 
+        FUNCTION DEFINITION Point  [212:5/4109-212:15/4119] ConstructorDDImpl SCOPE: Point 
             SIGNATURE Point()
             UNIQUE NAME f:Point::Point()
-            DECLARATION: Point  [212:5/4117-212:15/4127]
+            DECLARATION: Point  [212:5/4109-212:15/4119]
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]
-            STATEMENT COMPOUND  [212:13/4125-212:15/4127] SCOPE: Point 
-        FUNCTION DEFINITION Point  [213:5/4132-213:41/4168] ConstructorDDImpl SCOPE: Point 
+            STATEMENT COMPOUND  [212:13/4117-212:15/4119] SCOPE: Point 
+        FUNCTION DEFINITION Point  [213:5/4124-213:41/4160] ConstructorDDImpl SCOPE: Point 
             SIGNATURE Point(int,int)
             UNIQUE NAME f:Point::Point(int,int)
-            DECLARATION: Point  [213:5/4132-213:41/4168]
+            DECLARATION: Point  [213:5/4124-213:41/4160]
             PARAMETERS:
-                x [213:11/4138-213:16/4143]  TYPE: int TEXT=int  [213:11/4138-213:14/4141]  INIT: null  SCOPE: Point 
-                y [213:18/4145-213:23/4150]  TYPE: int TEXT=int  [213:18/4145-213:21/4148]  INIT: null  SCOPE: Point 
+                x [213:11/4130-213:16/4135]  TYPE: int TEXT=int  [213:11/4130-213:14/4133]  INIT: null  SCOPE: Point 
+                y [213:18/4137-213:23/4142]  TYPE: int TEXT=int  [213:18/4137-213:21/4140]  INIT: null  SCOPE: Point 
             RETURNS <*no_classifier*> TEXT=  [null-null]
-            STATEMENT COMPOUND  [213:39/4166-213:41/4168] SCOPE: Point 
-        FIELD PUBLIC x_ [214:9/4177-214:11/4179]  TYPE: int TEXT=int  [214:5/4173-214:8/4176]  INIT: null  SCOPE: Point 
-        FIELD PUBLIC y_ [214:13/4181-214:15/4183]  TYPE: int TEXT=int  [214:5/4173-214:8/4176]  INIT: null  SCOPE: Point 
-UNION U (U ) [216:1/4188-222:2/4530] lcurly=4196 SCOPE: $Global$ 
+            STATEMENT COMPOUND  [213:39/4158-213:41/4160] SCOPE: Point 
+        FIELD PUBLIC x_ [214:9/4169-214:11/4171]  TYPE: int TEXT=int  [214:5/4165-214:8/4168]  INIT: null  SCOPE: Point 
+        FIELD PUBLIC y_ [214:13/4173-214:15/4175]  TYPE: int TEXT=int  [214:5/4165-214:8/4168]  INIT: null  SCOPE: Point 
+UNION U (U ) [216:1/4180-222:2/4522] lcurly=4188 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        FIELD PUBLIC z [217:5/4202-217:11/4208]  TYPE: int TEXT=int  [217:5/4202-217:8/4205]  INIT: null  SCOPE: U 
-        FIELD PUBLIC w [218:5/4213-218:14/4222]  TYPE: double TEXT=double  [218:5/4213-218:11/4219]  INIT: null  SCOPE: U 
-        FIELD PUBLIC p [219:5/4227-219:13/4235]  TYPE: Point TEXT=Point  [219:5/4227-219:10/4232]  INIT: null  SCOPE: U 
-        FUNCTION DEFINITION U  [220:5/4331-220:31/4357] ConstructorDDImpl SCOPE: U 
+        FIELD PUBLIC z [217:5/4194-217:11/4200]  TYPE: int TEXT=int  [217:5/4194-217:8/4197]  INIT: null  SCOPE: U 
+        FIELD PUBLIC w [218:5/4205-218:14/4214]  TYPE: double TEXT=double  [218:5/4205-218:11/4211]  INIT: null  SCOPE: U 
+        FIELD PUBLIC p [219:5/4219-219:13/4227]  TYPE: Point TEXT=Point  [219:5/4219-219:10/4224]  INIT: null  SCOPE: U 
+        FUNCTION DEFINITION U  [220:5/4323-220:31/4349] ConstructorDDImpl SCOPE: U 
             SIGNATURE U()
             UNIQUE NAME f:U::U()
-            DECLARATION: U  [220:5/4331-220:31/4357]
+            DECLARATION: U  [220:5/4323-220:31/4349]
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]
-            STATEMENT COMPOUND  [220:9/4335-220:31/4357] SCOPE: U 
-                STATEMENT EXPRESSION  [220:11/4337-220:28/4354] SCOPE: Stmt  [220:9/4335-220:31/4357] text: 'new( &p ) Point()'
-CLASS tuple<typename...Values> (tuple ) [231:1/4798-231:42/4839] lcurly=4838 SCOPE: $Global$ 
+            STATEMENT COMPOUND  [220:9/4327-220:31/4349] SCOPE: U 
+                STATEMENT EXPRESSION  [220:11/4329-220:28/4346] SCOPE: Stmt  [220:9/4327-220:31/4349] text: 'new( &p ) Point()'
+CLASS tuple<typename...Values> (tuple ) [231:1/4790-231:42/4831] lcurly=4830 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-CLASS ClassName<typename...BaseClasses> (ClassName ) [233:1/4841-236:2/5007] lcurly=4916 SCOPE: $Global$ 
+CLASS ClassName<typename...BaseClasses> (ClassName ) [233:1/4833-236:2/4999] lcurly=4908 SCOPE: $Global$ 
     BASE CLASSES:
         CLASS=ClassName::BaseClasses VISIBILITY==PUBLIC virtual==false text='public BaseClasses'
     MEMBERS:
-        FUNCTION DEFINITION ClassName  [235:5/4930-235:80/5005] ConstructorDDImpl SCOPE: ClassName 
+        FUNCTION DEFINITION ClassName  [235:5/4922-235:80/4997] ConstructorDDImpl SCOPE: ClassName 
             SIGNATURE ClassName(BaseClasses&)
             UNIQUE NAME f:ClassName::ClassName(BaseClasses&)
-            DECLARATION: ClassName  [235:5/4930-235:80/5005]
+            DECLARATION: ClassName  [235:5/4922-235:80/4997]
             PARAMETERS:
-                base_classes [235:16/4941-235:45/4970]  TYPE: &ClassName::BaseClasses TEXT=BaseClasses&  [235:16/4941-235:29/4954]  INIT: null  SCOPE: ClassName 
+                base_classes [235:16/4933-235:45/4962]  TYPE: &ClassName::BaseClasses TEXT=BaseClasses&  [235:16/4933-235:29/4946]  INIT: null  SCOPE: ClassName 
             RETURNS <*no_classifier*> TEXT=  [null-null]
-            STATEMENT COMPOUND  [235:78/5003-235:80/5005] SCOPE: ClassName 
-STRUCT SomeStruct<typename...Args> (SomeStruct ) [237:1/5009-239:2/5102] lcurly=5054 SCOPE: $Global$ 
+            STATEMENT COMPOUND  [235:78/4995-235:80/4997] SCOPE: ClassName 
+STRUCT SomeStruct<typename...Args> (SomeStruct ) [237:1/5001-239:2/5094] lcurly=5046 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        FIELD PUBLIC static size [238:5/5060-238:45/5100]  TYPE: const int TEXT=const int  [238:5/5060-238:21/5076]  INIT: text='sizeof...(Args)'  SCOPE: SomeStruct 
-STRUCT NonCopyable (NonCopyable ) [270:1/5969-274:2/6124] lcurly=5988 SCOPE: $Global$ 
+        FIELD PUBLIC static size [238:5/5052-238:45/5092]  TYPE: const int TEXT=const int  [238:5/5052-238:21/5068]  INIT: text='sizeof...(Args)'  SCOPE: SomeStruct 
+STRUCT NonCopyable (NonCopyable ) [270:1/5961-274:2/6116] lcurly=5980 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        FUNCTION DEFINITION operator =  [271:5/5994-271:57/6046] MethodDDImpl SCOPE: NonCopyable 
+        FUNCTION DEFINITION operator =  [271:5/5986-271:57/6038] MethodDDImpl SCOPE: NonCopyable 
             SIGNATURE operator =(const NonCopyable&)
             UNIQUE NAME f:NonCopyable::operator =(const NonCopyable&)
-            DECLARATION: operator =  [271:5/5994-271:57/6046]
+            DECLARATION: operator =  [271:5/5986-271:57/6038]
             PARAMETERS:
-                 [271:29/6018-271:47/6036]  TYPE: const &NonCopyable TEXT=const NonCopyable&  [271:29/6018-271:34/6023]  INIT: null  SCOPE: operator = 
-            RETURNS &NonCopyable TEXT=NonCopyable&  [271:5/5994-271:18/6007]
-            STATEMENT COMPOUND  [271:5/5994-271:57/6046] SCOPE: operator = 
-        FUNCTION DEFINITION NonCopyable  [272:5/6052-272:45/6092] ConstructorDDImpl SCOPE: NonCopyable 
+                 [271:29/6010-271:47/6028]  TYPE: const &NonCopyable TEXT=const NonCopyable&  [271:29/6010-271:34/6015]  INIT: null  SCOPE: operator = 
+            RETURNS &NonCopyable TEXT=NonCopyable&  [271:5/5986-271:18/5999]
+            STATEMENT COMPOUND  [271:5/5986-271:57/6038] SCOPE: operator = 
+        FUNCTION DEFINITION NonCopyable  [272:5/6044-272:45/6084] ConstructorDDImpl SCOPE: NonCopyable 
             SIGNATURE NonCopyable(const NonCopyable&)
             UNIQUE NAME f:NonCopyable::NonCopyable(const NonCopyable&)
-            DECLARATION: NonCopyable  [272:5/6052-272:45/6092]
+            DECLARATION: NonCopyable  [272:5/6044-272:45/6084]
             PARAMETERS:
-                 [272:17/6064-272:35/6082]  TYPE: const &NonCopyable TEXT=const NonCopyable&  [272:17/6064-272:22/6069]  INIT: null  SCOPE: NonCopyable 
+                 [272:17/6056-272:35/6074]  TYPE: const &NonCopyable TEXT=const NonCopyable&  [272:17/6056-272:22/6061]  INIT: null  SCOPE: NonCopyable 
             RETURNS <*no_classifier*> TEXT=  [null-null]
-            STATEMENT COMPOUND  [272:5/6052-272:45/6092] SCOPE: NonCopyable 
-        FUNCTION DEFINITION NonCopyable  [273:5/6098-273:28/6121] ConstructorDDImpl SCOPE: NonCopyable 
+            STATEMENT COMPOUND  [272:5/6044-272:45/6084] SCOPE: NonCopyable 
+        FUNCTION DEFINITION NonCopyable  [273:5/6090-273:28/6113] ConstructorDDImpl SCOPE: NonCopyable 
             SIGNATURE NonCopyable()
             UNIQUE NAME f:NonCopyable::NonCopyable()
-            DECLARATION: NonCopyable  [273:5/6098-273:28/6121]
+            DECLARATION: NonCopyable  [273:5/6090-273:28/6113]
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]
-            STATEMENT COMPOUND  [273:5/6098-273:28/6121] SCOPE: NonCopyable 
-STRUCT NoInt (NoInt ) [276:1/6127-279:2/6191] lcurly=6140 SCOPE: $Global$ 
+            STATEMENT COMPOUND  [273:5/6090-273:28/6113] SCOPE: NonCopyable 
+STRUCT NoInt (NoInt ) [276:1/6119-279:2/6183] lcurly=6132 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        FUNCTION f [277:5/6146-277:22/6163] MethodImpl SCOPE: NoInt 
-            DEFINITION: f  [278:5/6168-278:25/6188]
+        FUNCTION f [277:5/6138-277:22/6155] MethodImpl SCOPE: NoInt 
+            DEFINITION: f  [278:5/6160-278:25/6180]
             SIGNATURE f(double)
             UNIQUE NAME F:NoInt::f(double)
             PARAMETERS:
-                i [277:12/6153-277:20/6161]  TYPE: double TEXT=double  [277:12/6153-277:18/6159]  INIT: null  SCOPE: f 
-            RETURNS void TEXT=void  [277:5/6146-277:9/6150]
-        FUNCTION DEFINITION f  [278:5/6168-278:25/6188] MethodDDImpl SCOPE: NoInt 
+                i [277:12/6145-277:20/6153]  TYPE: double TEXT=double  [277:12/6145-277:18/6151]  INIT: null  SCOPE: f 
+            RETURNS void TEXT=void  [277:5/6138-277:9/6142]
+        FUNCTION DEFINITION f  [278:5/6160-278:25/6180] MethodDDImpl SCOPE: NoInt 
             SIGNATURE f(int)
             UNIQUE NAME f:NoInt::f(int)
-            DECLARATION: f  [278:5/6168-278:25/6188]
+            DECLARATION: f  [278:5/6160-278:25/6180]
             PARAMETERS:
-                 [278:12/6175-278:15/6178]  TYPE: int TEXT=int  [278:12/6175-278:15/6178]  INIT: null  SCOPE: f 
-            RETURNS void TEXT=void  [278:5/6168-278:9/6172]
-            STATEMENT COMPOUND  [278:5/6168-278:25/6188] SCOPE: f 
-STRUCT OnlyDouble (OnlyDouble ) [281:1/6194-284:2/6279] lcurly=6212 SCOPE: $Global$ 
+                 [278:12/6167-278:15/6170]  TYPE: int TEXT=int  [278:12/6167-278:15/6170]  INIT: null  SCOPE: f 
+            RETURNS void TEXT=void  [278:5/6160-278:9/6164]
+            STATEMENT COMPOUND  [278:5/6160-278:25/6180] SCOPE: f 
+STRUCT OnlyDouble (OnlyDouble ) [281:1/6186-284:2/6271] lcurly=6204 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        FUNCTION f [282:5/6218-282:22/6235] MethodImpl SCOPE: OnlyDouble 
+        FUNCTION f [282:5/6210-282:22/6227] MethodImpl SCOPE: OnlyDouble 
             DEFINITION: null
             SIGNATURE f(double)
             UNIQUE NAME F:OnlyDouble::f(double)
             PARAMETERS:
-                d [282:12/6225-282:20/6233]  TYPE: double TEXT=double  [282:12/6225-282:18/6231]  INIT: null  SCOPE: f 
-            RETURNS void TEXT=void  [282:5/6218-282:9/6222]
-        FUNCTION DEFINITION f  [283:5/6240-283:41/6276] MethodDDImpl SCOPE: OnlyDouble 
+                d [282:12/6217-282:20/6225]  TYPE: double TEXT=double  [282:12/6217-282:18/6223]  INIT: null  SCOPE: f 
+            RETURNS void TEXT=void  [282:5/6210-282:9/6214]
+        FUNCTION DEFINITION f  [283:5/6232-283:41/6268] MethodDDImpl SCOPE: OnlyDouble 
             SIGNATURE f<class>(T)
             UNIQUE NAME f:OnlyDouble::f<class>(T)
-            DECLARATION: f  [283:5/6240-283:41/6276]
+            DECLARATION: f  [283:5/6232-283:41/6268]
             PARAMETERS:
-                 [283:30/6265-283:31/6266]  TYPE: OnlyDouble::f::T TEXT=T  [283:30/6265-283:31/6266]  INIT: null  SCOPE: f 
-            RETURNS void TEXT=void  [283:23/6258-283:27/6262]
-            STATEMENT COMPOUND  [283:5/6240-283:41/6276] SCOPE: f 
-VARIABLE i [288:1/6312-288:17/6328]  TYPE: long long int TEXT=long long int  [288:1/6312-288:14/6325]  INIT: null  SCOPE: $Global$ 
-STRUCT Check<class T> (Check ) [295:1/6463-298:2/6568] lcurly=6495 SCOPE: $Global$ 
+                 [283:30/6257-283:31/6258]  TYPE: OnlyDouble::f::T TEXT=T  [283:30/6257-283:31/6258]  INIT: null  SCOPE: f 
+            RETURNS void TEXT=void  [283:23/6250-283:27/6254]
+            STATEMENT COMPOUND  [283:5/6232-283:41/6268] SCOPE: f 
+VARIABLE i [288:1/6304-288:17/6320]  TYPE: long long int TEXT=long long int  [288:1/6304-288:14/6317]  INIT: null  SCOPE: $Global$ 
+STRUCT Check<class T> (Check ) [295:1/6455-298:2/6560] lcurly=6487 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-STRUCT SomeType (SomeType ) [302:1/6652-302:32/6683] lcurly=6668 SCOPE: $Global$ 
+STRUCT SomeType (SomeType ) [302:1/6644-302:32/6675] lcurly=6660 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        FIELD PUBLIC member [302:19/6670-302:30/6681]  TYPE: int TEXT=int  [302:19/6670-302:22/6673]  INIT: null  SCOPE: SomeType 
-VARIABLE j [303:1/6685-303:34/6718]  TYPE: int TEXT=int  [303:1/6685-303:4/6688]  INIT: text='sizeof(SomeType::member)'  SCOPE: $Global$ 
+        FIELD PUBLIC member [302:19/6662-302:30/6673]  TYPE: int TEXT=int  [302:19/6662-302:22/6665]  INIT: null  SCOPE: SomeType 
+VARIABLE j [303:1/6677-303:34/6710]  TYPE: int TEXT=int  [303:1/6677-303:4/6680]  INIT: text='sizeof(SomeType::member)'  SCOPE: $Global$ 
 

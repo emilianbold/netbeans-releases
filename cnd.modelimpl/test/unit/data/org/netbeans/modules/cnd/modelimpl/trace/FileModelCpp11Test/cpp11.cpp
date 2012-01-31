@@ -197,10 +197,10 @@ std::vector<SomeType<(1>2)>> x1;
 //        Template aliases
 
 // ?
-//template <typename First, typename Second, int third>
-//class SomeType; 
-//template <typename Second> using TypedefName = SomeType<OtherType, Second, 5>;
-//using OtherType = void (*)(double);           // New introduced syntax
+template <typename First, typename Second, int third>
+class SomeType; 
+template <typename Second> using TypedefName = SomeType<OtherType, Second, 5>;
+using OtherType = void (*)(double);           // New introduced syntax
 
 
 //        Unrestricted unions

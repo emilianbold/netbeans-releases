@@ -875,6 +875,8 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
 			}
 			dtor_head[true] dtor_body
 			{ #external_declaration_template = #(#[CSM_DTOR_TEMPLATE_DEFINITION, "CSM_DTOR_TEMPLATE_DEFINITION"], #external_declaration_template); }
+                |
+                    ((template_head)? LITERAL_using ID ASSIGNEQUAL) => (template_head)? alias_declaration
 		|  
 			// templated forward class decl, init/decl of static member in template
                         // Changed alternative order as a fix for IZ#138099:
@@ -1275,6 +1277,8 @@ member_declaration_template
         {if( definition )   #member_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION, "CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION"], #member_declaration_template);
          else               #member_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION, "CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION"], #member_declaration_template);}
     |
+        (LITERAL_using ID ASSIGNEQUAL) => alias_declaration
+    |
                         // this rule must be after handling functions 
 			// templated forward class decl, init/decl of static member in template
 			(declaration_specifiers[true, false]
@@ -1512,6 +1516,7 @@ member_declaration
 				LT(1).getLine());
 		}
 		SEMICOLON! //{end_of_stmt();}
+        |       (LITERAL_using ID ASSIGNEQUAL) => alias_declaration
 	|	using_declaration
         |       static_assert_declaration
 	)
@@ -1641,6 +1646,8 @@ declaration[int kind]
         | SEMICOLON )
         //{end_of_stmt();}
         {endDeclaration();}
+    |
+        (LITERAL_using ID ASSIGNEQUAL) => alias_declaration
     |
 	using_declaration	// DW 19/04/04
     |
@@ -3350,6 +3357,12 @@ using_declaration
 		|qid = qualified_id				// Using-declaration
 		    {#using_declaration = #[CSM_USING_DECLARATION, qid]; #using_declaration.addChild(#u);}
 		)
+		SEMICOLON! //{end_of_stmt();}
+	;
+
+alias_declaration
+	:	LITERAL_using
+		ID ASSIGNEQUAL type_name
 		SEMICOLON! //{end_of_stmt();}
 	;
 
