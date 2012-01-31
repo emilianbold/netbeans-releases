@@ -54,6 +54,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.NetworkSettings;
 
 /** Global password protected sites Authenticator for IDE
  *
@@ -90,7 +91,7 @@ public class AdminAuthenticator extends java.net.Authenticator {
                 if (!"admin-realm".equals(title)) {  // NOI18N
                     displayed = false;
                 }
-                if (!displayed) {
+                if (!displayed && !NetworkSettings.isAuthenticationDialogSuppressed()) {
                     // try to prevent the dialog from popping up too often... since the
                     // plugin  sends a bunch of requests to the AS one after the other to try to
                     // populate its node tree.

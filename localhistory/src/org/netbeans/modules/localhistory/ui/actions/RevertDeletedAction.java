@@ -51,7 +51,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.JTree;
 import javax.swing.tree.TreeNode;
-import org.netbeans.modules.localhistory.ui.view.ShowLocalHistoryAction;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,6 +68,9 @@ import org.netbeans.modules.localhistory.ui.actions.FileNode.PlainFileNode;
 import org.netbeans.modules.localhistory.ui.actions.FileNode.StoreEntryNode;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -80,6 +82,9 @@ import org.openide.util.actions.NodeAction;
 /**
  * @author Tomas Stupka
  */
+@ActionID(id = "org.netbeans.modules.localhistory.ui.actions.RevertDeletedAction", category = "History")
+@ActionRegistration(lazy = false, displayName = "#CTL_ShowRevertDeleted")
+@ActionReference(path = "OptionsDialog/Actions/History", name = "RevertDeletedAction")
 public class RevertDeletedAction extends NodeAction {
     
     /** Creates a new instance of ShowLocalHistoryAction */
@@ -192,8 +197,9 @@ public class RevertDeletedAction extends NodeAction {
         return NbBundle.getMessage(this.getClass(), "CTL_ShowRevertDeleted");   // NOI18N      
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ShowLocalHistoryAction.class);
+        return new HelpCtx(RevertDeletedAction.class);
     }
 
     private static void revert(StoreEntry se) {        

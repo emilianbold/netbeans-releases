@@ -2033,12 +2033,12 @@ cast_array_initializer:
 array_initializer:
         LCURLY RCURLY
     |   
-        LCURLY initializer 
+        LCURLY initializer (ELLIPSIS)?
         (
             // empty comma
             (COMMA (RCURLY|EOF)) => COMMA
             |
-            COMMA initializer
+            COMMA initializer (ELLIPSIS)?
         )*  
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | RCURLY )
@@ -2108,7 +2108,7 @@ typedef_class_fwd
 ;
 
 base_clause
-	:	COLON base_specifier (COMMA base_specifier)*
+	:	COLON base_specifier (ELLIPSIS)? (COMMA base_specifier (ELLIPSIS)? )*
 	;
 
 base_specifier
@@ -2212,8 +2212,8 @@ direct_declarator[int kind, int level]
         function_like_var_declarator
         {if(kind != declFunctionParam && (kind == declStatement || kind == declNotFirst || LA(1) == COMMA)) {#direct_declarator = #(#[CSM_VARIABLE_LIKE_FUNCTION_DECLARATION, "CSM_VARIABLE_LIKE_FUNCTION_DECLARATION"], #direct_declarator);}}
     |   
-        (qualified_id LPAREN) => // Must be class instantiation
-        id = qualified_id
+        ((ELLIPSIS)? qualified_id LPAREN) => // Must be class instantiation
+        (ELLIPSIS)? id = qualified_id
         {declaratorID(id, qiVar);}
         LPAREN
         (expression_list)?
@@ -2222,8 +2222,8 @@ direct_declarator[int kind, int level]
     |
                 (options {greedy=true;} :variable_attribute_specification)?
                 (
-                    (qualified_id LSQUARE)=>	// Must be array declaration
-                    id = qualified_id 
+                    ((ELLIPSIS)? qualified_id LSQUARE)=>	// Must be array declaration
+                    (ELLIPSIS)? id = qualified_id 
                     {
                          if (_td==true) {
                             declaratorID(id,qiType);
@@ -2243,7 +2243,7 @@ direct_declarator[int kind, int level]
                         }
                     }
                 |
-                    id = qualified_id
+                    (ELLIPSIS)? id = qualified_id
                     {
                          if (_td==true) {
                             // todo: build tree in this case
@@ -2489,7 +2489,7 @@ ctor_body
 
 ctor_initializer
 	:
-	COLON! superclass_init (COMMA! superclass_init)*
+	COLON! superclass_init (ELLIPSIS)? (COMMA! superclass_init (ELLIPSIS)? )*
 
         {#ctor_initializer = #(#[CSM_CTOR_INITIALIZER_LIST, "CSM_CTOR_INITIALIZER_LIST"], #ctor_initializer);}
 	;
@@ -2852,10 +2852,10 @@ template_parameter_list
  */
 template_parameter
 	:
-	(   ((LITERAL_class|LITERAL_typename) (ELLIPSIS)? (ID)? (ASSIGNEQUAL | COMMA | GREATERTHAN)) =>
+	(   ((LITERAL_class|LITERAL_typename) (ELLIPSIS)? (ID (ELLIPSIS)? )? (ASSIGNEQUAL | COMMA | GREATERTHAN)) =>
 		(LITERAL_class|LITERAL_typename) 
                 (ELLIPSIS)? // support for variadic template params
-		(id:ID  (ASSIGNEQUAL assigned_type_name)? )?
+		(id:ID (ELLIPSIS)? (ASSIGNEQUAL assigned_type_name)? )?
 		{templateTypeParameter((id == null) ? "" : id.getText());}
 	|
 		template_template_parameter
@@ -2892,7 +2892,7 @@ template_id	// aka template_class_name
 	;
 
 template_argument_list
-	:	template_argument (COMMA template_argument)*
+	:	template_argument (ELLIPSIS)? (COMMA template_argument (ELLIPSIS)? )*
         |    
 	;
 
