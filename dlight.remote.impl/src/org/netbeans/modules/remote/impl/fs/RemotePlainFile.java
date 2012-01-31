@@ -304,6 +304,7 @@ public final class RemotePlainFile extends RemoteFileObjectFile {
                     } else {
                         RemoteLogger.getInstance().log(Level.FINEST, "WritingQueue: uploading {0} failed", this);
                         setPendingRemoteDelivery(false);
+                        throw new IOException(uploadStatus.getError()+" "+uploadStatus.getExitCode()); //NOI18N
                     }
                 } catch (InterruptedException ex) {
                     throw newIOException(ex);
