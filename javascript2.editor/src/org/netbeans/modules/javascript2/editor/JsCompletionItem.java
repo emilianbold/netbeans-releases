@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -155,11 +156,9 @@ public class JsCompletionItem implements CompletionProposal {
     }
     
     public static class JsFunctionCompletionItem extends JsCompletionItem {
-        private JsFunction function;
         
         JsFunctionCompletionItem(ElementHandle element, CompletionRequest request) {
             super(element, request);
-            this.function = (JsFunction)element;
         }
 
         @Override
@@ -174,11 +173,19 @@ public class JsCompletionItem implements CompletionProposal {
         }
         
         private void appendParamsStr(HtmlFormatter formatter){
-            Collection<? extends Identifier> allParameters = function.getParameters();
-            for (Iterator<? extends Identifier> it = allParameters.iterator(); it.hasNext();) {
-                Identifier ident = it.next();
+            Collection<String> allParameters = new ArrayList<String>();
+            
+            if(getElement() instanceof JsFunction) {
+                for (Identifier identifier: ((JsFunction)getElement()).getParameters()) {
+                    allParameters.add(identifier.getName());
+                }
+            } else if (getElement() instanceof IndexedElement.FunctionIndexedElement) {
+                allParameters = ((IndexedElement.FunctionIndexedElement)getElement()).getParameters();
+            }
+            for (Iterator<String> it = allParameters.iterator(); it.hasNext();) {
+                String name = it.next();
                 formatter.parameters(true);
-                formatter.appendText(ident.getName());
+                formatter.appendText(name);
                 formatter.parameters(false);
                 if (it.hasNext()) {
                     formatter.appendText(", ");  //NOI18N
@@ -192,6 +199,7 @@ public class JsCompletionItem implements CompletionProposal {
         public static JsCompletionItem create(JsObject object, CompletionRequest request) {
             JsCompletionItem result;
             switch (object.getJSKind()) {
+                case CONSTRUCTOR:
                 case FUNCTION:
                 case METHOD:
                     result = new JsFunctionCompletionItem(object, request);
@@ -203,7 +211,17 @@ public class JsCompletionItem implements CompletionProposal {
         }
         
         public static JsCompletionItem create(IndexedElement element, CompletionRequest request) {
-            JsCompletionItem result = new JsCompletionItem(element, request);
+            JsCompletionItem result;
+            switch (element.getJSKind()) {
+                case CONSTRUCTOR:
+                case FUNCTION:
+                case METHOD:
+                    result = new JsFunctionCompletionItem(element, request);
+                    break;
+                default:
+                    result = new JsCompletionItem(element, request);
+            }
+
             return result;
         }
     }

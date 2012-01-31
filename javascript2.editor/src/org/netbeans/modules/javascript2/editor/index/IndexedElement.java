@@ -41,13 +41,12 @@
  */
 package org.netbeans.modules.javascript2.editor.index;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.Set;
+import java.util.*;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.impl.JsElementImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
@@ -84,7 +83,7 @@ public class IndexedElement extends JsElementImpl {
         elementDocument.addPair(JsIndex.FIELD_IS_GLOBAL, (ModelUtils.isGlobal(object.getParent()) ? "1" : "0"), true, true);
         elementDocument.addPair(JsIndex.FIELD_OFFSET, Integer.toString(object.getOffset()), true, true);            
         for (JsObject property : object.getProperties().values()) {
-            elementDocument.addPair(JsIndex.FIELD_PROPERTY, property.getName(), false, true);
+            elementDocument.addPair(JsIndex.FIELD_PROPERTY, codeProperty(property), false, true);
         }
         return elementDocument;
     }
@@ -101,8 +100,56 @@ public class IndexedElement extends JsElementImpl {
         Collection<IndexedElement> result = new ArrayList<IndexedElement>();
         FileObject fo = indexResult.getFile();
         for(String sProperty : indexResult.getValues(JsIndex.FIELD_PROPERTY)) {
-            result.add(new IndexedElement(fo, sProperty, JsElement.Kind.PROPERTY, OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC)));
+            result.add(decodeProperty(sProperty, fo));
         }
         return result;
+    }
+    
+    private static String codeProperty(JsObject property) {
+        StringBuilder result = new StringBuilder();
+        JsElement.Kind jsKind = property.getJSKind();
+        result.append(property.getName()).append(';');  //NOI18N
+        result.append(jsKind.getId()).append(';');  //NOI18N
+        if (jsKind == JsElement.Kind.FUNCTION || jsKind == JsElement.Kind.METHOD || jsKind == JsElement.Kind.CONSTRUCTOR) {
+            for (Iterator<? extends Identifier> it = ((JsFunction)property).getParameters().iterator(); it.hasNext();) {
+                Identifier parametr = it.next();
+                result.append(parametr.getName());
+                if (it.hasNext()) {
+                    result.append(',');
+                }
+            }
+        }
+        
+        return result.toString();
+    }
+    
+    private static IndexedElement decodeProperty(String text, FileObject fo) {
+        StringTokenizer st = new StringTokenizer(text, ";");
+        String name = st.nextToken();
+        JsElement.Kind jsKind = JsElement.Kind.fromId(Integer.parseInt(st.nextToken()));
+        if (st.hasMoreTokens()) {
+            String paramsText = st.nextToken();
+            if (jsKind == JsElement.Kind.FUNCTION || jsKind == JsElement.Kind.METHOD || jsKind == JsElement.Kind.CONSTRUCTOR) {
+                Collection<String> parameters = new ArrayList();
+                for (StringTokenizer stringTokenizer = new StringTokenizer(paramsText, ","); stringTokenizer.hasMoreTokens();) {
+                    parameters.add(stringTokenizer.nextToken());
+                }
+                return new FunctionIndexedElement(fo, name, jsKind, OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC), parameters);
+            }
+        }
+        return new IndexedElement(fo, name, jsKind, OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC));
+    }
+    
+    public static class FunctionIndexedElement extends IndexedElement {
+        private final Collection<String> parameters;
+        
+        public FunctionIndexedElement(FileObject fileObject, String name, Kind kind, OffsetRange offsetRange, Set<Modifier> modifiers, Collection<String> parameters) {
+            super(fileObject, name, kind, offsetRange, modifiers);
+            this.parameters = parameters;
+        }
+        
+        public Collection<String> getParameters() {
+            return this.parameters;
+        }
     }
 }
