@@ -56,6 +56,7 @@ import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
 import org.netbeans.modules.java.hints.spiimpl.MessageImpl;
 import org.netbeans.modules.java.hints.spiimpl.SPIAccessor;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
+import org.netbeans.spi.java.hints.Hint.Severity;
 
 /**
  *
@@ -65,7 +66,7 @@ public class HintContext {
 
     private final CompilationInfo info;
     private final Preferences preferences;
-    private final HintSeverity severity;
+    private final Severity severity;
     private final HintMetadata metadata;
     private final TreePath path;
     private final Map<String, TreePath> variables;
@@ -79,7 +80,7 @@ public class HintContext {
     private HintContext(CompilationInfo info, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames, Map<String, TypeMirror> constraints, Collection<? super MessageImpl> problems, boolean bulkMode, AtomicBoolean cancel) {
         this.info = info;
         this.preferences = metadata != null ? HintsSettings.getPreferences(metadata.id, HintsSettings.getCurrentProfileId()) : null;
-        this.severity = preferences != null ? HintsSettings.getSeverity(metadata, preferences) : HintSeverity.ERROR;
+        this.severity = preferences != null ? HintsSettings.getSeverity(metadata, preferences) : Severity.ERROR;
         this.metadata = metadata;
         this.path = path;
 
@@ -103,7 +104,7 @@ public class HintContext {
         return preferences;
     }
 
-    public HintSeverity getSeverity() {
+    public Severity getSeverity() {
         return severity;
     }
 

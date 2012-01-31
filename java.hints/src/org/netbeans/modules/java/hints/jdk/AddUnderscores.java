@@ -57,7 +57,8 @@ import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.java.hints.HintSeverity;
+import org.netbeans.spi.java.hints.Hint.Severity;
+import org.netbeans.spi.java.hints.Hint.Severity;
 import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
@@ -65,7 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(id=AddUnderscores.ID, category="rules15", enabled=false, severity=HintSeverity.CURRENT_LINE_WARNING, customizerProvider=AddUnderscoresPanel.class)
+@Hint(id=AddUnderscores.ID, category="rules15", enabled=false, severity=Severity.CURRENT_LINE_WARNING, customizerProvider=AddUnderscoresPanel.class)
 public class AddUnderscores {
     public static final String ID = "org.netbeans.modules.java.hints.jdk.AddUnderscores";
 

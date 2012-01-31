@@ -49,6 +49,7 @@ import org.netbeans.modules.java.hints.legacy.spi.RulesManager;
 import org.netbeans.modules.java.hints.legacy.spi.RulesManager.APIAccessor;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.Hint;
 
 /** Class to be extended by all the Java hints.
  *
@@ -119,14 +120,14 @@ public abstract class AbstractHint implements TreeRule {
      *  <li><code>CURRENT_LINE_WARNING</code>  - will only show up when the caret is placed in the errorneous element
      */
     public static enum HintSeverity {
-        ERROR(Severity.ERROR, org.netbeans.spi.java.hints.HintSeverity.ERROR),
-        WARNING(Severity.VERIFIER, org.netbeans.spi.java.hints.HintSeverity.WARNING),
-        CURRENT_LINE_WARNING(Severity.HINT, org.netbeans.spi.java.hints.HintSeverity.CURRENT_LINE_WARNING);
+        ERROR(Severity.ERROR, Hint.Severity.ERROR),
+        WARNING(Severity.VERIFIER, Hint.Severity.WARNING),
+        CURRENT_LINE_WARNING(Severity.HINT, Hint.Severity.CURRENT_LINE_WARNING);
 
         private final Severity editorSeverity;
-        private final org.netbeans.spi.java.hints.HintSeverity officialSeverity;
+        private final Hint.Severity officialSeverity;
 
-        private HintSeverity(Severity editorSeverity, org.netbeans.spi.java.hints.HintSeverity officialSeverity) {
+        private HintSeverity(Severity editorSeverity, Hint.Severity officialSeverity) {
             this.editorSeverity = editorSeverity;
             this.officialSeverity = officialSeverity;
         }
@@ -135,7 +136,7 @@ public abstract class AbstractHint implements TreeRule {
             return editorSeverity;
         }
 
-        private static HintSeverity fromOfficialHintSeverity(org.netbeans.spi.java.hints.HintSeverity official, HintSeverity def) {
+        private static HintSeverity fromOfficialHintSeverity(Hint.Severity official, HintSeverity def) {
             if (official == null) return def;
 
             switch (official) {
@@ -146,7 +147,7 @@ public abstract class AbstractHint implements TreeRule {
             }
         }
 
-        public org.netbeans.spi.java.hints.HintSeverity toOfficialSeverity() {
+        public Hint.Severity toOfficialSeverity() {
             return officialSeverity;
         }
     }

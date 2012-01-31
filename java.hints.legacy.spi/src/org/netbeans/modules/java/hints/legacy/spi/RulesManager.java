@@ -65,6 +65,7 @@ import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription.Worker;
 import org.netbeans.modules.java.hints.providers.spi.HintDescriptionFactory;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.providers.spi.HintProvider;
 import org.netbeans.modules.java.hints.providers.spi.Trigger.Kinds;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
@@ -87,8 +88,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 import static org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription;
 import org.netbeans.spi.java.hints.Hint.Kind;
-import org.netbeans.spi.java.hints.Hint.Options;
-import org.netbeans.spi.java.hints.HintSeverity;
+import org.netbeans.spi.java.hints.Hint.Severity;
 
 /** Manages rules read from the system filesystem.
  *
@@ -271,7 +271,7 @@ public class RulesManager implements FileChangeListener {
                     else if (h.getClass().getClassLoader() != RulesManager.class.getClassLoader()) hmb = hmb.addOptions(Options.QUERY);
                 } else {
                     hmb = hmb.setDescription(toGui ? tr.getDisplayName() : "", toGui ? tr.getDisplayName() : "");
-                    hmb = hmb.setSeverity(HintSeverity.WARNING);
+                    hmb = hmb.setSeverity(Severity.WARNING);
                 }
 
                 HintMetadata hm = hmb.build();

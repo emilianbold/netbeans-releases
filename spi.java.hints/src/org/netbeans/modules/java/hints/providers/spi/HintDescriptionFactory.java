@@ -45,7 +45,7 @@ package org.netbeans.modules.java.hints.providers.spi;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription.AdditionalQueryConstraints;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription.Worker;
-import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata.Options;
 
 /**
  *

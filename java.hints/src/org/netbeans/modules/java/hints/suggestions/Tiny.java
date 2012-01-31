@@ -72,7 +72,8 @@ import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.Hint.Kind;
-import org.netbeans.spi.java.hints.HintSeverity;
+import org.netbeans.spi.java.hints.Hint.Severity;
+import org.netbeans.spi.java.hints.Hint.Severity;
 import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
@@ -82,7 +83,7 @@ import org.openide.util.NbBundle;
  */
 public class Tiny {
 
-    @Hint(category="suggestions", hintKind=Kind.SUGGESTION, severity=HintSeverity.CURRENT_LINE_WARNING)
+    @Hint(category="suggestions", hintKind=Kind.SUGGESTION, severity=Severity.CURRENT_LINE_WARNING)
     @TriggerPattern(value="$this.equals($other)",
                     constraints={
                         @ConstraintVariableType(variable="$this", type="java.lang.Object"),
@@ -134,7 +135,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, fix);
     }
     
-    @Hint(category="suggestions", hintKind=Kind.SUGGESTION, severity=HintSeverity.CURRENT_LINE_WARNING)
+    @Hint(category="suggestions", hintKind=Kind.SUGGESTION, severity=Severity.CURRENT_LINE_WARNING)
     @TriggerTreeKind({Tree.Kind.INT_LITERAL, Tree.Kind.LONG_LITERAL})
     public static ErrorDescription convertToDifferentBase(HintContext ctx) {
         int start = (int) ctx.getInfo().getTrees().getSourcePositions().getStartPosition(ctx.getInfo().getCompilationUnit(), ctx.getPath().getLeaf());
@@ -225,7 +226,7 @@ public class Tiny {
         
     }
 
-    @Hint(category="suggestions", hintKind=Kind.SUGGESTION, severity=HintSeverity.CURRENT_LINE_WARNING)
+    @Hint(category="suggestions", hintKind=Kind.SUGGESTION, severity=Severity.CURRENT_LINE_WARNING)
     @TriggerPattern(value="$mods$ $type $name = $init;")
     public static ErrorDescription splitDeclaration(HintContext ctx) {
         Tree.Kind parentKind = ctx.getPath().getParentPath().getLeaf().getKind();

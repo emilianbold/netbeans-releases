@@ -71,6 +71,7 @@ import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription.Worker;
 import org.netbeans.modules.java.hints.providers.spi.HintDescriptionFactory;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.providers.spi.HintProvider;
 import org.netbeans.modules.java.hints.providers.spi.Trigger.Kinds;
 import org.netbeans.modules.java.hints.providers.spi.Trigger.PatternDescription;
@@ -78,7 +79,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.BooleanOption;
 import org.netbeans.spi.java.hints.ConstraintVariableType;
 import org.netbeans.spi.java.hints.Hint;
-import org.netbeans.spi.java.hints.HintSeverity;
+import org.netbeans.spi.java.hints.Hint.Severity;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
@@ -163,7 +164,7 @@ public class CodeHintProviderImpl implements HintProvider {
                                               .setKind(metadata.hintKind())
                                               .setCustomizerProvider(createCustomizerProvider(clazz, method, id, metadata))
                                               .addSuppressWarnings(metadata.suppressWarnings())
-                                              .addOptions(metadata.options())
+                                              .addOptions(Options.fromHintOptions(metadata.options()).toArray(new Options[0]))
                                               .build();
         return hm;
     }
@@ -353,8 +354,8 @@ public class CodeHintProviderImpl implements HintProvider {
             return true;
         }
 
-        public HintSeverity severity() {
-            return HintSeverity.WARNING;
+        public Severity severity() {
+            return Severity.WARNING;
         }
 
         private static final String[] EMPTY_SW = new String[0];

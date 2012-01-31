@@ -55,8 +55,8 @@ import javax.swing.ComboBoxModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsPanelLogic.HintCategory;
-import org.netbeans.spi.java.hints.Hint.Options;
 
 /**
  *

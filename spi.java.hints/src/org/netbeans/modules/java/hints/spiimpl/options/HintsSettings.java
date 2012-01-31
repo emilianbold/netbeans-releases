@@ -50,7 +50,8 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.hints.spiimpl.RulesManager;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
-import org.netbeans.spi.java.hints.HintSeverity;
+import org.netbeans.spi.java.hints.Hint.Severity;
+import org.netbeans.spi.java.hints.Hint.Severity;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
 
@@ -126,9 +127,9 @@ public class HintsSettings {
         p.putBoolean(IN_TASK_LIST_KEY, value);
     }
 
-    public static HintSeverity getSeverity(@NullAllowed HintMetadata hint, @NonNull Preferences preferences ) {
+    public static Severity getSeverity(@NullAllowed HintMetadata hint, @NonNull Preferences preferences ) {
         String s = preferences.get(SEVERITY_KEY, null );
-        return s == null ? hint == null ? null : hint.severity : HintSeverity.valueOf(s);
+        return s == null ? hint == null ? null : hint.severity : Severity.valueOf(s);
     }
 //
 //    public static AbstractHint.HintSeverity getSeverity( AbstractHint hint, Preferences preferences ) {
@@ -136,7 +137,7 @@ public class HintsSettings {
 //        return s == null ? HINTS_ACCESSOR.severiryDefault(hint) : AbstractHint.HintSeverity.valueOf(s);
 //    }
 //
-    public static void setSeverity( Preferences p, HintSeverity severity ) {
+    public static void setSeverity( Preferences p, Severity severity ) {
         p.put(SEVERITY_KEY, severity.name());
     }
 //

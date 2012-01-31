@@ -51,10 +51,10 @@ import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.java.hints.spiimpl.RulesManager;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
+import org.netbeans.modules.java.hints.spiimpl.RulesManager;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
-import org.netbeans.spi.java.hints.HintSeverity;
+import org.netbeans.spi.java.hints.Hint.Severity;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -107,7 +107,7 @@ public final class AnalyzeFolder extends AbstractAction implements ContextAwareA
 
                         preferencesOverlay.put(id, prefs);
                         HintsSettings.setEnabled(prefs, SUPPORTED_IDS.contains(id));
-                        HintsSettings.setSeverity(prefs, HintSeverity.WARNING);
+                        HintsSettings.setSeverity(prefs, Severity.WARNING);
                     }
                 }
 

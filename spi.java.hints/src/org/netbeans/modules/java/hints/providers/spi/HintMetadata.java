@@ -46,13 +46,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.spi.java.hints.Hint;
-import org.netbeans.spi.java.hints.HintSeverity;
+import org.netbeans.spi.java.hints.Hint.Severity;
 import org.openide.util.NbBundle;
 
 /**
@@ -67,13 +68,13 @@ public class HintMetadata {
     public final String category;
     public final boolean enabled;
     public final Hint.Kind kind;
-    public final HintSeverity severity;
+    public final Severity severity;
     public final Collection<? extends String> suppressWarnings;
     public final CustomizerProvider customizer;
     public final boolean showInTaskList = false;
-    public final Set<Hint.Options> options;
+    public final Set<Options> options;
 
-    HintMetadata(String id, String displayName, String description, String category, boolean enabled, Hint.Kind kind, HintSeverity severity, Collection<? extends String> suppressWarnings, CustomizerProvider customizer, Set<Hint.Options> options) {
+    HintMetadata(String id, String displayName, String description, String category, boolean enabled, Hint.Kind kind, Severity severity, Collection<? extends String> suppressWarnings, CustomizerProvider customizer, Set<Options> options) {
         this.id = id;
         this.displayName = displayName;
         this.description = description;
@@ -107,10 +108,10 @@ public class HintMetadata {
         private String category;
         private boolean enabled;
         private Hint.Kind kind;
-        private HintSeverity severity;
+        private Severity severity;
         private final Collection<String> suppressWarnings = new ArrayList<String>();
         private CustomizerProvider customizer;
-        private final Set<Hint.Options> options = EnumSet.noneOf(Hint.Options.class);
+        private final Set<Options> options = EnumSet.noneOf(Options.class);
 
         private Builder(String id) {
             this.id = id;
@@ -119,7 +120,7 @@ public class HintMetadata {
             this.category = "";
             this.enabled = true;
             this.kind = Hint.Kind.HINT;
-            this.severity = HintSeverity.WARNING;
+            this.severity = Severity.WARNING;
         }
 
         public static Builder create(String id) {
@@ -176,7 +177,7 @@ public class HintMetadata {
             return this;
         }
 
-        public Builder setSeverity(HintSeverity severity) {
+        public Builder setSeverity(Severity severity) {
             this.severity = severity;
             return this;
         }
@@ -192,7 +193,7 @@ public class HintMetadata {
             return this;
         }
 
-        public Builder addOptions(Hint.Options... options) {
+        public Builder addOptions(Options... options) {
             this.options.addAll(Arrays.asList(options));
             return this;
         }
@@ -201,5 +202,21 @@ public class HintMetadata {
             return new HintMetadata(id, displayName, description, category, enabled, kind, severity, suppressWarnings, customizer, options);
         }
 
+    }
+
+    public enum Options {
+        NON_GUI,
+        QUERY,
+        NO_BATCH;
+
+        public static Set<Options> fromHintOptions(Hint.Options... options) {
+            Set<Options> result = new HashSet<Options>();
+
+            for (Hint.Options opt : options) {
+                result.add(valueOf(opt.name()));
+            }
+
+            return result;
+        }
     }
 }

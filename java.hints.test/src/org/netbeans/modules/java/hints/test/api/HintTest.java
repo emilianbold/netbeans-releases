@@ -125,18 +125,18 @@ import org.openide.util.lookup.Lookups;
 
 /**A support class for writing a test for a Java Hint. A test verifying that correct
  * warnings are produced should look like:
- * <code>
+ * <pre>
  * HintTest.create()
  *         .input("&lt;input Java source code>")
  *         .run(&lt;class containg the hint>)
  *         .assertWarnings("&lt;required warning(s)>");
- * </code>
+ * </pre>
  *
  * Note: when verifying that no warnings are produced in a particular situation,
  * do not pass any warnings to the {@code assertWarnings} method.
  *
  * A test verifying that a hint's transformation is correct:
- * <code>
+ * <pre>
  * HintTest.create()
  *         .input("&lt;input Java source code>")
  *         .run(&lt;class containg the hint>)
@@ -144,7 +144,7 @@ import org.openide.util.lookup.Lookups;
  *         .applyFix() //fill apply the only fix in the given ErrorDescription
  *         .assertCompilable()
  *         .assertOutput("&lt;output Java source code>");
- * </code>
+ * </pre>
  *
  * All the tests run under the {@code test} branding, which allows to specify test values
  * for bundle keys for warning and fix in {@code Bundle_test.properties}, to isolate the

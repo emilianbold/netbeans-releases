@@ -87,7 +87,8 @@ import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.Hint.Kind;
-import org.netbeans.spi.java.hints.HintSeverity;
+import org.netbeans.spi.java.hints.Hint.Severity;
+import org.netbeans.spi.java.hints.Hint.Severity;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -102,7 +103,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Dusan Balek
  */
-@Hint(category = "suggestions", hintKind = Kind.SUGGESTION, severity = HintSeverity.CURRENT_LINE_WARNING)
+@Hint(category = "suggestions", hintKind = Kind.SUGGESTION, severity = Severity.CURRENT_LINE_WARNING)
 public class CreateSubclass {
 
     @TriggerTreeKind({Tree.Kind.CLASS, Tree.Kind.INTERFACE})

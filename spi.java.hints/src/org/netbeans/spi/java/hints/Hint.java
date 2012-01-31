@@ -46,6 +46,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 
 /**Description of a hint. When applied to a class, any enclosed method marked with a trigger
@@ -54,7 +55,8 @@ import javax.swing.JComponent;
  *
  * Two keys in bundle are required: {@code DN_ <hint-id>}, which will be used the hint's display
  * name, and {@code DESC_<hint-id>}, which will be used as the hint's long description
- * @author lahvac
+ * 
+ * @author lahvac, Petr Hrebejk
  */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.SOURCE)
@@ -69,9 +71,12 @@ public @interface Hint {
     /**Should the hint be enabled by default?*/
     public boolean enabled() default true;
     /**Default severity of the hint*/
-    public HintSeverity severity() default HintSeverity.WARNING;
+    public Severity severity() default Severity.WARNING;
     /**Suppress warnings keys that should automatically suppress the hint.*/
     public String[] suppressWarnings() default {};
+    /**A customizer that allows to customize hint's preferences. The given class should have
+     * a publicly accessible constructor, taking one parameter of type {@link Preferences}.
+     */
     public Class<? extends JComponent> customizerProvider() default JComponent.class;
     /**Whether the hint should be considered a {@link Kind#HINT hint}, e.g. it detects a code smell,
      * or otherwise leads to improving the code, or a {@link Kind#SUGGESTION}, which is simply
@@ -81,14 +86,62 @@ public @interface Hint {
     /**Specify various options for the hint*/
     public Options[] options() default {};
 
+    /**Whether the hint should be considered a {@link Kind#HINT hint}, e.g. it
+     * detects a code smell, or otherwise leads to improving the code, or a {@link Kind#SUGGESTION},
+     * which is simply an offer to do automatically do something for the user.
+     */
    public enum Kind {
-        HINT,
-        SUGGESTION;
+       /**The hint represents a code-smell detector, or alike. It marks code that
+        * is not correct (in some sense).
+        */
+       HINT,
+       
+       /**The hint represents an offer to the user to automatically alter the code.
+        * The transformation is not intended to improve the code, only allow the
+        * user to do some kind of code transformation quickly.
+        *
+        * The only meaningful severity for suggestions if {@link Severity#CURRENT_LINE_WARNING}.
+        */
+       SUGGESTION;
     }
 
+   /**Various options to altering the behavior of the hint.
+    */
     public enum Options {
-        NON_GUI,
+        /**The hint does not produce any automatic transformations that could be run
+         * inside the Inspect&Refactor dialog.
+         */
         QUERY,
+        /**The hint cannot be run inside the Inspect&Refactor dialog.
+         */
         NO_BATCH;
+    }
+
+    /** Severity of hint
+     *  <li><code>ERROR</code>  - will show up as error
+     *  <li><code>WARNING</code>  - will show up as warning
+     *  <li><code>CURRENT_LINE_WARNING</code>  - will only show up when the caret is placed in the erroneous element
+     * @author Petr Hrebejk
+     */
+    public enum Severity {
+        /**Will show as an error*/
+        ERROR,
+        /**Will show as a warning*/
+        WARNING,
+        /**Will be shown only for the line with the caret*/
+        CURRENT_LINE_WARNING;
+
+        public org.netbeans.spi.editor.hints.Severity toEditorSeverity() {
+            switch ( this ) {
+                case ERROR:
+                    return org.netbeans.spi.editor.hints.Severity.ERROR;
+                case WARNING:
+                    return org.netbeans.spi.editor.hints.Severity.VERIFIER;
+                case CURRENT_LINE_WARNING:
+                    return org.netbeans.spi.editor.hints.Severity.HINT;
+                default:
+                    return null;
+            }
+        }
     }
 }

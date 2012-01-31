@@ -88,7 +88,8 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.java.hints.spiimpl.options.DepScanningSettings.DependencyTracking;
 import org.netbeans.spi.java.hints.Hint.Kind;
 import org.netbeans.spi.java.hints.Hint.Options;
-import org.netbeans.spi.java.hints.HintSeverity;
+import org.netbeans.spi.java.hints.Hint.Severity;
+import org.netbeans.spi.java.hints.Hint.Severity;
 
 
 /** Contains all important listeners and logic of the Hints Panel.
@@ -100,7 +101,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     private Map<String,ModifiedPreferences> changes = new HashMap<String, ModifiedPreferences>();
     private DependencyTracking depScn = null;
     
-    private static Map<HintSeverity,Integer> severity2index;
+    private static Map<Severity,Integer> severity2index;
     private static Map<DependencyTracking,Integer> deptracking2index;
     
     private static final String DESCRIPTION_HEADER = 
@@ -113,10 +114,10 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     
     
     static {
-        severity2index = new HashMap<HintSeverity, Integer>();
-        severity2index.put( HintSeverity.ERROR, 0  );
-        severity2index.put( HintSeverity.WARNING, 1  );
-        severity2index.put( HintSeverity.CURRENT_LINE_WARNING, 2  );
+        severity2index = new HashMap<Severity, Integer>();
+        severity2index.put( Severity.ERROR, 0  );
+        severity2index.put( Severity.WARNING, 1  );
+        severity2index.put( Severity.CURRENT_LINE_WARNING, 2  );
         deptracking2index = new HashMap<DepScanningSettings.DependencyTracking, Integer>();
         deptracking2index.put(DependencyTracking.ENABLED, 0);
         deptracking2index.put(DependencyTracking.ENABLED_WITHIN_PROJECT, 1);
@@ -328,15 +329,15 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
             Preferences p = getCurrentPrefernces(hint.id);
 
             if (hint.kind == Kind.SUGGESTION) {
-                severityComboBox.setSelectedIndex(severity2index.get(HintSeverity.CURRENT_LINE_WARNING));
+                severityComboBox.setSelectedIndex(severity2index.get(Severity.CURRENT_LINE_WARNING));
                 severityComboBox.setEnabled(false);
             } else {
-                HintSeverity severity = HintsSettings.getSeverity(hint, p);
+                Severity severity = HintsSettings.getSeverity(hint, p);
                 if (severity != null) {
                     severityComboBox.setSelectedIndex(severity2index.get(severity));
                     severityComboBox.setEnabled(true);
                 } else {
-                    severityComboBox.setSelectedIndex(severity2index.get(HintSeverity.ERROR));
+                    severityComboBox.setSelectedIndex(severity2index.get(Severity.ERROR));
                     severityComboBox.setEnabled(false);
                 }
             }
@@ -424,8 +425,8 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
         
     }
     
-    private HintSeverity index2severity( int index ) {
-        for( Map.Entry<HintSeverity,Integer> e : severity2index.entrySet()) {
+    private Severity index2severity( int index ) {
+        for( Map.Entry<Severity,Integer> e : severity2index.entrySet()) {
             if ( e.getValue() == index ) {
                 return e.getKey();
             }
@@ -500,7 +501,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
             customizerPanel.getParent().invalidate();
             ((JComponent)customizerPanel.getParent()).revalidate();
             customizerPanel.getParent().repaint();
-            severityComboBox.setSelectedIndex(severity2index.get(HintSeverity.WARNING));
+            severityComboBox.setSelectedIndex(severity2index.get(Severity.WARNING));
             tasklistCheckBox.setSelected(false);
             descriptionTextArea.setText(""); // NOI18N
         }
