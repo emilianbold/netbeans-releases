@@ -100,6 +100,14 @@ public class BrowserReload {
         pluginMap.remove( fileObject );
     }
     
+    public boolean isScopedArtifact( FileObject artifact ){
+        /*
+         *  TODO : check project of artifact against "registered" projects. 
+         *  Return false is it doesn't match.
+         */
+        return true;
+    }
+    
     private BrowserPlugin getPlugin(){
         Factory wwwBrowser = IDESettings.getWWWBrowser();
         // TODO: handle only known accessors

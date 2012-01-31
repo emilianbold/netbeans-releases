@@ -1510,6 +1510,10 @@ public final class WebProject implements Project {
      */
     private class CopyOnSaveSupport extends FileChangeAdapter implements PropertyChangeListener {
 
+        private static final String META_INF = "META-INF";      // NOI18N
+
+        private static final String WEB_INF = "WEB-INF";        // NOI18N
+
         private FileObject docBase = null;
 
         private String docBaseValue = null;
@@ -1522,20 +1526,18 @@ public final class WebProject implements Project {
 
         private String buildWeb = null;
         
-        private Map<Collection<Artifact>,FileObject> toReload;
-
         private final List<ArtifactListener> listeners = new CopyOnWriteArrayList<ArtifactListener>();
 
         /** Creates a new instance of CopyOnSaveSupport */
         public CopyOnSaveSupport() {
             super();
-            toReload = new ConcurrentHashMap<Collection<Artifact>, FileObject>();
             webModule.getConfigSupport().addDeployOnSaveListener( new DeployOnSaveListener(){
-                public void deployed(Iterable<ArtifactListener.Artifact> artifacts){
-                    Collection<Artifact> collection = getCollection(artifacts);
-                    FileObject fileObject = toReload.remove( collection );
-                    if ( fileObject != null ){
-                        BrowserReload.getInstance().reload( fileObject );
+                public void deployed(Iterable<Artifact> artifacts){
+                    for( Artifact artifact : artifacts ){
+                        FileObject fileObject = getReloadFileObject(artifact);
+                        if ( fileObject!= null ){
+                            BrowserReload.getInstance().reload( fileObject );
+                        }
                     }
                 }
             });
@@ -1586,12 +1588,6 @@ public final class WebProject implements Project {
                 FileUtil.addFileChangeListener(this, resources);
             }
             
-            SourceRoots sourceRoots = getSourceRoots();
-            BuildArtifactMapper.ArtifactsUpdated listener = new BuildArtifactListener();
-            for( URL url : sourceRoots.getRootURLs()) {
-                BuildArtifactMapper.addArtifactsUpdatedListener(url, listener);
-            }
-
             LOGGER.log(Level.FINE, "Web directory is {0}", docBaseValue);
             LOGGER.log(Level.FINE, "WEB-INF directory is {0}", webInfValue);
         }
@@ -1636,8 +1632,8 @@ public final class WebProject implements Project {
         @Override
         public void fileChanged(FileEvent fe) {
             try {
-                if (!handleResource(fe, true)) {
-                    handleCopyFileToDestDir(fe.getFile(), true);
+                if (!handleResource(fe)) {
+                    handleCopyFileToDestDir(fe.getFile());
                 }
             } catch (IOException e) {
                 LOGGER.log(Level.INFO, null, e);
@@ -1669,7 +1665,8 @@ public final class WebProject implements Project {
                 FileObject persistenceXmlDir = getWebModule().getPersistenceXmlDir();
                 if (persistenceXmlDir != null && FileUtil.isParentOf(persistenceXmlDir, fo)
                         && "persistence.xml".equals(fe.getName() + "." + fe.getExt())) { // NOI18N
-                    String path = "WEB-INF/classes/META-INF/" + FileUtil.getRelativePath(persistenceXmlDir, fo.getParent())
+                    String path = WEB_INF+"/classes/"+META_INF+
+                        "/" + FileUtil.getRelativePath(persistenceXmlDir, fo.getParent())
                             + "/" + fe.getName() + "." + fe.getExt(); // NOI18N
                     if (!isSynchronizationAppropriate(path)) {
                         return;
@@ -1692,7 +1689,7 @@ public final class WebProject implements Project {
                     } else {
                         path = fe.getName() + "." + fe.getExt(); // NOI18N
                     }
-                    path = "WEB-INF/" + path;
+                    path = WEB_INF+"/" + path;
 
                     if (!isSynchronizationAppropriate(path))  {
                         return;
@@ -1733,7 +1730,8 @@ public final class WebProject implements Project {
                 FileObject persistenceXmlDir = getWebModule().getPersistenceXmlDir();
                 if (persistenceXmlDir != null && FileUtil.isParentOf(persistenceXmlDir, fo)
                         && "persistence.xml".equals(fo.getNameExt())) { // NOI18N
-                    String path = "WEB-INF/classes/META-INF/" + FileUtil.getRelativePath(persistenceXmlDir, fo); // NOI18N
+                    String path = WEB_INF+"/classes/"+META_INF+"/" + 
+                        FileUtil.getRelativePath(persistenceXmlDir, fo); // NOI18N
                     if (!isSynchronizationAppropriate(path)) {
                         return;
                     }
@@ -1747,7 +1745,7 @@ public final class WebProject implements Project {
                 if (webInf != null && FileUtil.isParentOf(webInf, fo)
                         && !(webInf.getParent() != null && webInf.getParent().equals(docBase))) {
                     // inside webInf
-                    String path = "WEB-INF/" + FileUtil.getRelativePath(webInf, fo); // NOI18N
+                    String path = WEB_INF+"/" + FileUtil.getRelativePath(webInf, fo); // NOI18N
                     if (!isSynchronizationAppropriate(path)) {
                         return;
                     }
@@ -1765,77 +1763,129 @@ public final class WebProject implements Project {
                 LOGGER.log(Level.INFO, null, e);
             }
         }
-
-        private void requestReload( FileObject fileObject , 
-                Iterable<Artifact> collection ) 
-        {
-            if ( fileObject == null || !collection.iterator().hasNext() ){  
-                return;
-            }  
-            if ( !BrowserReload.getInstance().canReload(fileObject)) {
-                return;
+        
+        private FileObject getReloadFileObject( Artifact artifact ) {
+            File file = artifact.getFile();
+            FileObject fileObject = FileUtil.toFileObject( FileUtil.normalizeFile(file));
+            if ( fileObject.getExt().equals("class")){               //  NOI18N
+                if ( BrowserReload.getInstance().isScopedArtifact(fileObject)){
+                    return getJavaSourceFileObject(fileObject);
+                }
+                else {
+                    return null;
+                }
             }
-            FileObject webInf = getWebModule().resolveWebInf(docBaseValue, webInfValue, true, true);
-            FileObject docBase = getWebModule().resolveDocumentBase(docBaseValue, false);
-            if ( FileUtil.isParentOf(webInf, fileObject) || 
-                    FileUtil.isParentOf(docBase, fileObject))
-            {
-                toReload.put(getCollection(collection), fileObject);
+            else {
+                return getWebDocFileObject(fileObject);
             }
         }
         
+        private FileObject getWebDocFileObject( FileObject artifact ){
+            String path = artifact.getPath();
+            if ( path.contains( WEB_INF)){
+                if( path.contains(META_INF)){
+                    FileObject persistenceXmlDir = getWebModule().
+                        getPersistenceXmlDir();
+                    if ( persistenceXmlDir == null ){
+                        return null;
+                    }
+                    String meta = WEB_INF+"/classes/"+META_INF+"/";     // NOI18N
+                    int index = path.indexOf( meta );
+                    if ( index == -1){
+                        return null;
+                    }
+                    path = path.substring(index+meta.length());
+                    return persistenceXmlDir.getFileObject(path);
+                }
+                else {
+                    int index = path.indexOf( WEB_INF+'/' );
+                    if ( index == -1){
+                        return null;
+                    }
+                    path = path.substring(index+WEB_INF.length()+1);
+                    FileObject webInf = getWebModule().resolveWebInf(docBaseValue, 
+                            webInfValue, true, true);
+                    if ( webInf != null ){
+                        return webInf.getFileObject(path);
+                    }
+                    else {
+                        return null;
+                    }
+                }
+            }
+            else {
+                FileObject docBase = getWebModule().resolveDocumentBase(docBaseValue, 
+                        false);
+                FileObject webBuildBase = buildWeb == null ? null : helper.resolveFileObject(buildWeb);
+                if ( docBase != null && webBuildBase!= null){
+                    if ( !FileUtil.isParentOf(webBuildBase, artifact) ){
+                        return null;
+                    }
+                    else {
+                        path = FileUtil.getRelativePath(webBuildBase, artifact);
+                        return docBase.getFileObject(path);
+                    }
+                }
+                else {
+                    return null;
+                }
+            }
+        }
+        
+        private FileObject getJavaSourceFileObject( FileObject classFile ){
+            JavaSource js = JavaSource.forFileObject(classFile);
+            final List<ElementHandle<TypeElement>> handle = 
+                    new ArrayList<ElementHandle<TypeElement>>(1);
+            if (js != null) {
+                try {
+                    js.runUserActionTask(
+                            new org.netbeans.api.java.source.Task<CompilationController>()
+                            {
+                                @Override
+                                public void run( CompilationController controller )
+                                        throws Exception
+                                {
+                                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                                    List<? extends TypeElement> elements = controller
+                                            .getTopLevelElements();
+                                    if ( !elements.isEmpty() ){
+                                        handle.add(ElementHandle.create(
+                                                elements.get(0)));
+                                    }
+                                }
+                            }, true);
+                }
+                catch (IOException e) {
+                    Logger.getLogger(getClass().getCanonicalName()).log(
+                            Level.INFO, null, e);
+                }
+            }
+            if ( handle.get(0)== null){
+                return null;
+            }
+            return SourceUtils.getFile(handle.get(0),js.getClasspathInfo());
+        }
+
         private boolean isSynchronizationAppropriate(String filePath) {
-            if (filePath.startsWith("WEB-INF/classes") && !filePath.startsWith("WEB-INF/classes/META-INF")) { // NOI18N
+            if (filePath.startsWith(WEB_INF+"/classes") && !filePath.startsWith(WEB_INF+"/classes/"+META_INF)) { // NOI18N
                 return false;
             }
-            if (filePath.startsWith("WEB-INF/src")) { // NOI18N
+            if (filePath.startsWith(WEB_INF+"/src")) { // NOI18N
                 return false;
             }
-            if (filePath.startsWith("WEB-INF/lib")) { // NOI18N
+            if (filePath.startsWith(WEB_INF+"/lib")) { // NOI18N
                 return false;
             }
             return true;
         }
 
         private void fireArtifactChange(Iterable<ArtifactListener.Artifact> artifacts) {
-            fireArtifactChange( artifacts , null );
-        }
-        
-        private void fireArtifactChange(Iterable<ArtifactListener.Artifact> artifacts,
-                FileObject fileObject ) 
-        {
-            if ( fileObject!= null){
-                requestReload(fileObject, artifacts);
-            }
             for (ArtifactListener listener : listeners) {
                 listener.artifactsUpdated(artifacts);
             }
         }
         
-        private Collection<Artifact> getCollection(
-                Iterable<Artifact> artifacts)
-        {
-            Set<Artifact> set ;
-            if ( artifacts.getClass().equals(Set.class)){
-                return (Collection<Artifact>)artifacts;
-            }
-            else if (List.class.isAssignableFrom(artifacts.getClass())){
-                return new HashSet((List<Artifact>) artifacts);
-            }
-            else {
-                set = new HashSet<Artifact>();
-                for (Artifact artifact : artifacts) {
-                    set.add( artifact );
-                }
-                return set;
-            }
-        }
-        
         private boolean handleResource(FileEvent fe ) {
-            return handleResource( fe , false);
-        }
-
-        private boolean handleResource(FileEvent fe, boolean callReload ) {
             // this may happen in broken project - see issue #191516
             // in any case it can't be resource event when resources is null            
             if (resources == null) {
@@ -1847,9 +1897,6 @@ public final class WebProject implements Project {
 
                 Set<Artifact> set = Collections.singleton(
                         Artifact.forFile(FileUtil.toFile(fe.getFile())).serverResource());
-                if ( callReload ){
-                    requestReload( fe.getFile(), set );
-                }
                 fireArtifactChange(set);
                 return true;
             }
@@ -1873,10 +1920,6 @@ public final class WebProject implements Project {
         }
         
         private void handleCopyFileToDestDir(FileObject fo) throws IOException {
-            handleCopyFileToDestDir(fo, false);
-        }
-
-        private void handleCopyFileToDestDir(FileObject fo, boolean callReload) throws IOException {
             if (fo.isVirtual()) {
                 return;
             }
@@ -1884,8 +1927,8 @@ public final class WebProject implements Project {
             FileObject persistenceXmlDir = getWebModule().getPersistenceXmlDir();
             if (persistenceXmlDir != null && FileUtil.isParentOf(persistenceXmlDir, fo)
                     && "persistence.xml".equals(fo.getNameExt())) { // NOI18N
-                handleCopyFileToDestDir("WEB-INF/classes/META-INF", 
-                        persistenceXmlDir, fo, callReload ); // NOI18N
+                handleCopyFileToDestDir(WEB_INF+"/classes/"+META_INF, 
+                        persistenceXmlDir, fo ); // NOI18N
             }
 
             FileObject webInf = getWebModule().resolveWebInf(docBaseValue, webInfValue, true, true);
@@ -1893,22 +1936,16 @@ public final class WebProject implements Project {
 
             if (webInf != null && FileUtil.isParentOf(webInf, fo)
                     && !(webInf.getParent() != null && webInf.getParent().equals(docBase))) {
-                handleCopyFileToDestDir("WEB-INF", webInf, fo, callReload); // NOI18N
+                handleCopyFileToDestDir(WEB_INF, webInf, fo); // NOI18N
             }
             if (docBase != null && FileUtil.isParentOf(docBase, fo)) {
-                handleCopyFileToDestDir(null, docBase, fo, callReload);
+                handleCopyFileToDestDir(null, docBase, fo);
             }
             
         }
         
         private void handleCopyFileToDestDir(String prefix, FileObject baseDir, 
                 FileObject fo) throws IOException 
-        {
-            handleCopyFileToDestDir( prefix , baseDir, fo , false );
-        }
-
-        private void handleCopyFileToDestDir(String prefix, FileObject baseDir, 
-                FileObject fo, boolean callReload) throws IOException 
         {
             if (fo.isVirtual()) {
                 return ;
@@ -1955,8 +1992,7 @@ public final class WebProject implements Project {
                             File file = FileUtil.toFile(destFile);
                             if (file != null) {
                                 fireArtifactChange( Collections.singleton(
-                                        ArtifactListener.Artifact.forFile(file)) , 
-                                        fo );
+                                        ArtifactListener.Artifact.forFile(file)));
                             }
                         }
                     }
@@ -1991,91 +2027,6 @@ public final class WebProject implements Project {
             assert current != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
             return current;
         }
-    }
-    
-    private class BuildArtifactListener implements ArtifactsUpdated {
-        
-        private Set<Collection<File>> toReload;
-        
-        BuildArtifactListener(){
-            toReload = Collections.synchronizedSet( new HashSet<Collection<File>>());
-            webModule.getConfigSupport().addDeployOnSaveListener( new DeployOnSaveListener(){
-                public void deployed(Iterable<ArtifactListener.Artifact> artifacts){
-                    Collection<File> collection = getFileCollection(artifacts);
-                    if ( toReload.remove( collection ) ){
-                        List<FileObject> list = new ArrayList<FileObject>( collection.size());
-                        for (File file : collection) {
-                            collectReloadFiles(file, list);
-                        }
-                        for (FileObject fileObject : list) {
-                            BrowserReload.getInstance().reload( fileObject );
-                        }
-                    }
-                }
-            });
-        }
-        
-        @Override
-        public void artifactsUpdated(Iterable<File> artifacts) {
-            toReload.add(getCollection( artifacts));
-        }
-
-        private void collectReloadFiles( File file , 
-                final List<FileObject> requestedFiles)
-        {
-            JavaSource js = JavaSource.forFileObject( FileUtil.toFileObject(file));
-            if ( js != null ){
-                try {
-                js.runUserActionTask( new org.netbeans.api.java.source.Task<CompilationController>(){
-                    public void run(CompilationController controller) throws Exception {
-                        controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                        List<? extends TypeElement> elements = 
-                            controller.getTopLevelElements();
-                        for (TypeElement element : elements) {
-                            FileObject source = SourceUtils.getFile(
-                                    ElementHandle.create(element),  
-                                    controller.getClasspathInfo());
-                            if ( source != null ){
-                                requestedFiles.add( source );
-                                break;
-                            }
-                        }
-                    }
-                }, true);
-                }
-                catch(IOException e ){
-                    Logger.getLogger( getClass().getCanonicalName()).
-                        log(Level.INFO, null , e);
-                }
-            }
-        }
-        
-        private Collection<File> getFileCollection( Iterable<Artifact> artifacts){
-            Set<File> set = new HashSet<File>();
-            for( Artifact artifact : artifacts ){
-                File file = artifact.getFile();
-                set.add( file );
-            }
-            return set;
-        }
-        
-        private Collection<File> getCollection( Iterable<File> files){
-            Set<File> set ;
-            if ( files.getClass().equals(Set.class)){
-                return (Collection<File>)files;
-            }
-            else if (List.class.isAssignableFrom(files.getClass())){
-                return new HashSet( (List<File>) files);
-            }
-            else {
-                set = new HashSet<File>();
-                for (File file : files) {
-                    set.add( file );
-                }
-                return set;
-            }
-        }
-        
     }
 
     private class ArtifactCopySupport extends ArtifactCopyOnSaveSupport {
