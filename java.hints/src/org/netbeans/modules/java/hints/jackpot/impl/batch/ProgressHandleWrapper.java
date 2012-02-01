@@ -45,6 +45,7 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.modules.java.hints.jackpot.impl.Utilities;
 
 public final class ProgressHandleWrapper {
@@ -66,6 +67,10 @@ public final class ProgressHandleWrapper {
 
     public ProgressHandleWrapper(ProgressHandle handle, int... parts) {
         this(new ProgressHandleBasedProgressHandleAbstraction(handle), parts);
+    }
+
+    public ProgressHandleWrapper(ProgressContributor handle, int... parts) {
+        this(new ProgressContributorBasedProgressHandleAbstraction(handle), parts);
     }
 
     public ProgressHandleWrapper(ProgressHandleAbstraction handle, int... parts) {
@@ -221,6 +226,29 @@ public final class ProgressHandleWrapper {
     private static final class ProgressHandleBasedProgressHandleAbstraction implements ProgressHandleAbstraction {
         private final ProgressHandle delegate;
         public ProgressHandleBasedProgressHandleAbstraction(ProgressHandle delegate) {
+            this.delegate = delegate;
+        }
+
+        public void start(int totalWork) {
+            delegate.start(totalWork);
+        }
+
+        public void progress(int currentWorkDone) {
+            delegate.progress(currentWorkDone);
+        }
+
+        public void progress(String message) {
+            delegate.progress(message);
+        }
+
+        public void finish() {
+            delegate.finish();
+        }
+    }
+
+    private static final class ProgressContributorBasedProgressHandleAbstraction implements ProgressHandleAbstraction {
+        private final ProgressContributor delegate;
+        public ProgressContributorBasedProgressHandleAbstraction(ProgressContributor delegate) {
             this.delegate = delegate;
         }
 

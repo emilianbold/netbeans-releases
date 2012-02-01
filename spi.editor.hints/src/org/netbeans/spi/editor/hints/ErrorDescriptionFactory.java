@@ -47,6 +47,7 @@ import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.editor.hints.HintsControllerImpl;
 import org.netbeans.modules.editor.hints.StaticFixList;
 import org.openide.filesystems.FileObject;
@@ -88,6 +89,13 @@ public class ErrorDescriptionFactory {
      * Should be called inside document read lock to assure consistency
      */
     public static @NonNull ErrorDescription createErrorDescription(@NonNull Severity severity, @NonNull String description, @NonNull LazyFixList fixes, @NonNull Document doc, int lineNumber) {
+        return createErrorDescription(null, severity, description, null, fixes, doc, lineNumber);
+    }
+
+    /**
+     * Should be called inside document read lock to assure consistency
+     */
+    public static @NonNull ErrorDescription createErrorDescription(String id, @NonNull Severity severity, @NonNull String description, @NullAllowed CharSequence details, @NonNull LazyFixList fixes, @NonNull Document doc, int lineNumber) {
         Parameters.notNull("severity", severity);
         Parameters.notNull("description", description);
         Parameters.notNull("fixes", fixes);
@@ -96,7 +104,7 @@ public class ErrorDescriptionFactory {
         DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
         FileObject file = od != null ? od.getPrimaryFile() : null;
         
-        return new ErrorDescription(file, description, severity, fixes, HintsControllerImpl.fullLine(doc, lineNumber));
+        return new ErrorDescription(file, id, description, details, severity, fixes, HintsControllerImpl.fullLine(doc, lineNumber));
     }
     
     /**
@@ -130,6 +138,13 @@ public class ErrorDescriptionFactory {
      * Acquires read lock on the provided document to assure consistency
      */
     public static @NonNull ErrorDescription createErrorDescription(@NonNull Severity severity, @NonNull String description, @NonNull LazyFixList fixes, @NonNull Document doc, @NonNull Position start, @NonNull Position end) {
+        return createErrorDescription(null, severity, description, null, fixes, doc, start, end);
+    }
+
+    /**
+     * Acquires read lock on the provided document to assure consistency
+     */
+    public static @NonNull ErrorDescription createErrorDescription(@NullAllowed String id, @NonNull Severity severity, @NonNull String description, @NullAllowed CharSequence details, @NonNull LazyFixList fixes, @NonNull Document doc, @NonNull Position start, @NonNull Position end) {
         Parameters.notNull("severity", severity);
         Parameters.notNull("description", description);
         Parameters.notNull("fixes", fixes);
@@ -140,7 +155,7 @@ public class ErrorDescriptionFactory {
         DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
         FileObject file = od != null ? od.getPrimaryFile() : null;
         
-        return new ErrorDescription(file, description, severity, fixes, HintsControllerImpl.linePart(doc, start, end));
+        return new ErrorDescription(file, id, description, details, severity, fixes, HintsControllerImpl.linePart(doc, start, end));
     }
 
     /**
@@ -174,6 +189,13 @@ public class ErrorDescriptionFactory {
      * Should be called inside document read lock to assure consistency
      */
     public static @NonNull ErrorDescription createErrorDescription(@NonNull Severity severity, @NonNull String description, @NonNull LazyFixList fixes, @NonNull FileObject file, int start, int end) {
+        return createErrorDescription(null, severity, description, null, fixes, file, start, end);
+    }
+
+    /**
+     * Should be called inside document read lock to assure consistency
+     */
+    public static @NonNull ErrorDescription createErrorDescription(@NullAllowed String id, @NonNull Severity severity, @NonNull String description, @NullAllowed CharSequence details, @NonNull LazyFixList fixes, @NonNull FileObject file, int start, int end) {
         Parameters.notNull("severity", severity);
         Parameters.notNull("description", description);
         Parameters.notNull("fixes", fixes);
@@ -181,7 +203,7 @@ public class ErrorDescriptionFactory {
         if (start < 0) throw new IndexOutOfBoundsException("start < 0 (" + start + " < 0)");
         if (end < start) throw new IndexOutOfBoundsException("end < start (" + end + " < " + start + ")");
         
-        return new ErrorDescription(file, description, severity, fixes, HintsControllerImpl.linePart(file, start, end));
+        return new ErrorDescription(file, id, description, details, severity, fixes, HintsControllerImpl.linePart(file, start, end));
     }
 
     /**
