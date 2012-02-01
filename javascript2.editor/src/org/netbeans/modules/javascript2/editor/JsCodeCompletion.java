@@ -346,7 +346,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
     
     private void completeObjectMember(CompletionRequest request, List<CompletionProposal> resultList) {
         JsParserResult result = (JsParserResult)request.info;
-        JsObject jsObject = ModelUtils.findJsObject(result.getModel(), request.anchor);
+        JsObject jsObject = (JsObject)ModelUtils.getDeclarationScope(result.getModel(), request.anchor);
         
         System.out.println("jsObject: " + jsObject.getName());
         if (jsObject.getJSKind() == JsElement.Kind.METHOD) {
