@@ -85,7 +85,8 @@ public final class StartupExtender {
      * a {@code org.netbeans.api.server.ServerInstance} can be expected in the
      * context. Other kinds of API objects may be present according to contracts
      * not specified here.
-     *
+     * <p>This method should not be called unless and until the program is really
+     * about to be run, i.e. all known preconditions have been satisfied.
      * @param context the lookup providing the contract between client
      *             and provider
      * @param mode the startup mode the client is going to use
