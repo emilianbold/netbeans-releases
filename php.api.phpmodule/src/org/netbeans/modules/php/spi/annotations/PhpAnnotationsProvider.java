@@ -57,6 +57,7 @@ import org.openide.util.Parameters;
  * <p>Instances of this class are registered in the <code>{@value org.netbeans.modules.php.api.annotations.PhpAnnotations#ANNOTATIONS_PATH}</code>
  * in the module layer, see {@link Registration}.</p>
  * @since 1.63
+ * @see org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider#getAnnotationsProvider(PhpModule)
  */
 public abstract class PhpAnnotationsProvider {
 
