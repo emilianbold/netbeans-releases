@@ -39,18 +39,18 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.module.spi;
+package org.netbeans.modules.css.lib.api.properties;
+
+import org.netbeans.modules.css.lib.api.properties.Node;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public interface CssModule {
-
-    public String getName();
-
-    public String getDisplayName();
-
-    public String getSpecificationURL();
-
+public interface NodeVisitor {
+    
+    public void visit(Node node);
+    
+    public void unvisit(Node node);
+    
 }

@@ -49,13 +49,14 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
-import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
-import org.netbeans.modules.css.editor.properties.parser.Token;
+import org.netbeans.modules.css.lib.api.properties.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.PropertyValue;
+import org.netbeans.modules.css.lib.api.properties.Token;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
+import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.NbBundle;
 
@@ -100,7 +101,7 @@ public class CssAnalyser {
                         }
 
                         //check for vendor specific properies - ignore them
-                        PropertyModel property = CssModuleSupport.getPropertyModel(propertyName);
+                        PropertyModel property = Properties.getPropertyModel(propertyName);
                         if (!Css3Utils.containsGeneratedCode(propertyName) && !Css3Utils.isVendorSpecificProperty(propertyName) && property == null) {
                             //unknown property - report
                             String msg = NbBundle.getMessage(CssAnalyser.class, UNKNOWN_PROPERTY_BUNDLE_KEY, propertyName);

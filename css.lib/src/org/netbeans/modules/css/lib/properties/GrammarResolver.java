@@ -39,14 +39,19 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.properties.parser;
+package org.netbeans.modules.css.lib.properties;
 
+import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
+import org.netbeans.modules.css.lib.api.properties.GrammarElement;
+import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
+import org.netbeans.modules.css.lib.api.properties.Token;
+import org.netbeans.modules.css.lib.api.properties.ResolvedToken;
 import java.util.Map.Entry;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static org.netbeans.modules.css.editor.properties.parser.GrammarResolver.Log.*;
+import static org.netbeans.modules.css.lib.properties.GrammarResolver.Log.*;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.Pair;
 

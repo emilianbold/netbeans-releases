@@ -39,8 +39,11 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.properties.parser;
+package org.netbeans.modules.css.lib.api.properties;
 
+import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
+import org.netbeans.modules.css.lib.api.properties.Token;
+import org.netbeans.modules.css.lib.api.properties.ResolvedToken;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -150,7 +153,7 @@ public interface Node {
     
     static class GroupNode extends AbstractNode {
         
-        GroupGrammarElement group;
+        protected GroupGrammarElement group;
         
         private Map<Node, Node> children = new LinkedHashMap<Node, Node>();
 
@@ -163,7 +166,7 @@ public interface Node {
          * equal to the given node argument exists already, otherwise returns
          * the existing node.
          */
-        <T extends AbstractNode> T addChild(T node) {
+        public <T extends AbstractNode> T addChild(T node) {
             //do not overwrite the existing nodes, use the old ones instead
             if(children.containsKey(node)) {
                 return (T)children.get(node); //safe

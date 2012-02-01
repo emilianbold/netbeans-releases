@@ -39,8 +39,9 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.properties.parser;
+package org.netbeans.modules.css.lib.properties;
 
+import org.netbeans.modules.css.lib.api.properties.Token;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.lexer.TokenHierarchy;

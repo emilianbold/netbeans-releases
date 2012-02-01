@@ -42,9 +42,9 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
-import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.PropertyValue;
 
 /**
  * Actually there's no such class as MarqueeModule, the property descriptors
@@ -59,13 +59,13 @@ public class MarqueeModuleTest extends CslTestBase {
     }
     
     public void testProperties() {
-        PropertyModel p = CssModuleSupport.getPropertyModel("marquee-direction");
+        PropertyModel p = Properties.getPropertyModel("marquee-direction");
         assertTrue(new PropertyValue(p, "reverse").isResolved());
         assertTrue(new PropertyValue(p, "forward").isResolved());
     }
     
     public void testMarqueePlayCount() {
-        PropertyModel p = CssModuleSupport.getPropertyModel("marquee-play-count");
+        PropertyModel p = Properties.getPropertyModel("marquee-play-count");
         assertTrue(new PropertyValue(p, "1").isResolved());
         assertFalse(new PropertyValue(p, "-1").isResolved()); //negative not allowed
         

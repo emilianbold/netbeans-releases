@@ -39,11 +39,12 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.properties.parser;
+package org.netbeans.modules.css.lib.api.properties;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.modules.css.lib.properties.GrammarParser;
 
 /**
  * the object is in fact immutable since the setMinimum/MaximumOccurrences is
@@ -55,6 +56,15 @@ import java.util.List;
  */
 public abstract class GrammarElement {
 
+    public static final char INVISIBLE_PROPERTY_PREFIX = '@';
+    
+    public static boolean isArtificialElementName(CharSequence name) {
+        if(name.length() == 0) {
+            return false;
+        }
+        return name.charAt(0) == INVISIBLE_PROPERTY_PREFIX;
+    }
+    
     private GroupGrammarElement parent;
     private String path;
 
@@ -66,11 +76,11 @@ public abstract class GrammarElement {
     private int minimum_occurances = 1;
     private int maximum_occurances = 1;
 
-    void setMinimumOccurances(int i) {
+    public void setMinimumOccurances(int i) {
         this.minimum_occurances = i;
     }
 
-    void setMaximumOccurances(int i) {
+    public void setMaximumOccurances(int i) {
         maximum_occurances = i;
     }
 
@@ -119,7 +129,7 @@ public abstract class GrammarElement {
         GroupGrammarElement p = parent;
         while (p != null) {
             if (p.referenceName != null) {
-                boolean visible = !GrammarParser.isArtificialElementName(p.referenceName);
+                boolean visible = !isArtificialElementName(p.referenceName);
                 if (visible || allowNonVisibleElements) {
                     return p.referenceName;
                 }

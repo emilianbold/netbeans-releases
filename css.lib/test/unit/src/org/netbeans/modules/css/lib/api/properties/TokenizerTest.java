@@ -39,18 +39,20 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.properties.parser;
+package org.netbeans.modules.css.lib.api.properties;
 
+import org.netbeans.modules.css.lib.api.properties.Token;
+import org.netbeans.modules.css.lib.properties.Tokenizer;
 import java.util.Arrays;
 import java.util.List;
 import junit.framework.AssertionFailedError;
-import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
+import org.netbeans.modules.css.lib.CssTestBase;
 
 /**
  *
  * @author marekfukala
  */
-public class TokenizerTest extends CssModuleTestBase {
+public class TokenizerTest extends CssTestBase {
 
     public TokenizerTest(String name) {
         super(name);

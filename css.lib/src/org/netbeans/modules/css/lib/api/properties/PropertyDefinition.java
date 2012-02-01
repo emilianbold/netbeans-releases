@@ -39,7 +39,10 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.module.spi;
+package org.netbeans.modules.css.lib.api.properties;
+
+import org.netbeans.modules.css.lib.api.CssModule;
+
 
 /**
  * Described a CSS property.
@@ -69,16 +72,22 @@ package org.netbeans.modules.css.editor.module.spi;
  * 
  * @author mfukala@netbeans.org
  */
-public class Property {
+public class PropertyDefinition {
     
     private String name, valueGrammar;
-    private CssModule cssmodule;
+    
+    private CssModule cssModule;
 
-    public Property(String name, String valueGrammar, CssModule cssmodule) {
+    public PropertyDefinition(String name, String valueGrammar, CssModule module) {
         this.name = name;
         this.valueGrammar = valueGrammar;
-        this.cssmodule = cssmodule;
+        this.cssModule = module;
     }
+
+    public CssModule getCssModule() {
+        return cssModule;
+    }
+    
     
     /**
      * @return The property name.
@@ -94,10 +103,6 @@ public class Property {
         return valueGrammar;
     }
     
-    public CssModule getCssModule() {
-        return cssmodule;
-    }
-    
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -106,7 +111,7 @@ public class Property {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final Property other = (Property) obj;
+        final PropertyDefinition other = (PropertyDefinition) obj;
         if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
             return false;
         }

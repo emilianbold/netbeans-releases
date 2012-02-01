@@ -39,8 +39,9 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.properties.parser;
+package org.netbeans.modules.css.lib.properties;
 
+import org.netbeans.modules.css.lib.api.properties.Token;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.*;

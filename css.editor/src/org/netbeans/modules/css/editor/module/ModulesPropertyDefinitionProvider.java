@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,12 +23,6 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *      
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
@@ -40,35 +34,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.properties.parser;
+package org.netbeans.modules.css.editor.module;
 
-import java.util.Arrays;
-import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
-import org.netbeans.modules.css.editor.module.spi.Property;
+import java.util.ArrayList;
+import java.util.Collection;
+import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinitionProvider;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * @author Marek Fukala
+ *
+ * @author marekfukala
  */
-public class PropertyModelTest extends CssModuleTestBase {
+@ServiceProvider(service=PropertyDefinitionProvider.class)
+public class ModulesPropertyDefinitionProvider implements PropertyDefinitionProvider {
 
-    public PropertyModelTest(String name) {
-        super(name);
-    }
-
-    public void testBasic() {
-        Property p1 = new Property("p1", "a | b", null);
-        Property p2 = new Property("p2", "c | d", null);
-        
-        PropertyModel pm = new PropertyModel("p", Arrays.asList(new Property[]{p1, p2}));
-        
-        assertSame(p1, pm.getProperty());
-        assertNotNull(pm.getProperties());
-        assertEquals(2, pm.getProperties().size());
-        assertNotNull(pm.getGrammarElement());
-        
-        //merged grammar
-        assertEquals(" [ a | b ]  |  [ c | d ] ", pm.getGrammar());
+    @Override
+    public Collection<PropertyDefinition> getProperties() {
+        Collection<PropertyDefinition> all = new ArrayList<PropertyDefinition>();
+        for (CssEditorModule module : CssModuleSupport.getModules()) {
+            all.addAll(module.getProperties());
+        }
+        return all;
     }
     
 }

@@ -39,14 +39,40 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.properties.parser;
+package org.netbeans.modules.css.lib.api.properties;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
-public enum GrammarElementKind {
+public class ValueGrammarElement extends GrammarElement {
+
+    private boolean isUnit;
+    private String value;
     
-    VALUE, GROUP
+    public ValueGrammarElement(GroupGrammarElement parent, String value, boolean isUnit) {
+        super(parent);
+        this.value = value;
+        this.isUnit = isUnit;
+    }
+
+    @Override
+    public GrammarElementKind getKind() {
+        return GrammarElementKind.VALUE;
+    }
+
+    /** true for 'unit' values like length, angle etc. Simply for those which has no fixed value. */
+    public boolean isUnit() {
+        return isUnit;
+    }
+
+    public String value() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return (isUnit() ? "!" : "") + value() + super.toString(); //NOI18N
+    }
     
 }

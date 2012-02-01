@@ -39,55 +39,33 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.properties.parser;
-
-import org.netbeans.modules.css.lib.api.CssTokenId;
+package org.netbeans.modules.css.lib.api.properties;
 
 /**
  *
  * @author marekfukala
  */
-public class Token {
+public class ResolvedToken {
     
-    private int offset, length;
-    private CssTokenId tokenId;
-    private CharSequence tokenizerInput;
-    
-    Token(CssTokenId tokenId, int offset, int length, CharSequence tokenizerInput) {
-        this.tokenId = tokenId;
-        this.offset = offset;
-        this.length = length;
-        this.tokenizerInput = tokenizerInput;
+    private Token token;
+    private ValueGrammarElement grammarElement;
+
+    public ResolvedToken(Token token, ValueGrammarElement GrammarElement) {
+        this.token = token;
+        this.grammarElement = GrammarElement;
     }
-    
-    public CssTokenId tokenId() {
-        return tokenId;
+
+    public Token token() {
+        return token;
     }
-    
-    public int offset() {
-        return offset;
+
+    public ValueGrammarElement getGrammarElement() {
+        return grammarElement;
     }
-    
-    public int length() {
-        return length;
-    }
-    
-    public CharSequence image() {
-        return tokenizerInput.subSequence(offset, offset + length);
-    }
-    
+
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(image());
-        sb.append('(');
-        sb.append(tokenId);
-        sb.append(';');
-        sb.append(offset());
-        sb.append('-');
-        sb.append(offset() + length());
-        sb.append(')');
-        return sb.toString();
+        return new StringBuilder().append(grammarElement.path()).append(" (").append(token()).append(")").toString();
     }
 
     @Override
@@ -98,14 +76,11 @@ public class Token {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final Token other = (Token) obj;
-        if (this.offset != other.offset) {
+        final ResolvedToken other = (ResolvedToken) obj;
+        if ((this.token == null) ? (other.token != null) : !this.token.equals(other.token)) {
             return false;
         }
-        if (this.length != other.length) {
-            return false;
-        }
-        if (this.tokenId != other.tokenId) {
+        if (this.grammarElement != other.grammarElement && (this.grammarElement == null || !this.grammarElement.equals(other.grammarElement))) {
             return false;
         }
         return true;
@@ -114,9 +89,8 @@ public class Token {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 89 * hash + this.offset;
-        hash = 89 * hash + this.length;
-        hash = 89 * hash + (this.tokenId != null ? this.tokenId.hashCode() : 0);
+        hash = 97 * hash + (this.token != null ? this.token.hashCode() : 0);
+        hash = 97 * hash + (this.grammarElement != null ? this.grammarElement.hashCode() : 0);
         return hash;
     }
     

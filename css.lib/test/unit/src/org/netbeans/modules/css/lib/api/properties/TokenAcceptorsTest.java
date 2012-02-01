@@ -7,8 +7,8 @@
  * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
+ * General Public License Version 2 only (getToken("GPL") or the Common
+ * Development and Distribution License(getToken("CDDL") (collectively, the
  * "License"). You may not use this file except in compliance with the
  * License. You can obtain a copy of the License at
  * http://www.netbeans.org/cddl-gplv2.html
@@ -39,35 +39,47 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.properties.parser;
+package org.netbeans.modules.css.lib.api.properties;
 
-import java.util.Collections;
-import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
-import org.netbeans.modules.css.editor.module.spi.Property;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.css.lib.properties.TokenAcceptor;
+import org.netbeans.modules.css.lib.properties.Tokenizer;
 
 /**
  *
  * @author marekfukala
  */
-public class GrammarParserTest extends CssModuleTestBase {
-
-    public GrammarParserTest(String name) {
+public class TokenAcceptorsTest extends NbTestCase {
+    
+    public TokenAcceptorsTest(String name) {
         super(name);
     }
     
-    public void testCanParserGrammarOfAllProperties() {
-        for (Property property : CssModuleSupport.getProperties()) {
-            PropertyModel model = new PropertyModel(property.getName(), Collections.singletonList(property));
-            assertNotNull(GrammarParser.parse(model.getGrammar()));
-        }
+    public void testBasic() {
+        TokenAcceptor ta = TokenAcceptor.getAcceptor("length");
+        assertNotNull(ta);
     }
-    
-    public void testParseAllGroup() {
-        String grammar = " a && b";
+
+    public void testAccepts() {
+        TokenAcceptor ta = TokenAcceptor.getAcceptor("identifier");
+        assertTrue(ta.accepts(getToken("hello")));
+        assertTrue(ta.accepts(getToken("_hello")));
+        assertTrue(ta.accepts(getToken("hel_lo")));
+        assertTrue(ta.accepts(getToken("-hello")));
+        assertTrue(ta.accepts(getToken("hel-lo")));
+        assertTrue(ta.accepts(getToken("hello23")));
+        assertTrue(ta.accepts(getToken("\u0080hello")));
+        assertTrue(ta.accepts(getToken("hel\u0090o")));
+        assertTrue(ta.accepts(getToken("hel\\uffbbo")));
+        assertTrue(ta.accepts(getToken("hel\\no")));
         
-        GroupGrammarElement e = GrammarParser.parse(grammar);
-        assertEquals(GroupGrammarElement.Type.ALL, e.getType());
+        assertFalse(ta.accepts(getToken("0hello")));
+        
     }
     
+    private Token getToken(String tokenImg) {
+        Tokenizer t = new Tokenizer(tokenImg);
+        return t.token();
     }
+    
+}

@@ -7,8 +7,8 @@
  * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only (getToken("GPL") or the Common
- * Development and Distribution License(getToken("CDDL") (collectively, the
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
  * "License"). You may not use this file except in compliance with the
  * License. You can obtain a copy of the License at
  * http://www.netbeans.org/cddl-gplv2.html
@@ -39,45 +39,87 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.properties.parser;
+package org.netbeans.modules.css.lib.api.properties;
 
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 
 /**
  *
  * @author marekfukala
  */
-public class TokenAcceptorsTest extends NbTestCase {
+public class Token {
     
-    public TokenAcceptorsTest(String name) {
-        super(name);
+    private int offset, length;
+    private CssTokenId tokenId;
+    private CharSequence tokenizerInput;
+    
+    public Token(CssTokenId tokenId, int offset, int length, CharSequence tokenizerInput) {
+        this.tokenId = tokenId;
+        this.offset = offset;
+        this.length = length;
+        this.tokenizerInput = tokenizerInput;
     }
     
-    public void testBasic() {
-        TokenAcceptor ta = TokenAcceptor.getAcceptor("length");
-        assertNotNull(ta);
+    public CssTokenId tokenId() {
+        return tokenId;
+    }
+    
+    public int offset() {
+        return offset;
+    }
+    
+    public int length() {
+        return length;
+    }
+    
+    public CharSequence image() {
+        return tokenizerInput.subSequence(offset, offset + length);
+    }
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(image());
+        sb.append('(');
+        sb.append(tokenId);
+        sb.append(';');
+        sb.append(offset());
+        sb.append('-');
+        sb.append(offset() + length());
+        sb.append(')');
+        return sb.toString();
     }
 
-    public void testAccepts() {
-        TokenAcceptor ta = TokenAcceptor.getAcceptor("identifier");
-        assertTrue(ta.accepts(getToken("hello")));
-        assertTrue(ta.accepts(getToken("_hello")));
-        assertTrue(ta.accepts(getToken("hel_lo")));
-        assertTrue(ta.accepts(getToken("-hello")));
-        assertTrue(ta.accepts(getToken("hel-lo")));
-        assertTrue(ta.accepts(getToken("hello23")));
-        assertTrue(ta.accepts(getToken("\u0080hello")));
-        assertTrue(ta.accepts(getToken("hel\u0090o")));
-        assertTrue(ta.accepts(getToken("hel\\uffbbo")));
-        assertTrue(ta.accepts(getToken("hel\\no")));
-        
-        assertFalse(ta.accepts(getToken("0hello")));
-        
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Token other = (Token) obj;
+        if (this.offset != other.offset) {
+            return false;
+        }
+        if (this.length != other.length) {
+            return false;
+        }
+        if (this.tokenId != other.tokenId) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 89 * hash + this.offset;
+        hash = 89 * hash + this.length;
+        hash = 89 * hash + (this.tokenId != null ? this.tokenId.hashCode() : 0);
+        return hash;
     }
     
-    private Token getToken(String tokenImg) {
-        Tokenizer t = new Tokenizer(tokenImg);
-        return t.token();
-    }
+    
     
 }

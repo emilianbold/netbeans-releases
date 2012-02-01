@@ -66,10 +66,10 @@ import org.netbeans.modules.css.editor.csl.CssNodeElement;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
-import org.netbeans.modules.css.editor.module.spi.CssModule;
+import org.netbeans.modules.css.lib.api.CssModule;
 import org.netbeans.modules.css.editor.module.spi.FutureParamTask;
 import org.netbeans.modules.css.editor.module.spi.HelpResolver;
-import org.netbeans.modules.css.editor.module.spi.Property;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
@@ -118,7 +118,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
         module("presentation_levels", "http://www.w3.org/TR/css3-preslev"),
         module("generated_and_replaced_content", "http://www.w3.org/TR/css3-content") //NOI18N
     };
-    private static Collection<Property> propertyDescriptors;
+    private static Collection<PropertyDefinition> propertyDescriptors;
 
     private static CssModule module(String name, String url) {
         return new DefaultCssModule(name, url);
@@ -165,12 +165,12 @@ public class DefaultCssEditorModule extends CssEditorModule {
     private static class Css21HelpResolver extends HelpResolver {
 
         @Override
-        public String getHelp(Property property) {
+        public String getHelp(PropertyDefinition property) {
             return CssHelpResolver.instance().getPropertyHelp(property.getName());
         }
 
         @Override
-        public URL resolveLink(Property property, String link) {
+        public URL resolveLink(PropertyDefinition property, String link) {
 //            return CssHelpResolver.getHelpZIPURLasString() == null ? null :
 //            new ElementHandle.UrlHandle(CssHelpResolver.getHelpZIPURLasString() +
 //                    normalizeLink( elementHandle, link));
@@ -184,9 +184,9 @@ public class DefaultCssEditorModule extends CssEditorModule {
     }
 
     @Override
-    public synchronized Collection<Property> getProperties() {
+    public synchronized Collection<PropertyDefinition> getProperties() {
         if (propertyDescriptors == null) {
-            propertyDescriptors = new ArrayList<Property>();
+            propertyDescriptors = new ArrayList<PropertyDefinition>();
             for (CssModule module : MODULE_PROPERTY_DEFINITION_FILE_NAMES) {
                 String path = MODULE_PATH_BASE + module.getName();
                 propertyDescriptors.addAll(Utilities.parsePropertyDefinitionFile(path, module));

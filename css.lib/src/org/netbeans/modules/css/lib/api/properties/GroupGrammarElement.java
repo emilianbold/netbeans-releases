@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.properties.parser;
+package org.netbeans.modules.css.lib.api.properties;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,12 +76,12 @@ public class GroupGrammarElement extends GrammarElement {
         ALL;
     }
 
-    GroupGrammarElement(GroupGrammarElement parent, int index, String referenceName) {
+    public GroupGrammarElement(GroupGrammarElement parent, int index, String referenceName) {
         this(parent, index);
         this.referenceName = referenceName;
     }
 
-    GroupGrammarElement(GroupGrammarElement parent, int index) {
+    public GroupGrammarElement(GroupGrammarElement parent, int index) {
         super(parent);
         this.index = index;
         this.type = Type.LIST; //default type
@@ -98,7 +98,7 @@ public class GroupGrammarElement extends GrammarElement {
         return type;
     }
     
-    void setType(Type type) {
+    public void setType(Type type) {
         this.type = type;
     }
 
@@ -106,7 +106,7 @@ public class GroupGrammarElement extends GrammarElement {
         return elements;
     }
 
-    void addElement(GrammarElement element) {
+    public void addElement(GrammarElement element) {
         elements.add(element);
     }
 

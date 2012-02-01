@@ -63,8 +63,8 @@ import org.netbeans.modules.css.editor.csl.CssColor;
 import org.netbeans.modules.css.editor.csl.CssCompletion;
 import org.netbeans.modules.css.editor.csl.CssElement;
 import org.netbeans.modules.css.editor.csl.CssValueElement;
-import org.netbeans.modules.css.editor.properties.parser.GrammarElement;
-import org.netbeans.modules.css.editor.properties.parser.ValueGrammarElement;
+import org.netbeans.modules.css.lib.api.properties.GrammarElement;
+import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.util.NbBundle;
 

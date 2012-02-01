@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,34 +34,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.lib.api.properties;
 
-package org.netbeans.modules.css.editor.csl;
-
-import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
-import org.netbeans.modules.css.lib.api.properties.GrammarElement;
+import java.util.Collections;
+import org.netbeans.modules.css.lib.CssTestBase;
+import org.netbeans.modules.css.lib.properties.GrammarParser;
 
 /**
- * Represents CSS property value. Just one item in case of multivalues e.g. background: red 1px; 
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class CssValueElement extends CssPropertyElement {
-    
-    private GrammarElement value; 
-    
-    public CssValueElement(PropertyDefinition property, GrammarElement value) {
-        super(property);
-        this.value = value;
-    }
-    
-    @Override
-    public String getName() {
-        return value.toString();
-    }
+public class GrammarParserTest extends CssTestBase {
 
-}
+    public GrammarParserTest(String name) {
+        super(name);
+    }
+    
+    public void testCanParserGrammarOfAllProperties() {
+        for (PropertyDefinition property : PropertyDefinitionProvider.Query.getProperties()) {
+            PropertyModel model = new PropertyModel(property.getName(), Collections.singletonList(property));
+            assertNotNull(GrammarParser.parse(model.getGrammar()));
+        }
+    }
+    
+    public void testParseAllGroup() {
+        String grammar = " a && b";
+        
+        GroupGrammarElement e = GrammarParser.parse(grammar);
+        assertEquals(GroupGrammarElement.Type.ALL, e.getType());
+    }
+    
+    }

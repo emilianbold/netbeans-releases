@@ -39,27 +39,25 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.properties.parser;
+package org.netbeans.modules.css.lib.properties;
 
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
+import org.netbeans.modules.css.lib.api.properties.GrammarElement;
+import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
 import java.util.Collection;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.module.spi.Property;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinitionProvider;
 
 /**
  * @author mfukala@netbeans.org
  */
 public class GrammarParser {
     
-    public static final char INVISIBLE_PROPERTY_PREFIX = '@';
     
-    public static boolean isArtificialElementName(CharSequence name) {
-        if(name.length() == 0) {
-            return false;
-        }
-        return name.charAt(0) == INVISIBLE_PROPERTY_PREFIX;
-    }
 
     public static GroupGrammarElement parse(String expresssion) {
         return parse(expresssion, null);
@@ -153,7 +151,8 @@ public class GrammarParser {
 
                     //resolve reference
                     String referredElementName = buf.toString();
-                    Collection<Property> properties = CssModuleSupport.getProperties(referredElementName, true);
+                    Collection<PropertyDefinition> properties = Properties.getProperties(referredElementName, true);
+//                    Collection<PropertyDefinition> properties = PropertyDefinitionProvider.Query.getProperties(referredElementName);
                     if (properties == null) {
                         throw new IllegalStateException(
                                 String.format("Property '%s' parsing error: No referred element '%s' found. "
