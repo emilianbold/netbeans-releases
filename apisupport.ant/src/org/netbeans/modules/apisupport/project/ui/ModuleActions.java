@@ -64,6 +64,8 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.startup.StartupExtender;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.java.source.ElementHandle;
@@ -77,6 +79,8 @@ import org.netbeans.modules.apisupport.project.spi.ExecProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import static org.netbeans.modules.apisupport.project.ui.Bundle.*;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.apisupport.project.ui.customizer.ModuleProperties;
+import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
@@ -457,7 +461,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                     return;
                 } else {
                     // XXX consider passing PM.fP(FU.toFO(SuiteUtils.suiteDirectory(project))) instead for a suite component project:
-                    setRunArgsIde(project, command, p, project.getTestUserDirLockFile());
+                    setRunArgsIde(project, SingleModuleProperties.getInstance(project), command, p, project.getTestUserDirLockFile());
                     if (command.equals(ActionProvider.COMMAND_REBUILD)) {
                         p.setProperty("do.not.clean.module.config.xml", "true"); // #196192
                     }
@@ -480,7 +484,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
             runnable.run();
     }
 
-    static void setRunArgsIde(Project project, String command, Properties p, File testUserDirLockFile) {
+    static void setRunArgsIde(Project project, ModuleProperties modprops, String command, Properties p, File testUserDirLockFile) {
         StringBuilder runArgsIde = new StringBuilder();
         StartupExtender.StartMode mode;
         if (command.equals(COMMAND_RUN) || command.equals(COMMAND_RUN_SINGLE)) {
@@ -499,7 +503,9 @@ public final class ModuleActions implements ActionProvider, ExecProject {
             mode = null;
         }
         if (mode != null) {
-            for (StartupExtender group : StartupExtender.getExtenders(Lookups.singleton(project /*XXX JavaPlatform*/), mode)) {
+            JavaPlatform plaf = modprops.getJavaPlatform();
+            Lookup context = Lookups.fixed(project, plaf != null ? plaf : JavaPlatformManager.getDefault().getDefaultPlatform());
+            for (StartupExtender group : StartupExtender.getExtenders(context, mode)) {
                 for (String arg : group.getArguments()) {
                     runArgsIde.append("-J").append(arg).append(' ');
                 }

@@ -46,13 +46,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.extexecution.startup.StartupExtender;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 @ProjectServiceProvider(service=LateBoundPrerequisitesChecker.class, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_JAR)
 public class RunJarStartupArgs implements LateBoundPrerequisitesChecker {
@@ -77,7 +80,16 @@ public class RunJarStartupArgs implements LateBoundPrerequisitesChecker {
         for (Map.Entry<? extends String, ? extends String> entry : config.getProperties().entrySet()) {
             if (entry.getKey().equals("exec.args")) {
                 List<String> args = new ArrayList<String>();
-                for (StartupExtender group : StartupExtender.getExtenders(Lookups.singleton(config.getProject() /*XXX JavaPlatform*/), mode)) {
+                InstanceContent ic = new InstanceContent();
+                Project p = config.getProject();
+                if (p != null) {
+                    ic.add(p);
+                    ActiveJ2SEPlatformProvider pp = p.getLookup().lookup(ActiveJ2SEPlatformProvider.class);
+                    if (pp != null) {
+                        ic.add(pp.getJavaPlatform());
+                    }
+                }
+                for (StartupExtender group : StartupExtender.getExtenders(new AbstractLookup(ic), mode)) {
                     args.addAll(group.getArguments());
                 }
                 if (!args.isEmpty()) {
