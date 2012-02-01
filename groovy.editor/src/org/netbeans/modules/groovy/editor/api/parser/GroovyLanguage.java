@@ -72,10 +72,10 @@ import org.netbeans.modules.groovy.editor.api.StructureAnalyzer;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyHintsProvider;
-import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
@@ -85,6 +85,12 @@ import org.openide.windows.TopComponent;
  * @author Tor Norbye
  * @author Martin Adamek
  */
+@MIMEResolver.ExtensionRegistration(
+    displayName="#GroovyResolver",
+    extension={ "groovy" },
+    mimeType="text/x-groovy",
+    position=281
+)
 @LanguageRegistration(mimeType="text/x-groovy", useMultiview=true)
 @PathRecognizerRegistration(mimeTypes="text/x-groovy", sourcePathIds=ClassPath.SOURCE, libraryPathIds={}, binaryLibraryPathIds={}) //NOI18N
 public class GroovyLanguage extends DefaultLanguageConfig {

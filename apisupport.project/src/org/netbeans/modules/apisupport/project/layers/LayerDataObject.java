@@ -53,6 +53,7 @@ import org.netbeans.modules.apisupport.project.spi.LayerUtil;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
@@ -66,6 +67,21 @@ import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
+@MIMEResolver.NamespaceRegistration(
+    displayName="org.netbeans.modules.apisupport.project.api.Bundle#LayerResolver.xml",
+    position=320,
+    doctypePublicId={
+        "-//NetBeans//DTD Filesystem 1.0//EN",
+        "-//NetBeans//DTD Filesystem 1.1//EN",
+        "-//NetBeans//DTD Filesystem 1.2//EN"
+    },
+    mimeType="text/x-netbeans-layer+xml"
+)
+@MIMEResolver.Registration(
+    displayName="org.netbeans.modules.apisupport.project.layers.Bundle#LBL_hidden_files",
+    resource="../ui/resources/hidden-resolver.xml",
+    position=97447
+)
 public class LayerDataObject extends MultiDataObject {
 
     private final Lookup lkp;

@@ -63,6 +63,7 @@ import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.xml.cookies.*;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 import org.w3c.dom.Document;
@@ -74,6 +75,17 @@ import org.xml.sax.SAXParseException;
  *
  * @author Petr Pisl
  */
+@MIMEResolver.NamespaceRegistration(
+    displayName="",
+    position=410,
+    mimeType="text/x-struts+xml",
+    doctypePublicId={
+        "-//Apache Software Foundation//DTD Struts Configuration 1.0//EN",
+        "-//Apache Software Foundation//DTD Struts Configuration 1.1//EN",
+        "-//Apache Software Foundation//DTD Struts Configuration 1.2//EN",
+        "-//Apache Software Foundation//DTD Struts Configuration 1.3//EN"
+    }
+)
 public class StrutsConfigDataObject extends MultiDataObject
                                     implements org.openide.nodes.CookieSet.Factory  {
 

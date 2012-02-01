@@ -17,14 +17,6 @@
             </file>
         </folder>
     </folder>
-    <folder name="Services">
-        <folder name="MIMEResolver">
-            <file name="PHPMimeResolver.xml" url="PHPMimeResolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
-                <attr name="position" intvalue="282"/>
-            </file>
-        </folder>
-    </folder>
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-php5">

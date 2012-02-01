@@ -50,12 +50,21 @@ import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author mfukala@netbeans.org
  */
+@NbBundle.Messages("CssResolver=CSS Files")
+@MIMEResolver.ExtensionRegistration(
+    mimeType="text/css",
+    position=169,
+    displayName="#CssResolver",
+    extension={ "css" }
+)
 public class CssProjectSupport {
 
     private static final WeakHashMap<Project, CssProjectSupport> INSTANCIES = new WeakHashMap<Project, CssProjectSupport>();

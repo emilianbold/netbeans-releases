@@ -61,6 +61,7 @@ import org.netbeans.modules.xml.sync.*;
 import org.netbeans.modules.xml.cookies.*;
 import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 import org.netbeans.modules.xsl.cookies.ValidateXSLSupport;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
@@ -70,6 +71,13 @@ import org.openide.windows.TopComponent;
  * @author Libor Kramolis
  * @author asgeir@dimonsoftware.com
  */
+@MIMEResolver.NamespaceRegistration(
+    displayName="org.netbeans.modules.xsl.resources.Bundle#XSLTResolver",
+    acceptedExtension={"xsl", "xslt"},
+    mimeType="application/xslt+xml",
+    position=450,
+    elementNS="http://www.w3.org/1999/XSL/Transform"
+)
 public final class XSLDataObject extends MultiDataObject implements XMLDataObjectLook {
     /** Serial Version UID */
     private static final long serialVersionUID = -3523066651187749549L;
