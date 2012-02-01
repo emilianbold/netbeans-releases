@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.ide.ergonomics.newproject;
 
+import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.ide.ergonomics.fod.FindComponentModules;
 import org.netbeans.modules.ide.ergonomics.fod.ModulesInstaller;
 import java.awt.Component;
@@ -68,7 +69,7 @@ import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.ide.ergonomics.ServerWizardProviderProxy;
 import org.netbeans.modules.ide.ergonomics.fod.ConfigurationPanel;
-import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
+import org.netbeans.modules.ide.ergonomics.fod.FoDLayersProvider;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
 import org.netbeans.spi.server.ServerWizardProvider;
@@ -109,7 +110,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
             configPanel = new ConfigurationPanel(new Callable<JComponent>() {
                 @Override
                 public JComponent call() throws Exception {
-                    FoDFileSystem.getInstance().refresh();
+                    FoDLayersProvider.getInstance().refreshForce();
                     waitForDelegateWizard();
                     return new JLabel(" ");
                 }
@@ -182,7 +183,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
             forEnable = elems;
             fireChange ();
         } else {
-            FoDFileSystem.getInstance().refresh();
+            FoDLayersProvider.getInstance().refreshForce();
             waitForDelegateWizard ();
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -207,7 +208,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         Object o = settings.getProperty (FeatureOnDemandWizardIterator.CHOSEN_TEMPLATE);
         assert o != null && o instanceof FileObject : o + " is not null and instanceof FileObject.";
         FileObject fileObject = (FileObject) o;
-        info = FoDFileSystem.getInstance ().whichProvides(fileObject);
+        info = FoDLayersProvider.getInstance ().whichProvides(fileObject);
         assert info != null : "No info for " + fileObject;
         finder = new FindComponentModules(info);
     }
@@ -228,8 +229,11 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         WizardDescriptor.InstantiatingIterator<?> iterator = null;
         int i = 0;
         while (fo == null || iterator == null) {
-            FoDFileSystem.getInstance().refresh();
-            FoDFileSystem.getInstance().waitFinished();
+            try {
+                FoDLayersProvider.getInstance().refreshForce();
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
             // hot-fixed wizard providers - temporary
             if (templateResource.startsWith("Servers/WizardProvider")) {
                 try {
@@ -287,7 +291,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                 }
                 LOG.info("Forcing refresh"); // NOI18N
                 // force refresh for the filesystem
-                FoDFileSystem.getInstance().refreshForce();
+                FoDLayersProvider.getInstance().refreshForce();
                 LOG.info("Done with refresh"); // NOI18N
 
                 FileObject fake = FileUtil.getConfigFile(templateResource);

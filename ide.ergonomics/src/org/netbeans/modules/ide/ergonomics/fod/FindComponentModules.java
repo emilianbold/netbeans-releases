@@ -165,7 +165,7 @@ public final class FindComponentModules {
             }
         }
         if (res.size() > 1) {
-            FoDFileSystem.LOG.warning("No prefCNB found " + prefCNB + " using multiple " + res);
+            FoDLayersProvider.LOG.warning("No prefCNB found " + prefCNB + " using multiple " + res);
         }
         return res;
     }
@@ -261,7 +261,7 @@ public final class FindComponentModules {
                         all.add (el);
                         all.addAll (reqs);
 //                    } else {
-//                        FoDFileSystem.LOG.fine("Cannot enable " + el.getCodeName() + " broken deps: " + breaks); // NOI18N
+//                        FoDLayersProvider.LOG.fine("Cannot enable " + el.getCodeName() + " broken deps: " + breaks); // NOI18N
 //                        ignore.add(el.getCodeName());
 //                    }
                 } else {

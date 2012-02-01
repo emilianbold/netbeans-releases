@@ -128,7 +128,7 @@ public class ModulesInstaller {
         }
         
         if (success) {
-            FoDFileSystem.getInstance().refresh();
+            FoDLayersProvider.getInstance().refreshForce();
         }
         
         return success;
@@ -193,7 +193,7 @@ public class ModulesInstaller {
                     );
             DialogDisplayer.getDefault ().notifyLater (nd);
         } finally {
-            FoDFileSystem.getInstance().refresh();
+            FoDLayersProvider.getInstance().refreshForce();
         }
     }
     

@@ -154,8 +154,7 @@ public class FodDataObjectFactoryTest extends NbTestCase {
             ParseXMLContentTest.class.getResource("TestBundle.properties")
         );
         ic.add(info);
-        FoDFileSystem.getInstance().refresh();
-        FoDFileSystem.getInstance().waitFinished();
+        FoDLayersProvider.getInstance().refreshForce();
     }
 
 

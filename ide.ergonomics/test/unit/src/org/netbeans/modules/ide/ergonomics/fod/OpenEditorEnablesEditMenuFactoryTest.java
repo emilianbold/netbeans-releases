@@ -151,7 +151,7 @@ public class OpenEditorEnablesEditMenuFactoryTest extends NbTestCase {
             }
         });
         LOG.info("waitFinished");
-        FoDFileSystem.getInstance().waitFinished();
+        FoDLayersProvider.getInstance().waitFinished();
 
         FileObject fo = null;
         for (int i = 0; i < 100; i++) {
