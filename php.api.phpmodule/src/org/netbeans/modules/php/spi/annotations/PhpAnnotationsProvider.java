@@ -45,6 +45,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.openide.util.Parameters;
@@ -130,9 +131,18 @@ public abstract class PhpAnnotationsProvider {
 
     /**
      * Get all possible annotations.
+     * <p>
+     * Default implementation simply return all the possible annotations.
      * @return all possible annotations
      */
-    public abstract List<PhpAnnotationTag> getAnnotations();
+    public List<PhpAnnotationTag> getAnnotations() {
+        List<PhpAnnotationTag> annotations = new LinkedList<PhpAnnotationTag>();
+        annotations.addAll(getFunctionAnnotations());
+        annotations.addAll(getTypeAnnotations());
+        annotations.addAll(getFieldAnnotations());
+        annotations.addAll(getMethodAnnotations());
+        return annotations;
+    }
 
     /**
      * Get annotations that are available for global functions.
