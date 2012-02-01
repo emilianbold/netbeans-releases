@@ -383,6 +383,7 @@ public class CommitDataTest extends JellyTestCase {
             TestKit.waitText(mh);
             
             Node nodeTest;
+            new EventTool().waitNoEvent(5000);
             for (int i = 0; i < expected.length; i++) {
                 nodeTest = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|" + expected[i]);
                 nodeIDE = (org.openide.nodes.Node) nodeTest.getOpenideNode();
