@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.apt.support.lang;
 
 import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.apt.impl.support.SplitShiftRightTokenFilter;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 
 /**
@@ -60,7 +61,9 @@ class APTGnuCpp11Filter extends APTBaseLanguageFilter {
     
     @Override
     public TokenStream getFilteredStream(TokenStream origStream) {
-        return new APTGnuCpp11FilterEx().getFilteredStream(super.getFilteredStream(origStream));
+        // FIXME: it's better to handle '>>' in grammar instead, but as we don't 
+        // have real rules for expression hack lexer instead
+        return new SplitShiftRightTokenFilter(super.getFilteredStream(origStream));
     }
     
     private void initialize() {

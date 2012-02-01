@@ -471,13 +471,17 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                                         indent = getTokenIndent(stmt);
                                         if (isHalfIndentNewlineBeforeBrace()) {
                                             indent += getShiftWidth() / 2;
-                                        }
+                                        } else if (isFullIndentNewlineBeforeBrace()) {
+                                            indent += getShiftWidth();
+                                        } 
                                         break;
                                     case SWITCH:
                                         indent = getTokenIndent(stmt);
                                         if (isHalfIndentNewlineBeforeBraceSwitch()) {
                                             indent += getShiftWidth() / 2;
-                                        }
+                                        } else if (isFullIndentNewlineBeforeBraceSwitch()) {
+                                            indent += getShiftWidth();
+                                        } 
                                         break;
 
                                     case LBRACE:
@@ -495,9 +499,11 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                                             indent = getTokenIndent(stmt);
                                             if (stmt.getTokenID() == CppTokenId.LBRACE ) {
                                                 indent += getShiftWidth();
-                                                break;
+                                            } else if (isFullIndentNewlineBeforeBraceDeclaration()) {
+                                                indent += getShiftWidth();
                                             }
                                         }
+                                        break;
                                 }
                             }
                         }
@@ -543,13 +549,21 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                                     case CATCH:
                                         if (isHalfIndentNewlineBeforeBrace()) {
                                             indent += getShiftWidth() / 2;
-                                        }
+                                        } else if (isFullIndentNewlineBeforeBrace()) {
+                                            indent += getShiftWidth();
+                                        } 
                                         break;
                                     case SWITCH:
                                         if (isHalfIndentNewlineBeforeBraceSwitch()) {
                                             indent += getShiftWidth() / 2;
-                                        }
+                                        } else if (isFullIndentNewlineBeforeBraceSwitch()) {
+                                            indent += getShiftWidth();
+                                        } 
                                         break;
+                                    default:
+                                        if (isFullIndentNewlineBeforeBraceDeclaration()) {
+                                            indent += getShiftWidth();
+                                        }
                                 }
                             }
                         } else { // no matching left brace
