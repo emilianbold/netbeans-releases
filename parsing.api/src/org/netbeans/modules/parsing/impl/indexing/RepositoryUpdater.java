@@ -4784,8 +4784,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         WORKER.submit(this);
                     }
                     todo.notifyAll();
-                    RunWhenScanFinishedSupport.performDeferredTasks();
                 }
+                RunWhenScanFinishedSupport.performDeferredTasks();
             }
         }
 
