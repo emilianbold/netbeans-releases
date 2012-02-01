@@ -1936,3 +1936,36 @@ org.netbeans.modules.parsing.lucene.IndexDocumentImpl
 org.netbeans.modules.parsing.lucene.support.IndexDocument
 org.netbeans.modules.parsing.spi.indexing.support.IndexDocument
 
+#Background scan
+org.netbeans.modules.java.source.classpath.AptSourcePath
+org.netbeans.modules.java.source.classpath.AptSourcePath$MapToAptCache
+org.netbeans.modules.java.source.classpath.AptSourcePath$MapToSources
+org.netbeans.modules.java.source.classpath.Function
+org.netbeans.modules.java.source.classpath.SourcePath$FilterNonOpened
+org.netbeans.modules.java.source.indexing.TransactionContext
+org.netbeans.modules.java.source.indexing.TransactionContext$Service
+org.netbeans.modules.java.source.parsing.FileManagerTransaction
+org.netbeans.modules.java.source.parsing.FileManagerTransaction$Null
+org.netbeans.modules.java.source.parsing.FileManagerTransaction$WriteThrogh
+org.netbeans.modules.java.source.usages.ClassIndexEventsTransaction
+org.netbeans.modules.java.source.usages.PersistentClassIndex$IndexPatch
+org.netbeans.modules.java.source.usages.PersistentIndexTransaction
+org.netbeans.modules.parsing.impl.RunWhenScanFinishedSupport
+org.netbeans.modules.parsing.impl.RunWhenScanFinishedSupport$DeferredTask
+org.netbeans.modules.parsing.impl.RunWhenScanFinishedSupport$ScanSync
+org.netbeans.modules.parsing.impl.indexing.ArchiveTimeStamps
+org.netbeans.modules.parsing.impl.indexing.ArchiveTimeStamps$Saver
+org.netbeans.modules.parsing.impl.indexing.ArchiveTimeStamps$Store
+org.netbeans.modules.parsing.impl.indexing.IndexingManagerAccessor
+org.netbeans.modules.parsing.impl.indexing.LogContext
+org.netbeans.modules.parsing.impl.indexing.LogContext$EventType
+org.netbeans.modules.parsing.impl.indexing.ProxyBinaryIndexerFactory
+org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater$WorkCancel
+org.netbeans.modules.parsing.impl.indexing.ScanSuspendImpl
+org.netbeans.modules.parsing.impl.indexing.SuspendStatus
+org.netbeans.modules.parsing.impl.indexing.SuspendSupport
+org.netbeans.modules.parsing.lucene.spi.ScanSuspendImplementation
+org.netbeans.modules.parsing.lucene.support.Index$Transactional
+org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask
+org.netbeans.modules.parsing.spi.TaskIndexingMode
+
