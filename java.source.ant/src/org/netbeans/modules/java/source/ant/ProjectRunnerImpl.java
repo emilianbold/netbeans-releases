@@ -51,6 +51,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -65,6 +66,7 @@ import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.AntTargetExecutor;
 import org.apache.tools.ant.module.api.support.AntScriptUtils;
+import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.runner.JavaRunner;
@@ -98,6 +100,10 @@ import org.w3c.dom.TypeInfo;
 import org.w3c.dom.UserDataHandler;
 
 import static org.netbeans.api.java.project.runner.JavaRunner.*;
+import org.netbeans.api.project.ProjectManager;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -139,11 +145,10 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         ClassPath exec = getValue(properties, PROP_EXECUTE_CLASSPATH, ClassPath.class);
         String javaTool = getValue(properties, PROP_PLATFORM_JAVA, String.class);
         String projectName = getValue(properties, PROP_PROJECT_NAME, String.class);
-        Iterable<String> runJVMArgs = getMultiValue(properties, PROP_RUN_JVMARGS, String.class);
         Iterable<String> args = getMultiValue(properties, PROP_APPLICATION_ARGS, String.class);
         final String tmpDir = getValue(properties, "tmp.dir", String.class);  //NOI18N
         if (workDir == null) {
-            Parameters.notNull("toRun", toRun);
+            Parameters.notNull(PROP_EXECUTE_FILE + " or " + PROP_WORK_DIR, toRun);
             Project project = FileOwnerQuery.getOwner(toRun);
             if (project != null) {
                 //NOI18N
@@ -156,7 +161,7 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
             }
         }
         if (className == null) {
-            Parameters.notNull("toRun", toRun);
+            Parameters.notNull(PROP_EXECUTE_FILE + " or " + PROP_CLASSNAME, toRun);
             ClassPath source = ClassPath.getClassPath(toRun, ClassPath.SOURCE);
             if (source == null) {
                 throw new IllegalArgumentException("The source classpath for specified toRun parameter has is null. " +
@@ -165,7 +170,7 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
             className = source.getResourceName(toRun, '.', false);
         }
         if (exec == null) {
-            Parameters.notNull("toRun", toRun);
+            Parameters.notNull(PROP_EXECUTE_FILE + " or " + PROP_EXECUTE_CLASSPATH, toRun);
             exec = ClassPath.getClassPath(toRun, ClassPath.EXECUTE);
         }
         JavaPlatform p = getValue(properties, PROP_PLATFORM, JavaPlatform.class);
@@ -189,20 +194,51 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         if (boot == null) {
             boot = p.getBootstrapLibraries();
         }
-        if (projectName == null) {
-            Project project = getValue(properties, "project", Project.class);
-            if (project != null) {
-                projectName = ProjectUtils.getInformation(project).getDisplayName();
-            }
-            if (projectName == null && toRun != null) {
-                project = FileOwnerQuery.getOwner(toRun);
-                if (project != null) {
-                    //NOI18N
-                    projectName = ProjectUtils.getInformation(project).getDisplayName();
+        Project project = getValue(properties, "project", Project.class);
+        if (project == null && toRun != null) {
+            project = FileOwnerQuery.getOwner(toRun);
+        }
+        if (project == null && workDir != null) {
+            FileObject d = FileUtil.toFileObject(FileUtil.normalizeFile(new File(workDir)));
+            if (d != null) {
+                try {
+                    project = ProjectManager.getDefault().findProject(d);
+                } catch (IOException x) {
+                    Exceptions.printStackTrace(x);
                 }
             }
-            if (projectName == null) {
+        }
+        if (projectName == null) {
+            if (project != null) {
+                projectName = ProjectUtils.getInformation(project).getDisplayName();
+            } else {
                 projectName = "";
+            }
+        }
+        List<String> runJVMArgs = new ArrayList<String>(getMultiValue(properties, PROP_RUN_JVMARGS, String.class));
+        StartupExtender.StartMode mode;
+        if (command.equals(QUICK_RUN)) {
+            mode = StartupExtender.StartMode.NORMAL;
+        } else if (command.equals(QUICK_DEBUG)) {
+            mode = StartupExtender.StartMode.DEBUG;
+        } else if (command.equals(QUICK_TEST)) {
+            mode = StartupExtender.StartMode.TEST_NORMAL;
+        } else if (command.equals(QUICK_TEST_DEBUG)) {
+            mode = StartupExtender.StartMode.TEST_DEBUG;
+        } else {
+            mode = null;
+        }
+        if (mode != null) {
+            InstanceContent ic = new InstanceContent();
+            if (project != null) {
+                ic.add(project);
+            }
+            if (p != null) {
+                ic.add(p);
+            }
+            Lookup l = new AbstractLookup(ic);
+            for (StartupExtender group : StartupExtender.getExtenders(l, mode)) {
+                runJVMArgs.addAll(group.getArguments());
             }
         }
 
@@ -342,7 +378,7 @@ out:                for (FileObject root : exec.getRoots()) {
         return type.cast(v);
     }
 
-    private static <T> Iterable<T> getMultiValue(Map<String, ?> properties, String name, Class<T> type) {
+    private static <T> List<T> getMultiValue(Map<String, ?> properties, String name, Class<T> type) {
         Iterable v = (Iterable) properties.remove(name);
         List<T>  result = new LinkedList<T>();
 

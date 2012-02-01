@@ -51,14 +51,12 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import javax.swing.Icon;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -75,31 +73,16 @@ import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
 import static org.junit.Assert.*;
+import org.netbeans.api.extexecution.startup.StartupExtender.StartMode;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.project.runner.JavaRunner;
+import org.netbeans.spi.extexecution.startup.StartupExtenderImplementation;
 
 /**
  *
  * @author Jan Lahoda
  */
 public class ProjectRunnerImplTest {
-
-    public ProjectRunnerImplTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
 
     @Test
     public void testComputeProperties1() throws MalformedURLException {
@@ -172,6 +155,27 @@ public class ProjectRunnerImplTest {
         checkProperties(Arrays.asList("execute.file", java, "platform.java", "J", "work.dir", dir, "project", fake, "application.args", args, "run.jvmargs", jvmArgs),
                         Arrays.asList("classname", "A", "platform.java", "J", "classpath", prjPath, "work.dir", FileUtil.toFile(dir).getAbsolutePath(), "run.jvmargs", "test3 test4", "encoding", "UTF-8", "platform.bootcp", JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries().toString()),
                         "fake");
+    }
+
+    @Test public void testStartupExtender() throws Exception {
+        File wd = getWD();
+        FileObject fo = FileUtil.toFileObject(wd);
+        FileObject java = FileUtil.createData(fo, "prj/A.java");
+        FileObject prj = java.getParent();
+        String prjPath = FileUtil.toFile(prj).getAbsolutePath();
+        MockLookup.setInstances(new ProjectFactoryImpl(prj));
+        checkProperties(JavaRunner.QUICK_RUN, Arrays.asList("execute.file", java, "platform.java", "J", JavaRunner.PROP_RUN_JVMARGS, Collections.singleton("-ea")),
+                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", prjPath, "encoding", "UTF-8", "work.dir", FileUtil.toFile(prj).getAbsolutePath(), JavaRunner.PROP_RUN_JVMARGS, "-ea -Ddir=prj -Dvm=j2se", "platform.bootcp", JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries().toString()));
+        checkProperties(JavaRunner.QUICK_DEBUG, Arrays.asList("execute.file", java, "platform.java", "J", JavaRunner.PROP_RUN_JVMARGS, Collections.singleton("-ea")),
+                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", prjPath, "encoding", "UTF-8", "work.dir", FileUtil.toFile(prj).getAbsolutePath(), JavaRunner.PROP_RUN_JVMARGS, "-ea", "platform.bootcp", JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries().toString()));
+        checkProperties(JavaRunner.QUICK_RUN, Arrays.asList(JavaRunner.PROP_WORK_DIR, prj, JavaRunner.PROP_CLASSNAME, "A", JavaRunner.PROP_EXECUTE_CLASSPATH, ClassPath.EMPTY, "platform.java", "J", JavaRunner.PROP_RUN_JVMARGS, Collections.singleton("-ea")),
+                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", "", "encoding", "UTF-8", "work.dir", FileUtil.toFile(prj).getAbsolutePath(), JavaRunner.PROP_APPLICATION_ARGS, "", JavaRunner.PROP_RUN_JVMARGS, "-ea -Ddir=prj -Dvm=j2se", "platform.bootcp", JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries().toString()));
+    }
+    @StartupExtenderImplementation.Registration(displayName="mock", startMode=StartMode.NORMAL)
+    public static class MockStartupExtender implements StartupExtenderImplementation {
+        @Override public List<String> getArguments(Lookup context, StartMode mode) {
+            return Arrays.asList("-Ddir=" + context.lookup(Project.class).getProjectDirectory().getNameExt(), "-Dvm=" + context.lookup(JavaPlatform.class).getSpecification().getName());
+        }
     }
     
     private void checkProperties(Collection<?> source, Collection<String> target) {

@@ -93,10 +93,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
-import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
-import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  * Encapsulates a set of ServerTarget(s), provides a wrapper for deployment
@@ -519,7 +516,6 @@ public class TargetServer {
                     break;
                 }
                 case PROFILE: {
-                    ProfilerServerSettings settings = Lookup.getDefault().lookup(Profiler.class).getSettings(instance.getUrl(), false);
                     final CountDownLatch latch = new CountDownLatch(1);
                     ServerInstance.StateListener sl = new ServerInstance.StateListener() {
 
@@ -534,7 +530,7 @@ public class TargetServer {
 
                     instance.addStateListener(sl);
                     try {
-                        instance.startProfile(settings, false, ui);
+                        instance.startProfile(false, ui);
                         try {
                             // need to wait for profiler to load the agent etc.
                             // 60 seconds timeout; instrumentation may slow down the startup significantly

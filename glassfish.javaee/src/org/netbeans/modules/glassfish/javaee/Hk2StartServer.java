@@ -72,12 +72,10 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
-import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -152,7 +150,7 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
                                 CommandType.START, translateState(newState), ActionType.EXECUTE,
                                 message));
                     }
-                });
+                }, GlassfishModule.ServerState.RUNNING);
             } else if (commonSupport != null) { // this is the remote case
                 commonSupport.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.NORMAL_MODE, true);
                 commonSupport.restartServer(new OperationStateListener() {
@@ -242,7 +240,7 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
                                 CommandType.START, translateState(newState), ActionType.EXECUTE,
                                 message));
                     }
-                });
+                }, GlassfishModule.ServerState.RUNNING);
             } else if  (null != commonSupport) { // this is the remote case
                 commonSupport.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.DEBUG_MODE, true);
                 commonSupport.restartServer(new OperationStateListener() {
@@ -431,7 +429,7 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
     }
 
     @Override
-    public ProgressObject startProfiling(Target target, ProfilerServerSettings settings) {
+    public ProgressObject startProfiling(Target target) {
         if (ProfilerSupport.getState() == ProfilerSupport.STATE_BLOCKING) {
             fireHandleProgressEvent(null, new Hk2DeploymentStatus(
                     CommandType.START, StateType.RUNNING, ActionType.EXECUTE,
@@ -453,11 +451,6 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
 //            String domainLocation = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
 //            String domainName = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
             commonSupport.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.PROFILE_MODE, true);
-            Iterator<FileObject> iter = settings.getJavaPlatform().getInstallFolders().iterator();
-            FileObject jdkRoot = null;
-            if (iter.hasNext()) {
-                jdkRoot = iter.next();
-            }
             commonSupport.startServer(new OperationStateListener() {
 
                 @Override
@@ -486,7 +479,7 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
                         CommandType.START, translateState(newState), ActionType.EXECUTE,
                         message));
                 }
-            }, jdkRoot, settings.getJvmArgs());
+            }, GlassfishModule.ServerState.STOPPED_JVM_PROFILER);
         }
         return this;
     }
