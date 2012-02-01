@@ -122,7 +122,7 @@ public class GetterSetterPanel extends JPanel implements PropertyChangeListener 
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 12);
         add(selectorLabel, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(performEncapsulate, org.openide.util.NbBundle.getMessage(GetterSetterPanel.class, "GetterSetterPanel.performEncapsulate.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(performEncapsulate, org.openide.util.NbBundle.getMessage(GetterSetterGenerator.class, "GetterSetterPanel.performEncapsulate.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
