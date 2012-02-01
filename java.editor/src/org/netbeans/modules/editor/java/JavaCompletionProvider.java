@@ -44,14 +44,12 @@
 
 package org.netbeans.modules.editor.java;
 
-import org.netbeans.api.whitelist.WhiteListQuery;
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
@@ -71,12 +69,14 @@ import javax.tools.Diagnostic;
 
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -95,6 +95,7 @@ import org.openide.util.NbBundle;
  *
  * @author Dusan Balek
  */
+@MimeRegistration(mimeType = "text/x-java", service = CompletionProvider.class, position = 100) //NOI18N
 public class JavaCompletionProvider implements CompletionProvider {
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
@@ -292,19 +293,6 @@ public class JavaCompletionProvider implements CompletionProvider {
                         ParserManager.parse(Collections.singletonList(source), getTask());
                         if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                             if (results != null) {
-                                if (results.isEmpty() && SourceUtils.isScanInProgress() && (hasAdditionalItems == 0 || queryType == COMPLETION_ALL_QUERY_TYPE)) {
-                                    Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singletonList(source), getTask());
-                                    if (!f.isDone()) {
-                                        component.putClientProperty("completion-active", Boolean.FALSE); //NOI18N
-                                        resultSet.setWaitText(NbBundle.getMessage(JavaCompletionProvider.class, "scanning-in-progress")); //NOI18N
-                                        while (!isTaskCancelled()) {
-                                            try {
-                                                f.get(250, TimeUnit.MILLISECONDS);
-                                                break;
-                                            } catch (TimeoutException timeOut) {/*retry*/}
-                                        }
-                                    }
-                                }
                                 resultSet.addAllItems(results);
                             }
                             resultSet.setHasAdditionalItems(hasAdditionalItems > 0);

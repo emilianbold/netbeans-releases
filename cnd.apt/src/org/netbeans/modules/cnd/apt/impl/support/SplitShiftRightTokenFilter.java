@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,46 +34,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.apt.impl.support;
 
-package org.netbeans.modules.java.editor.javadoc;
-
-import javax.swing.text.JTextComponent;
-
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.modules.editor.java.Utilities;
-import org.netbeans.spi.editor.completion.CompletionProvider;
-import org.netbeans.spi.editor.completion.CompletionTask;
-import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
+import java.util.logging.Level;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
+import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.APTTokenStream;
+import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
+import org.netbeans.modules.cnd.apt.support.lang.APTBaseLanguageFilter;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
- *
- * @author Jan Pokorsky
+ * helper for c++11 standard. 
+ * all '>>' are replaced uncoditionally with two '>' tokens
+ * @author Vladimir Voskresensky
  */
-@MimeRegistration(mimeType = "text/x-java", service = CompletionProvider.class, position = 200) //NOI18N
-public final class JavadocCompletionProvider implements CompletionProvider {
-    // complete @TAG, {@TAG}, @param NAME, @see LINK, {@link LINK}
+public class SplitShiftRightTokenFilter  implements APTTokenStream, TokenStream {
+    private TokenStream orig;
+    private APTToken nextGTToken = null;
 
-    public CompletionTask createTask(int queryType, JTextComponent component) {
-        CompletionTask task = null;
-        if (queryType == COMPLETION_QUERY_TYPE || queryType == COMPLETION_ALL_QUERY_TYPE) {
-            task = new AsyncCompletionTask(new JavadocCompletionQuery(queryType), component);
-        }
-        return task;
+    public SplitShiftRightTokenFilter(TokenStream orig) {
+        this.orig = orig;
     }
 
-    public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        char c;
-        if (typedText != null && typedText.length() == 1
-                && Utilities.getJavadocCompletionAutoPopupTriggers().indexOf(typedText.charAt(0)) >= 0
-                && JavadocCompletionUtils.isJavadocContext(component.getDocument(), component.getCaretPosition())) {
-            return COMPLETION_QUERY_TYPE;
+    @Override
+    public APTToken nextToken() {
+        try {
+            APTToken ret = nextGTToken;
+            nextGTToken = null;
+            if (ret == null) {
+                ret = (APTToken) orig.nextToken();
+                if (ret.getType() == APTTokenTypes.SHIFTRIGHT) {
+                    nextGTToken = new APTBaseLanguageFilter.FilterToken(ret, APTTokenTypes.GREATERTHAN);
+                    ret = nextGTToken;
+                }
+            }
+            return ret;
+        } catch (TokenStreamException ex) {
+            // IZ#163088 : unexpected char
+            APTUtils.LOG.log(Level.SEVERE, ex.getMessage());
+            return APTUtils.EOF_TOKEN;
         }
-        return 0;
     }
-
 }
