@@ -64,8 +64,10 @@ import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
@@ -129,6 +131,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
             case OBJECT_PROPERTY:
                 completeObjectProperty(request, resultList);
                 break;
+            case OBJECT_MEMBERS:
+                completeObjectMember(request, resultList);
             default:
                 result = CodeCompletionResult.NONE;
         }
@@ -338,6 +342,25 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 }
             }
         }
+    }
+    
+    private void completeObjectMember(CompletionRequest request, List<CompletionProposal> resultList) {
+        JsParserResult result = (JsParserResult)request.info;
+        JsObject jsObject = ModelUtils.findJsObject(result.getModel(), request.anchor);
+        
+        System.out.println("jsObject: " + jsObject.getName());
+        if (jsObject.getJSKind() == JsElement.Kind.METHOD) {
+            jsObject = jsObject.getParent();
+        }
+        if (jsObject.getJSKind() == JsElement.Kind.OBJECT) {
+            for (JsObject property : jsObject.getProperties().values()) {
+                if(startsWith(property.getName(), request.prefix)) {
+                    resultList.add(JsCompletionItem.Factory.create(property, request));
+                }
+            }
+        }
+        
+        
     }
     
     private boolean startsWith(String theString, String prefix) {

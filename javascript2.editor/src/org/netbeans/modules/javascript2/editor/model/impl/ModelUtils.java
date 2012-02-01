@@ -83,6 +83,36 @@ public class ModelUtils {
         return object.getJSKind() == JsElement.Kind.FILE;
     }
     
+    public static JsObject findJsObject(Model model, int offset) {
+        JsObject result = null;
+        JsObject global = model.getGlobalObject();
+        result = findJsObject(global, offset);
+        if (result == null) {
+            result = global;
+        }
+        return result;
+    }
+    
+    public static JsObject findJsObject(JsObject object, int offset) {
+        JsObjectImpl jsObject = (JsObjectImpl)object;
+        JsObject result = null;
+        JsObject tmpObject = null;
+        if (jsObject.getOffsetRange(null).containsInclusive(offset)) {
+            result = jsObject;
+            for (JsObject property : jsObject.getProperties().values()) {
+                JsElement.Kind kind = property.getJSKind();
+                if (kind == JsElement.Kind.OBJECT 
+                        || kind == JsElement.Kind.FUNCTION || kind == JsElement.Kind.METHOD || kind == JsElement.Kind.CONSTRUCTOR)
+                tmpObject = findJsObject(property, offset);
+                if (tmpObject != null) {
+                    result = tmpObject;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+    
     public static DeclarationScope getDeclarationScope(Model model, int offset) {
         DeclarationScope result = null;
         JsObject global = model.getGlobalObject();

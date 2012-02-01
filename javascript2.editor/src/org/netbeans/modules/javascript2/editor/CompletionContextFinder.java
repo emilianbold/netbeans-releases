@@ -59,13 +59,19 @@ public class CompletionContextFinder {
     public static enum CompletionContext {
         NONE,       // There shouldn't be any code completion
         EXPRESSION, // usually, we will offer everything what we know in the context
-        OBJECT_PROPERTY,
+        OBJECT_PROPERTY, // object property that are visible outside the object
+        OBJECT_MEMBERS, // usually after this.
         GLOBAL
     } 
     
     private static final List<Object[]> OBJECT_PROPERTY_TOKENCHAINS = Arrays.asList(
         new Object[]{JsTokenId.OPERATOR_DOT},
         new Object[]{JsTokenId.OPERATOR_DOT, JsTokenId.IDENTIFIER}
+    );
+    
+    private static final List<Object[]> OBJECT_THIS_TOKENCHAINS = Arrays.asList(
+        new Object[]{JsTokenId.KEYWORD_THIS, JsTokenId.OPERATOR_DOT},
+        new Object[]{JsTokenId.KEYWORD_THIS, JsTokenId.OPERATOR_DOT, JsTokenId.IDENTIFIER}
     );
     
     @NonNull
@@ -88,6 +94,9 @@ public class CompletionContextFinder {
         JsTokenId tokenId =token.id();
         int tokenOffset = ts.offset();
         
+        if (acceptTokenChains(ts, OBJECT_THIS_TOKENCHAINS, true)) {
+            return CompletionContext.OBJECT_MEMBERS;
+        }
         if (acceptTokenChains(ts, OBJECT_PROPERTY_TOKENCHAINS, true)) {
             return CompletionContext.OBJECT_PROPERTY;
         }

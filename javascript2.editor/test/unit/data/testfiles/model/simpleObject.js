@@ -50,4 +50,13 @@ var Carrot = {
     called: 0
 }
 
+Carrot.isVegitable = function () {
+    if (this.color === "red") {
+        return true;
+    }
+    return false;
+}
+
 formatter.println(Carrot.getColor());
+formatter.println(Carrot.isVegitable());
+

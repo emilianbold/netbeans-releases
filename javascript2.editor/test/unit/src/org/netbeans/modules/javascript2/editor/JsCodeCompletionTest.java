@@ -95,6 +95,13 @@ public class JsCodeCompletionTest extends JsTestBase {
         // needs to be displayed also return types
         checkCompletion("testfiles/completion/test129036.js", "my^ //Foo", false);
     }
+    
+    public void testSimpleObject01() throws Exception {
+        checkCompletion("testfiles/model/simpleObject.js", "this.called = this.^called + 1;", false);
+    }
 
+    public void testSimpleObject02() throws Exception {
+        checkCompletion("testfiles/model/simpleObject.js", "this.called = this.cal^led + 1;", false);
+    }
     
 }
