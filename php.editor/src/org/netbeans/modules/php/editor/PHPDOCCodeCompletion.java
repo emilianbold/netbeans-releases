@@ -157,30 +157,37 @@ public class PHPDOCCodeCompletion {
             elem = new PHPDOCTagElement(tag.getName(), tag.getDocumentation());
         }
 
+        @Override
         public int getAnchorOffset() {
             return request.anchor;
         }
 
+        @Override
         public ElementHandle getElement() {
             return elem;
         }
 
+        @Override
         public String getName() {
             return TAG_PREFIX + tag.getName(); //NOI18N
         }
 
+        @Override
         public String getInsertPrefix() {
             return getName();
         }
 
+        @Override
         public String getSortText() {
             return getName();
         }
 
+        @Override
         public int getSortPrioOverride() {
             return 0;
         }
 
+        @Override
         public String getLhsHtml(HtmlFormatter formatter) {
             formatter.name(getKind(), true);
             formatter.appendText(getName());
@@ -189,26 +196,32 @@ public class PHPDOCCodeCompletion {
             return formatter.getText();
         }
 
+        @Override
         public String getRhsHtml(HtmlFormatter formatter) {
             return providerName;
         }
 
+        @Override
         public ElementKind getKind() {
             return elem.getKind();
         }
 
+        @Override
         public ImageIcon getIcon() {
             return null;
         }
 
+        @Override
         public Set<Modifier> getModifiers() {
             return Collections.<Modifier>emptySet();
         }
 
+        @Override
         public boolean isSmart() {
             return false;
         }
 
+        @Override
         public String getCustomInsertTemplate() {
             return tag.getInsertTemplate();
         }
