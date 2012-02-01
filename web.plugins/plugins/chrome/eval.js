@@ -1,7 +1,7 @@
 /* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,17 +37,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-{
-  "name": "NetBeans IDE Support Plugin",
-  "version": "0.2",
 
-  "background_page": "main.html",
+var listener = function(port) {
+    port.onDisconnect.addListener(function() {
+        chrome.extension.onConnect.removeListener(listener);
+    });
+    port.onMessage.addListener(function(message) {
+        var result = new Object();
+        result.message = 'eval';
+        result.id = message.id;
+        var type = message.message;
+        if (type === 'eval') {
+            try {
+                result.result = eval(message.script);
+                result.status = 'ok';
+                port.postMessage(result);
+            } catch (err) {
+                result.status = 'error';
+                console.log('Problem during script evaluation!');
+                console.log(message);
+                console.log(err);
+                if (err instanceof Error) {
+                    result.result = err.name + ':' + err.message;
+                } else {
+                    result.result = err;
+                }
+                port.postMessage(result);
+            }
+        } else {
+            console.log('Ignoring unexpected message from the background page!');
+            console.log(message);
+        }
+    });
+};
 
-  "permissions": [
-    "contextMenus",
-    "tabs",
-    "<all_urls>"
-  ]
-}
+chrome.extension.onConnect.addListener(listener);
