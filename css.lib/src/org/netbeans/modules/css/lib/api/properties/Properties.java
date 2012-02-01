@@ -49,82 +49,44 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 
 /**
+ * An entry point for clients wishing to operate with the property api.
  *
  * @author marekfukala
  */
 public class Properties {
-    
+
     private static final Logger LOGGER = Logger.getLogger(Properties.class.getSimpleName());
- 
+    
     //TODO possibly add support for refreshing the cached data based on css module changes in the lookup    
     private static final AtomicReference<Map<String, Collection<PropertyDefinition>>> PROPERTIES_MAP = new AtomicReference<Map<String, Collection<PropertyDefinition>>>();
     private static final AtomicReference<Collection<PropertyDefinition>> PROPERTIES = new AtomicReference<Collection<PropertyDefinition>>();
     private static final Map<String, PropertyModel> PROPERTY_MODELS = new HashMap<String, PropertyModel>();
-
-        public static Collection<PropertyDefinition> getProperties() {
+    
+    /**
+     * 
+     * @return collection of all available property definitions
+     */
+    public static Collection<PropertyDefinition> getProperties() {
         synchronized (PROPERTIES) {
-            if(PROPERTIES.get() == null) {
+            if (PROPERTIES.get() == null) {
                 PROPERTIES.set(createAllPropertiesCollection());
             }
             return PROPERTIES.get();
         }
     }
-    
-    /**
-     * @return map of property name to collection of Property impls.
-     */
-    public static Map<String, Collection<PropertyDefinition>> getPropertiesMap() {
-        synchronized (PROPERTIES_MAP) {
-            if(PROPERTIES_MAP.get() == null) {
-                PROPERTIES_MAP.set(loadProperties());
-            }
-            return PROPERTIES_MAP.get();
-        }
-    }
-    
-    private static Collection<PropertyDefinition> createAllPropertiesCollection() {
-        Collection<PropertyDefinition> all = new LinkedList<PropertyDefinition>();
-        for(Collection<PropertyDefinition> props : getPropertiesMap().values()) {
-            all.addAll(props);
-        }
-        return all;
-    }
- 
-    
-    //property name to set of Property impls - one name may be mapped to more properties
-    private static Map<String, Collection<PropertyDefinition>> loadProperties() {
-        Map<String, Collection<PropertyDefinition>> all = new HashMap<String, Collection<PropertyDefinition>>();
-            for(PropertyDefinition pd : PropertyDefinitionProvider.Query.getProperties()) {
-                String propertyName = pd.getName();
-                Collection<PropertyDefinition> props = all.get(propertyName);
-                if(props == null) {
-                    props = new LinkedList<PropertyDefinition>();
-                    all.put(propertyName, props);
-                }
-                if(!GrammarElement.isArtificialElementName(propertyName)) {
-                    //standart (visible) properties cannot be duplicated
-                    if(!props.isEmpty()) {
-                        LOGGER.warning(String.format("Duplicate property %s found, "
-                                + "offending css module: %s", pd.getName(), pd.getCssModule())); //NOI18N
-                        for(PropertyDefinition p : props) {
-                            LOGGER.warning(String.format("Existing property found"
-                                + " in css module: %s", p.getCssModule())); //NOI18N
-                        }
-                    }
-                }
-                props.add(pd);
-            
-        }
-        return all;
-    }
 
-    
+    /**
+     * Returns a collection of property definitions for the given property name.
+     */
     public static Collection<PropertyDefinition> getProperties(String propertyName) {
         return getProperties(propertyName, false);
     }
-    
+
+    /**
+     * Same as {@link #getProperties(java.lang.String) but first it tries to obtain 
+     * the invisible (@-prefixed) properties. 
+     */
     public static Collection<PropertyDefinition> getProperties(String propertyName, boolean preferInvisibleProperties) {
-//    public static Collection<PropertyDefinition> getProperties(String propertyName) {    
         //try to resolve the refered element name with the at-sign prefix so
         //the property appearance may contain link to appearance, which in fact
         //will be resolved as the @appearance property:
@@ -134,10 +96,13 @@ public class Properties {
         //
         StringBuilder sb = new StringBuilder().append(GrammarElement.INVISIBLE_PROPERTY_PREFIX).append(propertyName);
         Collection<PropertyDefinition> invisibleProperty = getPropertiesMap().get(sb.toString());
-        
+
         return preferInvisibleProperties && invisibleProperty != null ? invisibleProperty : PROPERTIES_MAP.get().get(propertyName);
     }
 
+    /**
+     * Returns a cached PropertyModel for the given property name.
+     */
     public static PropertyModel getPropertyModel(String name) {
         synchronized (PROPERTY_MODELS) {
             PropertyModel model = PROPERTY_MODELS.get(name);
@@ -150,6 +115,51 @@ public class Properties {
         }
 
     }
-
     
+    /**
+     * @return map of property name to collection of Property impls.
+     */
+    private static Map<String, Collection<PropertyDefinition>> getPropertiesMap() {
+        synchronized (PROPERTIES_MAP) {
+            if (PROPERTIES_MAP.get() == null) {
+                PROPERTIES_MAP.set(loadProperties());
+            }
+            return PROPERTIES_MAP.get();
+        }
+    }
+
+    private static Collection<PropertyDefinition> createAllPropertiesCollection() {
+        Collection<PropertyDefinition> all = new LinkedList<PropertyDefinition>();
+        for (Collection<PropertyDefinition> props : getPropertiesMap().values()) {
+            all.addAll(props);
+        }
+        return all;
+    }
+
+    //property name to set of Property impls - one name may be mapped to more properties
+    private static Map<String, Collection<PropertyDefinition>> loadProperties() {
+        Map<String, Collection<PropertyDefinition>> all = new HashMap<String, Collection<PropertyDefinition>>();
+        for (PropertyDefinition pd : PropertyDefinitionProvider.Query.getProperties()) {
+            String propertyName = pd.getName();
+            Collection<PropertyDefinition> props = all.get(propertyName);
+            if (props == null) {
+                props = new LinkedList<PropertyDefinition>();
+                all.put(propertyName, props);
+            }
+            if (!GrammarElement.isArtificialElementName(propertyName)) {
+                //standart (visible) properties cannot be duplicated
+                if (!props.isEmpty()) {
+                    LOGGER.warning(String.format("Duplicate property %s found, "
+                            + "offending css module: %s", pd.getName(), pd.getCssModule())); //NOI18N
+                    for (PropertyDefinition p : props) {
+                        LOGGER.warning(String.format("Existing property found"
+                                + " in css module: %s", p.getCssModule())); //NOI18N
+                    }
+                }
+            }
+            props.add(pd);
+
+        }
+        return all;
+    }
 }
