@@ -98,12 +98,11 @@ public class RemoteLinkChild extends RemoteLinkBase {
         return getDelegate().deleteImpl(lock);
     }
 
-    @Override
-    public void rename(FileLock lock, String name, String ext) throws IOException {
+    protected void renameImpl(FileLock lock, String name, String ext, RemoteFileObjectBase orig) throws IOException {
         // all work in delegate
         RemoteFileObjectBase dlg = getDelegate();
         if (dlg != null) {
-            dlg.rename(lock, name, ext);
+            dlg.renameImpl(lock, name, ext, orig);
         } else {
             throw new IOException("can not rename " + getPath()); //NOI18N
         }

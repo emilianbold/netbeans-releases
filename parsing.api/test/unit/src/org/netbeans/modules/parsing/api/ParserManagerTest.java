@@ -59,7 +59,9 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.parsing.impl.Utilities;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater.IndexingState;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdaterTestSupport;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -255,7 +257,7 @@ public class ParserManagerTest extends NbTestCase {
 
     }
 
-    private static class RUEmulator extends ParserResultTask implements Utilities.IndexingStatus {
+    private static class RUEmulator implements Runnable, Utilities.IndexingStatus {
 
         private final Set<IndexingState> scanning = EnumSet.noneOf(IndexingState.class);
 
@@ -265,7 +267,7 @@ public class ParserManagerTest extends NbTestCase {
         
         public void scan () {
             scanning.add(IndexingState.WORKING);
-            Utilities.scheduleSpecialTask(this);
+            RepositoryUpdaterTestSupport.runAsWork(this);
         }
 
         @Override
@@ -274,21 +276,7 @@ public class ParserManagerTest extends NbTestCase {
         }
 
         @Override
-        public int getPriority() {
-            return 0;
-        }
-
-        @Override
-        public Class<? extends Scheduler> getSchedulerClass() {
-            return null;
-        }
-
-        @Override
-        public void cancel() {            
-        }
-
-        @Override
-        public void run(Result result, SchedulerEvent event) {
+        public void run() {
             try {
                 // just to simulate that indexing takes some time
                 Thread.sleep(500);

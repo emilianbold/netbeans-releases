@@ -60,6 +60,7 @@ import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.SendEmailCodeGenerator;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -89,19 +90,18 @@ public class AddMethodActions implements CodeGenerator {
                 return ret;
             try {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                Element elem = controller.getTrees().getElement(path);
-                if (elem != null) {
-                    if (elem.getKind() != ElementKind.CLASS)
-                        return ret;
-                    TypeElement typeElement = (TypeElement)elem;
-                    if (!isEnable(strategy, controller.getFileObject(), typeElement)) {
-                        return ret;
-                    }
-                    ret.add(new AddMethodActions(strategy, controller.getFileObject(), typeElement));
-                }
             } catch (IOException ioe) {
-                ioe.printStackTrace();
+                return ret;
             }
+            
+            TypeElement typeElement = (TypeElement) controller.getTrees().getElement(path);
+            if (typeElement != null && typeElement.getKind().isClass()) {
+                if (!isEnable(strategy, controller.getFileObject(), typeElement)) {
+                    return ret;
+                }
+                ret.add(new AddMethodActions(strategy, controller.getFileObject(), typeElement));
+            }
+            
             return ret;
         }
     }
@@ -159,17 +159,11 @@ public class AddMethodActions implements CodeGenerator {
 
     public void invoke() {
         if (strategy.supportsEjb(fileObject, beanClass.getQualifiedName().toString())) {
-            RequestProcessor.getDefault().post(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        strategy.addMethod(fileObject, beanClass.getQualifiedName().toString());
-                    } catch (IOException ex) {
-                        Logger.getLogger(AbstractAddMethodAction.class.getName()).log(Level.WARNING, null, ex);
-                    }
-                }
-            });
+            try {
+                strategy.addMethod(fileObject, beanClass.getQualifiedName().toString());
+            } catch (IOException ex) {
+                Logger.getLogger(AbstractAddMethodAction.class.getName()).log(Level.WARNING, null, ex);
+            }
         }
     }
 

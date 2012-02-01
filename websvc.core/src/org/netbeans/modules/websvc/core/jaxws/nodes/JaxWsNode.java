@@ -64,6 +64,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
@@ -602,36 +603,39 @@ public class JaxWsNode extends AbstractNode implements
         return null;
     }
 
-    private void resolveServiceInfo(final ServiceInfo serviceInfo, final boolean inEjbProject) throws UnsupportedEncodingException {
+    private void resolveServiceInfo(final ServiceInfo serviceInfo, 
+            final boolean inEjbProject) throws UnsupportedEncodingException 
+    {
         final String[] serviceName = new String[1];
         final String[] name = new String[1];
         final boolean[] isProvider = {false};
         serviceInfo.setEjb(inEjbProject);
         JavaSource javaSource = getImplBeanJavaSource();
         if (javaSource != null) {
-            CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+            CancellableTask<CompilationController> task = new 
+                CancellableTask<CompilationController>() 
+                {
 
-                @Override
-                public void run(CompilationController controller) throws IOException {
-                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                    TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
-                    TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
-                    if (typeElement != null && wsElement != null) {
-                        boolean foundWsAnnotation = resolveServiceUrl(controller, typeElement, wsElement, serviceName, name);
+                    @Override
+                    public void run(CompilationController controller) 
+                        throws IOException 
+                    {
+                        controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                        TypeElement typeElement = SourceUtils.
+                            getPublicTopLevelElement(controller);
+                        if ( typeElement == null ){
+                            return;
+                        }
+                        boolean foundWsAnnotation = resolveServiceUrl(controller, 
+                                typeElement,  serviceName, name);
                         if (!foundWsAnnotation) {
-                            TypeElement wsProviderElement = controller.getElements().getTypeElement("javax.xml.ws.WebServiceProvider"); //NOI18N
-                            List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
-                            for (AnnotationMirror anMirror : annotations) {
-                                if (controller.getTypes().isSameType(wsProviderElement.asType(), anMirror.getAnnotationType())) {
-                                    isProvider[0] = true;
-                                }
-                            }
+                            isProvider[0] = JaxWsUtils.hasAnnotation(typeElement, 
+                                    "javax.xml.ws.WebServiceProvider");     // NOI18N
                         }
                         if (!inEjbProject) {
-                            serviceInfo.setEjb(isStatelessEjb(controller, typeElement));
+                            serviceInfo.setEjb(isStatelessEjb(typeElement));
                         }
                     }
-                }
 
                 @Override
                 public void cancel() {
@@ -661,21 +665,33 @@ public class JaxWsNode extends AbstractNode implements
         }
         serviceInfo.setPortName(name[0]);
     }
-
-    private boolean resolveServiceUrl(CompilationController controller, TypeElement targetElement, TypeElement wsElement, String[] serviceName, String[] name) throws IOException {
+    
+    private boolean resolveServiceUrl(CompilationController controller, 
+            TypeElement targetElement, String[] serviceName, String[] name) 
+                throws IOException 
+    {
         boolean foundWsAnnotation = false;
         List<? extends AnnotationMirror> annotations = targetElement.getAnnotationMirrors();
         for (AnnotationMirror anMirror : annotations) {
-            if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
+            boolean isWebMethodAnnotation = JaxWsUtils.hasFqn(anMirror, 
+                    "javax.jws.WebService");   // NOI18N
+            if (isWebMethodAnnotation) {
                 foundWsAnnotation = true;
-                Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
-                for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : expressions.entrySet()) {
+                Map<? extends ExecutableElement, ? extends AnnotationValue> 
+                    expressions = anMirror.getElementValues();
+                for (Map.Entry<? extends ExecutableElement, 
+                        ? extends AnnotationValue> entry : expressions.entrySet()) 
+                {
                     if (entry.getKey().getSimpleName().contentEquals("serviceName")) { //NOI18N
-                        serviceName[0] = (String) expressions.get(entry.getKey()).getValue();
+                        serviceName[0] = (String) expressions.get(entry.getKey()).
+                            getValue();
                         if (serviceName[0] != null) {
-                            serviceName[0] = URLEncoder.encode(serviceName[0], "UTF-8"); //NOI18N
+                            serviceName[0] = URLEncoder.encode(serviceName[0], 
+                                    "UTF-8"); //NOI18N
                         }
-                    } else if (entry.getKey().getSimpleName().contentEquals("name")) { //NOI18N
+                    } else if (entry.getKey().getSimpleName().
+                            contentEquals("name"))  //NOI18N
+                    {
                         name[0] = (String) expressions.get(entry.getKey()).getValue();
                         if (name[0] != null) {
                             name[0] = URLEncoder.encode(name[0], "UTF-8"); //NOI18N
@@ -691,19 +707,8 @@ public class JaxWsNode extends AbstractNode implements
         return foundWsAnnotation;
     }
 
-    private boolean isStatelessEjb(CompilationController controller, TypeElement targetElement) {
-        boolean foundEjbAnnotation = false;
-        TypeElement statelessElement = controller.getElements().getTypeElement("javax.ejb.Stateless"); //NOI18N
-        if (statelessElement != null) {
-            List<? extends AnnotationMirror> annotations = targetElement.getAnnotationMirrors();
-            for (AnnotationMirror anMirror : annotations) {
-                if (controller.getTypes().isSameType(statelessElement.asType(), anMirror.getAnnotationType())) {
-                    foundEjbAnnotation = true;
-                    break;
-                } // end if
-            } // end for
-        }
-        return foundEjbAnnotation;
+    private boolean isStatelessEjb(TypeElement targetElement) {
+        return JaxWsUtils.hasAnnotation(targetElement, "javax.ejb.Stateless"); // NOI18N
     }
 
     private String getNameFromPackageName(String packageName) {
@@ -860,8 +865,9 @@ public class JaxWsNode extends AbstractNode implements
         if (implBeanFo == null) {
             // unable to find implementation class
             NotifyDescriptor.Message dialogDesc = new NotifyDescriptor.Message(
-                    NbBundle.getMessage(JaxWsNode.class, "ERR_missingImplementationClass"),
-                    NotifyDescriptor.ERROR_MESSAGE);
+                    NbBundle.getMessage(JaxWsNode.class, 
+                            "ERR_missingImplementationClass"),  // NOI18N  
+                                NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(dialogDesc);
             return;
         }
@@ -872,15 +878,21 @@ public class JaxWsNode extends AbstractNode implements
         final String[] handlerFileName = new String[1];
         final boolean[] isNew = new boolean[]{true};
         JavaSource implBeanJavaSrc = JavaSource.forFileObject(implBeanFo);
-        CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
-
+        CancellableTask<CompilationController> task = 
+            new CancellableTask<CompilationController>() 
+            {
+            @Override
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
-                AnnotationMirror handlerAnnotation = getAnnotation(controller, typeElement, "javax.jws.HandlerChain"); //NOI18N
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(
+                        controller);
+                AnnotationMirror handlerAnnotation =JaxWsUtils.getAnnotation(typeElement, 
+                        "javax.jws.HandlerChain"); //NOI18N
                 if (handlerAnnotation != null) {
                     isNew[0] = false;
-                    Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = handlerAnnotation.getElementValues();
+                    Map<? extends ExecutableElement, 
+                            ? extends AnnotationValue> expressions = 
+                                handlerAnnotation.getElementValues();
                     for (ExecutableElement ex : expressions.keySet()) {
                         if (ex.getSimpleName().contentEquals("file")) {   //NOI18N
                             handlerFileName[0] = (String) expressions.get(ex).getValue();
@@ -889,7 +901,7 @@ public class JaxWsNode extends AbstractNode implements
                     }
                 }
             }
-
+            @Override
             public void cancel() {
             }
         };
@@ -912,7 +924,8 @@ public class JaxWsNode extends AbstractNode implements
                 }
                 if (handlerFO != null) {
                     try {
-                        handlerChains = HandlerChainsProvider.getDefault().getHandlerChains(handlerFO);
+                        handlerChains = HandlerChainsProvider.getDefault().
+                            getHandlerChains(handlerFO);
                     } catch (Exception e) {
                         ErrorManager.getDefault().notify(e);
                         return; //TODO handle this
@@ -926,7 +939,10 @@ public class JaxWsNode extends AbstractNode implements
                     }
                 } else {
                     //unable to find the handler file, display a warning
-                    NotifyDescriptor.Message dialogDesc = new NotifyDescriptor.Message(NbBundle.getMessage(JaxWsNode.class, "MSG_HANDLER_FILE_NOT_FOUND", handlerFileName), NotifyDescriptor.INFORMATION_MESSAGE);
+                    NotifyDescriptor.Message dialogDesc = new NotifyDescriptor.
+                        Message(NbBundle.getMessage(JaxWsNode.class, 
+                                "MSG_HANDLER_FILE_NOT_FOUND", handlerFileName), // NOI18N 
+                                    NotifyDescriptor.INFORMATION_MESSAGE);
                     DialogDisplayer.getDefault().notify(dialogDesc);
                 }
             } catch (IOException ex) {
@@ -940,19 +956,6 @@ public class JaxWsNode extends AbstractNode implements
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
         dialog.getAccessibleContext().setAccessibleDescription(dialog.getTitle());
         dialog.setVisible(true);
-    }
-
-    static AnnotationMirror getAnnotation(CompilationController controller, TypeElement typeElement, String annotationType) {
-        TypeElement anElement = controller.getElements().getTypeElement(annotationType);
-        if (anElement != null) {
-            List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
-            for (AnnotationMirror annotation : annotations) {
-                if (controller.getTypes().isSameType(anElement.asType(), annotation.getAnnotationType())) {
-                    return annotation;
-                }
-            }
-        }
-        return null;
     }
 
     void refreshImplClass() {
@@ -1005,7 +1008,10 @@ public class JaxWsNode extends AbstractNode implements
             url = null;
         }
 
-        return new WebServiceTransferable(new WebServiceReference(url, service.getWsdlUrl() != null ? service.getServiceName() : service.getName(), project.getProjectDirectory().getName()));
+        return new WebServiceTransferable(new WebServiceReference(url, 
+                service.getWsdlUrl() != null ? 
+                        service.getServiceName() : service.getName(), 
+                            project.getProjectDirectory().getName()));
     }
 
     private class RefreshServiceImpl implements JaxWsRefreshCookie {
@@ -1015,7 +1021,8 @@ public class JaxWsNode extends AbstractNode implements
          */
         public void refreshService(boolean downloadWsdl) {
             if (downloadWsdl) {
-                String result = RefreshWsDialog.open(downloadWsdl, service.getImplementationClass(), service.getWsdlUrl());
+                String result = RefreshWsDialog.open(downloadWsdl, 
+                        service.getImplementationClass(), service.getWsdlUrl());
                 if (RefreshWsDialog.CLOSE.equals(result)) {
                     return;
                 }
@@ -1029,7 +1036,8 @@ public class JaxWsNode extends AbstractNode implements
                     ((JaxWsChildren) getChildren()).refreshKeys(false, false, null);
                 }
             } else {
-                String result = RefreshWsDialog.openWithOKButtonOnly(downloadWsdl, service.getImplementationClass(), service.getWsdlUrl());
+                String result = RefreshWsDialog.openWithOKButtonOnly(downloadWsdl, 
+                        service.getImplementationClass(), service.getWsdlUrl());
                 if (RefreshWsDialog.REGENERATE_IMPL_CLASS.equals(result)) {
                     ((JaxWsChildren) getChildren()).refreshKeys(false, true, null);
                 } else {
@@ -1099,7 +1107,7 @@ public class JaxWsNode extends AbstractNode implements
         }
         return hostName;
     }
-
+    
     private class ServerContextInfo {
         private String host, port, contextRoot;
 

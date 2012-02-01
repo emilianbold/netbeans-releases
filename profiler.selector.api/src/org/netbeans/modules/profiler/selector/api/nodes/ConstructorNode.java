@@ -117,4 +117,8 @@ public class ConstructorNode extends SelectorNode {
     final public SourceCodeSelection getSignature() {
         return signature;
     }
+    
+    final public SourceMethodInfo getMethodInfo() {
+        return method;
+    }
 }

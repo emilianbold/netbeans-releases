@@ -227,7 +227,7 @@ abstract class LayoutEvent extends EventObject {
         }
 
         private void undoIntervalAddition() {
-            getModel().removeInterval(parentInt, index);
+            index = getModel().removeInterval(interval);
         }
 
         private void undoIntervalRemoval() {
@@ -378,7 +378,8 @@ abstract class LayoutEvent extends EventObject {
         }
 
         private void changeContainerAttr() {
-            component.setLayoutContainer(!component.isLayoutContainer(), newLayoutRoots);
+            boolean toContainer = !component.isLayoutContainer();
+            component.setLayoutContainer(toContainer, toContainer ? newLayoutRoots : null);
         }
 
         private void undoComponentRegistration() {

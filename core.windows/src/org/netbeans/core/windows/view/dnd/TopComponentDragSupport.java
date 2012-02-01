@@ -47,6 +47,7 @@ package org.netbeans.core.windows.view.dnd;
 
 
 
+import org.netbeans.swing.tabcontrol.customtabs.Tabbed;
 import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Component;
@@ -273,18 +274,11 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
         TopComponent tc = null;
         Tabbed tabbed;
 
-        if(srcComp instanceof Tabbed) {
-            tabbed = (Tabbed)srcComp;
+        if(srcComp instanceof Tabbed.Accessor) {
+            tabbed = ((Tabbed.Accessor)srcComp).getTabbed();
         } else {
-            tabbed = (Tabbed)SwingUtilities.getAncestorOfClass(Tabbed.class, srcComp);
-        }
-        if (tabbed == null) {
-            if(srcComp instanceof Tabbed.Accessor) {
-                tabbed = ((Tabbed.Accessor)srcComp).getTabbed();
-            } else {
-                Tabbed.Accessor acc = (Tabbed.Accessor)SwingUtilities.getAncestorOfClass(Tabbed.Accessor.class, srcComp);
-                tabbed = acc != null ? acc.getTabbed() : null;
-            }
+            Tabbed.Accessor acc = (Tabbed.Accessor)SwingUtilities.getAncestorOfClass(Tabbed.Accessor.class, srcComp);
+            tabbed = acc != null ? acc.getTabbed() : null;
         }
         if(tabbed == null) {
             return;
@@ -396,13 +390,10 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
         addListening();
         hackESC = false;
         
-        Tabbed tabbed = (Tabbed) SwingUtilities.getAncestorOfClass (Tabbed.class,
-            startingComp);
-        if (tabbed == null) {
-            Tabbed.Accessor acc = (Tabbed.Accessor) SwingUtilities.getAncestorOfClass (Tabbed.Accessor.class,
-                                                                                       startingComp);
-            tabbed = acc != null ? acc.getTabbed() : null;
-        }
+        Tabbed tabbed = null;
+        Tabbed.Accessor acc = (Tabbed.Accessor) SwingUtilities.getAncestorOfClass (Tabbed.Accessor.class,
+                                                                                    startingComp);
+        tabbed = acc != null ? acc.getTabbed() : null;
         
         int tabIndex = -1;
         Image img = createDragImage();

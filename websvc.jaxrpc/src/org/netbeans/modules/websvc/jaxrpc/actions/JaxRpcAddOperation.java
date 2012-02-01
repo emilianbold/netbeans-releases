@@ -47,7 +47,6 @@ package org.netbeans.modules.websvc.jaxrpc.actions;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
-import org.netbeans.modules.websvc.core._RetoucheUtil;
 import org.netbeans.modules.websvc.core.AddWsOperationHelper;
 import org.netbeans.modules.websvc.api.support.AddOperationCookie;
 import java.io.IOException;

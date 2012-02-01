@@ -446,6 +446,18 @@ public final class ProjectPropertiesSupport {
         return getString(project, PhpProjectProperties.PHP_UNIT_LAST_USED_TEST_GROUPS, null);
     }
 
+    public static String getHostname(PhpProject project) {
+        return getString(project, PhpProjectProperties.HOSTNAME, null);
+    }
+
+    public static String getPort(PhpProject project) {
+        return getString(project, PhpProjectProperties.PORT, null);
+    }
+
+    public static String getInternalRouter(PhpProject project) {
+        return getString(project, PhpProjectProperties.ROUTER, null);
+    }
+
     /**
      * @return instance of Pair<String, String> or null
      */

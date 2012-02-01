@@ -83,6 +83,8 @@ public class POMDataObject extends MultiDataObject {
 
     public static final String SETTINGS_MIME_TYPE = "text/x-maven-settings+xml";
 
+    static final String POM_ICON = "org/netbeans/modules/maven/grammar/xmlObject.gif";
+
     private static final Logger LOG = Logger.getLogger(POMDataObject.class.getName());
 
     public POMDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
@@ -94,7 +96,7 @@ public class POMDataObject extends MultiDataObject {
 
     @MultiViewElement.Registration(
         displayName="#CTL_SourceTabCaption",
-        iconBase="org/netbeans/modules/maven/grammar/xmlObject.gif",
+        iconBase=POM_ICON,
         persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID="maven.pom",
         mimeType=Constants.POM_MIME_TYPE,
@@ -106,7 +108,7 @@ public class POMDataObject extends MultiDataObject {
 
     @MultiViewElement.Registration(
         displayName="#CTL_SourceTabCaption",
-        iconBase="org/netbeans/modules/maven/grammar/xmlObject.gif",
+        iconBase=POM_ICON,
         persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID="xml.text",
         mimeType=SETTINGS_MIME_TYPE,

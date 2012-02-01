@@ -477,7 +477,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 }
             };
         }
-        ScanDialog.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.whereUsedAction()));
+        task.run();
     }
 
     /**

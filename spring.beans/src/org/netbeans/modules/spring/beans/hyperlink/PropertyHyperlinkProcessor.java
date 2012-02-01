@@ -43,26 +43,23 @@
  */
 package org.netbeans.modules.spring.beans.hyperlink;
 
-import java.io.IOException;
 import java.util.StringTokenizer;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
+import org.netbeans.modules.spring.beans.utils.ElementSeekerTask;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
 import org.netbeans.modules.spring.java.JavaUtils;
 import org.netbeans.modules.spring.java.MatchType;
 import org.netbeans.modules.spring.java.Property;
 import org.netbeans.modules.spring.java.PropertyFinder;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -72,6 +69,7 @@ import org.openide.util.NbBundle;
 public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
 
     @NbBundle.Messages("title.property.searching=Property Searching")
+    @Override
     public void process(HyperlinkEnv env) {
         String className = new BeanClassFinder(env.getBeanAttributes(),
                 env.getFileObject()).findImplementationClass(false);
@@ -90,40 +88,24 @@ public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
         }
 
         boolean jumpToGetter = StringUtils.occurs(env.getValueString(), ".", propChain.length()); //NOI18N
-        PropertySeeker propertySeeker = new PropertySeeker(js, className, propChain, jumpToGetter);
-//        runPropertySeekerAsUserTask(js, propertySeeker);
-//        if (!propertySeeker.wasElementFound()) {
+        PropertySeekerTask propertySeeker = new PropertySeekerTask(js, className, propChain, jumpToGetter);
+        propertySeeker.runAsUserTask();
+        if (!propertySeeker.wasElementFound()) {
             ScanDialog.runWhenScanFinished(propertySeeker, Bundle.title_property_searching());
-//        }
+        }
     }
 
-    private class PropertySeeker implements Runnable, CancellableTask<CompilationController> {
+    private class PropertySeekerTask extends ElementSeekerTask {
 
-        private final AtomicBoolean wasElementFound = new AtomicBoolean(false);
-
-        private final JavaSource javaSource;
         private final String className;
         private final String propChain;
         private final boolean jumpToGetter;
 
-        public PropertySeeker(JavaSource javaSource, String className, String propChain, boolean jumpToGetter) {
-            this.javaSource = javaSource;
+        public PropertySeekerTask(JavaSource javaSource, String className, String propChain, boolean jumpToGetter) {
+            super(javaSource);
             this.className = className;
             this.propChain = propChain;
             this.jumpToGetter = jumpToGetter;
-        }
-
-        public boolean wasElementFound() {
-            return wasElementFound.get();
-        }
-
-        @Override
-        public void run() {
-            runPropertySeekerAsUserTask(javaSource, this);
-        }
-
-        @Override
-        public void cancel() {
         }
 
         @Override
@@ -167,7 +149,7 @@ public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
                 return;
             }
 
-            wasElementFound.set(true);
+            elementFound.set(true);
             String setterProp = propChain.substring(dotIndex + 1);
             Property[] sProps = new PropertyFinder(startType, setterProp, eu, MatchType.PREFIX).findProperties();
             if (sProps.length > 0) {
@@ -204,14 +186,6 @@ public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
             return env.getValueString();
         } else {
             return env.getValueString().substring(0, endPos);
-        }
-    }
-
-    private void runPropertySeekerAsUserTask(JavaSource javaSource, PropertySeeker propertySeeker) {
-        try {
-            javaSource.runUserActionTask(propertySeeker, true);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         }
     }
 }

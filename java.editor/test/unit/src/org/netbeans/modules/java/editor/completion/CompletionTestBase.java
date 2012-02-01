@@ -80,6 +80,7 @@ import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.TreeLoader;
+import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
@@ -186,7 +187,12 @@ public class CompletionTestBase extends NbTestCase {
         final ClassPath sourcePath = ClassPathSupport.createClassPath(new FileObject[] {FileUtil.toFileObject(getDataDir())});
         final ClassIndexManager mgr  = ClassIndexManager.getDefault();
         for (ClassPath.Entry entry : sourcePath.entries()) {
-            mgr.createUsagesQuery(entry.getURL(), true);
+            TransactionContext tx = TransactionContext.beginStandardTransaction(true, entry.getURL());
+            try {
+                mgr.createUsagesQuery(entry.getURL(), true);
+            } finally {
+                tx.commit();
+            }
         }
         final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, ClassPathSupport.createClassPath(new URL[0]), sourcePath);
         assertNotNull(cpInfo);
@@ -196,15 +202,15 @@ public class CompletionTestBase extends NbTestCase {
             public void run(CompilationController parameter) throws Exception {
                 for (ClassPath.Entry entry : bootPath.entries()) {
                     final URL url = entry.getURL();
-                    final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);
-                    ClassIndexManager.getDefault().writeLock(new Action<Void>() {
-                        public Void run() throws IOException, InterruptedException {
-                            BinaryAnalyser ba = cii.getBinaryAnalyser();
-                            ba.start(url, new AtomicBoolean(false), new AtomicBoolean(false));
-                            ba.finish();
-                            return null;
-                        }
-                    });
+                    TransactionContext.beginStandardTransaction(false, entry.getURL());
+                    try {
+                        final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);
+                        BinaryAnalyser ba = cii.getBinaryAnalyser();
+                        ba.start(url, new AtomicBoolean(false), new AtomicBoolean(false));
+                        ba.finish();
+                    } finally {
+                        TransactionContext.get().commit();
+                    }
                 }
             }
         }, true);

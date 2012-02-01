@@ -57,12 +57,13 @@ import org.netbeans.jellytools.modules.editor.KeyMapOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.test.editor.lib.EditorTestCase;
 
 /**
  *
  * @author Petr Dvorak Petr.Dvorak@Sun.COM
  */
-public class KeyMapTest extends JellyTestCase {
+public class KeyMapTest extends EditorTestCase {
     public static final String PROFILE_DEFAULT = "NetBeans";
 
     public static final String SRC_PACKAGES_PATH = Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir");
@@ -74,6 +75,9 @@ public class KeyMapTest extends JellyTestCase {
      */
     public KeyMapTest(String name) {
         super(name);
+        openDefaultProject();
+        openSourceFile("keymap", "Main.java");
+        editor = new EditorOperator("Main.java");
     }
 
     public void closeProject() {
@@ -121,8 +125,8 @@ public class KeyMapTest extends JellyTestCase {
             closed = true;
         } catch (Exception e) {
             System.out.println("ERROR: testVerify");
-            e.printStackTrace();
-            fail();
+            e.printStackTrace(System.out);
+            fail(e);
         } finally {
             if (!closed && kmo != null) {
                 kmo.cancel().push();
@@ -146,7 +150,7 @@ public class KeyMapTest extends JellyTestCase {
             new EventTool().waitNoEvent(2000);
             editor.requestFocus();
             new EventTool().waitNoEvent(100);
-            editor.setCaretPosition(12, 1);
+            editor.setCaretPosition(7, 1);
             ValueResolver vr = new ValueResolver() {
 
                 public Object getValue() {
@@ -164,8 +168,8 @@ public class KeyMapTest extends JellyTestCase {
             assertEquals("public class Main {", text.trim());
         } catch (Exception e) {
             System.out.println("ERROR: testAddShortcut");
-            e.printStackTrace();
-            fail();
+            e.printStackTrace(System.out);
+            fail(e);
         } finally {
             if (!closed && kmo != null) {
                 kmo.cancel().push();
@@ -197,7 +201,7 @@ public class KeyMapTest extends JellyTestCase {
             editor.requestFocus();
             new EventTool().waitNoEvent(100);
             // Check Ctrl+Alt+M works for select line
-            editor.setCaretPosition(12, 1);
+            editor.setCaretPosition(7, 1);
             ValueResolver vr = new ValueResolver() {
 
                 public Object getValue() {
@@ -232,8 +236,8 @@ public class KeyMapTest extends JellyTestCase {
             assertEquals("public class Main {", text.trim());
         } catch (Exception e) {
             System.out.println("ERROR: testAssignAlternativeShortcut");
-            e.printStackTrace();
-            fail();
+            e.printStackTrace(System.out);
+            fail(e);
         } finally {
             if (!closed && kmo != null) {
                 kmo.cancel().push();
@@ -266,6 +270,7 @@ public class KeyMapTest extends JellyTestCase {
                 editor.setCaretPosition(12, 1);
                 ValueResolver vr = new ValueResolver() {
 
+                    @Override
                     public Object getValue() {
                         editor.pushKey(KeyEvent.VK_G, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
                         String selected = editor.txtEditorPane().getSelectedText();
@@ -299,9 +304,9 @@ public class KeyMapTest extends JellyTestCase {
                 assertNotSame("public class Main {", text.trim());
             }
         } catch (Exception e) {
-            System.out.println("ERROR: testUnassign");
-            e.printStackTrace();
-            fail();
+            System.out.println("ERROR: testUnassign");            
+            e.printStackTrace(System.out);
+            fail(e);
         } finally {
             if (!closed && kmo != null) {
                 kmo.cancel().push();
@@ -318,25 +323,25 @@ public class KeyMapTest extends JellyTestCase {
             closed = false;
             kmo.selectProfile(PROFILE_DEFAULT);
             Vector<String> shortcuts = kmo.getAllShortcutsForAction("select line");
-            kmo.assignShortcutToAction("select line", true, true, false, KeyEvent.VK_F9, true, false);
+            kmo.assignShortcutToAction("select line", false, true, true, KeyEvent.VK_F9, true, false);
             shortcuts.equals(kmo.getAllShortcutsForAction("select line"));
             kmo.ok().push();
             closed = true;
             kmo = KeyMapOperator.invoke();
             closed = false;
             kmo.selectProfile(PROFILE_DEFAULT);
-            kmo.assignShortcutToAction("select line", true, true, false, KeyEvent.VK_F9, true, true);
+            kmo.assignShortcutToAction("select line", false, true, true, KeyEvent.VK_F9, true, true);
             kmo.ok().push();
             closed = true;
             new EventTool().waitNoEvent(2000);
             editor.requestFocus();
             new EventTool().waitNoEvent(100);
-            // Check Ctrl+Shift+G works for select line
+            // Check ALT+Shift+G works for select line
             editor.setCaretPosition(12, 1);
             ValueResolver vr = new ValueResolver() {
 
                 public Object getValue() {
-                    editor.pushKey(KeyEvent.VK_F9, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
+                    editor.pushKey(KeyEvent.VK_F9, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
                     String selected = editor.txtEditorPane().getSelectedText();
                     new EventTool().waitNoEvent(100);
                     if (selected == null) {
@@ -350,8 +355,8 @@ public class KeyMapTest extends JellyTestCase {
             assertEquals("public class Main {", text.trim());
         } catch (Exception e) {
             System.out.println("ERROR: testAddDuplicateCancel");
-            e.printStackTrace();
-            fail();
+            e.printStackTrace(System.out);
+            fail(e);
         } finally {
             if (!closed && kmo != null) {
                 kmo.cancel().push();
@@ -495,7 +500,7 @@ public class KeyMapTest extends JellyTestCase {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(KeyMapTest.class)
-                    .addTest("prepareFileInEditor")
+                    //.addTest("prepareFileInEditor")
                     .addTest("testVerify")
                     .addTest("testAddDuplicateCancel")
                     .addTest("testAddShortcut")
@@ -504,7 +509,7 @@ public class KeyMapTest extends JellyTestCase {
                     //.addTest("testProfileRestore")//fails due to issue 151254
                     .addTest("testProfileDuplicte")
                     .addTest("testHelp")
-                    .addTest("closeProject")
+                    //.addTest("closeProject")
                 .enableModules(".*").clusters(".*"));
     }
 }

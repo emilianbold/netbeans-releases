@@ -47,7 +47,9 @@ package org.netbeans.modules.versioning;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Handler;
@@ -64,6 +66,7 @@ import org.openide.util.Lookup;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCSInterceptor;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileLock;
+import org.openide.util.Exceptions;
 
 /**
  * Versioning SPI unit tests of VCSInterceptor.
@@ -82,20 +85,20 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
     private static final String beforeChangedFormat = "beforeChange {0}";
     private static final String fileChangedFormat = "fileChanged {0}";
     private static final String beforeCreateFormat = "beforeCreate {0}, {1}, {2}";
-    private static final String createdFormat = "createSuccess {0}";
+    private static final String createSuccessFormat = "createSuccess {0}";
     private static final String createdExternalyFormat = "createdExternally {0}";
     private static final String createFailureFormat = "createFailure {0}, {1}, {2}";
-    private static final String beforeDeleteFormat = "getDeleteHandler {0}";
+    private static final String getDeleteHandlerFormat = "getDeleteHandler {0}";
     private static final String deleteHandleFormat = "delete handle {0}";
     private static final String deletedExternalyFormat = "deletedExternaly {0}";
     private static final String deleteSuccessFormat = "deleteSuccess {0}";
-    private static final String beforeRenameFormat = "getRenameHandler {0}, {1}";
-    private static final String beforeMoveFormat = "getMoveHandler {0}, {1}";
+    private static final String getRenameHandlerFormat = "getRenameHandler {0}, {1}";
+    private static final String getMoveHandlerFormat = "getMoveHandler {0}, {1}";
     private static final String moveHandleFormat = "move handle {0} {1}";
     private static final String afterMoveFormat = "afterMove {0}, {1}";
-    private static final String beforeCopyFormat = "getCopyHandler {0}, {1}";
+    private static final String getCopyHandlerFormat = "getCopyHandler {0}, {1}";
     private static final String copyHandleFormat = "copy handle {0} {1}";
-    private static final String afterCopyFormat = "copySuccess {0}, {1}";
+    private static final String copySuccessFormat = "copySuccess {0}, {1}";
     
     static String[] formats = new String[] {
         listFilesFormat,
@@ -103,22 +106,22 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         fileLockedFormat,
         beforeChangedFormat,
         fileChangedFormat,
-        beforeDeleteFormat,
+        getDeleteHandlerFormat,
         deleteHandleFormat,
         deletedExternalyFormat,
         deleteSuccessFormat,
         beforeCreateFormat,
-        createdFormat,
+        createSuccessFormat,
         canWriteFormat,
         createdExternalyFormat,
         createFailureFormat,
-        beforeRenameFormat,
-        beforeMoveFormat,
+        getRenameHandlerFormat,
+        getMoveHandlerFormat,
         moveHandleFormat,
         afterMoveFormat,
-        beforeCopyFormat,
+        getCopyHandlerFormat,
         copyHandleFormat,
-        afterCopyFormat
+        copySuccessFormat
     };
     
     public VCSInterceptorTestCase(String testName) {
@@ -134,7 +137,7 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
                 if(vs instanceof DelegatingVCS) {
                     DelegatingVCS dvcs = (DelegatingVCS)vs;
                     if("TestVCSDisplay".equals(dvcs.getDisplayName())) {
-                        inteceptor = (TestVCSInterceptor) dvcs.getInterceptor();
+                        inteceptor = (TestVCSInterceptor) dvcs.getVCSInterceptor();
                     }
                 }
             }
@@ -160,9 +163,10 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         assertTrue(inteceptor.getDoCreateFiles().contains(proxy));
         assertTrue(inteceptor.getCreatedFiles().contains(proxy));
         
-        assertEquals(2, logHandler.messages.size());
-        logHandler.assertEvent(beforeCreateFormat, proxy.getParentFile(), proxy.getName(), false);
-        logHandler.assertEvent(createdFormat, proxy);
+        assertInterceptedCalls(
+            f(beforeCreateFormat, proxy.getParentFile(), proxy.getName(), false),
+            f(createSuccessFormat, proxy)
+        );
     }
     
     public void testFileCreateNotVersioned() throws IOException {
@@ -175,10 +179,10 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         assertFalse(inteceptor.getBeforeCreateFiles().contains(proxy));
         assertFalse(inteceptor.getDoCreateFiles().contains(proxy));
         assertFalse(inteceptor.getCreatedFiles().contains(proxy));
-        
-        assertEquals(2, logHandler.messages.size());
-        logHandler.assertEvent(beforeCreateFormat, proxy.getParentFile(), proxy.getName(), false);
-        logHandler.assertEvent(createdFormat, proxy);
+        assertInterceptedCalls(
+            f(beforeCreateFormat, proxy.getParentFile(), proxy.getName(), false),
+            f(createSuccessFormat, proxy)
+        );
     }
     
     public void testIsMuttable() throws IOException {
@@ -201,8 +205,9 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         
         assertFalse(fo.canWrite());
         assertTrue(inteceptor.getIsMutableFiles().contains(proxy));
-        assertEquals(1, logHandler.messages.size());
-        logHandler.assertEvent(canWriteFormat, proxy);
+        assertInterceptedCalls(
+            f(canWriteFormat, proxy)
+        );        
     }
     
     public void testVCSOverridesReadOnly() throws IOException {
@@ -214,8 +219,9 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         
         assertTrue(fo.canWrite());
         assertTrue(inteceptor.getIsMutableFiles().contains(proxy));
-        assertEquals(1, logHandler.messages.size());
-        logHandler.assertEvent(canWriteFormat, proxy);
+        assertInterceptedCalls(
+            f(canWriteFormat, proxy)
+        );   
     }
 
     public void testGetAttribute() throws IOException {
@@ -233,8 +239,9 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         attr = (String) fo.getAttribute("ProvidedExtensions.RemoteLocation");
         assertNotNull(attr);
         assertTrue(attr.endsWith("gotattr.txt"));
-        assertEquals(1, logHandler.messages.size());
-        logHandler.assertEvent(getAttributeFormat, proxy, "ProvidedExtensions.RemoteLocation");
+        assertInterceptedCalls(
+            f(getAttributeFormat, proxy, "ProvidedExtensions.RemoteLocation")
+        );   
         
         fo = folder.createData("versioned.txt");
         proxy = VCSFileProxy.createFileProxy(fo);
@@ -243,7 +250,9 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         assertNotNull(battr);
         assertTrue(battr);
         assertEquals(1, logHandler.messages.size());
-        logHandler.assertEvent(getAttributeFormat, proxy, "ProvidedExtensions.VCSManaged");
+        assertInterceptedCalls(
+            f(getAttributeFormat, proxy, "ProvidedExtensions.VCSManaged")
+        );   
     }
 
     public void testRefreshRecursively() throws IOException {
@@ -256,8 +265,10 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         assertTrue(inteceptor.getRefreshRecursivelyFiles().contains(VCSFileProxy.createFileProxy(fo)));     
         
         // XXX listFiles called twice on adding the listener. is this realy necessary
-        assertEquals(2, logHandler.messages.size());
-        logHandler.assertEvent(listFilesFormat, proxy);
+        assertInterceptedCalls(
+            2, 
+            f(listFilesFormat, proxy)
+        );            
     }
 
     public void testChangedFile() throws IOException {
@@ -275,15 +286,18 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         assertTrue(inteceptor.getBeforeChangeFiles().contains(proxy));
         assertTrue(inteceptor.getAfterChangeFiles().contains(proxy));
         
-        assertEquals(3, logHandler.messages.size());
-        logHandler.assertEvent(fileLockedFormat, proxy);
-        logHandler.assertEvent(beforeChangedFormat, proxy);
-        logHandler.assertEvent(fileChangedFormat, proxy);
+        assertInterceptedCalls(
+            f(fileLockedFormat, proxy),
+            f(beforeChangedFormat, proxy),
+            f(fileChangedFormat, proxy)
+        );
     }
     
     public void testFileProtectedAndNotDeleted() throws IOException {
         FileObject fo = getVersionedFolder();
         logHandler.clear();
+        logHandler.ignoredMessages.add(createdExternalyFormat); // XXX 
+        
         fo = fo.createData("deleteme.txt-do-not-delete");
         VCSFileProxy proxy = VCSFileProxy.createFileProxy(fo);
         fo.delete();
@@ -296,19 +310,19 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         assertTrue(inteceptor.getDoDeleteFiles().contains(proxy));
         assertTrue(inteceptor.getDeletedFiles().contains(proxy));
         
-        assertEquals(7, logHandler.messages.size());
-        logHandler.assertEvent(beforeCreateFormat, proxy.getParentFile(), proxy.getName(), false);
-        logHandler.assertEvent(createdFormat, proxy);
-        logHandler.assertEvent(fileLockedFormat, proxy);
-        logHandler.assertEvent(beforeDeleteFormat, proxy);
-        logHandler.assertEvent(deleteHandleFormat, proxy);
-        logHandler.assertEvent(deleteSuccessFormat, proxy);
-        logHandler.assertEvent(createdExternalyFormat, proxy); // XXX is this necessary
-        
+        assertInterceptedCalls(
+            f(beforeCreateFormat, proxy.getParentFile(), proxy.getName(), false),
+            f(createSuccessFormat, proxy),
+            f(fileLockedFormat, proxy),
+            f(getDeleteHandlerFormat, proxy),
+            f(deleteHandleFormat, proxy),
+            f(deleteSuccessFormat, proxy)
+        );
     }
 
     public void testFileCreatedLockedRenamedDeleted() throws IOException {
         inteceptor.moveHandler = moveHandler;
+        inteceptor.deleteHandler = deleteHandler;
         FileObject fo = getVersionedFolder();
         logHandler.clear();
         
@@ -329,17 +343,18 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         assertTrue(inteceptor.getDoDeleteFiles().contains(proxy2));
         assertTrue(inteceptor.getDeletedFiles().contains(proxy2));
         
-        assertEquals(10, logHandler.messages.size());
-        logHandler.assertEvent(beforeCreateFormat, proxy.getParentFile(), proxy.getName(), false);
-        logHandler.assertEvent(createdFormat, proxy);
-        logHandler.assertEvent(fileLockedFormat, proxy);
-        logHandler.assertEvent(beforeRenameFormat, proxy, proxy2.getName());
-        logHandler.assertEvent(moveHandleFormat, proxy, proxy2);
-        logHandler.assertEvent(afterMoveFormat, proxy, proxy2);
-        logHandler.assertEvent(fileLockedFormat, proxy);
-        logHandler.assertEvent(beforeDeleteFormat, proxy2);
-        logHandler.assertEvent(deleteHandleFormat, proxy2);
-        logHandler.assertEvent(deleteSuccessFormat, proxy2);
+        assertInterceptedCalls(
+            f(beforeCreateFormat, proxy.getParentFile(), proxy.getName(), false),
+            f(createSuccessFormat, proxy),
+            f(fileLockedFormat, proxy),
+            f(getRenameHandlerFormat, proxy, proxy2.getName()),
+            f(moveHandleFormat, proxy, proxy2),
+            f(afterMoveFormat, proxy, proxy2),
+            f(fileLockedFormat, proxy),
+            f(getDeleteHandlerFormat, proxy2),
+            f(deleteHandleFormat, proxy2),
+            f(deleteSuccessFormat, proxy2)
+        );
     }
 
     public void testFileCopied() throws IOException {
@@ -347,6 +362,7 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         FileObject fo = getVersionedFolder();
         fo = fo.createData("copyme.txt");
         logHandler.clear();  
+        logHandler.ignoredMessages.add(createdExternalyFormat); // XXX 
         
         FileObject fto = fo.copy(fo.getParent(), "copymeto", "txt");
         VCSFileProxy fromProxy = VCSFileProxy.createFileProxy(fo);
@@ -359,13 +375,13 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         assertTrue(inteceptor.getAfterCopyFiles().contains(fromProxy));
         assertTrue(inteceptor.getAfterCopyFiles().contains(toProxy));
         
-        logHandler.ignoredMessages.add(createdExternalyFormat); // XXX 
-        assertEquals(3, logHandler.messages.size());
-//        logHandler.assertEvent(fileLockedFormat, fromProxy); // XXX no lock before copy ???
-        logHandler.assertEvent(beforeCopyFormat, fromProxy, toProxy);
-        logHandler.assertEvent(copyHandleFormat, fromProxy, toProxy);
-        logHandler.assertEvent(afterCopyFormat, fromProxy, toProxy);
-        // XXX and this doesnt invoke createdExternaly but move does?
+        assertInterceptedCalls(
+//              f(fileLockedFormat, fromProxy); // XXX no lock before copy ???
+            f(getCopyHandlerFormat, fromProxy, toProxy),
+            f(copyHandleFormat, fromProxy, toProxy),
+            f(copySuccessFormat, fromProxy, toProxy)
+            // XXX and this doesnt invoke createdExternaly but move does?
+        );
     }
     
     public void testFolderTreeCopied() throws IOException {
@@ -376,6 +392,7 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         FileObject targetFolder = fo.createFolder("targetFolder");
         VCSFileProxy fromProxy = VCSFileProxy.createFileProxy(fromFolder);
         logHandler.clear();
+        logHandler.ignoredMessages.add(createdExternalyFormat); // XXX 
         
         FileObject toFolder = fromFolder.copy(targetFolder, "copy", null);
         VCSFileProxy toProxy = VCSFileProxy.createFileProxy(toFolder);
@@ -387,11 +404,11 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         assertTrue(inteceptor.getAfterCopyFiles().contains(fromProxy));
         assertTrue(inteceptor.getAfterCopyFiles().contains(toProxy));
         
-        logHandler.ignoredMessages.add(createdExternalyFormat); // XXX 
-        assertEquals(3, logHandler.messages.size());
-        logHandler.assertEvent(beforeCopyFormat, fromProxy, toProxy);
-        logHandler.assertEvent(copyHandleFormat, fromProxy, toProxy);
-        logHandler.assertEvent(afterCopyFormat, fromProxy, toProxy);
+        assertInterceptedCalls(
+            f(getCopyHandlerFormat, fromProxy, toProxy),
+            f(copyHandleFormat, fromProxy, toProxy),
+            f(copySuccessFormat, fromProxy, toProxy)
+        );
     }
 
     public void testFileMoved() throws IOException {
@@ -402,6 +419,9 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         VCSFileProxy fromProxy = VCSFileProxy.createFileProxy(fromFile);
         
         logHandler.clear();
+        logHandler.ignoredMessages.add(createdExternalyFormat);
+        logHandler.ignoredMessages.add(deletedExternalyFormat);
+        
         FileObject toFile = fromFile.move(fromFile.lock(), toFolder, fromFile.getName(), fromFile.getExt());
         VCSFileProxy toProxy = VCSFileProxy.createFileProxy(toFile);
 
@@ -412,14 +432,14 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         assertTrue(inteceptor.getAfterMoveFiles().contains(fromProxy));
         assertTrue(inteceptor.getAfterMoveFiles().contains(toProxy));
         
-        logHandler.ignoredMessages.add(createdExternalyFormat);
-        logHandler.ignoredMessages.add(deletedExternalyFormat);
-        assertEquals(4, logHandler.messages.size());
-        logHandler.assertEvent(fileLockedFormat, fromProxy); 
-        logHandler.assertEvent(beforeMoveFormat, fromProxy, toProxy);
-        logHandler.assertEvent(moveHandleFormat, fromProxy, toProxy);
-//        logHandler.assertEvent(deletedExternalyFormat, toProxy); // XXX can we avoid this? sometimes deleted or created externaly 
-        logHandler.assertEvent(afterMoveFormat, fromProxy, toProxy);
+        assertInterceptedCalls(
+            f(fileLockedFormat, fromProxy),
+            f(getMoveHandlerFormat, fromProxy, toProxy),
+            f(moveHandleFormat, fromProxy, toProxy),
+    //        f(deletedExternalyFormat, toProxy); // XXX can we avoid this? sometimes deleted or created externaly 
+            f(afterMoveFormat, fromProxy, toProxy)
+        );
+    
     }
     
     public void testFolderTreeMoved() throws IOException {
@@ -431,6 +451,8 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         VCSFileProxy fromProxy = VCSFileProxy.createFileProxy(fromFolder);
         
         logHandler.clear();
+        logHandler.ignoredMessages.add(createdExternalyFormat);
+        logHandler.ignoredMessages.add(deletedExternalyFormat);
         FileObject toFile = fromFolder.move(fromFolder.lock(), targetFolder, fromFolder.getName(), fromFolder.getExt());
         VCSFileProxy toProxy = VCSFileProxy.createFileProxy(toFile);
 
@@ -441,14 +463,13 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         assertTrue(inteceptor.getAfterMoveFiles().contains(fromProxy));
         assertTrue(inteceptor.getAfterMoveFiles().contains(toProxy));
         
-        logHandler.ignoredMessages.add(createdExternalyFormat);
-        logHandler.ignoredMessages.add(deletedExternalyFormat);
-        assertEquals(3, logHandler.messages.size());
-//        logHandler.assertEvent(fileLockedFormat, fromProxy); // no lock on folder
-        logHandler.assertEvent(beforeMoveFormat, fromProxy, toProxy);
-        logHandler.assertEvent(moveHandleFormat, fromProxy, toProxy);
-//        logHandler.assertEvent(deletedExternalyFormat, toProxy); // XXX can we avoid this? sometimes deleted or created externaly 
-        logHandler.assertEvent(afterMoveFormat, fromProxy, toProxy);
+        assertInterceptedCalls(
+    //        f(fileLockedFormat, fromProxy); // no lock on folder
+            f(getMoveHandlerFormat, fromProxy, toProxy),
+            f(moveHandleFormat, fromProxy, toProxy),
+    //        f(deletedExternalyFormat, toProxy); // XXX can we avoid this? sometimes deleted or created externaly 
+            f(afterMoveFormat, fromProxy, toProxy)
+        );
     }
     
     public void testModifyFileOnDemand() throws Exception {
@@ -468,10 +489,11 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         assertTrue(inteceptor.getBeforeChangeFiles().contains(proxy));
         assertTrue(inteceptor.getAfterChangeFiles().contains(proxy));
         
-        assertEquals(3, logHandler.messages.size());
-        logHandler.assertEvent(fileLockedFormat, proxy);
-        logHandler.assertEvent(beforeChangedFormat, proxy);
-        logHandler.assertEvent(fileChangedFormat, proxy);
+        assertInterceptedCalls(
+            f(fileLockedFormat, proxy),
+            f(beforeChangedFormat, proxy),
+            f(fileChangedFormat, proxy)
+        );
     }
 
     public void testDeleteNotVersionedFile() throws Exception {
@@ -490,10 +512,12 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         assertFalse(inteceptor.getDoDeleteFiles().contains(proxy));
         assertFalse(inteceptor.getDeletedFiles().contains(proxy));
         
-        assertEquals(3, logHandler.messages.size());
-        logHandler.assertEvent(fileLockedFormat, proxy);
-        logHandler.assertEvent(beforeDeleteFormat, proxy);
-        logHandler.assertEvent(deleteSuccessFormat, proxy);
+        assertInterceptedCalls(
+            f(fileLockedFormat, proxy),
+            f(getDeleteHandlerFormat, proxy),
+            f(deleteSuccessFormat, proxy)
+        );    
+    
     }
     
     public void testDeleteVersionedFile() throws Exception {
@@ -511,11 +535,12 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         assertTrue(inteceptor.getDoDeleteFiles().contains(proxy));
         assertTrue(inteceptor.getDeletedFiles().contains(proxy));
         
-        assertEquals(4, logHandler.messages.size());
-        logHandler.assertEvent(fileLockedFormat, proxy);
-        logHandler.assertEvent(beforeDeleteFormat, proxy);
-        logHandler.assertEvent(deleteHandleFormat, proxy);
-        logHandler.assertEvent(deleteSuccessFormat, proxy);
+        assertInterceptedCalls(
+            f(fileLockedFormat, proxy),
+            f(getDeleteHandlerFormat, proxy),
+            f(deleteHandleFormat, proxy),
+            f(deleteSuccessFormat, proxy)
+        );
     }
 
     public void testDeleteVersionedFolder() throws Exception {
@@ -533,10 +558,11 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         assertTrue(inteceptor.getDoDeleteFiles().contains(proxy));
         assertTrue(inteceptor.getDeletedFiles().contains(proxy));
         
-        assertEquals(3, logHandler.messages.size());
-        logHandler.assertEvent(beforeDeleteFormat, proxy);
-        logHandler.assertEvent(deleteHandleFormat, proxy);
-        logHandler.assertEvent(deleteSuccessFormat, proxy);
+        assertInterceptedCalls(
+            f(getDeleteHandlerFormat, proxy),
+            f(deleteHandleFormat, proxy),
+            f(deleteSuccessFormat, proxy)
+        );    
     }
 
     public void testDeleteNotVersionedFolder() throws IOException {
@@ -554,9 +580,10 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         assertFalse(inteceptor.getDoDeleteFiles().contains(proxy));
         assertFalse(inteceptor.getDeletedFiles().contains(proxy));
         
-        assertEquals(2, logHandler.messages.size());
-        logHandler.assertEvent(beforeDeleteFormat, proxy);
-        logHandler.assertEvent(deleteSuccessFormat, proxy);
+        assertInterceptedCalls(
+            f(getDeleteHandlerFormat, proxy),
+            f(deleteSuccessFormat, proxy)
+        );
     }    
 
     public void testDeleteVersionedFileTree() throws IOException {
@@ -571,10 +598,11 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         assertTrue(inteceptor.getDoDeleteFiles().contains(deleteProxy));
         assertTrue(inteceptor.getDeletedFiles().contains(deleteProxy));
         
-        assertEquals(3, logHandler.messages.size());
-        logHandler.assertEvent(beforeDeleteFormat, deleteProxy);
-        logHandler.assertEvent(deleteHandleFormat, deleteProxy);
-        logHandler.assertEvent(deleteSuccessFormat, deleteProxy);
+        assertInterceptedCalls(
+            f(getDeleteHandlerFormat, deleteProxy),
+            f(deleteHandleFormat, deleteProxy),
+            f(deleteSuccessFormat, deleteProxy)
+        );
     }
     
     public void testDeleteNotVersionedFileTree() throws IOException {
@@ -589,9 +617,10 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         assertTrue(!inteceptor.getDoDeleteFiles().contains(deleteProxy));
         assertTrue(!inteceptor.getDeletedFiles().contains(deleteProxy));
         
-        assertEquals(2, logHandler.messages.size());
-        logHandler.assertEvent(beforeDeleteFormat, deleteProxy);
-        logHandler.assertEvent(deleteSuccessFormat, deleteProxy);
+        assertInterceptedCalls(
+            f(getDeleteHandlerFormat, deleteProxy),
+            f(deleteSuccessFormat, deleteProxy)
+        );
     }
 
     private void deleteFolderTree(FileObject deleteFolder, final VCSFileProxy deleteProxy) throws IOException {
@@ -620,11 +649,15 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
     private String getRelativePath(VCSFileProxy proxy) throws IOException {
         String path = proxy.getPath();
         String rootPath = getRoot(path);
-        path = path.substring(rootPath.length());
-        if(path.startsWith("/")) {
-            path = path.substring(1, path.length());
+        if(rootPath != null) {
+            path = path.substring(rootPath.length());
+            if(path.startsWith("/")) {
+                path = path.substring(1, path.length());
+            }
+            return path;
+        } else {
+            return null;
         }
-        return path;
 //        VCSFilesystemTestFactory factory = VCSFilesystemTestFactory.getInstance(VCSInterceptorTestCase.this);
 //        String path = proxy.getPath();
 //        path = path.substring(factory.getRootPath().length());
@@ -633,6 +666,21 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
 //        }
 //        return path;
     }
+    
+    private String getWorkdirRelativePath(VCSFileProxy proxy) throws IOException {
+        String path = proxy.getPath();
+        String rootPath = getRoot(path);
+        if(rootPath != null) {
+            rootPath = rootPath + "/" + workDirPath;
+            path = path.substring(rootPath.length());
+            if(path.startsWith("/")) {
+                path = path.substring(1, path.length());
+            }
+            return path;
+        } else {
+            return null;
+        }
+    }    
     
     private TestVCSInterceptor.DeleteHandler deleteHandler = new TestVCSInterceptor.DeleteHandler() {
         @Override
@@ -655,9 +703,45 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         }
     };
     
-    private static class FSInterceptorLogHandler extends Handler {
+    private void assertInterceptedCalls(int count, String... formats) {
+        assertInterceptedCalls(count, count, formats);
+    }
+    
+    private void assertInterceptedCalls(String... formats) {
+        assertInterceptedCalls(formats.length, formats.length, formats);
+    }
+    
+    private void assertInterceptedCalls(int expectedMin, int expectedMax, String... formats) {
+        if(logHandler.messages.size() < expectedMin || logHandler.messages.size() > expectedMax) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("intercepted calls should be: \n");
+            for (String f : formats) {
+                sb.append(f);
+                sb.append('\n');
+            }
+            sb.append("but where instead: \n");
+            for (String m : logHandler.messages) {
+                sb.append(m);
+                sb.append('\n');
+            }
+            fail(sb.toString());
+        }
+        for (String f : formats) {
+            assertEvent(f);
+        }
+    }
+    
+    private void assertEvent(String format) {
+        boolean contains = logHandler.messages.contains(format);
+        if(!contains) {
+            fail(format + " should be intercepted but wasn't");
+        } 
+//            else if(!contains && !bl){
+//                fail(new MessageFormat(format).format(proxies) + " shouldn't be intercepted but was");
+//            }
+    }
 
-        
+    private class FSInterceptorLogHandler extends Handler {
         List<String> ignoredMessages = new LinkedList<String>();
         List<String> messages = new LinkedList<String>();
 
@@ -668,7 +752,7 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
             for (String format : formats) {
                 String f = format.substring(0, format.indexOf(" {0}")); 
                 if(msg.startsWith(f) && !ignored(f)) {
-                    messages.add(new MessageFormat(format).format(record.getParameters()).trim());
+                    messages.add(f(format, record.getParameters()));
                     break;
                 }
             }
@@ -689,22 +773,30 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
             ignoredMessages.clear();
         }
         
-        private void assertEvent(String format, Object... proxies) {
-            boolean contains = messages.contains(new MessageFormat(format).format(proxies));
-            if(!contains) {
-                fail(new MessageFormat(format).format(proxies) + " should be intercepted but wasn't");
-            } 
-//            else if(!contains && !bl){
-//                fail(new MessageFormat(format).format(proxies) + " shouldn't be intercepted but was");
-//            }
-        }
-
         private boolean ignored(String f) {
             for (String ignored : ignoredMessages) {
                 if(ignored.startsWith(f)) return true;
             }
             return false;
         }
+    }
+
+    private String f(String format, Object... args) {
+        for (int i = 0; i < args.length; i++) {
+            Object o = args[i];
+            if(o instanceof VCSFileProxy) {
+                VCSFileProxy p = (VCSFileProxy) o;
+                try {
+                    String path = getWorkdirRelativePath(p);
+                    if(path != null) {
+                        args[i] = getWorkdirRelativePath(p);
+                    }
+                } catch (IOException ex) {
+                    fail(ex.getMessage());
+                }
+            }
+        }
+        return new MessageFormat(format).format(args);
     }
     
 }

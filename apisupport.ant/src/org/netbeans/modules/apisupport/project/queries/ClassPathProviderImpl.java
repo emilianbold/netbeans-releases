@@ -59,6 +59,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.modules.apisupport.project.Evaluator;
@@ -115,13 +116,13 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         FileObject srcDir = project.getSourceDirectory();
         FileObject testSrcDir = project.getTestSourceDirectory("unit");
         FileObject funcTestSrcDir = project.getTestSourceDirectory("qa-functional");
-        File dir = project.getClassesDirectory();
+        @NonNull File dir = project.getClassesDirectory();
         // #164282: workaround for not refreshed FS cache
-        dir = dir == null ? null : FileUtil.normalizeFile(dir);
-        FileObject classesDir = (dir == null || ! dir.exists()) ? null : FileUtil.toFileObject(dir);
+        dir = FileUtil.normalizeFile(dir);
+        FileObject classesDir = dir.exists() ? FileUtil.toFileObject(dir) : null;
         dir = project.getTestClassesDirectory("unit");
-        dir = dir == null ? null : FileUtil.normalizeFile(dir);
-        FileObject testClassesDir = (dir == null || ! dir.exists()) ? null : FileUtil.toFileObject(dir);
+        dir = FileUtil.normalizeFile(dir);
+        FileObject testClassesDir = dir.exists() ? FileUtil.toFileObject(dir) : null;
         File moduleJar;
         URL generatedClasses = FileUtil.urlForArchiveOrDir(project.getGeneratedClassesDirectory());
         URL generatedUnitTestClasses = FileUtil.urlForArchiveOrDir(project.getTestGeneratedClassesDirectory("unit"));

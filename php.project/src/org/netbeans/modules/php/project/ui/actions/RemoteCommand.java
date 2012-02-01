@@ -65,9 +65,8 @@ import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.connections.transfer.TransferInfo;
 import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
 import org.netbeans.modules.php.project.runconfigs.validation.RunConfigRemoteValidator;
-import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
-import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -118,7 +117,7 @@ public abstract class RemoteCommand extends Command {
     public final void invokeAction(Lookup context) {
         assert getConfigAction().getClass().getSimpleName().equals("ConfigActionRemote") : "Remote config action expected but found: " + getConfigAction().getClass().getSimpleName();
         if (RunConfigRemoteValidator.validateRemoteTransfer(RunConfigRemote.forProject(getProject())) != null) {
-            showCustomizer();
+            PhpProjectUtils.openCustomizerRun(getProject());
             return;
         }
         RUNNABLES.add(getContextRunnable(context));
@@ -343,10 +342,6 @@ public abstract class RemoteCommand extends Command {
             }
         }
         return true;
-    }
-
-    private void showCustomizer() {
-        getProject().getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.RUN);
     }
 
     //~ Inner classes

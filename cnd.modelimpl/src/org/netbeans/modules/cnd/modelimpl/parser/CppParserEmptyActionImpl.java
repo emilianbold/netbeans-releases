@@ -120,5 +120,21 @@ public class CppParserEmptyActionImpl implements CppParserAction {
     @Override
     public void namespace_name(Token token) {
     }
+
+    @Override
+    public void class_declaration(Token token) {
+    }
+
+    @Override
+    public void end_class_declaration(Token token) {
+    }
+
+    @Override
+    public void class_kind(Token token) {
+    }
+
+    @Override
+    public void simple_type_id(Token token) {
+    }
     
 }

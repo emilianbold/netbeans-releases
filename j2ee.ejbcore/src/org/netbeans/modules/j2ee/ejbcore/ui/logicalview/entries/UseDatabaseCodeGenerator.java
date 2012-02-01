@@ -86,6 +86,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -172,15 +173,23 @@ public class UseDatabaseCodeGenerator implements CodeGenerator {
                 DialogDescriptor.DEFAULT_ALIGN,
                 new HelpCtx(SelectDatabasePanel.class),
                 null
-
                 );
+        final NotificationLineSupport notificationSupport = dialogDescriptor.createNotificationLineSupport();
         dialogDescriptor.setValid(checkConnections(selectDatabasePanel));
         selectDatabasePanel.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(SelectDatabasePanel.IS_VALID)) {
                     Object newvalue = evt.getNewValue();
                     if ((newvalue != null) && (newvalue instanceof Boolean)) {
-                        dialogDescriptor.setValid(((Boolean)newvalue).booleanValue() && checkConnections(selectDatabasePanel));
+                        Boolean booleanValue = (Boolean) newvalue;
+                        if (booleanValue) {
+                            dialogDescriptor.setValid(true);
+                            notificationSupport.clearMessages();
+                        } else {
+                            dialogDescriptor.setValid(false);
+                            notificationSupport.setErrorMessage(selectDatabasePanel.getErrorMessage());
+                        }
                     }
                 }
             }

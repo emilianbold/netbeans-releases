@@ -51,7 +51,7 @@ import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Test of typing at begining/end and other typing tests.
+ * Test of typing at beginning/end and other typing tests.
  *
  * @author Miloslav Metelka
  */

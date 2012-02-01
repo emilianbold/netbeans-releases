@@ -52,6 +52,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.StyleConstants;
+import javax.swing.undo.UndoManager;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.junit.Filter;
 import org.netbeans.junit.NbTestCase;
@@ -76,6 +77,7 @@ public class ViewHierarchyTest extends NbTestCase {
 //        includes.add("testSimple1");
 //        includes.add("testSimpleUndoRedo");
 //        includes.add("testCustomBounds");
+//        includes.add("testEmptyCustomBounds");
 //        includes.add("testRemoveNewline");
 //        includes.add("testRandom");
 //        includes.add("testLock");
@@ -90,6 +92,12 @@ public class ViewHierarchyTest extends NbTestCase {
         Filter filter = new Filter();
         filter.setIncludes(includeTests.toArray(new Filter.IncludeExclude[includeTests.size()]));
         setFilter(filter);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        ViewUpdatesTesting.registerTestFactory();
     }
 
     private RandomTestContainer createContainer() throws Exception {
@@ -119,122 +127,139 @@ public class ViewHierarchyTest extends NbTestCase {
     }
     
     public void testSimple1() throws Exception {
-//        loggingOn();    
-        TestRootView rootView = new TestRootView();
-        Document doc = rootView.getDocument();
-        rootView.modelToView(0);
+        loggingOn();    
+        JEditorPane pane = ViewUpdatesTesting.createPane();
+        Document doc = pane.getDocument();
         doc.insertString(0, "hello", null);
-        List<TestHighlight> hlts = rootView.getHighlightsCopy();
-        TestHighlight hi = rootView.createHighlight(3, 5, colorAttrs[0]);
+        TestHighlightsViewFactory testFactory = ViewUpdatesTesting.getTestFactory(pane);
+        List<TestHighlight> hlts = ViewUpdatesTesting.getHighlightsCopy(testFactory);
+        TestHighlight hi = TestHighlight.create(doc, 3, 5, colorAttrs[0]);
         doc.insertString(doc.getLength(), " world", null);
         hlts.add(hi);
-        rootView.setHighlights(hlts);
-        rootView.fireChange(0, 10);
+        testFactory.setHighlights(hlts);
+        testFactory.fireChange(0, 10);
         // Insert at offset == 0
         doc.insertString(0, "test ", null);
         // Test insert newline at offset == 0
         doc.insertString(0, "\ntest2\n", null);
         doc.remove(0, 1);
         doc.insertString(6, "a", null);
-//        rootView.dump();
         doc.remove(0, doc.getLength());
     }
     
     public void testSimpleUndoRedo() throws Exception {
-//        loggingOn();
-        TestRootView rootView = new TestRootView();
-        Document doc = rootView.getDocument();
+        loggingOn();
+        JEditorPane pane = ViewUpdatesTesting.createPane();
+        Document doc = pane.getDocument();
+        UndoManager undoManager = ViewUpdatesTesting.getUndoManager(doc);
         doc.insertString(0, "abc\ndef\nghi\n", null);
-        rootView.setBounds(4, 8);
-        rootView.modelToView(0);
+        ViewUpdatesTesting.setViewBounds(pane, 4, 8);
+        pane.modelToView(0);
         doc.insertString(4, "o", null);
         doc.remove(3, 3);
         doc.insertString(4, "ab", null);
         doc.remove(7, 2);
-        rootView.modelToView(0);
-        rootView.undo(); // insert(7,2)
-        rootView.undo(); // remove(4,2)
-        rootView.undo(); // insert(3,3)
-        rootView.undo();
-        rootView.redo();
-        rootView.redo();
-        rootView.redo();
-        rootView.redo();
+        pane.modelToView(0);
+        undoManager.undo(); // insert(7,2)
+        undoManager.undo(); // remove(4,2)
+        undoManager.undo(); // insert(3,3)
+        undoManager.undo();
+        undoManager.redo();
+        undoManager.redo();
+        undoManager.redo();
+        undoManager.redo();
+    }
+
+    public void testLongLineUndo() throws Exception {
+        loggingOn();
+        JEditorPane pane = ViewUpdatesTesting.createPane();
+        Document doc = pane.getDocument();
+        UndoManager undoManager = ViewUpdatesTesting.getUndoManager(doc);
+        int lineLen = 4000;
+        StringBuilder sb = new StringBuilder(lineLen + 10);
+        for (int i = 0; i < lineLen; i++) {
+            sb.append('a');
+        }
+        sb.append('\n');
+        doc.insertString(0, sb.toString(), null);
+        pane.modelToView(0);
+        doc.remove(0, lineLen);
+        pane.modelToView(0);
+        undoManager.undo();
+        undoManager.redo();
     }
 
     public void testRemoveNewline() throws Exception {
-//        loggingOn();
-        TestRootView rootView = new TestRootView();
-        Document doc = rootView.getDocument();
-        rootView.modelToView(0);
+        loggingOn();
+        JEditorPane pane = ViewUpdatesTesting.createPane();
+        Document doc = pane.getDocument();
+        UndoManager undoManager = ViewUpdatesTesting.getUndoManager(doc);
         doc.insertString(0, "a\nb", null);
         doc.remove(1, 1);
-        rootView.undoManager().undo();
-        rootView.modelToView(0);
+        undoManager.undo();
+        pane.modelToView(0);
     }
 
     public void testCustomBounds() throws Exception {
-//        loggingOn();    
-        TestRootView rootView = new TestRootView();
-        Document doc = rootView.getDocument();
-        JEditorPane pane = rootView.pane();
-        rootView.modelToView(0);
+        loggingOn();    
+        JEditorPane pane = ViewUpdatesTesting.createPane();
+        Document doc = pane.getDocument();
         doc.insertString(0, "hello\nworld\ngood\nmorning", null);
         Position startPos = doc.createPosition(3);
         pane.putClientProperty(DocumentView.START_POSITION_PROPERTY, startPos);
-        rootView.modelToView(0); // Force rebuild of VH
+        pane.modelToView(0); // Force rebuild of VH
         doc.insertString(startPos.getOffset(), "a", null);
         doc.insertString(startPos.getOffset() - 1, "a", null);
         Element line0 = doc.getDefaultRootElement().getElement(0);
         Position endPos = doc.createPosition(line0.getEndOffset() + 3); // Middle of line 1
         pane.putClientProperty(DocumentView.END_POSITION_PROPERTY, endPos);
-        rootView.modelToView(0); // Force rebuild of VH
+        pane.modelToView(0); // Force rebuild of VH
 
-        List<TestHighlight> hlts = rootView.getHighlightsCopy();
+        TestHighlightsViewFactory testFactory = ViewUpdatesTesting.getTestFactory(pane);
+        List<TestHighlight> hlts = ViewUpdatesTesting.getHighlightsCopy(testFactory);
         int hlStartOffset = startPos.getOffset() + 1;
         int hlEndOffset = endPos.getOffset() - 1; 
-        TestHighlight hi = rootView.createHighlight(hlStartOffset, hlEndOffset, colorAttrs[0]);
+        TestHighlight hi = TestHighlight.create(doc, hlStartOffset, hlEndOffset, colorAttrs[0]);
         hlts.add(hi);
-        rootView.setHighlights(hlts);
-        rootView.fireChange(hlStartOffset, hlEndOffset);
-        rootView.modelToView(0); // Force rebuild of VH
+        testFactory.setHighlights(hlts);
+        testFactory.fireChange(hlStartOffset, hlEndOffset);
+        pane.modelToView(0); // Force rebuild of VH
         
         doc.insertString(doc.getLength(), "test\ntest2", null);
         Position endPos2 = doc.createPosition(doc.getLength() - 3);
         pane.putClientProperty(DocumentView.END_POSITION_PROPERTY, endPos2);
-        rootView.modelToView(0); // Force rebuild of VH
+        pane.modelToView(0); // Force rebuild of VH
         doc.remove(endPos2.getOffset() - 2, 3);
         pane.putClientProperty(DocumentView.START_POSITION_PROPERTY, null);
-        rootView.modelToView(0); // Force rebuild of VH
+        pane.modelToView(0); // Force rebuild of VH
     }
     
     public void testEmptyCustomBounds() throws Exception {
-//        loggingOn();    
-        TestRootView rootView = new TestRootView();
-        Document doc = rootView.getDocument();
-        JEditorPane pane = rootView.pane();
-        rootView.modelToView(0);
+        loggingOn();    
+        JEditorPane pane = ViewUpdatesTesting.createPane();
+        Document doc = pane.getDocument();
+        pane.modelToView(0);
         doc.insertString(0, "hello\nworld\ngood\nmorning", null);
         Position startPos = doc.createPosition(3);
         pane.putClientProperty(DocumentView.START_POSITION_PROPERTY, startPos);
         pane.putClientProperty(DocumentView.END_POSITION_PROPERTY, startPos);
-        rootView.modelToView(0); // Force rebuild of VH
+        pane.modelToView(0); // Force rebuild of VH
 
         Position endPos = doc.createPosition(2);
         pane.putClientProperty(DocumentView.END_POSITION_PROPERTY, endPos);
-        rootView.modelToView(0); // Force rebuild of VH
+        pane.modelToView(0); // Force rebuild of VH
     }
     
     public void testInsertNewlineIntoPartial() throws Exception {
-//        loggingOn();    
-        TestRootView rootView = new TestRootView();
-        Document doc = rootView.getDocument();
-        rootView.modelToView(0);
+        loggingOn();    
+        JEditorPane pane = ViewUpdatesTesting.createPane();
+        Document doc = pane.getDocument();
+        pane.modelToView(0);
         doc.insertString(0, "x\nya\n\nbc\nmorning", null);
-        rootView.setBounds(3, doc.getLength() - 3);
-        rootView.modelToView(0);
+        ViewUpdatesTesting.setViewBounds(pane, 3, doc.getLength() - 3);
+        pane.modelToView(0);
         doc.insertString(8, "\n\n", null);
-        rootView.modelToView(0);
+        pane.modelToView(0);
     }
     
     public void testRandom() throws Exception {
@@ -242,35 +267,39 @@ public class ViewHierarchyTest extends NbTestCase {
         RandomTestContainer container = createContainer();
         DocumentTesting.setLogDoc(container, false);
         RandomTestContainer.Round round = RootViewRandomTesting.addRound(container);
-        round.setRatio(RootViewRandomTesting.CREATE_ROOT_VIEW, 0);
-        round.setRatio(RootViewRandomTesting.DESTROY_ROOT_VIEW, 0);
+        round.setRatio(RootViewRandomTesting.CREATE_PANE, 0);
+        round.setRatio(RootViewRandomTesting.RELEASE_PANE, 0);
         RandomTestContainer.Context context = container.context();
         DocumentTesting.insert(context, 0, "test\n\nab\nxyz\n\nfd\nhjk");
-        TestRootView rootView = RootViewRandomTesting.addNewRootView(context);
-        rootView.setBounds(3, 10);
-        rootView = RootViewRandomTesting.addNewRootView(context);
-        rootView.setBounds(1, 5);
-        rootView = RootViewRandomTesting.addNewRootView(context);
-        rootView.setBounds(8, 15);
+        JEditorPane pane = RootViewRandomTesting.addNewPane(context);
+        ViewUpdatesTesting.setViewBounds(pane, 3, 10);
+        pane = RootViewRandomTesting.addNewPane(context);
+        ViewUpdatesTesting.setViewBounds(pane, 1, 5);
+        pane = RootViewRandomTesting.addNewPane(context);
+        ViewUpdatesTesting.setViewBounds(pane, 8, 15);
 
-//        round.setRatio(RootViewRandomTesting.CREATE_ROOT_VIEW, 0f); // No new root views
+        round.setRatio(RootViewRandomTesting.CREATE_PANE, 2);
+        round.setRatio(RootViewRandomTesting.RELEASE_PANE, 1);
         round.setOpCount(500);
         container.runInit(1305718603094L);
         container.runOps(355);
         container.runOps(0);
 //        container.run(1305713030265L);
+        round.setRatio(RootViewRandomTesting.CREATE_PANE, 1);
+        round.setRatio(RootViewRandomTesting.RELEASE_PANE, 2);
         container.runInit(1305643331093L);
         container.runOps(356);
         container.runOps(0);
+
+        round.setOpCount(500);
         container.run(0L); // truly pseudo-random
     }
 
     public void testLock() throws Exception {
         loggingOn();
-        TestRootView rootView = new TestRootView();
-        final Document doc = rootView.getDocument();
+        final JEditorPane pane = ViewUpdatesTesting.createPane();
+        Document doc = pane.getDocument();
         doc.insertString(0, "hello\nworld\ngood\nmorning", null);
-        final JEditorPane pane = rootView.pane();
         doc.render(new Runnable() {
             @Override
             public void run() {

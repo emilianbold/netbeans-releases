@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
@@ -78,7 +79,7 @@ public final class Resolver3 implements Resolver {
     private final int origOffset;
     private Resolver parentResolver;
 
-    private final List<CharSequence> usedNamespaces = new ArrayList<CharSequence>();
+    private final Map<CharSequence, CsmObject/*CsmNamespace or CsmUsingDeclaration*/> usedNamespaces = new LinkedHashMap<CharSequence, CsmObject>();
     private final Map<CharSequence, CsmNamespace> namespaceAliases = new HashMap<CharSequence, CsmNamespace>();
     private final Map<CharSequence, CsmDeclaration> usingDeclarations = new HashMap<CharSequence, CsmDeclaration>();
     private final Map<CharSequence, CsmClassifier> currUsedClassifiers = new HashMap<CharSequence, CsmClassifier>();
@@ -525,7 +526,7 @@ public final class Resolver3 implements Resolver {
             if (nsd.getName().length() == 0) {
                 // this is unnamed namespace and it should be considered as
                 // it declares using itself
-                usedNamespaces.add(nsd.getQualifiedName());
+                usedNamespaces.put(nsd.getQualifiedName(), nsd.getNamespace());
             }
             if (offset < end || isInContext(nsd)) {
                 //currentNamespace = nsd.getNamespace();
@@ -552,8 +553,8 @@ public final class Resolver3 implements Resolver {
         } else if( kind == CsmDeclaration.Kind.USING_DIRECTIVE ) {
             CsmUsingDirective udir = (CsmUsingDirective) element;
             CharSequence name = udir.getName();
-            if (!usedNamespaces.contains(name)) {
-                usedNamespaces.add(name); // getReferencedNamespace()
+            if (!usedNamespaces.containsKey(name)) {
+                usedNamespaces.put(name, udir); // getReferencedNamespace()
             }
         } else if( element instanceof CsmDeclarationStatement ) {
             CsmDeclarationStatement ds = (CsmDeclarationStatement) element;
@@ -681,7 +682,13 @@ public final class Resolver3 implements Resolver {
                 result = null;
             }
         }
+        CsmObject backupResult = result;
+        if (!needForwardClassesOnly() && ForwardClass.isForwardClass(result)) {
+            // try to find not forward class
+            result = null;
+        }
         if (result == null) {
+            
             if (isRendering) {
                 gatherMaps(file, false, origOffset);
             } else {
@@ -700,17 +707,33 @@ public final class Resolver3 implements Resolver {
                 }
             }
             if (result == null && needClassifiers()) {
-                for (Iterator<CharSequence> iter = usedNamespaces.iterator(); iter.hasNext();) {
-                    String nsp = iter.next().toString();
+                for (Map.Entry<CharSequence, CsmObject> entry : usedNamespaces.entrySet()) {
+                    String nsp = entry.getKey().toString();
                     String fqn = nsp + "::" + name; // NOI18N
                     result = findClassifierUsedInFile(fqn);
                     if (result == null) {
                         result = findClassifier(containingNS, fqn);
                     }
                     if (result == null) {
-                        CsmNamespace ns = findNamespace(nsp);
-                        if (ns != null) {
-                            result = resolveInUsings(ns, name);
+                        CsmObject val = entry.getValue();
+                        if (CsmKindUtilities.isUsingDirective(val)) {
+                            // replace using namespace by referenced namespace
+                            val = ((CsmUsingDirective)val).getReferencedNamespace();
+                            entry.setValue(val);
+                        }
+                        if (val == null) {
+                            val = findNamespace(nsp);
+                            entry.setValue(val);
+                        }
+                        if (CsmKindUtilities.isNamespace(val)) {
+                            CsmNamespace ns = (CsmNamespace)val;
+                            if (!nsp.contains(ns.getQualifiedName())) {
+                                fqn = ns.getQualifiedName().toString() + "::" + name; // NOI18N
+                                result = findClassifierUsedInFile(fqn);
+                            }
+                            if (result == null) {
+                                result = resolveInUsings(ns, name);
+                            }
                         }
                     }
                     if (result != null) {
@@ -725,7 +748,7 @@ public final class Resolver3 implements Resolver {
                 }
             }
             if (result == null && needNamespaces()) {
-                for (Iterator<CharSequence> iter = usedNamespaces.iterator(); iter.hasNext();) {
+                for (Iterator<CharSequence> iter = usedNamespaces.keySet().iterator(); iter.hasNext();) {
                     String nsp = iter.next().toString();
                     String fqn = nsp + "::" + name; // NOI18N
                     result = findNamespace(fqn);
@@ -734,6 +757,9 @@ public final class Resolver3 implements Resolver {
                     }
                 }
             }
+        }
+        if (result == null) {
+             result = backupResult;
         }
         if (result == null) {
             if (TemplateUtils.isTemplateQualifiedName(name.toString())) {
@@ -804,7 +830,7 @@ public final class Resolver3 implements Resolver {
                 }
             }
             if (result == null) {
-                for (Iterator<CharSequence> iter = usedNamespaces.iterator(); iter.hasNext();) {
+                for (Iterator<CharSequence> iter = usedNamespaces.keySet().iterator(); iter.hasNext();) {
                     String nsp = iter.next().toString();
                     String fqn = nsp + "::" + fullName; // NOI18N
                     result = findClassifierUsedInFile(fqn);

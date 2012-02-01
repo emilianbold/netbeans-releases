@@ -71,6 +71,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.TestUtil;
+import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -144,7 +145,9 @@ public class ClasspathInfoTest extends NbTestCase {
                 TypeElement te = elements.getTypeElementByBinaryName( typeName );
 //                assertNotNull( "Declaration for " + typeName + " should not be null.", td );
                 if ( te == null ) {
-                    notFound.add( typeName );
+                    if (!typeName.endsWith("package-info")) {
+                        notFound.add( typeName );
+                    }
                 }
             }
         }
@@ -210,17 +213,22 @@ public class ClasspathInfoTest extends NbTestCase {
     public void testMemoryFileManager () throws Exception {
         final ClassPath scp = createSourcePath(FileUtil.toFileObject(this.getWorkDir()));
         createJavaFile(scp.getRoots()[0], "org/me/Lib.java", "package org.me;\n class Lib {}\n");
-        final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create( bootPath, classPath,scp, null, true, true, true, false);
-        final JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);
-        Iterable<JavaFileObject> jfos = fm.list(StandardLocation.SOURCE_PATH, "org.me", EnumSet.of(JavaFileObject.Kind.SOURCE), false);
-        assertEquals (new String[] {"org.me.Lib"}, jfos, fm);
-        ClasspathInfoAccessor.getINSTANCE().registerVirtualSource(cpInfo, FileObjects.memoryFileObject("org.me","Main.java",
-        null,System.currentTimeMillis(),"package org.me;\n class Main{}\n"));
-        jfos = fm.list(StandardLocation.SOURCE_PATH, "org.me", EnumSet.of(JavaFileObject.Kind.SOURCE), false);
-        assertEquals (new String[] {"org.me.Lib","org.me.Main"}, jfos, fm);
-        ClasspathInfoAccessor.getINSTANCE().unregisterVirtualSource(cpInfo, "org.me.Main");
-        jfos = fm.list(StandardLocation.SOURCE_PATH, "org.me", EnumSet.of(JavaFileObject.Kind.SOURCE), false);
-        assertEquals (new String[] {"org.me.Lib"}, jfos, fm);
+        TransactionContext tx = TransactionContext.beginStandardTransaction(true, scp.getRoots()[0].getURL());
+        try {
+            final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create( bootPath, classPath,scp, null, true, true, true, false);
+            final JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);
+            Iterable<JavaFileObject> jfos = fm.list(StandardLocation.SOURCE_PATH, "org.me", EnumSet.of(JavaFileObject.Kind.SOURCE), false);
+            assertEquals (new String[] {"org.me.Lib"}, jfos, fm);
+            ClasspathInfoAccessor.getINSTANCE().registerVirtualSource(cpInfo, FileObjects.memoryFileObject("org.me","Main.java",
+            null,System.currentTimeMillis(),"package org.me;\n class Main{}\n"));
+            jfos = fm.list(StandardLocation.SOURCE_PATH, "org.me", EnumSet.of(JavaFileObject.Kind.SOURCE), false);
+            assertEquals (new String[] {"org.me.Lib","org.me.Main"}, jfos, fm);
+            ClasspathInfoAccessor.getINSTANCE().unregisterVirtualSource(cpInfo, "org.me.Main");
+            jfos = fm.list(StandardLocation.SOURCE_PATH, "org.me", EnumSet.of(JavaFileObject.Kind.SOURCE), false);
+            assertEquals (new String[] {"org.me.Lib"}, jfos, fm);
+        } finally {
+            TransactionContext.get().commit();
+        }
     }
 
 

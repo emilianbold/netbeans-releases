@@ -67,9 +67,9 @@ public final class NewlineView extends EditorView {
 
     private final AttributeSet attributes;
 
-    public NewlineView(int offset, AttributeSet attributes) {
+    public NewlineView(AttributeSet attributes) {
         super(null);
-        this.rawEndOffset = offset + 1;
+        this.rawEndOffset = 1;
         this.attributes = attributes;
     }
 

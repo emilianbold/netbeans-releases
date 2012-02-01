@@ -66,6 +66,7 @@ public final class CndLexerUtilities {
     public static final String LEXER_FILTER = "lexer-filter"; // NOI18N
     public static final String FORTRAN_FREE_FORMAT = "fortran-free-format"; // NOI18N
     public static final String FORTRAN_MAXIMUM_TEXT_WIDTH = "fortran-maximum-text-width"; // NOI18N
+    public static final String FLAVOR = "language-flavor"; // NOI18N
 
     private CndLexerUtilities() {
     }

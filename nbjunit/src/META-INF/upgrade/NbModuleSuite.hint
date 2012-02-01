@@ -1,0 +1,4 @@
+org.netbeans.junit.NbModuleSuite.create($c) :: $c instanceof org.netbeans.junit.NbModuleSuite.Configuration
+=>
+$c.suite()
+;;
