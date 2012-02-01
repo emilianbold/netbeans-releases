@@ -107,6 +107,15 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
             NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.applicationParams.name"), // NOI18N
             NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.applicationParams.value") // NOI18N
         };
+    
+    private volatile boolean configChangedRunning = false;
+    private volatile boolean comboConfigActionRunning = false;
+    private volatile boolean checkBoxPreloaderActionRunning = false;
+    private volatile boolean comboBoxPreloaderClassActionRunning = false;
+    private volatile boolean comboBoxWebBrowserActionRunning = false;
+    private volatile boolean radioButtonBEActionRunning = false;
+    private volatile boolean radioButtonSAActionRunning = false;
+    private volatile boolean radioButtonWSActionRunning = false;
 
     /**
      * Creates new form JFXRunPanel
@@ -798,12 +807,16 @@ private void buttonDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 }//GEN-LAST:event_buttonDeleteActionPerformed
 
 private void comboConfigActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboConfigActionPerformed
+    if(!comboConfigActionRunning) {
+        comboConfigActionRunning = true;
         String config = (String) comboConfig.getSelectedItem();
         if (config.length() == 0) {
             config = null;
         }
         configChanged(config);
         jfxProps.setActiveConfig(config);
+        comboConfigActionRunning = false;
+    }
 }//GEN-LAST:event_comboConfigActionPerformed
 
 private void buttonNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonNewActionPerformed
@@ -857,15 +870,27 @@ private void buttonWorkDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 }//GEN-LAST:event_buttonWorkDirActionPerformed
 
     private void radioButtonWSActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioButtonWSActionPerformed
-        runTypeChanged(JFXProjectProperties.RunAsType.ASWEBSTART);
+        if(!radioButtonWSActionRunning) {
+            radioButtonWSActionRunning = true;
+            runTypeChanged(JFXProjectProperties.RunAsType.ASWEBSTART);
+            radioButtonWSActionRunning = false;
+        }
     }//GEN-LAST:event_radioButtonWSActionPerformed
 
     private void radioButtonSAActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioButtonSAActionPerformed
-        runTypeChanged(JFXProjectProperties.RunAsType.STANDALONE);
+        if(!radioButtonSAActionRunning) {
+            radioButtonSAActionRunning = true;
+            runTypeChanged(JFXProjectProperties.RunAsType.STANDALONE);
+            radioButtonSAActionRunning = false;
+        }
     }//GEN-LAST:event_radioButtonSAActionPerformed
 
     private void radioButtonBEActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioButtonBEActionPerformed
-        runTypeChanged(JFXProjectProperties.RunAsType.INBROWSER);
+        if(!radioButtonBEActionRunning) {
+            radioButtonBEActionRunning = true;
+            runTypeChanged(JFXProjectProperties.RunAsType.INBROWSER);
+            radioButtonBEActionRunning = false;
+        }
     }//GEN-LAST:event_radioButtonBEActionPerformed
     
     void runTypeChanged(JFXProjectProperties.RunAsType runType) {
@@ -941,16 +966,20 @@ private void buttonParamsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 }//GEN-LAST:event_buttonParamsActionPerformed
 
 private void checkBoxPreloaderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkBoxPreloaderActionPerformed
-    boolean sel = checkBoxPreloader.isSelected();
-    textFieldPreloader.setEnabled(sel);
-    labelPreloaderClass.setEnabled(sel);
-    comboBoxPreloaderClass.setEnabled(sel);
-    String config = (String) comboConfig.getSelectedItem();
-    if (config.length() == 0) {
-        config = null;
+    if(!checkBoxPreloaderActionRunning) {
+        checkBoxPreloaderActionRunning = true;
+        boolean sel = checkBoxPreloader.isSelected();
+        textFieldPreloader.setEnabled(sel);
+        labelPreloaderClass.setEnabled(sel);
+        comboBoxPreloaderClass.setEnabled(sel);
+        String config = (String) comboConfig.getSelectedItem();
+        if (config.length() == 0) {
+            config = null;
+        }
+        jfxProps.configsGet(config).put(JFXProjectProperties.PRELOADER_ENABLED, sel ? "true" : "false"); //NOI18N
+        setEmphasized(checkBoxPreloader, preloaderConfigChanged(config));
+        checkBoxPreloaderActionRunning = false;
     }
-    jfxProps.configsGet(config).put(JFXProjectProperties.PRELOADER_ENABLED, sel ? "true" : "false"); //NOI18N
-    setEmphasized(checkBoxPreloader, preloaderConfigChanged(config));
 }//GEN-LAST:event_checkBoxPreloaderActionPerformed
 
 private void buttonPreloaderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonPreloaderActionPerformed
@@ -1021,26 +1050,34 @@ private void buttonWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {//
 }//GEN-LAST:event_buttonWebBrowserActionPerformed
 
 private void comboBoxPreloaderClassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboBoxPreloaderClassActionPerformed
-    String config = (String) comboConfig.getSelectedItem();
-    if (config.length() == 0) {
-        config = null;
+    if(!comboBoxPreloaderClassActionRunning) {
+        comboBoxPreloaderClassActionRunning = true;
+        String config = (String) comboConfig.getSelectedItem();
+        if (config.length() == 0) {
+            config = null;
+        }
+        String sel = (String)comboBoxPreloaderClass.getSelectedItem();
+        if(sel != null && sel.equalsIgnoreCase(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"))) { //NOI18N
+            sel = null;
+        }
+        jfxProps.configsGet(config).put(JFXProjectProperties.PRELOADER_CLASS, sel);
+        setEmphasized(labelPreloaderClass, !JFXProjectProperties.isEqual(sel, jfxProps.configsGet(null).get(JFXProjectProperties.PRELOADER_CLASS)));
+        comboBoxPreloaderClassActionRunning = false;
     }
-    String sel = (String)comboBoxPreloaderClass.getSelectedItem();
-    if(sel != null && sel.equalsIgnoreCase(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"))) { //NOI18N
-        sel = null;
-    }
-    jfxProps.configsGet(config).put(JFXProjectProperties.PRELOADER_CLASS, sel);
-    setEmphasized(labelPreloaderClass, !JFXProjectProperties.isEqual(sel, jfxProps.configsGet(null).get(JFXProjectProperties.PRELOADER_CLASS)));
 }//GEN-LAST:event_comboBoxPreloaderClassActionPerformed
 
 private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboBoxWebBrowserActionPerformed
-    String config = (String) comboConfig.getSelectedItem();
-    if (config.length() == 0) {
-        config = null;
+    if(!comboBoxWebBrowserActionRunning) {
+        comboBoxWebBrowserActionRunning = true;
+        String config = (String) comboConfig.getSelectedItem();
+        if (config.length() == 0) {
+            config = null;
+        }
+        String sel = (String)comboBoxWebBrowser.getSelectedItem();
+        jfxProps.configsGet(config).put(JFXProjectProperties.RUN_IN_BROWSER, sel);
+        setEmphasized(labelWebBrowser, !JFXProjectProperties.isEqual(sel, jfxProps.configsGet(null).get(JFXProjectProperties.RUN_IN_BROWSER)));
+        comboBoxWebBrowserActionRunning = false;
     }
-    String sel = (String)comboBoxWebBrowser.getSelectedItem();
-    jfxProps.configsGet(config).put(JFXProjectProperties.RUN_IN_BROWSER, sel);
-    setEmphasized(labelWebBrowser, !JFXProjectProperties.isEqual(sel, jfxProps.configsGet(null).get(JFXProjectProperties.RUN_IN_BROWSER)));
 }//GEN-LAST:event_comboBoxWebBrowserActionPerformed
 
     private List<Map<String,String>> copyList(List<Map<String,String>> list2Copy) {
@@ -1081,75 +1118,79 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
     }
     
     private void configChanged(String activeConfig) {
-        DefaultComboBoxModel model = new DefaultComboBoxModel();
-        model.addElement("");
-        SortedSet<String> alphaConfigs = new TreeSet<String>(new Comparator<String>() {
-            Collator coll = Collator.getInstance();
-            @Override
-            public int compare(String s1, String s2) {
-                return coll.compare(label(s1), label(s2));
-            }
-            private String label(String c) {
-                Map<String,String> m = jfxProps.configsGet(c);
-                String label = m.get("$label"); // NOI18N
-                return label != null ? label : c;
-            }
-        });
-        for (Map.Entry<String,Map<String,String>> entry : configs.entrySet()) {
-            String config = entry.getKey();
-            if (config != null && entry.getValue() != null) {
-                alphaConfigs.add(config);
-            }
-        }
-        for (String c : alphaConfigs) {
-            model.addElement(c);
-        }
-        comboConfig.setModel(model);
-        comboConfig.setSelectedItem(activeConfig != null ? activeConfig : "");  // NOI18N
-        Map<String,String> m = configs.get(activeConfig);
-        Map<String,String> def = jfxProps.configsGet(null);
-        if (m != null) {
-            for (int i = 0; i < data.length; i++) {
-                String v = m.get(keys[i]);
-                if (v == null) {
-                    // display default value
-                    v = def.get(keys[i]);
+        if(!configChangedRunning) {
+            configChangedRunning = true;
+            DefaultComboBoxModel model = new DefaultComboBoxModel();
+            model.addElement("");
+            SortedSet<String> alphaConfigs = new TreeSet<String>(new Comparator<String>() {
+                Collator coll = Collator.getInstance();
+                @Override
+                public int compare(String s1, String s2) {
+                    return coll.compare(label(s1), label(s2));
                 }
-                data[i].setText(v);
+                private String label(String c) {
+                    Map<String,String> m = jfxProps.configsGet(c);
+                    String label = m.get("$label"); // NOI18N
+                    return label != null ? label : c;
+                }
+            });
+            for (Map.Entry<String,Map<String,String>> entry : configs.entrySet()) {
+                String config = entry.getKey();
+                if (config != null && entry.getValue() != null) {
+                    alphaConfigs.add(config);
+                }
             }
-            String preloaderEnabled = m.get(JFXProjectProperties.PRELOADER_ENABLED);
-            preloaderSelectionChanged(
-                    preloaderEnabled,
-                    m.get(JFXProjectProperties.PRELOADER_PROJECT),
-                    m.get(JFXProjectProperties.PRELOADER_JAR_PATH),
-                    m.get(JFXProjectProperties.PRELOADER_JAR_FILENAME),
-                    m.get(JFXProjectProperties.PRELOADER_CLASS),
-                    m);
-            
-            String runType = m.get(JFXProjectProperties.RUN_AS);
-            if(runType == null) {
-                runTypeChanged(JFXProjectProperties.RunAsType.STANDALONE);
-            } else {
-                if(runType.equals(JFXProjectProperties.RunAsType.ASWEBSTART.getString())) {
-                    runTypeChanged(JFXProjectProperties.RunAsType.ASWEBSTART);
+            for (String c : alphaConfigs) {
+                model.addElement(c);
+            }
+            comboConfig.setModel(model);
+            comboConfig.setSelectedItem(activeConfig != null ? activeConfig : "");  // NOI18N
+            Map<String,String> m = configs.get(activeConfig);
+            Map<String,String> def = jfxProps.configsGet(null);
+            if (m != null) {
+                for (int i = 0; i < data.length; i++) {
+                    String v = m.get(keys[i]);
+                    if (v == null) {
+                        // display default value
+                        v = def.get(keys[i]);
+                    }
+                    data[i].setText(v);
+                }
+                String preloaderEnabled = m.get(JFXProjectProperties.PRELOADER_ENABLED);
+                preloaderSelectionChanged(
+                        preloaderEnabled,
+                        m.get(JFXProjectProperties.PRELOADER_PROJECT),
+                        m.get(JFXProjectProperties.PRELOADER_JAR_PATH),
+                        m.get(JFXProjectProperties.PRELOADER_JAR_FILENAME),
+                        m.get(JFXProjectProperties.PRELOADER_CLASS),
+                        m);
+
+                String runType = m.get(JFXProjectProperties.RUN_AS);
+                if(runType == null) {
+                    runTypeChanged(JFXProjectProperties.RunAsType.STANDALONE);
                 } else {
-                    if(runType.equals(JFXProjectProperties.RunAsType.INBROWSER.getString())) {
-                        runTypeChanged(JFXProjectProperties.RunAsType.INBROWSER);
+                    if(runType.equals(JFXProjectProperties.RunAsType.ASWEBSTART.getString())) {
+                        runTypeChanged(JFXProjectProperties.RunAsType.ASWEBSTART);
                     } else {
-                        runTypeChanged(JFXProjectProperties.RunAsType.STANDALONE);
-                    }                
+                        if(runType.equals(JFXProjectProperties.RunAsType.INBROWSER.getString())) {
+                            runTypeChanged(JFXProjectProperties.RunAsType.INBROWSER);
+                        } else {
+                            runTypeChanged(JFXProjectProperties.RunAsType.STANDALONE);
+                        }                
+                    }
                 }
+                String paramString = getParamsString(jfxProps.getActiveAppParameters(activeConfig));
+                textFieldParams.setText(paramString);
+                setEmphasized(labelParams, !JFXProjectProperties.isEqual(paramString, getParamsString(jfxProps.getActiveAppParameters(null))));
+
+                setEmphasized(checkBoxPreloader, preloaderConfigChanged(activeConfig));
+                setEmphasized(labelPreloaderClass, !JFXProjectProperties.isEqual(m.get(JFXProjectProperties.PRELOADER_CLASS),def.get(JFXProjectProperties.PRELOADER_CLASS)));
+
+                browserSelectionChanged(activeConfig, m.get(JFXProjectProperties.RUN_IN_BROWSER));
             }
-            String paramString = getParamsString(jfxProps.getActiveAppParameters(activeConfig));
-            textFieldParams.setText(paramString);
-            setEmphasized(labelParams, !JFXProjectProperties.isEqual(paramString, getParamsString(jfxProps.getActiveAppParameters(null))));
-            
-            setEmphasized(checkBoxPreloader, preloaderConfigChanged(activeConfig));
-            setEmphasized(labelPreloaderClass, !JFXProjectProperties.isEqual(m.get(JFXProjectProperties.PRELOADER_CLASS),def.get(JFXProjectProperties.PRELOADER_CLASS)));
-            
-            browserSelectionChanged(activeConfig, m.get(JFXProjectProperties.RUN_IN_BROWSER));
+            buttonDelete.setEnabled(activeConfig != null);
+            configChangedRunning = false;
         }
-        buttonDelete.setEnabled(activeConfig != null);
     }
     
     private void browserSelectionChanged(String config, String browser) {
