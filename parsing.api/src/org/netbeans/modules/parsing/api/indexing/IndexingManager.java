@@ -240,9 +240,13 @@ public final class IndexingManager {
      *  documents rather than saved files. For scans the indexers should prefer
      *  content of files. the document content may be useful for example for error badge
      *  recovery.
+     * @exception IllegalStateException when caller holds the parser lock
      * @since 1.40
      */
-    public void refreshIndexAndWait(URL root, Collection<? extends URL> files, boolean fullRescan, boolean checkEditor) {
+    public void refreshIndexAndWait(URL root, Collection<? extends URL> files, boolean fullRescan, boolean checkEditor) throws IllegalStateException {
+        if (Utilities.holdsParserLock()) {
+            throw new IllegalStateException("The caller holds TaskProcessor.parserLock");   //NOI18N
+        }
         inRefreshIndexAndWait.set(Boolean.TRUE);
         try {
             if (IndexingManagerAccessor.getInstance().requiresReleaseOfCompletionLock()) {
