@@ -64,17 +64,18 @@ import org.apache.maven.model.License;
 import org.apache.maven.model.MailingList;
 import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;
-import org.netbeans.modules.maven.api.CommonArtifactActions;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.modules.maven.api.CommonArtifactActions;
+import static org.netbeans.modules.maven.repository.ui.Bundle.*;
 import org.openide.awt.Actions;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
 /**
@@ -583,13 +584,17 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
         });
     }
 
+    @Messages({
+        "LBL_Loading=<Loading>",
+        "LBL_Undefined=<Undefined>"
+    })
     private void setLinkedText(JButton btn, String url, boolean loading) {
         if (url == null) {
             btn.setAction(null);
             if (loading) {
-                btn.setText(NbBundle.getMessage(ProjectInfoPanel.class, "LBL_Loading"));
+                btn.setText(LBL_Loading());
             } else {
-                btn.setText(NbBundle.getMessage(ProjectInfoPanel.class, "LBL_Undefined"));
+                btn.setText(LBL_Undefined());
             }
             btn.setCursor(null);
         } else {
@@ -602,9 +607,9 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
     private void setPlainText(JTextComponent field, String value, boolean loading) {
         if (value == null) {
             if (loading) {
-                field.setText(NbBundle.getMessage(ProjectInfoPanel.class, "LBL_Loading"));
+                field.setText(LBL_Loading());
             } else {
-                field.setText(NbBundle.getMessage(ProjectInfoPanel.class, "LBL_Undefined"));
+                field.setText(LBL_Undefined());
             }
         } else {
             field.setText(value);
@@ -619,12 +624,13 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
             this.url = url;
         }
 
+        @Messages("ERR_WrongURL=Not a proper URL, cannot open in browser: {0}")
         public void actionPerformed(ActionEvent e) {
             try {
                 URL u = new URL(url);
                 HtmlBrowser.URLDisplayer.getDefault().showURL(u);
             } catch (MalformedURLException ex) {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ProjectInfoPanel.class, "ERR_WrongURL", url));
+                StatusDisplayer.getDefault().setStatusText(ERR_WrongURL(url));
             }
         }
 
