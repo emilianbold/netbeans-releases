@@ -180,11 +180,13 @@ public final class ParserManager {
                     }
                 }
                 final SourceCache uncachedSourceCache = new SourceCache(source, null);
+                SourceCache origCache = SourceAccessor.getINSTANCE().getAndSetCache(source, uncachedSourceCache);
                 final ResultIterator resultIterator = new ResultIterator (uncachedSourceCache, parser, userTask);
                 try {
                     TaskProcessor.callUserTask(userTask, resultIterator);
                 } finally {
                     ResultIteratorAccessor.getINSTANCE().invalidate(resultIterator);
+                    SourceAccessor.getINSTANCE().getAndSetCache(source, origCache);
                 }
                 if (lMListener.isLowMemory ())
                     parser = null;

@@ -173,6 +173,7 @@ public abstract class SourceAccessor {
     public abstract long getLastEventId (Source source);
     
     public abstract SourceCache getCache (Source source);
+    public abstract SourceCache getAndSetCache(Source source, SourceCache sourceCache);
 
     /**
      * SPI method - don't call it directly.
