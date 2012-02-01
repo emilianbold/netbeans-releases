@@ -43,7 +43,6 @@
 package org.netbeans.modules.php.editor.index;
 
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.php.editor.PHPDOCCodeCompletion;
 
 /**
  *
@@ -51,9 +50,11 @@ import org.netbeans.modules.php.editor.PHPDOCCodeCompletion;
  */
 public class PHPDOCTagElement extends PHPElement{
     private String tagName;
+    private final String documentation;
 
-    public PHPDOCTagElement(String tagName) {
+    public PHPDOCTagElement(String tagName, String documentation) {
         this.tagName = tagName;
+        this.documentation = documentation;
     }
 
     @Override
@@ -67,6 +68,6 @@ public class PHPDOCTagElement extends PHPElement{
     }
 
     public String getDoc(){
-        return PHPDOCCodeCompletion.getDoc(tagName);
+        return documentation;
     }
 }
