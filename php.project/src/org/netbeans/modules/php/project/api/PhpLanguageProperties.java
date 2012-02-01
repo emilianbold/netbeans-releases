@@ -201,7 +201,7 @@ public final class PhpLanguageProperties {
     /**
     * Add listener that is notified when any "important" PHP language property changes.
     * @param listener a listener to add
-    * @see #removePropertyChangeListener(PropertyChangeListener)
+    * @see #removeProjectPropertyChangeListener(PropertyChangeListener)
     */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         impl.addPropertyChangeListener(listener);
@@ -210,7 +210,7 @@ public final class PhpLanguageProperties {
     /**
     * Remove listener.
     * @param listener a listener to remove
-    * @see #addPropertyChangeListener(PropertyChangeListener)
+    * @see #addProjectPropertyChangeListener(PropertyChangeListener)
     */
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         impl.removePropertyChangeListener(listener);

@@ -50,6 +50,7 @@ import java.lang.annotation.Target;
 import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
+import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.openide.util.Parameters;
@@ -256,6 +257,21 @@ public abstract class PhpFrameworkProvider {
      * @since 1.13
      */
     public abstract EditorExtender getEditorExtender(PhpModule phpModule);
+
+    /**
+     * Get a {@link PhpAnnotationsProvider annotations provider} for this framework
+     * and the given PHP module.
+     * <p>
+     * The default implementation returns {@code null}.
+     *
+     * @param  phpModule the PHP module for which annotations provider is to be gotten
+     * @return annotations provider, can be <code>null</code> if the framework doesn't provide
+     *         any PHP annotations
+     * @since 1.63
+     */
+    public PhpAnnotationsProvider getAnnotationsProvider(PhpModule phpModule) {
+        return null;
+    }
 
     /**
      * This method is called when the PHP module is opened in the IDE but only if is is extended by this framework.
