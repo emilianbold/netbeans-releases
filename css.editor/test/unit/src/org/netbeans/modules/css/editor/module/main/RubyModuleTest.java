@@ -43,8 +43,9 @@ package org.netbeans.modules.css.editor.module.main;
 
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
-import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.PropertyValue;
 
 /**
  * Actually there's no such class as RubyModule, the property descriptors
@@ -59,7 +60,7 @@ public class RubyModuleTest extends CslTestBase {
     }
     
     public void testProperties() {
-        PropertyModel p = CssModuleSupport.getPropertyModel("ruby-span");
+        PropertyModel p = Properties.getPropertyModel("ruby-span");
         
         assertNotNull(p);
         

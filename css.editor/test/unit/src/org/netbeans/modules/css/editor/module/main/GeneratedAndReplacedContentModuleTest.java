@@ -42,8 +42,9 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.properties.parser.GrammarResolver;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.properties.GrammarResolver;
+import org.netbeans.modules.css.lib.api.properties.PropertyModel;
 
 /**
  *
@@ -72,7 +73,7 @@ public class GeneratedAndReplacedContentModuleTest extends CssModuleTestBase {
     }
 
     public void testContent2() {
-        PropertyModel model = CssModuleSupport.getPropertyModel("content");
+        PropertyModel model = Properties.getPropertyModel("content");
 
         assertResolve(model.getGrammar(), "url(\"link\") normal");
         assertResolve(model.getGrammar(), "url(\"link\") counter(anid, anotherid)");

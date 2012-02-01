@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.css.editor.csl;
 
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import java.awt.Color;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -64,9 +66,9 @@ import org.netbeans.modules.css.editor.URLRetriever;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.*;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
-import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
-import org.netbeans.modules.css.editor.properties.parser.ValueGrammarElement;
+import org.netbeans.modules.css.lib.api.properties.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.PropertyValue;
+import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
 import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.lib.api.*;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
@@ -220,7 +222,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
     private Collection<CompletionProposal> wrapPropertyValues(CompletionContext context,
             String prefix,
-            Property propertyDescriptor,
+            PropertyDefinition propertyDescriptor,
             Collection<ValueGrammarElement> props,
             int anchor,
             boolean addSemicolon,
@@ -373,10 +375,10 @@ public class CssCompletion implements CodeCompletionHandler {
         return filtered;
     }
 
-    private Collection<Property> filterProperties(Collection<Property> props, String propertyNamePrefix) {
+    private Collection<PropertyDefinition> filterProperties(Collection<PropertyDefinition> props, String propertyNamePrefix) {
         propertyNamePrefix = propertyNamePrefix.toLowerCase();
-        List<Property> filtered = new ArrayList<Property>();
-        for (Property p : props) {
+        List<PropertyDefinition> filtered = new ArrayList<PropertyDefinition>();
+        for (PropertyDefinition p : props) {
             if (p.getName().toLowerCase().startsWith(propertyNamePrefix)) {
                 filtered.add(p);
             }
@@ -389,7 +391,7 @@ public class CssCompletion implements CodeCompletionHandler {
         HelpResolver resolver = CssModuleSupport.getHelpResolver();
         if (element instanceof CssPropertyElement) {
             CssPropertyElement e = (CssPropertyElement) element;
-            Property property = e.getPropertyDescriptor();
+            PropertyDefinition property = e.getPropertyDescriptor();
             return resolver.getHelp(property);
         } else if (element instanceof ElementHandle.UrlHandle) {
             try {
@@ -405,7 +407,7 @@ public class CssCompletion implements CodeCompletionHandler {
     public ElementHandle resolveLink(String link, ElementHandle elementHandle) {
         if (elementHandle instanceof CssPropertyElement) {
             CssPropertyElement e = (CssPropertyElement) elementHandle;
-            Property property = e.getPropertyDescriptor();
+            PropertyDefinition property = e.getPropertyDescriptor();
             URL url = CssModuleSupport.getHelpResolver().resolveLink(property, link);
             if (url != null) {
                 return new UrlHandle(url.toExternalForm());
@@ -856,7 +858,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
         //1. css property name completion with prefix
         if (nodeType == NodeType.property && (cc.getPrefix().length() > 0 || cc.getEmbeddedCaretOffset() == cc.getActiveNode().from())) {
-            Collection<Property> possibleProps = filterProperties(CssModuleSupport.getProperties(), cc.getPrefix());
+            Collection<PropertyDefinition> possibleProps = filterProperties(Properties.getProperties(), cc.getPrefix());
             completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getSnapshot().getOriginalOffset(cc.getActiveNode().from())));
         }
 
@@ -864,7 +866,7 @@ public class CssCompletion implements CodeCompletionHandler {
         if (nodeType == NodeType.recovery || nodeType == NodeType.error) {
             Node parent = cc.getActiveNode().parent();
             if (parent != null && (parent.type() == NodeType.rule || parent.type() == NodeType.moz_document)) {
-                Collection<Property> possibleProps = filterProperties(CssModuleSupport.getProperties(), cc.getPrefix());
+                Collection<PropertyDefinition> possibleProps = filterProperties(Properties.getProperties(), cc.getPrefix());
                 completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getCaretOffset()));
             }
         }
@@ -879,7 +881,7 @@ public class CssCompletion implements CodeCompletionHandler {
         if (nodeType == NodeType.rule
                 || nodeType == NodeType.moz_document
                 || nodeType == NodeType.declarations) {
-            completionProposals.addAll(Utilities.wrapProperties(CssModuleSupport.getProperties(), cc.getCaretOffset()));
+            completionProposals.addAll(Utilities.wrapProperties(Properties.getProperties(), cc.getCaretOffset()));
         }
 
     }
@@ -945,7 +947,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
                 }
 
-                PropertyModel prop = CssModuleSupport.getPropertyModel(property.image().toString().trim());
+                PropertyModel prop = Properties.getPropertyModel(property.image().toString().trim());
                 if (prop != null) {
 
                     PropertyValue propVal = new PropertyValue(prop, expressionText);
@@ -1042,7 +1044,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 Node property = result[0];
 
                 String propertyName = property.image().toString();
-                PropertyModel propertyModel = CssModuleSupport.getPropertyModel(propertyName);
+                PropertyModel propertyModel = Properties.getPropertyModel(propertyName);
                 if (propertyModel == null) {
                     return;
                 }

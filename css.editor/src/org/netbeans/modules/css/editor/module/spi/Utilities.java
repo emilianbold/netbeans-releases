@@ -41,15 +41,7 @@
  */
 package org.netbeans.modules.css.editor.module.spi;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.*;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -57,11 +49,9 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.csl.CssElement;
 import org.netbeans.modules.css.editor.csl.CssPropertyElement;
-import org.netbeans.modules.css.editor.properties.parser.GrammarParser;
-import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.NodeType;
-import org.netbeans.modules.css.lib.api.NodeUtil;
-import org.netbeans.modules.css.lib.api.NodeVisitor;
+import org.netbeans.modules.css.lib.api.*;
+import org.netbeans.modules.css.lib.api.properties.GrammarElement;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.NbBundle;
 
@@ -135,11 +125,11 @@ public class Utilities {
         return proposals;
     }
  
-    public static List<CompletionProposal> wrapProperties(Collection<Property> props, int anchor) {
+    public static List<CompletionProposal> wrapProperties(Collection<PropertyDefinition> props, int anchor) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
-        for (Property p : props) {
+        for (PropertyDefinition p : props) {
             //filter out non-public properties
-            if (!GrammarParser.isArtificialElementName(p.getName())) {
+            if (!GrammarElement.isArtificialElementName(p.getName())) {
                 CssElement handle = new CssPropertyElement(p);
                 CompletionProposal proposal = CssCompletionItem.createPropertyNameCompletionItem(handle, p.getName(), anchor, false);
                 proposals.add(proposal);
@@ -162,8 +152,8 @@ public class Utilities {
      * 
      * @param sourcePath - an absolute path to the resource properties file relative to the module base
      */
-    public static Collection<Property> parsePropertyDefinitionFile(String sourcePath, CssModule module) {
-        Collection<Property> properties = new ArrayList<Property>();
+    public static Collection<PropertyDefinition> parsePropertyDefinitionFile(String sourcePath, CssModule module) {
+        Collection<PropertyDefinition> properties = new ArrayList<PropertyDefinition>();
         ResourceBundle bundle = NbBundle.getBundle(sourcePath);
 
         Enumeration<String> keys = bundle.getKeys();
@@ -176,7 +166,7 @@ public class Utilities {
 
             while (nameTokenizer.hasMoreTokens()) {
                 String parsed_name = nameTokenizer.nextToken().trim();
-                Property prop = new Property(parsed_name, value, module);
+                PropertyDefinition prop = new PropertyDefinition(parsed_name, value, module);
                 properties.add(prop);
             }
 

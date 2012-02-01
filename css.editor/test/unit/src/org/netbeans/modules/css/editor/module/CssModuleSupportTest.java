@@ -43,7 +43,8 @@ package org.netbeans.modules.css.editor.module;
 
 import java.util.Collection;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.css.editor.module.spi.Property;
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 
 /**
  *
@@ -57,20 +58,20 @@ public class CssModuleSupportTest extends NbTestCase {
 
     
     public void testGetProperty() {
-        Collection<Property> p = CssModuleSupport.getProperties("perspective");
+        Collection<PropertyDefinition> p = Properties.getProperties("perspective");
         assertNotNull(p);
         assertFalse(p.isEmpty());
         assertEquals("perspective", p.iterator().next().getName());
         
         //get refered(invisible) property of the same name
-        p = CssModuleSupport.getProperties("perspective", true);
+        p = Properties.getProperties("perspective", true);
         assertNotNull(p);
         assertFalse(p.isEmpty());
         assertEquals("@perspective", p.iterator().next().getName());
     }
     
     public void testAllPropertiesHaveSomeGrammar() {
-        for (Property property : CssModuleSupport.getProperties()) {
+        for (PropertyDefinition property : Properties.getProperties()) {
             assertNotNull(property);
             assertNotNull(property.getName());
             assertNotNull(property.getValueGrammar());

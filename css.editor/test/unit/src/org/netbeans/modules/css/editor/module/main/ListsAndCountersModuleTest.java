@@ -42,7 +42,8 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.PropertyModel;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
@@ -63,7 +64,7 @@ public class ListsAndCountersModuleTest extends CssModuleTestBase {
     }
     
     public void testListStyleCompletion() {
-        PropertyModel p = CssModuleSupport.getPropertyModel("list-style");
+        PropertyModel p = Properties.getPropertyModel("list-style");
         assertAlternatives(p.getGrammar(), "",
                 "repeating-linear-gradient","lower-latin","lower-greek",
                 "repeating-radial-gradient","disc","lower-alpha","lower-roman",
@@ -82,7 +83,7 @@ public class ListsAndCountersModuleTest extends CssModuleTestBase {
     }
     
     public void testListStyleTypeCompletion() {
-        PropertyModel p = CssModuleSupport.getPropertyModel("list-style-type");
+        PropertyModel p = Properties.getPropertyModel("list-style-type");
         assertAlternatives(p.getGrammar(), "",
                 "georgian","armenian","upper-alpha","upper-latin","!string","lower-latin",
                 "circle","lower-greek","decimal","upper-roman","disc","lower-alpha",

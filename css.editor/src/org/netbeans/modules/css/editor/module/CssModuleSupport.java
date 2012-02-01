@@ -52,9 +52,8 @@ import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.css.editor.module.spi.*;
-import org.netbeans.modules.css.editor.properties.parser.GrammarParser;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.web.common.api.Pair;
 import org.openide.util.Lookup;
 
@@ -65,10 +64,6 @@ import org.openide.util.Lookup;
 public class CssModuleSupport {
 
     private static final Logger LOGGER = Logger.getLogger(CssModuleSupport.class.getSimpleName());
-    //TODO possibly add support for refreshing the cached data based on css module changes in the lookup
-    private static final AtomicReference<Map<String, Collection<Property>>> PROPERTIES_MAP = new AtomicReference<Map<String, Collection<Property>>>();
-    private static final AtomicReference<Collection<Property>> PROPERTIES = new AtomicReference<Collection<Property>>();
-    private static final Map<String, PropertyModel> PROPERTY_MODELS = new HashMap<String, PropertyModel>();
 
     public static Collection<? extends CssEditorModule> getModules() {
         return Lookup.getDefault().lookupAll(CssEditorModule.class);
@@ -228,94 +223,6 @@ public class CssModuleSupport {
 
     }
 
-    public static Collection<Property> getProperties() {
-        synchronized (PROPERTIES) {
-            if(PROPERTIES.get() == null) {
-                PROPERTIES.set(createAllPropertiesCollection());
-            }
-            return PROPERTIES.get();
-        }
-    }
-    
-    /**
-     * @return map of property name to collection of Property impls.
-     */
-    public static Map<String, Collection<Property>> getPropertiesMap() {
-        synchronized (PROPERTIES_MAP) {
-            if(PROPERTIES_MAP.get() == null) {
-                PROPERTIES_MAP.set(loadProperties());
-            }
-            return PROPERTIES_MAP.get();
-        }
-    }
-    
-    private static Collection<Property> createAllPropertiesCollection() {
-        Collection<Property> all = new LinkedList<Property>();
-        for(Collection<Property> props : getPropertiesMap().values()) {
-            all.addAll(props);
-        }
-        return all;
-    }
-
-    //property name to set of Property impls - one name may be mapped to more properties
-    private static Map<String, Collection<Property>> loadProperties() {
-        Map<String, Collection<Property>> all = new HashMap<String, Collection<Property>>();
-        for (CssEditorModule module : getModules()) {
-            for (Property pd : module.getProperties()) {
-                String propertyName = pd.getName();
-                Collection<Property> props = all.get(propertyName);
-                if(props == null) {
-                    props = new LinkedList<Property>();
-                    all.put(propertyName, props);
-                }
-                if(!GrammarParser.isArtificialElementName(propertyName)) {
-                    //standart (visible) properties cannot be duplicated
-                    if(!props.isEmpty()) {
-                        LOGGER.warning(String.format("Duplicate property %s found, "
-                                + "offending css module: %s", pd.getName(), pd.getCssModule())); //NOI18N
-                        for(Property p : props) {
-                            LOGGER.warning(String.format("Existing property found"
-                                + " in css module: %s", p.getCssModule())); //NOI18N
-                        }
-                    }
-                }
-                props.add(pd);
-            }
-        }
-        return all;
-    }
-
-    public static Collection<Property> getProperties(String propertyName) {
-        return getProperties(propertyName, false);
-    }
-    
-    public static Collection<Property> getProperties(String propertyName, boolean allowToGetInvisibleProperties) {
-        //try to resolve the refered element name with the at-sign prefix so
-        //the property appearance may contain link to appearance, which in fact
-        //will be resolved as the @appearance property:
-        //
-        //appearance=<appearance> |normal
-        //@appearance=...
-        //
-        StringBuilder sb = new StringBuilder().append(GrammarParser.INVISIBLE_PROPERTY_PREFIX).append(propertyName);
-        Collection<Property> invisibleProperty = getPropertiesMap().get(sb.toString());
-        
-        return allowToGetInvisibleProperties && invisibleProperty != null ? invisibleProperty : PROPERTIES_MAP.get().get(propertyName);
-    }
-
-    public static PropertyModel getPropertyModel(String name) {
-        synchronized (PROPERTY_MODELS) {
-            PropertyModel model = PROPERTY_MODELS.get(name);
-            if (model == null) {
-                Collection<Property> properties = getProperties(name);
-                model = properties != null ? new PropertyModel(name, properties) : null;
-                PROPERTY_MODELS.put(name, model);
-            }
-            return model;
-        }
-
-    }
-
     public static List<CompletionProposal> getCompletionProposals(CompletionContext context) {
         List<CompletionProposal> all = new ArrayList<CompletionProposal>();
         for (CssEditorModule module : getModules()) {
@@ -386,7 +293,7 @@ public class CssModuleSupport {
         return new HelpResolver() {
 
             @Override
-            public String getHelp(Property property) {
+            public String getHelp(PropertyDefinition property) {
                 StringBuilder sb = new StringBuilder();
                 for (HelpResolver resolver : getSortedHelpResolvers()) {
                     String help = resolver.getHelp(property);
@@ -398,7 +305,7 @@ public class CssModuleSupport {
             }
 
             @Override
-            public URL resolveLink(Property property, String link) {
+            public URL resolveLink(PropertyDefinition property, String link) {
                 for (HelpResolver resolver : getSortedHelpResolvers()) {
                     URL url = resolver.resolveLink(property, link);
                     if (url != null) {

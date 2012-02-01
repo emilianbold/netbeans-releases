@@ -49,12 +49,13 @@ import org.netbeans.modules.css.editor.module.BrowserSpecificDefinitionParser;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.Browser;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
-import org.netbeans.modules.css.editor.module.spi.CssModule;
+import org.netbeans.modules.css.lib.api.CssModule;
 import org.netbeans.modules.css.editor.module.spi.HelpResolver;
-import org.netbeans.modules.css.editor.module.spi.Property;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver;
 import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver.Factory;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.PropertyModel;
 import org.openide.util.NbBundle;
 
 /**
@@ -83,7 +84,7 @@ public class BrowserSupportModule extends CssEditorModule implements CssModule {
     }
 
     @Override
-    public Collection<Property> getProperties() {
+    public Collection<PropertyDefinition> getProperties() {
         return parser.getVendorSpecificProperties();
     }
 
@@ -102,11 +103,11 @@ public class BrowserSupportModule extends CssEditorModule implements CssModule {
         return Collections.<HelpResolver>singleton(new HelpResolver() {
 
             @Override
-            public String getHelp(Property property) {
+            public String getHelp(PropertyDefinition property) {
                 if(property.getName().startsWith(getBrowser().getVendorSpecificPropertyPrefix())) {
                     //try to delegate to the corresponding standard property help
                     String standardPropertyName = property.getName().substring(getBrowser().getVendorSpecificPropertyPrefix().length());
-                    PropertyModel standardPropertyModel = CssModuleSupport.getPropertyModel(standardPropertyName);
+                    PropertyModel standardPropertyModel = Properties.getPropertyModel(standardPropertyName);
                     if(standardPropertyModel != null) {
                         StandardPropertiesHelpResolver resolver = new StandardPropertiesHelpResolver();
                         String help = resolver.getHelp(standardPropertyModel.getProperty());
@@ -122,7 +123,7 @@ public class BrowserSupportModule extends CssEditorModule implements CssModule {
             }
 
             @Override
-            public URL resolveLink(Property property, String link) {
+            public URL resolveLink(PropertyDefinition property, String link) {
                 return null;
             }
 

@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.properties.parser.GrammarResolver;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
-import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.properties.GrammarResolver;
+import org.netbeans.modules.css.lib.api.properties.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.PropertyValue;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
@@ -58,7 +58,7 @@ public class BackgroundsAndBordersModuleTest extends CssModuleTestBase {
     }
 
     public void testBackground_Attachment() throws ParseException {
-        PropertyModel prop = CssModuleSupport.getPropertyModel("background-attachment");
+        PropertyModel prop = Properties.getPropertyModel("background-attachment");
         assertNotNull(prop);
 
         assertTrue(new PropertyValue(prop, "scroll").isResolved());
@@ -70,7 +70,7 @@ public class BackgroundsAndBordersModuleTest extends CssModuleTestBase {
     }
     
     public void testBackground_Image() throws ParseException {
-        PropertyModel prop = CssModuleSupport.getPropertyModel("background-image");
+        PropertyModel prop = Properties.getPropertyModel("background-image");
         assertNotNull(prop);
 
         assertTrue(new PropertyValue(prop, "none").isResolved());
@@ -83,7 +83,7 @@ public class BackgroundsAndBordersModuleTest extends CssModuleTestBase {
     }
     
     public void testBackground_Position() throws ParseException {
-        PropertyModel prop = CssModuleSupport.getPropertyModel("background-position");
+        PropertyModel prop = Properties.getPropertyModel("background-position");
         assertNotNull(prop);
         
         assertResolve(prop.getGrammar(), "left      top");
@@ -92,14 +92,14 @@ public class BackgroundsAndBordersModuleTest extends CssModuleTestBase {
     }
     
     public void testIssue201769() {
-        PropertyModel prop = CssModuleSupport.getPropertyModel("background-position");
+        PropertyModel prop = Properties.getPropertyModel("background-position");
         PropertyValue pv = new PropertyValue(prop, "center top");
 //        PropertyModelTest.dumpResult(pv);
         assertTrue(pv.isResolved());
     }
     
     public void testBackground() {
-        PropertyModel prop = CssModuleSupport.getPropertyModel("background");
+        PropertyModel prop = Properties.getPropertyModel("background");
 //        PRINT_INFO_IN_ASSERT_RESOLVE = true;
 //        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
         assertResolve(prop.getGrammar(), "url(image.png) , url(image2.png)");

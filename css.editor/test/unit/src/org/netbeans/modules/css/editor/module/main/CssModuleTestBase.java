@@ -41,6 +41,13 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.properties.GrammarParser;
+import org.netbeans.modules.css.lib.api.properties.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.api.properties.PropertyValue;
+import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
+import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -62,7 +69,6 @@ import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
-import org.netbeans.modules.css.editor.properties.parser.*;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -270,7 +276,7 @@ public class CssModuleTestBase extends CslTestBase {
 
     protected void assertPropertyValues(String propertyName, String... values) {
 
-        PropertyModel model = CssModuleSupport.getPropertyModel(propertyName);
+        PropertyModel model = Properties.getPropertyModel(propertyName);
         assertNotNull(String.format("Cannot find property %s", propertyName), model);
 
         for (String val : values) {
