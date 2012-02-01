@@ -270,25 +270,18 @@ public class Utilities {
             }
         }
 
-        result.addAll(listClassPathHints(cps));
+        result.addAll(listClassPathHints(Collections.<ClassPath>emptySet(), cps));
 
         return result;
     }
 
-    public static List<HintDescription> listClassPathHints(Set<ClassPath> cps) {
+    public static List<HintDescription> listClassPathHints(Set<ClassPath> sourceCPs, Set<ClassPath> binaryCPs) {
         List<HintDescription> result = new LinkedList<HintDescription>();
         Set<FileObject> roots = new HashSet<FileObject>();
 
-        for (ClassPath cp : cps) {
+        for (ClassPath cp : binaryCPs) {
             for (FileObject r : cp.getRoots()) {
-                Result2 src;
-
-                try {
-                    src = SourceForBinaryQuery.findSourceRoots2(r.getURL());
-                } catch (FileStateInvalidException ex) {
-                    Logger.getLogger(Utilities.class.getName()).log(Level.FINE, null, ex);
-                    src = null;
-                }
+                Result2 src = SourceForBinaryQuery.findSourceRoots2(r.toURL());
 
                 if (src != null && src.preferSources()) {
                     roots.addAll(Arrays.asList(src.getRoots()));
@@ -298,7 +291,11 @@ public class Utilities {
             }
         }
 
-        ClassPath cp = ClassPathSupport.createClassPath(roots.toArray(new FileObject[0]));
+        Set<ClassPath> cps = new HashSet<ClassPath>(sourceCPs);
+
+        cps.add(ClassPathSupport.createClassPath(roots.toArray(new FileObject[0])));
+
+        ClassPath cp = ClassPathSupport.createProxyClassPath(cps.toArray(new ClassPath[0]));
 
         for (ClassPathBasedHintProvider p : Lookup.getDefault().lookupAll(ClassPathBasedHintProvider.class)) {
             result.addAll(p.computeHints(cp));
