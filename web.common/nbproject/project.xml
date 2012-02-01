@@ -184,6 +184,7 @@
                 <package>org.netbeans.modules.web.common.spi</package>
                 <package>org.netbeans.modules.web.common.taginfo</package>
                 <package>org.netbeans.modules.web.common.reload</package>
+                <package>org.netbeans.modules.web.common.websocket</package>
             </friend-packages>
             <extra-compilation-unit>
                 <package-root>antsrc</package-root>
