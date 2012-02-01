@@ -232,19 +232,18 @@ public class Installer extends ModuleInstall implements Runnable {
             }
         } catch (BackingStoreException e) {
             // immediatelly show dialog with exception (usually Access is denied)
-            NotifyDescriptor.Exception eDesc = new NotifyDescriptor.Exception(e);
-            DialogDisplayer.getDefault().notify(eDesc);
+            Exceptions.printStackTrace(e);
         }
     }
 
     /**
-     * Used to synchronize access to ui log files to avoid wrtiting to/deleting/renaming file
+     * Used to synchronize access to ui log files to avoid writing to/deleting/renaming file
      * which is being parsed in another thread.
      */
     private static final Object UIGESTURE_LOG_LOCK = new Object();
 
     /**
-     * Used to synchronize access to metrics log files to avoid wrtiting to/deleting/renaming file
+     * Used to synchronize access to metrics log files to avoid writing to/deleting/renaming file
      * which is being parsed in another thread.
      */
     private static final Object METRICS_LOG_LOCK = new Object();
@@ -650,7 +649,7 @@ public class Installer extends ModuleInstall implements Runnable {
         LogRecord rec = new LogRecord(Level.INFO, "USG_INSTALLED_CLUSTERS");
         String dirs = System.getProperty("netbeans.dirs");
         String [] dirsArray = dirs.split(File.pathSeparator);
-        List list = new ArrayList<String>();
+        List<String> list = new ArrayList<String>();
         for (int i = 0; i < dirsArray.length; i++) {
             File f = new File(dirsArray[i]);
             if (f.exists()){
