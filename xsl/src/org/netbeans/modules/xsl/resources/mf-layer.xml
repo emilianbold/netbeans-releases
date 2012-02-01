@@ -159,8 +159,8 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
                         <attr name="position" intvalue="1100"/>
                     </file>
-                    <file name="org-openide-actions-EditAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-EditAction.instance"/>
+                    <file name="org-openide-actions-OpenAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>
                         <attr name="position" intvalue="300"/>
                     </file>
                     <file name="org-openide-actions-FileSystemAction.shadow">
