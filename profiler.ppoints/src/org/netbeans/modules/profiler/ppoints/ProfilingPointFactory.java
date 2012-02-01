@@ -109,6 +109,8 @@ public abstract class ProfilingPointFactory {
     } // subclasses will override this method if they eg. depend on external modules
 
     public abstract String getDescription();
+    
+    public String getHint() { return null; };
 
     public abstract Icon getIcon();
     
