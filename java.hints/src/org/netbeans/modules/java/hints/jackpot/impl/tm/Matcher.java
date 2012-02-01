@@ -143,7 +143,7 @@ public class Matcher {
         private final Map<Element, Element> variablesRemapToElement;
         private final Map<Element, TreePath> variablesRemapToTrees;
 
-        private OccurrenceDescription(TreePath occurrenceRoot, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variables2Names, Map<Element, Element> variablesRemapToElement, Map<Element, TreePath> variablesRemapToTrees) {
+        public OccurrenceDescription(TreePath occurrenceRoot, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variables2Names, Map<Element, Element> variablesRemapToElement, Map<Element, TreePath> variablesRemapToTrees) {
             this.occurrenceRoot = occurrenceRoot;
             this.variables = variables;
             this.multiVariables = multiVariables;
