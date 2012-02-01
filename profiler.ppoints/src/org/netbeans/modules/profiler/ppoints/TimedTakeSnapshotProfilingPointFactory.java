@@ -65,6 +65,7 @@ import org.openide.util.Lookup;
 @NbBundle.Messages({
     "TimedTakeSnapshotProfilingPointFactory_PpType=Timed Take Snapshot",
     "TimedTakeSnapshotProfilingPointFactory_PpDescr=Takes snapshot of currently collected profiling results similarly to Take Snapshot action in Profiler UI. This Profiling Point is defined globally for the profiling session and is invoked at certain time or periodically.",
+    "TimedTakeSnapshotProfilingPointFactory_PpHint=", // #207680 Do not remove, custom brandings may provide wizard hint here!!!
 //# Timed Take Snapshot at Anagrams.java:32
     "TimedTakeSnapshotProfilingPointFactory_PpDefaultName={0} in {1}"
 })
@@ -74,6 +75,10 @@ public class TimedTakeSnapshotProfilingPointFactory extends CodeProfilingPointFa
 
     public String getDescription() {
         return Bundle.TimedTakeSnapshotProfilingPointFactory_PpDescr();
+    }
+    
+    public String getHint() {
+        return Bundle.TimedTakeSnapshotProfilingPointFactory_PpHint();
     }
 
     public Icon getIcon() {
