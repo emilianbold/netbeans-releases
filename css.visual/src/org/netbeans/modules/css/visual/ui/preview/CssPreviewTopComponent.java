@@ -321,7 +321,7 @@ public final class CssPreviewTopComponent extends TopComponent {
     
     private String getTitle(CssRuleContext content) {
         if(content != null && content.selectedRuleContent() != null) {
-            return content.selectedRuleContent().rule().name() + " - " + DEFAULT_TC_NAME; //NOI18N
+            return content.selectedRuleContent().rule().image().toString() + " - " + DEFAULT_TC_NAME; //NOI18N
         }
         return DEFAULT_TC_NAME;
     }

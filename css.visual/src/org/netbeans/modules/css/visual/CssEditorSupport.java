@@ -122,7 +122,7 @@ public class CssEditorSupport {
                             if (oldRule != null && newRule == null) {
                                 //remove the old rule line - maybe we should just cut the exact part?!?!
                                 int start = oldRule.getProperty().offset();
-                                int end = oldRule.getValue().offset() + oldRule.getValue().name().length();
+                                int end = oldRule.getValue().offset() + oldRule.getValue().image().length();
 
                                 //cut off also the semicolon if there is any
                                 end = oldRule.semicolonOffset() != -1 ? oldRule.semicolonOffset() + 1 : end;
@@ -152,7 +152,7 @@ public class CssEditorSupport {
                                     //check if the last item has semicolon
                                     //add it if there is no semicolon
                                     if (last.semicolonOffset() == -1) {
-                                        doc.insertString(last.getValue().offset() + last.getValue().name().trim().length(), ";", null); //NOI18N
+                                        doc.insertString(last.getValue().offset() + last.getValue().image().toString().trim().length(), ";", null); //NOI18N
                                         insertOffset++; //shift the insert offset because of the added semicolon
                                     }
 
@@ -163,7 +163,7 @@ public class CssEditorSupport {
 
                                 String text = (initialNewLine ? LINE_SEPARATOR : "") +
                                         IndentUtils.createIndentString(document, INDENT) +
-                                        newRule.getProperty().name() + ": " + newRule.getValue().name() + ";" +
+                                        newRule.getProperty().image() + ": " + newRule.getValue().image() + ";" +
                                         LINE_SEPARATOR;
 
                                 doc.insertString(insertOffset, text, null);
@@ -171,12 +171,12 @@ public class CssEditorSupport {
                             } else if (oldRule != null && newRule != null) {
                                 //update the existing rule in document
                                 //replace attribute name
-                                doc.remove(oldRule.getProperty().offset(), oldRule.getProperty().name().length());
-                                doc.insertString(oldRule.getProperty().offset(), newRule.getProperty().name(), null);
+                                doc.remove(oldRule.getProperty().offset(), oldRule.getProperty().image().length());
+                                doc.insertString(oldRule.getProperty().offset(), newRule.getProperty().image().toString(), null);
                                 //replace the attribute value
-                                int diff = newRule.getProperty().name().length() - oldRule.getProperty().name().length();
-                                doc.remove(oldRule.getValue().offset() + diff, oldRule.getValue().name().length());
-                                doc.insertString(oldRule.getValue().offset() + diff, newRule.getValue().name(), null);
+                                int diff = newRule.getProperty().image().length() - oldRule.getProperty().image().length();
+                                doc.remove(oldRule.getValue().offset() + diff, oldRule.getValue().image().length());
+                                doc.insertString(oldRule.getValue().offset() + diff, newRule.getValue().image().toString(), null);
 
                             } else {
                                 //new rule and old rule is null

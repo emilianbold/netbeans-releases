@@ -96,7 +96,7 @@ public final class StyleBuilderTopComponent extends TopComponent {
 
     public void setContent(CssRuleContext content) {
         Rule rule = content.selectedRuleContent().rule();
-        setName((rule != null ? rule.name() + " - " : "") + DEFAULT_TC_NAME);//NOI18N
+        setName((rule != null ? rule.image() + " - " : "") + DEFAULT_TC_NAME);//NOI18N
         styleBuilderPanel.setContent(content);
     }
 

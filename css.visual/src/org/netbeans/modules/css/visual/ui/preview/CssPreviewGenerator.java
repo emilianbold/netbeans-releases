@@ -100,7 +100,7 @@ public class CssPreviewGenerator {
                 //pseudo classes hack ( A:link { color: red; }
                 //we need to generate an artificial element so we can spot various states of the element (a:visited, active etc.)
                 //which depends on the state of the browser.
-                String ruleName = rule.name();
+                String ruleName = rule.image().toString();
                 while (ruleName.indexOf('[') > 0) {// remove [ ] blocks !!!FIX ME in future
                     int startBracket = ruleName.indexOf('[');
                     int endBracket = ruleName.indexOf(']', startBracket);
@@ -116,7 +116,7 @@ public class CssPreviewGenerator {
         preview.append((CharSequence)sb);
         preview.append(HTML_MIDDLE);
         Rule selected = content.selectedRuleContent().rule();
-        String ruleName = selected.name();
+        String ruleName = selected.image().toString();
         ruleName = ruleName.replace('\n', ' '); //hotfix #117690 (selectors on multiple lines break the css previrew)
         
         //We do not support preview of multiple elements in selector e.g.

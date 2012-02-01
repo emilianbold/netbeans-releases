@@ -85,7 +85,7 @@ public class CssRuleContent {
     public String getProperty(String property) {
         Declaration item = findItem(property);
         if(item != null) {
-            return item.getValue().name();
+            return item.getValue().image().toString();
         } else {
             return  null;
         }
@@ -119,7 +119,7 @@ public class CssRuleContent {
 //            }
             firePropertyChange(item, null); //NOI18N
         } else {
-            String oldVal = item == null ? null : item.getValue().name();
+            String oldVal = item == null ? null : item.getValue().image().toString();
             //do not fire events when the old and new values are the same
             if(oldVal == null || !newValue.equals(oldVal)) {
                 //property add or modify
@@ -152,8 +152,8 @@ public class CssRuleContent {
                 continue;
             }
             
-            String property = item.getProperty().name();
-            String propertyValue = item.getValue().name().trim();
+            String property = item.getProperty().image().toString();
+            String propertyValue = item.getValue().image().toString().trim();
             if(!(propertyValue.equals(Utils.NOT_SET) || propertyValue.equals(""))){ //NOI18N
                 strWriter.write("   " + property); //NOI18N
                 strWriter.write(": "); //NOI18N
@@ -195,7 +195,7 @@ public class CssRuleContent {
 
     private Declaration findItem(String keyName) {
         for(Declaration ri : ruleItems()) {
-            if(ri.getProperty().name().equals(keyName)) {
+            if(ri.getProperty().image().toString().equals(keyName)) {
                 return ri;
             }
         }

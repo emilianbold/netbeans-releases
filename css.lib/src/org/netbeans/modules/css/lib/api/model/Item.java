@@ -58,12 +58,22 @@ public class Item {
         this.node = node;
     }
     
+    //XXX remove once stylebuilder is gone!
+    private CharSequence image;
+    private int offset = -1;
+    protected Item(CharSequence image, int offset) {
+        this.image = image;
+        this.offset = offset;
+    }
+    
     public CharSequence image() {
-        return node.image();
+        return image != null ? image : node.image();
+//        return node.image();
     }
     
     public int offset() {
-        return node.from();
+        return offset != -1 ? offset : node.from();
+//        return node.from();
     }
     
 }
