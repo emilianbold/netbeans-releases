@@ -19,6 +19,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -138,6 +139,7 @@ public class IgnoreTest extends JellyTestCase {
             
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|NewClass");
             org.openide.nodes.Node nodeIDE = (org.openide.nodes.Node) node.getOpenideNode();
+            new EventTool().waitNoEvent(5000);
             String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
             String status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
             assertEquals("Wrong color of node - file color should be ignored!!!", TestKit.IGNORED_COLOR, color);
