@@ -385,10 +385,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                    autoCompleteClassMembers(completionResult, request, true);
                     break;
                 case PHPDOC:
+                    PHPDOCCodeCompletion.complete(completionResult, request);
                     if (PHPDOCCodeCompletion.isTypeCtx(request)) {
                         autoCompleteTypeNames(completionResult, request);
-                    } else {
-                        PHPDOCCodeCompletion.complete(completionResult, request);
                     }
                     break;
                 case CLASS_CONTEXT_KEYWORDS:
