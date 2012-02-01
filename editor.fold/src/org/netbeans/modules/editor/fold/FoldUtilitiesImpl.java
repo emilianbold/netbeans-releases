@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.AbstractDocument;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
@@ -71,7 +72,12 @@ public final class FoldUtilitiesImpl {
     public static void collapseOrExpand(FoldHierarchy hierarchy, Collection foldTypes,
     boolean collapse) {
 
-        AbstractDocument adoc = (AbstractDocument)hierarchy.getComponent().getDocument();
+        Document d = hierarchy.getComponent().getDocument();
+        if (!(d instanceof AbstractDocument)) {
+            // no op, the folding hierarchy does not work for != AbstractDocument
+            return;
+        }
+        AbstractDocument adoc = (AbstractDocument)d;
         adoc.readLock();
         try {
             hierarchy.lock();
