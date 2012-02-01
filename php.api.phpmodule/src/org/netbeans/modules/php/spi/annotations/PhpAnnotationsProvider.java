@@ -45,8 +45,10 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.openide.util.Parameters;
 
@@ -136,12 +138,12 @@ public abstract class PhpAnnotationsProvider {
      * @return all possible annotations
      */
     public List<PhpAnnotationTag> getAnnotations() {
-        List<PhpAnnotationTag> annotations = new LinkedList<PhpAnnotationTag>();
+        Set<PhpAnnotationTag> annotations = new LinkedHashSet<PhpAnnotationTag>();
         annotations.addAll(getFunctionAnnotations());
         annotations.addAll(getTypeAnnotations());
         annotations.addAll(getFieldAnnotations());
         annotations.addAll(getMethodAnnotations());
-        return annotations;
+        return new ArrayList<PhpAnnotationTag>(annotations);
     }
 
     /**
