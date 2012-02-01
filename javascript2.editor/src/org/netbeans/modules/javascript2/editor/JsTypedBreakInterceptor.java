@@ -42,7 +42,6 @@
 package org.netbeans.modules.javascript2.editor;
 
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Caret;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.lexer.Token;
@@ -399,6 +398,12 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                 return;
             }
         }
+        StringBuilder sb = new StringBuilder("\n");
+        int indentSize = getNextLineIndentation(doc, offset);
+        if (indentSize > 0) {
+            sb.append(IndentUtils.createIndentString(doc, indentSize));
+        }
+        context.setText(sb.toString(), -1, sb.length());
     }
 
     @Override
@@ -412,6 +417,31 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
 
     @Override
     public void cancelled(Context context) {
+    }
+
+    private static int getNextLineIndentation(BaseDocument doc, int offset) throws BadLocationException {
+        int indent = GsfUtilities.getLineIndent(doc, offset);
+        int currentOffset = offset;
+        while (currentOffset > 0) {
+            if (!Utilities.isRowEmpty(doc, currentOffset) && !Utilities.isRowWhite(doc, currentOffset)
+                    && !LexUtilities.isCommentOnlyLine(doc, currentOffset)) {
+                indent = GsfUtilities.getLineIndent(doc, currentOffset);
+                int parenBalance = LexUtilities.getLineBalance(doc, currentOffset,
+                        JsTokenId.BRACKET_LEFT_PAREN, JsTokenId.BRACKET_RIGHT_PAREN);
+                if (parenBalance < 0) {
+                    break;
+                }
+                int curlyBalance = LexUtilities.getLineBalance(doc, currentOffset,
+                        JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY);
+                if (curlyBalance > 0) {
+                    indent += IndentUtils.indentLevelSize(doc);
+                }
+                return indent;
+            }
+            currentOffset = Utilities.getRowStart(doc, currentOffset) - 1;
+        }
+
+        return indent;
     }
 
     /**

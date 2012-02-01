@@ -67,11 +67,11 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
     protected Formatter getFormatter(IndentPrefs preferences) {
         return null;
     }
-// BROKEN !
-//    public void testInsertBrace4() throws Exception {
-//        insertBreak("function test(){\n    if(true &&\n        true){^\n    }\n}",
-//                "function test(){\n    if(true &&\n        true){\n        ^\n    }\n}");
-//    }
+
+    public void testInsertBrace4() throws Exception {
+        insertBreak("function test(){\n    if(true &&\n        true){^\n    }\n}",
+                "function test(){\n    if(true &&\n        true){\n        ^\n    }\n}");
+    }
 
     public void testInsertBrace1() throws Exception {
         insertBreak("foobar({^});", "foobar({\n    ^\n});");
@@ -142,15 +142,9 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
         insertBreak("function foo() {^", "function foo() {\n    ^\n}");
     }
 
-// BROKEN !
-//    public void testInsertEnd3() throws Exception {
-//        insertBreak("function foo() {^\n}", "function foo() {\n    ^\n}");
-//    }
-
-    // THIS IS BROKEN!!!
-    //public void testInsertEnd5() throws Exception {
-    //    insertBreak("if (a_condition) ^thing() {", "if (a_condition) \n  ^thing()\n}");
-    //}
+    public void testInsertEnd3() throws Exception {
+        insertBreak("function foo() {^\n}", "function foo() {\n    ^\n}");
+    }
 
     public void testInsertIf1() throws Exception {
         insertBreak("    if (true) {^", "    if (true) {\n        ^\n    }");
