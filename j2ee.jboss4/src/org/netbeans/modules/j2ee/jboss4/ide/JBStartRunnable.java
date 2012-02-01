@@ -77,6 +77,7 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.InputOutput;
 
 /**
@@ -223,7 +224,7 @@ class JBStartRunnable implements Runnable {
         }
 
         for (StartupExtender args : StartupExtender.getExtenders(
-                CommonServerBridge.getCommonInstance(ip.getProperty("url")).getLookup(), getMode(startServer.getMode()))) {
+                Lookups.singleton(CommonServerBridge.getCommonInstance(ip.getProperty("url"))), getMode(startServer.getMode()))) {
             for (String singleArg : args.getArguments()) {
                 javaOptsBuilder.append(' ').append(singleArg);
             }

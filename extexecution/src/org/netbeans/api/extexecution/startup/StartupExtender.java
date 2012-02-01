@@ -81,10 +81,10 @@ public final class StartupExtender {
      * execution. For a simple Java SE program being run in the Java launcher,
      * a {@code org.netbeans.api.project.Project} can be expected; where available,
      * a {@code org.netbeans.api.java.platform.JavaPlatform} will be present as well.
-     * For a Java EE program being run in an application server, the context
-     * may correspond to {@code org.netbeans.api.server.ServerInstance.getLookup()}.
-     * Other kinds of API objects may be present according to contracts not
-     * specified here.
+     * For a Java EE program being run in an application server,
+     * a {@code org.netbeans.api.server.ServerInstance} can be expected in the
+     * context. Other kinds of API objects may be present according to contracts
+     * not specified here.
      *
      * @param context the lookup providing the contract between client
      *             and provider

@@ -81,6 +81,7 @@ import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.InputOutput;
 
 /**
@@ -411,7 +412,7 @@ public final class WLStartServer extends StartServer {
             }
 
             for (StartupExtender args : StartupExtender.getExtenders(
-                        CommonServerBridge.getCommonInstance(dm.getUri()).getLookup(), StartupExtender.StartMode.PROFILE)) {
+                        Lookups.singleton(CommonServerBridge.getCommonInstance(dm.getUri())), StartupExtender.StartMode.PROFILE)) {
                 for (String singleArg : args.getArguments()) {
                     javaOptsBuilder.append(' ').append(singleArg);
                 }
@@ -465,7 +466,7 @@ public final class WLStartServer extends StartServer {
             javaOptsBuilder.append("-Xrunjdwp:server=y,suspend=n,transport=dt_socket,address=");// NOI18N
             javaOptsBuilder.append( debugPort );
             for (StartupExtender args : StartupExtender.getExtenders(
-                        CommonServerBridge.getCommonInstance(dm.getUri()).getLookup(), StartupExtender.StartMode.DEBUG)) {
+                        Lookups.singleton(CommonServerBridge.getCommonInstance(dm.getUri())), StartupExtender.StartMode.DEBUG)) {
                 for (String singleArg : args.getArguments()) {
                     javaOptsBuilder.append(' ').append(singleArg);
                 }
@@ -654,7 +655,7 @@ public final class WLStartServer extends StartServer {
             StringBuilder sb = new StringBuilder((javaOpts!= null && javaOpts.trim().length() > 0)
                     ? javaOpts.trim() : "");
             for (StartupExtender args : StartupExtender.getExtenders(
-                        CommonServerBridge.getCommonInstance(dm.getUri()).getLookup(), StartupExtender.StartMode.NORMAL)) {
+                        Lookups.singleton(CommonServerBridge.getCommonInstance(dm.getUri())), StartupExtender.StartMode.NORMAL)) {
                 for (String singleArg : args.getArguments()) {
                     sb.append(' ').append(singleArg);
                 }

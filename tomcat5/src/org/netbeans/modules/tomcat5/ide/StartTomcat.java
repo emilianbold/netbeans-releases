@@ -87,6 +87,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.EditableProperties;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 import org.xml.sax.SAXException;
 
 /** Extension to Deployment API that enables starting of Tomcat.
@@ -400,7 +401,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
 
 
                 for (StartupExtender args : StartupExtender.getExtenders(
-                        CommonServerBridge.getCommonInstance(tm.getUri()).getLookup(), getMode(mode))) {
+                        Lookups.singleton(CommonServerBridge.getCommonInstance(tm.getUri())), getMode(mode))) {
                     for (String singleArg : args.getArguments()) {
                         sb.append(' ').append(singleArg);
                     }

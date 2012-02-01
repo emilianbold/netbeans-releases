@@ -83,6 +83,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 
 /**
@@ -699,7 +700,7 @@ public class StartTask extends BasicTask<OperationState> {
         }
 
         for (StartupExtender args : StartupExtender.getExtenders(
-                support.getInstanceProvider().getInstance(ip.get("url")).getLookup(), getMode(ip.get(GlassfishModule.JVM_MODE)))) {
+                Lookups.singleton(support.getInstanceProvider().getInstance(ip.get("url"))), getMode(ip.get(GlassfishModule.JVM_MODE)))) {
             for (String singleArg : args.getArguments()) {
                 argumentBuf.append(' ').append(singleArg);
             }

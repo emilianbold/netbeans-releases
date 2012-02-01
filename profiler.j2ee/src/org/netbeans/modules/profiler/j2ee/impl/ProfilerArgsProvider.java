@@ -45,6 +45,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.extexecution.startup.StartupExtender.StartMode;
+import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
 import org.netbeans.spi.extexecution.startup.StartupExtenderImplementation;
@@ -61,10 +62,14 @@ public class ProfilerArgsProvider implements StartupExtenderImplementation {
     @Override
     public List<String> getArguments(Lookup context, StartMode mode) {
         Profiler p = Lookup.getDefault().lookup(Profiler.class);
-        InstanceProperties ip = context.lookup(InstanceProperties.class);
-        if (ip != null) {
-            return Arrays.asList(p.getSettings(ip.getProperty("url"), false).getJvmArgs()); //NOI18N
+        ServerInstance server = context.lookup(ServerInstance.class);
+        if (server != null) {
+            InstanceProperties ip = server.getLookup().lookup(InstanceProperties.class);
+            if (ip != null) {
+                return Arrays.asList(p.getSettings(ip.getProperty("url"), false).getJvmArgs()); //NOI18N
+            }
         }
+
         return Collections.EMPTY_LIST;
     }
 
