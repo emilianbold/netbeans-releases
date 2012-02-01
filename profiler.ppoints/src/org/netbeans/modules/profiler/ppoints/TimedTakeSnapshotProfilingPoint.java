@@ -435,26 +435,26 @@ public final class TimedTakeSnapshotProfilingPoint extends TimedGlobalProfilingP
 
     public void hideResults() {
         SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    if (hasReport()) {
-                        getReport().close();
-                    }
-                }
-            });
+            public void run() {
+                Report report = getReport(false);
+                if (report != null) report.close();
+            }
+        });
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (hasReport()) {
+        Report report = getReport(false);
+        if (report != null) {
             if (evt.getPropertyName() == PROPERTY_NAME) {
-                getReport().refreshProperties();
+                report.refreshProperties();
             }
 
-            getReport().refreshData();
+            report.refreshData();
         }
     }
 
     public void showResults(URL url) {
-        TopComponent topComponent = getReport();
+        TopComponent topComponent = getReport(true);
         topComponent.open();
         topComponent.requestActive();
     }
@@ -561,19 +561,13 @@ public final class TimedTakeSnapshotProfilingPoint extends TimedGlobalProfilingP
         }
     }
 
-    private Report getReport() {
-        if (hasReport()) {
-            return reportReference.get();
+    private Report getReport(boolean create) {
+        Report report = reportReference == null ? null : reportReference.get();
+        if (report == null && create) {
+            report = new Report();
+            reportReference = new WeakReference<Report>(report);
         }
-
-        Report report = new Report();
-        reportReference = new WeakReference(report);
-
         return report;
-    }
-
-    private boolean hasReport() {
-        return (reportReference != null) && (reportReference.get() != null);
     }
 
     private String takeHeapdumpHit() {
