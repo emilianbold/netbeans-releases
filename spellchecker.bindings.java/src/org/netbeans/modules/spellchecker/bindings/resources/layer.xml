@@ -53,7 +53,9 @@ made subject to such option by the copyright holder.
                 </folder>
 
                 <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance"/>
+                    <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance">
+                        <attr name="position" intvalue="600"/>
+                    </file>
                 </folder>
             </folder>
         </folder>

@@ -57,6 +57,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -78,6 +79,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
  *
  * @author Miloslav Metelka
  */
+@MimeRegistration(mimeType = "text/x-java", service = CompletionProvider.class, position = 300) //NOI18N
 public final class CodeTemplateCompletionProvider implements CompletionProvider {
 
     public CompletionTask createTask(int type, JTextComponent component) {

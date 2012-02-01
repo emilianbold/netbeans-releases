@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +37,45 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.editor.javadoc;
+package org.netbeans.modules.javafx2.editor.css.acceptors;
 
-import javax.swing.text.JTextComponent;
+import java.util.Arrays;
+import java.util.List;
+//import org.netbeans.modules.css.editor.properties.NumberPostfixAcceptor;
 
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.modules.editor.java.Utilities;
-import org.netbeans.spi.editor.completion.CompletionProvider;
-import org.netbeans.spi.editor.completion.CompletionTask;
-import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
+// XXX probably length will be declared through property
 
 /**
  *
- * @author Jan Pokorsky
+ * @author Anton Chechel <anton.chechel@oracle.com>
  */
-@MimeRegistration(mimeType = "text/x-java", service = CompletionProvider.class, position = 200) //NOI18N
-public final class JavadocCompletionProvider implements CompletionProvider {
-    // complete @TAG, {@TAG}, @param NAME, @see LINK, {@link LINK}
+//public class FXLength extends NumberPostfixAcceptor {
+public class FXLength {
 
-    public CompletionTask createTask(int queryType, JTextComponent component) {
-        CompletionTask task = null;
-        if (queryType == COMPLETION_QUERY_TYPE || queryType == COMPLETION_ALL_QUERY_TYPE) {
-            task = new AsyncCompletionTask(new JavadocCompletionQuery(queryType), component);
-        }
-        return task;
+    private static final List<String> POSTFIXES = Arrays.asList(new String[]{"px", "mm", "cm", "in", "pt", "pc", "em", "ex"}); //NOI18N
+    
+//    @Override
+    public String id() {
+        return "fx-length"; //NOI18N
     }
 
-    public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        char c;
-        if (typedText != null && typedText.length() == 1
-                && Utilities.getJavadocCompletionAutoPopupTriggers().indexOf(typedText.charAt(0)) >= 0
-                && JavadocCompletionUtils.isJavadocContext(component.getDocument(), component.getCaretPosition())) {
-            return COMPLETION_QUERY_TYPE;
-        }
-        return 0;
+//    @Override
+    public List<String> postfixes() {
+        return POSTFIXES;
     }
-
+    
+//    @Override
+    public boolean accepts(String text) {
+//        boolean sa = super.accepts(text);
+//        if(!sa) {
+//            return "0".equals(text); //NOI18N
+//        } else {
+//            return sa;
+//        }
+        return true;
+    }
+    
 }
