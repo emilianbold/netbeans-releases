@@ -56,15 +56,23 @@ public class PhpAnnotationTag {
 
 
     /**
-     * Create new annotation tag.
+     * Create new annotation tag without documentation.
      * @param name tag name, cannot
      * @param insertTemplate text that it inserted to the source file
-     * @param documentation documentation of the tag, HTML allowed
+     */
+    public PhpAnnotationTag(String name, String insertTemplate) {
+        this(name, insertTemplate, null);
+    }
+
+    /**
+     * Create new annotation tag with documentation.
+     * @param name tag name, cannot
+     * @param insertTemplate text that it inserted to the source file
+     * @param documentation documentation of the tag, HTML allowed; can be {@code null}
      */
     public PhpAnnotationTag(String name, String insertTemplate, String documentation) {
         Parameters.notEmpty("name", name);
         Parameters.notEmpty("insertTemplate", insertTemplate);
-        Parameters.notEmpty("documentation", documentation);
 
         this.name = name;
         this.insertTemplate = insertTemplate;
@@ -89,7 +97,7 @@ public class PhpAnnotationTag {
 
     /**
      * Get documentation of the tag.
-     * @return documentation of the tag
+     * @return documentation of the tag; can be {@code null}
      */
     public final String getDocumentation() {
         return documentation;
