@@ -1141,7 +1141,14 @@ public class NbModuleSuite {
                         }
                         jos.putNextEntry(entry);
                         byte[] buf = new byte[(int) entry.getSize()];
-                        int read = jis.read(buf, 0, buf.length);
+                        int read = 0;
+                        for (;;) {
+                            int more = jis.read(buf, read, buf.length - read);
+                            if (more == -1) {
+                                break;
+                            }
+                            read += more;
+                        }
                         if (read != buf.length) {
                             throw new IOException("read wrong amount");
                         }
