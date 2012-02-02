@@ -99,14 +99,9 @@ public final class PhpAnnotations implements PropertyChangeListener {
     private List<PhpAnnotationsProvider> computeProviders(FileObject fileObject) {
         assert Thread.holdsLock(this);
 
-        List<PhpAnnotationsProvider> allProviders = org.netbeans.modules.php.api.annotations.PhpAnnotations.getProviders();
-        List<PhpAnnotationsProvider> result = new ArrayList<PhpAnnotationsProvider>(allProviders.size());
-        // first, add providers that are in every file (phpModule == null)
-        for (PhpAnnotationsProvider provider : allProviders) {
-            if (provider.isInPhpModule(null)) {
-                result.add(provider);
-            }
-        }
+        List<PhpAnnotationsProvider> result = new ArrayList<PhpAnnotationsProvider>();
+        // first, add global providers
+        result.addAll(org.netbeans.modules.php.api.annotations.PhpAnnotations.getProviders());
         // next, add providers from php frameworks
         PhpProject phpProject = org.netbeans.modules.php.project.util.PhpProjectUtils.getPhpProject(fileObject);
         if (phpProject != null) {
