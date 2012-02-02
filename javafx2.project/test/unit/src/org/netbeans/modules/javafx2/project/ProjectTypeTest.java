@@ -71,6 +71,12 @@ public class ProjectTypeTest extends NbTestCase {
         System.out.println("FXFXFXFX  "+getName()+"  FXFXFXFX");
     }
     
+    /** Test FX type identifying property. */
+    public void testFXTypeProperty() {
+        // this is necessary to avoid SE-on-FX dependence but enable FX type test in J2SECompositePanelProvider
+        assertEquals(JFXProjectProperties.JAVAFX_ENABLED, "javafx.enabled");
+    }
+            
     /** Test FX createProject method. */
     public void testCreatedFXProjectType() throws Exception {
         File projectParentDir = this.getWorkDir();
