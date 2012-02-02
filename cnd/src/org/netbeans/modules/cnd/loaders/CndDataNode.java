@@ -55,12 +55,18 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.actions.OpenAction;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Lookup;
 
 /**
  *  A base class for CND binary nodes. The functionality from
  *  this base class is the renaming of the PROP_name property to show an extension.
  */
+@MIMEResolver.Registration(
+    displayName="#ExtBasedResolver",
+    position=138,
+    resource="../resources/mime-resolver-ext-based.xml"
+)
 public class CndDataNode extends DataNode {
 
     /** The name property */

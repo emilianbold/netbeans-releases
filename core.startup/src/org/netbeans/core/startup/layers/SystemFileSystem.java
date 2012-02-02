@@ -66,6 +66,7 @@ import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -75,6 +76,15 @@ import org.openide.util.NbBundle.Messages;
 *
 * @author Jan Jancura, Ian Formanek, Petr Hamernik
 */
+@NbBundle.Messages({
+    "INSTANCE_FILES=Instance Files"
+})
+@MIMEResolver.ExtensionRegistration(
+    displayName="#INSTANCE_FILES",
+    mimeType="content/unknown",
+    extension="instance",
+    position=90
+)
 public final class SystemFileSystem extends MultiFileSystem 
 implements FileChangeListener {
     // Must be public for BeanInfo to work: #11186.

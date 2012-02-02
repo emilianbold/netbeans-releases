@@ -41,6 +41,7 @@ package org.netbeans.modules.java.hints.declarative.test;
 
 import java.io.IOException;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
@@ -51,6 +52,9 @@ import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import org.openide.text.DataEditorSupport;
 
+@MIMEResolver.ExtensionRegistration(
+    mimeType="text/x-javahintstest", displayName="", extension="test", position=999200
+)
 public class DeclarativeHintsTestDataObject extends MultiDataObject {
 
     public DeclarativeHintsTestDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {

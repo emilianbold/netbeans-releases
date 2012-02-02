@@ -67,6 +67,8 @@ import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
@@ -88,6 +90,7 @@ public abstract class BaseFileObj extends FileObject {
     //constants
     private static final String PATH_SEPARATOR = File.separator;//NOI18N
     private static final char EXT_SEP = '.';//NOI18N
+    static final Logger LOG = Logger.getLogger(BaseFileObj.class.getName());
 
     //static fields 
     static final long serialVersionUID = -1244650210876356809L;
@@ -620,6 +623,7 @@ public abstract class BaseFileObj extends FileObject {
             fireFileDataCreatedEvent(getListeners(), fe);
         }
         stopWatch.stop();
+        LOG.log(Level.FINER, "fireFileDataCreatedEvent {0}", this);
     }
 
 
@@ -644,6 +648,7 @@ public abstract class BaseFileObj extends FileObject {
             fireFileFolderCreatedEvent(getListeners(), fe);
         }
         stopWatch.stop();
+        LOG.log(Level.FINER, "fireFileFolderCreatedEvent {0}", this);
     }
 
     public final void fireFileChangedEvent(final boolean expected) {
@@ -669,6 +674,7 @@ public abstract class BaseFileObj extends FileObject {
             fireFileChangedEvent(getListeners(), fe);
         }
         stopWatch.stop();
+        LOG.log(Level.FINER, "fireFileChangedEvent {0}", this);
     }
 
 
@@ -692,6 +698,7 @@ public abstract class BaseFileObj extends FileObject {
             fireFileDeletedEvent(getListeners(), fe);
         }
         stopWatch.stop();
+        LOG.log(Level.FINER, "fireFileDeletedEvent {0}", this);
     }
 
 
@@ -709,6 +716,7 @@ public abstract class BaseFileObj extends FileObject {
         }
         
         stopWatch.stop();
+        LOG.log(Level.FINER, "fireFileRenamedEvent {0} oldName {1} ext {2}", new Object[] { this, originalName, originalExt });
     }
 
     final void fireFileAttributeChangedEvent(final String attrName, final Object oldValue, final Object newValue) {
@@ -720,6 +728,7 @@ public abstract class BaseFileObj extends FileObject {
         if (parent != null && pListeners != null) {
             parent.fireFileAttributeChangedEvent(pListeners, new FileAttributeEvent(parent, this, attrName, oldValue, newValue));
         }
+        LOG.log(Level.FINER, "fireFileAttributeChangedEvent {0} attribute {1}", new Object[] { this, attrName });
     }
 
 

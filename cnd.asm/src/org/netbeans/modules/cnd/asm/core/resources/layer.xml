@@ -143,15 +143,6 @@
         </folder>
     </folder>
 
-    <folder name="Services">
-        <folder name="MIMEResolver">
-            <file name="AsmResolver.xml" url="AsmResolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.asm.core.resources.Bundle"/>
-                <attr name="position" intvalue="458"/>
-            </file>
-        </folder>
-    </folder>
-
     <folder name="CND">
         <folder name="Extensions">
             <file name="Assembler">

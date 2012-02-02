@@ -97,6 +97,16 @@ public class FsMimeResolverTest extends NbTestCase {
         assertEquals("text/x-springconfig+xml", fo.getMIMEType());
     }
 
+    public void testResolveNormalXmlFile() throws Exception {
+        createResolver();
+
+        String content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> "
+                        + "<beans xmlns=\"http://www.springframework.org/schema/beans\" "
+                        + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"></beans>";
+        FileObject fo = createXmlFile(content);
+        assertEquals("text/x-springconfig+xml", fo.getMIMEType());
+    }
+    
     private void createResolver() throws Exception {
         FileObject resolver = FileUtil.createData(FileUtil.getConfigRoot(), "Services/MIMEResolver/resolver.xml");
         OutputStream os = resolver.getOutputStream();

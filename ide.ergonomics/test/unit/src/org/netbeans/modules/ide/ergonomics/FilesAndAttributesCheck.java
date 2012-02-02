@@ -248,6 +248,12 @@ public class FilesAndAttributesCheck extends NbTestCase {
             if (!fo.isData()) {
                 continue;
             }
+            if (fo.hasExt("instance")) {
+                if (fo.getSize() != 0) {
+                    errors.append("Should be empty ").append(fo).append(" size: ").append(fo.getSize()).append('\n');
+                }
+                continue;
+            }
 
             int read = -1;
             InputStream is = null;
@@ -262,7 +268,7 @@ public class FilesAndAttributesCheck extends NbTestCase {
                 }
             }
             if (read <= 0) {
-                errors.append("Content shall exist: " + fo + "\n");
+                errors.append("Content shall exist: ").append(fo).append("\n");
             }
         }
 

@@ -79,14 +79,6 @@ made subject to such option by the copyright holder.
 
     <folder name="Services">
 
-        <!-- Recognize text/x-ant+xml: -->
-        <folder name="MIMEResolver">
-            <file name="org-apache-tools-ant-module-mime-resolver.xml" url="ant-mime-resolver.xml">
-                <attr name="displayName" bundlevalue="org.apache.tools.ant.module.resources.Bundle#Services/MIMEResolver/org-apache-tools-ant-module-mime-resolver.xml"/>
-                <attr name="iconBase" stringvalue="org/apache/tools/ant/module/resources/AntIcon.gif"/>
-                <attr name="position" intvalue="310"/>
-            </file>
-        </folder>
         <folder name="Hidden">
             <file name="com-jcraft-jzlib-antlibrary.instance">
                 <attr name="instanceCreate" methodvalue="org.apache.tools.ant.module.spi.AutomaticExtraClasspath.url"/>

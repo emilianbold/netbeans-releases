@@ -53,8 +53,17 @@ import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.CiManagement;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.util.lookup.ServiceProvider;
 
+@MIMEResolver.NamespaceRegistration(
+    displayName="",
+    position=454,
+    mimeType="text/x-jelly+xml",
+    acceptedExtension="jelly",
+    elementName="jelly",
+    elementNS="jelly:core"
+)
 @ServiceProvider(service=ProjectHudsonProvider.class, position=100)
 public class HudsonProviderImpl extends ProjectHudsonProvider {
 

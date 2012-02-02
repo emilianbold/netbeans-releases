@@ -90,7 +90,9 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Index Ruby structure into the persistent store for retrieval by
@@ -111,9 +113,17 @@ import org.openide.util.Exceptions;
 public final class PHPIndexer extends EmbeddingIndexer {
     private static final Logger LOG = Logger.getLogger(PHPIndexer.class.getName());
     static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
+    @MIMEResolver.ExtensionRegistration(
+        extension={ "php", "php3", "php4", "php5", "phtml", "inc", "phpt" },
+        displayName="#PHPResolver",
+        mimeType="text/x-php5",
+        position=282
+    )
+    @NbBundle.Messages("PHPResolver=PHP Files")
     // a workaround for issue #132388
     private static final Collection<String>INDEXABLE_EXTENSIONS = Arrays.asList(
-            "php", "php3", "php4", "php5", "phtml", "inc"); //NOI18N
+        "php", "php3", "php4", "php5", "phtml", "inc", "phpt"
+    );
 
     // I need to be able to search several things:
     // (1) by function root name, e.g. quickly all functions that start
