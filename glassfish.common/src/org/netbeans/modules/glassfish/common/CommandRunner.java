@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,12 +44,30 @@
 
 package org.netbeans.modules.glassfish.common;
 
-import java.io.*;
-import java.net.*;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Map.Entry;
-import java.util.*;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.Authenticator;
+import java.net.ConnectException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -58,11 +76,26 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import javax.net.ssl.*;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.Map.Entry;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import org.netbeans.modules.glassfish.spi.AppDesc;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
+import org.netbeans.modules.glassfish.spi.OperationStateListener;
+import org.netbeans.modules.glassfish.spi.ResourceDesc;
+import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
-import org.netbeans.modules.glassfish.spi.*;
+import org.netbeans.modules.glassfish.spi.CommandFactory;
+import org.netbeans.modules.glassfish.spi.Utils;
+import org.netbeans.modules.glassfish.spi.WSDesc;
 
 
 /**
@@ -612,7 +645,7 @@ public class CommandRunner extends BasicTask<OperationState> {
                             Authenticator.setDefault(AUTH);
                             hconn.connect();
                             // Send data to server if necessary
-                            boolean requestSent = handleSend(hconn);
+                            handleSend(hconn);
 
                             respCode = hconn.getResponseCode();
                             if (respCode == HttpURLConnection.HTTP_UNAUTHORIZED
@@ -636,14 +669,6 @@ public class CommandRunner extends BasicTask<OperationState> {
                                     urlToConnectTo = new URL(newUrl);
                                     conn = urlToConnectTo.openConnection();
                                     hconn.disconnect();
-                                }
-                            } else if (!requestSent) {
-                                // the send failed. This may be due to 
-                                // http://java.net/jira/browse/GLASSFISH-15773
-                                // we can try to resent the request as https
-                                String url = urlToConnectTo.toString();
-                                if (url.startsWith("http://")) { // NOI18N
-                                    urlToConnectTo = new URL(url.replaceFirst("http://", "https://")); // NOI18N
                                 }
                             }
                         } while (urlToConnectTo != oldUrlToConnectTo);
@@ -716,10 +741,13 @@ public class CommandRunner extends BasicTask<OperationState> {
         int port = Integer.parseInt(ip.get(useAdminPort ? GlassfishModule.ADMINPORT_ATTR : GlassfishModule.HTTPPORT_ATTR));
         String protocol = "http";
         String url = ip.get(GlassfishModule.URL_ATTR);
+        String domainsDir = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR);
         if (null == url) {
             protocol = getHttpListenerProtocol(host,port, ":::"+cmd+"?"+query);  //NOI18N
         } else if (!(url.contains("ee6wc"))) {
             protocol = getHttpListenerProtocol(host,port,url+":::"+cmd+"?"+query);  // NOI18N
+        } else if (url.contains("ee6wc") && (null == domainsDir || "".equals(domainsDir))) {
+            protocol = "https";
         }
         URI uri = new URI(protocol, null, host, port, cmdSrc + cmd, query, null); // NOI18N
         return uri.toASCIIString().replace("+", "%2b"); // these characters don't get handled by GF correctly... best I can tell.
@@ -750,8 +778,7 @@ public class CommandRunner extends BasicTask<OperationState> {
      * need to send multiple files, the server assumes the input is a ZIP
      * stream.
      */
-    private boolean handleSend(HttpURLConnection hconn) throws IOException {
-        boolean retVal = true;
+    private void handleSend(HttpURLConnection hconn) throws IOException {
         InputStream istream = serverCmd.getInputStream();
         if(istream != null) {
             ZipOutputStream ostream = null;
@@ -761,33 +788,22 @@ public class CommandRunner extends BasicTask<OperationState> {
                 e.setExtra(getExtraProperties());
                 ostream.putNextEntry(e);
                 byte buffer[] = new byte[1024*1024];
-                boolean writeError = false;
-                while (!writeError) {
+                while (true) {
                     int n = istream.read(buffer);
                     if (n < 0) {
                         break;
                     }
-                    try {
-                        ostream.write(buffer, 0, n);
-                    } catch (IOException ioe) {
-                        writeError = true;
-                        retVal = false;
-                        if ("https".equalsIgnoreCase(hconn.getURL().getProtocol())) { // NOI18N
-                            throw ioe;
-                        }
-                    }
+                    ostream.write(buffer, 0, n);
                 }
-                if (!writeError) {
-                    ostream.closeEntry();
-                    ostream.flush();
-                }
+                ostream.closeEntry();
+                ostream.flush();
             } finally {
                 try {
                     istream.close();
                 } catch(IOException ex) {
                     Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
                 }
-                if(ostream != null && retVal) {
+                if(ostream != null) {
                     try {
                         ostream.close();
                     } catch(IOException ex) {
@@ -799,7 +815,6 @@ public class CommandRunner extends BasicTask<OperationState> {
         } else if("POST".equalsIgnoreCase(serverCmd.getRequestMethod())) { // NOI18N
             Logger.getLogger("glassfish").log(Level.INFO, "HTTP POST request but no data stream provided"); // NOI18N
         }
-        return retVal;
     }
 
     private byte[] getExtraProperties() {
