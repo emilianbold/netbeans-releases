@@ -48,7 +48,7 @@ public class DependsTag extends PhpAnnotationTag {
 
     public DependsTag() {
         super("depends", // NOI18N
-                "@depends ${u1 default=\"methodName\"}", // NOI18N
+                "@depends ${methodName}", // NOI18N
                 NbBundle.getMessage(DependsTag.class, "DependsTag.documentation"));
     }
 
