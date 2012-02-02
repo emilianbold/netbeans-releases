@@ -45,17 +45,11 @@
 package org.netbeans.modules.uihandler;
 
 import java.lang.reflect.InvocationTargetException;
-import java.text.MessageFormat;
 import java.util.Date;
-import java.util.MissingResourceException;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-import javax.swing.JButton;
 import org.netbeans.lib.uihandler.Decorable;
 import org.netbeans.lib.uihandler.LogRecords;
-import org.openide.awt.Actions;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -73,6 +67,7 @@ final class UINode extends AbstractNode implements VisualData, Decorable {
     private LogRecord log;
     private String htmlKey;
 
+    @SuppressWarnings("LeakingThisInConstructor")
     private UINode(LogRecord r, Children ch) {
         super(ch, Lookups.fixed(r));
         log = r;
@@ -96,14 +91,17 @@ final class UINode extends AbstractNode implements VisualData, Decorable {
         }
     }
 
+    @Override
     public long getMillis() {
         return log.getMillis();
     }
     
+    @Override
     public String getLoggerName() {
         return log.getLoggerName();
     }
     
+    @Override
     public String getMessage() {
         return FORMATTER.format(log);
     }
@@ -150,13 +148,16 @@ final class UINode extends AbstractNode implements VisualData, Decorable {
                 );
             }
 
+            @Override
             public Date getValue() throws IllegalAccessException, InvocationTargetException {
                 return source == null ? null : new Date(source.getMillis());
             }
             
+            @Override
             public int hashCode() {
                 return getClass().hashCode();
             }
+            @Override
             public boolean equals(Object o) {
                 return o != null && o.getClass().equals(getClass());
             }
@@ -174,6 +175,7 @@ final class UINode extends AbstractNode implements VisualData, Decorable {
                 );
             }
 
+            @Override
             public String getValue() throws IllegalAccessException, InvocationTargetException {
                 if (source == null) {
                     return null;
@@ -192,9 +194,11 @@ final class UINode extends AbstractNode implements VisualData, Decorable {
                 return full;
             }
             
+            @Override
             public int hashCode() {
                 return getClass().hashCode();
             }
+            @Override
             public boolean equals(Object o) {
                 return o != null && o.getClass().equals(getClass());
             }
@@ -211,13 +215,16 @@ final class UINode extends AbstractNode implements VisualData, Decorable {
                 );
             }
 
+            @Override
             public String getValue() throws IllegalAccessException, InvocationTargetException {
                 return source == null ? null : source.getMessage();
             }
             
+            @Override
             public int hashCode() {
                 return getClass().hashCode();
             }
+            @Override
             public boolean equals(Object o) {
                 return o != null && o.getClass().equals(getClass());
             }
@@ -234,6 +241,7 @@ final class UINode extends AbstractNode implements VisualData, Decorable {
                 );
             }
 
+            @Override
             public String getValue() throws IllegalAccessException, InvocationTargetException {
                 return object == null ? null : object.toString();
             }
@@ -242,9 +250,11 @@ final class UINode extends AbstractNode implements VisualData, Decorable {
                 return index;
             }
             
+            @Override
             public int hashCode() {
                 return getClass().hashCode();
             }
+            @Override
             public boolean equals(Object o) {
                 if (o == null || !o.getClass().equals(getClass())) {
                     return false;
@@ -263,10 +273,12 @@ final class UINode extends AbstractNode implements VisualData, Decorable {
             throwable = t;
         }
         
+        @Override
         protected void addNotify() {
             setKeys(throwable.getStackTrace());
         }
         
+        @Override
         protected Node[] createNodes(StackTraceElement key) {
             AbstractNode an = new AbstractNode(Children.LEAF);
             an.setName(key.getClassName() + "." + key.getMethodName());
@@ -292,10 +304,12 @@ final class UINode extends AbstractNode implements VisualData, Decorable {
             modules = m;
         }
         
+        @Override
         protected void addNotify() {
             setKeys(modules);
         }
         
+        @Override
         protected Node[] createNodes(Object key) {
             AbstractNode an = new AbstractNode(Children.LEAF);
             an.setName((String)key);

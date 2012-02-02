@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.fsm.core.DataRenderer;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.FortranParser;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.NewCppParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -81,7 +82,11 @@ public final class ParserProviderImpl extends CsmParserProvider {
             if (file.getFileType() == CsmFile.FileType.SOURCE_FORTRAN_FILE) {
                 return new Antrl3FortranParser((FileImpl)file);
             }
-            return new Antlr2CppParser((FileImpl)file);
+            if(true) {
+                return new Antlr2CppParser((FileImpl)file);
+            } else {
+                return new Antlr3NewCppParser((FileImpl)file);
+            }
         } else {
             return null;
         }
@@ -285,4 +290,234 @@ public final class ParserProviderImpl extends CsmParserProvider {
             System.err.println(tree.getChildren());
         }
     }
+
+    private final static class Antlr3NewCppParser implements CsmParserProvider.CsmParser, CsmParserProvider.CsmParserResult {
+        private final FileImpl file;
+        private NewCppParser parser;
+
+        private ConstructionKind kind;
+        
+        Antlr3NewCppParser(FileImpl file) {
+            this.file = file;
+        }
+
+        @Override
+        public void init(CsmObject object, TokenStream ts) {
+            assert parser == null : "parser can not be reused " + parser;
+            assert ts != null;
+            org.netbeans.modules.cnd.antlr.TokenBuffer tb = new org.netbeans.modules.cnd.antlr.TokenBuffer(ts);            
+            org.antlr.runtime.TokenStream tokens = new MyTokenStream(tb);
+            parser = new NewCppParser(tokens);
+        }
+
+        @Override
+        public CsmParserProvider.CsmParserResult parse(ConstructionKind kind) {
+            try {
+                this.kind = kind;
+                switch (kind) {
+                    case TRANSLATION_UNIT_WITH_COMPOUND:
+                    case TRANSLATION_UNIT:
+                        parser.compilation_unit();
+                        break;
+                }
+            } catch (Throwable ex) {
+                System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
+                ex.printStackTrace(System.err);
+            }
+            return this;
+        }
+
+        @Override
+        public void render(Object... context) {
+        }
+        
+        @Override
+        public boolean isEmptyAST() {
+            return true;
+        }
+
+        @Override
+        public void dumpAST() {
+        }
+        
+        @Override
+        public Object getAST() {
+            return null;
+        }
+
+        @Override
+        public int getErrorCount() {
+            return parser.getNumberOfSyntaxErrors();
+        }
+        
+        static private class MyToken implements org.antlr.runtime.Token {
+
+            org.netbeans.modules.cnd.antlr.Token t;
+
+            public MyToken(org.netbeans.modules.cnd.antlr.Token t) {
+                this.t = t;
+            }
+
+            @Override
+            public String getText() {
+                return t.getText();
+            }
+
+            @Override
+            public void setText(String arg0) {
+                t.setText(arg0);
+            }
+
+            @Override
+            public int getType() {
+                return t.getType();
+            }
+
+            @Override
+            public void setType(int arg0) {
+                t.setType(arg0);
+            }
+
+            @Override
+            public int getLine() {
+                return t.getLine();
+            }
+
+            @Override
+            public void setLine(int arg0) {
+                t.setLine(arg0);
+            }
+
+            @Override
+            public int getCharPositionInLine() {
+                return t.getColumn();
+            }
+
+            @Override
+            public void setCharPositionInLine(int arg0) {
+                t.setColumn(arg0);
+            }
+
+            @Override
+            public int getChannel() {
+                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            }
+
+            @Override
+            public void setChannel(int arg0) {
+                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            }
+
+            @Override
+            public int getTokenIndex() {
+                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            }
+
+            @Override
+            public void setTokenIndex(int arg0) {
+                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            }
+
+            @Override
+            public org.antlr.runtime.CharStream getInputStream() {
+                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            }
+
+            @Override
+            public void setInputStream(org.antlr.runtime.CharStream arg0) {
+                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            }
+
+        }
+
+
+        static private class MyTokenStream implements org.antlr.runtime.TokenStream {
+            org.netbeans.modules.cnd.antlr.TokenBuffer tb;
+
+            public MyTokenStream(org.netbeans.modules.cnd.antlr.TokenBuffer tb) {
+                this.tb = tb;
+            }
+
+            @Override
+            public org.antlr.runtime.Token LT(int arg0) {
+                return new MyToken(tb.LT(arg0));
+            }
+
+            @Override
+            public void consume() {
+                tb.consume();
+            }
+
+            @Override
+            public int LA(int arg0) {
+                return tb.LA(arg0);
+            }
+
+            @Override
+            public int mark() {
+                return tb.mark();
+            }
+
+            @Override
+            public int index() {
+                return tb.index();
+            }
+
+            @Override
+            public void rewind(int arg0) {
+                tb.rewind(arg0);
+            }
+
+            @Override
+            public void rewind() {
+                tb.rewind(0);
+            }
+
+            @Override
+            public void seek(int arg0) {
+                tb.seek(arg0);
+            }
+
+            @Override
+            public org.antlr.runtime.Token get(int arg0) {
+                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            }
+
+            @Override
+            public org.antlr.runtime.TokenSource getTokenSource() {
+                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            }
+
+            @Override
+            public String toString(int arg0, int arg1) {
+                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            }
+
+            @Override
+            public String toString(org.antlr.runtime.Token arg0, org.antlr.runtime.Token arg1) {
+                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            }
+
+            @Override
+            public void release(int arg0) {
+                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            }
+
+            @Override
+            public int size() {
+                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            }
+
+            @Override
+            public String getSourceName() {
+                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            }
+
+            @Override
+            public int range() {
+                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            }
+        }
+
+    }        
 }

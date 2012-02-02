@@ -43,13 +43,12 @@
  */
 package org.netbeans.modules.uihandler.api;
 
-import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import org.netbeans.modules.uihandler.Installer;
 import org.netbeans.modules.uihandler.UIHandler;
 
-/** Class that allows other modules to control the behaviour of the UI
+/** Class that allows other modules to control the behavior of the UI
  * Gestures submit process.
  *
  * @author Jaroslav Tulach
@@ -114,7 +113,7 @@ public final class Controller {
     }
     
     /** Explicitly invoke the submit data procedure. The method returns
-     * immediatelly, then it opens a dialog and asks the user whether he
+     * immediately, then it opens a dialog and asks the user whether he
      * wants to submit the data.
      * @since 2.0
      */
@@ -123,10 +122,12 @@ public final class Controller {
     }
 
     private static class ExplicitSubmit implements Runnable {
+        @SuppressWarnings("LeakingThisInConstructor")
         public ExplicitSubmit() {
             Installer.RP.post(this);
         }
         
+        @Override
         public void run() {
             Installer.displaySummary("WELCOME_URL", true, false, true); // NOI18N
         }
