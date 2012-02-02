@@ -105,11 +105,6 @@ public class PhpAnnotationsRegistrationProcessorTest extends NbTestCase {
         }
 
         @Override
-        public boolean isInPhpModule(PhpModule phpModule) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
         public List<PhpAnnotationTag> getAnnotations() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
