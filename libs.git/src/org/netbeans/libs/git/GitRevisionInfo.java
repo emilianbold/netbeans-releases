@@ -239,4 +239,50 @@ public final class GitRevisionInfo {
         }
     }
     
+    public static final class GitFileInfo {
+
+        public static enum Status {
+            ADDED,
+            MODIFIED,
+            RENAMED,
+            COPIED,
+            REMOVED,
+            UNKNOWN
+        }
+
+        private final String relativePath;
+        private final String originalPath;
+        private final Status status;
+        private final File file;
+        private final File originalFile;
+
+        GitFileInfo (File file, String relativePath, Status status, File originalFile, String originalPath) {
+            this.relativePath = relativePath;
+            this.status = status;
+            this.file = file;
+            this.originalFile = originalFile;
+            this.originalPath = originalPath;
+        }
+
+        public String getRelativePath() {
+            return relativePath;
+        }
+
+        public String getOriginalPath() {
+            return originalPath;
+        }
+
+        public Status getStatus() {
+            return status;
+        }
+
+        public File getFile () {
+            return file;
+        }
+
+        public File getOriginalFile () {
+            return originalFile;
+        }
+    }
+    
 }
