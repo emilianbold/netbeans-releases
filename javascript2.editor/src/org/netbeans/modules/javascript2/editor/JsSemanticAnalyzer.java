@@ -105,24 +105,24 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                 case CONSTRUCTOR:
                 case METHOD:
                 case FUNCTION:
-                    highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), ColoringAttributes.METHOD_SET);
+                    highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.METHOD_SET);
                     break;
                 case OBJECT:
                     if (object.isDeclared()) {
-                        highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), ColoringAttributes.CLASS_SET);
+                        highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.CLASS_SET);
                     }
                     break;
                 case PROPERTY:
-                    highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), ColoringAttributes.FIELD_SET);
+                    highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.FIELD_SET);
                     for(Occurrence occurence: object.getOccurrences()) {
-                        highlights.put(LexUtilities.getLexerOffsets(result, occurence.getOffsetRange()), ColoringAttributes.FIELD_SET);
+                        highlights.put(occurence.getOffsetRange(), ColoringAttributes.FIELD_SET);
                     }
                     break;
                 case VARIABLE:
                     if (parent.getParent() == null) {
-                        highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), ColoringAttributes.GLOBAL_SET);
+                        highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.GLOBAL_SET);
                         for(Occurrence occurence: object.getOccurrences()) {
-                            highlights.put(LexUtilities.getLexerOffsets(result, occurence.getOffsetRange()), ColoringAttributes.GLOBAL_SET);
+                            highlights.put(occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
                         }
                     }
             }

@@ -69,7 +69,7 @@ public class DeclarationFinderImpl implements DeclarationFinder{
         Occurrence occurrence = os.getOccurrence(caretOffset);
         if (occurrence != null) {
             JsObject object = occurrence.getDeclarations().iterator().next();
-            return new DeclarationLocation(object.getFileObject(), LexUtilities.getLexerOffset((JsParserResult)info, object.getDeclarationName().getOffsetRange().getStart()));
+            return new DeclarationLocation(object.getFileObject(), object.getDeclarationName().getOffsetRange().getStart());
         }
         return DeclarationLocation.NONE;
     }

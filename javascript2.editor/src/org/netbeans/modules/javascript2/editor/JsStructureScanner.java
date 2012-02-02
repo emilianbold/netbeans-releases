@@ -239,12 +239,12 @@ public class JsStructureScanner implements StructureScanner {
 
         @Override
         public long getPosition() {
-            return LexUtilities.getLexerOffset(parserResult, modelElement.getOffset());
+            return modelElement.getOffset();
         }
 
         @Override
         public long getEndPosition() {
-            return LexUtilities.getLexerOffset(parserResult, modelElement.getOffsetRange(null).getEnd());
+            return modelElement.getOffsetRange(null).getEnd();
         }
 
         @Override

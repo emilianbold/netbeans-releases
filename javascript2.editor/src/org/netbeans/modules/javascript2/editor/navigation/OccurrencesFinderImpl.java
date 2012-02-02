@@ -91,9 +91,9 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
         if (occurrence != null) {
             range2Attribs = new HashMap<OffsetRange, ColoringAttributes>();
             for(JsObject object: occurrence.getDeclarations()){
-                range2Attribs.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), ColoringAttributes.MARK_OCCURRENCES);
+                range2Attribs.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.MARK_OCCURRENCES);
                 for(Occurrence oc : object.getOccurrences()) {
-                    range2Attribs.put(LexUtilities.getLexerOffsets(result, oc.getOffsetRange()), ColoringAttributes.MARK_OCCURRENCES);
+                    range2Attribs.put(oc.getOffsetRange(), ColoringAttributes.MARK_OCCURRENCES);
                     if(cancelled) {
                         cancelled = false;
                         return ;
