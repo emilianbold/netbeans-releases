@@ -55,6 +55,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.Exceptions;
 
@@ -312,5 +313,22 @@ public final class LexUtilities {
         }
 
         return null;
+    }
+    
+    public static int getLexerOffset(JsParserResult info, int astOffset) {
+        return info.getSnapshot().getOriginalOffset(astOffset);
+    }
+    
+    public static OffsetRange getLexerOffsets(JsParserResult info, OffsetRange astRange) {
+        int rangeStart = astRange.getStart();
+        int start = info.getSnapshot().getOriginalOffset(rangeStart);
+        if (start == rangeStart) {
+            return astRange;
+        } else if (start == -1) {
+            return OffsetRange.NONE;
+        } else {
+            // Assumes the translated range maintains size
+            return new OffsetRange(start, start + astRange.getLength());
+        }
     }
 }

@@ -42,11 +42,14 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.List;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
  *
@@ -149,5 +152,9 @@ public class ModelUtils {
             result.insert(0, parent.getName());
         }
         return result.toString();
+    }
+    
+    public static OffsetRange documentOffsetRange(JsParserResult result, int start, int end) {
+        return new OffsetRange(LexUtilities.getLexerOffset(result, start), LexUtilities.getLexerOffset(result, end));
     }
 }

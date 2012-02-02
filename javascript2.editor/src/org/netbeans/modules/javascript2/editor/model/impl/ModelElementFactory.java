@@ -52,6 +52,7 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
  *
@@ -59,14 +60,14 @@ import org.netbeans.modules.javascript2.editor.model.JsObject;
  */
 class ModelElementFactory {
 
-    static JsFunctionImpl create(FunctionNode functionNode, List<Identifier> fqName, ModelBuilder modelBuilder) {
+    static JsFunctionImpl create(JsParserResult parserResult, FunctionNode functionNode, List<Identifier> fqName, ModelBuilder modelBuilder) {
         JsObjectImpl inObject = modelBuilder.getCurrentObject();
         JsObject parentObject = inObject;
         int start = Token.descPosition(functionNode.getFirstToken());
         int end = Token.descPosition(functionNode.getLastToken()) + Token.descLength(functionNode.getLastToken());
         List<Identifier> parameters = new ArrayList(functionNode.getParameters().size());
         for(IdentNode node: functionNode.getParameters()) {
-            parameters.add(create(node));
+            parameters.add(create(parserResult, node));
         }
         JsFunctionImpl result; 
         if (fqName.size() > 1) {
@@ -74,27 +75,27 @@ class ModelElementFactory {
             List<Identifier> objectName = fqName.subList(0, fqName.size() - 1);
             parentObject = ModelUtils.getJsObject(modelBuilder, objectName);
             result = new JsFunctionImpl(modelBuilder.getCurrentDeclarationScope(), 
-                    parentObject, fqName.get(fqName.size() - 1), parameters, new OffsetRange(start, end));
+                    parentObject, fqName.get(fqName.size() - 1), parameters, ModelUtils.documentOffsetRange(parserResult, start, end));
             if (!"prototype".equals(parentObject.getName())) {
                 result.addModifier(Modifier.STATIC);
             } 
         } else {
             result = new JsFunctionImpl(modelBuilder.getCurrentDeclarationScope(),
-                    inObject, fqName.get(fqName.size() - 1), parameters, new OffsetRange(start, end));
+                    inObject, fqName.get(fqName.size() - 1), parameters, ModelUtils.documentOffsetRange(parserResult, start, end));
         }
         parentObject.addProperty(result.getDeclarationName().getName(), result);
         return result;
     }
     
-    static IdentifierImpl create(IdentNode node) {
-        return new IdentifierImpl(node.getName(), new OffsetRange(node.getStart(), node.getFinish()));
+    static IdentifierImpl create(JsParserResult parserResult, IdentNode node) {
+        return new IdentifierImpl(node.getName(), ModelUtils.documentOffsetRange(parserResult, node.getStart(), node.getFinish()));
     }
     
-    static IdentifierImpl create(LiteralNode node) {
-        return new IdentifierImpl(node.getString(), new OffsetRange(node.getStart(), node.getFinish()));
+    static IdentifierImpl create(JsParserResult parserResult, LiteralNode node) {
+        return new IdentifierImpl(node.getString(), ModelUtils.documentOffsetRange(parserResult, node.getStart(), node.getFinish()));
     }
     
-    static JsObjectImpl create(ObjectNode objectNode, List<Identifier> fqName, ModelBuilder modelBuilder, boolean belongsToParent) {
+    static JsObjectImpl create(JsParserResult parserResult, ObjectNode objectNode, List<Identifier> fqName, ModelBuilder modelBuilder, boolean belongsToParent) {
         JsObjectImpl scope = modelBuilder.getCurrentObject();
         JsObject parent = scope;
         JsObject result = null;
@@ -105,7 +106,7 @@ class ModelElementFactory {
             parent = ModelUtils.getJsObject(modelBuilder, objectName);
         }
         result = parent.getProperty(name.getName());
-        newObject = new JsObjectImpl(parent, name, new OffsetRange(objectNode.getStart(), objectNode.getFinish()));
+        newObject = new JsObjectImpl(parent, name, ModelUtils.documentOffsetRange(parserResult, objectNode.getStart(), objectNode.getFinish()));
         newObject.setDeclared(true);
         if (result != null) {
             // the object already exist due a definition of a property => needs to be copied
