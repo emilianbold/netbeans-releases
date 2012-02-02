@@ -88,6 +88,10 @@ public abstract class APTWalker {
     public TokenStream getTokenStream() {
         return new WalkerTokenStream();
     }
+
+    protected boolean needPPTokens() {
+        return false;
+    }
     
     private final class WalkerTokenStream implements TokenStream, APTTokenStream {
         private WalkerTokenStream() {
@@ -375,12 +379,14 @@ public abstract class APTWalker {
                         tokens.addFirst(ts);
                         break;
                     }
-//                    case APT.Type.INCLUDE:
-//                    case APT.Type.INCLUDE_NEXT:
-//                    {
-//                        tokens.addFirst(new TokenBasedTokenStream(new APTPreprocessorToken(node)));
-//                        break;
-//                    }
+                    case APT.Type.INCLUDE:
+                    case APT.Type.INCLUDE_NEXT:
+                    {
+                        if (needPPTokens()) {
+                            tokens.addFirst(new TokenBasedTokenStream(new APTPreprocessorToken(node)));
+                        }
+                        break;
+                    }
                 }
             }
         }
