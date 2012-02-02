@@ -219,15 +219,13 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
         insertBreak("code //foo\n^// foobar", "code //foo\n\n^// foobar");
     }
 
-    // This test no longer passes, related to AST formatter.
-    //public void testContComment12() throws Exception {
-    //    insertBreak("  code\n^// foobar", "  code\n\n  ^// foobar");
-    //}
+    public void testContComment12() throws Exception {
+        insertBreak("  code\n^// foobar", "  code\n\n  ^// foobar");
+    }
 
-    // This test no longer passes, related to AST formatter.
-    //public void testContComment14() throws Exception {
-    //    insertBreak("function foo() {\n    code\n^// foobar\n}\n", "function foo() {\n    code\n\n    ^// foobar\n}\n");
-    //}
+    public void testContComment14() throws Exception {
+        insertBreak("function foo() {\n    code\n^// foobar\n}\n", "function foo() {\n    code\n\n    ^// foobar\n}\n");
+    }
 
     public void testContComment15() throws Exception {
         insertBreak("\n\n^// foobar", "\n\n\n^// foobar");
