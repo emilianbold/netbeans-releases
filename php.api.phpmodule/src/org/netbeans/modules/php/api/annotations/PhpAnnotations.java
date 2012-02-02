@@ -50,7 +50,10 @@ import org.openide.util.Parameters;
 import org.openide.util.lookup.Lookups;
 
 /**
- * This class provides access to the list of registered PHP annotations providers.
+ * This class provides access to the list of registered PHP annotations providers
+ * that are <b>globally</b> available (it means that their annotations are available
+ * in every PHP file). For <b>framework specific</b> annotations, use
+ * {@link org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider#getAnnotationsProvider(org.netbeans.modules.php.api.phpmodule.PhpModule)}.
  * <p>
  * The path is "{@value #ANNOTATIONS_PATH}" on SFS.
  * @since 1.63
@@ -66,7 +69,10 @@ public final class PhpAnnotations {
     }
 
     /**
-     * Get all registered {@link PhpAnnotationsProvider}s.
+     * Get all registered {@link PhpAnnotationsProvider}s
+     * that are <b>globally</b> available (it means that their annotations are available
+     * in every PHP file). For <b>framework specific</b> annotations, use
+     * {@link org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider#getAnnotationsProvider(org.netbeans.modules.php.api.phpmodule.PhpModule)}.
      * @return a list of all registered {@link PhpAnnotationsProvider}s; never {@code null}
      */
     public static List<PhpAnnotationsProvider> getProviders() {
