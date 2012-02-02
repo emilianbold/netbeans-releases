@@ -143,7 +143,7 @@ for each (var tab in tabs) {
     assignIdIfNeeded(tab);
     sendOpenMessage(tab[tabIdKey]);
     var url = tab.url;
-    if (url !== undefined && url !== null && url.length !== 0) {
+    if (url !== undefined && url !== null && url.length !== 0 && url !== 'about:blank') {
         // URL of the tab is known already
         sendReadyMessage(tab[tabIdKey], url);
     }
