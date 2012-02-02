@@ -7,11 +7,8 @@
 package org.netbeans.modules.uihandler;
 
 import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Font;
 import java.net.MalformedURLException;
 import java.net.URL;
-import javax.swing.UIManager;
 import org.openide.util.NbBundle;
 
 /**

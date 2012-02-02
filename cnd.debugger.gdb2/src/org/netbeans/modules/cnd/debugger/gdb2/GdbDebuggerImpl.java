@@ -753,9 +753,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private void doMIAttach(GdbDebuggerInfo gdi) {
         String cmdString;
         long pid = -1;
-        String remoteTarget = gdi.getRemoteTarget();
+        String remoteTarget = gdi.getTargetCommand();
         if (remoteTarget != null) {
-            cmdString = "target remote " + remoteTarget;  //NOI18N
+            cmdString = "target " + remoteTarget;  //NOI18N
         } else {
             pid = gdi.getPid();
             // MI command "-target-attach pid | file" does not available in
