@@ -62,6 +62,7 @@ implements AbstractFileSystem.List, AbstractFileSystem.Info, AbstractFileSystem.
     private final String[] names;
     private final File[] contents;
 
+    @SuppressWarnings("LeakingThisInConstructor")
     SelfSampleVFS(String[] names, File[] contents) {
         this.names = names;
         this.contents = contents;
