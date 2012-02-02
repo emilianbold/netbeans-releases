@@ -53,7 +53,7 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.filesystems.Repository.LayersProvider;
+import org.openide.filesystems.Repository.LayerProvider;
 import org.openide.util.Lookup;
 
 /**
@@ -97,7 +97,7 @@ public class ContentProviderTest extends NbTestCase {
         
     }
 
-    public static final class MyProvider extends LayersProvider {
+    public static final class MyProvider extends LayerProvider {
         private boolean empty;
         
         final void makeEmpty() {

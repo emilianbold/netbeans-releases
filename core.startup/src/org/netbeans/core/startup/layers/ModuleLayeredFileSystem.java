@@ -60,7 +60,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository.LayersProvider;
+import org.openide.filesystems.Repository.LayerProvider;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
@@ -82,7 +82,7 @@ implements LookupListener {
 
     /** lookup result for registered filesystems */
     private static Lookup.Result<FileSystem> fsResult = Lookup.getDefault().lookupResult(FileSystem.class);
-    private static Lookup.Result<LayersProvider> layerResult = Lookup.getDefault().lookupResult(LayersProvider.class);
+    private static Lookup.Result<LayerProvider> layerResult = Lookup.getDefault().lookupResult(LayerProvider.class);
 
     /** current list of URLs - r/o; or null if not yet set */
     private List<URL> urls;

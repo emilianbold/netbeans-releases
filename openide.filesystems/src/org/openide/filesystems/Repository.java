@@ -151,12 +151,12 @@ public class Repository implements Serializable {
      * The list of <em>layers</em> as well as their content may be cached.
      * In a typical NetBeans Platform application, the cache remains until
      * list of <a href="@org-openide-modules@/org/openide/modules/ModuleInfo.html">modules</a>
-     * and their enabled state remain the same. While it does, the {@link LayersProvider}s
+     * and their enabled state remain the same. While it does, the {@link LayerProvider}s
      * are not queried again.
      * </p>
      * @since 7.59
      */
-    public static abstract class LayersProvider {
+    public static abstract class LayerProvider {
         /** Allows providers to add their additions to the structure
          * beneath {@link FileUtil#getConfigRoot()}. The method is
          * supposed to collect all additional layers and {@link Collection#add(java.lang.Object) add}
@@ -178,7 +178,7 @@ public class Repository implements Serializable {
     }
 
     /** Methods that tells {@link Repository} subclasses to refresh list of
-     * URLs provided by {@link LayersProvider}s.
+     * URLs provided by {@link LayerProvider}s.
      * @since 7.59
      */
     protected void refreshAdditionalLayers() {
@@ -189,13 +189,13 @@ public class Repository implements Serializable {
     
     /** Allows subclasses registered as {@link Repository#getDefault()} to 
      * find out list of URLs for a given provider. The method just calls
-     * {@link LayersProvider#layers()}.
+     * {@link LayerProvider#layers()}.
      * 
      * @param p the provider.
      * @return ordered list of URLs
      * @since 7.59
      */
-    protected final List<? extends URL> findLayers(LayersProvider p) {
+    protected final List<? extends URL> findLayers(LayerProvider p) {
         if (this != Repository.getDefault()) {
             return Collections.emptyList();
         }
@@ -248,7 +248,7 @@ public class Repository implements Serializable {
             for (URL generatedLayer : NbCollections.iterable(l.getResources("META-INF/generated-layer.xml"))) { // NOI18N
                 layerUrls.add(generatedLayer);
             }
-            for (LayersProvider p : Lookup.getDefault().lookupAll(LayersProvider.class)) {
+            for (LayerProvider p : Lookup.getDefault().lookupAll(LayerProvider.class)) {
                 p.registerLayers(layerUrls);
             }
         }

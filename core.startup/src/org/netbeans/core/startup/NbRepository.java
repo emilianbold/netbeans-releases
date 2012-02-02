@@ -180,7 +180,7 @@ public final class NbRepository extends Repository {
     }
 
     public List<URL> additionalLayers(List<URL> urls) {
-        for (LayersProvider p : Lookup.getDefault().lookupAll(LayersProvider.class)) {
+        for (LayerProvider p : Lookup.getDefault().lookupAll(LayerProvider.class)) {
             List<URL> mix = new ArrayList<URL>(urls);
             mix.addAll(findLayers(p));
             urls = mix;

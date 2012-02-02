@@ -61,10 +61,10 @@ import org.openide.util.lookup.ServiceProviders;
  * @author Jirka Rechtacek
  */
 @ServiceProviders({
-    @ServiceProvider(service=Repository.LayersProvider.class),
+    @ServiceProvider(service=Repository.LayerProvider.class),
     @ServiceProvider(service=FoDLayersProvider.class)
 })
-public final class FoDLayersProvider extends Repository.LayersProvider
+public final class FoDLayersProvider extends Repository.LayerProvider
 implements LookupListener, Runnable {
     final static Logger LOG = Logger.getLogger (FoDLayersProvider.class.getPackage().getName());
     private static RequestProcessor RP = new RequestProcessor("Ergonomics"); // NOI18N
