@@ -178,6 +178,10 @@ public class Repository implements Serializable {
      *     }
      * }
      * </pre>
+     * The additional layers are inserted below traditional layers provided
+     * by modules in so called {@link FileSystem fallback mode} - e.g. modules 
+     * can override and redefine layers contributed by layer providers.
+     * 
      * @since 7.59
      */
     public static abstract class LayerProvider {
