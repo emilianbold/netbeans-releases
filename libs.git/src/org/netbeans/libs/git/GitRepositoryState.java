@@ -46,8 +46,10 @@ import org.eclipse.jgit.lib.RepositoryState;
 import org.netbeans.libs.git.jgit.Utils;
 
 /**
- *
- * @author ondra
+ * Represents th state a repository is currently in. The state implies what git commands
+ * may be called on the repository and what should be the next steps to get the repository
+ * into a normal state.
+ * @author Ondra Vrabec
  */
 public enum GitRepositoryState {
         /** Has no work tree and cannot be used for normal editing. */
@@ -76,7 +78,7 @@ public enum GitRepositoryState {
             public String toString () { return Utils.getBundle(GitRepositoryState.class).getString("LBL_RepositoryInfo_Safe"); } //NOI18N
 	},
 
-	/** An unfinished merge. Must resolve or reset before continuing normally
+	/** An unfinished merge or cherry-picking. Must resolve or reset before continuing normally
 	 */
 	MERGING {
             @Override
@@ -90,7 +92,7 @@ public enum GitRepositoryState {
 	},
 
 	/**
-	 * An merge where all conflicts have been resolved. The index does not
+	 * A merge where all conflicts have been resolved. The index does not
 	 * contain any unmerged paths.
 	 */
 	MERGING_RESOLVED {
