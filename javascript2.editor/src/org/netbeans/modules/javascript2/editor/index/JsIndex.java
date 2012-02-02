@@ -45,13 +45,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
@@ -70,8 +66,10 @@ public class JsIndex {
     public static final String FIELD_BASE_NAME = "basename"; //NOI18N
     public static final String FIELD_FQ_NAME = "fqn"; //NOI18N
     public static final String FIELD_PROPERTY = "property"; //NOI18N
+    public static final String FIELD_IS_DECLARED = "isdec"; //NOI18N
     public static final String FIELD_JS_KIND = "jskind"; //NOI18N
     public static final String FIELD_OFFSET = "offset"; //NOI18N
+    
     
     private static final String[] TERMS_BASIC_INFO = new String[] { FIELD_BASE_NAME, FIELD_FQ_NAME, FIELD_JS_KIND, FIELD_OFFSET, FIELD_IS_GLOBAL};
     private static final String[] TERMS_PROPERTIES = new String[] { FIELD_PROPERTY};

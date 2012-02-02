@@ -41,18 +41,13 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.*;
@@ -69,7 +64,6 @@ import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -347,20 +341,42 @@ class JsCodeCompletion implements CodeCompletionHandler {
     private void completeObjectMember(CompletionRequest request, List<CompletionProposal> resultList) {
         JsParserResult result = (JsParserResult)request.info;
         JsObject jsObject = (JsObject)ModelUtils.getDeclarationScope(result.getModel(), request.anchor);
+        HashMap<String, JsElement> properties = new HashMap<String, JsElement>();
         
-        System.out.println("jsObject: " + jsObject.getName());
         if (jsObject.getJSKind() == JsElement.Kind.METHOD) {
             jsObject = jsObject.getParent();
         }
         if (jsObject.getJSKind() == JsElement.Kind.OBJECT) {
             for (JsObject property : jsObject.getProperties().values()) {
                 if(startsWith(property.getName(), request.prefix)) {
-                    resultList.add(JsCompletionItem.Factory.create(property, request));
+                    JsElement element = properties.get(property.getName());
+                    if(element == null || (!element.isDeclared() && property.isDeclared())) {
+                        properties.put(property.getName(), property);
+                    }
                 }
             }
         }
         
+        String fqn = ModelUtils.createFQN(jsObject);
         
+        FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+        Collection<IndexedElement> indexedProperties = JsIndex.get(fo).getProperties(fqn);
+        for (IndexedElement indexedElement : indexedProperties) {
+            if (startsWith(indexedElement.getName(), request.prefix)) {
+                JsElement element = properties.get(indexedElement.getName());
+                if (element == null || (!element.isDeclared() && indexedElement.isDeclared())) {
+                    properties.put(indexedElement.getName(), indexedElement);
+                }
+            }
+        }
+        
+        for (JsElement element : properties.values()) {
+            if (element instanceof JsObject)
+                resultList.add(JsCompletionItem.Factory.create((JsObject)element, request));
+            else if (element instanceof IndexedElement){
+                resultList.add(JsCompletionItem.Factory.create((IndexedElement)element, request));
+            }
+        }
     }
     
     private boolean startsWith(String theString, String prefix) {

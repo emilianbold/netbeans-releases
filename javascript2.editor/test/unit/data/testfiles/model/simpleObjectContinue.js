@@ -1,7 +1,7 @@
-/*
+/* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,59 +37,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
 
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.csl.api.ElementHandle;
-
-/**
- *
- * @author Petr Pisl
- */
-public interface JsElement extends ElementHandle {
-
-    public enum Kind {
-
-        FUNCTION(1),
-        METHOD(2),
-        CONSTRUCTOR(3),
-        OBJECT(4),
-        PROPERTY(5),
-        VARIABLE(6),
-        FIELD(7),
-        FILE(8),
-        PARAMETER(9);
-        
-        private final int id;
-        private static Map<Integer, Kind> lookup = new HashMap<Integer, Kind>();
-        
-        static {
-            for (Kind kind : EnumSet.allOf(Kind.class)) {
-                lookup.put(kind.getId(), kind);
-            }
-        }
-        
-        private Kind(int id) {
-            this.id = id;
-        }
-        
-        public int getId() {
-            return this.id;
-        }
-        
-        public static  Kind fromId(int id) {
-            return lookup.get(id);
-        }
-        
-    }
-
-    int getOffset();
-
-    Kind getJSKind();
-    
-    boolean isDeclared();
+Carrot.getDescription = function () {
+    return "This is a carrot that has " + this.color + " color";
 }
+
+formatter.println(Carrot.getColor());
+formatter.println(Carrot.isVegitable());
+formatter.println(Carrot.getDescription());
+
+
+

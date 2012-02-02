@@ -64,15 +64,14 @@ public class IndexedElement extends JsElementImpl {
     
     private final JsElement.Kind jsKind;
     
-    public IndexedElement(FileObject fileObject, String name, JsElement.Kind kind, OffsetRange offsetRange, Set<Modifier> modifiers) {
-        super(fileObject, name, offsetRange, modifiers);
+    public IndexedElement(FileObject fileObject, String name, boolean isDeclared, JsElement.Kind kind, OffsetRange offsetRange, Set<Modifier> modifiers) {
+        super(fileObject, name, isDeclared, offsetRange, modifiers);
         this.jsKind = kind;
     }
 
-    
     @Override
     public Kind getJSKind() {
-        return jsKind;
+        return this.jsKind;
     }
     
     public static IndexDocument createDocument(JsObject object, IndexingSupport support, Indexable indexable) {
@@ -81,6 +80,7 @@ public class IndexedElement extends JsElementImpl {
         elementDocument.addPair(JsIndex.FIELD_FQ_NAME,  ModelUtils.createFQN(object), true, true);
         elementDocument.addPair(JsIndex.FIELD_JS_KIND, Integer.toString(object.getJSKind().getId()), true, true);
         elementDocument.addPair(JsIndex.FIELD_IS_GLOBAL, (ModelUtils.isGlobal(object.getParent()) ? "1" : "0"), true, true);
+        elementDocument.addPair(JsIndex.FIELD_IS_DECLARED, (object.isDeclared() ? "1" : "0"), true, true);
         elementDocument.addPair(JsIndex.FIELD_OFFSET, Integer.toString(object.getOffset()), true, true);            
         for (JsObject property : object.getProperties().values()) {
             elementDocument.addPair(JsIndex.FIELD_PROPERTY, codeProperty(property), false, true);
@@ -91,9 +91,10 @@ public class IndexedElement extends JsElementImpl {
     public static IndexedElement create(IndexResult indexResult) {
         FileObject fo = indexResult.getFile();
         String name = indexResult.getValue(JsIndex.FIELD_BASE_NAME);
+        boolean isDeclared = "1".equals(indexResult.getValue(JsIndex.FIELD_IS_DECLARED)); //NOI18N
         JsElement.Kind kind = JsElement.Kind.fromId(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_JS_KIND)));
         int offset = Integer.parseInt(indexResult.getValue(JsIndex.FIELD_OFFSET));
-        return new IndexedElement(fo, name, kind, new OffsetRange(offset, offset + name.length()), EnumSet.of(Modifier.PUBLIC));
+        return new IndexedElement(fo, name, isDeclared, kind, new OffsetRange(offset, offset + name.length()), EnumSet.of(Modifier.PUBLIC));
     }
     
     public static Collection<IndexedElement> createProperties(IndexResult indexResult) {
@@ -110,6 +111,7 @@ public class IndexedElement extends JsElementImpl {
         JsElement.Kind jsKind = property.getJSKind();
         result.append(property.getName()).append(';');  //NOI18N
         result.append(jsKind.getId()).append(';');  //NOI18N
+        result.append(property.isDeclared() ? "1" : "0").append(';'); //NOI18N
         if (jsKind == JsElement.Kind.FUNCTION || jsKind == JsElement.Kind.METHOD || jsKind == JsElement.Kind.CONSTRUCTOR) {
             for (Iterator<? extends Identifier> it = ((JsFunction)property).getParameters().iterator(); it.hasNext();) {
                 Identifier parametr = it.next();
@@ -127,6 +129,7 @@ public class IndexedElement extends JsElementImpl {
         StringTokenizer st = new StringTokenizer(text, ";");
         String name = st.nextToken();
         JsElement.Kind jsKind = JsElement.Kind.fromId(Integer.parseInt(st.nextToken()));
+        boolean isDeclared = "1".equals(st.nextToken());
         if (st.hasMoreTokens()) {
             String paramsText = st.nextToken();
             if (jsKind == JsElement.Kind.FUNCTION || jsKind == JsElement.Kind.METHOD || jsKind == JsElement.Kind.CONSTRUCTOR) {
@@ -137,14 +140,14 @@ public class IndexedElement extends JsElementImpl {
                 return new FunctionIndexedElement(fo, name, jsKind, OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC), parameters);
             }
         }
-        return new IndexedElement(fo, name, jsKind, OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC));
+        return new IndexedElement(fo, name, isDeclared, jsKind,OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC));
     }
     
     public static class FunctionIndexedElement extends IndexedElement {
         private final Collection<String> parameters;
         
         public FunctionIndexedElement(FileObject fileObject, String name, Kind kind, OffsetRange offsetRange, Set<Modifier> modifiers, Collection<String> parameters) {
-            super(fileObject, name, kind, offsetRange, modifiers);
+            super(fileObject, name, true, kind, offsetRange, modifiers);
             this.parameters = parameters;
         }
         
