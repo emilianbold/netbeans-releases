@@ -139,7 +139,7 @@ public class PHPDOCCodeCompletion {
             }
             for (PhpAnnotationTag tag : annotations) {
                 if (tag.getName().startsWith(prefix)) {
-                    completionResult.add(new PHPDOCCodeCompletionItem(request, tag, annotationProvider.getName()));
+                    completionResult.add(new PHPDOCCodeCompletionItem(request.anchor, tag, annotationProvider.getName()));
                 }
             }
         }
@@ -149,20 +149,20 @@ public class PHPDOCCodeCompletion {
         private static final String PHP_ANNOTATION_ICON = "org/netbeans/modules/php/editor/resources/annotation.png"; //NOI18N
         private static ImageIcon ANNOTATION_ICON = null;
         private final PhpAnnotationTag tag;
-        private final PHPCompletionItem.CompletionRequest request;
+        private final int anchorOffset;
         private final PHPDOCTagElement elem;
         private final String providerName;
 
-        public PHPDOCCodeCompletionItem(CompletionRequest request, PhpAnnotationTag tag, String providerName) {
+        public PHPDOCCodeCompletionItem(int anchorOffset, PhpAnnotationTag tag, String providerName) {
             this.tag = tag;
-            this.request = request;
+            this.anchorOffset = anchorOffset;
             this.providerName= providerName;
             elem = new PHPDOCTagElement(tag.getName(), tag.getDocumentation());
         }
 
         @Override
         public int getAnchorOffset() {
-            return request.anchor;
+            return anchorOffset;
         }
 
         @Override
