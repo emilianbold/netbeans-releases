@@ -132,7 +132,6 @@ public class JsDeletedTextInterceptor implements DeletedTextInterceptor {
             }
         } // TODO: Test other auto-completion chars, like %q-foo-
         }
-        return;
     }
 
 
@@ -143,7 +142,6 @@ public class JsDeletedTextInterceptor implements DeletedTextInterceptor {
         public DeletedTextInterceptor createDeletedTextInterceptor(MimePath mimePath) {
             return new JsDeletedTextInterceptor();
         }
-
 
     }
 }

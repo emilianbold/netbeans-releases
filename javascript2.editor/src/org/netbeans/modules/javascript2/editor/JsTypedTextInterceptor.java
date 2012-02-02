@@ -89,8 +89,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
     public boolean isInsertMatchingEnabled(BaseDocument doc) {
         // The editor options code is calling methods on BaseOptions instead of looking in the settings map :(
-        //Boolean b = ((Boolean)Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION));
-        //return b == null || b.booleanValue();
+        // Boolean b = ((Boolean)Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION));
+        // return b == null || b.booleanValue();
         EditorOptions options = EditorOptions.get(JsTokenId.JAVASCRIPT_MIME_TYPE);
         if (options != null) {
             return options.getMatchBrackets();
@@ -278,8 +278,6 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             break;
         }
         }
-
-        return;
     }
 
     @Override
