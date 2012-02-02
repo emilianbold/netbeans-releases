@@ -40,73 +40,39 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.api.annotations;
+package org.netbeans.modules.php.api.registrations;
 
-import java.util.Collection;
-import java.util.Iterator;
-import org.netbeans.junit.NbTestCase;
+import java.util.Set;
+import javax.annotation.processing.Processor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.php.api.doc.PhpDocs;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.spi.doc.PhpDocProvider;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.test.MockLookup;
+import org.openide.filesystems.annotations.LayerGeneratingProcessor;
+import org.openide.filesystems.annotations.LayerGenerationException;
+import org.openide.util.lookup.ServiceProvider;
 
-public class PhpDocProviderRegistrationTest extends NbTestCase {
-
-    private static final String CONSTRUCTOR = "constructor";
-    private static final String FACTORY = "factory";
-
-
-    public PhpDocProviderRegistrationTest(String name) {
-        super(name);
-    }
+/**
+ * @author Tomas Mysik
+ */
+@SupportedAnnotationTypes("org.netbeans.modules.php.spi.doc.PhpDocProvider.Registration")
+@ServiceProvider(service = Processor.class)
+@SupportedSourceVersion(SourceVersion.RELEASE_6)
+public class PhpDocRegistrationProcessor extends LayerGeneratingProcessor {
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        clearWorkDir();
-    }
-
-    public void testRegistration() {
-        MyDoc.factoryCalls = 0;
-        MockLookup.init();
-        assertSame("No factory method should not be used yet", 0, MyDoc.factoryCalls);
-        Collection<? extends PhpDocProvider> all = Lookups.forPath(PhpDocs.DOCS_PATH).lookupAll(PhpDocProvider.class);
-        assertSame("Two should be found", 2, all.size());
-        // ???
-        //assertSame("One factory method should be used", 1, MyDoc.factoryCalls);
-
-        Iterator<? extends PhpDocProvider> it = all.iterator();
-        assertSame(CONSTRUCTOR, it.next().getName());
-        assertSame(FACTORY, it.next().getName());
-    }
-
-    //~ Inner classes
-
-    public static final class MyDocFactory {
-        @PhpDocProvider.Registration(position=200)
-        public static MyDoc getInstance() {
-            MyDoc.factoryCalls++;
-            return new MyDoc(FACTORY);
+    protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
+        for (Element element : roundEnv.getElementsAnnotatedWith(PhpDocProvider.Registration.class)) {
+            layer(element)
+                    .instanceFile(PhpDocs.DOCS_PATH, null, PhpDocProvider.class)
+                    .intvalue("position", element.getAnnotation(PhpDocProvider.Registration.class).position()) // NOI18N
+                    .write();
         }
-    }
-
-    @PhpDocProvider.Registration(position=100)
-    public static final class MyDoc extends PhpDocProvider {
-        static int factoryCalls = 0;
-
-        public MyDoc() {
-            super(CONSTRUCTOR, "display name");
-        }
-
-        MyDoc(String name) {
-            super(name, "display name");
-        }
-
-        @Override
-        public void generateDocumentation(PhpModule phpModule) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+        return true;
     }
 
 }

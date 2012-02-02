@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,37 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.api.registrations;
 
-package org.netbeans.modules.php.editor.index;
+import java.util.Set;
+import javax.annotation.processing.Processor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.modules.php.api.annotations.PhpAnnotations;
+import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
+import org.openide.filesystems.annotations.LayerGeneratingProcessor;
+import org.openide.filesystems.annotations.LayerGenerationException;
+import org.openide.util.lookup.ServiceProvider;
 
-import org.netbeans.modules.csl.api.ElementKind;
-
-/**
- *
- * @author tomslot
- */
-public class PHPDOCTagElement extends PHPElement{
-    private String tagName;
-    private final String documentation;
-
-    public PHPDOCTagElement(String tagName, String documentation) {
-        this.tagName = tagName;
-        this.documentation = documentation;
-    }
+@SupportedAnnotationTypes("org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider.Registration")
+@ServiceProvider(service = Processor.class)
+@SupportedSourceVersion(SourceVersion.RELEASE_6)
+public class PhpAnnotationsRegistrationProcessor extends LayerGeneratingProcessor {
 
     @Override
-    public String getName() {
-        return tagName;
+    protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
+        for (Element element : roundEnv.getElementsAnnotatedWith(PhpAnnotationsProvider.Registration.class)) {
+            layer(element)
+                    .instanceFile(PhpAnnotations.ANNOTATIONS_PATH, null, PhpAnnotationsProvider.class)
+                    .intvalue("position", element.getAnnotation(PhpAnnotationsProvider.Registration.class).position()) // NOI18N
+                    .write();
+        }
+        return true;
     }
 
-    @Override
-    public ElementKind getKind() {
-        return ElementKind.KEYWORD;
-    }
-
-    public String getDoc(){
-        return documentation;
-    }
 }

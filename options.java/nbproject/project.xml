@@ -29,7 +29,6 @@
                 <friend>org.netbeans.modules.form</friend>
                 <friend>org.netbeans.modules.javacard.project</friend>
                 <friend>org.netbeans.modules.maven</friend>
-                <friend>org.netbeans.modules.profiler</friend>
                 <friend>org.netbeans.modules.profiler.options</friend>
                 <friend>org.netbeans.modules.vmd.componentssupport</friend>
                 <package>org.netbeans.modules.options.java.api</package>
