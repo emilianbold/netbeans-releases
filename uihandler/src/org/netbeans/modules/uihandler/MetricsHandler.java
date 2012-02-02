@@ -67,10 +67,12 @@ public class MetricsHandler extends Handler {
         setLevel(Level.FINEST);
     }
 
+    @Override
     public void publish(LogRecord record) {
 
         class WriteOut implements Runnable {
             public LogRecord r;
+            @Override
             public void run() {
                 Installer.writeOutMetrics(r);
                 r = null;
@@ -85,19 +87,20 @@ public class MetricsHandler extends Handler {
         }
     }
 
+    @Override
     public void flush() {
         waitFlushed();
     }
     
-    static final void flushImmediatelly() {
+    static void flushImmediatelly() {
         flushOnRecord = true;
     }
 
-    static final void setFlushOnRecord (boolean flushOnRecord) {
+    static void setFlushOnRecord (boolean flushOnRecord) {
         MetricsHandler.flushOnRecord = flushOnRecord;
     }
     
-    static final void waitFlushed() {
+    static void waitFlushed() {
         try {
             lastRecord.waitFinished(1000);
         } catch (InterruptedException ex) {
@@ -105,6 +108,7 @@ public class MetricsHandler extends Handler {
         }
     }
 
+    @Override
     public void close() throws SecurityException {
     }
     
