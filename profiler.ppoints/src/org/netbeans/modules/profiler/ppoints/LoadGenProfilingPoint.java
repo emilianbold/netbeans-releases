@@ -91,7 +91,7 @@ import org.netbeans.modules.profiler.api.ProjectUtilities;
     "LoadGenProfilingPoint_HeaderProjectString=<b>Project:</b> {0}",
     "LoadGenProfilingPoint_HeaderLocationString=<b>Location:</b> {0}, line {1}",
     "LoadGenProfilingPoint_HeaderStartLocationString=<b>Start location:</b> {0}, line {1}",
-    "LoadGenProfilingPoint_HeaderEndLocationString=<b>End location:</b> {0}, line {1}",
+    "LoadGenProfilingPoint_HeaderEndLocationString=<b>Stop location:</b> {0}, line {1}",
     "LoadGenProfilingPoint_HeaderHitsString=<b>Hits:</b> {0}",
     "LoadGenProfilingPoint_HitSuccessString=<b>{0}.</b> hit at <b>{1}</b>",
     "LoadGenProfilingPoint_HitFailedString=<b>{0}.</b> hit at <b>{1}</b>, <b>action failed!</b>",
@@ -465,26 +465,26 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
 
     public void hideResults() {
         SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    if (hasReport()) {
-                        getReport().close();
-                    }
-                }
-            });
+            public void run() {
+                Report report = getReport(false);
+                if (report != null) report.close();
+            }
+        });
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (hasReport()) {
+        Report report = getReport(false);
+        if (report != null) {
             if (evt.getPropertyName() == PROPERTY_NAME) {
-                getReport().refreshProperties();
+                report.refreshProperties();
             }
 
-            getReport().refreshData();
+            report.refreshData();
         }
     }
 
     public void showResults(URL url) {
-        TopComponent topComponent = getReport();
+        TopComponent topComponent = getReport(true);
         topComponent.open();
         topComponent.requestActive();
     }
@@ -603,18 +603,12 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
         }
     }
 
-    private Report getReport() {
-        if (hasReport()) {
-            return reportReference.get();
+    private Report getReport(boolean create) {
+        Report report = reportReference == null ? null : reportReference.get();
+        if (report == null && create) {
+            report = new Report();
+            reportReference = new WeakReference<Report>(report);
         }
-
-        Report report = new Report();
-        reportReference = new WeakReference<Report>(report);
-
         return report;
-    }
-
-    private boolean hasReport() {
-        return (reportReference != null) && (reportReference.get() != null);
     }
 }

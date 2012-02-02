@@ -82,6 +82,7 @@ import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.netbeans.modules.maven.options.MavenOptionController;
 import org.netbeans.modules.maven.options.MavenSettings;
+import org.netbeans.modules.options.java.api.JavaOptions;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.validation.api.AbstractValidator;
 import org.netbeans.validation.api.Problems;
@@ -444,7 +445,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
     }//GEN-LAST:event_browseButtonActionPerformed
 
     private void btnSetupNewerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSetupNewerActionPerformed
-        OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/" + MavenOptionController.OPTIONS_SUBPATH); //NOI18N
+        OptionsDisplayer.getDefault().open(JavaOptions.JAVA + "/" + MavenOptionController.OPTIONS_SUBPATH); //NOI18N
         panel.getValidationGroup().performValidation();
     }//GEN-LAST:event_btnSetupNewerActionPerformed
     

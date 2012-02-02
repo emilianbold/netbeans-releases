@@ -156,24 +156,19 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    public FileObject createData(String name) throws IOException {
-        return create(name, false);
-    }
-    
-    @Override
-    public FileObject createData(String name, String ext) throws IOException {
-        return create(composeName(name, ext), false);
+    public FileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException {
+        return create(composeName(name, ext), false, orig);
     }
 
     @Override
-    public FileObject createFolder(String name) throws IOException {
-        return create(name, true);
+    public FileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException {
+        return create(name, true, orig);
     }
 
     @Override
     protected void postDeleteChild(FileObject child) {
         try {
-            DirectoryStorage ds = refreshDirectoryStorage(child.getNameExt()); // it will fire events itself
+            DirectoryStorage ds = refreshDirectoryStorage(child.getNameExt(), false); // it will fire events itself
         } catch (ConnectException ex) {
             RemoteLogger.getInstance().log(Level.INFO, "Error post removing child " + child, ex);
         } catch (IOException ex) {
@@ -192,17 +187,20 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return RemoteFileSystemUtils.delete(getExecutionEnvironment(), getPath(), true);
     }
 
-    private FileObject create(String name, boolean directory) throws IOException {
+    private FileObject create(String name, boolean directory, RemoteFileObjectBase orig) throws IOException {
         // Have to comment this out since NB does lots of stuff in the UI thread and I have no way to control this :(
         // RemoteLogger.assertNonUiThread("Remote file operations should not be done in UI thread");
         String path = getPath() + '/' + name;
+        if (name.contains("\\") || name.contains("/")) { //NOI18N
+            throw new IOException("Cannot create file "+path); //NOI18N
+        }
         if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
             throw new ConnectException("Can not create " + getUrlToReport(path) + ": connection required"); //NOI18N
         }
         if (USE_VCS) {
             FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
             if (interceptor != null) {
-                interceptor.beforeCreate(FilesystemInterceptorProvider.toFileProxy(this), name, directory);
+                interceptor.beforeCreate(FilesystemInterceptorProvider.toFileProxy(orig), name, directory);
             }
         }
         ProcessUtils.ExitStatus res;
@@ -212,51 +210,59 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             String script = String.format("ls \"%s\" || touch \"%s\"", name, name); // NOI18N
             res = ProcessUtils.executeInDir(getPath(), getExecutionEnvironment(), "sh", "-c", script); // NOI18N
             if (res.isOK() && res.error.length() == 0) {
-                creationFalure(name, directory);
+                creationFalure(name, directory, orig);
                 throw new IOException("Already exists: " + getUrlToReport(path)); // NOI18N
             }
         }
         if (res.isOK()) {
             try {
-                refreshDirectoryStorage(name);
+                refreshDirectoryStorage(name, false);
                 RemoteFileObjectBase fo = getFileObject(name);
                 if (fo == null) {
-                    creationFalure(name, directory);
+                    creationFalure(name, directory, orig);
                     throw new FileNotFoundException("Can not create FileObject " + getUrlToReport(path)); //NOI18N
                 }
                 if (USE_VCS) {
                     FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
                     if (interceptor != null) {
-                        interceptor.createSuccess(FilesystemInterceptorProvider.toFileProxy(fo));
+                        if (this == orig) {
+                            interceptor.createSuccess(FilesystemInterceptorProvider.toFileProxy(fo));
+                        } else {
+                            RemoteFileObjectBase originalFO = orig.getFileObject(name);
+                            if (originalFO == null) {
+                                throw new FileNotFoundException("Can not create FileObject " + getUrlToReport(path)); //NOI18N
+                            }
+                            interceptor.createSuccess(FilesystemInterceptorProvider.toFileProxy(originalFO));
+                        }
                     }
                 }
                 return fo;
             } catch (ConnectException ex) {
-                creationFalure(name, directory);
+                creationFalure(name, directory, orig);
                 throw new IOException("Can not create " + path + ": not connected", ex); // NOI18N
             } catch (InterruptedIOException ex) {
-                creationFalure(name, directory);
+                creationFalure(name, directory, orig);
                 throw new IOException("Can not create " + path + ": interrupted", ex); // NOI18N
             } catch (IOException ex) {
-                creationFalure(name, directory);
+                creationFalure(name, directory, orig);
                 throw ex;
             } catch (ExecutionException ex) {
-                creationFalure(name, directory);
+                creationFalure(name, directory, orig);
                 throw new IOException("Can not create " + path + ": exception occurred", ex); // NOI18N
             } catch (InterruptedException ex) {
-                creationFalure(name, directory);
+                creationFalure(name, directory, orig);
                 throw new IOException("Can not create " + path + ": interrupted", ex); // NOI18N
             } catch (CancellationException ex) {
-                creationFalure(name, directory);
+                creationFalure(name, directory, orig);
                 throw new IOException("Can not create " + path + ": cancelled", ex); // NOI18N
             }
         } else {
-            creationFalure(name, directory);
+            creationFalure(name, directory, orig);
             throw new IOException("Can not create " + getUrlToReport(path) + ": " + res.error); // NOI18N
         }
     }
     
-    private void creationFalure(String name, boolean directory) {
+    private void creationFalure(String name, boolean directory, RemoteFileObjectBase orig) {
         if (USE_VCS) {
             FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
             if (interceptor != null) {
@@ -470,7 +476,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         long time = System.currentTimeMillis();
         try {
-            return getDirectoryStorageImpl(false, null, childName);
+            return getDirectoryStorageImpl(false, null, childName, false);
         } finally {
             if (trace) {
                 trace("getDirectoryStorage for {1} took {0} ms", this, System.currentTimeMillis() - time); // NOI18N
@@ -478,11 +484,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
 
-    private DirectoryStorage refreshDirectoryStorage(String expectedName) throws
+    private DirectoryStorage refreshDirectoryStorage(String expectedName, boolean expected) throws
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         long time = System.currentTimeMillis();
         try {
-            return getDirectoryStorageImpl(true, expectedName, null);
+            return getDirectoryStorageImpl(true, expectedName, null, expected);
         } finally {
             if (trace) {
                 trace("refreshDirectoryStorage for {1} took {0} ms", this, System.currentTimeMillis() - time); // NOI18N
@@ -576,7 +582,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
     
     @Override
-    protected final void renameChild(FileLock lock, RemoteFileObjectBase directChild2Rename, String newNameExt) throws 
+    protected final void renameChild(FileLock lock, RemoteFileObjectBase directChild2Rename, String newNameExt, RemoteFileObjectBase orig) throws 
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         String nameExt2Rename = directChild2Rename.getNameExt();
         String name2Rename = directChild2Rename.getName();
@@ -604,7 +610,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (USE_VCS) {
                 FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
                 if (interceptor != null) {
-                    FilesystemInterceptorProvider.IOHandler renameHandler = interceptor.getRenameHandler(FilesystemInterceptorProvider.toFileProxy(directChild2Rename), newNameExt);
+                    FilesystemInterceptorProvider.IOHandler renameHandler = interceptor.getRenameHandler(FilesystemInterceptorProvider.toFileProxy(orig), newNameExt);
                     if (renameHandler != null) {
                         renameHandler.handle();
                         isRenamed = true;
@@ -787,7 +793,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             synchronized (refLock) {
                 storageRef = new SoftReference<DirectoryStorage>(storage);
             }
-            // fire all event under lock
+            // fire all event under lockImpl
             if (changed) {
                 dropMagic();
                 for (FileObject deleted : filesToFireDeleted) {
@@ -846,7 +852,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
     
-    private DirectoryStorage getDirectoryStorageImpl(boolean forceRefresh, String expectedName, String childName) throws
+    private DirectoryStorage getDirectoryStorageImpl(boolean forceRefresh, String expectedName, String childName, boolean expected) throws
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
         if (forceRefresh && ! ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
@@ -923,7 +929,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (trace) { trace("waiting for lock"); } // NOI18N
         writeLock.lock();
         try {
-            // in case another writer thread already synchronized content while we were waiting for lock
+            // in case another writer thread already synchronized content while we were waiting for lockImpl
             // even in refresh mode, we need this content, otherwise we'll generate events twice
             synchronized (refLock) {
                 DirectoryStorage s = storageRef.get();
@@ -1105,7 +1111,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             synchronized (refLock) {
                 storageRef = new SoftReference<DirectoryStorage>(storage);
             }
-            // fire all event under lock
+            // fire all event under lockImpl
             if (changed) {
                 dropMagic();
                 FilesystemInterceptorProvider.FilesystemInterceptor interceptor = null;
@@ -1113,10 +1119,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
                 }
                 for (FileObject deleted : filesToFireDeleted) {
-                    if (interceptor != null) {
-                        interceptor.deletedExternally(FilesystemInterceptorProvider.toFileProxy(deleted));
-                    }
-                    fireFileDeletedEvent(getListeners(), new FileEvent(this, deleted));
+                    fireDeletedEvent(this, (RemoteFileObjectBase)deleted, interceptor, expected);
                 }
                 for (DirEntry entry : entriesToFireCreated) {
                     RemoteFileObjectBase fo = createFileObject(entry);
@@ -1131,7 +1134,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         if (fo.isPendingRemoteDelivery()) {
                             RemoteLogger.getInstance().log(Level.FINE, "Skipping change event for pending file {0}", fo);
                         } else {
-                            fireFileChangedEvent(getListeners(), new FileEvent(fo));
+                            fireFileChangedEvent(getListeners(), new FileEvent(fo, fo, expected));
                         }
                     }
                 }
@@ -1141,6 +1144,14 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             writeLock.unlock();
         }
         return storage;
+    }
+    
+    private void fireDeletedEvent(RemoteFileObjectBase parent, RemoteFileObjectBase fo, FilesystemInterceptorProvider.FilesystemInterceptor interceptor, boolean expected) {
+        if (interceptor != null) {
+            interceptor.deletedExternally(FilesystemInterceptorProvider.toFileProxy(fo));
+        }
+        fo.fireFileDeletedEvent(fo.getListeners(), new FileEvent(fo, fo, expected));
+        parent.fireFileDeletedEvent(parent.getListeners(), new FileEvent(parent, fo, expected));
     }
     
     InputStream _getInputStream(RemotePlainFile child) throws
@@ -1252,7 +1263,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
     
     @Override
-    public final OutputStream getOutputStream(final FileLock lock) throws IOException {
+    protected final OutputStream getOutputStreamImpl(final FileLock lock, RemoteFileObjectBase orig) throws IOException {
         throw new IOException(getPath());
     }
 
@@ -1290,7 +1301,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    protected void refreshImpl(boolean recursive, Set<String> antiLoop) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    protected void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (antiLoop != null) {
             if (antiLoop.contains(getPath())) {
                 return;
@@ -1298,26 +1309,10 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 antiLoop.add(getPath());
             }
         }
-        DirectoryStorage refreshedStorage = refreshDirectoryStorage(null);
+        DirectoryStorage refreshedStorage = refreshDirectoryStorage(null, expected);
         if (recursive) {
             for (RemoteFileObjectBase child : getExistentChildren(refreshedStorage)) {
-                child.refreshImpl(true, antiLoop);
-            }
-        }
-        if (USE_VCS) {
-            FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
-            if (interceptor != null) {
-                LinkedList<FilesystemInterceptorProvider.FileProxyI> arr = new LinkedList<FilesystemInterceptorProvider.FileProxyI>();
-                long ts = interceptor.listFiles(FilesystemInterceptorProvider.toFileProxy(this), -1, arr);
-                for (FilesystemInterceptorProvider.FileProxyI proxy : arr) {
-                    DirEntry entry = getEntry(PathUtilities.getBaseName(proxy.getPath()));
-                    if (entry != null && !entry.isDirectory()) {
-                        long lm = entry.getLastModified().getTime();
-                        if (lm > ts) {
-                            ts = lm;
-                        }
-                    }
-                }
+                child.refreshImpl(true, antiLoop, expected);
             }
         }
     }

@@ -41,13 +41,16 @@
  */
 package org.netbeans.modules.hudson.php.options;
 
+import java.io.File;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.hudson.php.commands.PpwScript;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
 
@@ -55,6 +58,8 @@ import org.openide.util.NbPreferences;
  * Hudson PHP options.
  */
 public final class HudsonOptions {
+
+    private static final Logger LOGGER = Logger.getLogger(HudsonOptions.class.getName());
 
     // Do not change arbitrary - consult with layer's folder OptionsExport
     // Path to Preferences node for storing these preferences
@@ -110,7 +115,17 @@ public final class HudsonOptions {
     }
 
     public String getJobConfig() {
-        return getPreferences().get(JOB_CONFIG, null);
+        String config = getPreferences().get(JOB_CONFIG, null);
+        if (config == null) {
+            File configFile = InstalledFileLocator.getDefault().locate("hudson/config.xml", "org.netbeans.modules.hudson.php", false);  // NOI18N
+            if (configFile != null) {
+                config = configFile.getAbsolutePath();
+                setJobConfig(config);
+            } else {
+                LOGGER.info("Hudson job config should be bundled with the IDE");
+            }
+        }
+        return config;
     }
 
     public void setJobConfig(String jobConfig) {

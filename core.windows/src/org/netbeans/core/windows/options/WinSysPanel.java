@@ -45,6 +45,7 @@
 package org.netbeans.core.windows.options;
 
 import java.util.prefs.Preferences;
+import javax.swing.JTabbedPane;
 import org.netbeans.core.windows.FloatingWindowTransparencyManager;
 import org.netbeans.core.windows.nativeaccess.NativeWindowSystem;
 import org.openide.util.NbBundle;
@@ -56,6 +57,9 @@ final class WinSysPanel extends javax.swing.JPanel {
     private final WinSysOptionsPanelController controller;
     
     private final Preferences prefs = NbPreferences.forModule(WinSysPanel.class);
+
+    private boolean defMultiRow;
+    private int defTabPlacement;
     
     WinSysPanel(WinSysOptionsPanelController controller) {
         this.controller = controller;
@@ -72,15 +76,26 @@ final class WinSysPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        buttonGroup1 = new javax.swing.ButtonGroup();
         isDragImage = new javax.swing.JCheckBox();
         isAlphaFloating = new javax.swing.JCheckBox();
         isSnapping = new javax.swing.JCheckBox();
         isDragImageAlpha = new javax.swing.JCheckBox();
         isSnapScreenEdges = new javax.swing.JCheckBox();
+        panelDocTabs = new javax.swing.JPanel();
+        checkMultiRow = new javax.swing.JCheckBox();
+        jLabel1 = new javax.swing.JLabel();
+        radioTop = new javax.swing.JRadioButton();
+        radioBottom = new javax.swing.JRadioButton();
+        radioLeft = new javax.swing.JRadioButton();
+        radioRight = new javax.swing.JRadioButton();
         isCloseActivatesMostRecentDocument = new javax.swing.JCheckBox();
         isNewDocumentOpensNextToActiveTab = new javax.swing.JCheckBox();
+        panelSeparator = new javax.swing.JPanel();
+        jSeparator1 = new javax.swing.JSeparator();
+        jLabel2 = new javax.swing.JLabel();
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
         setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(isDragImage, org.openide.util.NbBundle.getMessage(WinSysPanel.class, "LBL_DragWindowImage")); // NOI18N
@@ -92,7 +107,6 @@ final class WinSysPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(isDragImage, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(isAlphaFloating, org.openide.util.NbBundle.getMessage(WinSysPanel.class, "LBL_TransparentFloatingWindows")); // NOI18N
@@ -106,7 +120,7 @@ final class WinSysPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(20, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(20, 0, 0, 0);
         add(isAlphaFloating, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(isSnapping, org.openide.util.NbBundle.getMessage(WinSysPanel.class, "LBL_SnapFloatingWindows")); // NOI18N
@@ -119,7 +133,7 @@ final class WinSysPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 25, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 25, 0, 0);
         add(isSnapping, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(isDragImageAlpha, org.openide.util.NbBundle.getMessage(WinSysPanel.class, "LBL_TransparentDragWindow")); // NOI18N
@@ -128,7 +142,6 @@ final class WinSysPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(isDragImageAlpha, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(isSnapScreenEdges, org.openide.util.NbBundle.getMessage(WinSysPanel.class, "LBL_SnapToScreenEdges")); // NOI18N
@@ -141,26 +154,116 @@ final class WinSysPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 25, 0, 0);
         add(isSnapScreenEdges, gridBagConstraints);
 
+        panelDocTabs.setLayout(new java.awt.GridBagLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(checkMultiRow, NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.checkMultiRow.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        panelDocTabs.add(checkMultiRow, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.jLabel1.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        panelDocTabs.add(jLabel1, gridBagConstraints);
+
+        buttonGroup1.add(radioTop);
+        radioTop.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(radioTop, NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.radioTop.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 3, 0, 0);
+        panelDocTabs.add(radioTop, gridBagConstraints);
+
+        buttonGroup1.add(radioBottom);
+        org.openide.awt.Mnemonics.setLocalizedText(radioBottom, NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.radioBottom.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 3, 0, 0);
+        panelDocTabs.add(radioBottom, gridBagConstraints);
+
+        buttonGroup1.add(radioLeft);
+        org.openide.awt.Mnemonics.setLocalizedText(radioLeft, NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.radioLeft.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 3, 0, 0);
+        panelDocTabs.add(radioLeft, gridBagConstraints);
+
+        buttonGroup1.add(radioRight);
+        org.openide.awt.Mnemonics.setLocalizedText(radioRight, NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.radioRight.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 3, 0, 0);
+        panelDocTabs.add(radioRight, gridBagConstraints);
+
         org.openide.awt.Mnemonics.setLocalizedText(isCloseActivatesMostRecentDocument, org.openide.util.NbBundle.getMessage(WinSysPanel.class, "LBL_CloseActivatesRecentDocument")); // NOI18N
         isCloseActivatesMostRecentDocument.setToolTipText(org.openide.util.NbBundle.getMessage(WinSysPanel.class, "TIP_CloseActivatesMostRecentDocument")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
-        add(isCloseActivatesMostRecentDocument, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        panelDocTabs.add(isCloseActivatesMostRecentDocument, gridBagConstraints);
         isCloseActivatesMostRecentDocument.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.isCloseActivatesMostRecentDocument.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(isNewDocumentOpensNextToActiveTab, NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.isNewDocumentOpensNextToActiveTab.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(20, 12, 0, 0);
-        add(isNewDocumentOpensNextToActiveTab, gridBagConstraints);
+        panelDocTabs.add(isNewDocumentOpensNextToActiveTab, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        add(panelDocTabs, gridBagConstraints);
+
+        panelSeparator.setLayout(new java.awt.GridBagLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.PAGE_END;
+        gridBagConstraints.weightx = 1.0;
+        panelSeparator.add(jSeparator1, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.jLabel2.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 3);
+        panelSeparator.add(jLabel2, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(20, 0, 0, 0);
+        add(panelSeparator, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void isDragImageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isDragImageActionPerformed
@@ -193,9 +296,26 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         updateDragSection();
         updateSnapSection();
         updateFloatingSection();
+
+        defMultiRow = prefs.getBoolean( WinSysPrefs.DOCUMENT_TABS_MULTIROW, false );
+        checkMultiRow.setSelected( defMultiRow );
+        defTabPlacement = prefs.getInt( WinSysPrefs.DOCUMENT_TABS_PLACEMENT, JTabbedPane.TOP );
+        switch( defTabPlacement ) {
+            case JTabbedPane.BOTTOM:
+                radioBottom.setSelected( true );
+                break;
+            case JTabbedPane.LEFT:
+                radioLeft.setSelected( true );
+                break;
+            case JTabbedPane.RIGHT:
+                radioRight.setSelected( true );
+                break;
+            default:
+                radioTop.setSelected( true );
+        }
     }
 
-    void store() {
+    boolean store() {
         prefs.putBoolean(WinSysPrefs.DND_DRAGIMAGE, isDragImage.isSelected());
         prefs.putBoolean(WinSysPrefs.TRANSPARENCY_DRAGIMAGE, isDragImageAlpha.isSelected());
         
@@ -207,6 +327,22 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         
         prefs.putBoolean(WinSysPrefs.EDITOR_CLOSE_ACTIVATES_RECENT, isCloseActivatesMostRecentDocument.isSelected());
         prefs.putBoolean(WinSysPrefs.OPEN_DOCUMENTS_NEXT_TO_ACTIVE_TAB, isNewDocumentOpensNextToActiveTab.isSelected());
+
+        boolean needsWinsysRefresh = false;
+        needsWinsysRefresh = checkMultiRow.isSelected() != defMultiRow;
+        prefs.putBoolean(WinSysPrefs.DOCUMENT_TABS_MULTIROW, checkMultiRow.isSelected());
+
+        int tabPlacement = JTabbedPane.TOP;
+        if( radioBottom.isSelected() )
+            tabPlacement = JTabbedPane.BOTTOM;
+        else if( radioLeft.isSelected() )
+            tabPlacement = JTabbedPane.LEFT;
+        else if( radioRight.isSelected() )
+            tabPlacement = JTabbedPane.RIGHT;
+        prefs.putInt( WinSysPrefs.DOCUMENT_TABS_PLACEMENT, tabPlacement );
+        needsWinsysRefresh |= tabPlacement != defTabPlacement;
+
+        return needsWinsysRefresh;
     }
 
     boolean valid() {
@@ -249,6 +385,8 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JCheckBox checkMultiRow;
     private javax.swing.JCheckBox isAlphaFloating;
     private javax.swing.JCheckBox isCloseActivatesMostRecentDocument;
     private javax.swing.JCheckBox isDragImage;
@@ -256,5 +394,14 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JCheckBox isNewDocumentOpensNextToActiveTab;
     private javax.swing.JCheckBox isSnapScreenEdges;
     private javax.swing.JCheckBox isSnapping;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JPanel panelDocTabs;
+    private javax.swing.JPanel panelSeparator;
+    private javax.swing.JRadioButton radioBottom;
+    private javax.swing.JRadioButton radioLeft;
+    private javax.swing.JRadioButton radioRight;
+    private javax.swing.JRadioButton radioTop;
     // End of variables declaration//GEN-END:variables
 }

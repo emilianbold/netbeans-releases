@@ -95,7 +95,7 @@ final class Call implements CallDescriptor {
     private boolean leaf;
     /** collection of references might not be complete */
     private boolean canceled = false;
-    private enum State { CANCELED, BROKEN }
+    private enum State { CANCELED, BROKEN, INCOMPLETE }
     private State state;
 
     private Call() {
@@ -145,6 +145,16 @@ final class Call implements CallDescriptor {
         if (canceled) {
             this.state = State.CANCELED;
         }
+    }
+    
+    void setIncomplete(boolean state) {
+        if (state) {
+            this.state = State.INCOMPLETE;
+        }
+    }
+    
+    public boolean isIncomplete() {
+        return this.state == State.INCOMPLETE;
     }
 
     void setBroken() {

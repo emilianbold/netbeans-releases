@@ -1109,7 +1109,7 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                                 r.y -= dy;
                                 compToRect.put(components[i], r);
                             }
-                            addingInts = LayoutModel.createIntervalsFromBounds(compToRect);
+                            addingInts = layoutModel.createIntervalsFromBounds(compToRect);
                         } else { // moving multiple existing components (already in layout, no resizing)
                             f = new LayoutFeeder(components, targetContainer, operations, dragger);
                             LayoutInterval[] commonParents = new LayoutInterval[DIM_COUNT];
@@ -1406,7 +1406,8 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                 layoutModel.addInterval(interval, root, -1);
             } else {
                 while (interval.getSubIntervalCount() > 0) {
-                    layoutModel.addInterval(interval.remove(0), root, -1);
+                    LayoutInterval li = layoutModel.removeInterval(interval, 0);
+                    layoutModel.addInterval(li, root, -1);
                 }
             }
         }
@@ -2171,7 +2172,7 @@ public final class LayoutDesigner implements LayoutModel.RemoveHandler, LayoutMo
                 r.y -= minY;
             }
         }
-        LayoutInterval[] addingInts = LayoutModel.createIntervalsFromBounds(compToBounds);
+        LayoutInterval[] addingInts = layoutModel.createIntervalsFromBounds(compToBounds);
         if (relative) {
             addUnspecified(components, targetContainer, addingInts);
         } else {

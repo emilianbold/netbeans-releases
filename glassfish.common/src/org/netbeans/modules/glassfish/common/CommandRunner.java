@@ -741,10 +741,13 @@ public class CommandRunner extends BasicTask<OperationState> {
         int port = Integer.parseInt(ip.get(useAdminPort ? GlassfishModule.ADMINPORT_ATTR : GlassfishModule.HTTPPORT_ATTR));
         String protocol = "http";
         String url = ip.get(GlassfishModule.URL_ATTR);
+        String domainsDir = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR);
         if (null == url) {
             protocol = getHttpListenerProtocol(host,port, ":::"+cmd+"?"+query);  //NOI18N
         } else if (!(url.contains("ee6wc"))) {
             protocol = getHttpListenerProtocol(host,port,url+":::"+cmd+"?"+query);  // NOI18N
+        } else if (url.contains("ee6wc") && (null == domainsDir || "".equals(domainsDir))) {
+            protocol = "https";
         }
         URI uri = new URI(protocol, null, host, port, cmdSrc + cmd, query, null); // NOI18N
         return uri.toASCIIString().replace("+", "%2b"); // these characters don't get handled by GF correctly... best I can tell.

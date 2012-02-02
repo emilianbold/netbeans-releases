@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.source;
 
 // This file was initially based on org.netbeans.modules.java.JavaEditor
 // (Rev 61)
-import java.awt.Image;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -56,12 +55,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.core.api.multiview.MultiViews;
-import org.netbeans.core.spi.multiview.MultiViewDescription;
-import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.cnd.source.spi.CndPaneProvider;
 
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
@@ -81,15 +76,12 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
+import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
-import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.CloneableOpenSupport;
-import org.openide.windows.TopComponent;
 
 /**
  *  C/C++/Fortran source-file extension for handling the Editor.
@@ -123,10 +115,12 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
      *  Create a new Editor support for the given C/C++/Fortran source.
      *  @param entry The (primary) file entry representing the C/C++/f95 source file
      */
-    public CppEditorSupport(SourceDataObject obj) {
+    public CppEditorSupport(SourceDataObject obj, Node nodeDelegate) {
         super(obj, null, new Environment(obj));
         this.ic = obj.getInstanceContent();
-        this.ic.add(obj.getNodeDelegate());
+        if (nodeDelegate != null) {
+            this.ic.add(nodeDelegate);
+        }
     }
     /** 
      * Overrides superclass method. Adds adding of save cookie if the document has been marked modified.
@@ -283,20 +277,6 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
         return ""; // NOI18N
     }
 
-//    @Override
-//    protected Pane createPane() {
-//        DataObject dataObject = getDataObject();
-//        if (dataObject != null && dataObject.isValid()) {
-//            MultiViewDescription[] descriptions = dataObject.getLookup().lookup(MultiViewDescription[].class);
-//            if (descriptions != null) {
-//                CloneableEditorSupport.Pane pane= (CloneableEditorSupport.Pane) MultiViewFactory.createCloneableMultiView(
-//                        descriptions, descriptions[0]);
-//                return pane;
-//            }
-//        }
-//        return super.createPane();
-//    }
-    
     @Override
     protected Pane createPane() {
 
@@ -312,38 +292,6 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
     }
     
     
-    private class StandardDescriptor implements MultiViewDescription {
-        @Override
-        public MultiViewElement createElement() {
-            return new MultiViewEditorElement(getDataObject().getLookup());
-        }
-
-        @Override
-        public String getDisplayName() {
-            return NbBundle.getMessage(CppEditorSupport.class, "TabLabel_Source"); // NOI18N
-        }
-
-        @Override
-        public HelpCtx getHelpCtx() {
-            return HelpCtx.DEFAULT_HELP;
-        }
-
-        @Override
-        public Image getIcon() {
-            return ImageUtilities.loadImage(HDataNode.HDataIcon);
-        }
-
-        @Override
-        public int getPersistenceType() {
-            return TopComponent.PERSISTENCE_ONLY_OPENED;
-        }
-
-        @Override
-        public String preferredID() {
-            return "header.source"; // NOI18N
-        }        
-    }
-
     /** Nested class. Environment for this support. Extends <code>DataEditorSupport.Env</code> abstract class. */
     private static class Environment extends DataEditorSupport.Env {
 
@@ -377,7 +325,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
          */
         @Override
         public CloneableOpenSupport findCloneableOpenSupport() {
-            return getDataObject().getCookie(CppEditorSupport.class);
+            return getDataObject().getLookup().lookup(CppEditorSupport.class);
         }
     } // End of nested Environment class.    
 }

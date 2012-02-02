@@ -100,15 +100,15 @@ public final class ProjectPropertiesSupport {
         project.addWeakIgnoredFilesListener(listener);
     }
 
-    public static boolean addWeakPropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
+    public static boolean addWeakProjectPropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
         return project.addWeakPropertyChangeListener(listener);
     }
 
-    public static void addPropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
+    public static void addProjectPropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
         project.addPropertyChangeListener(listener);
     }
 
-    public static void removePropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
+    public static void removeProjectPropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
         project.removePropertyChangeListener(listener);
     }
 
@@ -444,6 +444,18 @@ public final class ProjectPropertiesSupport {
 
     public static String getPhpUnitLastUsedTestGroups(PhpProject project) {
         return getString(project, PhpProjectProperties.PHP_UNIT_LAST_USED_TEST_GROUPS, null);
+    }
+
+    public static String getHostname(PhpProject project) {
+        return getString(project, PhpProjectProperties.HOSTNAME, null);
+    }
+
+    public static String getPort(PhpProject project) {
+        return getString(project, PhpProjectProperties.PORT, null);
+    }
+
+    public static String getInternalRouter(PhpProject project) {
+        return getString(project, PhpProjectProperties.ROUTER, null);
     }
 
     /**

@@ -59,7 +59,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
 import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.Filer;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -81,10 +81,10 @@ import javax.tools.StandardLocation;
  */
 public abstract class AbstractServiceProviderProcessor extends AbstractProcessor {
 
-    private final Map<ProcessingEnvironment,Map<String,SortedSet<ServiceLoaderLine>>> outputFilesByProcessor =
-            new WeakHashMap<ProcessingEnvironment,Map<String,SortedSet<ServiceLoaderLine>>>();
-    private final Map<ProcessingEnvironment,Map<String,List<Element>>> originatingElementsByProcessor =
-            new WeakHashMap<ProcessingEnvironment,Map<String,List<Element>>>();
+    private final Map<Filer,Map<String,SortedSet<ServiceLoaderLine>>> outputFilesByProcessor =
+            new WeakHashMap<Filer,Map<String,SortedSet<ServiceLoaderLine>>>();
+    private final Map<Filer,Map<String,List<Element>>> originatingElementsByProcessor =
+            new WeakHashMap<Filer,Map<String,List<Element>>>();
     private final Map<TypeElement,Boolean> verifiedClasses = new WeakHashMap<TypeElement,Boolean>();
 
     /** Throws IllegalStateException. For access by selected subclasses. */
@@ -161,11 +161,12 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
         processingEnv.getMessager().printMessage(Kind.NOTE,
                 impl + " to be registered as a " + xface + (path.length() > 0 ? " under " + path : ""));
         String rsrc = (path.length() > 0 ? "META-INF/namedservices/" + path + "/" : "META-INF/services/") + xface;
+        Filer filer = processingEnv.getFiler();
         {
-            Map<String,List<Element>> originatingElements = originatingElementsByProcessor.get(processingEnv);
+            Map<String,List<Element>> originatingElements = originatingElementsByProcessor.get(filer);
             if (originatingElements == null) {
                 originatingElements = new HashMap<String,List<Element>>();
-                originatingElementsByProcessor.put(processingEnv, originatingElements);
+                originatingElementsByProcessor.put(filer, originatingElements);
             }
             List<Element> origEls = originatingElements.get(rsrc);
             if (origEls == null) {
@@ -174,17 +175,17 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
             }
             origEls.add(clazz);
         }
-        Map<String,SortedSet<ServiceLoaderLine>> outputFiles = outputFilesByProcessor.get(processingEnv);
+        Map<String,SortedSet<ServiceLoaderLine>> outputFiles = outputFilesByProcessor.get(filer);
         if (outputFiles == null) {
             outputFiles = new HashMap<String,SortedSet<ServiceLoaderLine>>();
-            outputFilesByProcessor.put(processingEnv, outputFiles);
+            outputFilesByProcessor.put(filer, outputFiles);
         }
         SortedSet<ServiceLoaderLine> lines = outputFiles.get(rsrc);
         if (lines == null) {
             lines = new TreeSet<ServiceLoaderLine>();
             try {
                 try {
-                    FileObject in = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, "", rsrc);
+                    FileObject in = filer.getResource(StandardLocation.SOURCE_PATH, "", rsrc);
                     in.openInputStream().close();
                     processingEnv.getMessager().printMessage(Kind.ERROR,
                             "Cannot generate " + rsrc + " because it already exists in sources: " + in.toUri());
@@ -200,7 +201,7 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
                     // Good.
                 }
                 try {
-                    FileObject in = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", rsrc);
+                    FileObject in = filer.getResource(StandardLocation.CLASS_OUTPUT, "", rsrc);
                     InputStream is = in.openInputStream();
                     try {
                         ServiceLoaderLine.parse(new InputStreamReader(is, "UTF-8"), lines); // NOI18N
@@ -277,11 +278,12 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
     }
 
     private void writeServices() {
-        for (Map.Entry<ProcessingEnvironment,Map<String,SortedSet<ServiceLoaderLine>>> outputFiles : outputFilesByProcessor.entrySet()) {
+        for (Map.Entry<Filer,Map<String,SortedSet<ServiceLoaderLine>>> outputFiles : outputFilesByProcessor.entrySet()) {
+            Filer filer = outputFiles.getKey();
             for (Map.Entry<String,SortedSet<ServiceLoaderLine>> entry : outputFiles.getValue().entrySet()) {
                 try {
-                    FileObject out = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", entry.getKey(),
-                            originatingElementsByProcessor.get(outputFiles.getKey()).get(entry.getKey()).toArray(new Element[0]));
+                    FileObject out = filer.createResource(StandardLocation.CLASS_OUTPUT, "", entry.getKey(),
+                            originatingElementsByProcessor.get(filer).get(entry.getKey()).toArray(new Element[0]));
                     OutputStream os = out.openOutputStream();
                     try {
                         PrintWriter w = new PrintWriter(new OutputStreamWriter(os, "UTF-8"));

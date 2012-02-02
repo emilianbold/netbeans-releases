@@ -98,7 +98,7 @@ import org.openide.util.NbBundle;
  * see NNCompletionProvider and NNCompletionQuery as nb 5.5 precursors for this class 
  * @author sp153251
  */
-@MimeRegistration(mimeType = "text/x-java", service = CompletionProvider.class)//NOI18N
+@MimeRegistration(mimeType = "text/x-java", service = CompletionProvider.class, position = 400)//NOI18N
 public class JPACodeCompletionProvider implements CompletionProvider {
 
     @Override
@@ -186,12 +186,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
                         anchorOffset = -1;
                         Source source = Source.create(doc);
                         if (source != null) {
-                            Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singletonList(source), getTask());
-                            if (!f.isDone()) {
-                                component.putClientProperty("completion-active", Boolean.FALSE); //NOI18N
-                                resultSet.setWaitText(NbBundle.getMessage(JPACodeCompletionProvider.class, "scanning-in-progress")); //NOI18N
-                                f.get();
-                            }
+                            ParserManager.parse(Collections.singletonList(source), getTask());
                             if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                                 if (results != null) {
                                     resultSet.addAllItems(results);

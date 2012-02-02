@@ -55,7 +55,14 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
-final class ComponentssupportOptionsPanelController extends OptionsPanelController {
+@OptionsPanelController.SubRegistration(
+    location="Java",
+    id="JavaME",
+    displayName="#JavaME_Option_DisplayName_Componentssupport_TITLE",
+    keywords="#KW_JavaMEOptions",
+    keywordsCategory="Java/JavaME"
+)
+public final class ComponentssupportOptionsPanelController extends OptionsPanelController {
 
     private ComponentssupportPanel panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);

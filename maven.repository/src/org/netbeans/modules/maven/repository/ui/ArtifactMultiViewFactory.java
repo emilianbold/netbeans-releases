@@ -82,12 +82,13 @@ import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.repository.dependency.AddAsDependencyAction;
+import static org.netbeans.modules.maven.repository.ui.Bundle.*;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -139,6 +140,11 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
         return tc;
     }
 
+    @Messages({
+        "Progress_Download=Downloading Maven dependencies",
+        "TIT_Error=Panel loading error.",
+        "BTN_CLOSE=&Close"
+    })
     @NonNull private Lookup createLookup(final @NullAllowed Project prj, final @NullAllowed NBVersionInfo info, final @NonNull Artifact artifact, final @NullAllowed List<ArtifactRepository> fRepos) {
         final InstanceContent ic = new InstanceContent();
         AbstractLookup lookup = new AbstractLookup(ic);
@@ -155,7 +161,7 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
         RP.post(new Runnable() {
             public void run() {
                 MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
-                AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(NbBundle.getMessage(NbMavenProject.class, "Progress_Download"),
+                AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(Progress_Download(),
                             new ProgressContributor[] {
                                 AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
                             ProgressTransferListener.cancellable(), null);
@@ -188,9 +194,9 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
 
                 } catch (ProjectBuildingException ex) {
                     ErrorPanel pnl = new ErrorPanel(ex);
-                    DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(ArtifactMultiViewFactory.class, "TIT_Error"));
+                    DialogDescriptor dd = new DialogDescriptor(pnl, TIT_Error());
                     JButton close = new JButton();
-                    org.openide.awt.Mnemonics.setLocalizedText(close, NbBundle.getMessage(ArtifactMultiViewFactory.class, "BTN_CLOSE"));
+                    org.openide.awt.Mnemonics.setLocalizedText(close, BTN_CLOSE());
                     dd.setOptions(new Object[] { close });
                     dd.setClosingOptions(new Object[] { close });
                     DialogDisplayer.getDefault().notify(dd);

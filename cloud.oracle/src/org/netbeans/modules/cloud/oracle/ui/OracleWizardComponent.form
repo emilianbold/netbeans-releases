@@ -38,13 +38,13 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="instanceURLTextField" alignment="0" pref="229" max="32767" attributes="0"/>
-                  <Component id="adminURLTextField" alignment="0" pref="229" max="32767" attributes="0"/>
-                  <Component id="passwordField" alignment="0" pref="229" max="32767" attributes="0"/>
-                  <Component id="userNameTextField" alignment="0" pref="229" max="32767" attributes="0"/>
-                  <Component id="identityDomainTextField" alignment="0" pref="229" max="32767" attributes="0"/>
-                  <Component id="serviceInstanceTextField" alignment="0" pref="229" max="32767" attributes="0"/>
-                  <Component id="cloudURLTextField" alignment="0" pref="229" max="32767" attributes="0"/>
+                  <Component id="instanceURLTextField" alignment="0" pref="233" max="32767" attributes="0"/>
+                  <Component id="adminURLTextField" alignment="0" pref="233" max="32767" attributes="0"/>
+                  <Component id="passwordField" alignment="0" pref="233" max="32767" attributes="0"/>
+                  <Component id="userNameTextField" alignment="0" pref="233" max="32767" attributes="0"/>
+                  <Component id="identityDomainTextField" alignment="0" pref="233" max="32767" attributes="0"/>
+                  <Component id="serviceInstanceTextField" alignment="0" pref="233" max="32767" attributes="0"/>
+                  <Component id="cloudURLTextField" alignment="0" pref="233" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>

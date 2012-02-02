@@ -69,6 +69,8 @@ public class ApplicationManagerConnectionFactoryImpl implements ApplicationManag
         Thread.currentThread().setContextClassLoader(classLoader);
         try {
             am = oracle.cloud.paas.api.ApplicationManagerConnectionFactory.createServiceEndpoint(u, user, password);
+        } catch (oracle.cloud.paas.exception.ManagerException ex) {
+            throw ApplicationManagerImpl.wrapException(ex);
         } finally {
             Thread.currentThread().setContextClassLoader(cl_);
         }

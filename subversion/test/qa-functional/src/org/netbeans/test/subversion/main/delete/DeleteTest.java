@@ -18,6 +18,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.Operator;
@@ -79,7 +80,7 @@ public class DeleteTest extends JellyTestCase {
      }
     
     public void testDeleteRevert() throws Exception {
-        try {
+       
             MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
 
@@ -130,8 +131,9 @@ public class DeleteTest extends JellyTestCase {
             node.performPopupAction("Subversion|Show Changes");
 
             TestKit.waitText(mh);
-
+            new EventTool().waitNoEvent(5000);
             node.performPopupActionNoBlock("Delete");
+            new EventTool().waitNoEvent(5000);
             NbDialogOperator dialog = new NbDialogOperator("Delete");
             JButtonOperator btn = new JButtonOperator(dialog, "OK");
             btn.push();
@@ -188,11 +190,9 @@ public class DeleteTest extends JellyTestCase {
                 e = ex;
             }
             assertNull("Reverted file should be visible!!!", e);
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
-        } finally {
+        
             TestKit.closeProject(PROJECT_NAME);
-        }    
+         
     }
     
     public void testDeleteCommit() throws Exception {

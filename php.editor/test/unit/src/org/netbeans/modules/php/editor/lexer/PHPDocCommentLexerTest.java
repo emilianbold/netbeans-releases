@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -50,10 +50,10 @@ import org.netbeans.junit.NbTestCase;
  * @author Petr Pisl
  */
 public class PHPDocCommentLexerTest extends NbTestCase {
-    
+
     public PHPDocCommentLexerTest(String testName) {
         super(testName);
-    }            
+    }
 
     @Override
     protected void setUp() throws Exception {
@@ -70,19 +70,19 @@ public class PHPDocCommentLexerTest extends NbTestCase {
         PHPLexerUtils.printTokenSequence(ts, "testSimpleComment"); ts.moveStart();
         PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, "comment 1");
     }
-    
+
     public void testCommentTags() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("comment 1\n * @link\n * @name\n * @desc", PHPDocCommentTokenId.language());
         //PHPLexerUtils.printTokenSequence(ts, "testSimpleComment"); ts.moveStart();
         PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, "comment 1\n * ");
-        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_LINK, "@link");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_ANNOTATION, "@link");
         PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, "\n * ");
-        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_NAME, "@name");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_ANNOTATION, "@name");
         PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, "\n * ");
-        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_DESC, "@desc");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_ANNOTATION, "@desc");
 
     }
-    
+
     public void testNotMatchInput1() throws Exception {
         TokenSequence<?> ts = PHPLexerUtils.seqForText("*   <dd> \"*word\"  => ENDS_WITH(word)\n *   <dd> \"/^word.* /\" => REGEX(^word.*)\n *   <dd> \"word*word\" => REGEX(word.*word)", PHPDocCommentTokenId.language());
         PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, "*   <dd> \"*word\"  => ENDS_WITH(word)\n *   <dd> \"/^word.* /\" => REGEX(^word.*)\n *   <dd> \"word*word\" => REGEX(word.*word)");
@@ -96,11 +96,11 @@ public class PHPDocCommentLexerTest extends NbTestCase {
                 " * @property-write boolean death", PHPDocCommentTokenId.language());
         PHPLexerUtils.printTokenSequence(ts, "testSimpleComment"); ts.moveStart();
         PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, "comment 1\n * ");
-        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_PROPERTY, "@property");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_ANNOTATION, "@property");
         PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, " int age how old she is\n * ");
-        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_PROPERTY_READ, "@property-read");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_ANNOTATION, "@property-read");
         PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, " string nick readonly property\n * ");
-        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_PROPERTY_WRITE, "@property-write");
+        PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_ANNOTATION, "@property-write");
         PHPLexerUtils.next(ts, PHPDocCommentTokenId.PHPDOC_COMMENT, " boolean death");
     }
 

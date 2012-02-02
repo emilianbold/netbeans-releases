@@ -92,5 +92,16 @@ public interface WinSysPrefs {
      * @since 2.38
      */
     public final String OPEN_DOCUMENTS_NEXT_TO_ACTIVE_TAB = "editor.open.next.to.active";
+
+    /**
+     * @since 2.43
+     */
+    public final String DOCUMENT_TABS_PLACEMENT = "document.tabs.placement";
+
+    /**
+     * @since 2.43
+     */
+    public final String DOCUMENT_TABS_MULTIROW = "document.tabs.multirow";
+
     
 }

@@ -1134,6 +1134,14 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         ctx.typeChar('\f');
         ctx.assertDocumentTextEquals("()|");
     }
+    
+    public void testJumpCharacters() throws Exception {
+        Context ctx = new Context(new JavaKit(), "m(\"p|\");");
+        ctx.typeChar('"');
+        ctx.assertDocumentTextEquals("m(\"p\"|);");
+        ctx.typeChar(')');
+        ctx.assertDocumentTextEquals("m(\"p\")|;");
+    }
 
     public void testCorrectHandlingOfStringEscapes184059() throws Exception {
         assertTrue(isInsideString("foo\n\"bar|\""));

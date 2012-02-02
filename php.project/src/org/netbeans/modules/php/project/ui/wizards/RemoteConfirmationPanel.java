@@ -72,7 +72,10 @@ import org.openide.windows.InputOutput;
  */
 public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDescriptor>,
         WizardDescriptor.FinishablePanel<WizardDescriptor>, CancelablePanel, ChangeListener {
+
     static final String REMOTE_FILES = "remoteFiles"; // NOI18N
+    static final String REMOTE_CLIENT = "remoteClient"; // NOI18N
+
     private static final RequestProcessor RP = new RequestProcessor("Fetching remote files", 2); // NOI18N
 
     final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -120,6 +123,10 @@ public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDes
         descriptor = settings;
         getComponent();
 
+        if (remoteClient != null) {
+            // this method is called more than once so stor the remove client just once
+            settings.putProperty(REMOTE_CLIENT, remoteClient);
+        }
         cancel();
 
         settings.putProperty(REMOTE_FILES, confirmationPanel.getRemoteFiles());

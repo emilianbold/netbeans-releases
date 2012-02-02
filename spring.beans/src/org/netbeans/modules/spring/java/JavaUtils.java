@@ -86,6 +86,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.spring.beans.utils.ElementSeekerTask;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.StatusDisplayer;
@@ -223,16 +224,21 @@ public final class JavaUtils {
         return null;
     }
 
-    @NbBundle.Messages("title.searching.method=Searching Method")
+    @NbBundle.Messages("JavaUtils.title.method.searching=Searching Method")
     public static ElementHandle<ExecutableElement> findMethod(FileObject fileObject, final String classBinName,
             final String methodName, int argCount, Public publicFlag, Static staticFlag) {
         JavaSource js = JavaUtils.getJavaSource(fileObject);
         if (js != null) {
             MethodFinder methodFinder = new MethodFinder(js, classBinName, methodName, argCount, publicFlag, staticFlag);
-            if (!ScanDialog.runWhenScanFinished(methodFinder, Bundle.title_searching_method())) {
-                return methodFinder.getMethodHandle();
+            methodFinder.runAsUserTask();
+            if (methodFinder.getMethodHandle() == null && SourceUtils.isScanInProgress()) {
+                if (!ScanDialog.runWhenScanFinished(methodFinder, Bundle.JavaUtils_title_method_searching())) {
+                    return methodFinder.getMethodHandle();
+                } else {
+                    return null;
+                }
             } else {
-                return null;
+                return methodFinder.getMethodHandle();
             }
         }
 
@@ -317,78 +323,51 @@ public final class JavaUtils {
             }
         }
     }
-    
+
+    @NbBundle.Messages("JavaUtils.title.class.searching=Searching Class")
     public static void findAndOpenJavaClass(final String classBinaryName, FileObject fileObject) {
+        if (classBinaryName == null || fileObject == null) {
+            return;
+        }
+
         final JavaSource js = JavaUtils.getJavaSource(fileObject);
         if (js != null) {
-            try {
+            ClassFinder classFinder = new ClassFinder(js, classBinaryName);
+            classFinder.runAsUserTask();
+            if (!classFinder.wasElementFound() && SourceUtils.isScanInProgress()) {
+                ScanDialog.runWhenScanFinished(classFinder, Bundle.JavaUtils_title_class_searching());
+            }
+        }
+    }
 
-                class AL implements ActionListener {
-                    private Dialog dialog;
-                    private Future<Void> monitor;
+    private static final class ClassFinder extends ElementSeekerTask {
 
-                    public void start (final Future<Void> monitor) {
-                        assert monitor != null;
-                        this.monitor = monitor;
-                        if (dialog != null) {
-                            dialog.setVisible(true);
-                        }
-                    }
+        private final String classBinaryName;
 
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        monitor.cancel(false);
-                        close ();
-                    }
+        public ClassFinder(JavaSource javaSource, String classBinaryName) {
+            super(javaSource);
+            this.classBinaryName = classBinaryName;
+        }
 
-                    void close () {
-                        if (dialog != null) {
-                            dialog.setVisible(false);
-                            dialog.dispose();
-                            dialog = null;
-                        }
-                    }
-                };
-
-                final AL listener = new AL();
-                
-                JLabel label = new JLabel(NbBundle.getMessage(JavaUtils.class,"MSG_WaitScan"),
-                        javax.swing.UIManager.getIcon("OptionPane.informationIcon"), SwingConstants.LEFT);
-                label.setBorder(new EmptyBorder(12,12,11,11));
-                String actionName=NbBundle.getMessage(JavaUtils.class,"TTL_WaitScan");
-                DialogDescriptor dd = new DialogDescriptor(label, actionName, true, new Object[]{NbBundle.getMessage(JavaUtils.class,"LBL_CancelAction",actionName)}, null, 0, null, listener);
-                listener.dialog = DialogDisplayer.getDefault().createDialog(dd);
-                listener.dialog.pack();
-
-                Future<Void> future = js.runWhenScanFinished(new Task<CompilationController>() {
-                    @Override
-                    public void run(CompilationController cc) throws Exception {
-                        listener.close();
-                        boolean opened = false;
-                        if (classBinaryName == null) {
-                            return;
-                        }
-                        TypeElement element = JavaUtils.findClassElementByBinaryName(classBinaryName, cc);
-                        if (element != null) {
-                            opened = ElementOpen.open(js.getClasspathInfo(), element);
-                        }
-                        if (!opened) {
-                            String msg = NbBundle.getMessage(JavaUtils.class, "LBL_SourceNotFound", classBinaryName);
-                            StatusDisplayer.getDefault().setStatusText(msg);
-                        }
-                    }
-                }, true);
-                
-                if (!future.isDone()) {
-                    listener.start(future);
-                }
-            } catch (IOException ex) {
-                Logger.getLogger("global").log(Level.SEVERE, ex.getMessage(), ex);
+        @Override
+        public void run(CompilationController controller) throws Exception {
+            boolean opened = false;
+            if (classBinaryName == null) {
+                return;
+            }
+            TypeElement element = JavaUtils.findClassElementByBinaryName(classBinaryName, controller);
+            if (element != null) {
+                elementFound.set(true);
+                opened = ElementOpen.open(javaSource.getClasspathInfo(), element);
+            }
+            if (!opened) {
+                String msg = NbBundle.getMessage(JavaUtils.class, "LBL_SourceNotFound", classBinaryName); //NOI18N
+                StatusDisplayer.getDefault().setStatusText(msg);
             }
         }
     }
     
-    private static final class MethodFinder implements Runnable, CancellableTask<CompilationController> {
+    private static final class MethodFinder extends ElementSeekerTask {
 
         private String classBinName;
         private String methodName;
@@ -396,15 +375,14 @@ public final class JavaUtils {
         private Public publicFlag;
         private Static staticFlag;
         private ElementHandle<ExecutableElement> methodHandle;
-        private JavaSource javaSource;
 
         public MethodFinder(JavaSource javaSource, String classBinName, String methodName, int argCount, Public publicFlag, Static staticFlag) {
+            super(javaSource);
             this.classBinName = classBinName;
             this.methodName = methodName;
             this.argCount = argCount;
             this.publicFlag = publicFlag;
             this.staticFlag = staticFlag;
-            this.javaSource = javaSource;
         }
 
         @Override
@@ -464,19 +442,6 @@ public final class JavaUtils {
 
         public ElementHandle<ExecutableElement> getMethodHandle() {
             return this.methodHandle;
-        }
-
-        @Override
-        public void run() {
-            try {
-                javaSource.runUserActionTask(this, true);
-            } catch (IOException ex) {
-                Logger.getLogger("global").log(Level.SEVERE, ex.getMessage(), ex); //NOI18N
-            }
-        }
-
-        @Override
-        public void cancel() {
         }
     }
     
