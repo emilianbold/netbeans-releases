@@ -413,6 +413,17 @@ public final class JFXProjectProperties {
     
     /** Keeps singleton instance of JFXProjectProperties for any fx project for which property customizer is opened at once */
     private static Map<String, JFXProjectProperties> propInstance = new TreeMap<String, JFXProjectProperties>();
+
+    /** Keeps set of category markers used to identify validity of JFXProjectProperties instance */
+    private Set<String> instanceMarkers = new TreeSet<String>();
+    
+    public void markInstance(@NonNull String marker) {
+        instanceMarkers.add(marker);
+    }
+    
+    public boolean isInstanceMarked(@NonNull String marker) {
+        return instanceMarkers.contains(marker);
+    }
     
     /** Factory method */
     public static JFXProjectProperties getInstance(Lookup context) {
@@ -426,6 +437,38 @@ public final class JFXProjectProperties {
         return prop;
     }
 
+    /** Factory method 
+     * This is to prevent reuse of the same instance after the properties dialog
+     * has been cancelled. Called by each FX category provider at the time
+     * when properties dialog is opened, it checks/stores category-specific marker strings. 
+     * Previous existence of marker string indicates that properties dialog had been opened
+     * before and ended by Cancel, otherwise this instance would not exist (OK would
+     * cause properties to be saved and the instance deleted by a call to JFXProjectProperties.cleanup()).
+     * (Note that this is a workaround to avoid adding listener to properties dialog close event.)
+     * 
+     * @param category marker string to indicate which category provider is calling this
+     * @return instance of JFXProjectProperties shared among category panels in the current Project Properties dialog only
+     */
+    public static JFXProjectProperties getInstancePerSession(Lookup context, String category) {
+        Project proj = context.lookup(Project.class);
+        String projDir = proj.getProjectDirectory().getPath();
+        JFXProjectProperties prop = propInstance.get(projDir);
+        if(prop != null) {
+            if(prop.isInstanceMarked(category)) {
+                // category marked before - create new instance to avoid reuse after Cancel
+                prop = null;
+            } else {
+                prop.markInstance(category);
+            }
+        }
+        if(prop == null) {
+            prop = new JFXProjectProperties(context);
+            propInstance.put(projDir, prop);
+            prop.markInstance(category);
+        }
+        return prop;
+    }
+    
     /** Getter method */
     public static JFXProjectProperties getInstanceIfExists(Project proj) {
         assert proj != null;
