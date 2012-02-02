@@ -62,16 +62,18 @@ public abstract class JsElementImpl implements JsElement {
     private String name;
     private OffsetRange offsetRange;
     private Set<Modifier> modifiers;
+    private boolean isDeclared;
     
-    public JsElementImpl(FileObject fileObject, String name, OffsetRange offsetRange, Set<Modifier> modifiers) {
+    public JsElementImpl(FileObject fileObject, String name, boolean isDeclared, OffsetRange offsetRange, Set<Modifier> modifiers) {
         this.fileObject = fileObject;
         this.name = name;
         this.offsetRange = offsetRange;
         this.modifiers = modifiers;
+        this.isDeclared = isDeclared;
     }
     
-    public JsElementImpl(FileObject fileObject, String name, OffsetRange offsetRange) {
-        this(fileObject, name, offsetRange, Collections.<Modifier>emptySet());
+    public JsElementImpl(FileObject fileObject, String name, boolean isDeclared, OffsetRange offsetRange) {
+        this(fileObject, name, isDeclared, offsetRange, Collections.<Modifier>emptySet());
     }
            
     @Override
@@ -130,7 +132,16 @@ public abstract class JsElementImpl implements JsElement {
     public String getIn() {
         return null;
     }
-    
+
+    @Override
+    public boolean isDeclared() {
+        return isDeclared;
+    }
+
+    public void setDeclared(boolean isDeclared) {
+        this.isDeclared = isDeclared;
+    }
+   
     @Override
     public OffsetRange getOffsetRange(ParserResult result) {
         return offsetRange;

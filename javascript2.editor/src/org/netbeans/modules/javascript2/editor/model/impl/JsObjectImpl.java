@@ -59,14 +59,12 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     final private JsObject parent;
     final private List<Occurrence> occurrences;
     final private HashMap<Integer, Collection<String>> assignments;
-    private boolean isDeclared;
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange) {
-        super((parent != null ? parent.getFileObject() : null), name.getName(), offsetRange, EnumSet.of(Modifier.PUBLIC));
+        super((parent != null ? parent.getFileObject() : null), name.getName(), false,  offsetRange, EnumSet.of(Modifier.PUBLIC));
         this.properties = new HashMap<String, JsObject>();
         this.declarationName = name;
         this.parent = parent;
-        this.isDeclared = false;
         this.occurrences = new ArrayList<Occurrence>();
         this.assignments = new HashMap<Integer, Collection<String>>();
     }
@@ -111,16 +109,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     public JsObject getParent() {
         return parent;
     }
-
-    @Override
-    public boolean isDeclared() {
-        return isDeclared;
-    }
-
-    public void setDeclared(boolean isDeclared) {
-        this.isDeclared = isDeclared;
-    }
-
+    
     @Override
     public int getOffset() {
         return declarationName.getOffsetRange().getStart();

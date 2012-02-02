@@ -44,10 +44,11 @@
 
 package org.netbeans.modules.javascript2.editor;
 
+import java.util.Collections;
+import java.util.Set;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.javascript2.editor.JsLanguage;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 
 /**
@@ -55,6 +56,8 @@ import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
  */
 public abstract class JsTestBase extends CslTestBase {
 
+    public static String JS_SOURCE_ID = "classpath/js-source"; // NOI18N
+    
     public JsTestBase(String testName) {
         super(testName);
     }
@@ -67,7 +70,7 @@ public abstract class JsTestBase extends CslTestBase {
 
     @Override
     protected DefaultLanguageConfig getPreferredLanguage() {
-        return new JsLanguage();
+        return new TestJsLanguage();
     }
     
     @Override
@@ -75,6 +78,20 @@ public abstract class JsTestBase extends CslTestBase {
         return JsTokenId.JAVASCRIPT_MIME_TYPE;
     }
     
+    public static class TestJsLanguage extends JsLanguage {
+
+        public TestJsLanguage() {
+            super();
+        }
+
+        @Override
+        public Set<String> getSourcePathIds() {
+            return Collections.singleton(JS_SOURCE_ID);
+        }
+        
+        
+        
+    }
 //    @Override
 //    protected Parser getParser() {
 //        JsParser.runtimeException = null;
@@ -125,84 +142,6 @@ public abstract class JsTestBase extends CslTestBase {
 //        return doc;
 //    }
     
-    protected String[] JAVASCRIPT_TEST_FILES = new String[] {
-        "testfiles/arraytype.js",
-        "testfiles/bubble.js",
-        "testfiles/class-inheritance-ext.js",
-        "testfiles/class-via-function.js",
-        "testfiles/classes.js",
-        "testfiles/classprops.js",
-        "testfiles/completion/lib/comments.js",
-        "testfiles/completion/lib/expressions.js",
-        "testfiles/completion/lib/expressions2.js",
-        "testfiles/completion/lib/expressions3.js",
-        "testfiles/completion/lib/expressions4.js",
-        "testfiles/completion/lib/expressions5.js",
-        "testfiles/completion/lib/test1.js",
-        "testfiles/completion/lib/test129036.js",
-        "testfiles/completion/lib/test2.js",
-        "testfiles/completion/lib/yahoo.js",
-        "testfiles/dnd.js",
-        "testfiles/dragdrop.js",
-        "testfiles/e4x.js",
-        "testfiles/e4x2.js",
-        "testfiles/e4xexample1.js",
-        "testfiles/e4xexample2.js",
-        "testfiles/embedding/convertscript.html.js",
-        "testfiles/embedding/embed124916.erb.js",
-        "testfiles/embedding/fileinclusion.html.js",
-        "testfiles/embedding/mixed.erb.js",
-        "testfiles/embedding/rails-index.html.js",
-        "testfiles/embedding/sideeffects.html.js",
-        "testfiles/embedding/yuisample.html.js",
-        "testfiles/events.js",
-        "testfiles/fileinclusion.html.js",
-        "testfiles/indexable/dojo.js",
-        "testfiles/indexable/dojo.uncompressed.js",
-        "testfiles/indexable/ext-all-debug.js",
-        "testfiles/indexable/ext-all.js",
-        "testfiles/indexable/foo.js",
-        "testfiles/indexable/foo.min.js",
-        "testfiles/indexable/lib.js",
-        "testfiles/indexable/yui-debug.js",
-        "testfiles/indexable/yui-min.js",
-        "testfiles/indexable/yui.js",
-        "testfiles/jmaki-uncompressed.js",
-        "testfiles/jsexample1.js",
-        "testfiles/newstyle-prototype.js",
-        "testfiles/occurrences.js",
-        "testfiles/occurrences2.js",
-        "testfiles/oldstyle-prototype.js",
-        "testfiles/orig-dojo.js.uncompressed.js",
-        "testfiles/prototype-new.js",
-        "testfiles/prototype.js",
-        "testfiles/rename.js",
-        "testfiles/returntypes.js",
-        "testfiles/semantic1.js",
-        "testfiles/semantic2.js",
-        "testfiles/semantic3.js",
-        "testfiles/semantic4.js",
-        "testfiles/semantic5.js",
-        "testfiles/semantic6.js",
-        "testfiles/semantic7.js",
-        "testfiles/simple.js",
-        "testfiles/SpryAccordion.js",
-        "testfiles/SpryData.js",
-        "testfiles/SpryEffects.js",
-        "testfiles/SpryXML.js",
-        "testfiles/stub_dom2_Node.js",
-        "testfiles/stub_dom_Window.js",
-        "testfiles/stub_Element.js",
-        "testfiles/switches.js",
-        "testfiles/tryblocks.js",
-        "testfiles/two-names.js",
-        "testfiles/types1.js",
-        "testfiles/types2.js",
-        "testfiles/woodstock-body.js",
-        "testfiles/woodstock2.js",
-        "testfiles/yui-anim.js",
-        "testfiles/yui.js",
-    };
 
 //    @Override
 //    protected void assertEquals(String message, BaseDocument doc, ParserResult expected, ParserResult actual) throws Exception {

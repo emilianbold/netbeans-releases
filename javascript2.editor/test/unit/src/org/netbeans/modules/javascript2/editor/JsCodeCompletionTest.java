@@ -106,5 +106,6 @@ public class JsCodeCompletionTest extends JsTestBase {
     
     public void testSimpleObject03() throws Exception {
         checkCompletion("testfiles/model/simpleObject.js", "if (this.^color === \"red\") {", false);
-    }
+    }   
+    
 }
