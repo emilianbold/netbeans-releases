@@ -158,38 +158,36 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
         }
     }
 
-// BROKEN !
-//    public void testContComment2() throws Exception {
-//        // No auto-# on new lines
-//        if (JsTypedBreakInterceptor.CONTINUE_COMMENTS) {
-//            insertBreak("   //  ^", "   //  \n   //  ^");
-//        } else {
-//            insertBreak("   //  ^", "   //  \n   ^");
-//        }
-//    }
-//
-//    public void testContComment3() throws Exception {
-//        // No auto-# on new lines
-//        if (JsTypedBreakInterceptor.CONTINUE_COMMENTS) {
-//            insertBreak("   //\t^", "   //\t\n   //\t^");
-//        } else {
-//            insertBreak("   //\t^", "   //\t\n   ^");
-//        }
-//    }
+    public void testContComment2() throws Exception {
+        // No auto-# on new lines
+        if (JsTypedBreakInterceptor.CONTINUE_COMMENTS) {
+            insertBreak("   //  ^", "   //  \n   //  ^");
+        } else {
+            insertBreak("   //  ^", "   //  \n   ^");
+        }
+    }
+
+    public void testContComment3() throws Exception {
+        // No auto-# on new lines
+        if (JsTypedBreakInterceptor.CONTINUE_COMMENTS) {
+            insertBreak("   //\t^", "   //\t\n   //\t^");
+        } else {
+            insertBreak("   //\t^", "   //\t\n   ^");
+        }
+    }
 
     public void testContComment4() throws Exception {
         insertBreak("// foo\n^", "// foo\n\n^");
     }
 
-// BROKEN !
-//    public void testContComment5() throws Exception {
-//        // No auto-# on new lines
-//        if (JsTypedBreakInterceptor.CONTINUE_COMMENTS) {
-//            insertBreak("      // ^", "      // \n      // ^");
-//        } else {
-//            insertBreak("      // ^", "      // \n      ^");
-//        }
-//    }
+    public void testContComment5() throws Exception {
+        // No auto-# on new lines
+        if (JsTypedBreakInterceptor.CONTINUE_COMMENTS) {
+            insertBreak("      // ^", "      // \n      // ^");
+        } else {
+            insertBreak("      // ^", "      // \n      ^");
+        }
+    }
 
     public void testContComment6() throws Exception {
         insertBreak("   // foo^bar", "   // foo\n   // ^bar");
