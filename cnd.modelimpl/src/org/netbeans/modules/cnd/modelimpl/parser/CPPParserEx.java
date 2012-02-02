@@ -68,13 +68,13 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import java.lang.Integer;
 import org.netbeans.modules.cnd.antlr.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.Hashtable;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
 
@@ -148,14 +148,89 @@ public class CPPParserEx extends CPPParser {
         super.init(filename, flags);
     }
 
-    protected final void init2(CsmFile file, Map<Integer, CsmObject> objects) {
+    private void init2(CsmFile file, Map<Integer, CsmObject> objects) {
         if(objects == null || file == null) {
             action = new CppParserEmptyActionImpl();
         } else {
             action = new CppParserActionImpl(file, objects);        
         }
+        skipIncludeTokensIfNeeded(1);
     }
 
+    private void onIncludeToken(Token t) {
+        // TODO: update semantic context of action if needed
+    }
+
+    // Number of active markers
+    private int nMarkers = 0;    
+    @Override
+    public int mark() {
+        nMarkers++;
+        return super.mark();
+    }
+
+    @Override
+    public void rewind(int pos) {
+        nMarkers--;
+        super.rewind(pos);
+    }
+        
+    @Override
+    public int LA(int i) {
+        final int newIndex = skipIncludeTokensIfNeeded(i);
+        int LA = super.LA(newIndex);
+        assert !isIncludeToken(LA) : super.LT(newIndex) + " not expected";
+        return LA;
+    }
+
+    @Override
+    public Token LT(int i) {
+        Token LT = super.LT(skipIncludeTokensIfNeeded(i));
+        assert !isIncludeToken(LT.getType()) : LT + " not expected ";
+        return LT;
+    }
+    
+    @Override
+    public void consume() {
+        assert !isIncludeToken(super.LA(1)) : super.LT(1) + " not expected ";
+        super.consume();
+        // consume following includes as well
+        while (isIncludeToken(super.LA(1))) {
+            Token t = super.LT(1);
+            onIncludeToken(t);
+            super.consume();
+        }        
+    }
+
+    private int skipIncludeTokensIfNeeded(int i) {
+        if (i == 0) {
+            assert !isIncludeToken(super.LA(0)) : super.LT(0) + " not expected ";
+            return 0;
+        }
+        int superIndex = 0;
+        int nonIncludeTokens = 0;
+        do {
+            int LA = super.LA(++superIndex);
+            if (isIncludeToken(LA)) {
+                if (nMarkers == 0 && superIndex == 1) {
+                    // consume if the first an no markers
+                    Token t = super.LT(superIndex);
+                    onIncludeToken(t);
+                    super.consume();
+                    superIndex = 0;
+                }
+            } else {
+                nonIncludeTokens++;
+            }
+        } while (nonIncludeTokens < i);
+        assert (superIndex >= i) && nonIncludeTokens == i : "LA(" + i + ") => LA(" + superIndex + ") " + nonIncludeTokens + ")" + super.LT(superIndex);
+        return superIndex;
+    }
+    
+    private static boolean isIncludeToken(int LA) {
+        return LA == APTTokenTypes.INCLUDE || LA == APTTokenTypes.INCLUDE_NEXT;
+    }
+    
     private static int strcmp(String s1, String s2) {
         return (s1 == null) ? (s2 == null ? 0 : -1) : s1.compareTo(s2);
     }

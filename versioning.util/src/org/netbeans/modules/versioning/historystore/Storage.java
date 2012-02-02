@@ -57,6 +57,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
 /**
@@ -118,6 +119,30 @@ public class Storage {
             }
         }
         return content;
+    }
+    
+    /**
+     * Stores file's content in the given revision
+     * @param repositoryPath repository path to the file
+     * @param revision revision of the file's content
+     * @param content input stream of the file in the given revision
+     */
+    public synchronized void setContent (String repositoryPath, String revision, InputStream content) {
+        if (ensureAccessible()) {
+            Entry entry = getEntry(repositoryPath, revision, true);
+            try {
+                OutputStream os = entry.getStoreFileOutputStream();
+                Utils.copyStreamsCloseAll(os, content);
+            } catch (IOException ex) {
+                StorageManager.LOG.log(Level.INFO, "setContent(): Cannot save stream's content", ex); //NOI18N
+            }
+        } else {
+            try {
+                content.close();
+            } catch (IOException ex) {
+                StorageManager.LOG.log(Level.INFO, "setContent(): Cannot close stream's content", ex); //NOI18N
+            }
+        }
     }
 
     /**

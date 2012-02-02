@@ -875,6 +875,8 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
 			}
 			dtor_head[true] dtor_body
 			{ #external_declaration_template = #(#[CSM_DTOR_TEMPLATE_DEFINITION, "CSM_DTOR_TEMPLATE_DEFINITION"], #external_declaration_template); }
+                |
+                    ((template_head)? LITERAL_using ID ASSIGNEQUAL) => (template_head)? alias_declaration
 		|  
 			// templated forward class decl, init/decl of static member in template
                         // Changed alternative order as a fix for IZ#138099:
@@ -1275,6 +1277,8 @@ member_declaration_template
         {if( definition )   #member_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION, "CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION"], #member_declaration_template);
          else               #member_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION, "CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION"], #member_declaration_template);}
     |
+        (LITERAL_using ID ASSIGNEQUAL) => alias_declaration
+    |
                         // this rule must be after handling functions 
 			// templated forward class decl, init/decl of static member in template
 			(declaration_specifiers[true, false]
@@ -1512,6 +1516,7 @@ member_declaration
 				LT(1).getLine());
 		}
 		SEMICOLON! //{end_of_stmt();}
+        |       (LITERAL_using ID ASSIGNEQUAL) => alias_declaration
 	|	using_declaration
         |       static_assert_declaration
 	)
@@ -1641,6 +1646,8 @@ declaration[int kind]
         | SEMICOLON )
         //{end_of_stmt();}
         {endDeclaration();}
+    |
+        (LITERAL_using ID ASSIGNEQUAL) => alias_declaration
     |
 	using_declaration	// DW 19/04/04
     |
@@ -1996,8 +2003,10 @@ init_declarator[int kind]
 		(	
 			ASSIGNEQUAL 
                         (cast_array_initializer_head) => initializer
-                        |	
+                |	
 			LPAREN expression_list RPAREN
+                |
+                        array_initializer
 		)?
 	;
 
@@ -2047,7 +2056,7 @@ array_initializer:
 // only for predicates
 cast_array_initializer_head
 :
-    (AMPERSAND)? (balanceParensInExpression)+ LCURLY
+    (AMPERSAND)? (balanceParensInExpression)* LCURLY
     ;
 
 // so far this one is used in predicates only
@@ -2497,7 +2506,12 @@ ctor_initializer
 superclass_init
 	{String q;} 
 	: 
-	q = qualified_id LPAREN! (expression_list)? RPAREN!
+	q = qualified_id 
+        (
+            LPAREN! (expression_list)? RPAREN!
+        |
+            array_initializer
+        )
 
         {#superclass_init = #(#[CSM_CTOR_INITIALIZER, "CSM_CTOR_INITIALIZER"], #superclass_init);}
 	;
@@ -3176,7 +3190,9 @@ condition_declaration {int ts = tsInvalid;}
         ts=type_specifier[dsInvalid, false]
         (postfix_cv_qualifier)? 
         declarator[declStatement, 0]
-        ASSIGNEQUAL assignment_expression
+        (   ASSIGNEQUAL assignment_expression
+        |   array_initializer 
+        )
     ;
 
 //	(declaration)=> declaration|	expression
@@ -3229,7 +3245,7 @@ for_statement
     LITERAL_for LPAREN!
     (
         (for_range_init_statement COLON) =>
-        for_range_init_statement COLON expression
+        for_range_init_statement COLON (expression | array_initializer)
     |
         for_init_statement
         (
@@ -3341,6 +3357,12 @@ using_declaration
 		|qid = qualified_id				// Using-declaration
 		    {#using_declaration = #[CSM_USING_DECLARATION, qid]; #using_declaration.addChild(#u);}
 		)
+		SEMICOLON! //{end_of_stmt();}
+	;
+
+alias_declaration
+	:	LITERAL_using
+		ID ASSIGNEQUAL type_name
 		SEMICOLON! //{end_of_stmt();}
 	;
 
