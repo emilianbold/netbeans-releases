@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,34 +37,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.api.registrations;
 
-package org.netbeans.modules.php.api.annotations;
-
-import java.io.File;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
+import org.netbeans.modules.php.api.annotations.PhpAnnotations;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
-import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
-import org.netbeans.modules.php.spi.editor.EditorExtender;
-import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
+import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
 
-public class PhpFrameworkProviderRegistrationTest extends NbTestCase {
+public class PhpAnnotationsRegistrationProcessorTest extends NbTestCase {
 
     private static final String CONSTRUCTOR = "constructor";
     private static final String FACTORY = "factory";
 
 
-    public PhpFrameworkProviderRegistrationTest(String name) {
+    public PhpAnnotationsRegistrationProcessorTest(String name) {
         super(name);
     }
 
@@ -75,73 +69,71 @@ public class PhpFrameworkProviderRegistrationTest extends NbTestCase {
     }
 
     public void testRegistration() {
-        MyFw.factoryCalls = 0;
+        MyAnnotations.factoryCalls = 0;
         MockLookup.init();
-        assertSame("No factory method should not be used yet", 0, MyFw.factoryCalls);
-        Collection<? extends PhpFrameworkProvider> all = Lookups.forPath(PhpFrameworks.FRAMEWORK_PATH).lookupAll(PhpFrameworkProvider.class);
+        assertSame("No factory method should not be used yet", 0, MyAnnotations.factoryCalls);
+        Collection<? extends PhpAnnotationsProvider> all = Lookups.forPath(PhpAnnotations.ANNOTATIONS_PATH).lookupAll(PhpAnnotationsProvider.class);
         assertSame("Two should be found", 2, all.size());
         // ???
-        //assertSame("One factory method should be used", 1, MyFw.factoryCalls);
+        //assertSame("One factory method should be used", 1, MyAnnotations.factoryCalls);
 
-        Iterator<? extends PhpFrameworkProvider> it = all.iterator();
-        assertEquals(CONSTRUCTOR, it.next().getIdentifier());
-        assertEquals(FACTORY, it.next().getIdentifier());
+        Iterator<? extends PhpAnnotationsProvider> it = all.iterator();
+        assertSame(CONSTRUCTOR, it.next().getIdentifier());
+        assertSame(FACTORY, it.next().getIdentifier());
     }
 
     //~ Inner classes
 
-    public static final class MyFwFactory {
-        @PhpFrameworkProvider.Registration(position=200)
-        public static MyFw getInstance() {
-            MyFw.factoryCalls++;
-            return new MyFw(FACTORY);
+    public static final class MyAnnotationsFactory {
+        @PhpAnnotationsProvider.Registration(position=200)
+        public static MyAnnotations getInstance() {
+            MyAnnotations.factoryCalls++;
+            return new MyAnnotations(FACTORY);
         }
     }
 
-    @PhpFrameworkProvider.Registration(position=100)
-    public static final class MyFw extends PhpFrameworkProvider {
+    @PhpAnnotationsProvider.Registration(position=100)
+    public static final class MyAnnotations extends PhpAnnotationsProvider {
         static int factoryCalls = 0;
 
-        public MyFw() {
-            super(CONSTRUCTOR, CONSTRUCTOR, null);
+        public MyAnnotations() {
+            super(CONSTRUCTOR, "display name", null);
         }
 
-        MyFw(String name) {
-            super(name, name, null);
+        MyAnnotations(String name) {
+            super(name, "display name", null);
         }
 
         @Override
         public boolean isInPhpModule(PhpModule phpModule) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
         @Override
-        public File[] getConfigurationFiles(PhpModule phpModule) {
+        public List<PhpAnnotationTag> getAnnotations() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
         @Override
-        public PhpModuleExtender createPhpModuleExtender(PhpModule phpModule) {
+        public List<PhpAnnotationTag> getFunctionAnnotations() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
         @Override
-        public PhpModuleProperties getPhpModuleProperties(PhpModule phpModule) {
+        public List<PhpAnnotationTag> getTypeAnnotations() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
         @Override
-        public PhpModuleActionsExtender getActionsExtender(PhpModule phpModule) {
+        public List<PhpAnnotationTag> getFieldAnnotations() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
         @Override
-        public PhpModuleIgnoredFilesExtender getIgnoredFilesExtender(PhpModule phpModule) {
+        public List<PhpAnnotationTag> getMethodAnnotations() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-        @Override
-        public FrameworkCommandSupport getFrameworkCommandSupport(PhpModule phpModule) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        @Override
-        public EditorExtender getEditorExtender(PhpModule phpModule) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+
     }
 
 }
