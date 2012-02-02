@@ -126,22 +126,7 @@ public final class CoreBridgeImpl extends CoreBridge {
 
     @SuppressWarnings("deprecation")
     public org.openide.util.Lookup lookupCacheLoad () {
-        FileObject services = FileUtil.getConfigFile("Services"); // NOI18N
-        if (services != null) {
-            StartLog.logProgress("Got Services folder"); // NOI18N
-            DataFolder servicesF;
-            try {
-                servicesF = DataFolder.findFolder(services);
-            } catch (RuntimeException e) {
-                Exceptions.printStackTrace(e);
-                return Lookup.EMPTY;
-            }
-            org.openide.loaders.FolderLookup f = new org.openide.loaders.FolderLookup(servicesF, "SL["); // NOI18N
-            StartLog.logProgress("created FolderLookup"); // NOI18N
-            return f.getLookup();
-        } else {
-            return Lookup.EMPTY;
-        }
+        return NbLoaderPool.getNbLoaderPool().findServicesLookup();
     }
 
     public int cli(
