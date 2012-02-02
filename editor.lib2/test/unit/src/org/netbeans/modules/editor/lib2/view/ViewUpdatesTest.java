@@ -1554,4 +1554,100 @@ ViewBuilder.RebuildCause.INIT_PARAGRAPHS,
         ViewUpdatesTesting.setTestValues();
     }
     
+    public void testInsertAndRemoveNewline() throws Exception {
+        loggingOn();
+        ViewUpdatesTesting.setTestValues(ViewUpdatesTesting.NO_OP_TEST_VALUE);
+        JEditorPane pane = ViewUpdatesTesting.createPane();
+        Document doc = pane.getDocument();
+        final DocumentView docView = DocumentView.get(pane);
+        final PositionsBag highlights = ViewUpdatesTesting.getSingleHighlightingLayer(pane);
+        int offset;
+        String text;
+        int cRegionStartOffset;
+        int cRegionEndOffset;
+        
+        offset = 0;
+        text = "abc\nd\n";
+        ViewUpdatesTesting.setTestValues(
+/*rebuildCause*/        ViewBuilder.RebuildCause.MOD_UPDATE,
+/*createLocalViews*/    true,
+/*startCreationOffset*/ 0,
+/*matchOffset*/         offset + text.length(),
+/*endCreationOffset*/   offset + text.length() + 1, // includes '\n'
+/*bmReuseOffset*/       0,
+/*bmReusePView*/        docView.getParagraphView(0),
+/*bmReuseLocalIndex*/   0,
+/*amReuseOffset*/       offset + text.length(),
+/*amReusePIndex*/       0,
+/*amReusePView*/        docView.getParagraphView(0),
+/*amReuseLocalIndex*/   0 // Could reuse NewlineView
+        );
+        doc.insertString(offset, text, null);
+        ViewUpdatesTesting.checkViews(docView, 0, -1,
+            3, HI_VIEW,
+            1, NL_VIEW /* e:4 */,
+            1, HI_VIEW,
+            1, NL_VIEW /* e:6 */,
+            1, NL_VIEW /* e:7 */
+        );
+
+        offset = 5;
+        text = "\n"; // Newline at end of second line
+        ViewUpdatesTesting.setTestValues(
+/*rebuildCause*/        ViewBuilder.RebuildCause.MOD_UPDATE,
+/*createLocalViews*/    true,
+/*startCreationOffset*/ offset - 1,  // Rebuild prev view since insert at view boundary
+/*matchOffset*/         offset + text.length(),
+/*endCreationOffset*/   offset + text.length() + 1, // includes '\n'
+/*bmReuseOffset*/       offset - 1,
+/*bmReusePView*/        docView.getParagraphView(1),
+/*bmReuseLocalIndex*/   0,
+/*amReuseOffset*/       offset + text.length(),
+/*amReusePIndex*/       1,
+/*amReusePView*/        docView.getParagraphView(1),
+/*amReuseLocalIndex*/   1
+        );
+        doc.insertString(offset, text, null);
+        ViewUpdatesTesting.checkViews(docView, 0, -1,
+            3, HI_VIEW,
+            1, NL_VIEW /* e:4 */,
+            1, HI_VIEW,
+            1, NL_VIEW /* e:6 */,
+            1, NL_VIEW /* e:7 */,
+            1, NL_VIEW /* e:8 */
+        );
+
+        offset = 5;
+        int removeLength = 1;
+        cRegionStartOffset = offset;
+        cRegionEndOffset = offset + removeLength;
+        docView.op.viewUpdates.extendCharRebuildRegion(OffsetRegion.create(doc, cRegionStartOffset, cRegionEndOffset));
+        ViewUpdatesTesting.setTestValues(
+/*rebuildCause*/        ViewBuilder.RebuildCause.MOD_UPDATE,
+/*createLocalViews*/    true,
+/*startCreationOffset*/ offset - 1,
+/*matchOffset*/         offset, // First HI_VIEW#1 removed and one char from second TAB_VIEW#2 removed by cRegion
+/*endCreationOffset*/   docView.getParagraphView(2).getEndOffset() - removeLength, // Remove from line end so plan rebuild till next line's end
+/*bmReuseOffset*/       offset - 1,
+/*bmReusePView*/        docView.getParagraphView(1),
+/*bmReuseLocalIndex*/   0,
+/*amReuseOffset*/       offset,
+/*amReusePIndex*/       2,
+/*amReusePView*/        docView.getParagraphView(2),
+/*amReuseLocalIndex*/   0 // Could reuse NewlineView
+        );
+        doc.remove(offset, removeLength);
+        ViewUpdatesTesting.checkViews(docView, 0, -1,
+            3, HI_VIEW,
+            1, NL_VIEW /* e:4 */,
+            1, HI_VIEW,
+            1, NL_VIEW /* e:6 */,
+            1, NL_VIEW /* e:7 */
+        );
+        NbTestCase.assertEquals(3, docView.getViewCount());
+
+
+        ViewUpdatesTesting.setTestValues();
+    }
+    
 }
