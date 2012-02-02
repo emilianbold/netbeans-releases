@@ -87,6 +87,7 @@ public class ResourcesPanel extends JPanel implements ExplorerManager.Provider {
         initResourcesLabel();
         add(noResourcesLabel);
         pageModel.addPropertyChangeListener(createModelListener());
+        update(true);
     }
 
     /**
