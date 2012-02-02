@@ -168,7 +168,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     @Override
     protected void postDeleteChild(FileObject child) {
         try {
-            DirectoryStorage ds = refreshDirectoryStorage(child.getNameExt()); // it will fire events itself
+            DirectoryStorage ds = refreshDirectoryStorage(child.getNameExt(), false); // it will fire events itself
         } catch (ConnectException ex) {
             RemoteLogger.getInstance().log(Level.INFO, "Error post removing child " + child, ex);
         } catch (IOException ex) {
@@ -216,7 +216,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
         if (res.isOK()) {
             try {
-                refreshDirectoryStorage(name);
+                refreshDirectoryStorage(name, false);
                 RemoteFileObjectBase fo = getFileObject(name);
                 if (fo == null) {
                     creationFalure(name, directory, orig);
@@ -476,7 +476,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         long time = System.currentTimeMillis();
         try {
-            return getDirectoryStorageImpl(false, null, childName);
+            return getDirectoryStorageImpl(false, null, childName, false);
         } finally {
             if (trace) {
                 trace("getDirectoryStorage for {1} took {0} ms", this, System.currentTimeMillis() - time); // NOI18N
@@ -484,11 +484,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
 
-    private DirectoryStorage refreshDirectoryStorage(String expectedName) throws
+    private DirectoryStorage refreshDirectoryStorage(String expectedName, boolean expected) throws
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         long time = System.currentTimeMillis();
         try {
-            return getDirectoryStorageImpl(true, expectedName, null);
+            return getDirectoryStorageImpl(true, expectedName, null, expected);
         } finally {
             if (trace) {
                 trace("refreshDirectoryStorage for {1} took {0} ms", this, System.currentTimeMillis() - time); // NOI18N
@@ -852,7 +852,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
     
-    private DirectoryStorage getDirectoryStorageImpl(boolean forceRefresh, String expectedName, String childName) throws
+    private DirectoryStorage getDirectoryStorageImpl(boolean forceRefresh, String expectedName, String childName, boolean expected) throws
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
         if (forceRefresh && ! ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
@@ -1119,10 +1119,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
                 }
                 for (FileObject deleted : filesToFireDeleted) {
-                    if (interceptor != null) {
-                        interceptor.deletedExternally(FilesystemInterceptorProvider.toFileProxy(deleted));
-                    }
-                    fireFileDeletedEvent(getListeners(), new FileEvent(this, deleted));
+                    fireDeletedEvent(this, (RemoteFileObjectBase)deleted, interceptor, expected);
                 }
                 for (DirEntry entry : entriesToFireCreated) {
                     RemoteFileObjectBase fo = createFileObject(entry);
@@ -1137,7 +1134,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         if (fo.isPendingRemoteDelivery()) {
                             RemoteLogger.getInstance().log(Level.FINE, "Skipping change event for pending file {0}", fo);
                         } else {
-                            fireFileChangedEvent(getListeners(), new FileEvent(fo));
+                            fireFileChangedEvent(getListeners(), new FileEvent(fo, fo, expected));
                         }
                     }
                 }
@@ -1147,6 +1144,14 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             writeLock.unlock();
         }
         return storage;
+    }
+    
+    private void fireDeletedEvent(RemoteFileObjectBase parent, RemoteFileObjectBase fo, FilesystemInterceptorProvider.FilesystemInterceptor interceptor, boolean expected) {
+        if (interceptor != null) {
+            interceptor.deletedExternally(FilesystemInterceptorProvider.toFileProxy(fo));
+        }
+        fo.fireFileDeletedEvent(fo.getListeners(), new FileEvent(fo, fo, expected));
+        parent.fireFileDeletedEvent(parent.getListeners(), new FileEvent(parent, fo, expected));
     }
     
     InputStream _getInputStream(RemotePlainFile child) throws
@@ -1296,7 +1301,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    protected void refreshImpl(boolean recursive, Set<String> antiLoop) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    protected void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (antiLoop != null) {
             if (antiLoop.contains(getPath())) {
                 return;
@@ -1304,26 +1309,10 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 antiLoop.add(getPath());
             }
         }
-        DirectoryStorage refreshedStorage = refreshDirectoryStorage(null);
+        DirectoryStorage refreshedStorage = refreshDirectoryStorage(null, expected);
         if (recursive) {
             for (RemoteFileObjectBase child : getExistentChildren(refreshedStorage)) {
-                child.refreshImpl(true, antiLoop);
-            }
-        }
-        if (USE_VCS) {
-            FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
-            if (interceptor != null) {
-                LinkedList<FilesystemInterceptorProvider.FileProxyI> arr = new LinkedList<FilesystemInterceptorProvider.FileProxyI>();
-                long ts = interceptor.listFiles(FilesystemInterceptorProvider.toFileProxy(this), -1, arr);
-                for (FilesystemInterceptorProvider.FileProxyI proxy : arr) {
-                    DirEntry entry = getEntry(PathUtilities.getBaseName(proxy.getPath()));
-                    if (entry != null && !entry.isDirectory()) {
-                        long lm = entry.getLastModified().getTime();
-                        if (lm > ts) {
-                            ts = lm;
-                        }
-                    }
-                }
+                child.refreshImpl(true, antiLoop, expected);
             }
         }
     }

@@ -127,7 +127,7 @@ public class RulesManagerImpl extends RulesManager {
         return result;
     }
 
-    private static void sortByMetadata(Collection<? extends HintDescription> listedHints, Map<HintMetadata, Collection<HintDescription>> into) {
+    public static void sortByMetadata(Collection<? extends HintDescription> listedHints, Map<HintMetadata, Collection<HintDescription>> into) {
         for (HintDescription hd : listedHints) {
             Collection<HintDescription> h = into.get(hd.getMetadata());
 

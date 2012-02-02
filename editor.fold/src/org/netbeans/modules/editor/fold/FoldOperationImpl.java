@@ -210,15 +210,21 @@ public final class FoldOperationImpl {
     }
     
     public void insertUpdate(DocumentEvent evt, FoldHierarchyTransactionImpl transaction) {
-        manager.insertUpdate(evt, transaction.getTransaction());
+        if (!isReleased()) {
+            manager.insertUpdate(evt, transaction.getTransaction());
+        }
     }
     
     public void removeUpdate(DocumentEvent evt, FoldHierarchyTransactionImpl transaction) {
-        manager.removeUpdate(evt, transaction.getTransaction());
+        if (!isReleased()) {
+            manager.removeUpdate(evt, transaction.getTransaction());
+        }
     }
     
     public void changedUpdate(DocumentEvent evt, FoldHierarchyTransactionImpl transaction) {
-        manager.changedUpdate(evt, transaction.getTransaction());
+        if (!isReleased()) {
+            manager.changedUpdate(evt, transaction.getTransaction());
+        }
     }
 
     public void release() {

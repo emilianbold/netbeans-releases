@@ -103,10 +103,43 @@ final class ViewGapStorage {
         this.offsetGapStart = offsetGapStart;
         this.offsetGapLength = INITIAL_OFFSET_GAP_LENGTH;
     }
+    
+    int raw2Offset(int rawEndOffset) {
+        // Using <= allows to use prevView.getRawEndOffset() as offsetGapStart (assuming non-empty views)
+        return (rawEndOffset <= offsetGapStart)
+                ? rawEndOffset
+                : rawEndOffset - offsetGapLength;
+    }
+
+    int offset2Raw(int offset) {
+        // Using <= allows to use prevView.getRawEndOffset() as offsetGapStart (assuming non-empty views)
+        return (offset <= offsetGapStart)
+                ? offset
+                : offset + offsetGapLength;
+    }
+
+    double raw2VisualOffset(double rawVisualOffset) {
+        // Using <= allows to use prevView.getRawEndVisualOffset() as visualGapStart (assuming non-empty views)
+        return (rawVisualOffset <= visualGapStart)
+                ? rawVisualOffset
+                : rawVisualOffset - visualGapLength;
+    }
+
+    double visualOffset2Raw(double visualOffset) {
+        // Using <= allows to use prevView.getRawEndVisualOffset() as visualGapStart (assuming non-empty views)
+        return (visualOffset <= visualGapStart)
+                ? visualOffset
+                : visualOffset + visualGapLength;
+    }
+
+    boolean isBelowVisualGap(double rawVisualOffset) {
+        return (rawVisualOffset <= visualGapStart);
+    }
 
     StringBuilder appendInfo(StringBuilder sb) {
-        sb.append("<").append(offsetGapStart).append("|").append(offsetGapLength);
-        sb.append(", vis<").append(visualGapStart).append("|").append(visualGapLength);
+        sb.append("<").append(offsetGapStart).append("|").append(offsetGapLength). // NOI18N
+                append(", vis[").append(visualGapIndex).append("]<"). // NOI18N
+                append(visualGapStart).append("|").append(visualGapLength); // NOI18N
         return sb;
     }
 

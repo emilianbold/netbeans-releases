@@ -55,6 +55,15 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         //System.setProperty("cnd.modelimpl.trace.registration", "true");
     }
 
+    public void testDoubleUsing() throws Exception {
+        // #207841 - double "using namespace" breaks code model
+        performTest("iz207841.cpp", 27, 7, "iz207841.cpp", 13, 9); 
+        performTest("iz207841.cpp", 31, 7, "iz207841.cpp", 18, 13); 
+        performTest("iz207841.cpp", 36, 12, "iz207841.cpp", 26, 1); 
+        performTest("iz207841.cpp", 42, 10, "iz207841.cpp", 30, 1); 
+        performTest("iz207841.cpp", 44, 10, "iz207841.cpp", 26, 1); 
+    }
+    
     public void testScopeInTypeAfterConst() throws Exception {
         performTest("boost_in_type_after_scope.cpp", 14, 15, "boost_in_type_after_scope.cpp", 1, 1);
         performTest("boost_in_type_after_scope.cpp", 14, 25, "boost_in_type_after_scope.cpp", 2, 5);

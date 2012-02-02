@@ -59,9 +59,9 @@ final class ViewReplace<V extends EditorView, CV extends EditorView> {
 
     int index; // 12 + 4 = 16 bytes
 
-    int removeCount; // 16 + 4 = 20 bytes
+    private int removeCount; // 16 + 4 = 20 bytes
 
-    List<CV> added; // 20 + 4 = 24 bytes
+    private List<CV> added; // 20 + 4 = 24 bytes
 
     ViewReplace(V view) {
         assert (view != null);
@@ -79,6 +79,10 @@ final class ViewReplace<V extends EditorView, CV extends EditorView> {
         return (added != null) ? added.size() : 0;
     }
 
+    List<CV> added() {
+        return added;
+    }
+
     EditorView[] addedViews() {
         EditorView[] views;
         if (added != null) {
@@ -90,29 +94,35 @@ final class ViewReplace<V extends EditorView, CV extends EditorView> {
         return views;
     }
 
+    int getRemoveCount() {
+        return removeCount;
+    }
+
+    void setRemoveCount(int removeCount) {
+        if (index + removeCount > view.getViewCount()) {
+            throw new IllegalStateException("removeCount=" + removeCount + ", this:\n" + this);
+        }
+        this.removeCount = removeCount;
+    }
+
     int removeEndIndex() {
-        return index + removeCount;
+        return index + getRemoveCount();
     }
     
     int addEndIndex() {
         return index + addedSize();
     }
     
-    int removeNext() {
-        removeCount++;
-        return removeEndIndex();
-    }
-
     void removeTillEnd() {
-        removeCount = view.getViewCount() - index;
+        setRemoveCount(view.getViewCount() - index);
     }
 
     boolean isChanged() {
-        return (added != null) || (removeCount > 0);
+        return (added != null) || (getRemoveCount() > 0);
     }
     
     boolean isMakingViewEmpty() {
-        return index == 0 && removeCount == view.getViewCount() && addedSize() == 0;
+        return index == 0 && getRemoveCount() == view.getViewCount() && addedSize() == 0;
     }
 
     @Override
@@ -120,7 +130,7 @@ final class ViewReplace<V extends EditorView, CV extends EditorView> {
         StringBuilder sb = new StringBuilder(200);
         sb.append(view.getDumpId());
         sb.append(": index=").append(index); // NOI18N
-        sb.append(", remove=").append(removeCount); // NOI18N
+        sb.append(", remove=").append(getRemoveCount()); // NOI18N
         EditorView[] addedViews = addedViews();
         sb.append(", added="); // NOI18N
         if (addedViews != null && addedViews.length > 0) {

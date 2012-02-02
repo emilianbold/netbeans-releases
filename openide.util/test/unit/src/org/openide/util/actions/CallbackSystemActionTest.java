@@ -58,6 +58,7 @@ import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.text.DefaultEditorKit;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -103,7 +104,8 @@ public class CallbackSystemActionTest extends NbTestCase {
     protected boolean runInEQ() {
         return true;
     }
-    
+
+    @RandomlyFails // NB-Core-Build #7816: expected:<0> but was:<1>
     public void testPropertyChangeListenersDetachedAtFinalizeIssue58100() throws Exception {
         
         class MyAction extends AbstractAction

@@ -426,10 +426,11 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     }
 
     private void fakeOneModule(Module m, Bundle original) throws IOException {
-        if (registered.get(m.getCodeNameBase()) != null && original == null) {
+        String cnb = m.getCodeNameBase();
+        if (registered.get(cnb) != null && original == null) {
             return;
         }
-        registered.put(m.getCodeNameBase(), EMPTY);
+        registered.put(cnb, EMPTY);
         Bundle b;
         try {
             String symbolicName = (String) m.getAttribute("Bundle-SymbolicName");
@@ -466,9 +467,10 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                         original.update(is);
                         b = original;
                     } else {
-                        b = framework.getBundleContext().installBundle(
-                            "netigso://" + m.getCodeNameBase(), is
-                        );
+                        assert framework != null;
+                        BundleContext bc = framework.getBundleContext();
+                        assert bc != null;
+                        b = bc.installBundle("netigso://" + cnb, is);
                     }
                     is.close();
                 }

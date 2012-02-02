@@ -655,7 +655,11 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
         }
         for (JavaProjectGenerator.JavaCompilationUnit.CP cp : cps) {
             if (cp.mode.equals(ProjectModel.CLASSPATH_MODE_COMPILE)) {
-                for (String path : PropertyUtils.tokenizePath(model.getEvaluator().evaluate(cp.classpath))) {
+                String v = model.getEvaluator().evaluate(cp.classpath);
+                if (v == null) {
+                    continue;
+                }
+                for (String path : PropertyUtils.tokenizePath(v)) {
                     // we want to show relative paths to user in customizer => following line commented out
                     // path = PropertyUtils.resolveFile(model.getNBProjectFolder(), path).getAbsolutePath();
                     if (path != null) {

@@ -164,37 +164,4 @@ public final class TestUtilities {
         return f;
     }   
 
-//    private static final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
-//
-//    /**
-//     * Prepare Java caches for given binary roots.
-//     *
-//     * @param urls to analyze
-//     */
-//    public final static void analyzeBinaries(final Collection<URL> urls) throws IOException {
-//        final ClasspathInfo cpInfo = ClasspathInfo.create(EMPTY, EMPTY, EMPTY);
-//        final ClassIndexManager mgr  = ClassIndexManager.getDefault();
-//        final JavaSource js = JavaSource.create(cpInfo);
-//        js.runUserActionTask(new Task<CompilationController>() {
-//            public void run(CompilationController parameter) throws Exception {
-//                for (final URL url : urls) {
-//                    TransactionContext ctx = TransactionContext.beginStandardTransaction(false, url);
-//                    try {
-//                        final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);
-//                        ClassIndexManager.getDefault().writeLock(new IndexManager.Action<Void>() {
-//                            public Void run() throws IOException, InterruptedException {
-//                                BinaryAnalyser ba = cii.getBinaryAnalyser();
-//                                ba.start(url, new AtomicBoolean(false), new AtomicBoolean(false));
-//                                ba.finish();
-//                                return null;
-//                            }
-//                        });
-//                    } finally {
-//                        ctx.commit();
-//                    }
-//                }
-//            }
-//        }, true);
-//    }
-    
 }

@@ -72,10 +72,7 @@ import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider;
 import org.netbeans.modules.remote.impl.fileoperations.spi.AnnotationProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStatusEvent;
-import org.openide.filesystems.FileStatusListener;
-import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.*;
 import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.io.NbObjectInputStream;
@@ -291,18 +288,21 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
 
     /*package*/ void setAttribute(RemoteFileObjectBase file, String attrName, Object value) {
         RemoteFileObjectBase parent = file.getParent();
+        boolean hasParent = true;
         if (parent == null) {
             // root
             parent = file;
+            hasParent = false;
         }
         File attr = getAttrFile(parent);
         Properties table = readProperties(attr);
         String translatedAttributeName = translateAttributeName(file, attrName);
         String encodedValue = encodeValue(value);
+        Object oldValue = null;
         if (encodedValue == null) {
             table.remove(translatedAttributeName);
         } else {                
-            table.setProperty(translatedAttributeName, encodedValue);
+            oldValue = table.setProperty(translatedAttributeName, encodedValue);
         }
         FileOutputStream fileOtputStream = null;
         try {
@@ -318,6 +318,12 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                     Exceptions.printStackTrace(ex);
                 }
             }
+        }
+        if (hasParent) {
+            file.fireFileAttributeChangedEvent(file.getListeners(), new FileAttributeEvent(file, file, attrName, oldValue, value));
+            parent.fireFileAttributeChangedEvent(parent.getListeners(), new FileAttributeEvent(parent, file, attrName, oldValue, value));
+        } else {
+            file.fireFileAttributeChangedEvent(file.getListeners(), new FileAttributeEvent(file, file, attrName, oldValue, value));
         }
     }
 

@@ -62,6 +62,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
@@ -109,7 +110,7 @@ class DocRenderer {
     static String document(ParserResult info, ElementHandle element) {
         if (element instanceof PHPDOCTagElement) {
             PHPDOCTagElement pHPDOCTagElement = (PHPDOCTagElement) element;
-            return pHPDOCTagElement.getDoc();
+            return PHPDocExtractor.processPhpDoc(pHPDOCTagElement.getDoc());
         }
 
         if (element instanceof PredefinedSymbolElement) {
@@ -219,7 +220,7 @@ class DocRenderer {
         private static final Pattern REPLACE_CODE_PATTERN = Pattern.compile("(?<=(</|<))code>", Pattern.CASE_INSENSITIVE); // NOI18N
         private static final Pattern REPLACE_NEWLINE_PATTERN = Pattern.compile("(\r?\n){2,}"); // NOI18N
         // #183594
-        private static final Pattern KEEP_NEWLINE_PATTERN = Pattern.compile("(\r?\n)(?=(\\s\\S|[-+#o]\\s|\\d\\.?\\s))"); // NOI18N
+        private static final Pattern LIST_PATTERN = Pattern.compile("(\r?\n)(?=([-+#o]\\s|\\d\\.?\\s))"); // NOI18N
 
         private static final ArrayList<String> LINK_TAGS = new ArrayList<String>();
 
@@ -458,10 +459,14 @@ class DocRenderer {
 
         // because of unit tests
         static String processPhpDoc(String phpDoc) {
-            String notags = KEEP_TAGS_PATTERN.matcher(phpDoc).replaceAll("&lt;"); // NOI18N
-            notags = REPLACE_CODE_PATTERN.matcher(notags).replaceAll("pre>"); // NOI18N
-            notags = REPLACE_NEWLINE_PATTERN.matcher(notags).replaceAll("<br><br>"); // NOI18N
-            return KEEP_NEWLINE_PATTERN.matcher(notags).replaceAll("<br>&nbsp;&nbsp;&nbsp;&nbsp;"); // NOI18N
+            String result = NbBundle.getMessage(DocRenderer.class, "PHPDocNotFound");
+            if (StringUtils.hasText(phpDoc)) {
+                String notags = KEEP_TAGS_PATTERN.matcher(phpDoc).replaceAll("&lt;"); // NOI18N
+                notags = REPLACE_CODE_PATTERN.matcher(notags).replaceAll("pre>"); // NOI18N
+                notags = REPLACE_NEWLINE_PATTERN.matcher(notags).replaceAll("<br><br>"); // NOI18N
+                result = LIST_PATTERN.matcher(notags).replaceAll("<br>&nbsp;&nbsp;&nbsp;&nbsp;"); // NOI18N
+            }
+            return result;
         }
 
          @Override

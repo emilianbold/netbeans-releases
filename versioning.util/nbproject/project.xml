@@ -273,6 +273,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.ade</friend>
                 <friend>org.netbeans.modules.bugtracking.bridge</friend>
                 <friend>org.netbeans.modules.clearcase</friend>
                 <friend>org.netbeans.modules.git</friend>
@@ -283,6 +284,7 @@
                 <friend>org.netbeans.modules.versioning.indexingbridge</friend>
                 <friend>org.netbeans.modules.versioning.kenai</friend>
                 <friend>org.netbeans.modules.versioning.system.cvss</friend>
+                <friend>org.netbeans.modules.versioning.ui</friend>
                 <package>org.netbeans.modules.proxy</package>
                 <package>org.netbeans.modules.turbo</package>
                 <package>org.netbeans.modules.versioning.annotate</package>

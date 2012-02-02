@@ -5,12 +5,11 @@
  datasource-classname="org.apache.derby.jdbc.ClientDataSource" res-type="javax.sql.DataSource"
  name="java:app/app-scoped-pool" max-wait-time-in-millis="0">
       <property name="PortNumber" value="1527"></property>
-      <property name="Password" value="APP"></property>
-      <property name="User" value="APP"></property>
+      <property name="Password" value="app"></property>
+      <property name="User" value="app"></property>
       <property name="serverName" value="localhost"></property>
-      <property name="DatabaseName" value="nb-samples"></property>
-      <property name="connectionAttributes" value=";create=true"></property>
+      <property name="DatabaseName" value="sample"></property>
+      
     </jdbc-connection-pool>
 <jdbc-resource pool-name="java:app/app-scoped-pool" jndi-name="java:app/app-scoped-resource"></jdbc-resource>
 </resources>
-

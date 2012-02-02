@@ -46,6 +46,7 @@ package org.netbeans.lib.editor.bookmarks.api;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -73,7 +74,7 @@ public final class Bookmark {
     public static final String BOOKMARK_ANNOTATION_TYPE = "editor-bookmark"; // NOI18N
 
     // cary mary fuk!
-    private static Map<Line,AAnnotation> lineToAnnotation = new WeakHashMap<Line,AAnnotation> ();
+    private static Map<Line,Reference<AAnnotation>> lineToAnnotation = new WeakHashMap<Line,Reference<AAnnotation>> (); // Hanziii;)
 
     /**
      * Bookmark list to which this bookmark belongs.
@@ -107,13 +108,16 @@ public final class Bookmark {
                 _line.getLookup().lookup (DataObject.class).equals (dataObject)
             ) {
                 this.line = _line;
-                this.annotation = lineToAnnotation.get (_line);
-                return;
+                Reference<AAnnotation> annoRef = lineToAnnotation.get (_line);
+                this.annotation = annoRef.get();
+                if (this.annotation != null) {
+                    return;
+                }
             }
         }
         annotation = new AAnnotation ();
         line = NbEditorUtilities.getLine (bookmarkList.getDocument (), offset, false);
-        lineToAnnotation.put (line, annotation);
+        lineToAnnotation.put (line, new WeakReference(annotation));
         annotation.attach (line);
         LineListener lineListener = bookmarkListToLineListener.get (bookmarkList);
         if (lineListener == null) {

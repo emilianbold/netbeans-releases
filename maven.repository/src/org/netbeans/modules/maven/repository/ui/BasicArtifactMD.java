@@ -48,11 +48,12 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerPanelProvider;
+import static org.netbeans.modules.maven.repository.ui.Bundle.*;
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
 /**
@@ -71,8 +72,9 @@ public class BasicArtifactMD implements MultiViewDescription, Serializable {
         return TopComponent.PERSISTENCE_NEVER;
     }
 
+    @Messages("TAB_Basic=Basic")
     public String getDisplayName() {
-        return NbBundle.getMessage(BasicArtifactMD.class, "TAB_Basic");
+        return TAB_Basic();
     }
 
     public Image getIcon() {

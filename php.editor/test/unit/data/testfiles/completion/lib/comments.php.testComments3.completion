@@ -2,35 +2,20 @@ Code completion result for source line:
 * PHPDoc comment @|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-KEYWORD    @abstract                                  
-KEYWORD    @access                                    
-KEYWORD    @author                                    
-KEYWORD    @category                                  
-KEYWORD    @copyright                                 
-KEYWORD    @deprecated                                
-KEYWORD    @example                                   
-KEYWORD    @filesource                                
-KEYWORD    @final                                     
-KEYWORD    @global                                    
-KEYWORD    @ignore                                    
-KEYWORD    @internal                                  
-KEYWORD    @license                                   
-KEYWORD    @link                                      
-KEYWORD    @method                                    
-KEYWORD    @name                                      
-KEYWORD    @package                                   
-KEYWORD    @param                                     
-KEYWORD    @property                                  
-KEYWORD    @property-read                             
-KEYWORD    @property-write                            
-KEYWORD    @return                                    
-KEYWORD    @see                                       
-KEYWORD    @since                                     
-KEYWORD    @static                                    
-KEYWORD    @staticvar                                 
-KEYWORD    @subpackage                                
-KEYWORD    @todo                                      
-KEYWORD    @tutorial                                  
-KEYWORD    @uses                                      
-KEYWORD    @var                                       
-KEYWORD    @version                                   
+OTHER      @assert                                    PHPUnit
+OTHER      @backupGlobals                             PHPUnit
+OTHER      @backupStaticAttributes                    PHPUnit
+OTHER      @codeCoverageIgnore                        PHPUnit
+OTHER      @covers                                    PHPUnit
+OTHER      @dataProvider                              PHPUnit
+OTHER      @depends                                   PHPUnit
+OTHER      @expectedException                         PHPUnit
+OTHER      @expectedExceptionCode                     PHPUnit
+OTHER      @expectedExceptionMessage                  PHPUnit
+OTHER      @group                                     PHPUnit
+OTHER      @outputBuffering                           PHPUnit
+OTHER      @runInSeparateProcess                      PHPUnit
+OTHER      @runTestsInSeparateProcesses               PHPUnit
+OTHER      @test                                      PHPUnit
+OTHER      @testdox                                   PHPUnit
+OTHER      @ticket                                    PHPUnit

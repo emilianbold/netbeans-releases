@@ -268,7 +268,13 @@ public class ImportUITest extends JellyTestCase {
             for (int i = 0; i < actual.length; i++) {
                 actual[i] = model.getValueAt(i, 1).toString();
             }
-            assertEquals("Incorrect count of records for addition!!!", 10, model.getRowCount());
+            if (TestKit.getOsName().indexOf("Win") > -1) {
+            assertEquals("Incorrect count of records for addition!!!", 11, model.getRowCount());
+            }else{
+              assertEquals("Incorrect count of records for addition!!!", 10, model.getRowCount());
+              
+            }
+                
          //   assertEquals("Some records were omitted from addition", 10, TestKit.compareThem(expected, actual, false));
             //try to change commit actions
             cso.selectCommitAction("project.xml", "Add As Text");

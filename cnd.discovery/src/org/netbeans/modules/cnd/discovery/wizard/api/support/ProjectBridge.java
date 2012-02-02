@@ -595,6 +595,8 @@ public class ProjectBridge {
                 }
                 if (languageStandard == ItemProperties.LanguageStandard.CPP) {
                     itemConfiguration.setLanguageFlavor(LanguageFlavor.CPP);
+                } if (languageStandard == ItemProperties.LanguageStandard.CPP11) {
+                    itemConfiguration.setLanguageFlavor(LanguageFlavor.CPP11);
                 }
                 break;
             case Fortran:

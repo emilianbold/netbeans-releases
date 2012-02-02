@@ -1056,46 +1056,53 @@ class LayoutFeeder implements LayoutConstants {
     /**
      * After the moving/resizing interval is temporarily removed, the related
      * optimizations may alter the parent group or neighbor recorded in the
-     * original position. This methods tries to correct that.
+     * original position. This methods tries to correct that. [Just showing that
+     * the original position representation is rather dubious.]
      */
     private static IncludeDesc correctOriginalInclusion(IncludeDesc iDesc, LayoutInterval targetRoot) {
-        if (iDesc != null) {
-            if (iDesc.parent.getParent() == null && iDesc.parent.getSubIntervalCount() == 0
-                    && iDesc.parent != targetRoot) {
-                // Original parallel parent did not survive - probably because of
-                // border gaps optimization after removing the resizing interval.
-                LayoutInterval interval;
-                if (iDesc.snappedParallel != null) {
-                    interval = iDesc.snappedParallel;
-                } else if (iDesc.snappedNextTo != null) {
-                    interval = iDesc.snappedNextTo;
-                } else if (iDesc.neighbor != null) {
-                    interval = iDesc.neighbor;
-                } else {
-                    return null; // bad luck, we don't know where it is
-                }
-                if (interval != null) {
-                    iDesc.parent = interval.getParent() != null
-                            ? LayoutInterval.getFirstParent(interval, PARALLEL) : interval;
-                }
+        if (iDesc == null) {
+            return null;
+        }
+        if (iDesc.parent.getParent() == null && iDesc.parent.getSubIntervalCount() == 0
+                && iDesc.parent != targetRoot) {
+            // Original parallel parent did not survive - probably because of
+            // border gaps optimization after removing the resizing interval.
+            LayoutInterval interval;
+            if (iDesc.snappedParallel != null) {
+                interval = iDesc.snappedParallel;
+            } else if (iDesc.snappedNextTo != null) {
+                interval = iDesc.snappedNextTo;
+            } else if (iDesc.neighbor != null) {
+                interval = iDesc.neighbor;
+            } else {
+                return null; // bad luck, we don't know where it is
             }
-            if (iDesc.neighbor != null) {
-                if (iDesc.neighbor.isParallel() && iDesc.neighbor.getParent() == null) {
-                    // As expected, the sequence where 'neighbor' was originally
-                    // placed with the moving interval did not survive, but
-                    // moreover the content of 'neigbor' itself (as a parallel
-                    // group) was dissolved into a parallel parent.
-                    iDesc.neighbor = null;
-                } else if (iDesc.neighbor.getParent().isSequential()) {
-                    // In contrary, here the sequential parent of 'neighbor'
-                    // unexpectedly survived removal of the moving interval (some
-                    // gaps stayed around it), so we should use the sequence directly.
-                    iDesc.parent = iDesc.neighbor.getParent();
-                    iDesc.neighbor = null;
-                    if (iDesc.index > iDesc.parent.getSubIntervalCount()) {
-                        iDesc.index = iDesc.parent.getSubIntervalCount();
-                    }
+            if (interval != null) {
+                iDesc.parent = interval.getParent() != null
+                        ? LayoutInterval.getFirstParent(interval, PARALLEL) : interval;
+            }
+        }
+        if (iDesc.neighbor != null) {
+            LayoutInterval neighborParent = iDesc.neighbor.getParent();
+            if (iDesc.neighbor.isParallel() && neighborParent == null) {
+                // As expected, the sequence where 'neighbor' was originally
+                // placed with the moving interval did not survive, but
+                // moreover the content of 'neigbor' itself (as a parallel
+                // group) was dissolved into a parallel parent.
+                iDesc.neighbor = null;
+            } else if (neighborParent.isSequential()) {
+                // In contrary, here the sequential parent of 'neighbor'
+                // unexpectedly survived removal of the moving interval (some
+                // gaps stayed around it), so we should use the sequence directly.
+                iDesc.parent = neighborParent;
+                iDesc.neighbor = null;
+                if (iDesc.index > iDesc.parent.getSubIntervalCount()) {
+                    iDesc.index = iDesc.parent.getSubIntervalCount();
                 }
+            } else if (iDesc.parent.isParentOf(neighborParent)) { // bug 207040
+                // It might also happen that after removing the moving interval
+                // the neighbor joined a parallel group.
+                iDesc.parent = neighborParent;
             }
         }
         return iDesc;

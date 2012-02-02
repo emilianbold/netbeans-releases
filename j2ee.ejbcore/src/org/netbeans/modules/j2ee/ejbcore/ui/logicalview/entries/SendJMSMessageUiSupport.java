@@ -48,20 +48,18 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.common.MetadataModelReadHelper;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
@@ -89,14 +87,14 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
      * Get list of message-driven beans with all required properties.
      * @return list of message-driven beans.
      */
-    public static List<MdbHolder> getMdbs() {
+    public static List<MdbHolder> getMdbs(ChangeListener listener) {
         List<MdbHolder> mdbs = new ArrayList<MdbHolder>();
         
         Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
         for (Project p : openProjects) {
             if (EjbJar.getEjbJars(p).length > 0) {
                 try {
-                    Map<String, String> drivens = getMdbs(p);
+                    Map<String, String> drivens = getMdbs(p, listener);
                     populateMdbs(mdbs, drivens, p);
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
@@ -130,6 +128,7 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
             comboBox.addItem(mdbHolder);
         }
         comboBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 populateMdbTextField((JComboBox) actionEvent.getSource(), textField);
             }
@@ -149,7 +148,6 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
         for (Map.Entry<String, String> mdbEntry : drivens.entrySet()) {
             J2eeModuleProvider j2eeModuleProvider = getJ2eeModuleProvider(project);
             try {
-                MessageDestination messageDestination = null;
                 String mdbName = mdbEntry.getKey();
                 String mappedName = mdbEntry.getValue();
                 String destName = j2eeModuleProvider.getConfigSupport().findMessageDestinationName(mdbName);
@@ -157,7 +155,7 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
                     destName = mappedName;
                 }
                 if (destName != null) {
-                    messageDestination = j2eeModuleProvider.getConfigSupport().findMessageDestination(destName);
+                    MessageDestination messageDestination = j2eeModuleProvider.getConfigSupport().findMessageDestination(destName);
                     mdbs.add(new MdbHolder(mdbName, messageDestination, project));
                 }
             } catch (ConfigurationException ce) {
@@ -171,31 +169,60 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
     }
 
     // kay ejb-name and value is mapped-name
-    private static Map<String, String> getMdbs(Project project) throws IOException {
+    private static Map<String, String> getMdbs(Project project, final ChangeListener listener) throws IOException {
         
         Map<String, String> mdbs = new HashMap<String, String>();
-        
+
         for (EjbJar ejbModule : EjbJar.getEjbJars(project)) {
             MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
-            Map<String, String> mdbsInModule = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Map<String, String>>() {
-                public Map<String, String> run(EjbJarMetadata metadata) throws Exception {
-                    Map<String, String> result = new HashMap<String, String>();
-                    EnterpriseBeans eb = metadata.getRoot().getEnterpriseBeans();
-                    if (eb == null) {
-                        return Collections.<String, String>emptyMap();
-                    }
+            MdbReadAction mdbReadAction = new MdbReadAction();
+            Map<String, String> mdbsInModule = new HashMap<String, String>();
 
-                    MessageDriven[] messageDrivens = eb.getMessageDriven();
-                    for (MessageDriven mdb : messageDrivens) {
-                        result.put(mdb.getEjbName(), findMsgDest(mdb));
+            // read current model data
+            mdbsInModule.putAll(metadataModel.runReadAction(mdbReadAction));
+            
+            // read all data once processing/scanning is gone if requires (means not null listener)
+            if (!metadataModel.isReady() && listener != null) {
+                final MetadataModelReadHelper<EjbJarMetadata, Void> readHelper =
+                        MetadataModelReadHelper.create(metadataModel,new MetadataModelAction<EjbJarMetadata, Void>() {
+                    @Override
+                    public Void run(EjbJarMetadata metadata) throws Exception {
+                        return null;
                     }
-                    return result;
-                }
-            });
+                });
+                readHelper.addChangeListener(new ChangeListener() {
+                    @Override
+                    public void stateChanged(ChangeEvent e) {
+                        if (readHelper.getState() == MetadataModelReadHelper.State.FINISHED) {
+                            listener.stateChanged(e);
+                        }
+                    }
+                });
+                readHelper.start();
+            }
+            
             mdbs.putAll(mdbsInModule);
         }
         
         return mdbs;
+    }
+
+    private static class MdbReadAction implements MetadataModelAction<EjbJarMetadata, Map<String, String>> {
+
+        @Override
+        public Map<String, String> run(EjbJarMetadata metadata) throws Exception {
+            Map<String, String> result = new HashMap<String, String>();
+            EnterpriseBeans eb = metadata.getRoot().getEnterpriseBeans();
+            if (eb == null) {
+                return Collections.<String, String>emptyMap();
+            }
+
+            MessageDriven[] messageDrivens = eb.getMessageDriven();
+            for (MessageDriven mdb : messageDrivens) {
+                result.put(mdb.getEjbName(), findMsgDest(mdb));
+            }
+            return result;
+        }
     }
     
     // fix for 162899
@@ -272,6 +299,7 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
     // optional - create factory method for this class
     private static class MdbHolderComparator implements Comparator<MdbHolder> {
         
+        @Override
         public int compare(MdbHolder mdbHolder1, MdbHolder mdbHolder2) {
             
             if (mdbHolder1 == null) {
@@ -295,6 +323,7 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
     // optional - create factory method for this class
     private static class MdbHolderListCellRenderer extends DefaultListCellRenderer {
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
                 boolean cellHasFocus) {
 

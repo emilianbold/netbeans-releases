@@ -68,6 +68,7 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.hints.spiimpl.RulesManager;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
+import org.netbeans.modules.java.hints.spiimpl.RulesManagerImpl;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.spi.java.hints.Hint.Options;
@@ -181,13 +182,16 @@ public class Utilities {
 
         public synchronized void compute() {
             if (hints != null) return ;
-            
-            Set<ClassPath> classPath = new HashSet<ClassPath>();
-            classPath.addAll(GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE));
-            classPath.addAll(GlobalPathRegistry.getDefault().getPaths(ClassPath.COMPILE));
-            classPath.addAll(GlobalPathRegistry.getDefault().getPaths(ClassPath.BOOT));
 
-            this.hints = RulesManager.getInstance().readHints(null, classPath, new AtomicBoolean());
+            Set<ClassPath> binaryClassPath = new HashSet<ClassPath>();
+            binaryClassPath.addAll(GlobalPathRegistry.getDefault().getPaths(ClassPath.COMPILE));
+            binaryClassPath.addAll(GlobalPathRegistry.getDefault().getPaths(ClassPath.BOOT));
+            List<HintDescription> listedHints = org.netbeans.modules.java.hints.spiimpl.Utilities.listClassPathHints(GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE), binaryClassPath);
+            HashMap<HintMetadata, Collection<HintDescription>> localHints = new HashMap<HintMetadata, Collection<HintDescription>>();
+
+            RulesManagerImpl.sortByMetadata(listedHints, localHints);
+
+            this.hints = localHints;
         }
 
         public synchronized Map<? extends HintMetadata, ? extends Collection<? extends HintDescription>> getHints() {

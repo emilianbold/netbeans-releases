@@ -78,7 +78,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
     }
 
     @Override
-    protected final void init(CsmScope scope, AST ast, boolean register) {
+    public final void init(CsmScope scope, AST ast, boolean register) {
         // does not call super.init(), but copies super.init() with some changes:
         // it needs to initialize qualifiedNameSuffix
         // after rendering, but before calling initQualifiedName() and register()

@@ -42,9 +42,11 @@
 package org.netbeans.modules.profiler.nbimpl.javac;
 
 import com.sun.source.tree.ClassTree;
-import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -78,7 +80,7 @@ public class JavacClassInfo extends SourceClassInfo {
     private ElementHandle<TypeElement> handle;
     private FileObject src;
     private ClasspathInfo cpInfo;
-    private JavaSource source;
+    private Reference<JavaSource> sourceRef;
 
     private JavacClassInfo(ElementHandle<TypeElement> eh) {
         super(getSimpleName(eh.getBinaryName()), eh.getBinaryName(), eh.getBinaryName().replace('.', '/')); // NOI18N
@@ -95,7 +97,7 @@ public class JavacClassInfo extends SourceClassInfo {
         this(eh);
         
         this.cpInfo = cc.getClasspathInfo();
-        source = cc.getJavaSource();
+        sourceRef = new SoftReference<JavaSource>(cc.getJavaSource());
     }
 
     @Override
@@ -435,7 +437,7 @@ public class JavacClassInfo extends SourceClassInfo {
     }
     
     private synchronized JavaSource getSource(boolean allowSourceLess) {
-        JavaSource jSrc = source;
+        JavaSource jSrc = sourceRef != null ? sourceRef.get() : null;
         if (jSrc == null || (!allowSourceLess && jSrc.getFileObjects().isEmpty())) {
             FileObject f = getFile();
             if (f.getExt().toLowerCase().equals("java") || f.getExt().toLowerCase().equals("class")) { // NOI18N
@@ -443,8 +445,8 @@ public class JavacClassInfo extends SourceClassInfo {
             } else if (cpInfo != null) {
                 jSrc = JavaSource.create(cpInfo);
             }
-            source = jSrc;
+            sourceRef = new SoftReference(jSrc);
         }
-        return source;
+        return jSrc;
     }
 }

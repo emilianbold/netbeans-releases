@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.remote.test;
 
+import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.RandomlyFails;
@@ -62,44 +63,43 @@ public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
     
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(FileSystemTestHid_.class);
+        suite.addTestSuite(FileSystemTestHid.class);
         suite.addTestSuite(FileObjectTestHid_.class);
         // it seems AttributesTestHidden does not belong to FS TCK
         //suite.addTestSuite(AttributesTestHidden.class);
-        suite.addTestSuite(URLMapperTestHidden_.class);
-        suite.addTestSuite(FileUtilTestHidden_.class);
+        suite.addTestSuite(URLMapperTestHidden.class);
+        suite.addTestSuite(FileUtilTestHidden.class);
         return new RemoteFSTCKTest(suite);
     }
     
-    @RandomlyFails
-    public static class FileSystemTestHid_ extends FileSystemTestHid {
-
-        public FileSystemTestHid_(String testName) {
-            super(testName);
-        }
-    }
-
-    @RandomlyFails
     public static class FileObjectTestHid_ extends FileObjectTestHid {
 
         public FileObjectTestHid_(String testName) {
             super(testName);
         }
-    }
 
-    @RandomlyFails
-    public static class URLMapperTestHidden_ extends URLMapperTestHidden {
-
-        public URLMapperTestHidden_(String testName) {
-            super(testName);
+        @RandomlyFails
+        @Override
+        public void testWriteReadExclusion() throws Exception {
+            super.testWriteReadExclusion();
         }
-    }
 
-    @RandomlyFails
-    public static class FileUtilTestHidden_ extends FileUtilTestHidden {
+        @RandomlyFails
+        @Override
+        public void testWriteReadExclusionDeadlock() throws Exception {
+            super.testWriteReadExclusionDeadlock();
+        }
 
-        public FileUtilTestHidden_(String testName) {
-            super(testName);
+        @RandomlyFails
+        @Override
+        public void testFireFileDeletedEvent2() throws IOException {
+            super.testFireFileDeletedEvent2();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testBigFileAndAsString() throws Exception {
+            super.testBigFileAndAsString();
         }
     }
 }

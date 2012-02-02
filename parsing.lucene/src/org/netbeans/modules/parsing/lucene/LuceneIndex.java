@@ -719,40 +719,45 @@ public class LuceneIndex implements Index.Transactional {
             checkPreconditions();
             Status valid = validCache;
             if (force ||  valid == null) {
-                final Collection<? extends String> locks = getOrphanLock();
-                Status res = Status.INVALID;
-                if (!locks.isEmpty()) {
-                    if (txWriter.get() != null) {
-                        res = Status.WRITING;
-                    } else {
-                        LOGGER.log(Level.WARNING, "Broken (locked) index folder: {0}", folder.getAbsolutePath());   //NOI18N
-                        synchronized (this) {
-                            for (String lockName : locks) {
-                                fsDir.deleteFile(lockName);
+                rwLock.writeLock().lock();
+                try {
+                    final Collection<? extends String> locks = getOrphanLock();
+                    Status res = Status.INVALID;
+                    if (!locks.isEmpty()) {
+                        if (txWriter.get() != null) {
+                            res = Status.WRITING;
+                        } else {
+                            LOGGER.log(Level.WARNING, "Broken (locked) index folder: {0}", folder.getAbsolutePath());   //NOI18N
+                            synchronized (this) {
+                                for (String lockName : locks) {
+                                    fsDir.deleteFile(lockName);
+                                }
+                            }
+                            if (force) {
+                                clear();
                             }
                         }
-                        if (force) {
-                            clear();
-                        }
-                    }
-                } else {
-                    if (!exists()) {
-                        res = Status.EMPTY;
-                    } else if (force) {
-                        try {
-                            getReader();
-                            res = Status.VALID;
-                        } catch (java.io.IOException e) {
-                            clear();
-                        } catch (RuntimeException e) {
-                            clear();
-                        }
                     } else {
-                        res = Status.VALID;
+                        if (!exists()) {
+                            res = Status.EMPTY;
+                        } else if (force) {
+                            try {
+                                getReader();
+                                res = Status.VALID;
+                            } catch (java.io.IOException e) {
+                                clear();
+                            } catch (RuntimeException e) {
+                                clear();
+                            }
+                        } else {
+                            res = Status.VALID;
+                        }
                     }
+                    valid = res;
+                    validCache = valid;
+                } finally {
+                    rwLock.writeLock().unlock();
                 }
-                valid = res;
-                validCache = valid;
             }
             return valid;
         }

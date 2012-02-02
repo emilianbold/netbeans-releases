@@ -1131,12 +1131,24 @@ public class IndentSupport {
         return getCodeStyle().getFormatNewlineBeforeBrace() == CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED;
     }
 
+    protected boolean isFullIndentNewlineBeforeBrace() {
+        return getCodeStyle().getFormatNewlineBeforeBrace() == CodeStyle.BracePlacement.NEW_LINE_FULL_INDENTED;
+    }
+
     protected boolean isHalfIndentNewlineBeforeBraceSwitch() {
         return getCodeStyle().getFormatNewLineBeforeBraceSwitch() == CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED;
     }
 
+    protected boolean isFullIndentNewlineBeforeBraceSwitch() {
+        return getCodeStyle().getFormatNewLineBeforeBraceSwitch() == CodeStyle.BracePlacement.NEW_LINE_FULL_INDENTED;
+    }
+
     protected boolean isHalfIndentNewlineBeforeBraceDeclaration() {
         return getCodeStyle().getFormatNewlineBeforeBraceDeclaration() == CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED;
+    }
+
+    protected boolean isFullIndentNewlineBeforeBraceDeclaration() {
+        return getCodeStyle().getFormatNewlineBeforeBraceDeclaration() == CodeStyle.BracePlacement.NEW_LINE_FULL_INDENTED;
     }
 
     protected boolean isHalfIndentVisibility() {

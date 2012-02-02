@@ -697,7 +697,7 @@ public class SvnClientExceptionHandler {
 //      svn: URL 'file:///data/subversion/dilino' non-existent in revision 88
         msg = msg.toLowerCase();
         return msg.indexOf("(not a valid url)") > - 1 ||                                      // NOI18N
-               (msg.indexOf("svn: url") > -1 && msg.indexOf("non-existent in") > - 1 ) ||
+               (msg.contains("svn:") && msg.contains("url") && msg.contains("non-existent in")) || //NOI18N
                (msg.indexOf("bad url passed to ra layer") > - 1 );
     }
 
@@ -712,7 +712,13 @@ public class SvnClientExceptionHandler {
     public static boolean isUnversionedResource(String msg) {
         msg = msg.toLowerCase();
         return msg.indexOf("(not a versioned resource)") > -1 ||                            // NOI18N
-               msg.indexOf("is not a working copy") > -1;                                   // NOI18N
+               msg.indexOf("is not a working copy") > -1 ||                                 //NOI18N
+               msg.contains("some targets are not versioned");                              //NOI18N
+    }
+    
+    public static boolean hasNoBaseRevision (String msg) {
+        msg = msg.toLowerCase();
+        return msg.contains("has no base revision until it is committed"); //NOI18N
     }
 
     public static boolean isTooOldClientForWC(String msg) {
@@ -730,7 +736,8 @@ public class SvnClientExceptionHandler {
             return true;
         }
         idx = msg.indexOf("url");                                                           // NOI18N
-        return idx > -1 && msg.indexOf("non-existent in that revision", idx + 3) > -1;      // NOI18N        
+        return idx > -1 && (msg.indexOf("non-existent in that revision", idx + 3) > -1      //NOI18N
+                || msg.indexOf("non-existent in revision", idx + 3) > -1);                  //NOI18N
     }    
 
     private static boolean isHTTP405(String msg) {

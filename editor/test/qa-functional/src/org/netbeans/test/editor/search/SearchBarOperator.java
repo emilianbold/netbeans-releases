@@ -60,8 +60,8 @@ import org.netbeans.modules.editor.impl.SearchBar;
 import org.openide.util.Exceptions;
 
 /**
- *
  * @author jp159440
+ * @deprecated 
  */
 public class SearchBarOperator {
 
@@ -69,7 +69,7 @@ public class SearchBarOperator {
 
     private enum CheckBoxes {
 
-        MatchCase, WholeWords, ReqularExpression, HighlightResults;
+        MatchCase, WholeWords, ReqularExpression, HighlightResults,WrapAround;
     }
     private Set<CheckBoxes> inMenu = new HashSet<CheckBoxes>();
     private JButton prevButton;
@@ -87,6 +87,7 @@ public class SearchBarOperator {
     private JCheckBoxOperator whole;
     private JCheckBoxOperator regular;
     private JCheckBoxOperator highlight;
+    private JCheckBoxOperator wrap;
 
     public SearchBarOperator(JPanel searchBar) {
         this.searchBar = searchBar;

@@ -49,7 +49,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.lang.model.element.Element;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
@@ -60,6 +59,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  * Utility methods, which help JavaSource processing tasks to coordinate with the indexing/scanning process.
@@ -114,8 +114,9 @@ public final class ScanUtils {
      * @see JavaSource#runUserActionTask
      */
     public static Future<Void> postUserActionTask(@NonNull final JavaSource src, @NonNull final Task<CompilationController> uat) {
-        assert src != null;
-        assert uat != null;
+        Parameters.notNull("src", src);
+        Parameters.notNull("uat", uat);
+
         AtomicReference<Throwable> status = new AtomicReference(null);
         Future<Void> f = postJavaTask(src, uat, status);
         
@@ -147,8 +148,9 @@ public final class ScanUtils {
      * @see JavaSource#runUserActionTask
      */
     public static Future<Void> postUserTask(@NonNull final Source src, @NonNull final UserTask task) {
-        assert src != null;
-        assert task != null;
+        Parameters.notNull("src", src);
+        Parameters.notNull("task", task);
+
         AtomicReference<Throwable> status = new AtomicReference(null);
         Future<Void> f = postUserTask(src, task, status);
         
@@ -179,8 +181,9 @@ public final class ScanUtils {
      * @see JavaSource#runUserActionTask
      */
     public static void waitUserActionTask(@NonNull final JavaSource src, @NonNull final Task<CompilationController> uat) throws IOException {
-        assert src != null;
-        assert uat != null;
+        Parameters.notNull("src", src);
+        Parameters.notNull("uat", uat);
+
         if (SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("Illegal to call within EDT");
         }
@@ -234,8 +237,9 @@ public final class ScanUtils {
      * @see ParserManager#parseWhenScanFinished(java.util.Collection, org.netbeans.modules.parsing.api.UserTask) 
      */
     public static void waitUserTask(@NonNull final Source src, @NonNull final UserTask task) throws ParseException {
-        assert src != null;
-        assert task != null;
+        Parameters.notNull("src", src);
+        Parameters.notNull("task", task);
+        
         if (SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("Illegal to call within EDT");
         }
@@ -308,7 +312,6 @@ public final class ScanUtils {
             signalIncompleteData(info, null);
             return e;
         }
-        TypeMirror tm = e.asType();
         if (!info.getElementUtilities().isErroneous(e)) {
             return e;
         }
@@ -331,7 +334,6 @@ public final class ScanUtils {
      *
      */
     public static void signalIncompleteData(@NonNull CompilationInfo ci, @NullAllowed ElementHandle handle) {
-        assert ci != null;
         checkRetryContext();
         if (shouldSignal()) {
             throw new RetryWhenScanFinished(ci, handle);
@@ -543,7 +545,9 @@ public final class ScanUtils {
         private Source          source;
 
         public RetryWhenScanFinished(CompilationInfo ci, ElementHandle elHandle) {
-            source = ci.getSnapshot().getSource();
+            if (ci != null && ci.getSnapshot() != null) {
+               source = ci.getSnapshot().getSource();
+            }
             this.elHandle = elHandle;
         }
 

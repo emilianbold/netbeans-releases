@@ -104,6 +104,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.CharBuffer;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -116,6 +117,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.AnnotationValueVisitor;
@@ -140,21 +142,27 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.queries.SourceForBinaryQuery.Result2;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.CompilationInfo.CacheClearPolicy;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.modules.java.hints.providers.spi.ClassPathBasedHintProvider;
 import org.netbeans.modules.java.hints.spiimpl.JackpotTrees.CatchWildcard;
 import org.netbeans.modules.java.hints.spiimpl.JackpotTrees.ModifiersWildcard;
 import org.netbeans.modules.java.hints.spiimpl.JackpotTrees.VariableWildcard;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
+import org.netbeans.modules.java.hints.providers.spi.Trigger.PatternDescription;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.modules.java.source.javac.NBParserFactory.NBEndPosParser;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbCollections;
 import org.openide.util.lookup.ServiceProvider;
@@ -250,52 +258,49 @@ public class Utilities {
         return output;
     }
 
-//    public static List<HintDescription> listAllHints(Set<ClassPath> cps) {
-//        List<HintDescription> result = new LinkedList<HintDescription>();
-//
-//        for (Collection<? extends HintDescription> hints : RulesManager.getInstance().allHints.values()) {
-//            for (HintDescription hd : hints) {
-//                if (!(hd.getTrigger() instanceof PatternDescription)) continue; //TODO: only pattern based hints are currently supported
-//                result.add(hd);
-//            }
-//        }
-//
-//        result.addAll(listClassPathHints(cps));
-//
-//        return result;
-//    }
-//
-//    public static List<HintDescription> listClassPathHints(Set<ClassPath> cps) {
-//        List<HintDescription> result = new LinkedList<HintDescription>();
-//        Set<FileObject> roots = new HashSet<FileObject>();
-//
-//        for (ClassPath cp : cps) {
-//            for (FileObject r : cp.getRoots()) {
-//                Result2 src;
-//
-//                try {
-//                    src = SourceForBinaryQuery.findSourceRoots2(r.getURL());
-//                } catch (FileStateInvalidException ex) {
-//                    Logger.getLogger(Utilities.class.getName()).log(Level.FINE, null, ex);
-//                    src = null;
-//                }
-//
-//                if (src != null && src.preferSources()) {
-//                    roots.addAll(Arrays.asList(src.getRoots()));
-//                } else {
-//                    roots.add(r);
-//                }
-//            }
-//        }
-//
-//        ClassPath cp = ClassPathSupport.createClassPath(roots.toArray(new FileObject[0]));
-//
-//        for (ClassPathBasedHintProvider p : Lookup.getDefault().lookupAll(ClassPathBasedHintProvider.class)) {
-//            result.addAll(p.computeHints(cp));
-//        }
-//
-//        return result;
-//    }
+    public static List<HintDescription> listAllHints(Set<ClassPath> cps) {
+        List<HintDescription> result = new LinkedList<HintDescription>();
+
+        for (Collection<? extends HintDescription> hints : RulesManager.getInstance().readHints(null, cps, new AtomicBoolean()).values()) {
+            for (HintDescription hd : hints) {
+                if (!(hd.getTrigger() instanceof PatternDescription)) continue; //TODO: only pattern based hints are currently supported
+                result.add(hd);
+            }
+        }
+
+        result.addAll(listClassPathHints(Collections.<ClassPath>emptySet(), cps));
+
+        return result;
+    }
+
+    public static List<HintDescription> listClassPathHints(Set<ClassPath> sourceCPs, Set<ClassPath> binaryCPs) {
+        List<HintDescription> result = new LinkedList<HintDescription>();
+        Set<FileObject> roots = new HashSet<FileObject>();
+
+        for (ClassPath cp : binaryCPs) {
+            for (FileObject r : cp.getRoots()) {
+                Result2 src = SourceForBinaryQuery.findSourceRoots2(r.toURL());
+
+                if (src != null && src.preferSources()) {
+                    roots.addAll(Arrays.asList(src.getRoots()));
+                } else {
+                    roots.add(r);
+                }
+            }
+        }
+
+        Set<ClassPath> cps = new HashSet<ClassPath>(sourceCPs);
+
+        cps.add(ClassPathSupport.createClassPath(roots.toArray(new FileObject[0])));
+
+        ClassPath cp = ClassPathSupport.createProxyClassPath(cps.toArray(new ClassPath[0]));
+
+        for (ClassPathBasedHintProvider p : Lookup.getDefault().lookupAll(ClassPathBasedHintProvider.class)) {
+            result.addAll(p.computeHints(cp));
+        }
+
+        return result;
+    }
     
     public static Tree parseAndAttribute(CompilationInfo info, String pattern, Scope scope) {
         return parseAndAttribute(info, pattern, scope, null);

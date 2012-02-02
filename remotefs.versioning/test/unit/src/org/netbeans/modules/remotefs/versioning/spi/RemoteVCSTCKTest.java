@@ -198,6 +198,8 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
         if (res.exitCode != 0) {
             throw new IOException("chmod failed: " + res.error);
         }
+        FileObject fo = root.getFileObject(path);
+        fo.getParent().refresh(true);
     }
     
     public static Test suite() {
@@ -208,7 +210,6 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
         return new RemoteVCSTCKTest(suite);
     }
     
-    @RandomlyFails
     public static final class VCSOwnerTestCase_ extends VCSOwnerTestCase {
 
         public VCSOwnerTestCase_(String testName) {
@@ -216,19 +217,30 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
         }
     }
     
-    @RandomlyFails
     public static final class VCSInterceptorTestCase_ extends VCSInterceptorTestCase {
 
         public VCSInterceptorTestCase_(String testName) {
             super(testName);
         }
+
+        @RandomlyFails
+        @Override
+        public void testRefreshRecursively() throws IOException {
+            super.testRefreshRecursively();
+        }
     }
     
-    @RandomlyFails
     public static final class VCSAnnotationProviderTestCase_ extends VCSAnnotationProviderTestCase {
 
         public VCSAnnotationProviderTestCase_(String testName) {
             super(testName);
         }
+
+        @RandomlyFails
+        @Override
+        public void testAnnotationChanged() throws Exception {
+            super.testAnnotationChanged();
+        }
+        
     }
 }

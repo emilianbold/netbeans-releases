@@ -68,18 +68,18 @@ public final class HighlightsViewPart extends EditorView {
     // -J-Dorg.netbeans.modules.editor.lib2.view.HighlightsViewPart.level=FINE
     private static final Logger LOG = Logger.getLogger(HighlightsViewPart.class.getName());
 
-    private HighlightsView fullView;
+    private HighlightsView fullView; // 24 + 4 = 28 bytes
 
     /** Shift of start of this view relative to HighlightsView. */
-    private int shift;
+    private int shift; // 28 + 4 = 32 bytes
 
     /** Number of characters that this view covers. */
-    private int length;
+    private int length; // 32 + 4 = 36 bytes
 
     /**
      * Use dedicated text layout since measurements may differ for a part of original text.
      */
-    private TextLayout partTextLayout;
+    private TextLayout partTextLayout; // 36 + 4 = 40 bytes
 
     public HighlightsViewPart(HighlightsView fullView, int shift, int length) {
         super(null);
@@ -106,7 +106,7 @@ public final class HighlightsViewPart extends EditorView {
             return 0f;
         }
         float span = (axis == View.X_AXIS)
-            ? TextLayoutUtils.getWidth(textLayout) // Can be negative
+            ? textLayout.getAdvance()
             : TextLayoutUtils.getHeight(textLayout);
         return span;
     }
