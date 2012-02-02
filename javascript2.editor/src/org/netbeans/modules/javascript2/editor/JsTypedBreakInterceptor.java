@@ -391,12 +391,12 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         }
         
         // Just indent the line properly
-        StringBuilder sb = new StringBuilder("\n"); // NOI18N
         int indentSize = getNextLineIndentation(doc, offset);
         if (indentSize > 0) {
+            StringBuilder sb = new StringBuilder("\n"); // NOI18N
             sb.append(IndentUtils.createIndentString(doc, indentSize));
+            context.setText(sb.toString(), -1, sb.length());
         }
-        context.setText(sb.toString(), -1, sb.length());
     }
 
     @Override
