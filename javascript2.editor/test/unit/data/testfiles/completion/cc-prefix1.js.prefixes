@@ -1,0 +1,22 @@
+foo = true
+ ^f,foo
+foo = true
+  ^fo,foo
+foo = true
+   ^foo,foo
+foo = true
+       ^t,true
+foo = true
+        ^tr,true
+foo = true
+         ^tru,true
+foo = true
+          ^true,true
+if !fo
+ ^i,if
+if !fo
+  ^if,if
+if !fo
+     ^f,fo
+if !fo
+      ^fo,fo
