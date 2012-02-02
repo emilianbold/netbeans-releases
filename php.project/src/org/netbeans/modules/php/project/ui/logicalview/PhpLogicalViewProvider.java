@@ -225,7 +225,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             setIconBaseWithExtension("org/netbeans/modules/php/project/ui/resources/phpProject.png"); // NOI18N
             setName(ProjectUtils.getInformation(project).getDisplayName());
 
-            ProjectPropertiesSupport.addWeakPropertyChangeListener(project, propertyChangeListener);
+            ProjectPropertiesSupport.addWeakProjectPropertyChangeListener(project, propertyChangeListener);
         }
 
         @Override

@@ -191,6 +191,7 @@ public class Installer extends ModuleInstall implements Runnable {
 
     /** Action listener for Usage Statistics Reminder dialog */
     private ActionListener l = new ActionListener () {
+        @Override
         public void actionPerformed (ActionEvent ev) {
             cmd = ev.getActionCommand();
             if (CMD_METRICS_ENABLE.equals(cmd)) {
@@ -231,19 +232,18 @@ public class Installer extends ModuleInstall implements Runnable {
             }
         } catch (BackingStoreException e) {
             // immediatelly show dialog with exception (usually Access is denied)
-            NotifyDescriptor.Exception eDesc = new NotifyDescriptor.Exception(e);
-            DialogDisplayer.getDefault().notify(eDesc);
+            Exceptions.printStackTrace(e);
         }
     }
 
     /**
-     * Used to synchronize access to ui log files to avoid wrtiting to/deleting/renaming file
+     * Used to synchronize access to ui log files to avoid writing to/deleting/renaming file
      * which is being parsed in another thread.
      */
     private static final Object UIGESTURE_LOG_LOCK = new Object();
 
     /**
-     * Used to synchronize access to metrics log files to avoid wrtiting to/deleting/renaming file
+     * Used to synchronize access to metrics log files to avoid writing to/deleting/renaming file
      * which is being parsed in another thread.
      */
     private static final Object METRICS_LOG_LOCK = new Object();
@@ -353,6 +353,7 @@ public class Installer extends ModuleInstall implements Runnable {
                     NbBundle.getMessage(Installer.class,"ACSD_MetricsCancel"));
             
             WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+                @Override
                 public void run() {
                     showDialog();
                 }
@@ -399,6 +400,7 @@ public class Installer extends ModuleInstall implements Runnable {
         //NbConnection.updateStatus(cmd,NbInstaller.PRODUCT_ID);
     }
 
+    @Override
     public void run() {
         if (RP.isRequestProcessorThread()) {
             displaySummary("INIT_URL", false, false, false); // NOI18N
@@ -444,6 +446,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 closeLogStream();
                 if (isHintsMode()) {
                     class Auto implements Runnable {
+                        @Override
                         public void run() {
                             displaySummary("WELCOME_URL", true, true,true);
                         }
@@ -555,6 +558,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
                 //Task to upload metrics data
                 class Auto implements Runnable {
+                    @Override
                     public void run() {
                         displaySummary("METRICS_URL", true, true, true, DataType.DATA_METRICS, null);
                     }
@@ -567,7 +571,7 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
 
-    /** Apend content of source to target */
+    /** Append content of source to target */
     private static void appendFile (File source, File target) {
         try {
             FileInputStream is = null;
@@ -645,7 +649,7 @@ public class Installer extends ModuleInstall implements Runnable {
         LogRecord rec = new LogRecord(Level.INFO, "USG_INSTALLED_CLUSTERS");
         String dirs = System.getProperty("netbeans.dirs");
         String [] dirsArray = dirs.split(File.pathSeparator);
-        List list = new ArrayList<String>();
+        List<String> list = new ArrayList<String>();
         for (int i = 0; i < dirsArray.length; i++) {
             File f = new File(dirsArray[i]);
             if (f.exists()){
@@ -713,6 +717,7 @@ public class Installer extends ModuleInstall implements Runnable {
         class H extends Handler {
             List<LogRecord> logs = new LinkedList<LogRecord>();
 
+            @Override
             public void publish(LogRecord r) {
                 logs.add(r);
                 if (logs.size() > UIHandler.MAX_LOGS) {
@@ -720,9 +725,11 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
             }
 
+            @Override
             public void flush() {
             }
 
+            @Override
             public void close() throws SecurityException {
             }
         }
@@ -737,13 +744,16 @@ public class Installer extends ModuleInstall implements Runnable {
             class H extends Handler {
                 List<LogRecord> logs = new LinkedList<LogRecord>();
 
+                @Override
                 public void publish(LogRecord r) {
                     logs.add(r);
                 }
 
+                @Override
                 public void flush() {
                 }
 
+                @Override
                 public void close() throws SecurityException {
                 }
             }
@@ -996,7 +1006,7 @@ public class Installer extends ModuleInstall implements Runnable {
         }
         ListIterator<LogRecord> it = list.listIterator(list.size());
         Throwable thr = null;
-        LogRecord result = null;
+        LogRecord result;
         while (it.hasPrevious()){
             result = it.previous();
             if (result.getLevel().intValue() >= Level.WARNING.intValue()){
@@ -1030,7 +1040,7 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
     /** Tries to parse a list of buttons provided by given page.
-     * @param u the url to read the page from
+     * @param is the input stream to read the page from
      * @param defaultButton the button to add always to the list
      */
     static void parseButtons(InputStream is, final Object defaultButton, final DialogDescriptor dd)
@@ -1038,6 +1048,7 @@ public class Installer extends ModuleInstall implements Runnable {
         final ButtonsParser bp = new ButtonsParser(is);
         bp.parse();
         Runnable buttonsCreation = new Runnable() {
+            @Override
             public void run() {
                 bp.createButtons();
                 List<Object> options = bp.getOptions();
@@ -1202,8 +1213,8 @@ public class Installer extends ModuleInstall implements Runnable {
             GZIPOutputStream gzip = new GZIPOutputStream(os);
             BufferedInputStream bis = new BufferedInputStream(new FileInputStream(f));
             byte[] heapDumpData = new byte[8192];
-            int read = 0;
-            int workunit = 0;
+            int read;
+            int workunit;
             while ((read = bis.read(heapDumpData)) != -1){
                 gzip.write(heapDumpData, 0, read);
                 alreadyWritten += read;
@@ -1620,6 +1631,7 @@ public class Installer extends ModuleInstall implements Runnable {
             return getClass().getResource("UnknownHostException.html"); // NOI18N
         }
 
+        @Override
         public void run() {
             DialogState newState = DialogState.CREATED;
             try{
@@ -1653,6 +1665,7 @@ public class Installer extends ModuleInstall implements Runnable {
             doCloseDialog();
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             final URL[] universalResourceLocator = new URL[1];
             String actionURL = decodeButtons(e.getSource(), universalResourceLocator, dataType);
@@ -1683,6 +1696,7 @@ public class Installer extends ModuleInstall implements Runnable {
 		}
                 RP_SUBMIT.post(new Runnable() {
 
+                    @Override
                     public void run() {
                         if (dataType == DataType.DATA_UIGESTURE) {
                             LogRecord userData = getUserData(true, reportPanel);
@@ -1701,6 +1715,7 @@ public class Installer extends ModuleInstall implements Runnable {
                             if ((report) && (!reportPanel.asAGuest())) {
                                 if (!checkUserName(reportPanel)) {
                                     EventQueue.invokeLater(new Runnable(){
+                                        @Override
                                         public void run() {
                                             submitButton.setEnabled(true);
                                             reportPanel.showWrongPassword();
@@ -1716,6 +1731,7 @@ public class Installer extends ModuleInstall implements Runnable {
                         }
                         final List<LogRecord> recsFinal = recs;
                         RP_SUBMIT.post(new Runnable() {
+                            @Override
                             public void run() {
                                 uploadAndPost(recsFinal, universalResourceLocator[0], dataType, getSlownessData());
                             }
@@ -1723,6 +1739,7 @@ public class Installer extends ModuleInstall implements Runnable {
                         okToExit = false;
                         // this should close the descriptor
                         EventQueue.invokeLater(new Runnable(){
+                            @Override
                             public void run() {
                                 doCloseDialog();
                             }
@@ -1746,6 +1763,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
                 //show Tools/Options dialog
                 RP_OPT.post(new Runnable() {
+                    @Override
                     public void run() {
                         OptionsDisplayer.getDefault().open("General"); // NOI18N
                     }
@@ -1937,6 +1955,7 @@ public class Installer extends ModuleInstall implements Runnable {
             this.slownData = slownData;
         }
 
+        @Override
         protected void createDialog() {
             String message = null;
             if (slownData != null) {
@@ -1962,6 +1981,7 @@ public class Installer extends ModuleInstall implements Runnable {
             try {
                 EventQueue.invokeAndWait(new Runnable() {
 
+                    @Override
                     public void run() {
                         LOG.log(Level.FINE, "Window system initialized:", WindowManager.getDefault().getMainWindow().isVisible());
                         if (reportPanel==null) {
@@ -2022,12 +2042,14 @@ public class Installer extends ModuleInstall implements Runnable {
             assert d != null;
         }
 
+        @Override
         public void hyperlinkUpdate(HyperlinkEvent e) {
             if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                 showURL(e.getURL(), false);
             }
         }
 
+        @Override
         protected void closeDialog() {
             if (d == null) {
                 return;
@@ -2063,6 +2085,7 @@ public class Installer extends ModuleInstall implements Runnable {
         private class DataLoader implements Runnable{
             private final StringBuilder panelContent = new StringBuilder();
             private final AbstractNode root = new AbstractNode(new Children.Array());
+            @Override
             public void run() {
                 if (EventQueue.isDispatchThread()){
                     panel.setText(panelContent.toString());
@@ -2083,12 +2106,13 @@ public class Installer extends ModuleInstall implements Runnable {
             }
         }
         
+        @Override
         protected void viewData() {
             if (panel == null) {
                 TimeToFailure.logAction();
                 panel = new SubmitPanel();
                 RequestProcessor.getDefault().post(new DataLoader());
-                panel.setText(NbBundle.getBundle(Installer.class).getString("LOADING_TEXT"));
+                panel.setText(NbBundle.getMessage(Installer.class, "LOADING_TEXT"));
                 panel.getExplorerManager().setRootContext(Node.EMPTY);
             }
             DialogDescriptor viewDD;
@@ -2120,6 +2144,7 @@ public class Installer extends ModuleInstall implements Runnable {
                         NbBundle.getMessage(Installer.class, "SubmitPanel.profileData.text"));
                 slownButton.addActionListener(new ActionListener() {
 
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         showProfilerSnapshot(e);
                     }
@@ -2132,6 +2157,7 @@ public class Installer extends ModuleInstall implements Runnable {
                         NbBundle.getMessage(Installer.class, "SubmitPanel.heapDump.text"));
                 heapDumpButton.addActionListener(new ActionListener() {
 
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         showHeapDump(e);
                     }
@@ -2204,6 +2230,7 @@ public class Installer extends ModuleInstall implements Runnable {
             notifyAll();
         }
 
+        @Override
         protected void showURL(URL u, boolean inIDE) {
             LOG.log(Level.FINE, "opening URL: {0}", u); // NOI18N
             if (inIDE){
@@ -2213,6 +2240,7 @@ public class Installer extends ModuleInstall implements Runnable {
             }
         }
 
+        @Override
         protected void addMoreLogs(List<? super String> params, boolean openPasswd) {
             if ((reportPanel != null) && (report)){
                 params.add(reportPanel.getSummary());
@@ -2234,6 +2262,7 @@ public class Installer extends ModuleInstall implements Runnable {
             }
         }
 
+        @Override
         protected Object showDialogAndGetValue(DialogDescriptor dd) {
             if (!connectDialog) {
                 synchronized (this) {
@@ -2256,6 +2285,7 @@ public class Installer extends ModuleInstall implements Runnable {
             try {
                 EventQueue.invokeAndWait(new Runnable() {
 
+                    @Override
                     public void run() {
                         d.setModal(false);
                         d.setVisible(true);
@@ -2278,6 +2308,7 @@ public class Installer extends ModuleInstall implements Runnable {
             return dd.getValue();
         }
         
+        @Override
         protected void alterMessage(final DialogDescriptor dd) {
             if ("ERROR_URL".equals(msg)&(dd.getOptions().length > 1)){
                 Object obj = dd.getOptions()[0];
@@ -2292,6 +2323,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 if (reportPanel != null && "reportDialog".equals(rptr)&&!errorPage) {
                     EventQueue.invokeLater(new Runnable(){
 
+                        @Override
                         public void run() {
                             dd.setMessage(reportPanel);
                             reportPanel.setInitialFocus();
@@ -2301,6 +2333,7 @@ public class Installer extends ModuleInstall implements Runnable {
             }
         }
 
+        @Override
         protected SlownessData getSlownessData() {
             return slownData;
         }
@@ -2319,25 +2352,32 @@ public class Installer extends ModuleInstall implements Runnable {
             this(msg,def,DataType.DATA_UIGESTURE);
         }
 
+        @Override
         protected void createDialog() {
         }
 
+        @Override
         protected void closeDialog() {
         }
 
+        @Override
         protected void viewData() {
             assert false;
         }
+        @Override
         protected synchronized void assignInternalURL(URL u) {
             urlComputed = true;
             notifyAll();
         }
+        @Override
         protected void showURL(URL u, boolean inIDE) {
             hintURL = u;
         }
 
+        @Override
         protected void addMoreLogs(List<? super String> params, boolean openPasswd) {
         }
+        @Override
         protected Object showDialogAndGetValue(DialogDescriptor dd) {
             while (!urlComputed) {
                 synchronized (this) {
@@ -2359,15 +2399,18 @@ public class Installer extends ModuleInstall implements Runnable {
             }
             return DialogDescriptor.CLOSED_OPTION;
         }
+        @Override
         protected void alterMessage(DialogDescriptor dd) {
         }
 
+        @Override
         protected SlownessData getSlownessData() {
             return null;
         }
     } // end SubmitAutomatic
     private static final class PrefChangeListener implements PreferenceChangeListener {
 
+        @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
             if (corePref.equals(evt.getNode()) && USAGE_STATISTICS_ENABLED.equals(evt.getKey())) {
                 boolean newVal = Boolean.parseBoolean(evt.getNewValue());
