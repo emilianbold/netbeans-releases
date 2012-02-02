@@ -61,6 +61,7 @@ import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**TODO: move to better package
  *
@@ -100,6 +101,14 @@ public final class JavaFixImpl implements Fix {
 
     public static abstract class Accessor {
 
+        static {
+            try {
+                Class.forName(JavaFix.class.getCanonicalName(), true, JavaFix.class.getClassLoader());
+            } catch (ClassNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
         public static Accessor INSTANCE;
 
         public abstract String getText(JavaFix jf);

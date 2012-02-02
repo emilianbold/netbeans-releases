@@ -119,12 +119,4 @@ public final class FixFactory {
         return false;
     }
 
-    static {
-        try {
-            Class.forName(JavaFix.class.getCanonicalName(), true, JavaFix.class.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-    
 }
