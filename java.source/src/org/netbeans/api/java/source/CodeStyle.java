@@ -827,7 +827,8 @@ public final class CodeStyle {
     // Comments -----------------------------------------------------------------
 
     public boolean enableBlockCommentFormatting() {
-        return preferences.getBoolean(enableCommentFormatting, getDefaultAsBoolean(enableCommentFormatting));
+        return preferences.getBoolean(enableCommentFormatting, getDefaultAsBoolean(enableCommentFormatting))
+                && preferences.getBoolean(enableBlockCommentFormatting, getDefaultAsBoolean(enableBlockCommentFormatting));
     }
 
     public boolean enableJavadocFormatting() {

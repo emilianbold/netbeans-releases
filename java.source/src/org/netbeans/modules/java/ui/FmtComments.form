@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.8" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
@@ -23,37 +23,38 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="enableCommentFormatCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="generalLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jSeparator1" pref="329" max="32767" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="12" pref="12" max="12" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="wrapCommentTextCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="addLeadingStarCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="wrapOneLineCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="preserveNewLinesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="javadocLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jSeparator2" pref="328" max="32767" attributes="0"/>
+                      <Component id="jSeparator2" max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="enableCommentFormatCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="wrapCommentTextCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="addLeadingStarCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="wrapOneLineCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="preserveNewLinesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="blankLineAfterParamsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="blankLineAfterDescCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="blankLineAfterReturnCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="generatePCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="alignParamsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="alignReturnCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="alignExceptionsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="enableBlockCommentFormatCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                      </Group>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="12" pref="12" max="12" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="blankLineAfterParamsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="blankLineAfterDescCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="blankLineAfterReturnCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="generatePCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="alignParamsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="alignReturnCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="alignExceptionsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
+                      <Component id="generalLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jSeparator1" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -64,15 +65,12 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Component id="enableCommentFormatCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="enableBlockCommentFormatCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="generalLabel" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="1" attributes="0">
-                      <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
-                      <Component id="jSeparator1" min="-2" pref="7" max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="jSeparator1" alignment="1" min="-2" pref="7" max="-2" attributes="0"/>
+                  <Component id="generalLabel" alignment="1" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="addLeadingStarCheckBox" min="-2" max="-2" attributes="0"/>
@@ -83,7 +81,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="preserveNewLinesCheckBox" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="javadocLabel" min="-2" max="-2" attributes="1"/>
                   </Group>
@@ -106,7 +104,7 @@
               <Component id="alignReturnCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="alignExceptionsCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="20" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -121,6 +119,13 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="enableCommentFormatCheckBoxActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="enableBlockCommentFormatCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/java/ui/Bundle.properties" key="LBL_doc_enableBlockCommentFormat" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="generalLabel">
       <Properties>
