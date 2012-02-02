@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
@@ -68,11 +69,13 @@ public class ModelVisitor extends PathNodeVisitor {
      * Keeps the name of the visited properties
      */
     private final List<List<FunctionNode>> functionStack;
-
+    private final JsParserResult parserResult;
+    
     public ModelVisitor(JsParserResult parserResult) {
         FileObject fileObject = parserResult.getSnapshot().getSource().getFileObject();
         this.modelBuilder = new ModelBuilder(JsFunctionImpl.createGlobal(fileObject));
         this.functionStack = new ArrayList<List<FunctionNode>>();
+        this.parserResult = parserResult;
     }
 
     public JsObject getGlobalObject() {
@@ -99,7 +102,7 @@ public class ModelVisitor extends PathNodeVisitor {
                             property = current.getProperty(iNode.getName());                            
                         }
                         if (property != null) {
-                            ((JsObjectImpl)property).addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
+                            ((JsObjectImpl)property).addOccurrence(ModelUtils.documentOffsetRange(parserResult, iNode.getStart(), iNode.getFinish()));
                         }
                     }
                 }
@@ -120,7 +123,7 @@ public class ModelVisitor extends PathNodeVisitor {
             if (fromAN != null) {
                 JsObjectImpl property = (JsObjectImpl)fromAN.getProperty(accessNode.getProperty().getName());
                 if (property != null) {
-                    property.addOccurrence(new OffsetRange(accessNode.getProperty().getStart(), accessNode.getProperty().getFinish()));
+                    property.addOccurrence(ModelUtils.documentOffsetRange(parserResult, accessNode.getProperty().getStart(), accessNode.getProperty().getFinish()));
                     fromAN = property;
                 }                
             }

@@ -80,7 +80,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
     @Override
     public CodeCompletionResult complete(CodeCompletionContext ccContext) {
-        long start = System.currentTimeMillis();
+         long start = System.currentTimeMillis();
         
         
         BaseDocument doc = (BaseDocument) ccContext.getParserResult().getSnapshot().getSource().getDocument(false);

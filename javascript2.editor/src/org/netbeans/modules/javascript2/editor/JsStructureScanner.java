@@ -51,6 +51,7 @@ import java.util.*;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
@@ -70,31 +71,31 @@ public class JsStructureScanner implements StructureScanner {
         final Model model = result.getModel();
         JsObject globalObject = model.getGlobalObject();
         
-        getEmbededItems(globalObject, items);
+        getEmbededItems(result, globalObject, items);
         return items;
     }
     
-    private List<StructureItem> getEmbededItems(JsObject jsObject, List<StructureItem> collectedItems) {
+    private List<StructureItem> getEmbededItems(JsParserResult result, JsObject jsObject, List<StructureItem> collectedItems) {
         Collection<? extends JsObject> properties = jsObject.getProperties().values();
         for (JsObject child : properties) {
             List<StructureItem> children = new ArrayList<StructureItem>();
-            children = getEmbededItems(child, children);
+            children = getEmbededItems(result, child, children);
             if (child.getJSKind() == JsElement.Kind.FUNCTION || child.getJSKind() == JsElement.Kind.METHOD
                     || child.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
                 if (((JsFunction)child).isAnonymous()) {
                     collectedItems.addAll(children);
                 } else {
-                    collectedItems.add(new JsFunctionStructureItem((JsFunction) child, children));
+                    collectedItems.add(new JsFunctionStructureItem((JsFunction) child, children, result));
                 }
             } else if (child.getJSKind() == JsElement.Kind.OBJECT) {
-                collectedItems.add(new JsObjectStructureItem(child, children));
+                collectedItems.add(new JsObjectStructureItem(child, children, result));
             } else if (child.getJSKind() == JsElement.Kind.PROPERTY) {
                 if(child.getModifiers().contains(Modifier.PUBLIC)
                         || !(jsObject.getParent() instanceof JsFunction))
-                collectedItems.add(new JsSimpleStructureItem(child, "prop-")); //NOI18N
+                collectedItems.add(new JsSimpleStructureItem(child, "prop-", result)); //NOI18N
             } else if (child.getJSKind() == JsElement.Kind.VARIABLE && child.isDeclared()
                     /*&& (jsObject.getJSKind() == JsElement.Kind.FILE || jsObject.getJSKind() == JsElement.Kind.CONSTRUCTOR)*/) {
-                collectedItems.add(new JsSimpleStructureItem(child, "var-")); //NOI18N
+                collectedItems.add(new JsSimpleStructureItem(child, "var-", result)); //NOI18N
             }
          }
         return collectedItems;
@@ -165,10 +166,12 @@ public class JsStructureScanner implements StructureScanner {
         
         final private List<? extends StructureItem> children;
         final private String sortPrefix;
-
-        public JsStructureItem(JsObject elementHandle, List<? extends StructureItem> children, String sortPrefix) {
+        final private JsParserResult parserResult;
+        
+        public JsStructureItem(JsObject elementHandle, List<? extends StructureItem> children, String sortPrefix, JsParserResult parserResult) {
             this.modelElement = elementHandle;
             this.sortPrefix = sortPrefix;
+            this.parserResult = parserResult;
             if (children != null) {
                 this.children = children;
             } else {
@@ -236,12 +239,12 @@ public class JsStructureScanner implements StructureScanner {
 
         @Override
         public long getPosition() {
-            return modelElement.getOffset();
+            return LexUtilities.getLexerOffset(parserResult, modelElement.getOffset());
         }
 
         @Override
         public long getEndPosition() {
-            return modelElement.getOffsetRange(null).getEnd();
+            return LexUtilities.getLexerOffset(parserResult, modelElement.getOffsetRange(null).getEnd());
         }
 
         @Override
@@ -257,8 +260,8 @@ public class JsStructureScanner implements StructureScanner {
     
     private class JsFunctionStructureItem extends JsStructureItem {
 
-        public JsFunctionStructureItem(JsFunction elementHandle, List<? extends StructureItem> children) {
-            super(elementHandle, children, "fn"); //NOI18N
+        public JsFunctionStructureItem(JsFunction elementHandle, List<? extends StructureItem> children, JsParserResult parserResult) {
+            super(elementHandle, children, "fn", parserResult); //NOI18N
         }
 
         public JsFunction getFunctionScope() {
@@ -301,8 +304,8 @@ public class JsStructureScanner implements StructureScanner {
 
     private class JsObjectStructureItem extends JsStructureItem {
 
-        public JsObjectStructureItem(JsObject elementHandle, List<? extends StructureItem> children) {
-            super(elementHandle, children, "ob"); //NOI18N
+        public JsObjectStructureItem(JsObject elementHandle, List<? extends StructureItem> children, JsParserResult parserResult) {
+            super(elementHandle, children, "ob", parserResult); //NOI18N
         }
 
         
@@ -326,8 +329,8 @@ public class JsStructureScanner implements StructureScanner {
     
     private class JsSimpleStructureItem extends JsStructureItem {
 
-        public JsSimpleStructureItem(JsObject elementHandle, String sortPrefix) {
-            super(elementHandle, null, sortPrefix);
+        public JsSimpleStructureItem(JsObject elementHandle, String sortPrefix, JsParserResult parserResult) {
+            super(elementHandle, null, sortPrefix, parserResult);
         }
 
         

@@ -41,11 +41,14 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
+import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
@@ -85,7 +88,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
         Model model = result.getModel();
         JsObject global = model.getGlobalObject();
         
-        highlights = count(global, highlights);
+        highlights = count(result, global, highlights);
         
         if (highlights != null && highlights.size() > 0) {
             semanticHighlights = highlights;
@@ -94,7 +97,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
         }
     }
     
-    private Map<OffsetRange, Set<ColoringAttributes>> count (JsObject parent, Map<OffsetRange, Set<ColoringAttributes>> highlights) {
+    private Map<OffsetRange, Set<ColoringAttributes>> count (JsParserResult result, JsObject parent, Map<OffsetRange, Set<ColoringAttributes>> highlights) {
 
         for (Iterator<? extends JsObject> it = parent.getProperties().values().iterator(); it.hasNext();) {
             JsObject object = it.next();
@@ -102,24 +105,24 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                 case CONSTRUCTOR:
                 case METHOD:
                 case FUNCTION:
-                    highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.METHOD_SET);
+                    highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), ColoringAttributes.METHOD_SET);
                     break;
                 case OBJECT:
                     if (object.isDeclared()) {
-                        highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.CLASS_SET);
+                        highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), ColoringAttributes.CLASS_SET);
                     }
                     break;
                 case PROPERTY:
-                    highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.FIELD_SET);
+                    highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), ColoringAttributes.FIELD_SET);
                     for(Occurrence occurence: object.getOccurrences()) {
-                        highlights.put(occurence.getOffsetRange(), ColoringAttributes.FIELD_SET);
+                        highlights.put(LexUtilities.getLexerOffsets(result, occurence.getOffsetRange()), ColoringAttributes.FIELD_SET);
                     }
                     break;
                 case VARIABLE:
                     if (parent.getParent() == null) {
-                        highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.GLOBAL_SET);
+                        highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), ColoringAttributes.GLOBAL_SET);
                         for(Occurrence occurence: object.getOccurrences()) {
-                            highlights.put(occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
+                            highlights.put(LexUtilities.getLexerOffsets(result, occurence.getOffsetRange()), ColoringAttributes.GLOBAL_SET);
                         }
                     }
             }
@@ -127,7 +130,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                 highlights = null;
                 break;
             }
-            highlights = count(object, highlights);
+            highlights = count(result, object, highlights);
         }
         
         return highlights;
