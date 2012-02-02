@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.java.hints.jackpot.refactoring;
 
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.logging.Logger;
@@ -79,6 +81,19 @@ public class RefactoringActionsProviderExt { //extends RefactoringActionsProvide
         if (selected.getKind() == ElementKind.CONSTRUCTOR) {
             return new ReplaceConstructorRefactoringUI(selectedElement, selected.getSimpleName().toString());
         }
+        
+        TreePath path = selectedElement.resolve(info);
+        Tree.Kind kind;
+        while (path != null && (kind = path.getLeaf().getKind()) != Tree.Kind.METHOD && kind != Tree.Kind.NEW_CLASS) {
+            path = path.getParentPath();
+        }
+        
+        if(path != null && (((kind = path.getLeaf().getKind()) == Tree.Kind.NEW_CLASS) || (kind == Tree.Kind.METHOD ))) {
+            ExecutableElement element = (ExecutableElement) info.getTrees().getElement(path);
+            if (element.getKind() == ElementKind.CONSTRUCTOR)
+                return new ReplaceConstructorRefactoringUI(TreePathHandle.create(element, info), element.getSimpleName().toString());
+        }
+        
 
         return null;
     }
@@ -91,6 +106,18 @@ public class RefactoringActionsProviderExt { //extends RefactoringActionsProvide
         }
         if (selected.getKind() == ElementKind.CONSTRUCTOR) {
             return new ReplaceConstructorWithBuilderUI(selectedElement, info);
+        }
+        
+        TreePath path = selectedElement.resolve(info);
+        Tree.Kind kind;
+        while (path != null && (kind = path.getLeaf().getKind()) != Tree.Kind.METHOD && kind != Tree.Kind.NEW_CLASS) {
+            path = path.getParentPath();
+        }
+        
+        if(path != null && (((kind = path.getLeaf().getKind()) == Tree.Kind.NEW_CLASS) || (kind == Tree.Kind.METHOD ))) {
+            ExecutableElement element = (ExecutableElement) info.getTrees().getElement(path);
+            if (element.getKind() == ElementKind.CONSTRUCTOR)
+                return new ReplaceConstructorWithBuilderUI(TreePathHandle.create(element, info), info);
         }
 
         return null;
