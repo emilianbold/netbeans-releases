@@ -279,10 +279,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                     }
                 }
 
-                int insertOffset = offset; // offset < length ? offset+1 : offset;
-                if (offset == begin && insertOffset > 0) {
-                    insertOffset = Utilities.getRowStart(doc, offset);
-                    int sp = Utilities.getRowStart(doc, offset)+sb.length();
+                if (offset == begin && offset > 0) {
                     context.setText(sb.toString(), -1, sb.length());
                     return;
                 }
@@ -384,10 +381,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                     }
                 }
 
-                int insertOffset = offset; // offset < length ? offset+1 : offset;
-                if (offset == begin && insertOffset > 0) {
-                    insertOffset = Utilities.getRowStart(doc, offset);
-                    int sp = Utilities.getRowStart(doc, offset) + sb.length();
+                if (offset == begin && offset > 0) {
                     context.setText(sb.toString(), -1, sb.length());
                     return;
                 }
@@ -395,7 +389,9 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                 return;
             }
         }
-        StringBuilder sb = new StringBuilder("\n");
+        
+        // Just indent the line properly
+        StringBuilder sb = new StringBuilder("\n"); // NOI18N
         int indentSize = getNextLineIndentation(doc, offset);
         if (indentSize > 0) {
             sb.append(IndentUtils.createIndentString(doc, indentSize));
