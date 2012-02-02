@@ -51,6 +51,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -85,6 +87,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil.AnnotationInfo;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil.TypeInfo;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil.MethodInfo;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -216,6 +219,16 @@ public class JpaControllerGenerator {
     }
     private static void addImplementsClause(FileObject fileObject, final String className, final String interfaceName) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        if(javaSource == null){
+            if (!fileObject.isValid()) {
+                fileObject.getParent().refresh();	//Maybe fo.refresh() is enough
+                fileObject = FileUtil.toFileObject(FileUtil.toFile(fileObject));
+                javaSource = JavaSource.forFileObject(fileObject);
+            } 
+        }
+        if(javaSource == null){
+                            Logger.getLogger(JpaControllerGenerator.class.getName()).log(Level.WARNING, "Can''t find JavaSource for {0}", fileObject.getPath());
+        }
         final boolean[] modified = new boolean[] { false };
         ModificationResult modificationResult = javaSource.runModificationTask(new Task<WorkingCopy>() {
             @Override
