@@ -9,7 +9,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
 import javax.ws.rs.DELETE;
-import org.codehaus.jettison.json.JSONString;
 
 /**
  * REST Web Service
@@ -42,7 +41,7 @@ public class CI1Cl {
      */
     @GET
     @Produces("application/json")
-    public JSONString getJson() {
+    public org.codehaus.jettison.json.JSONString getJson() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
     }
@@ -54,7 +53,7 @@ public class CI1Cl {
      */
     @PUT
     @Consumes("application/json")
-    public void putJson(JSONString content) {
+    public void putJson(org.codehaus.jettison.json.JSONString content) {
     }
 
     /**

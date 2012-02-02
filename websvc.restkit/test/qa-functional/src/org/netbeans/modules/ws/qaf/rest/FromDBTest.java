@@ -94,11 +94,6 @@ public class FromDBTest extends CRUDTest {
         JComboBoxOperator jcbo = new JComboBoxOperator(wo, 1);
         jcbo.clearText();
         jcbo.typeText(getRestPackage() + ".service"); //NOI18N
-        if (getJavaEEversion().equals(JavaEEVersion.JAVAEE5)) {
-            jcbo = new JComboBoxOperator(wo, 2);
-            jcbo.clearText();
-            jcbo.typeText(getRestPackage() + ".converter"); //NOI18N
-        }
         wo.finish();
         Runnable r = new Runnable() {
 
@@ -122,20 +117,17 @@ public class FromDBTest extends CRUDTest {
         new EventTool().waitNoEvent(1500);
         waitScanFinished();
         Set<File> files = getFiles(getRestPackage() + ".service"); //NOI18N
-        if (getJavaEEversion().equals(JavaEEVersion.JAVAEE5)) {
-            files.addAll(getFiles(getRestPackage() + ".converter")); //NOI18N
+        if (getJavaEEversion().equals(JavaEEVersion.JAVAEE5)) { // see http://netbeans.org/bugzilla/show_bug.cgi?id=189723
+            files.addAll(getFiles("controller")); //NOI18N
+            files.addAll(getFiles("controller.exceptions")); //NOI18N
         }
         if (JavaEEVersion.JAVAEE6.equals(getJavaEEversion())) {
             assertEquals("Some files were not generated", 8, files.size()); //NOI18N
         } else {
-            assertEquals("Some files were not generated", 30, files.size()); //NOI18N
+            assertEquals("Some files were not generated", 18, files.size()); //NOI18N
         }
         //make sure all REST services nodes are visible in project log. view
-        if (getJavaEEversion().equals(JavaEEVersion.JAVAEE6)) {
-            assertEquals("missing nodes?", 7, getRestNode().getChildren().length);
-        } else {
-            assertEquals("missing nodes?", 14, getRestNode().getChildren().length);
-        }
+        assertEquals("missing nodes?", 7, getRestNode().getChildren().length);
     }
 
     /**
