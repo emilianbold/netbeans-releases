@@ -750,12 +750,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         sendResumptive("-exec-continue"); // NOI18N
     }
     
+    private boolean targetAttach = false;
+    
     private void doMIAttach(GdbDebuggerInfo gdi) {
         String cmdString;
         long pid = -1;
         String remoteTarget = gdi.getTargetCommand();
         if (remoteTarget != null) {
             cmdString = "target " + remoteTarget;  //NOI18N
+            targetAttach = true;
         } else {
             pid = gdi.getPid();
             // MI command "-target-attach pid | file" does not available in
@@ -856,7 +859,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         // ... so we interrupt
 	int pid = (int) session().getPid();
 	if (pid > 0) {
-	    return gdb.pause(pid, silentStop);
+	    return gdb.pause(pid, silentStop, targetAttach);
         }
         return false;
     }
