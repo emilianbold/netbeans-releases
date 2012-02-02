@@ -55,7 +55,7 @@ import org.openide.windows.TopComponent;
  * @author Jan Stola
  */
 @TopComponent.Description(
-        preferredID = "DomTC", // NOI18N
+        preferredID = DomTC.ID,
         persistenceType = TopComponent.PERSISTENCE_ALWAYS,
         iconBase = ElementNode.ICON_BASE)
 @TopComponent.Registration(
@@ -76,6 +76,8 @@ import org.openide.windows.TopComponent;
     "HINT_DomTC=This window shows a DOM Tree" // NOI18N
 })
 public final class DomTC extends TopComponent {
+    /** TopComponent ID. */
+    public static final String ID = "DomTC"; // NOI18N
     /** Panel shown in this {@code TopComponent}. */
     private DomPanel domPanel;
 

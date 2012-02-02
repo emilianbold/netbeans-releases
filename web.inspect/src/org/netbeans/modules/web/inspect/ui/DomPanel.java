@@ -91,6 +91,7 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
         add(noDomLabel);
         pageModel.addPropertyChangeListener(createModelListener());
         manager.addPropertyChangeListener(createSelectedNodesListener());
+        update(true);
     }
 
     /**
@@ -124,7 +125,7 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
      * or whether it should attempt to keep the current expand/collapse state
      * of the nodes displayed currently.
      */
-    void update(final boolean rebuild) {
+    private void update(final boolean rebuild) {
         RP.post(new Runnable() {
             @Override
             public void run() {

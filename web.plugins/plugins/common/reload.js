@@ -50,6 +50,8 @@ NetBeans.serverURL = function() {
     return serverProtocol+'://'+serverHost+':'+serverPort+serverFile;
 }
 
+NetBeans.DEBUG = true;
+
 NetBeans.managedTabs = new Object();
 
 NetBeans.STATUS_NEW = 0;
@@ -95,6 +97,9 @@ NetBeans.connectIfNeeded = function() {
             self.sendPendingMessages();
         }
         this.socket.onmessage = function(e) {
+            if (self.DEBUG) {
+                console.log('Received message: ' + e.data);
+            }
             var message;
             try {
                 message = JSON.parse(e.data);
@@ -113,6 +118,9 @@ NetBeans.connectIfNeeded = function() {
 NetBeans.sendMessage = function(message) {
     if (this.connectIfNeeded()) {
         var messageText = JSON.stringify(message);
+        if (this.DEBUG) {
+            console.log('Sent message: ' + messageText);
+        }
         this.socket.send(messageText);
     } else {
         this.pendingMessages.push(message);

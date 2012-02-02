@@ -41,12 +41,19 @@
  */
 package org.netbeans.modules.web.inspect;
 
+import java.awt.EventQueue;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.web.common.websocket.WebSocketServer;
+import org.netbeans.modules.web.inspect.ui.ResourcesTC;
 import org.openide.modules.ModuleInstall;
+import org.openide.windows.TopComponent;
+import org.openide.windows.TopComponentGroup;
+import org.openide.windows.WindowManager;
 
 /**
  * Installer of {@code web.inspect} module.
@@ -67,6 +74,38 @@ public class Installer extends ModuleInstall {
         } catch (IOException ex) {
             Logger.getLogger(Installer.class.getName()).log(Level.INFO, null, ex);
         }
+        // PENDING what is a suitable place for this
+        PageModel.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                String propName = evt.getPropertyName();
+                if (PageModel.PROP_MODEL.equals(propName)) {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            boolean show = PageModel.getDefault().isValid();
+                            WindowManager manager = WindowManager.getDefault();
+                            TopComponentGroup group = manager.findTopComponentGroup("webinspect"); // NOI18N
+                            if (group == null) {
+                                Logger.getLogger(Installer.class.getName()).log(
+                                        Level.INFO, "TopComponentGroup webinspect not found!"); // NOI18N
+                            } else if (show) {
+                                group.open();
+                                TopComponent tc = manager.findTopComponent(ResourcesTC.ID);
+                                if (tc == null) {
+                                    Logger.getLogger(Installer.class.getName()).log(
+                                            Level.INFO, "TopComponent {0} not found!", ResourcesTC.ID); // NOI18N
+                                } else {
+                                    tc.requestVisible();
+                                }
+                            } else {
+                                group.close();
+                            }
+                        }
+                    });
+                }
+            }
+        });
     }
 
 }

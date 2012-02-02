@@ -55,7 +55,7 @@ import org.openide.windows.TopComponent;
  * @author Jan Stola
  */
 @TopComponent.Description(
-        preferredID = "ResourcesTC", // NOI18N
+        preferredID = ResourcesTC.ID,
         persistenceType = TopComponent.PERSISTENCE_ALWAYS,
         iconBase = ResourcesNode.ICON_BASE)
 @TopComponent.Registration(
@@ -76,6 +76,8 @@ import org.openide.windows.TopComponent;
     "HINT_ResourcesTC=This window shows resources of a web page." // NOI18N
 })
 public final class ResourcesTC extends TopComponent {
+    /** TopComponent ID. */
+    public static final String ID = "ResourcesTC"; // NOI18N
     /** Panel shown in this {@code TopComponent}. */
     private ResourcesPanel resourcesPanel;
 
