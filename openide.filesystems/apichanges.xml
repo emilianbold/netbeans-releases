@@ -61,7 +61,7 @@ made subject to such option by the copyright holder.
                     Those who wish to influence content of 
                     <a href="@TOP@/org/openide/filesystems/FileUtil.html#getConfigRoot()">
                     configuration file system</a> have an easier
-                    <a href="@TOP@/org/openide/filesystems/Repository.LayersProvider.html">
+                    <a href="@TOP@/org/openide/filesystems/Repository.LayerProvider.html">
                     way</a> now.
                 </p>
             </description>

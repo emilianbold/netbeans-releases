@@ -57,7 +57,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.*;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -68,6 +67,7 @@ import org.openide.util.LookupListener;
 import org.openide.util.NbCollections;
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  * Holder for NetBeans default (system, configuration) filesystem, used for most
@@ -154,6 +154,30 @@ public class Repository implements Serializable {
      * and their enabled state remain the same. While it does, the {@link LayerProvider}s
      * are not queried again.
      * </p>
+     * <p>You can show a dialog letting the user log in to some server, you can call
+     * {@code LoginProvider.injectLayer(...)} with the URL to an XML layer.
+     * The contents of the layer will become available only after login.
+     * <pre>
+     * {@code @}{@link ServiceProviders}({
+     *     {@code @}{@link ServiceProvider}(service=LoginProvider.class),
+     *     {@code @}{@link ServiceProvider}(service=LayerProvider.class)
+     * })
+     * public final class LoginProvider extends LayerProvider {
+     *     private URL layer;
+     * 
+     *     public void registerLayers(Collection{@code <? super URL>} arr) {
+     *         if (layer != null) {
+     *             arr.add(layer);
+     *         }
+     *     }
+     * 
+     *     public static void injectLayer(URL u) {
+     *         LoginProvider lp = {@link Lookup}.getDefault().lookup(LoginProvider.class);
+     *         lp.url = u;
+     *         lp.refresh();
+     *     }
+     * }
+     * </pre>
      * @since 7.59
      */
     public static abstract class LayerProvider {
@@ -189,7 +213,7 @@ public class Repository implements Serializable {
     
     /** Allows subclasses registered as {@link Repository#getDefault()} to 
      * find out list of URLs for a given provider. The method just calls
-     * {@link LayerProvider#layers()}.
+     * {@link LayerProvider#registerLayers(java.util.Collection)}.
      * 
      * @param p the provider.
      * @return ordered list of URLs
