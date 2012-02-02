@@ -227,7 +227,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     private transient Reference<Pane> lastSelected;
 
     /** The time of the last save to determine the real external modifications */
-    private long lastSaveTime;
+    private long lastSaveTime = -1;
 
     /** Whether the reload dialog is currently opened. Prevents poping of multiple
      * reload dialogs if there is more external saves.
