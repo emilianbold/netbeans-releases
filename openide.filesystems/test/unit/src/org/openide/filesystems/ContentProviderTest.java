@@ -43,8 +43,6 @@ package org.openide.filesystems;
 
 import java.net.URL;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.Repository.LayerProvider;
@@ -81,6 +79,7 @@ public class ContentProviderTest extends NbTestCase {
         
         @Override
         protected void registerLayers(Collection<? super URL> context) {
+            assertTrue("Context is empty: " + context, context.isEmpty());
             if (empty) {
                 return;
             }

@@ -43,8 +43,6 @@ package org.netbeans.core.startup.layers;
 
 import java.net.URL;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import junit.framework.Test;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.core.startup.NbRepository;
@@ -107,6 +105,7 @@ public class ContentProviderTest extends NbTestCase {
         
         @Override
         protected void registerLayers(Collection<? super URL> context) {
+            assertTrue("Context is empty: " + context, context.isEmpty());
             if (empty) {
                 return;
             }

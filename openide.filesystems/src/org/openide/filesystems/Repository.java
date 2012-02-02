@@ -249,7 +249,9 @@ public class Repository implements Serializable {
                 layerUrls.add(generatedLayer);
             }
             for (LayerProvider p : Lookup.getDefault().lookupAll(LayerProvider.class)) {
-                p.registerLayers(layerUrls);
+                List<URL> newURLs = new ArrayList<URL>();
+                p.registerLayers(newURLs);
+                layerUrls.addAll(newURLs);
             }
         }
 
