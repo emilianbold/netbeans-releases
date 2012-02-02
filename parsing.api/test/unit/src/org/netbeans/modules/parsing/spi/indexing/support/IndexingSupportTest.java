@@ -48,7 +48,9 @@ import java.util.Collection;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
+import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
+import org.netbeans.modules.parsing.impl.indexing.lucene.LayeredDocumentIndex;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -195,13 +197,26 @@ public class IndexingSupportTest extends NbTestCase {
         is.addDocument(doc2);
         SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder()).store(true);
 
-        class LIF extends LuceneIndexFactory {
+        class LIF implements IndexFactoryImpl {
+            
+            private final IndexFactoryImpl delegate = LuceneIndexFactory.getDefault();
+            
             boolean getIndexCalled = false;
 
             @Override
-            public DocumentIndex getIndex(FileObject indexFolder) throws IOException {
+            public org.netbeans.modules.parsing.lucene.support.IndexDocument createDocument(Indexable indexable) {
+                return delegate.createDocument(indexable);
+            }
+
+            @Override
+            public LayeredDocumentIndex createIndex(Context ctx) throws IOException {
+                return delegate.createIndex(ctx);
+            }
+            
+            @Override
+            public LayeredDocumentIndex getIndex(FileObject indexFolder) throws IOException {
                 getIndexCalled = true;
-                return super.getIndex(indexFolder);
+                return delegate.getIndex(indexFolder);
             }
         }
         final LIF lif = new LIF();
