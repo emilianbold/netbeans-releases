@@ -45,7 +45,7 @@ import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyModel;
-import org.netbeans.modules.css.lib.api.properties.PropertyValue;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 
 /**
  * Actually there's no such class as RubyModule, the property descriptors
@@ -64,8 +64,8 @@ public class RubyModuleTest extends CslTestBase {
         
         assertNotNull(p);
         
-        assertTrue(new PropertyValue(p, "none").isResolved());
-        assertTrue(new PropertyValue(p, "attr(rbspan)").isResolved());
+        assertTrue(new ResolvedProperty(p, "none").isResolved());
+        assertTrue(new ResolvedProperty(p, "attr(rbspan)").isResolved());
     }
     
    

@@ -46,87 +46,122 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.css.lib.properties.*;
+import org.netbeans.modules.css.lib.properties.GrammarParser;
+import org.netbeans.modules.css.lib.properties.GrammarResolver;
 
 /**
+ * Represents a resolved css declaration
  *
  * @author mfukala@netbeans.org
  */
-public class PropertyValue {
+public class ResolvedProperty {
 
-    private String value;
-    private GroupGrammarElement groupGrammarElement;
-    private GrammarResolver grammarResolver;
+    private final GroupGrammarElement groupGrammarElement;
+    private final GrammarResolver grammarResolver;
     private static final Pattern FILTER_COMMENTS_PATTERN = Pattern.compile("/\\*.*?\\*/");//NOI18N
     private Node simpleParseTree, fullParseTree;
+    private PropertyModel propertyModel;
 
-    public PropertyValue(PropertyModel property, String value) {
-        this(property.getGrammar(), property.getPropertyName(), filterComments(value));
+    public static ResolvedProperty resolve(PropertyModel propertyModel, CharSequence propertyValue) {
+        return new ResolvedProperty(propertyModel, propertyValue);
+    }
+    
+    public ResolvedProperty(PropertyModel propertyModel, CharSequence value) {
+        this(GrammarParser.parse(propertyModel.getGrammar(), propertyModel.getPropertyName()), filterComments(value));
+        this.propertyModel = propertyModel;
     }
    
-    public PropertyValue(String grammar, String propertyName, String value) {
-        this(GrammarParser.parse(grammar, propertyName), value);
-    }
-
-    public PropertyValue(GroupGrammarElement groupGrammarElement, String value) {
+    //No need to be public - used just by tests!
+    //tests only
+    //
+    //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    public ResolvedProperty(GroupGrammarElement groupGrammarElement, String value) {
         this.groupGrammarElement = groupGrammarElement;
-        this.value = value;
         this.grammarResolver = GrammarResolver.resolve(groupGrammarElement, value);
     }
     
-     //tests only>>>
-    public PropertyValue(String grammar, String value) {
+    public ResolvedProperty(String grammar, String value) {
         this(GrammarParser.parse(grammar), value);
-    }//<<<
-
-    public GroupGrammarElement getGroupGrammarElement() {
-        return groupGrammarElement;
-    }
-    
-    public String getValue() {
-        return value;
     }
 
     public List<Token> getTokens() {
         return grammarResolver.tokens();
     }
     
-    public List<Token> getUnresolvedTokens() {
-        return grammarResolver.left();
-    }
-
     public List<ResolvedToken> getResolvedTokens() {
         return grammarResolver.resolved();
     }
+    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+    /**
+     * Return an instance of {@link PropertyModel}.
+     */
+    public PropertyModel getPropertyModel() {
+        return propertyModel;
+    }
     
+    /**
+     * @return true if the property value fully corresponds to the property grammar.
+     */
+    public boolean isResolved() {
+        return grammarResolver.success();
+    }
+    
+    /**
+     * @return list of unresolved property value tokens. It means these tokens cannot
+     * be consumed by the property grammar.
+     * 
+     * Currently used just by the CssAnalyzer - error checking of the property values
+     */
+    public List<Token> getUnresolvedTokens() {
+        return grammarResolver.left();
+    }
+    
+    /**
+     * @return set of alternatives which may follow the end of the property value.
+     * The values are computed according to the grammar and the existing property value
+     */
+    public Set<ValueGrammarElement> getAlternatives() {
+        return grammarResolver.getAlternatives();
+    }
+
+    /**
+     * @return a parse tree for the property value. 
+     * The parse tree contains only named nodes (references).
+     * 
+     * In most cases clients will use this method.
+     */    
+    public synchronized Node getSimpleParseTree() {
+        if(simpleParseTree == null) {
+            simpleParseTree = generateParseTree(false);
+        }
+        return simpleParseTree;
+    }
+    
+    /**
+     * @return a parse tree for the property value. 
+     * The parse tree contains also the anonymous group nodes.
+     * If false the parse tree contains only named nodes (references)
+     * 
+     * Possibly remove from the API later since {@link #getSimpleParseTree()} 
+     * is the preferred way for clients wishing to work with the parse tree.
+     * 
+     * Mostly used for debugging and tests.
+     */
+    @Deprecated
     public synchronized Node getFullParseTree() {
         if(fullParseTree == null) {
             fullParseTree = generateParseTree(true);
         }
         return fullParseTree;
     }
-    
-    public Node getSimpleParseTree() {
-        if(simpleParseTree == null) {
-            simpleParseTree = generateParseTree(false);
-        }
-        return simpleParseTree;
-    }
 
-    public boolean isResolved() {
-        return grammarResolver.success();
-    }
+    //--------- private -----------
     
-    public Set<ValueGrammarElement> getAlternatives() {
-        return grammarResolver.getAlternatives();
-    }
-    
-    //tests
-    GrammarResolver getGrammarResolver() {
-        return grammarResolver;
-    }
-
-    private static String filterComments(String text) {
+    /**
+     * @return a text with all css comments replaced by spaces
+     */
+    private static String filterComments(CharSequence text) {
         Matcher m = FILTER_COMMENTS_PATTERN.matcher(text);
         StringBuilder b = new StringBuilder(text);
         while (m.find()) {
@@ -143,13 +178,11 @@ public class PropertyValue {
     }
 
     /**
-     * 
      * @param fullParseTree - if true then the parse tree contains also the anonymous
      * group nodes. If false the parse tree contains only named nodes (references)
-     * 
      */
     private Node generateParseTree(final boolean fullParseTree) {
-        Node.GroupNode root = new Node.GroupNode(getGroupGrammarElement()) {
+        Node.GroupNode root = new Node.GroupNode(groupGrammarElement) {
 
             @Override
             public String toString() {

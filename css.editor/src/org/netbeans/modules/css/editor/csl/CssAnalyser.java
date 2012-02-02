@@ -50,7 +50,7 @@ import java.util.List;
 import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.lib.api.properties.PropertyModel;
-import org.netbeans.modules.css.lib.api.properties.PropertyValue;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.css.lib.api.properties.Token;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
@@ -125,7 +125,7 @@ public class CssAnalyser {
                             //do not check values which contains generated code
                             //we are no able to identify the templating semantic
                             if (!Css3Utils.containsGeneratedCode(valueImage)) {
-                                PropertyValue pv = new PropertyValue(property, valueImage);
+                                ResolvedProperty pv = new ResolvedProperty(property, valueImage);
                                 if (!pv.isResolved()) {
                                     String errorMsg = null;
 

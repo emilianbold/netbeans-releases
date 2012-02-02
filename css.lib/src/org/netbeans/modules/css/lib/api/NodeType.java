@@ -167,10 +167,17 @@ public enum NodeType {
      * list of importItem-s
      */
     imports,
+    
+    /**
+     * Value of the css property - color : "red";
+     */
+    propertyValue,
+    
+    rule,
     /**
      * a CSS rule: div { ... }
      */
-    rule,
+    
     selector,
     simpleSelectorSequence,
     /**

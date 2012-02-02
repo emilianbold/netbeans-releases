@@ -573,7 +573,7 @@ pseudo
 declaration
     : 
     //syncToIdent //recovery: this will sync the parser the identifier (property) if there's a gargabe in front of it
-    property COLON ws? expr prio?
+    property COLON ws? propertyValue prio?
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
@@ -581,6 +581,10 @@ declaration
         //then skip all tokens until an end of the rule is found represented by right curly brace
         consumeUntil(input, BitSet.of(SEMI, RBRACE)); 
     }
+
+propertyValue
+	:	expr
+	;
 
 //recovery: syncs the parser to the first identifier in the token input stream or the closing curly bracket
 //since the rule matches epsilon it will always be entered

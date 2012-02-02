@@ -95,11 +95,15 @@ public interface ElementFactory {
 
     public Declaration createDeclaration();
 
-    public Declaration createDeclaration(Property property, Expression expression, boolean isImportant);
+    public Declaration createDeclaration(Property property, PropertyValue propertyValue, boolean isImportant);
 
     public Property createProperty();
 
     public Property createProperty(CharSequence propertyName);
+    
+    public PropertyValue createPropertyValue();
+
+    public PropertyValue createPropertyValue(Expression expression);
 
     public Expression createExpression();
 

@@ -76,8 +76,11 @@ public class MediaQueryITest extends ModelTestBase {
         
         Rule rule = f.createRule(
                 f.createSelectorsGroup(f.createSelector(".myclass")),
-                f.createDeclarations(f.createDeclaration(f.createProperty("color"),
-                f.createExpression("red"), false)));
+                f.createDeclarations(
+                f.createDeclaration(
+                    f.createProperty("color"),
+                    f.createPropertyValue(f.createExpression("red")), false))
+                );
         
         Media media = f.createMedia(mql, rule);
         Body body = f.createBody();

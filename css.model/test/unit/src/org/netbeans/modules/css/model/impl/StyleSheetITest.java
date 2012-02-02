@@ -71,7 +71,8 @@ public class StyleSheetITest extends ModelTestBase {
 
         Property p = factory.createProperty("border-color");
         Expression e = factory.createExpression("green");
-        Declaration d = factory.createDeclaration(p, e, false);
+        PropertyValue pv = factory.createPropertyValue(e);
+        Declaration d = factory.createDeclaration(p, pv, false);
 
         Declarations ds = factory.createDeclarations(d);
 
@@ -116,8 +117,11 @@ public class StyleSheetITest extends ModelTestBase {
 
         Declaration declaration = declarations.iterator().next();
         assertEquals("color", declaration.getProperty().getContent());
-
-        Expression expression = declaration.getExpression();
+        
+        PropertyValue pv = declaration.getPropertyValue();
+        assertNotNull(pv);
+        
+        Expression expression = pv.getExpression();
         assertNotNull(expression);
         assertEquals("green", expression.getContent());
 

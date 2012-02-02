@@ -44,7 +44,7 @@ package org.netbeans.modules.css.editor.module.main;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.properties.GrammarResolver;
 import org.netbeans.modules.css.lib.api.properties.PropertyModel;
-import org.netbeans.modules.css.lib.api.properties.PropertyValue;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
@@ -61,23 +61,23 @@ public class BackgroundsAndBordersModuleTest extends CssModuleTestBase {
         PropertyModel prop = Properties.getPropertyModel("background-attachment");
         assertNotNull(prop);
 
-        assertTrue(new PropertyValue(prop, "scroll").isResolved());
-        assertTrue(new PropertyValue(prop, "fixed").isResolved());
-        assertTrue(new PropertyValue(prop, "local").isResolved());
+        assertTrue(new ResolvedProperty(prop, "scroll").isResolved());
+        assertTrue(new ResolvedProperty(prop, "fixed").isResolved());
+        assertTrue(new ResolvedProperty(prop, "local").isResolved());
 
-        assertTrue(new PropertyValue(prop, "local, local, scroll").isResolved());
-        assertTrue(new PropertyValue(prop, "fixed,scroll").isResolved());
+        assertTrue(new ResolvedProperty(prop, "local, local, scroll").isResolved());
+        assertTrue(new ResolvedProperty(prop, "fixed,scroll").isResolved());
     }
     
     public void testBackground_Image() throws ParseException {
         PropertyModel prop = Properties.getPropertyModel("background-image");
         assertNotNull(prop);
 
-        assertTrue(new PropertyValue(prop, "none").isResolved());
-        assertTrue(new PropertyValue(prop, "url(http://site.org/img.png)").isResolved());
-        assertTrue(new PropertyValue(prop, "url(picture.jpg)").isResolved());
+        assertTrue(new ResolvedProperty(prop, "none").isResolved());
+        assertTrue(new ResolvedProperty(prop, "url(http://site.org/img.png)").isResolved());
+        assertTrue(new ResolvedProperty(prop, "url(picture.jpg)").isResolved());
         
-        assertTrue(new PropertyValue(prop, "url(picture.jpg), none, url(x.jpg)").isResolved());
+        assertTrue(new ResolvedProperty(prop, "url(picture.jpg), none, url(x.jpg)").isResolved());
    
          //[ top | bottom ]|[[ <percentage> | <length> | left | center | right ][ <percentage> | <length> | top | center | bottom ]?]|[[ center | [ left | right ] [ <percentage> | <length> ]? ][ center | [ top | bottom ] [ <percentage> | <length> ]? ]]
     }
@@ -93,7 +93,7 @@ public class BackgroundsAndBordersModuleTest extends CssModuleTestBase {
     
     public void testIssue201769() {
         PropertyModel prop = Properties.getPropertyModel("background-position");
-        PropertyValue pv = new PropertyValue(prop, "center top");
+        ResolvedProperty pv = new ResolvedProperty(prop, "center top");
 //        PropertyModelTest.dumpResult(pv);
         assertTrue(pv.isResolved());
     }

@@ -106,6 +106,8 @@ public final class ElementFactoryImpl implements ElementFactory {
                 return new SelectorI(ctx);
             case property:
                 return new PropertyI(ctx);
+            case propertyValue:
+                return new PropertyValueI(ctx);
             case expr:
                 return new ExpressionI(ctx);
             case prio:
@@ -247,10 +249,10 @@ public final class ElementFactoryImpl implements ElementFactory {
     }
 
     @Override
-    public Declaration createDeclaration(Property property, Expression expression, boolean isImportant) {
+    public Declaration createDeclaration(Property property, PropertyValue propertyValue, boolean isImportant) {
         Declaration d = createDeclaration();
         d.setProperty(property);
-        d.setExpression(expression);
+        d.setPropertyValue(propertyValue);
 
         Prio prio = createPrio();
         prio.setContent(isImportant ? "!" : "");
@@ -270,6 +272,20 @@ public final class ElementFactoryImpl implements ElementFactory {
         p.setContent(propertyName);
         return p;
     }
+
+    @Override
+    public PropertyValue createPropertyValue() {
+        return new PropertyValueI();
+    }
+
+    @Override
+    public PropertyValue createPropertyValue(Expression expression) {
+        PropertyValue pv = createPropertyValue();
+        pv.setExpression(expression);
+        return pv;
+    }
+    
+    
 
     @Override
     public Expression createExpression() {

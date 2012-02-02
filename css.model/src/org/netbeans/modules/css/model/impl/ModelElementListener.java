@@ -96,6 +96,8 @@ public interface ModelElementListener {
     public void elementAdded(Declaration declaration);
 
     public void elementAdded(Property property);
+    
+    public void elementAdded(PropertyValue propertyValue);
 
     public void elementAdded(Expression expression);
 
@@ -137,6 +139,8 @@ public interface ModelElementListener {
 
     public void elementRemoved(NamespacePrefixName namespacePrefixName);
 
+    public void elementRemoved(PropertyValue propertyValue);
+    
     public void elementRemoved(Body body);
 
     public void elementRemoved(BodyItem bodyItem);
@@ -198,6 +202,8 @@ public interface ModelElementListener {
                 listener.elementAdded((Namespace) element);
             } else if (element instanceof NamespacePrefixName) {
                 listener.elementAdded((NamespacePrefixName) element);
+            } else if (element instanceof PropertyValue) {
+                listener.elementAdded((PropertyValue) element);
             } else if (element instanceof Body) {
                 listener.elementAdded((Body) element);
             } else if (element instanceof BodyItem) {
@@ -256,6 +262,8 @@ public interface ModelElementListener {
                 listener.elementRemoved((Namespace) element);
             } else if (element instanceof NamespacePrefixName) {
                 listener.elementRemoved((NamespacePrefixName) element);
+            } else if (element instanceof PropertyValue) {
+                listener.elementRemoved((PropertyValue) element);
             } else if (element instanceof Body) {
                 listener.elementRemoved((Body) element);
             } else if (element instanceof BodyItem) {
@@ -506,6 +514,14 @@ public interface ModelElementListener {
 
         @Override
         public void elementRemoved(Page page) {
+        }
+
+        @Override
+        public void elementAdded(PropertyValue propertyValue) {
+        }
+
+        @Override
+        public void elementRemoved(PropertyValue propertyValue) {
         }
     }
 }

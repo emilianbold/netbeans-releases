@@ -351,7 +351,7 @@ public class PropertyValueTest extends CssTestBase {
 
     public void testGetSimpleParseTree() {
         String g = " a [ b [ c | d ]* ]";
-        PropertyValue pv = new PropertyValue(g, "a b d d d c d");
+        ResolvedProperty pv = new ResolvedProperty(g, "a b d d d c d");
         
 //        for(ResolvedToken t : pv.getResolvedTokens()) {
 //            System.out.println(t);
@@ -384,7 +384,7 @@ public class PropertyValueTest extends CssTestBase {
     
     public void testGetSimpltParseTree2() {
         PropertyModel p = Properties.getPropertyModel("font-family");
-        PropertyValue pv = new PropertyValue(p, "fantasy, monospace");
+        ResolvedProperty pv = new ResolvedProperty(p, "fantasy, monospace");
         
         Node root = pv.getSimpleParseTree();
         dumpTree(root);

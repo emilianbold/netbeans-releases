@@ -82,8 +82,9 @@ public class ModelTest extends ModelTestBase {
         StyleSheet styleSheet = model.getStyleSheet();
 
         Expression expression = factory.createExpression("20px");
+        PropertyValue pv = factory.createPropertyValue(expression);
         Property property = factory.createProperty("margin");
-        Declaration declaration = factory.createDeclaration(property, expression, false);
+        Declaration declaration = factory.createDeclaration(property, pv, false);
         Declarations declarations = factory.createDeclarations(declaration);
         Selector selector = factory.createSelector("h1");
         SelectorsGroup sgroup = factory.createSelectorsGroup(selector);
@@ -124,7 +125,9 @@ public class ModelTest extends ModelTestBase {
         Declaration declaration = rule.getDeclarations().getDeclarations().get(1);
         assertNotNull(declaration);
 
-        Declaration newd = factory.createDeclaration(factory.createProperty("margin"), factory.createExpression("20px"), false);
+        Declaration newd = factory.createDeclaration(
+                factory.createProperty("margin"), 
+                factory.createPropertyValue(factory.createExpression("20px")), false);
         rule.getDeclarations().addDeclaration(newd);
 
         Difference[] diffs = model.getModelSourceDiff();
@@ -167,7 +170,10 @@ public class ModelTest extends ModelTestBase {
         Declaration declaration = declarations.iterator().next();
         assertEquals("color", declaration.getProperty().getContent());
 
-        Expression expression = declaration.getExpression();
+        PropertyValue pv = declaration.getPropertyValue();
+        assertNotNull(pv);
+        
+        Expression expression = pv.getExpression();
         assertNotNull(expression);
         assertEquals("red", expression.getContent());
 

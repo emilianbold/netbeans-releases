@@ -433,7 +433,7 @@ public class Css3ParserTest extends CssTestBase {
                 TestUtil.bodysetPath + "rule/declarations/declaration|0/property/filter"));
 
         Node function = NodeUtil.query(result.getParseTree(),
-                TestUtil.bodysetPath + "rule/declarations/declaration|0/expr/term/function");
+                TestUtil.bodysetPath + "rule/declarations/declaration|0/propertyValue/expr/term/function");
         assertNotNull(function);
 
         Node functionName = NodeUtil.query(function, "functionName");
@@ -606,7 +606,7 @@ public class Css3ParserTest extends CssTestBase {
 //        TestUtil.dumpResult(result);
         Node error = NodeUtil.query(result.getParseTree(),
                 TestUtil.bodysetPath
-                + "rule/declarations/declaration/expr/term/function/expr/error");
+                + "rule/declarations/declaration/propertyValue/expr/term/function/expr/error");
         assertNotNull(error);
 
         assertResult(result, 2);
@@ -881,7 +881,7 @@ public class Css3ParserTest extends CssTestBase {
 //        TestUtil.dumpResult(result);
         Node node = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem/"
-                + "rule/declarations/declaration/expr/error");
+                + "rule/declarations/declaration/propertyValue/expr/error");
         assertNotNull(node);
         assertEquals(15, node.from());
         assertEquals(16, node.to());

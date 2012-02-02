@@ -46,7 +46,7 @@ import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyModel;
-import org.netbeans.modules.css.lib.api.properties.PropertyValue;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.css.lib.properties.model.MarginB;
 import org.netbeans.modules.css.lib.properties.model.MarginLr;
 import org.netbeans.modules.css.lib.properties.model.MarginT;
@@ -66,7 +66,7 @@ public class MarginTest extends CssTestBase {
 //        PropertyModel model = Properties.getPropertyModel("border");
 //        PropertyValue val = new PropertyValue(model, "1px solid gray");
         PropertyModel model = Properties.getPropertyModel("margin");
-        PropertyValue val = new PropertyValue(model, "1px 20% 3px");
+        ResolvedProperty val = new ResolvedProperty(model, "1px 20% 3px");
 
         Node root = val.getSimpleParseTree();
         dumpTree(root);
@@ -74,7 +74,7 @@ public class MarginTest extends CssTestBase {
         System.out.println("-------------------");
 
         PropertyModel model2 = Properties.getPropertyModel("margin-left");
-        PropertyValue val2 = new PropertyValue(model2, "1px");
+        ResolvedProperty val2 = new ResolvedProperty(model2, "1px");
 
         Node root2 = val2.getSimpleParseTree();
         dumpTree(root2);
@@ -104,7 +104,7 @@ public class MarginTest extends CssTestBase {
 
     public void testCreateMarginModel() {
         PropertyModel model = Properties.getPropertyModel("margin");
-        PropertyValue val = new PropertyValue(model, "1px 20% auto");
+        ResolvedProperty val = new ResolvedProperty(model, "1px 20% auto");
 
         Node root = val.getSimpleParseTree();
         dumpTree(root);
@@ -216,7 +216,7 @@ public class MarginTest extends CssTestBase {
     
     public Box<MarginWidth> getBoxModel(String propertyName, String text) {
         PropertyModel model = Properties.getPropertyModel(propertyName);
-        PropertyValue val = new PropertyValue(model, text);
+        ResolvedProperty val = new ResolvedProperty(model, text);
 
         ModelBuilderNodeVisitor<NodeModel> modelvisitor = new ModelBuilderNodeVisitor<NodeModel>(PropertyModelId.MARGIN);
         val.getSimpleParseTree().accept(modelvisitor);
@@ -228,7 +228,7 @@ public class MarginTest extends CssTestBase {
     
     public void dumpMargin(String value) {
         PropertyModel model = Properties.getPropertyModel("margin");
-        PropertyValue val = new PropertyValue(model, value);
+        ResolvedProperty val = new ResolvedProperty(model, value);
 
         ModelBuilderNodeVisitor<NodeModel> modelvisitor = new ModelBuilderNodeVisitor<NodeModel>(PropertyModelId.MARGIN);
         val.getSimpleParseTree().accept(modelvisitor);

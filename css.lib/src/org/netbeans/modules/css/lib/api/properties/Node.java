@@ -41,9 +41,6 @@
  */
 package org.netbeans.modules.css.lib.api.properties;
 
-import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
-import org.netbeans.modules.css.lib.api.properties.Token;
-import org.netbeans.modules.css.lib.api.properties.ResolvedToken;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.model;
 
+import java.io.PrintWriter;
 import javax.swing.text.BadLocationException;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -76,4 +77,20 @@ public class ModelTestBase extends NbTestCase {
         return new Model(result);
     }
     
+    protected void dumpTree(org.netbeans.modules.css.lib.api.properties.Node node) {
+        PrintWriter pw = new PrintWriter(System.out);
+        dump(node, 0, pw);
+        pw.flush();
+    }
+
+    private void dump(org.netbeans.modules.css.lib.api.properties.Node tree, int level, PrintWriter pw) {
+        for (int i = 0; i < level; i++) {
+            pw.print("    ");
+        }
+        pw.print(tree.toString());
+        pw.println();
+        for (org.netbeans.modules.css.lib.api.properties.Node c : tree.children()) {
+            dump(c, level + 1, pw);
+        }
+    }
 }

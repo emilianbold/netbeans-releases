@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,54 +37,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.module.main;
+package org.netbeans.modules.css.model.api;
 
-import java.util.List;
-import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.lib.api.properties.Properties;
-import org.netbeans.modules.css.lib.api.properties.PropertyModel;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
-import org.netbeans.modules.css.lib.api.properties.ResolvedToken;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class BasicBoxModelModuleTest extends CssModuleTestBase {
-
-    public BasicBoxModelModuleTest(String testName) {
-        super(testName);
-    }
+public interface PropertyValue extends Element {
     
-    public void testProperties() {
-        assertPropertyValues("display", "table", "cell");
-        assertPropertyValues("margin", "10px", "20px 30px 40px");
-        assertPropertyValues("padding", "1px");
-    }
+    public Expression getExpression();
     
-    public void testHeight() {
-        assertPropertyDeclaration("height: 20px");
-    }
-    
-    public void testMargin() {
-        assertPropertyDeclaration("margin: 1px"); //tblr == 1
-        assertPropertyDeclaration("margin: 1px 2px"); //tb=1, lr=2
-        assertPropertyDeclaration("margin: 1px 2px 3px"); //t=1, lr=2, b=3
-        assertPropertyDeclaration("margin: 1px 2px 3px 4px"); //t=1, r=2, b=3, l=4
-    }
-    
-    public void testMargin_Model() {
-        PropertyModel margin = Properties.getPropertyModel("margin");
-        ResolvedProperty eval = new ResolvedProperty(margin, "1px 2px 3px");
-        List<ResolvedToken> resolved = eval.getResolvedTokens();
-        for(ResolvedToken token : resolved) {
-            System.out.println(token);
-        }
-        
-        
-        
-    }
+    public void setExpression(Expression expr);
     
 }

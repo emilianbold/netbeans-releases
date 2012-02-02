@@ -45,7 +45,7 @@ import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.properties.GrammarParser;
 import org.netbeans.modules.css.lib.api.properties.PropertyModel;
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.PropertyValue;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
 import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
 import java.io.PrintWriter;
@@ -118,29 +118,29 @@ public class CssModuleTestBase extends CslTestBase {
         });
     }
 
-    protected PropertyValue assertResolve(String grammar, String inputText) {
+    protected ResolvedProperty assertResolve(String grammar, String inputText) {
         return assertResolve(grammar, inputText, true);
     }
 
-    protected PropertyValue assertNotResolve(String grammar, String inputText) {
+    protected ResolvedProperty assertNotResolve(String grammar, String inputText) {
         return assertResolve(grammar, inputText, false);
     }
 
-    protected PropertyValue assertResolve(String grammar, String inputText, boolean expectedSuccess) {
+    protected ResolvedProperty assertResolve(String grammar, String inputText, boolean expectedSuccess) {
         long a = System.currentTimeMillis();
         GroupGrammarElement tree = GrammarParser.parse(grammar);
         long b = System.currentTimeMillis();
         return assertResolve(tree, inputText, expectedSuccess);
     }
 
-    protected PropertyValue assertResolve(GroupGrammarElement tree, String inputText) {
+    protected ResolvedProperty assertResolve(GroupGrammarElement tree, String inputText) {
         return assertResolve(tree, inputText, true);
     }
 
-    protected PropertyValue assertResolve(GroupGrammarElement tree, String inputText, boolean expectedSuccess) {
+    protected ResolvedProperty assertResolve(GroupGrammarElement tree, String inputText, boolean expectedSuccess) {
 
         long a = System.currentTimeMillis();
-        PropertyValue pv = new PropertyValue(tree, inputText);
+        ResolvedProperty pv = new ResolvedProperty(tree, inputText);
         long c = System.currentTimeMillis();
 
         if (PRINT_INFO_IN_ASSERT_RESOLVE) {
@@ -163,7 +163,7 @@ public class CssModuleTestBase extends CslTestBase {
         assertResolve(grammar, inputText, false);
     }
 
-    protected void assertAlternatives(PropertyValue propertyValue, String... expected) {
+    protected void assertAlternatives(ResolvedProperty propertyValue, String... expected) {
         Set<ValueGrammarElement> alternatives = propertyValue.getAlternatives();
         Collection<String> alts = convert(alternatives);
         Collection<String> expc = new ArrayList<String>(Arrays.asList(expected));
@@ -186,7 +186,7 @@ public class CssModuleTestBase extends CslTestBase {
     }
 
     protected void assertAlternatives(String grammar, String input, String... expected) {
-        PropertyValue pv = new PropertyValue(grammar, input);
+        ResolvedProperty pv = new ResolvedProperty(grammar, input);
         assertAlternatives(pv, expected);
     }
 

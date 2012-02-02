@@ -41,8 +41,13 @@
  */
 package org.netbeans.modules.css.model.impl;
 
-import java.util.List;
-import org.netbeans.modules.css.model.api.*;
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
+import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.Prio;
+import org.netbeans.modules.css.model.api.Property;
+import org.netbeans.modules.css.model.api.PropertyValue;
 
 /**
  *
@@ -51,13 +56,16 @@ import org.netbeans.modules.css.model.api.*;
 public class DeclarationI extends ModelElement implements Declaration {
 
     private Property property;
-    private Expression expression;
+    private PropertyValue propertyValue;
     private Prio prio;
+    
+    private ResolvedProperty resolvedProperty;
+
     private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
 
         @Override
-        public void elementAdded(Expression value) {
-            expression = value;
+        public void elementAdded(PropertyValue value) {
+            propertyValue = value;
         }
 
         @Override
@@ -77,7 +85,7 @@ public class DeclarationI extends ModelElement implements Declaration {
 
         addEmptyElement(Property.class);
         addTextElement(":");
-        addEmptyElement(Expression.class);
+        addEmptyElement(PropertyValue.class);
         addEmptyElement(Prio.class);
     }
 
@@ -97,13 +105,13 @@ public class DeclarationI extends ModelElement implements Declaration {
     }
 
     @Override
-    public Expression getExpression() {
-        return expression;
+    public PropertyValue getPropertyValue() {
+        return propertyValue;
     }
 
     @Override
-    public void setExpression(Expression expression) {
-        setElement(expression);
+    public void setPropertyValue(PropertyValue value) {
+        setElement(value);
     }
 
     @Override
@@ -125,4 +133,16 @@ public class DeclarationI extends ModelElement implements Declaration {
     protected Class getModelClass() {
         return Declaration.class;
     }
+
+    @Override
+    public synchronized ResolvedProperty getResolvedProperty() {
+        if(resolvedProperty == null) {
+            PropertyModel pmodel = Properties.getPropertyModel(getProperty().getContent().toString().trim());
+            if(pmodel != null) {
+                resolvedProperty = ResolvedProperty.resolve(pmodel, getPropertyValue().getExpression().getContent());
+            }
+        }
+        return resolvedProperty;
+    }
+    
 }

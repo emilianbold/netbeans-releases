@@ -67,7 +67,7 @@ import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.*;
 import org.netbeans.modules.css.lib.api.properties.PropertyModel;
-import org.netbeans.modules.css.lib.api.properties.PropertyValue;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
 import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.lib.api.*;
@@ -950,7 +950,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 PropertyModel prop = Properties.getPropertyModel(property.image().toString().trim());
                 if (prop != null) {
 
-                    PropertyValue propVal = new PropertyValue(prop, expressionText);
+                    ResolvedProperty propVal = new ResolvedProperty(prop, expressionText);
 
                     Collection<ValueGrammarElement> alts = propVal.getAlternatives();
 
@@ -1051,7 +1051,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
                 //text from the node start to the embedded anchor offset (=embedded caret offset - prefix length)
 
-                Node expressionNode = NodeUtil.getChildByType(declaratioNode, NodeType.expr);
+                Node expressionNode = NodeUtil.query(declaratioNode, "propertyValue/expr"); //NOI18N
 
                 String expressionText = context.getSnapshot().getText().subSequence(
                         expressionNode.from(),
@@ -1064,7 +1064,7 @@ public class CssCompletion implements CodeCompletionHandler {
                     expressionText = expressionText.substring(0, eolIndex);
                 }
 
-                PropertyValue propVal = new PropertyValue(propertyModel, expressionText);
+                ResolvedProperty propVal = new ResolvedProperty(propertyModel, expressionText);
                 Collection<ValueGrammarElement> alts = propVal.getAlternatives();
                 Collection<ValueGrammarElement> filteredByPrefix = filterElements(alts, prefix);
 
@@ -1130,7 +1130,7 @@ public class CssCompletion implements CodeCompletionHandler {
                         expressionText = expressionText.substring(0, eolIndex);
                     }
 
-                    propVal = new PropertyValue(propertyModel, expressionText);
+                    propVal = new ResolvedProperty(propertyModel, expressionText);
                     alts = propVal.getAlternatives();
                     filteredByPrefix = alts; //no prefix
                     completionItemInsertPosition = context.getCaretOffset(); //no prefix
