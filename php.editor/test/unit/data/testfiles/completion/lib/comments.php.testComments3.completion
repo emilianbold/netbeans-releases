@@ -2,20 +2,20 @@ Code completion result for source line:
 * PHPDoc comment @|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-KEYWORD    @assert                                    PHPUnit
-KEYWORD    @backupGlobals                             PHPUnit
-KEYWORD    @backupStaticAttributes                    PHPUnit
-KEYWORD    @codeCoverageIgnore                        PHPUnit
-KEYWORD    @covers                                    PHPUnit
-KEYWORD    @dataProvider                              PHPUnit
-KEYWORD    @depends                                   PHPUnit
-KEYWORD    @expectedException                         PHPUnit
-KEYWORD    @expectedExceptionCode                     PHPUnit
-KEYWORD    @expectedExceptionMessage                  PHPUnit
-KEYWORD    @group                                     PHPUnit
-KEYWORD    @outputBuffering                           PHPUnit
-KEYWORD    @runInSeparateProcess                      PHPUnit
-KEYWORD    @runTestsInSeparateProcesses               PHPUnit
-KEYWORD    @test                                      PHPUnit
-KEYWORD    @testdox                                   PHPUnit
-KEYWORD    @ticket                                    PHPUnit
+OTHER      @assert                                    PHPUnit
+OTHER      @backupGlobals                             PHPUnit
+OTHER      @backupStaticAttributes                    PHPUnit
+OTHER      @codeCoverageIgnore                        PHPUnit
+OTHER      @covers                                    PHPUnit
+OTHER      @dataProvider                              PHPUnit
+OTHER      @depends                                   PHPUnit
+OTHER      @expectedException                         PHPUnit
+OTHER      @expectedExceptionCode                     PHPUnit
+OTHER      @expectedExceptionMessage                  PHPUnit
+OTHER      @group                                     PHPUnit
+OTHER      @outputBuffering                           PHPUnit
+OTHER      @runInSeparateProcess                      PHPUnit
+OTHER      @runTestsInSeparateProcesses               PHPUnit
+OTHER      @test                                      PHPUnit
+OTHER      @testdox                                   PHPUnit
+OTHER      @ticket                                    PHPUnit

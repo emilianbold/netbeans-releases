@@ -64,7 +64,7 @@ public class PHPDOCTagElement extends PHPElement{
 
     @Override
     public ElementKind getKind() {
-        return ElementKind.KEYWORD;
+        return ElementKind.OTHER;
     }
 
     public String getDoc(){
