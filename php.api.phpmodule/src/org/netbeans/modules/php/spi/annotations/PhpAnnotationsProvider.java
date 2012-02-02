@@ -77,8 +77,8 @@ public abstract class PhpAnnotationsProvider {
      *
      * @param  identifier the <b>non-localized (usually english)</b> identifier of this PHP annotations
      *         provider (e.g., "Symfony Annotations"); never {@code null}
-     * @param  name the <b>localized</b> name of this PHP annotations provider (e.g., "Symfony
-     *         PHP Web Framework Annotations"); never {@code null}
+     * @param  name <b>short, localized</b> name of this PHP annotations provider (e.g., "Symfony");
+     *         never {@code null}
      * @param  description the description of this PHP annotations provider (e.g., "PHP annotations
      *        for an open source framework based on the MVC pattern."); can be {@code null}
      * @throws NullPointerException if the {@ code identifier} or {@code name} parameter is {@code null}
@@ -102,7 +102,7 @@ public abstract class PhpAnnotationsProvider {
     }
 
     /**
-     * Get the <b>localized</b> name of this PHP annotations provider.
+     * Get the <b>short, localized</b> name of this PHP annotations provider.
      *
      * @return name; never {@code null}
      */
