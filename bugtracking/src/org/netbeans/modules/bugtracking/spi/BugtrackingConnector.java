@@ -45,6 +45,10 @@ package org.netbeans.modules.bugtracking.spi;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.Collection;
 import org.openide.util.Lookup;
 
@@ -62,34 +66,6 @@ public abstract class BugtrackingConnector implements Lookup.Provider {
      * a repository from this connector was created, removed or changed
      */
     public final static String EVENT_REPOSITORIES_CHANGED = "bugtracking.repositories.changed"; // NOI18N
-    
-    /**
-     * Returns a unique ID for this connector
-     *
-     * @return
-     */
-    public abstract String getID();
-
-    /**
-     * Returns the icon for this connector or null if not available
-     *
-     * @return
-     */
-    public abstract Image getIcon();
-
-    /**
-     * Returns the display name for this connector
-     *
-     * @return the display name for this connector
-     */
-    public abstract String getDisplayName();
-
-    /**
-     * Returns tooltip for this connector
-     *
-     * @return tooltip for this connector
-     */
-    public abstract String getTooltip();
 
     /**
      * Creates a new repository instance.
@@ -151,4 +127,37 @@ public abstract class BugtrackingConnector implements Lookup.Provider {
     protected void fireRepositoriesChanged(Collection<RepositoryProvider> oldRepositories, Collection<RepositoryProvider> newRepositories) {
         changeSupport.firePropertyChange(EVENT_REPOSITORIES_CHANGED, oldRepositories, newRepositories);
     }
+    
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE, ElementType.METHOD})
+    public @interface Registration {    
+        /**
+         * Returns a unique ID for this connector
+         *
+         * @return
+         */
+        public String id();
+
+        /**
+         * Returns the icon path for this connector
+         *
+         * @return
+         */
+        public String iconPath() default "";
+
+        /**
+         * Returns the display name for this connector
+         *
+         * @return the display name for this connector
+         */
+        public String displayName();
+
+        /**
+         * Returns tooltip for this connector
+         *
+         * @return tooltip for this connector
+         */
+        public String tooltip();    
+        
+    }    
 }

@@ -44,20 +44,8 @@ package org.netbeans.modules.bugtracking.util;
 
 import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
-import java.awt.AWTKeyStroke;
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.FontMetrics;
-import java.awt.KeyboardFocusManager;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.io.File;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -77,18 +65,13 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JViewport;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
 import org.netbeans.api.keyring.Keyring;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
@@ -104,9 +87,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -286,7 +266,12 @@ public class BugtrackingUtil {
     }
 
     public static BugtrackingConnector[] getBugtrackingConnectors() {
-        return BugtrackingManager.getInstance().getConnectors();
+        DelegatingConnector[] dcs = BugtrackingManager.getInstance().getConnectors();
+        BugtrackingConnector[] cons = new BugtrackingConnector[dcs.length];
+        for (int i = 0; i < cons.length; i++) {
+            cons[i] = dcs[i].getDelegate();
+        }
+        return cons;
     }
 
     public static String scramble(String str) {

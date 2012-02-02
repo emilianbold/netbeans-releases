@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.bugzilla;
 
-import java.awt.Image;
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -52,40 +51,29 @@ import org.netbeans.modules.bugzilla.issue.BugzillaIssueFinder;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProviders({@ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class),
-                                           @ServiceProvider(service=org.netbeans.modules.bugzilla.BugzillaConnector.class)})
+@BugtrackingConnector.Registration (
+        id=BugzillaConnector.ID,
+        displayName="#LBL_ConnectorName",
+        tooltip="#LBL_ConnectorTooltip"
+)    
 public class BugzillaConnector extends BugtrackingConnector {
+
+    public static final String ID = "org.netbeans.modules.bugzilla";
+    private static BugzillaConnector instance;
 
     private BugzillaIssueFinder issueFinder;
 
     public BugzillaConnector() {
-        System.out.println("");
+        instance = this;
     }
-
-    @Override
-    public String getID() {
-        return "org.netbeans.modules.bugzilla";                                 //  NOI18N
-    }
-
-    @Override
-    public Image getIcon() {
-        return null;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return getConnectorName();
-    }
-
-    @Override
-    public String getTooltip() {
-        return NbBundle.getMessage(BugzillaConnector.class, "LBL_ConnectorTooltip");        // NOI18N
+    
+    static BugzillaConnector getInstance() {
+        return instance;
     }
     
     @Override

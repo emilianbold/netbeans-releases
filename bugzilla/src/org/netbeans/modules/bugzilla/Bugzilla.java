@@ -173,10 +173,7 @@ public class Bugzilla {
     }
 
     public BugzillaConnector getConnector() {
-        if (connector == null) {
-            connector = Lookup.getDefault().lookup(BugzillaConnector.class);
-        }
-        return connector;
+        return BugzillaConnector.getInstance();
     }
 
     public void removeRepository(BugzillaRepository repository) {

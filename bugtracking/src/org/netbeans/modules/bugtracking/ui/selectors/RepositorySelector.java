@@ -47,6 +47,7 @@ package org.netbeans.modules.bugtracking.ui.selectors;
 import java.io.IOException;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.jira.JiraUpdater;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
@@ -65,7 +66,7 @@ public class RepositorySelector {
     }
 
     public RepositoryProvider create() {
-        BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+        DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
         connectors = addJiraProxyIfNeeded(connectors);
         selectorPanel.setConnectors(connectors);
         if(!selectorPanel.open()) {
@@ -101,9 +102,9 @@ public class RepositorySelector {
         return true;
     }
 
-    private BugtrackingConnector[] addJiraProxyIfNeeded(BugtrackingConnector[] connectors) {
+    private DelegatingConnector[] addJiraProxyIfNeeded(DelegatingConnector[] connectors) {
         if(!BugtrackingUtil.isJiraInstalled()) {
-            BugtrackingConnector[] ret = new BugtrackingConnector[connectors.length + 1];
+            DelegatingConnector[] ret = new DelegatingConnector[connectors.length + 1];
             System.arraycopy(connectors, 0, ret, 0, connectors.length);
             ret[ret.length - 1] = JiraUpdater.getInstance().getConnector();
             connectors = ret;

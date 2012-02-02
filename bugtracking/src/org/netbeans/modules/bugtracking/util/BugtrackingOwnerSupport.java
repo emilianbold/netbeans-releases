@@ -52,10 +52,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
+import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelectorBuilder;
 import org.openide.DialogDescriptor;
@@ -598,7 +596,7 @@ public abstract class BugtrackingOwnerSupport {
 
         private RepositoryProvider askUserToSpecifyRepository(RepositoryProvider suggestedRepo) {
             RepositoryProvider[] repos = BugtrackingUtil.getKnownRepositories(true);
-            BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();
+            DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
 
             final RepositorySelectorBuilder selectorBuilder = new RepositorySelectorBuilder();
             selectorBuilder.setDisplayFormForExistingRepositories(true);

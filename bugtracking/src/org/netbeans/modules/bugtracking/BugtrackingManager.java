@@ -142,12 +142,12 @@ public final class BugtrackingManager implements LookupListener {
         return rp;
     }
 
-    public BugtrackingConnector[] getConnectors() {
+    public DelegatingConnector[] getConnectors() {
         synchronized(connectors) {
             if(connectorsLookup == null) {
                 refreshConnectors();
             }
-            return connectors.toArray(new BugtrackingConnector[connectors.size()]);
+            return connectors.toArray(new DelegatingConnector[connectors.size()]);
         }
     }
 
@@ -226,8 +226,12 @@ public final class BugtrackingManager implements LookupListener {
             }
             Collection<? extends BugtrackingConnector> conns = connectorsLookup.allInstances();
             if(LOG.isLoggable(Level.FINER)) {
-                for (BugtrackingConnector repository : conns) {
-                    LOG.log(Level.FINER, "registered provider: {0}", repository.getDisplayName()); // NOI18N
+                for (BugtrackingConnector c : conns) {
+                    DelegatingConnector dc = 
+                        c instanceof DelegatingConnector ? 
+                            (DelegatingConnector) c :
+                            new DelegatingConnector(c, "Unknown", "Unknown", "Unknown", null); // NOI18N
+                    LOG.log(Level.FINER, "registered provider: {0}", dc.getDisplayName()); // NOI18N
                 }
             }
             connectors.clear();

@@ -297,9 +297,13 @@ public class IssueAccessorTest extends NbTestCase {
         public void applyChanges() throws IOException { }
     }
 
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class)
+    @BugtrackingConnector.Registration(
+            displayName=TestConnector.ID,
+            tooltip=TestConnector.ID,
+            id=TestConnector.ID
+    )
     public static class TestConnector extends BugtrackingConnector {
-        static String ID = "KenaiCconector";
+        public final static String ID = "KenaiCconector";
         static TestRepository kolibaRepository;
 //        static TestRepository goldenProjectRepository;
 
@@ -319,16 +323,6 @@ public class IssueAccessorTest extends NbTestCase {
         }
         public Lookup getLookup() {
             return Lookup.EMPTY;
-        }
-
-        @Override
-        public String getID() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Image getIcon() {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
     }  
 

@@ -60,6 +60,7 @@ import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
@@ -350,22 +351,16 @@ public class QTCTestHidden extends NbTestCase {
 
     }
     
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class)
+    @BugtrackingConnector.Registration (
+        id=MyConnector.ID,
+        displayName="Dummy bugtracking connector",
+        tooltip="bugtracking connector created for testing purposes"
+    )
     public static class MyConnector extends BugtrackingConnector {
-        static String ID = "QTCconector";
+        final static String ID = "QTCconector";
         private static MyRepository repo = new MyRepository();
 
         public MyConnector() {
-        }
-
-        @Override
-        public String getDisplayName() {
-            return ID;
-        }
-
-        @Override
-        public String getTooltip() {
-            return ID;
         }
 
         @Override
@@ -381,17 +376,6 @@ public class QTCTestHidden extends NbTestCase {
         public Lookup getLookup() {
             return Lookup.EMPTY;
         }
-
-        @Override
-        public String getID() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Image getIcon() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
     }
 
 }

@@ -47,28 +47,29 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author Marian Petras
  */
+@BugtrackingConnector.Registration (
+    id=BugzillaConnector.ID,
+    displayName="Dummy bugtracking connector",
+    tooltip="bugtracking connector created for testing purposes"
+)    
 public class DummyBugtrackingConnector extends BugtrackingConnector {
 
     private char newRepositoryName = 'A';
     private int newRepositoryNumber = 0;
     private List<RepositoryProvider> repositories;
+    public static DummyBugtrackingConnector instance;
 
-    @Override
-    public String getDisplayName() {
-        return "Dummy bugtracking connector";
+    public DummyBugtrackingConnector() {
+        instance = this;
     }
-
-    @Override
-    public String getTooltip() {
-        return "bugtracking connector created for testing purposes";
-    }
-
+    
     @Override
     public RepositoryProvider createRepository() {
         return createRepository(generateNewRepositoryName());
@@ -119,15 +120,4 @@ public class DummyBugtrackingConnector extends BugtrackingConnector {
     public Lookup getLookup() {
         return Lookup.EMPTY;
     }
-
-    @Override
-    public String getID() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Image getIcon() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
 }

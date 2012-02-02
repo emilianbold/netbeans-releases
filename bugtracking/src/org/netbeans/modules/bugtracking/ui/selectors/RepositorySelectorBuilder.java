@@ -84,6 +84,7 @@ import static javax.swing.SwingConstants.VERTICAL;
 import static javax.swing.SwingConstants.WEST;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
+import org.netbeans.modules.bugtracking.DelegatingConnector;
 
 /**
  * Allows the user to select an existing connection to a bug-tracking repository
@@ -99,7 +100,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
     private static final String NEW_REPO_PANEL = "new repo panel";      //NOI18N
 
     private RepositoryProvider[] existingRepositories;
-    private BugtrackingConnector[] bugtrackingConnectors;
+    private DelegatingConnector[] bugtrackingConnectors;
 
     private JLabel label;
     private JComboBox combo;
@@ -192,7 +193,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
         this.existingRepositories = repositories;
     }
 
-    public void setBugtrackingConnectors(BugtrackingConnector[] connectors) {
+    public void setBugtrackingConnectors(DelegatingConnector[] connectors) {
         if (combo != null) {
             throw new IllegalStateException(
                   "Cannot change parameters of an already created combo-box."); //NOI18N
@@ -440,7 +441,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
     /* PRIVATE METHODS */
 
     private static NewRepositoryInfo[] createRepositoryInfos(
-                                            BugtrackingConnector[] connectors) {
+                                            DelegatingConnector[] connectors) {
         if (connectors == null) {
             return null;
         }
@@ -712,9 +713,9 @@ public final class RepositorySelectorBuilder implements ItemListener,
     }
 
     private static final class NewRepositoryInfo {
-        private final BugtrackingConnector connector;
+        private final DelegatingConnector connector;
         private RepositoryProvider repository;
-        private NewRepositoryInfo(BugtrackingConnector connector) {
+        private NewRepositoryInfo(DelegatingConnector connector) {
             this.connector = connector;
         }
         RepositoryProvider initializeRepository() {

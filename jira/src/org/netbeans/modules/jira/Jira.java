@@ -156,10 +156,7 @@ public class Jira {
     }
 
     public JiraConnector getConnector() {
-        if (connector == null) {
-            connector = Lookup.getDefault().lookup(JiraConnector.class);
-        }
-        return connector;
+        return JiraConnector.getInstance();
     }
 
     public JiraRepository[] getRepositories() {

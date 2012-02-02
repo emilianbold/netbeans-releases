@@ -58,6 +58,7 @@ import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
@@ -79,7 +80,7 @@ import org.openide.util.NbBundle;
 public class JiraUpdater {
 
     private static JiraUpdater instance;
-    private JiraProxyConector connector;
+    private DelegatingConnector connector;
 
     private JiraUpdater() {
     }
@@ -98,9 +99,16 @@ public class JiraUpdater {
      *
      * @return
      */
-    public BugtrackingConnector getConnector() {
+    public DelegatingConnector getConnector() {
         if(connector == null) {
-            connector = new JiraProxyConector();
+            JiraProxyConector jpc = new JiraProxyConector();
+            return new DelegatingConnector(
+                    jpc, 
+                    "fake.jira.connector",                                              // NOI18N
+                    NbBundle.getMessage(JiraUpdater.class, "LBL_FakeJiraName"),         // NOI18N
+                    NbBundle.getMessage(JiraUpdater.class, "LBL_FakeJiraNameTooltip"),  // NOI18N
+                    null);
+            
         }
         return connector;
     }
@@ -201,14 +209,6 @@ public class JiraUpdater {
     
     private class JiraProxyConector extends BugtrackingConnector {
         @Override
-        public String getDisplayName() {
-            return NbBundle.getMessage(JiraUpdater.class, "LBL_FakeJiraName");              // NOI18N
-        }
-        @Override
-        public String getTooltip() {
-            return NbBundle.getMessage(JiraUpdater.class, "LBL_FakeJiraNameTooltip");       // NOI18N
-        }
-        @Override
         public RepositoryProvider createRepository() {
             return new JiraProxyRepository();
         }
@@ -216,18 +216,9 @@ public class JiraUpdater {
         public RepositoryProvider[] getRepositories() {
             return new RepositoryProvider[0];
         }
+        @Override
         public Lookup getLookup() {
             return Lookup.EMPTY;
-        }
-
-        @Override
-        public String getID() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Image getIcon() {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 

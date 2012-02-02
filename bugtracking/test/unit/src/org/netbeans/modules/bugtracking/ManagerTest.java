@@ -42,14 +42,15 @@
 
 package org.netbeans.modules.bugtracking;
 
-import java.awt.Image;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.openide.util.Lookup;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -69,6 +70,7 @@ public class ManagerTest extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {    
+        MockLookup.setLayersAndInstances();
     }
 
     @Override
@@ -76,29 +78,23 @@ public class ManagerTest extends NbTestCase {
     }
 
     public void testGetRepositories() {
-        BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+        DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
         assertNotNull(connectors);
         assertTrue(connectors.length > 1);
         Set<String> repos = new HashSet<String>();
-        for (BugtrackingConnector c : connectors) {
+        for (DelegatingConnector c : connectors) {
             repos.add(c.getDisplayName());
         }
         assertTrue(repos.contains("ManagerTestConector"));
     }
 
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class)
+    @BugtrackingConnector.Registration (
+        id=BugzillaConnector.ID,
+        displayName="ManagerTestConector",
+        tooltip="ManagerTestConector"
+    )    
     public static class MyConnector extends BugtrackingConnector {
         public MyConnector() {
-        }
-
-        @Override
-        public String getDisplayName() {
-            return "ManagerTestConector";
-        }
-
-        @Override
-        public String getTooltip() {
-            return "ManagerTestConector";
         }
 
         @Override
@@ -114,17 +110,6 @@ public class ManagerTest extends NbTestCase {
         public Lookup getLookup() {
             return Lookup.EMPTY;
         }
-
-        @Override
-        public String getID() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Image getIcon() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
     }
 
 }
