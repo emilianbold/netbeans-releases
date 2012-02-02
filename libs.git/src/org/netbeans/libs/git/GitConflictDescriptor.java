@@ -51,7 +51,7 @@ import org.netbeans.libs.git.jgit.Utils;
 public final class GitConflictDescriptor {
     private Type type;
 
-    public GitConflictDescriptor (Type type) {
+    GitConflictDescriptor (Type type) {
         this.type = type;
     }
     

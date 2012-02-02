@@ -66,7 +66,7 @@ public final class GitStatus {
         STATUS_ADDED, STATUS_REMOVED, STATUS_NORMAL, STATUS_MODIFIED, STATUS_IGNORED
     }
 
-    public GitStatus (String workTreePath, File file, String relativePath, boolean tracked) {
+    GitStatus (String workTreePath, File file, String relativePath, boolean tracked) {
         this.workTreePath = workTreePath;
         this.file = file;
         this.relativePath = relativePath;

@@ -52,7 +52,7 @@ public final class GitPushResult {
     private final Map<String, GitTransportUpdate> remoteRepositoryUpdates;
     private final Map<String, GitTransportUpdate> localRepositoryUpdates;
 
-    public GitPushResult (Map<String, GitTransportUpdate> remoteRepositoryUpdates, Map<String, GitTransportUpdate> localRepositoryUpdates) {
+    GitPushResult (Map<String, GitTransportUpdate> remoteRepositoryUpdates, Map<String, GitTransportUpdate> localRepositoryUpdates) {
         this.remoteRepositoryUpdates = remoteRepositoryUpdates;
         this.localRepositoryUpdates = localRepositoryUpdates;
     }
