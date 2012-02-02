@@ -69,7 +69,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
@@ -90,10 +90,10 @@ import org.openide.util.lookup.ServiceProviders;
  * @author Ondra Vrabec
  */
 @ServiceProviders({
-    @ServiceProvider(service=org.netbeans.modules.bugtracking.spi.IssueProvider.class),
+    @ServiceProvider(service=org.netbeans.modules.bugtracking.spi.TaskListIssueProvider.class),
     @ServiceProvider(service=JiraIssueProvider.class)
 })
-public final class JiraIssueProvider extends IssueProvider implements PropertyChangeListener {
+public final class JiraIssueProvider extends TaskListIssueProvider implements PropertyChangeListener {
 
     private static JiraIssueProvider instance;
     private final Object LOCK = new Object();

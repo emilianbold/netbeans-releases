@@ -52,7 +52,7 @@ import org.netbeans.modules.bugtracking.tasklist.TaskListProvider;
  * 
  * @author Ondra Vrabec
  */
-public abstract class IssueProvider {
+public abstract class TaskListIssueProvider {
 
     /**
      * Adds issues to the task list.
