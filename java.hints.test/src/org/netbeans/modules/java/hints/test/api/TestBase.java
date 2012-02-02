@@ -219,17 +219,22 @@ public abstract class TestBase extends NbTestCase {
         info = SourceUtilsTestUtil.getCompilationInfo(js, Phase.RESOLVED);
 
         assertNotNull(info);
+
+        hintsInvoker = new HintsInvoker(info, new AtomicBoolean());
     }
 
     private FileObject sourceRoot;
     private CompilationInfo info;
     private Document doc;
+    private HintsInvoker hintsInvoker;
 
     protected final void setTestFileCaretLocation(int pos) throws Exception {
         Method m = CaretAwareJavaSourceTaskFactory.class.getDeclaredMethod("setLastPosition", FileObject.class, int.class);
 
         m.setAccessible(true);
         m.invoke(null, info.getFileObject(), pos);
+
+        hintsInvoker = new HintsInvoker(info, pos, new AtomicBoolean());
     }
 
     private List<ErrorDescription> computeErrors(CompilationInfo info) {
@@ -388,9 +393,8 @@ public abstract class TestBase extends NbTestCase {
         return new FileObject[0];
     }
 
-    //XXX: if HintsRunner is public, it should be used instead of this:
-    private static Map<HintDescription, List<ErrorDescription>> computeErrors(CompilationInfo info, Iterable<? extends HintDescription> hints, AtomicBoolean cancel) {
-        return new HintsInvoker(info, cancel).computeHints(info, new TreePath(info.getCompilationUnit()), hints, new LinkedList<MessageImpl>());
+    private Map<HintDescription, List<ErrorDescription>> computeErrors(CompilationInfo info, Iterable<? extends HintDescription> hints, AtomicBoolean cancel) {
+        return hintsInvoker.computeHints(info, new TreePath(info.getCompilationUnit()), hints, new LinkedList<MessageImpl>());
     }
 
     static {

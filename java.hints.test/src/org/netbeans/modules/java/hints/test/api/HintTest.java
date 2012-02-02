@@ -44,7 +44,6 @@ package org.netbeans.modules.java.hints.test.api;
 import com.sun.source.util.TreePath;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -84,7 +83,6 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.hints.providers.code.CodeHintProviderImpl;
@@ -163,6 +161,7 @@ public class HintTest {
     private String sourceLevel = "1.5";
     private Character caretMarker;
     private FileObject testFile;
+    private int caret = -1;
     private FileObject[] extraClassPath = new FileObject[0];
 
     private HintTest() throws Exception {
@@ -347,10 +346,7 @@ public class HintTest {
 
         if (testFile == null) {
             testFile = file;
-            Method m = CaretAwareJavaSourceTaskFactory.class.getDeclaredMethod("setLastPosition", FileObject.class, int.class);
-
-            m.setAccessible(true);
-            m.invoke(null, testFile, caret);
+            this.caret = caret;
         }
         
         return this;
@@ -465,8 +461,8 @@ public class HintTest {
         return bt.info;
     }
 
-    private static Map<HintDescription, List<ErrorDescription>> computeErrors(CompilationInfo info, Iterable<? extends HintDescription> hints, AtomicBoolean cancel) {
-        return new HintsInvoker(info, cancel).computeHints(info, new TreePath(info.getCompilationUnit()), hints, new LinkedList<MessageImpl>());
+    private Map<HintDescription, List<ErrorDescription>> computeErrors(CompilationInfo info, Iterable<? extends HintDescription> hints, AtomicBoolean cancel) {
+        return new HintsInvoker(info, caret, cancel).computeHints(info, new TreePath(info.getCompilationUnit()), hints, new LinkedList<MessageImpl>());
     }
 
     private static class TempPreferences extends AbstractPreferences {

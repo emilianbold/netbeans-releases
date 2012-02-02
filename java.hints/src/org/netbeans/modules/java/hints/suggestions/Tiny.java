@@ -61,20 +61,18 @@ import javax.lang.model.SourceVersion;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
-import org.netbeans.spi.java.hints.ConstraintVariableType;
-import org.netbeans.spi.java.hints.Hint;
-import org.netbeans.spi.java.hints.TriggerPattern;
-import org.netbeans.spi.java.hints.TriggerTreeKind;
-import org.netbeans.spi.java.hints.HintContext;
-import org.netbeans.spi.java.hints.JavaFix;
-import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.Hint.Kind;
 import org.netbeans.spi.java.hints.Hint.Severity;
-import org.netbeans.spi.java.hints.Hint.Severity;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
@@ -90,7 +88,7 @@ public class Tiny {
                         @ConstraintVariableType(variable="$other", type="java.lang.Object")
                     })
     public static ErrorDescription flipEquals(HintContext ctx) {
-        int caret = CaretAwareJavaSourceTaskFactory.getLastPosition(ctx.getInfo().getFileObject());
+        int caret = ctx.getCaretLocation();
         MethodInvocationTree mit = (MethodInvocationTree) ctx.getPath().getLeaf();
         ExpressionTree select = mit.getMethodSelect();
         int selectStart;

@@ -508,7 +508,7 @@ public class HintsInvoker {
 
                     for (HintDescription hd : patternHints.get(d)) {
                         HintMetadata hm = hd.getMetadata();
-                        HintContext c = SPIAccessor.getINSTANCE().createHintContext(info, hm, candidate, verifiedVariables.getVariables(), verifiedVariables.getMultiVariables(), verifiedVariables.getVariables2Names(), constraints, problems, bulkMode, cancel);
+                        HintContext c = SPIAccessor.getINSTANCE().createHintContext(info, hm, candidate, verifiedVariables.getVariables(), verifiedVariables.getMultiVariables(), verifiedVariables.getVariables2Names(), constraints, problems, bulkMode, cancel, caret);
 
                         if (!Collections.disjoint(suppressedWarnings, hm.suppressWarnings))
                             continue;
@@ -602,7 +602,7 @@ public class HintsInvoker {
                         }
                     }
 
-                    HintContext c = SPIAccessor.getINSTANCE().createHintContext(info, hm, path, Collections.<String, TreePath>emptyMap(), Collections.<String, Collection<? extends TreePath>>emptyMap(), Collections.<String, String>emptyMap(), Collections.<String, TypeMirror>emptyMap(), new ArrayList<MessageImpl>(), bulkMode, cancel);
+                    HintContext c = SPIAccessor.getINSTANCE().createHintContext(info, hm, path, Collections.<String, TreePath>emptyMap(), Collections.<String, Collection<? extends TreePath>>emptyMap(), Collections.<String, String>emptyMap(), Collections.<String, TypeMirror>emptyMap(), new ArrayList<MessageImpl>(), bulkMode, cancel, caret);
                     Collection<? extends ErrorDescription> errors = runHint(hd, c);
 
                     if (errors != null) {

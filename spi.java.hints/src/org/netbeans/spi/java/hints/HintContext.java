@@ -56,6 +56,7 @@ import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
 import org.netbeans.modules.java.hints.spiimpl.MessageImpl;
 import org.netbeans.modules.java.hints.spiimpl.SPIAccessor;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
+import org.netbeans.spi.java.hints.Hint.Kind;
 import org.netbeans.spi.java.hints.Hint.Severity;
 
 /**
@@ -76,8 +77,9 @@ public class HintContext {
     private final Map<String, TypeMirror> constraints;
     private final boolean bulkMode;
     private final AtomicBoolean cancel;
+    private final int caret;
 
-    private HintContext(CompilationInfo info, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames, Map<String, TypeMirror> constraints, Collection<? super MessageImpl> problems, boolean bulkMode, AtomicBoolean cancel) {
+    private HintContext(CompilationInfo info, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames, Map<String, TypeMirror> constraints, Collection<? super MessageImpl> problems, boolean bulkMode, AtomicBoolean cancel, int caret) {
         this.info = info;
         this.preferences = metadata != null ? HintsSettings.getPreferences(metadata.id, HintsSettings.getCurrentProfileId()) : null;
         this.severity = preferences != null ? HintsSettings.getSeverity(metadata, preferences) : Severity.ERROR;
@@ -94,6 +96,7 @@ public class HintContext {
         this.constraints = constraints;
         this.bulkMode = bulkMode;
         this.cancel = cancel;
+        this.caret = caret;
     }
 
     public CompilationInfo getInfo() {
@@ -143,12 +146,30 @@ public class HintContext {
         messages.add(new MessageImpl(kind, text));
     }
 
+    /**Returns {@code true} if the hint is being run in over many files, {@code false}
+     * if only the file opened in the editor is being inspected.
+     *
+     * @return {@code true} if the hint is being run in over many files.
+     */
     public boolean isBulkMode() {
         return bulkMode;
     }
 
+    /**Returns {@code true} if the computation has been canceled.
+     *
+     * @return {@code true} if the computation has been canceled.
+     */
     public boolean isCanceled() {
         return cancel.get();
+    }
+
+    /**For suggestions, returns the caret location for the editor
+     * for which the suggestion is being computed. Returns -1 for hints.
+     *
+     * @return for suggestions, returns the caret location, -1 otherwise
+     */
+    public int getCaretLocation() {
+        return metadata.kind == Kind.SUGGESTION ? caret : -1;
     }
     
     public enum MessageKind {
@@ -157,11 +178,11 @@ public class HintContext {
     
     static {
         SPIAccessor.setINSTANCE(new SPIAccessor() {
-            @Override public HintContext createHintContext(CompilationInfo info, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames, Map<String, TypeMirror> constraints, Collection<? super MessageImpl> problems, boolean bulkMode, AtomicBoolean cancel) {
-                return new HintContext(info, metadata, path, variables, multiVariables, variableNames, constraints, problems, bulkMode, cancel);
+            @Override public HintContext createHintContext(CompilationInfo info, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames, Map<String, TypeMirror> constraints, Collection<? super MessageImpl> problems, boolean bulkMode, AtomicBoolean cancel, int caret) {
+                return new HintContext(info, metadata, path, variables, multiVariables, variableNames, constraints, problems, bulkMode, cancel, caret);
             }
             @Override public HintContext createHintContext(CompilationInfo info, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames) {
-                return new HintContext(info, metadata, path, variables, multiVariables, variableNames, Collections.<String, TypeMirror>emptyMap(), new LinkedList<MessageImpl>(), false, new AtomicBoolean());
+                return new HintContext(info, metadata, path, variables, multiVariables, variableNames, Collections.<String, TypeMirror>emptyMap(), new LinkedList<MessageImpl>(), false, new AtomicBoolean(), -1);
             }
             @Override public HintMetadata getHintMetadata(HintContext ctx) {
                 return ctx.getHintMetadata();
