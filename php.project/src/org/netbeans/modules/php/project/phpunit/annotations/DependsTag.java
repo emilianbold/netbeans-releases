@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,37 +37,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.project.phpunit.annotations;
 
-package org.netbeans.modules.php.editor.index;
+import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.openide.util.NbBundle;
 
-import org.netbeans.modules.csl.api.ElementKind;
+public class DependsTag extends PhpAnnotationTag {
 
-/**
- *
- * @author tomslot
- */
-public class PHPDOCTagElement extends PHPElement{
-    private String tagName;
-    private final String documentation;
-
-    public PHPDOCTagElement(String tagName, String documentation) {
-        this.tagName = tagName;
-        this.documentation = documentation;
+    public DependsTag() {
+        super("depends", // NOI18N
+                "@depends ${u1 default=\"methodName\"}", // NOI18N
+                NbBundle.getMessage(DependsTag.class, "DependsTag.documentation"));
     }
 
-    @Override
-    public String getName() {
-        return tagName;
-    }
-
-    @Override
-    public ElementKind getKind() {
-        return ElementKind.OTHER;
-    }
-
-    public String getDoc(){
-        return documentation;
-    }
 }

@@ -176,6 +176,8 @@ public abstract class PhpFrameworkProvider {
     /**
      * Creates a {@link PhpModuleExtender PHP module extender} for this framework
      * and the given PHP module.
+     * <p>
+     * <b>WARNING:</b> This method is called for all PHP modules (with or without this framework present).
      *
      * @param  phpModule the PHP module to be extended; can be <code>null</code>, e.g., if the
      *         method is called while creating a new PHP application, in which
@@ -190,9 +192,9 @@ public abstract class PhpFrameworkProvider {
      * Creates a {@link PhpModuleCustomizerExtender PHP module customizer extender} for this framework
      * and the given PHP module.
      * <p>
-     * <b>WARNING:</b> This method is always called so {@link PhpModuleCustomizerExtender} can be returned
-     * also for {@link PhpModule PHP modules} where this framework is not present (this is usually useful
-     * for adding framework to such {@link PhpModule PHP module}).
+     * <p>
+     * <b>WARNING:</b> This method is called for all PHP modules (with or without this framework present,
+     * this is usually useful for adding framework to such {@link PhpModule PHP module}).
      * <p>
      * The default implementation returns {@code null}.
      *
@@ -208,6 +210,8 @@ public abstract class PhpFrameworkProvider {
     /**
      * Get {@link PhpModuleProperties PHP module properties} the given PHP module. PHP framework
      * can provide default values for any property (e.g. web root).
+     * <p>
+     * This method is called only for PHP modules with this framework present.
      *
      * @param  phpModule the PHP module which properties are going to be changed
      * @return new PHP module properties
@@ -217,6 +221,8 @@ public abstract class PhpFrameworkProvider {
     /**
      * Get a {@link PhpModuleActionsExtender PHP module actions extender} for this framework
      * and the given PHP module.
+     * <p>
+     * This method is called only for PHP modules with this framework present.
      *
      * @param  phpModule the PHP module which actions are going to be extended
      * @return a new PHP module actions extender, can be <code>null</code> if the framework doesn't support
@@ -228,6 +234,8 @@ public abstract class PhpFrameworkProvider {
     /**
      * Get a {@link PhpModuleIgnoredFilesExtender PHP module ignored files extender} for this framework
      * and the given PHP module.
+     * <p>
+     * This method is called only for PHP modules with this framework present.
      *
      * @param  phpModule the PHP module which ignored files are going to be extended
      * @return PHP module ignored files extender, can be <code>null</code> if the framework doesn't need
@@ -239,6 +247,8 @@ public abstract class PhpFrameworkProvider {
     /**
      * Get a {@link FrameworkCommandSupport framework command support} for this framework
      * and the given PHP module.
+     * <p>
+     * This method is called only for PHP modules with this framework present.
      *
      * @param  phpModule the PHP module for which framework command support is to be gotten
      * @return framework command support, can be <code>null</code> if the framework doesn't support
@@ -250,6 +260,8 @@ public abstract class PhpFrameworkProvider {
     /**
      * Get a {@link EditorExtender editor extender} for this framework
      * and the given PHP module.
+     * <p>
+     * This method is called only for PHP modules with this framework present.
      *
      * @param  phpModule the PHP module for which editor extender is to be gotten
      * @return editor extender, can be <code>null</code> if the framework doesn't provide
@@ -261,6 +273,8 @@ public abstract class PhpFrameworkProvider {
     /**
      * Get a {@link PhpAnnotationsProvider annotations provider} for this framework
      * and the given PHP module.
+     * <p>
+     * This method is called only for PHP modules with this framework present.
      * <p>
      * The default implementation returns {@code null}.
      *
