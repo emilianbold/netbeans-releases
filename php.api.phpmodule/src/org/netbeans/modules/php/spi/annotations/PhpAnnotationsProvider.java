@@ -57,8 +57,11 @@ import org.openide.util.Parameters;
  *
  * <p>This class allows providing support for PHP annotations.</p>
  *
- * <p>Instances of this class are registered in the <code>{@value org.netbeans.modules.php.api.annotations.PhpAnnotations#ANNOTATIONS_PATH}</code>
- * in the module layer, see {@link Registration}.</p>
+ * <p>Globally available (annotations available in all PHP files) instances of this class are registered
+ * in the <code>{@value org.netbeans.modules.php.api.annotations.PhpAnnotations#ANNOTATIONS_PATH}</code>
+ * in the module layer, see {@link Registration}. For <b>framework specific</b> annotations, use
+ * {@link org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider#getAnnotationsProvider(org.netbeans.modules.php.api.phpmodule.PhpModule)}.</p>
+
  * @since 1.63
  * @see org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider#getAnnotationsProvider(PhpModule)
  */
@@ -121,17 +124,6 @@ public abstract class PhpAnnotationsProvider {
     }
 
     /**
-     * Find out if this annotations provider can provide annotations for the given PHP module. The PHP module can be {@code null};
-     * in such case, it means "are these annotations available in all files?" (typical for files without any project).
-     * <p>
-     * <b>This method should be as fast as possible.</b>
-     *
-     * @param  phpModule PHP module; can be {@code null}
-     * @return {@code true} if this annotations provider can provide annotations for the given PHP module, {@code false} otherwise
-     */
-    public abstract boolean isInPhpModule(PhpModule phpModule);
-
-    /**
      * Get all possible annotations.
      * <p>
      * Default implementation simply return all the possible annotations.
@@ -174,6 +166,10 @@ public abstract class PhpAnnotationsProvider {
 
     /**
      * Declarative registration of a singleton PHP annotations provider.
+     * that is <b>globally</b> available (it means that its annotations are available
+     * in every PHP file). For <b>framework specific</b> annotations, use
+     * {@link org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider#getAnnotationsProvider(org.netbeans.modules.php.api.phpmodule.PhpModule)}.
+     * <p>
      * By marking an implementation class or a factory method with this annotation,
      * you automatically register that implementation, normally in {@link org.netbeans.modules.php.api.annotations.PhpAnnotations#ANNOTATIONS_PATH}.
      * The class must be public and have:
