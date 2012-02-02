@@ -62,15 +62,16 @@ import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
  */
 public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
 
-    /** When true, continue comments if you press return in a line comment (that does not
-     * also have code on the same line
+    /**
+     * When true, continue comments if you press return in a line comment
+     * (that does not also have code on the same line).
      */
     static final boolean CONTINUE_COMMENTS = Boolean.getBoolean("js.cont.comment"); // NOI18N
 
     public boolean isInsertMatchingEnabled(BaseDocument doc) {
         // The editor options code is calling methods on BaseOptions instead of looking in the settings map :(
-        //Boolean b = ((Boolean)Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION));
-        //return b == null || b.booleanValue();
+        // Boolean b = ((Boolean) Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION));
+        // return b == null || b.booleanValue();
         EditorOptions options = EditorOptions.get(JsTokenId.JAVASCRIPT_MIME_TYPE);
         if (options != null) {
             return options.getMatchBrackets();
@@ -108,15 +109,11 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         Token<?extends JsTokenId> token = ts.token();
         TokenId id = token.id();
 
-        // Insert an end statement? Insert a } marker?
-        boolean[] insertRBraceResult = new boolean[1];
-        int[] indentResult = new int[1];
-        boolean insert = insertMatching &&
-            isEndMissing(doc, offset, false, insertRBraceResult, null, indentResult);
+        // Insert a missing }
+        boolean insertRightBrace = isEndMissing(doc, offset);
 
-        if (insert) {
-            boolean insertRBrace = insertRBraceResult[0];
-            int indent = indentResult[0];
+        if (insertMatching && insertRightBrace) {
+            int indent = GsfUtilities.getLineIndent(doc, offset);
 
             int afterLastNonWhite = Utilities.getRowLastNonWhite(doc, offset);
 
@@ -144,7 +141,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                 doc.remove(offset, restOfLine.length());
             }
 
-            if (insertRBrace) {
+            if (insertRightBrace) {
                 sb.append("}"); // NOI18N
             }
 
@@ -419,6 +416,14 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
     public void cancelled(Context context) {
     }
 
+    /**
+     * Computes the indentation of the next line (after the line break).
+     * 
+     * @param doc document
+     * @param offset current offset
+     * @return indentation size
+     * @throws BadLocationException 
+     */
     private static int getNextLineIndentation(BaseDocument doc, int offset) throws BadLocationException {
         int indent = GsfUtilities.getLineIndent(doc, offset);
         int currentOffset = offset;
@@ -445,97 +450,30 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
     }
 
     /**
-     * Determine if an "end" or "}" is missing following the caret offset.
-     * The logic used is to check the text on the current line for block initiators
-     * (e.g. "def", "for", "{" etc.) and then see if a corresponding close is
-     * found after the same indentation level.
-     *
-     * @param doc The document to be checked
-     * @param offset The offset of the current line
-     * @param skipJunk If false, only consider the current line (of the offset)
-     *   as the possible "block opener"; if true, look backwards across empty
-     *   lines and comment lines as well.
-     * @param insertRBraceResult Null, or a boolean 1-element array whose first
-     *   element will be set to true iff this method determines that "}" should
-     *   be inserted
-     * @param startOffsetResult Null, or an integer 1-element array whose first
-     *   element will be set to the starting offset of the opening block.
-     * @param indentResult Null, or an integer 1-element array whose first
-     *   element will be set to the indentation level "end" or "}" should be
-     *   indented to when inserted.
-     * @return true if something is missing; insertEndResult, insertRBraceResult
-     *   and identResult will provide the more specific return values in their
-     *   first elements.
+     * Returns <code>true</code> when ending } is missing.
+     * 
+     * @param doc document
+     * @param offset current offset
+     * @return <code>true</code> when ending } is missing
+     * @throws BadLocationException 
      */
-    private static boolean isEndMissing(BaseDocument doc, int offset, boolean skipJunk,
-        boolean[] insertRBraceResult, int[] startOffsetResult,
-        int[] indentResult) throws BadLocationException {
-        int length = doc.getLength();
-
-        // Insert an end statement? Insert a } marker?
-        // Do so if the current line contains an unmatched begin marker,
-        // AND a "corresponding" marker does not exist.
-        // This will be determined as follows: Look forward, and check
-        // that we don't have "indented" code already (tokens at an
-        // indentation level higher than the current line was), OR that
-        // there is no actual end or } coming up.
-        if (startOffsetResult != null) {
-            startOffsetResult[0] = Utilities.getRowFirstNonWhite(doc, offset);
-        }
+    private static boolean isEndMissing(BaseDocument doc, int offset) throws BadLocationException {
 
         // FIXME performance
-        int braceBalance =
-            LexUtilities.getTokenBalance(doc, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY, offset);
-            //LexUtilities.getLineBalance(doc, offset, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY);
+        int curlyBalance = LexUtilities.getTokenBalance(doc,
+                JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY, offset);
 
-        if (braceBalance <= 0) {
+        if (curlyBalance <= 0) {
             return false;
         }
 
-        int parenBalance =
-            LexUtilities.getLineBalance(doc, offset, JsTokenId.BRACKET_LEFT_PAREN, JsTokenId.BRACKET_RIGHT_PAREN);
+        int parenBalance = LexUtilities.getLineBalance(doc, 
+                offset, JsTokenId.BRACKET_LEFT_PAREN, JsTokenId.BRACKET_RIGHT_PAREN);
 
-        if ((braceBalance == 1) && parenBalance >= 0) {
+        if ((curlyBalance == 1) && parenBalance >= 0) {
             // There is one more opening token on the line than a corresponding
             // closing token.  (If there's is more than one we don't try to help.)
-            int indent = GsfUtilities.getLineIndent(doc, offset);
-
-            // Look for the next nonempty line, and if its indent is > indent,
-            // or if its line balance is -1 (e.g. it's an end) we're done
-            boolean insertRBrace = braceBalance > 0;
-// XXX why was this identation based? is it some perf improvement?
-//            int next = Utilities.getRowEnd(doc, offset) + 1;
-
-//            for (; next < length; next = Utilities.getRowEnd(doc, next) + 1) {
-//                if (Utilities.isRowEmpty(doc, next) || Utilities.isRowWhite(doc, next) ||
-//                        LexUtilities.isCommentOnlyLine(doc, next)) {
-//                    continue;
-//                }
-//
-//                int nextIndent = GsfUtilities.getLineIndent(doc, next);
-//
-//                if (nextIndent > indent) {
-//                    insertRBrace = false;
-//                } else if (nextIndent == indent) {
-//                    if (insertRBrace &&
-//                            (LexUtilities.getLineBalance(doc, next, JsTokenId.BRACKET_LEFT_CURLY,
-//                                JsTokenId.BRACKET_RIGHT_CURLY) < 0)) {
-//                        insertRBrace = false;
-//                    }
-//                }
-//
-//                break;
-//            }
-
-            if (insertRBraceResult != null) {
-                insertRBraceResult[0] = insertRBrace;
-            }
-
-            if (indentResult != null) {
-                indentResult[0] = indent;
-            }
-
-            return insertRBrace;
+            return curlyBalance > 0;
         }
 
         return false;
