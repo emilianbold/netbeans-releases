@@ -46,10 +46,14 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -58,19 +62,26 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.jackpot.impl.JavaFixImpl;
+import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher.OccurrenceDescription;
+import org.netbeans.modules.java.hints.jackpot.refactoring.JackpotBaseRefactoring2.Transform;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.spi.editor.hints.Fix;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author lahvac
  */
-public class ReplaceConstructorRefactoringPluginImpl extends JackpotBasedRefactoring {
+public class ReplaceConstructorRefactoringPluginImpl implements RefactoringPlugin {
 
     private final ReplaceConstructorRefactoring replaceConstructorRefactoring;
 
     public ReplaceConstructorRefactoringPluginImpl(ReplaceConstructorRefactoring replaceConstructorRefactoring) {
-        super(replaceConstructorRefactoring);
         this.replaceConstructorRefactoring = replaceConstructorRefactoring;
     }
 
@@ -89,9 +100,14 @@ public class ReplaceConstructorRefactoringPluginImpl extends JackpotBasedRefacto
         return null;
     }
 
-    @Override
-    protected void prepareAndConstructRule(final Context result) {
+    public final Problem prepare(RefactoringElementsBag refactoringElements) {
+//        TreePathHandle tph = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
+//        FileObject file = tph.getFileObject();
+//        ClassPath source = ClassPath.getClassPath(file, ClassPath.SOURCE);
+//        FileObject sourceRoot = source.findOwnerRoot(file);
         final TreePathHandle constr = replaceConstructorRefactoring.getConstructor();
+        final String[] ruleCode = new String[1];
+        final String[] toCode = new String[1];
 
         try {
             ModificationResult mod = JavaSource.forFileObject(constr.getFileObject()).runModificationTask(new Task<WorkingCopy>() {
@@ -129,15 +145,38 @@ public class ReplaceConstructorRefactoringPluginImpl extends JackpotBasedRefacto
                     if (constraints.length() > 0) {
                         rule.append(" :: ").append(constraints);
                     }
-                    rule.append(" => ").append(parent.getQualifiedName()).append(".").append(replaceConstructorRefactoring.getFactoryName()).append("(").append(parameters).append(");;");
-                    result.addScript(parent.getQualifiedName().toString(), rule.toString(), ScriptOptions.RUN/*, ScriptOptions.STORE*/);
+//                    rule.append(" => ").append(parent.getQualifiedName()).append(".").append(replaceConstructorRefactoring.getFactoryName()).append("(").append(parameters).append(");;");
+                    rule.append(";;");
+                    ruleCode[0] = rule.toString();
+                    toCode[0] = parent.getQualifiedName() + "." + replaceConstructorRefactoring.getFactoryName() + "(" + parameters + ")";
                 }
             });
 
-            result.addModificationResult(mod);
+            List<ModificationResult> results = new ArrayList<ModificationResult>();
+
+            results.add(mod);
+
+            results.addAll(JackpotBaseRefactoring2.performTransformation(ruleCode[0], new Transform() {
+                @Override public void transform(WorkingCopy copy, OccurrenceDescription occurrence) {
+                    try {
+                        Fix toFix = JavaFix.rewriteFix(copy, "whatever", occurrence.getOccurrenceRoot(), toCode[0], occurrence.getVariables(), occurrence.getMultiVariables(), occurrence.getVariables2Names(), Collections.<String, TypeMirror>emptyMap());
+                        JavaFixImpl.Accessor.INSTANCE.process(((JavaFixImpl) toFix).jf, copy, false);
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }));
+
+            JackpotBaseRefactoring2.createAndAddElements(replaceConstructorRefactoring, refactoringElements, results);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+
+        return null/*XXX*/;
+    }
+
+    @Override
+    public void cancelRequest() {
     }
 
 }
