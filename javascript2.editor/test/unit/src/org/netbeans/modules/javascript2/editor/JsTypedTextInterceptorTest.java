@@ -84,17 +84,16 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
         insertChar("clas^", 's', "class^");
     }
 
-// BROKEN !
-//    public void testNoMatchInComments() throws Exception {
-//        insertChar("// Hello^", '\'', "// Hello'^'");
-//        insertChar("// Hello^", '"', "// Hello\"^\"");
-//        insertChar("// Hello^", '[', "// Hello[^");
-//        insertChar("// Hello^", '(', "// Hello(^");
-//        insertChar("/* Hello^*/", '\'', "/* Hello'^*/");
-//        insertChar("/* Hello^*/", '"', "/* Hello\"^*/");
-//        insertChar("/* Hello^*/", '[', "/* Hello[^*/");
-//        insertChar("/* Hello^*/", '(', "/* Hello(^*/");
-//    }
+    public void testNoMatchInComments() throws Exception {
+        insertChar("// Hello^", '\'', "// Hello'^'");
+        insertChar("// Hello^", '"', "// Hello\"^\"");
+        insertChar("// Hello^", '[', "// Hello[^");
+        insertChar("// Hello^", '(', "// Hello(^");
+        insertChar("/* Hello^*/", '\'', "/* Hello'^*/");
+        insertChar("/* Hello^*/", '"', "/* Hello\"^*/");
+        insertChar("/* Hello^*/", '[', "/* Hello[^*/");
+        insertChar("/* Hello^*/", '(', "/* Hello(^*/");
+    }
 
     public void testNoMatchInStrings() throws Exception {
         insertChar("x = \"^\"", '\'', "x = \"'^\"");
