@@ -60,7 +60,7 @@ class IssueAccessorImpl extends IssueAccessor {
     }
 
     @Override
-    public void setSelection(Issue issue, Node[] nodes) {
+    public void setSelection(IssueProvider issue, Node[] nodes) {
         issue.setSelection(nodes);
     }
 

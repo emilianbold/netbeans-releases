@@ -17,10 +17,10 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableCellStyle;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.openide.nodes.Node.Property;
@@ -218,7 +218,7 @@ public class QueryTableCellRendererTest {
         return new MessageFormat(format);
     }
 
-    private class RendererQuery extends Query {
+    private class RendererQuery extends QueryProvider {
         private boolean containsIssue;
         private int status;
         private RendererRepository repository;
@@ -248,7 +248,7 @@ public class QueryTableCellRendererTest {
         }
 
         @Override
-        public Repository getRepository() {
+        public RepositoryProvider getRepository() {
             if(repository == null) {
                 repository = new RendererRepository();
             }
@@ -256,18 +256,18 @@ public class QueryTableCellRendererTest {
         }
 
         @Override
-        public Issue[] getIssues(int includeStatus) {
+        public IssueProvider[] getIssues(int includeStatus) {
             fail("implement me!!!");
             return null;
         }
 
         @Override
-        public boolean contains(Issue issue) {
+        public boolean contains(IssueProvider issue) {
             return containsIssue;
         }
 
         @Override
-        public int getIssueStatus(Issue issue) {
+        public int getIssueStatus(IssueProvider issue) {
             return status;
         }
     }
@@ -275,7 +275,7 @@ public class QueryTableCellRendererTest {
     private class RendererNode extends IssueNode {
 
         Object propertyValue;
-        public RendererNode(Issue issue, String value) {
+        public RendererNode(IssueProvider issue, String value) {
             super(issue);
             propertyValue = value;
         }
@@ -297,7 +297,7 @@ public class QueryTableCellRendererTest {
         }
     }
 
-    private class RendererIssue extends Issue {
+    private class RendererIssue extends IssueProvider {
         boolean wasSeen = false;
         private String recentChanges;
         public RendererIssue() {
@@ -369,7 +369,7 @@ public class QueryTableCellRendererTest {
         }
     }
 
-    private class RendererRepository extends Repository {
+    private class RendererRepository extends RepositoryProvider {
         private RendererIssue issue;
         public RendererRepository() {
         }
@@ -397,7 +397,7 @@ public class QueryTableCellRendererTest {
             throw new UnsupportedOperationException("Not supported yet.");
         }
         @Override
-        public Issue getIssue(String id) {
+        public IssueProvider getIssue(String id) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
         @Override
@@ -409,45 +409,45 @@ public class QueryTableCellRendererTest {
             throw new UnsupportedOperationException("Not supported yet.");
         }
         @Override
-        public Query createQuery() {
+        public QueryProvider createQuery() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
         @Override
-        public Issue createIssue() {
+        public IssueProvider createIssue() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
         @Override
-        public Query[] getQueries() {
+        public QueryProvider[] getQueries() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
         @Override
-        public Issue[] simpleSearch(String criteria) {
+        public IssueProvider[] simpleSearch(String criteria) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
         public Lookup getLookup() {
             return Lookups.singleton(new IssueCache("renderer", new IssueCache.IssueAccessor() {
-                public Issue createIssue(Object issueData) {
+                public IssueProvider createIssue(Object issueData) {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
-                public void setIssueData(Issue issue, Object issueData) {
+                public void setIssueData(IssueProvider issue, Object issueData) {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
                 public boolean wasSeen(String id) {
                     return issue.wasSeen;
                 }
-                public String getRecentChanges(Issue issue) {
+                public String getRecentChanges(IssueProvider issue) {
                     return ((RendererIssue) issue).getRecentChanges();
                 }
-                public long getLastModified(Issue issue) {
+                public long getLastModified(IssueProvider issue) {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
-                public long getCreated(Issue issue) {
+                public long getCreated(IssueProvider issue) {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
                 public String getID(Object issueData) {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
-                public Map getAttributes(Issue issue) {
+                public Map getAttributes(IssueProvider issue) {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
             }) {});

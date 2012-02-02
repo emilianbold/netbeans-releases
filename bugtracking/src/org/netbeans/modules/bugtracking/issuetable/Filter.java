@@ -51,8 +51,8 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.openide.util.NbBundle;
 
@@ -62,28 +62,28 @@ import org.openide.util.NbBundle;
  */
 public abstract class Filter {
 
-    private static Map<Query, Map<Class, Filter>> queryToFilter = new WeakHashMap<Query, Map<Class, Filter>>();
+    private static Map<QueryProvider, Map<Class, Filter>> queryToFilter = new WeakHashMap<QueryProvider, Map<Class, Filter>>();
 
     public abstract String getDisplayName();
-    public abstract boolean accept(Issue issue);
+    public abstract boolean accept(IssueProvider issue);
 
-    public static Filter getAllFilter(Query query) {
+    public static Filter getAllFilter(QueryProvider query) {
         return getFilter(query, AllFilter.class);
     }
-    public static Filter getNotSeenFilter(Query query) {
+    public static Filter getNotSeenFilter(QueryProvider query) {
         return getFilter(query, NotSeenFilter.class);
     }
-    public static Filter getNewFilter(Query query) {
+    public static Filter getNewFilter(QueryProvider query) {
         return getFilter(query, NewFilter.class);
     }
-    public static Filter getObsoleteDateFilter(Query query) {
+    public static Filter getObsoleteDateFilter(QueryProvider query) {
         return getFilter(query, ObsoleteDateFilter.class);
     }
-    public static Filter getAllButObsoleteDateFilter(Query query) {
+    public static Filter getAllButObsoleteDateFilter(QueryProvider query) {
         return getFilter(query, AllButObsoleteDateFilter.class);
     }
 
-    private static <T extends Filter> Filter getFilter(Query query, Class<T> clazz) {
+    private static <T extends Filter> Filter getFilter(QueryProvider query, Class<T> clazz) {
         Map<Class, Filter> filters = queryToFilter.get(query);
         if(filters == null) {
             filters = new HashMap<Class, Filter>(5);
@@ -97,7 +97,7 @@ public abstract class Filter {
                     c = clazz.getDeclaredConstructor();
                     filter = c.newInstance();
                 } else {
-                    c = clazz.getDeclaredConstructor(Query.class);
+                    c = clazz.getDeclaredConstructor(QueryProvider.class);
                     filter = c.newInstance(query);
                 }
             } catch (Exception ex) {
@@ -109,72 +109,72 @@ public abstract class Filter {
     }
 
     private static class AllFilter extends Filter {
-        private final Query query;
-        AllFilter(Query query) {
+        private final QueryProvider query;
+        AllFilter(QueryProvider query) {
             this.query = query;
         }
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(Query.class, "LBL_AllIssuesFilter");     // NOI18N
+            return NbBundle.getMessage(QueryProvider.class, "LBL_AllIssuesFilter");     // NOI18N
         }
         @Override
-        public boolean accept(Issue issue) {
+        public boolean accept(IssueProvider issue) {
             return query.contains(issue);
         }
     }
     private static class NotSeenFilter extends Filter {
-        private final Query query;
-        NotSeenFilter(Query query) {
+        private final QueryProvider query;
+        NotSeenFilter(QueryProvider query) {
             this.query = query;
         }
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(Query.class, "LBL_UnseenIssuesFilter");  // NOI18N
+            return NbBundle.getMessage(QueryProvider.class, "LBL_UnseenIssuesFilter");  // NOI18N
         }
         @Override
-        public boolean accept(Issue issue) {
+        public boolean accept(IssueProvider issue) {
             return !IssueCacheUtils.wasSeen(issue) && query.contains(issue);
         }
     }
     private static class NewFilter extends Filter {
-        private final Query query;
-        NewFilter(Query query) {
+        private final QueryProvider query;
+        NewFilter(QueryProvider query) {
             this.query = query;
         }
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(Query.class, "LBL_NewIssuesFilter");     // NOI18N
+            return NbBundle.getMessage(QueryProvider.class, "LBL_NewIssuesFilter");     // NOI18N
         }
         @Override
-        public boolean accept(Issue issue) {
+        public boolean accept(IssueProvider issue) {
             return query.getIssueStatus(issue) == IssueCache.ISSUE_STATUS_NEW;
         }
     }
     private static class ObsoleteDateFilter extends Filter {
-        private final Query query;
-        ObsoleteDateFilter(Query query) {
+        private final QueryProvider query;
+        ObsoleteDateFilter(QueryProvider query) {
             this.query = query;
         }
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(Query.class, "LBL_ObsoleteIssuesFilter");// NOI18N
+            return NbBundle.getMessage(QueryProvider.class, "LBL_ObsoleteIssuesFilter");// NOI18N
         }
         @Override
-        public boolean accept(Issue issue) {
+        public boolean accept(IssueProvider issue) {
             return !query.contains(issue);
         }
     }
     private static class AllButObsoleteDateFilter extends Filter {
-        private final Query query;
-        AllButObsoleteDateFilter(Query query) {
+        private final QueryProvider query;
+        AllButObsoleteDateFilter(QueryProvider query) {
             this.query = query;
         }
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(Query.class, "LBL_AllButObsoleteIssuesFilter");  // NOI18N
+            return NbBundle.getMessage(QueryProvider.class, "LBL_AllButObsoleteIssuesFilter");  // NOI18N
         }
         @Override
-        public boolean accept(Issue issue) {
+        public boolean accept(IssueProvider issue) {
             return query.contains(issue);
         }
     }

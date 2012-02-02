@@ -60,8 +60,8 @@ import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
 import org.openide.util.Lookup;
@@ -113,10 +113,10 @@ public final class BugtrackingManager implements LookupListener {
      * @param pingOpenProjects 
      * @return repositories
      */
-    public Repository[] getKnownRepositories(boolean pingOpenProjects) {
-        Repository[] kenaiRepos = KenaiUtil.getRepositories(pingOpenProjects);
-        Repository[] otherRepos = getRepositories();
-        Repository[] ret = new Repository[kenaiRepos.length + otherRepos.length];
+    public RepositoryProvider[] getKnownRepositories(boolean pingOpenProjects) {
+        RepositoryProvider[] kenaiRepos = KenaiUtil.getRepositories(pingOpenProjects);
+        RepositoryProvider[] otherRepos = getRepositories();
+        RepositoryProvider[] ret = new RepositoryProvider[kenaiRepos.length + otherRepos.length];
         System.arraycopy(kenaiRepos, 0, ret, 0, kenaiRepos.length);
         System.arraycopy(otherRepos, 0, ret, kenaiRepos.length, otherRepos.length);
         return ret;
@@ -126,16 +126,16 @@ public final class BugtrackingManager implements LookupListener {
      * Returns all user defined repositories
      * @return
      */
-    public Repository[] getRepositories() {
-        List<Repository> repos = new ArrayList<Repository>(10);
+    public RepositoryProvider[] getRepositories() {
+        List<RepositoryProvider> repos = new ArrayList<RepositoryProvider>(10);
         BugtrackingConnector[] conns = getConnectors();
         for (BugtrackingConnector bc : conns) {
-            Repository[] rs = bc.getRepositories();
+            RepositoryProvider[] rs = bc.getRepositories();
             if(rs != null) {
                 repos.addAll(Arrays.asList(rs));
             }
         }
-        return repos.toArray(new Repository[repos.size()]);
+        return repos.toArray(new RepositoryProvider[repos.size()]);
     }
 
     public RequestProcessor getRequestProcessor() {
@@ -156,20 +156,20 @@ public final class BugtrackingManager implements LookupListener {
         refreshConnectors();
     }
 
-    public List<Issue> getRecentIssues(Repository repo) {
+    public List<IssueProvider> getRecentIssues(RepositoryProvider repo) {
         assert repo != null;
         List<RecentIssue> l = getRecentIssues().get(repo.getID());
         if(l == null) {
             return Collections.EMPTY_LIST;
         }
-        List<Issue> ret = new ArrayList<Issue>(l.size());
+        List<IssueProvider> ret = new ArrayList<IssueProvider>(l.size());
         for (RecentIssue recentIssue : l) {
             ret.add(recentIssue.getIssue());
         }
         return ret;
     }
 
-    public void addRecentIssue(Repository repo, Issue issue) {
+    public void addRecentIssue(RepositoryProvider repo, IssueProvider issue) {
         assert repo != null && issue != null;
         if (issue.getID() == null) {
             return;
@@ -246,7 +246,7 @@ public final class BugtrackingManager implements LookupListener {
                     return;
                 }
                 IssueTopComponent itc = (IssueTopComponent) tc;
-                Issue issue = itc.getIssue();
+                IssueProvider issue = itc.getIssue();
                 LOG.log(Level.FINE, "activated issue : {0}", issue); // NOI18N
                 if(issue == null || issue.isNew()) {
                     return;

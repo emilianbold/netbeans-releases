@@ -60,7 +60,7 @@ import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.*;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.*;
@@ -127,7 +127,7 @@ public class BugtrackingRootNode extends AbstractNode {
         };
     }
     
-    private static class RootNodeChildren extends ChildFactory<Repository> implements PropertyChangeListener  {
+    private static class RootNodeChildren extends ChildFactory<RepositoryProvider> implements PropertyChangeListener  {
 
         /**
          * Creates a new instance of RootNodeChildren
@@ -140,7 +140,7 @@ public class BugtrackingRootNode extends AbstractNode {
         }
 
         @Override
-        protected Node createNodeForKey(Repository key) {
+        protected Node createNodeForKey(RepositoryProvider key) {
             return key.getNode();
         }
 
@@ -151,15 +151,15 @@ public class BugtrackingRootNode extends AbstractNode {
         }
 
         @Override
-        protected boolean createKeys(List<Repository> toPopulate) {
+        protected boolean createKeys(List<RepositoryProvider> toPopulate) {
             toPopulate.addAll(Arrays.asList(BugtrackingManager.getInstance().getRepositories()));
             Collections.sort(toPopulate, new RepositoryComparator());
             return true;
         }
     }
 
-    private static class RepositoryComparator implements Comparator<Repository> {
-        public int compare(Repository r1, Repository r2) {
+    private static class RepositoryComparator implements Comparator<RepositoryProvider> {
+        public int compare(RepositoryProvider r1, RepositoryProvider r2) {
             if(r1 == null && r2 == null) return 0;
             if(r1 == null) return -1;
             if(r2 == null) return 1;

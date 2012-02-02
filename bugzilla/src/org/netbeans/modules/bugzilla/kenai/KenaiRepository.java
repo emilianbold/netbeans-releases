@@ -55,8 +55,8 @@ import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
@@ -107,43 +107,43 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     }
 
     @Override
-    public Query createQuery() {
+    public QueryProvider createQuery() {
         KenaiQuery q = new KenaiQuery(null, this, null, product, false, false);
         return q;
     }
 
     @Override
-    public Issue createIssue() {
+    public IssueProvider createIssue() {
         return super.createIssue();
     }
 
     @Override
-    public synchronized Query[] getQueries() {
-        Query[] qs = super.getQueries();
-        Query[] dq = getDefinedQueries();
-        Query[] ret = new Query[qs.length + dq.length];
+    public synchronized QueryProvider[] getQueries() {
+        QueryProvider[] qs = super.getQueries();
+        QueryProvider[] dq = getDefinedQueries();
+        QueryProvider[] ret = new QueryProvider[qs.length + dq.length];
         System.arraycopy(qs, 0, ret, 0, qs.length);
         System.arraycopy(dq, 0, ret, qs.length, dq.length);
         return ret;
     }
 
-    private Query[] getDefinedQueries() {
-        List<Query> queries = new ArrayList<Query>();
+    private QueryProvider[] getDefinedQueries() {
+        List<QueryProvider> queries = new ArrayList<QueryProvider>();
         
-        Query mi = getMyIssuesQuery();
+        QueryProvider mi = getMyIssuesQuery();
         if(mi != null) {
             queries.add(mi);
         }
 
-        Query ai = getAllIssuesQuery();
+        QueryProvider ai = getAllIssuesQuery();
         if(ai != null) {
             queries.add(ai);
         }
 
-        return queries.toArray(new Query[queries.size()]);
+        return queries.toArray(new QueryProvider[queries.size()]);
     }
 
-    synchronized Query getAllIssuesQuery() throws MissingResourceException {
+    synchronized QueryProvider getAllIssuesQuery() throws MissingResourceException {
         if(!providePredefinedQueries() || BugzillaUtil.isNbRepository(this)) return null;
         if (allIssues == null) {
             StringBuffer url = new StringBuffer();
@@ -155,7 +155,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         return allIssues;
     }
 
-    synchronized Query getMyIssuesQuery() throws MissingResourceException {
+    synchronized QueryProvider getMyIssuesQuery() throws MissingResourceException {
         if(!providePredefinedQueries()) return null;
         if (myIssues == null) {
             String url = getMyIssuesQueryUrl();

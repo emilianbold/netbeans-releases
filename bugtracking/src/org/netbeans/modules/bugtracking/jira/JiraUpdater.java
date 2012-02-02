@@ -60,9 +60,9 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -209,12 +209,12 @@ public class JiraUpdater {
             return NbBundle.getMessage(JiraUpdater.class, "LBL_FakeJiraNameTooltip");       // NOI18N
         }
         @Override
-        public Repository createRepository() {
+        public RepositoryProvider createRepository() {
             return new JiraProxyRepository();
         }
         @Override
-        public Repository[] getRepositories() {
-            return new Repository[0];
+        public RepositoryProvider[] getRepositories() {
+            return new RepositoryProvider[0];
         }
         public Lookup getLookup() {
             return Lookup.EMPTY;
@@ -231,7 +231,7 @@ public class JiraUpdater {
         }
     }
 
-    private class JiraProxyRepository extends Repository {
+    private class JiraProxyRepository extends RepositoryProvider {
         @Override
         public Image getIcon() {
             return null;
@@ -253,7 +253,7 @@ public class JiraUpdater {
             throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
         @Override
-        public Issue getIssue(String id) {
+        public IssueProvider getIssue(String id) {
             throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
         @Override
@@ -263,25 +263,25 @@ public class JiraUpdater {
             return new JiraProxyController();
         }
         @Override
-        public Query createQuery() {
+        public QueryProvider createQuery() {
             throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
         @Override
-        public Issue createIssue() {
+        public IssueProvider createIssue() {
             throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
 
         @Override
-        public Query[] getQueries() {
-            return new Query[0];
+        public QueryProvider[] getQueries() {
+            return new QueryProvider[0];
         }
         @Override
         public Collection<RepositoryUser> getUsers() {
             return Collections.EMPTY_LIST;
         }
         @Override
-        public Issue[] simpleSearch(String criteria) {
-            return new Issue[0];
+        public IssueProvider[] simpleSearch(String criteria) {
+            return new IssueProvider[0];
         }
         public Lookup getLookup() {
             return Lookup.EMPTY;

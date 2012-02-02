@@ -56,8 +56,8 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.openide.util.Lookup;
 
@@ -183,10 +183,10 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         BugzillaRepository repo = new BugzillaRepository(REPO_NAME, REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD, null, null);
 
         // test queries
-        Query[] queries = repo.getQueries();
+        QueryProvider[] queries = repo.getQueries();
         assertEquals(0, queries.length);
 
-        Query q = repo.createQuery();
+        QueryProvider q = repo.createQuery();
         queries = repo.getQueries();
         assertEquals(0, queries.length); // returns only saved queries
 
@@ -207,7 +207,7 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
 
         // get issue
         String id = TestUtil.createIssue(repo, "somari");
-        Issue i = repo.getIssue(id);
+        IssueProvider i = repo.getIssue(id);
         assertNotNull(i);
         assertEquals(id, i.getID());
         assertEquals("somari", i.getSummary());
@@ -222,7 +222,7 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         String id1 = TestUtil.createIssue(repo, summary1);
         String id2 = TestUtil.createIssue(repo, summary2);
 
-        Issue[] issues = repo.simpleSearch(summary1);
+        IssueProvider[] issues = repo.simpleSearch(summary1);
         assertEquals(1, issues.length);
         assertEquals(summary1, issues[0].getSummary());
 
@@ -230,8 +230,8 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         // at least one as id might be also contained
         // in another issues summary
         assertTrue(issues.length > 0);
-        Issue i = null;
-        for(Issue issue : issues) {
+        IssueProvider i = null;
+        for(IssueProvider issue : issues) {
             if(issue.getID().equals(id1)) {
                 i = issue;
                 break;
@@ -243,7 +243,7 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         assertEquals(2, issues.length);
         List<String> summaries = new ArrayList<String>();
         List<String> ids = new ArrayList<String>();
-        for(Issue issue : issues) {
+        for(IssueProvider issue : issues) {
             summaries.add(issue.getSummary());
             ids.add(issue.getID());
         }

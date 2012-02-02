@@ -62,8 +62,8 @@ import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider;
 import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider.LazyIssue;
@@ -267,7 +267,7 @@ public final class TaskListProvider extends PushTaskScanner {
                 BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
                     @Override
                     public void run() {
-                        Issue issue = lazyIssue.getIssue();
+                        IssueProvider issue = lazyIssue.getIssue();
                         if (issue != null) {
                             LOG.log(Level.FINER, "TaskListProvider: openning issue {0}", lazyIssue.getName()); //NOI18N
                             // openning the real issue in it's top component
@@ -451,7 +451,7 @@ public final class TaskListProvider extends PushTaskScanner {
                     startTime = System.currentTimeMillis();
                 }
                 // lookup a repository registered with current projects
-                Repository repository = BugtrackingOwnerSupport.getInstance().getRepository(p, false);
+                RepositoryProvider repository = BugtrackingOwnerSupport.getInstance().getRepository(p, false);
                 if (LOG.isLoggable(Level.FINER)) {
                     LOG.log(Level.FINER, "getRepositoriesFor: repository: {0} for {1} after {2}", new Object[] {repository, p, (System.currentTimeMillis() - startTime)});
                 }

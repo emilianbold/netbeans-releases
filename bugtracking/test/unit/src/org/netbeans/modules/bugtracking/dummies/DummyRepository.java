@@ -45,9 +45,9 @@ package org.netbeans.modules.bugtracking.dummies;
 import java.awt.Image;
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -56,7 +56,7 @@ import org.openide.util.Lookup;
  *
  * @author Marian Petras
  */
-public class DummyRepository extends Repository {
+public class DummyRepository extends RepositoryProvider {
 
     private static final Image icon = ImageUtilities.loadImage(
             "org/netbeans/modules/bugtracking/dummies/DummyRepositoryIcon.png");
@@ -96,7 +96,7 @@ public class DummyRepository extends Repository {
     }
 
     @Override
-    public Issue getIssue(String id) {
+    public IssueProvider getIssue(String id) {
         assert false : "This was assumed to be never called.";
         return null;
     }
@@ -113,21 +113,21 @@ public class DummyRepository extends Repository {
     }
 
     @Override
-    public Query createQuery() {
+    public QueryProvider createQuery() {
         assert false : "This was assumed to be never called.";
         return null;
     }
 
     @Override
-    public Issue createIssue() {
+    public IssueProvider createIssue() {
         assert false : "This was assumed to be never called.";
         return null;
     }
 
     @Override
-    public Query[] getQueries() {
+    public QueryProvider[] getQueries() {
         assert false : "This was assumed to be never called.";
-        return new Query[0];
+        return new QueryProvider[0];
     }
 
     @Override
@@ -137,9 +137,9 @@ public class DummyRepository extends Repository {
     }
 
     @Override
-    public Issue[] simpleSearch(String criteria) {
+    public IssueProvider[] simpleSearch(String criteria) {
         assert false : "This was assumed to be never called.";
-        return new Issue[0];
+        return new IssueProvider[0];
     }
 
     public Lookup getLookup() {

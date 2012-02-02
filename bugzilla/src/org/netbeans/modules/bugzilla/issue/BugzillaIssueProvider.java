@@ -64,8 +64,8 @@ import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
@@ -198,7 +198,7 @@ public final class BugzillaIssueProvider extends TaskListIssueProvider implement
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (Repository.EVENT_ATTRIBUTES_CHANGED.equals(evt.getPropertyName())) {
+        if (RepositoryProvider.EVENT_ATTRIBUTES_CHANGED.equals(evt.getPropertyName())) {
             if (evt.getOldValue() != null && evt.getOldValue() instanceof Map) {
                 Object oldValue = ((Map)evt.getOldValue()).get(BugzillaRepository.ATTRIBUTE_URL);
                 if (oldValue != null && oldValue instanceof String) {
@@ -661,7 +661,7 @@ public final class BugzillaIssueProvider extends TaskListIssueProvider implement
                     @Override
                     public void propertyChange(PropertyChangeEvent evt) {
                         BugzillaIssue issue = issueRef.get();
-                        if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName()) && issue != null) {
+                        if (IssueProvider.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName()) && issue != null) {
                             // issue has somehow changed, checks for its changes and apply them in the tasklist
                             applyChangesFor(issue);
                         }
@@ -784,7 +784,7 @@ public final class BugzillaIssueProvider extends TaskListIssueProvider implement
 
         public KenaiBugzillaLazyIssue (BugzillaIssue issue, BugzillaIssueProvider provider) throws MalformedURLException {
             super(issue, provider);
-            Repository repo = issue.getRepository();
+            RepositoryProvider repo = issue.getRepository();
             if (!(repo instanceof KenaiRepository)) {
                 throw new IllegalStateException("Cannot instantiate with a non kenai issue: " + issue); //NOI18N
             }
@@ -798,7 +798,7 @@ public final class BugzillaIssueProvider extends TaskListIssueProvider implement
 
         protected KenaiRepository lookupRepository () {
             KenaiRepository kenaiRepo = null;
-            Repository repo = null;
+            RepositoryProvider repo = null;
             if (loginStatusChanged) {
                 try {
                     LOG.log(Level.FINE, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for: " + projectName);

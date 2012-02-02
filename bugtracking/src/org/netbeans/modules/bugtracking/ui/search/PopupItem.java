@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.bugtracking.ui.search;
 
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 
 /**
@@ -55,9 +55,9 @@ abstract class PopupItem {
     abstract String getDisplayText();
 
     static class IssueItem extends PopupItem {
-        private Issue issue;
+        private IssueProvider issue;
 
-        public IssueItem(Issue issue) {
+        public IssueItem(IssueProvider issue) {
             this.issue = issue;
         }
 
@@ -104,11 +104,11 @@ abstract class PopupItem {
             return sb.toString();
         }
 
-        public Issue getIssue() {
+        public IssueProvider getIssue() {
             return issue;
         }
 
-        public static String getIssueDescription(Issue issue) {
+        public static String getIssueDescription(IssueProvider issue) {
             return issue.getID() + " - " + issue.getSummary();                  // NOI18N
         }
 

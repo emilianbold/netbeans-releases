@@ -84,7 +84,7 @@ import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueSettingsStorage;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
@@ -131,7 +131,7 @@ public class CommentsPanel extends JPanel {
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
-                        Issue is = issue.getRepository().getIssue(issueKey);
+                        IssueProvider is = issue.getRepository().getIssue(issueKey);
                         if (is != null) {
                             is.open();
                         }
@@ -269,7 +269,7 @@ public class CommentsPanel extends JPanel {
                     author); 
             replyButton.setOpaque(false);
         }
-        // Issue 172653 - JTextPane too big
+        // IssueProvider 172653 - JTextPane too big
         JComponent pane = textPane;
         if (textPane.getPreferredSize().height>Short.MAX_VALUE) {
             pane = new JScrollPane(textPane);

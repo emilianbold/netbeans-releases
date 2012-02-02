@@ -50,7 +50,7 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.IssuetableTestFactory;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugzilla.TestConstants;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 
@@ -85,7 +85,7 @@ public class IssueTableTest extends IssuetableTestFactory implements QueryConsta
     }
 
     @Override
-    public Query createQuery() {
+    public QueryProvider createQuery() {
         final String summary = "summary" + System.currentTimeMillis();
 
         final BugzillaRepository repo = QueryTestUtil.getRepository();
@@ -97,7 +97,7 @@ public class IssueTableTest extends IssuetableTestFactory implements QueryConsta
     }
 
     @Override
-    public IssueTable getTable(Query q) {
+    public IssueTable getTable(QueryProvider q) {
         try {
             BugtrackingController c = q.getController();
             Field f = c.getClass().getDeclaredField("issueTable");

@@ -126,7 +126,7 @@ import javax.swing.LayoutStyle;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.issuetable.TableSorter;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
@@ -265,7 +265,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         // Project combo
         projectCombo.setRenderer(new ProjectRenderer());
 
-        // Issue type combo
+        // IssueProvider type combo
         issueTypeCombo.setRenderer(new TypeRenderer());
 
         // Priority combo
@@ -571,11 +571,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    Issue parentIssue = issue.getRepository().getIssueCache().getIssue(parentKey);
+                    IssueProvider parentIssue = issue.getRepository().getIssueCache().getIssue(parentKey);
                     if (parentIssue == null) {
                         parentIssue = issue.getRepository().getIssue(parentKey);
                     }
-                    final Issue parent = parentIssue;
+                    final IssueProvider parent = parentIssue;
                     if(parent == null) {
                         // how could this be possible? parent removed?
                         Jira.LOG.log(Level.INFO, "issue {0} is referencing not available parent with key {1}", new Object[]{issue.getKey(), parentKey}); // NOI18N
@@ -732,7 +732,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             attachmentsPanel.setIssue(issue);
             UIUtils.keepFocusedComponentVisible(attachmentsPanel);
 
-            // Issue-links
+            // IssueProvider-links
             boolean anyLink = (issue.getLinkedIssues().length != 0);
             issueLinksLabel.setVisible(anyLink);
             issueLinksPanel.setVisible(anyLink);
@@ -758,7 +758,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                 int row = subTaskTable.rowAtPoint(p);
                                 TableModel model = subTaskTable.getModel();
                                 final String issueKey = (String)model.getValueAt(row,0);
-                                Issue.open(issue.getRepository(), issueKey);
+                                IssueProvider.open(issue.getRepository(), issueKey);
                             }
                         }
                     });
@@ -1958,13 +1958,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 IssueCache cache = issue.getRepository().getIssueCache();
                 String parentKey = issue.getParentKey();
                 if ((parentKey != null) && (parentKey.trim().length()>0)) {
-                    Issue parentIssue = cache.getIssue(parentKey);
+                    IssueProvider parentIssue = cache.getIssue(parentKey);
                     if (parentIssue != null) {
                         parentIssue.refresh();
                     }
                 }
                 for (String subTaskKey : issue.getSubtaskKeys()) {
-                    Issue subTask = cache.getIssue(subTaskKey);
+                    IssueProvider subTask = cache.getIssue(subTaskKey);
                     if (subTask != null) {
                         subTask.refresh();
                     }
@@ -2047,7 +2047,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     if(ret) {
                         reloadFormInAWT(true);
                         if (wasNew && (issue.getParentKey() != null) && (issue.getParentKey().trim().length() > 0)) {
-                            Issue parent = issue.getRepository().getIssue(issue.getParentKey());
+                            IssueProvider parent = issue.getRepository().getIssue(issue.getParentKey());
                             parent.refresh();
                         }
                     }
@@ -2318,7 +2318,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     @Override
     public Dimension getPreferredSize() {
-        return getMinimumSize(); // Issue 176085
+        return getMinimumSize(); // IssueProvider 176085
     }
 
     @Override
@@ -2340,7 +2340,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     public boolean getScrollableTracksViewportWidth() {
         JScrollPane scrollPane = (JScrollPane)SwingUtilities.getAncestorOfClass(JScrollPane.class, this);
         if (scrollPane!=null) {
-             // Issue 176085
+             // IssueProvider 176085
             int minWidth = getMinimumSize().width;
             int width = scrollPane.getSize().width;
             Insets insets = scrollPane.getInsets();

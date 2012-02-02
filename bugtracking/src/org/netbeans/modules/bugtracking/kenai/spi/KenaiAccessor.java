@@ -51,8 +51,8 @@ import java.util.Collection;
 import java.util.logging.Level;
 import javax.swing.JLabel;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
 import org.openide.nodes.Node;
@@ -195,11 +195,11 @@ public abstract class KenaiAccessor {
                 BugtrackingManager.LOG.log(Level.FINER, "activated TC : {0}", tc); // NOI18N
                 if(tc instanceof QueryTopComponent) {
                     QueryTopComponent qtc = (QueryTopComponent) tc;
-                    Query query = qtc.getQuery();
+                    QueryProvider query = qtc.getQuery();
                     if(query == null) {
                         return;
                     }
-                    Repository repository = query.getRepository();
+                    RepositoryProvider repository = query.getRepository();
                     if(repository == null) {
                         return;
                     }

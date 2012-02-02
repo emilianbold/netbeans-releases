@@ -59,7 +59,7 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssueProvider;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.kenai.KenaiSupportImpl;
@@ -159,13 +159,13 @@ public class Bugzilla {
             // we don't store kenai repositories - XXX  shouldn't be even called
             return;        
         }
-        Collection<Repository> oldRepos;
-        Collection<Repository> newRepos;
+        Collection<RepositoryProvider> oldRepos;
+        Collection<RepositoryProvider> newRepos;
         synchronized(REPOSITORIES_LOCK) {
             Set<BugzillaRepository> repos = getStoredRepositories();
-            oldRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
+            oldRepos = Collections.unmodifiableCollection(new LinkedList<RepositoryProvider>(repos));
             repos.add(repository);
-            newRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
+            newRepos = Collections.unmodifiableCollection(new LinkedList<RepositoryProvider>(repos));
 
             BugzillaConfig.getInstance().putRepository(repository.getID(), repository);
         }
@@ -180,13 +180,13 @@ public class Bugzilla {
     }
 
     public void removeRepository(BugzillaRepository repository) {
-        Collection<Repository> oldRepos;
-        Collection<Repository> newRepos;
+        Collection<RepositoryProvider> oldRepos;
+        Collection<RepositoryProvider> newRepos;
         synchronized(REPOSITORIES_LOCK) {
             Set<BugzillaRepository> repos = getStoredRepositories();
-            oldRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
+            oldRepos = Collections.unmodifiableCollection(new LinkedList<RepositoryProvider>(repos));
             repos.remove(repository);
-            newRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
+            newRepos = Collections.unmodifiableCollection(new LinkedList<RepositoryProvider>(repos));
             BugzillaConfig.getInstance().removeRepository(repository.getID());
         }
         getConnector().fireRepositoriesChanged(oldRepos, newRepos);

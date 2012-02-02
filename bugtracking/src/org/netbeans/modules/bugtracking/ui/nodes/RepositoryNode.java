@@ -46,7 +46,7 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -63,9 +63,9 @@ import org.openide.util.actions.SystemAction;
  * @author Tomas Stupka
  */
 public class RepositoryNode extends AbstractNode {
-    private Repository repository;
+    private RepositoryProvider repository;
 
-    public RepositoryNode(Repository repository) {
+    public RepositoryNode(RepositoryProvider repository) {
         super(Children.LEAF);
         this.repository = repository;
         setName(repository.getDisplayName());

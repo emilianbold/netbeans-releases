@@ -51,7 +51,7 @@ import org.netbeans.modules.jira.*;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiQuery;
@@ -119,7 +119,7 @@ public class QueryRefreshTest extends NbTestCase {
         assertEquals(0, jq.getIssues().length);
         jq.refresh(); // refresh the query - so it won't be refreshed via first time open
 
-        Issue[] issues = jq.getIssues();
+        IssueProvider[] issues = jq.getIssues();
         assertEquals(0, issues.length);
 
         RepositoryResponse rr = JiraTestUtil.createIssue(summary, "desc", "Bug");
@@ -188,7 +188,7 @@ public class QueryRefreshTest extends NbTestCase {
 //        final JiraQuery jq = new KenaiQuery(queryName, repo, fd, JiraTestUtil.TEST_PROJECT, true, false);
 //        populateHandler.waitUntilDone();
 //        selectTestProject(jq);
-//        Issue[] issues = jq.getIssues();
+//        IssueProvider[] issues = jq.getIssues();
 //        assertEquals(0, issues.length);
 //
 //        // kenai queries are auto refreshed no matter if they are open or not, so

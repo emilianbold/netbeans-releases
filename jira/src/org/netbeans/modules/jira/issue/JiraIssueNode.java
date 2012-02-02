@@ -47,7 +47,7 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
 import java.util.Date;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.jira.issue.NbJiraIssue.IssueField;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Stupka
  */
 public class JiraIssueNode extends IssueNode {
-    public JiraIssueNode(Issue issue) {
+    public JiraIssueNode(IssueProvider issue) {
         super(issue);
     }
 

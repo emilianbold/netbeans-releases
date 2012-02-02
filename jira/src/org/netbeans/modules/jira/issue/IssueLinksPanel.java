@@ -63,8 +63,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import javax.swing.UIManager;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.jira.Jira;
@@ -79,7 +79,7 @@ import org.openide.util.RequestProcessor;
  * @author Jan Stola
  */
 public class IssueLinksPanel extends JPanel {
-    /** Issue whose links should be shown. */
+    /** IssueProvider whose links should be shown. */
     private NbJiraIssue issue;
     /** Maps linkId to the lists of outward and inward links. */
     private SortedMap<String,List<NbJiraIssue.LinkedIssue>[]> map = new TreeMap<String,List<NbJiraIssue.LinkedIssue>[]>();
@@ -123,7 +123,7 @@ public class IssueLinksPanel extends JPanel {
         IssueCache cache = repository.getIssueCache();
         for (NbJiraIssue.LinkedIssue linkedIssue : issue.getLinkedIssues()) {
             String issueKey = linkedIssue.getIssueKey();
-            Issue izzue = cache.getIssue(issueKey);
+            IssueProvider izzue = cache.getIssue(issueKey);
             if (izzue == null) {
                 izzue = repository.getIssue(issueKey);
             }
@@ -200,10 +200,10 @@ public class IssueLinksPanel extends JPanel {
     }
 
     static class OpenIssueAction extends AbstractAction {
-        private Repository repository;
+        private RepositoryProvider repository;
         private String issueKey;
 
-        public OpenIssueAction(Repository repository, String issueKey) {
+        public OpenIssueAction(RepositoryProvider repository, String issueKey) {
             this.repository = repository;
             this.issueKey = issueKey;
             putValue(Action.NAME, issueKey);

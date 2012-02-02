@@ -46,7 +46,7 @@ import java.awt.Image;
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssueFinder;
 import org.openide.util.Lookup;
@@ -89,13 +89,13 @@ public class BugzillaConnector extends BugtrackingConnector {
     }
     
     @Override
-    public Repository createRepository() {
+    public RepositoryProvider createRepository() {
         Bugzilla.init();
         return new BugzillaRepository();
     }
 
     @Override
-    public Repository[] getRepositories() {
+    public RepositoryProvider[] getRepositories() {
         return Bugzilla.getInstance().getRepositories();
     }
 
@@ -117,7 +117,7 @@ public class BugzillaConnector extends BugtrackingConnector {
     }
 
     @Override
-    public void fireRepositoriesChanged(Collection<Repository> oldRepos, Collection<Repository> newRepos) {
+    public void fireRepositoriesChanged(Collection<RepositoryProvider> oldRepos, Collection<RepositoryProvider> newRepos) {
         super.fireRepositoriesChanged(oldRepos, newRepos);
     }
 

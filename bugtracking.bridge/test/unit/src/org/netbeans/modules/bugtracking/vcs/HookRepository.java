@@ -45,9 +45,9 @@ package org.netbeans.modules.bugtracking.vcs;
 import java.awt.Image;
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.openide.util.Lookup;
 
@@ -55,7 +55,7 @@ import org.openide.util.Lookup;
  *
  * @author Tomas Stupka
  */
-public class HookRepository extends Repository {
+public class HookRepository extends RepositoryProvider {
 
     @Override
     public Image getIcon() {
@@ -83,7 +83,7 @@ public class HookRepository extends Repository {
     }
 
     @Override
-    public Issue getIssue(String id) {
+    public IssueProvider getIssue(String id) {
         return HookIssue.instance;
     }
 
@@ -98,17 +98,17 @@ public class HookRepository extends Repository {
     }
 
     @Override
-    public Query createQuery() {
+    public QueryProvider createQuery() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Issue createIssue() {
+    public IssueProvider createIssue() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Query[] getQueries() {
+    public QueryProvider[] getQueries() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -118,8 +118,8 @@ public class HookRepository extends Repository {
     }
 
     @Override
-    public Issue[] simpleSearch(String criteria) {
-        return new Issue[] {HookIssue.instance};
+    public IssueProvider[] simpleSearch(String criteria) {
+        return new IssueProvider[] {HookIssue.instance};
     }
 
     @Override

@@ -54,7 +54,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.issue.JiraIssueProvider;
 import org.netbeans.modules.jira.kenai.KenaiSupportImpl;
@@ -126,29 +126,29 @@ public class Jira {
     }
 
     public void addRepository(JiraRepository repository) {
-        Collection<Repository> oldRepos;
-        Collection<Repository> newRepos;
+        Collection<RepositoryProvider> oldRepos;
+        Collection<RepositoryProvider> newRepos;
         synchronized(REPOSITORIES_LOCK) {
             Set<JiraRepository> repos = getStoredRepositories();
-            oldRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
+            oldRepos = Collections.unmodifiableCollection(new LinkedList<RepositoryProvider>(repos));
             if(!(repository instanceof KenaiRepository)) {
                 // we don't store kenai repositories - XXX  shouldn't be even called
                 repos.add(repository);
                 JiraConfig.getInstance().putRepository(repository.getID(), repository);
             }
-            newRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
+            newRepos = Collections.unmodifiableCollection(new LinkedList<RepositoryProvider>(repos));
         }
         getConnector().fireRepositoriesChanged(oldRepos, newRepos);
     }
 
     public void removeRepository(JiraRepository repository) {
-        Collection<Repository> oldRepos;
-        Collection<Repository> newRepos;
+        Collection<RepositoryProvider> oldRepos;
+        Collection<RepositoryProvider> newRepos;
         synchronized(REPOSITORIES_LOCK) {
             Set<JiraRepository> repos = getStoredRepositories();
-            oldRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
+            oldRepos = Collections.unmodifiableCollection(new LinkedList<RepositoryProvider>(repos));
             repos.remove(repository);
-            newRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
+            newRepos = Collections.unmodifiableCollection(new LinkedList<RepositoryProvider>(repos));
             JiraConfig.getInstance().removeRepository(repository.getID());
         }
         getConnector().fireRepositoriesChanged(oldRepos, newRepos);

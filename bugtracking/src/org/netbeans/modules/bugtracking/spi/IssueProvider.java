@@ -49,11 +49,11 @@ import org.openide.nodes.Node;
 import static java.lang.Character.isSpaceChar;
 
 /**
- * Represents a bugtracking Issue
+ * Represents a bugtracking IssueProvider
  *
  * @author Tomas Stupka
  */
-public abstract class Issue {
+public abstract class IssueProvider {
 
     private static final int SHORT_DISP_NAME_LENGTH = 15;
 
@@ -64,7 +64,7 @@ public abstract class Issue {
      */
     public static final String EVENT_ISSUE_DATA_CHANGED = "issue.data_changed"; // NOI18N
 
-    private Repository repository;
+    private RepositoryProvider repository;
 
     static {
         IssueAccessorImpl.create();
@@ -74,7 +74,7 @@ public abstract class Issue {
     /**
      * Creates an issue
      */
-    public Issue(Repository repository) {
+    public IssueProvider(RepositoryProvider repository) {
         support = new PropertyChangeSupport(this);
         this.repository = repository;
     }
@@ -84,7 +84,7 @@ public abstract class Issue {
      *
      * @return
      */
-    public Repository getRepository() {
+    public RepositoryProvider getRepository() {
         return repository;
     }
 
@@ -191,7 +191,7 @@ public abstract class Issue {
      * @param repository
      * @param issueId
      */
-    public static void open(final Repository repository, final String issueId) {
+    public static void open(final RepositoryProvider repository, final String issueId) {
         if(issueId == null) {
             IssueAction.createIssue(repository);
         } else {            

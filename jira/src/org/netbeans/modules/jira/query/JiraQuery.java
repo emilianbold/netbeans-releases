@@ -55,8 +55,8 @@ import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
@@ -73,7 +73,7 @@ import org.netbeans.modules.jira.repository.JiraRepository;
  *
  * @author Tomas Stupka
  */
-public class JiraQuery extends Query {
+public class JiraQuery extends QueryProvider {
 
     private String name;
     private final JiraRepository repository;
@@ -227,13 +227,13 @@ public class JiraQuery extends Query {
     }
 
     @Override
-    public int getIssueStatus(Issue issue) {
+    public int getIssueStatus(IssueProvider issue) {
         String id = issue.getID();
         return getIssueStatus(id);
     }
 
     @Override
-    public boolean contains(Issue issue) {
+    public boolean contains(IssueProvider issue) {
         return issues.contains(issue.getID());
     }
 
@@ -271,9 +271,9 @@ public class JiraQuery extends Query {
     }
 
     @Override
-    public Issue[] getIssues(int includeStatus) {
+    public IssueProvider[] getIssues(int includeStatus) {
         if (issues == null) {
-            return new Issue[0];
+            return new IssueProvider[0];
         }
         List<String> ids = new ArrayList<String>();
         synchronized (issues) {
@@ -281,14 +281,14 @@ public class JiraQuery extends Query {
         }
 
         IssueCache cache = repository.getIssueCache();
-        List<Issue> ret = new ArrayList<Issue>();
+        List<IssueProvider> ret = new ArrayList<IssueProvider>();
         for (String id : ids) {
             int status = getIssueStatus(id);
             if((status & includeStatus) != 0) {
                 ret.add(cache.getIssue(id));
             }
         }
-        return ret.toArray(new Issue[ret.size()]);
+        return ret.toArray(new IssueProvider[ret.size()]);
     }
 
     /**

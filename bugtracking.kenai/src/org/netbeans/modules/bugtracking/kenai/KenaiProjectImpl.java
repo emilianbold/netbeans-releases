@@ -47,7 +47,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport.BugtrackingType;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -161,7 +161,7 @@ class KenaiProjectImpl extends org.netbeans.modules.bugtracking.kenai.spi.KenaiP
     }
 
     @Override
-    public void fireQueryActivated(Query query) {
+    public void fireQueryActivated(QueryProvider query) {
         KenaiHandler handler = Support.getInstance().getKenaiHandler(project.getKenai());
         if(handler == null) {
             return;

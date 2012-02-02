@@ -50,7 +50,7 @@ import org.openide.util.HelpCtx;
 import java.awt.event.ActionEvent;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugzilla.commands.ValidateCommand;
 import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
 import org.openide.util.NbBundle;
@@ -87,7 +87,7 @@ public class ReportNBIssueAction extends SystemAction {
                 if(!checkLogin(repo)) {
                     return;
                 }
-                Issue.open(repo, null);
+                IssueProvider.open(repo, null);
             }
         });
     }

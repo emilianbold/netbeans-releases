@@ -48,7 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.jira.repository.JiraRepository;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.jira.issue.JiraIssueFinder;
 import org.openide.util.Lookup;
@@ -89,7 +89,7 @@ public class JiraConnector extends BugtrackingConnector {
     }
 
     @Override
-    public Repository createRepository() {
+    public RepositoryProvider createRepository() {
         try {
             Jira.init();
         } catch (Throwable t) {
@@ -103,12 +103,12 @@ public class JiraConnector extends BugtrackingConnector {
     }
 
     @Override
-    public Repository[] getRepositories() {
+    public RepositoryProvider[] getRepositories() {
         Jira jira = getJira();
         if(jira != null) {
             return jira.getRepositories();
         }
-        return new Repository[0];
+        return new RepositoryProvider[0];
     }
 
     public static String getConnectorName() {
@@ -134,7 +134,7 @@ public class JiraConnector extends BugtrackingConnector {
     }
 
     @Override
-    protected void fireRepositoriesChanged(Collection<Repository> oldRepositories, Collection<Repository> newRepositories) {
+    protected void fireRepositoriesChanged(Collection<RepositoryProvider> oldRepositories, Collection<RepositoryProvider> newRepositories) {
         super.fireRepositoriesChanged(oldRepositories, newRepositories);
     }
 

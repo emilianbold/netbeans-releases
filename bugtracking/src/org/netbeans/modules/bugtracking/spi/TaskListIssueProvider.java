@@ -163,7 +163,7 @@ public abstract class TaskListIssueProvider {
          * Implement this to load and return the real issue.
          * @return the real issue or null
          */
-        public abstract Issue getIssue ();
+        public abstract IssueProvider getIssue ();
 
         /**
          * If the issue is not valid (previously invalidated by {@link #setValid(boolean)},

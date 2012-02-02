@@ -48,7 +48,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.openide.util.Lookup;
 
 /**
@@ -102,13 +102,13 @@ public class ManagerTest extends NbTestCase {
         }
 
         @Override
-        public Repository createRepository() {
+        public RepositoryProvider createRepository() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public Repository[] getRepositories() {
-            return new Repository[0];
+        public RepositoryProvider[] getRepositories() {
+            return new RepositoryProvider[0];
         }
 
         public Lookup getLookup() {

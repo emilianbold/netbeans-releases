@@ -51,8 +51,8 @@ import javax.swing.Action;
 import org.netbeans.modules.bugtracking.kenai.FakeJiraSupport.FakeJiraQueryHandle;
 import org.netbeans.modules.bugtracking.kenai.FakeJiraSupport.FakeJiraQueryResultHandle;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
@@ -71,7 +71,7 @@ public class QueryAccessorImpl extends QueryAccessor {
 
     @Override
     public QueryHandle getAllIssuesQuery(ProjectHandle projectHandle) {
-        Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getKenaiProject()));
+        RepositoryProvider repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getKenaiProject()));
         if(repo == null) {
             FakeJiraSupport jira = FakeJiraSupport.get(projectHandle);
             if (jira != null) {
@@ -88,7 +88,7 @@ public class QueryAccessorImpl extends QueryAccessor {
 
         KenaiHandler handler = Support.getInstance().getKenaiHandler(projectHandle, this);
         handler.registerRepository(repo, projectHandle);
-        Query allIssuesQuery = support.getAllIssuesQuery(repo);
+        QueryProvider allIssuesQuery = support.getAllIssuesQuery(repo);
         if(allIssuesQuery == null) {
             return null;
         }
@@ -101,7 +101,7 @@ public class QueryAccessorImpl extends QueryAccessor {
 
     @Override
     public List<QueryHandle> getQueries(ProjectHandle projectHandle) {
-        Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getKenaiProject()));
+        RepositoryProvider repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getKenaiProject()));
         if(repo == null) {
             return getQueriesForNoRepo(projectHandle);
         }
@@ -132,7 +132,7 @@ public class QueryAccessorImpl extends QueryAccessor {
 
     @Override
     public Action getFindIssueAction(ProjectHandle projectHandle) {
-        final Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getKenaiProject()));
+        final RepositoryProvider repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getKenaiProject()));
         if(repo == null) {
             // XXX dummy jira impl to open the jira page in a browser
             FakeJiraSupport jira = FakeJiraSupport.get(projectHandle);
@@ -146,7 +146,7 @@ public class QueryAccessorImpl extends QueryAccessor {
 
     @Override
     public Action getCreateIssueAction(ProjectHandle projectHandle) {
-        final Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getKenaiProject()));
+        final RepositoryProvider repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getKenaiProject()));
         if(repo == null) {
             // XXX dummy jira impl to open the jira page in a browser
             FakeJiraSupport jira = FakeJiraSupport.get(projectHandle);

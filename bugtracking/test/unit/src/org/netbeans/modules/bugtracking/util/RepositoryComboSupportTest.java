@@ -59,7 +59,7 @@ import org.netbeans.modules.bugtracking.kenai.spi.DummyKenaiRepositories;
 import org.netbeans.modules.bugtracking.dummies.DummyNode;
 import org.netbeans.modules.bugtracking.dummies.DummyTopComponentRegistry;
 import org.netbeans.modules.bugtracking.dummies.DummyWindowManager;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport.Progress;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -123,9 +123,9 @@ public class RepositoryComboSupportTest {
         protected Node repoNode1;
         protected Node repoNode2;
         protected Node repoNode3;
-        protected Repository repository1;
-        protected Repository repository2;
-        protected Repository repository3;
+        protected RepositoryProvider repository1;
+        protected RepositoryProvider repository2;
+        protected RepositoryProvider repository3;
 
         protected void createRepository1() {
             repository1 = connector.createRepository("alpha");
@@ -683,12 +683,12 @@ public class RepositoryComboSupportTest {
 
     /**
      * Tests that an {@code IllegalArgumentException} is thrown
-     * if <em>null</em> {@code Repository} is passed as the third argument
+     * if <em>null</em> {@code RepositoryProvider} is passed as the third argument
      * of method {@code setup()}.
      */
     @Test(timeout=10000,expected=IllegalArgumentException.class)
     public void testDefaultRepoExplicitlySetNull() throws InterruptedException {
-        RepositoryComboSupport.setup(null, new JComboBox(), (Repository) null);
+        RepositoryComboSupport.setup(null, new JComboBox(), (RepositoryProvider) null);
     }
 
     /**

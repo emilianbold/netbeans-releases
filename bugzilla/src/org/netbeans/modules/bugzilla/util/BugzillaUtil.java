@@ -48,7 +48,7 @@ import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -155,13 +155,13 @@ public class BugzillaUtil {
     }
 
     /**
-     * Determines wheter the given {@link Repository} is the
+     * Determines wheter the given {@link RepositoryProvider} is the
      * repository hosting netbeans or not
      *
      * @param repo
      * @return true if the given repository is the netbenas bugzilla, otherwise false
      */
-    public static boolean isNbRepository(Repository repo) {
+    public static boolean isNbRepository(RepositoryProvider repo) {
         return BugtrackingUtil.isNbRepository(repo);
     }
 

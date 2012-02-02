@@ -96,14 +96,14 @@ public abstract class BugtrackingConnector implements Lookup.Provider {
      * 
      * @return the created repository
      */
-    public abstract Repository createRepository();
+    public abstract RepositoryProvider createRepository();
 
     /**
      * Returns all available valid repositories for this connector.
      *
      * @return known repositories
      */
-    public abstract Repository[] getRepositories();
+    public abstract RepositoryProvider[] getRepositories();
 
     /**
      * Returns an {@code IssueFinder} for the connector, or {@code null}
@@ -148,7 +148,7 @@ public abstract class BugtrackingConnector implements Lookup.Provider {
      * @param oldRepositories - lists repositories which were available for the connector before the change
      * @param newRepositories - lists repositories which are available for the connector after the change
      */
-    protected void fireRepositoriesChanged(Collection<Repository> oldRepositories, Collection<Repository> newRepositories) {
+    protected void fireRepositoriesChanged(Collection<RepositoryProvider> oldRepositories, Collection<RepositoryProvider> newRepositories) {
         changeSupport.firePropertyChange(EVENT_REPOSITORIES_CHANGED, oldRepositories, newRepositories);
     }
 }

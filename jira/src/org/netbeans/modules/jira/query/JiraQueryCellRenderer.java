@@ -28,7 +28,7 @@ import org.netbeans.modules.bugtracking.issuetable.IssueNode.SummaryProperty;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableCellStyle;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.issue.JiraIssueNode.MultiValueFieldProperty;
 import org.netbeans.modules.jira.issue.JiraIssueNode.PriorityProperty;
@@ -243,7 +243,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
                 if(parent != null) {
                     parent.open();
                 } else {
-                    Issue.open(issue.getRepository(), id); // XXX show a wrong message in progress bar! opening ID instead of opening KEY
+                    IssueProvider.open(issue.getRepository(), id); // XXX show a wrong message in progress bar! opening ID instead of opening KEY
                 }
             }
         });

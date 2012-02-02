@@ -46,12 +46,12 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.openide.util.NbBundle;
 
 /**
- * Issue cache utility methods
+ * IssueProvider cache utility methods
  * 
  * @author Tomas Stupka
  */
@@ -62,7 +62,7 @@ public class IssueCacheUtils {
      * @param issue issue
      * @return true if issue was seen otherwise false
      */
-    public static boolean wasSeen(Issue issue) {
+    public static boolean wasSeen(IssueProvider issue) {
         return getCache(issue).wasSeen(issue.getID());
     }
 
@@ -70,7 +70,7 @@ public class IssueCacheUtils {
      * Changes the given issues seen value to ist opposite value
      * @param issue
      */
-    public static void switchSeen(Issue issue) {
+    public static void switchSeen(IssueProvider issue) {
         try {
             IssueCache cache = getCache(issue);
             String id = issue.getID();
@@ -85,7 +85,7 @@ public class IssueCacheUtils {
      * @param issue issue
      * @param seen value to be set
      */
-    public static void setSeen(Issue issue, boolean seen) {
+    public static void setSeen(IssueProvider issue, boolean seen) {
         try {
             getCache(issue).setSeen(issue.getID(), seen);
         } catch (IOException ex) {
@@ -100,7 +100,7 @@ public class IssueCacheUtils {
      * @param issue
      * @return
      */
-    public static String getRecentChanges(Issue issue) {
+    public static String getRecentChanges(IssueProvider issue) {
         String changes = getCache(issue).getIssueAccessor().getRecentChanges(issue);
         if(changes == null) {
             changes = "";
@@ -118,7 +118,7 @@ public class IssueCacheUtils {
      * @param issue
      * @param l
      */
-    public static void addCacheListener (Issue issue, PropertyChangeListener l) {
+    public static void addCacheListener (IssueProvider issue, PropertyChangeListener l) {
         getCache(issue).addPropertyChangeListener(issue, l);
     }
 
@@ -127,12 +127,12 @@ public class IssueCacheUtils {
      * @param issue
      * @param l
      */
-    public static void removeCacheListener (Issue issue, PropertyChangeListener l) {
+    public static void removeCacheListener (IssueProvider issue, PropertyChangeListener l) {
         getCache(issue).removePropertyChangeListener(issue, l);
     }
 
-    private static IssueCache getCache(Issue issue) {
-        Repository repo = issue.getRepository();
+    private static IssueCache getCache(IssueProvider issue) {
+        RepositoryProvider repo = issue.getRepository();
         IssueCache cache = repo.getLookup().lookup(IssueCache.class);
         assert cache != null;
         return cache;

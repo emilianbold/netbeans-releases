@@ -47,14 +47,14 @@ import java.io.IOException;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.openide.util.HelpCtx;
 
 /**
  *
  * @author tomas
  */
-public class HookIssue extends Issue {
+public class HookIssue extends IssueProvider {
     static HookIssue instance;
 
     boolean closed;

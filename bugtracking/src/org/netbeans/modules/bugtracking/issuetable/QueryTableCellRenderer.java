@@ -60,9 +60,9 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.openide.util.ImageUtilities;
@@ -76,7 +76,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
     public static final String PROPERTY_FORMAT = "format";                      // NOI18N
     public static final String PROPERTY_HIGHLIGHT_PATTERN = "highlightPattern"; // NOI18N
 
-    private Query query;
+    private QueryProvider query;
     private IssueTable issueTable;
 
     private static final int VISIBLE_START_CHARS = 0;
@@ -99,7 +99,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
     private static final Color modifiedHighlightColor       = new Color(0x0000ff);
     private static final Color obsoleteHighlightColor       = new Color(0x999999);
 
-    public QueryTableCellRenderer(Query query, IssueTable issueTable) {
+    public QueryTableCellRenderer(QueryProvider query, IssueTable issueTable) {
         this.query = query;
         this.issueTable = issueTable;
     }
@@ -292,12 +292,12 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
 
     }
 
-    public static TableCellStyle getCellStyle(JTable table, Query query, IssueTable issueTable, IssueProperty p, boolean isSelected, int row) {
+    public static TableCellStyle getCellStyle(JTable table, QueryProvider query, IssueTable issueTable, IssueProperty p, boolean isSelected, int row) {
         TableCellStyle style = getDefaultCellStyle(table, issueTable, p, isSelected, row);
         try {
             // set text format and background depending on selection and issue status
             int status = -2;
-            Issue issue = p.getIssue();
+            IssueProvider issue = p.getIssue();
             if(!query.contains(issue)) {
                 // archived issues
                 style.format     = isSelected ? style.format           : issueObsoleteFormat;

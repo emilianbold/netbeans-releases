@@ -45,7 +45,7 @@ package org.netbeans.modules.bugtracking.vcs;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NbPreferences;
@@ -170,7 +170,7 @@ public class VCSQueueHooksConfig {
         }
     }
 
-    static void logHookUsage(String vcs, Repository bugRepository) {
+    static void logHookUsage(String vcs, RepositoryProvider bugRepository) {
         BugtrackingUtil.logBugtrackingUsage(bugRepository, "QUEUES_HOOK"); // NOI18N
         Utils.logVCSActionEvent("QUEUES_HOOK_"+vcs); // NOI18N
     }

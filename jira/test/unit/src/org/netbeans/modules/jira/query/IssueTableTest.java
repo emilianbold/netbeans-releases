@@ -47,7 +47,7 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDef
 import java.lang.reflect.Field;
 import junit.framework.Test;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.jira.*;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
@@ -76,7 +76,7 @@ public class IssueTableTest extends IssuetableTestFactory {
     }
 
     @Override
-    public Query createQuery() {
+    public QueryProvider createQuery() {
         final String queryName = "columnstest";
 
         JiraRepository repo = JiraTestUtil.getRepository();
@@ -88,7 +88,7 @@ public class IssueTableTest extends IssuetableTestFactory {
     }
 
     @Override
-    public IssueTable getTable(Query q) {
+    public IssueTable getTable(QueryProvider q) {
         try {
             BugtrackingController c = q.getController();
             Field f = c.getClass().getDeclaredField("issueTable");

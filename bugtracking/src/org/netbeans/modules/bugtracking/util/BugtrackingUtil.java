@@ -90,10 +90,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.issue.PatchContextChooser;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
@@ -176,18 +176,18 @@ public class BugtrackingUtil {
      * 
      * @return issues
      */
-    public static Issue[] getOpenIssues() {
+    public static IssueProvider[] getOpenIssues() {
         Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
-        List<Issue> issues = new ArrayList<Issue>();
+        List<IssueProvider> issues = new ArrayList<IssueProvider>();
         for (TopComponent tc : tcs) {
             if(tc instanceof IssueTopComponent) {
-                Issue issue = ((IssueTopComponent)tc).getIssue();
+                IssueProvider issue = ((IssueTopComponent)tc).getIssue();
                 if(!issue.isNew()) {
                     issues.add(issue);
                 }
             }
         }
-        return issues.toArray(new Issue[issues.size()]);
+        return issues.toArray(new IssueProvider[issues.size()]);
     }
 
     /**
@@ -195,7 +195,7 @@ public class BugtrackingUtil {
      * @param issue
      * @return true in case the given issue is opened in the editor are, otherwise false
      */
-    public static boolean isOpened(Issue issue) {
+    public static boolean isOpened(IssueProvider issue) {
         IssueTopComponent tc = IssueTopComponent.find(issue, false);
         return tc != null ? tc.isOpened() : false;
     }
@@ -207,7 +207,7 @@ public class BugtrackingUtil {
      * @return true in case the given issue is opened in the editor area
      *         and showing on the screen, otherwise false
      */
-    public static boolean isShowing(Issue issue) {
+    public static boolean isShowing(IssueProvider issue) {
         IssueTopComponent tc = IssueTopComponent.find(issue, false);
         return tc != null ? tc.isShowing() : false;
     }
@@ -217,7 +217,7 @@ public class BugtrackingUtil {
      * @param query
      * @return
      */
-    public static boolean isOpened(Query query) {
+    public static boolean isOpened(QueryProvider query) {
         QueryTopComponent tc = QueryTopComponent.find(query);
         return tc != null ? tc.isOpened() : false;
     }
@@ -228,7 +228,7 @@ public class BugtrackingUtil {
      * @param query
      * @return
      */
-    public static boolean isShowing(Query query) {
+    public static boolean isShowing(QueryProvider query) {
         QueryTopComponent tc = QueryTopComponent.find(query);
         return tc != null ? tc.isShowing() : false;
     }
@@ -242,7 +242,7 @@ public class BugtrackingUtil {
      * @param criteria
      * @return
      */
-    public static Issue[] getByIdOrSummary(Issue[] issues, String criteria) {
+    public static IssueProvider[] getByIdOrSummary(IssueProvider[] issues, String criteria) {
         if(criteria == null) {
             return issues;
         }
@@ -251,8 +251,8 @@ public class BugtrackingUtil {
             return issues;
         }
         criteria = criteria.toLowerCase();
-        List<Issue> ret = new ArrayList<Issue>();
-        for (Issue issue : issues) {
+        List<IssueProvider> ret = new ArrayList<IssueProvider>();
+        for (IssueProvider issue : issues) {
             if(issue.isNew()) continue;
             String id = issue.getID();
             if(id == null) continue;
@@ -263,25 +263,25 @@ public class BugtrackingUtil {
                 ret.add(issue);
             }  
         }
-        return ret.toArray(new Issue[ret.size()]);
+        return ret.toArray(new IssueProvider[ret.size()]);
     }
 
-    public static Repository createRepository() {
+    public static RepositoryProvider createRepository() {
         RepositorySelector rs = new RepositorySelector();
-        Repository repo = rs.create();
+        RepositoryProvider repo = rs.create();
         return repo;
     }
 
-    public static boolean editRepository(Repository repository, String errorMessage) {
+    public static boolean editRepository(RepositoryProvider repository, String errorMessage) {
         RepositorySelector rs = new RepositorySelector();
         return rs.edit(repository, errorMessage);
     }
 
-    public static boolean editRepository(Repository repository) {
+    public static boolean editRepository(RepositoryProvider repository) {
         return editRepository(repository, null);
     }
 
-    public static Repository[] getKnownRepositories(boolean pingOpenProjects) {
+    public static RepositoryProvider[] getKnownRepositories(boolean pingOpenProjects) {
         return BugtrackingManager.getInstance().getKnownRepositories(pingOpenProjects);
     }
 
@@ -297,7 +297,7 @@ public class BugtrackingUtil {
         return Scrambler.getInstance().descramble(str);
     }
 
-    public static Issue selectIssue(String message, Repository repository, JPanel caller, HelpCtx helpCtx) {
+    public static IssueProvider selectIssue(String message, RepositoryProvider repository, JPanel caller, HelpCtx helpCtx) {
         QuickSearchComboBar bar = new QuickSearchComboBar(caller);
         bar.setRepository(repository);
         bar.setAlignmentX(0f);
@@ -325,7 +325,7 @@ public class BugtrackingUtil {
                 0,
                 layoutStyle.getContainerGap(panel, SwingConstants.EAST, null)));
         panel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_IssueSelector"));
-        Issue issue = null;
+        IssueProvider issue = null;
         JButton ok = new JButton(bundle.getString("LBL_Select")); // NOI18N
         ok.getAccessibleContext().setAccessibleDescription(ok.getText());
         JButton cancel = new JButton(bundle.getString("LBL_Cancel")); // NOI18N
@@ -393,7 +393,7 @@ public class BugtrackingUtil {
         logBugtrackingEvents(USG_BUGTRACKING_AUTOMATIC_REFRESH, new Object[] {connector, queryName, isKenai, on} );
     }
 
-    public static synchronized void logBugtrackingUsage(Repository repository, String operation) {
+    public static synchronized void logBugtrackingUsage(RepositoryProvider repository, String operation) {
         if (repository == null) {
             return;
         }
@@ -438,9 +438,9 @@ public class BugtrackingUtil {
         return buf.toString();
     }
 
-    private static String getBugtrackingType(Repository repository) {
+    private static String getBugtrackingType(RepositoryProvider repository) {
         // XXX hack: there's no clean way to determine the type of bugtracking
-        // from Repository (need BugtrackingConnector.getDisplayName)
+        // from RepositoryProvider (need BugtrackingConnector.getDisplayName)
         String clsName = repository.getClass().getName();
         if (clsName.contains(".bugzilla.")) { // NOI18N
             return "Bugzilla"; // NOI18N
@@ -517,13 +517,13 @@ public class BugtrackingUtil {
     
     private static Pattern netbeansUrlPattern = Pattern.compile("(https|http)://(([a-z]|\\d)+\\.)*([a-z]|\\d)*netbeans([a-z]|\\d)*(([a-z]|\\d)*\\.)+org(.*)"); // NOI18N
     /**
-     * Determines wheter the given {@link Repository} is the
+     * Determines wheter the given {@link RepositoryProvider} is the
      * repository hosting netbeans or not
      *
      * @param repo
      * @return true if the given repository is the netbenas bugzilla, otherwise false
      */
-    public static boolean isNbRepository(Repository repo) {
+    public static boolean isNbRepository(RepositoryProvider repo) {
         String url = repo.getUrl();
         return isNbRepository(url);
     }
@@ -594,7 +594,7 @@ public class BugtrackingUtil {
         return false;
     }
 
-    public static void openQuery(final Query query, final Repository repository, final boolean suggestedSelectionOnly) {
+    public static void openQuery(final QueryProvider query, final RepositoryProvider repository, final boolean suggestedSelectionOnly) {
         QueryAction.openQuery(query, repository, suggestedSelectionOnly);
     }
 
@@ -606,15 +606,15 @@ public class BugtrackingUtil {
         return BugtrackingManager.getInstance().getAllRecentIssues();
     }
 
-    public static Collection<Issue> getRecentIssues(Repository repo) {
+    public static Collection<IssueProvider> getRecentIssues(RepositoryProvider repo) {
         return BugtrackingManager.getInstance().getRecentIssues(repo);
     }
 
-    public static void closeQuery(Query query) {
+    public static void closeQuery(QueryProvider query) {
         QueryAction.closeQuery(query);
     }
 
-    public static void createIssue(Repository repo) {
+    public static void createIssue(RepositoryProvider repo) {
         IssueAction.createIssue(repo);
     }
 

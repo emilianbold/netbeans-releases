@@ -46,8 +46,8 @@ import java.net.URL;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import org.netbeans.api.keyring.Keyring;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
@@ -79,7 +79,7 @@ public class NBBugzillaUtils {
             Bugzilla.LOG.warning("No bugzilla repository available for netbeans.org"); // NOI18N
             return;
         }
-        Issue.open(nbRepo, issueID);
+        IssueProvider.open(nbRepo, issueID);
     }
 
     /**
@@ -154,7 +154,7 @@ public class NBBugzillaUtils {
         return preferences;
     }
     
-    public static Repository findNBRepository() {
+    public static RepositoryProvider findNBRepository() {
         return NBRepositorySupport.findNbRepository();
     }
     

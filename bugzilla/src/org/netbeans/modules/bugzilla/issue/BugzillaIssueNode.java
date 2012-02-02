@@ -43,7 +43,7 @@
 package org.netbeans.modules.bugzilla.issue;
 
 import java.util.List;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.SeenProperty;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Stupka
  */
 public class BugzillaIssueNode extends IssueNode {
-    public BugzillaIssueNode(Issue issue) {
+    public BugzillaIssueNode(IssueProvider issue) {
         super(issue);
     }
 

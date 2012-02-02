@@ -49,7 +49,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.jira.JiraUpdater;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.ui.nodes.BugtrackingRootNode;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
@@ -64,14 +64,14 @@ public class RepositorySelector {
         // init connector cbo
     }
 
-    public Repository create() {
+    public RepositoryProvider create() {
         BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
         connectors = addJiraProxyIfNeeded(connectors);
         selectorPanel.setConnectors(connectors);
         if(!selectorPanel.open()) {
             return null;
         }
-        final Repository repo = selectorPanel.getRepository();
+        final RepositoryProvider repo = selectorPanel.getRepository();
         try {
             repo.getController().applyChanges();
         } catch (IOException ex) {
@@ -87,11 +87,11 @@ public class RepositorySelector {
         return repo;
     }
 
-    public boolean edit(Repository repository, String errorMessage) {
+    public boolean edit(RepositoryProvider repository, String errorMessage) {
         if(!selectorPanel.edit(repository, errorMessage)) {
             return false;
         }
-        Repository repo = selectorPanel.getRepository();
+        RepositoryProvider repo = selectorPanel.getRepository();
         try {
             repo.getController().applyChanges();
         } catch (IOException ex) {

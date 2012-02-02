@@ -57,8 +57,8 @@ import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.JiraTestUtil;
@@ -181,10 +181,10 @@ public class RepositoryTest extends NbTestCase {
 //        JiraRepository repo = new JiraRepository(REPO_NAME, JiraTestUtil.REPO_URL, JiraTestUtil.REPO_USER, JiraTestUtil.REPO_PASSWD, null, null);
 //
 //        // test queries
-//        Query[] queries = getLocalQueries(repo);
+//        QueryProvider[] queries = getLocalQueries(repo);
 //        assertEquals(0, queries.length);
 //
-//        Query q = repo.createQuery();
+//        QueryProvider q = repo.createQuery();
 //        queries = getLocalQueries(repo);
 //        assertEquals(0, queries.length); // returns only saved queries
 //
@@ -210,7 +210,7 @@ public class RepositoryTest extends NbTestCase {
 //        // get issue
 //        RepositoryResponse rr = JiraTestUtil.createIssue("somari", "Trobleu", "Bug");
 //        String id = rr.getTaskId();
-//        Issue i = repo.getIssue(id);
+//        IssueProvider i = repo.getIssue(id);
 //        assertNotNull(i);
 //        assertEquals("somari", i.getSummary());
 //    }
@@ -229,7 +229,7 @@ public class RepositoryTest extends NbTestCase {
         assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_CREATED);
         String id2 = rr.getTaskId();
 
-        Issue[] issues = repo.simpleSearch(summary1);
+        IssueProvider[] issues = repo.simpleSearch(summary1);
         assertEquals(1, issues.length);
         assertEquals(summary1, issues[0].getSummary());
 
@@ -240,8 +240,8 @@ public class RepositoryTest extends NbTestCase {
         // at least one as id might be also contained
         // in another issues summary
         assertTrue(issues.length > 0);
-        Issue i = null;
-        for(Issue issue : issues) {
+        IssueProvider i = null;
+        for(IssueProvider issue : issues) {
             if(issue.getID().equals(key1)) {
                 i = issue;
                 break;
@@ -253,7 +253,7 @@ public class RepositoryTest extends NbTestCase {
         assertEquals(2, issues.length);
         List<String> summaries = new ArrayList<String>();
         List<String> ids = new ArrayList<String>();
-        for(Issue issue : issues) {
+        for(IssueProvider issue : issues) {
             summaries.add(issue.getSummary());
             ids.add(issue.getID());
         }
@@ -286,16 +286,16 @@ public class RepositoryTest extends NbTestCase {
         return c;
     }
 
-    private Query[] getLocalQueries(JiraRepository repo) {
-        Query[] queries = repo.getQueries();
-        List<Query> ret = new ArrayList<Query>();
-        for (Query query : queries) {
+    private QueryProvider[] getLocalQueries(JiraRepository repo) {
+        QueryProvider[] queries = repo.getQueries();
+        List<QueryProvider> ret = new ArrayList<QueryProvider>();
+        for (QueryProvider query : queries) {
             JiraQuery jq = (JiraQuery) query;
             if(jq.getFilterDefinition() instanceof FilterDefinition) {
                 ret.add(jq);
             }
         }
-        return ret.toArray(new Query[ret.size()]);
+        return ret.toArray(new QueryProvider[ret.size()]);
     }
 
     private RepositoryPanel getRepositoryPanel(BugtrackingController c) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
@@ -333,7 +333,7 @@ public class RepositoryTest extends NbTestCase {
     }
 
     private String getKey(JiraRepository repo, String id1) {
-        Issue i = repo.getIssue(id1);
+        IssueProvider i = repo.getIssue(id1);
         return i.getID();
     }
 

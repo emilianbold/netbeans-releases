@@ -59,11 +59,11 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.LogHandler;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
@@ -140,7 +140,7 @@ public class KenaiTestHidden extends NbTestCase {
 //        QueryTopComponent qtc = getQueryTC();
 //
 //        savedHandler.waitUntilDone();
-//        Query[] savedQueries = getSavedQueries(qtc);
+//        QueryProvider[] savedQueries = getSavedQueries(qtc);
 //        assertNotNull(savedQueries);
 //
 //        assertEquals(repo.queries.size(), savedQueries.length);
@@ -174,8 +174,8 @@ public class KenaiTestHidden extends NbTestCase {
 //        return qtc;
 //    }
 //
-//    private Query[] getSavedQueries(QueryTopComponent tc) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-//        return (Query[]) getField(tc, "savedQueries");
+//    private QueryProvider[] getSavedQueries(QueryTopComponent tc) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+//        return (QueryProvider[]) getField(tc, "savedQueries");
 //    }
 //
 //    private Object getField(Object o, String name) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
@@ -184,9 +184,9 @@ public class KenaiTestHidden extends NbTestCase {
 //        return f.get(o);
 //    }
 //
-//    private static class KenaiRepository extends Repository {
+//    private static class KenaiRepository extends RepositoryProvider {
 //        List<Query> queries = new ArrayList<Query>();
-//        Query newquery;
+//        QueryProvider newquery;
 //
 //        public KenaiRepository() {
 //            this.newquery = new KenaiQuery(this);
@@ -218,7 +218,7 @@ public class KenaiTestHidden extends NbTestCase {
 //        }
 //
 //        @Override
-//        public Issue getIssue(String id) {
+//        public IssueProvider getIssue(String id) {
 //            throw new UnsupportedOperationException("Not supported yet.");
 //        }
 //
@@ -233,22 +233,22 @@ public class KenaiTestHidden extends NbTestCase {
 //        }
 //
 //        @Override
-//        public Query createQuery() {
+//        public QueryProvider createQuery() {
 //            return newquery;
 //        }
 //
 //        @Override
-//        public Issue createIssue() {
+//        public IssueProvider createIssue() {
 //            throw new UnsupportedOperationException("Not supported yet.");
 //        }
 //
 //        @Override
-//        public Query[] getQueries() {
-//            return queries.toArray(new Query[queries.size()]);
+//        public QueryProvider[] getQueries() {
+//            return queries.toArray(new QueryProvider[queries.size()]);
 //        }
 //
 //        @Override
-//        public Issue[] simpleSearch(String criteria) {
+//        public IssueProvider[] simpleSearch(String criteria) {
 //            throw new UnsupportedOperationException("Not supported yet.");
 //        }
 //
@@ -266,8 +266,8 @@ public class KenaiTestHidden extends NbTestCase {
 //        }
 //    }
 //
-//    private static class KenaiQuery extends Query {
-//        private Repository repository;
+//    private static class KenaiQuery extends QueryProvider {
+//        private RepositoryProvider repository;
 //        private BugtrackingController controler = new BugtrackingController() {
 //            private JPanel panel = new JPanel();
 //            @Override
@@ -286,7 +286,7 @@ public class KenaiTestHidden extends NbTestCase {
 //            public void applyChanges() throws IOException {}
 //        };
 //
-//        public KenaiQuery(Repository repository) {
+//        public KenaiQuery(RepositoryProvider repository) {
 //            this.repository = repository;
 //        }
 //
@@ -303,19 +303,19 @@ public class KenaiTestHidden extends NbTestCase {
 //            return controler;
 //        }
 //        @Override
-//        public Repository getRepository() {
+//        public RepositoryProvider getRepository() {
 //            return repository;
 //        }
 //        @Override
-//        public Issue[] getIssues(int includeStatus) {
+//        public IssueProvider[] getIssues(int includeStatus) {
 //            throw new UnsupportedOperationException("Not supported yet.");
 //        }
 //        @Override
-//        public boolean contains(Issue issue) {
+//        public boolean contains(IssueProvider issue) {
 //            throw new UnsupportedOperationException("Not supported yet.");
 //        }
 //        @Override
-//        public int getIssueStatus(Issue issue) {
+//        public int getIssueStatus(IssueProvider issue) {
 //            throw new UnsupportedOperationException("Not supported yet.");
 //        }
 //    }
@@ -339,13 +339,13 @@ public class KenaiTestHidden extends NbTestCase {
 //        }
 //
 //        @Override
-//        public Repository createRepository() {
+//        public RepositoryProvider createRepository() {
 //                throw new UnsupportedOperationException("Not supported yet.");
 //        }
 //
 //        @Override
-//        public Repository[] getRepositories() {
-//            return new Repository[] {repo};
+//        public RepositoryProvider[] getRepositories() {
+//            return new RepositoryProvider[] {repo};
 //        }
 //
 //        public Lookup getLookup() {

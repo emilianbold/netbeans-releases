@@ -49,8 +49,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 
@@ -80,7 +80,7 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
         setEnabled(false);
     }
 
-    Issue getIssue() {
+    IssueProvider getIssue() {
         return qs.getIssue();
     }
 
@@ -182,7 +182,7 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        Repository repo = BugtrackingUtil.createRepository();
+        RepositoryProvider repo = BugtrackingUtil.createRepository();
         if(repo == null) {
             return;
         }
@@ -208,8 +208,8 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
         enableFields();
         if(e.getStateChange() == ItemEvent.SELECTED) {
             Object item = e.getItem();
-            if(item instanceof Repository) {
-                Repository repo = (Repository) item;
+            if(item instanceof RepositoryProvider) {
+                RepositoryProvider repo = (RepositoryProvider) item;
                 if(repo != null) {
                     qs.setRepository(repo);
                 }
@@ -252,7 +252,7 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
     }
 
     private void enableFields(boolean enable) {
-        boolean repoSelected = repositoryComboBox.getSelectedItem() instanceof Repository;
+        boolean repoSelected = repositoryComboBox.getSelectedItem() instanceof RepositoryProvider;
         boolean enableFields = getIssue() != null && repoSelected;
 
         descriptionTextField.setEnabled(enableFields && enable);

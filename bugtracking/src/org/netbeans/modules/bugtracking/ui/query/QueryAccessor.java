@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.bugtracking.ui.query;
 
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.openide.nodes.Node;
 
 /**
@@ -51,7 +51,7 @@ import org.openide.nodes.Node;
  */
 public abstract class QueryAccessor {
     protected static QueryAccessor IMPL;
-    public abstract void setSelection(Query query, Node[] nodes);
+    public abstract void setSelection(QueryProvider query, Node[] nodes);
     
     static QueryAccessor getInstance() {
         return IMPL;

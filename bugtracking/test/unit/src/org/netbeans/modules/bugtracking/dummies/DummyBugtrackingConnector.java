@@ -46,7 +46,7 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.openide.util.Lookup;
 
 /**
@@ -57,7 +57,7 @@ public class DummyBugtrackingConnector extends BugtrackingConnector {
 
     private char newRepositoryName = 'A';
     private int newRepositoryNumber = 0;
-    private List<Repository> repositories;
+    private List<RepositoryProvider> repositories;
 
     @Override
     public String getDisplayName() {
@@ -70,12 +70,12 @@ public class DummyBugtrackingConnector extends BugtrackingConnector {
     }
 
     @Override
-    public Repository createRepository() {
+    public RepositoryProvider createRepository() {
         return createRepository(generateNewRepositoryName());
     }
 
-    public Repository createRepository(String repositoryName) {
-        Repository newRepository = new DummyRepository(this, repositoryName);
+    public RepositoryProvider createRepository(String repositoryName) {
+        RepositoryProvider newRepository = new DummyRepository(this, repositoryName);
         storeRepository(newRepository);
         return newRepository;
     }
@@ -88,20 +88,20 @@ public class DummyBugtrackingConnector extends BugtrackingConnector {
         }
     }
 
-    private void storeRepository(Repository repository) {
+    private void storeRepository(RepositoryProvider repository) {
         if (repositories == null) {
-            repositories = new ArrayList<Repository>();
+            repositories = new ArrayList<RepositoryProvider>();
         }
         repositories.add(repository);
     }
 
     @Override
-    public Repository[] getRepositories() {
+    public RepositoryProvider[] getRepositories() {
         if (repositories == null) {
-            return new Repository[0];
+            return new RepositoryProvider[0];
         }
 
-        return repositories.toArray(new Repository[repositories.size()]);
+        return repositories.toArray(new RepositoryProvider[repositories.size()]);
     }
 
     void removeRepository(DummyRepository repository) {
