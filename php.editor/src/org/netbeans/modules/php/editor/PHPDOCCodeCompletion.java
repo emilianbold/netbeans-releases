@@ -66,6 +66,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
 import org.netbeans.modules.php.project.api.PhpAnnotations;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -138,28 +139,30 @@ public class PHPDOCCodeCompletion {
             }
             for (PhpAnnotationTag tag : annotations) {
                 if (tag.getName().startsWith(prefix)) {
-                    completionResult.add(new PHPDOCCodeCompletionItem(request, tag, annotationProvider.getName()));
+                    completionResult.add(new PHPDOCCodeCompletionItem(request.anchor, tag, annotationProvider.getName()));
                 }
             }
         }
     }
 
     public static class PHPDOCCodeCompletionItem implements CompletionProposal {
+        private static final String PHP_ANNOTATION_ICON = "org/netbeans/modules/php/editor/resources/annotation.png"; //NOI18N
+        private static ImageIcon ANNOTATION_ICON = null;
         private final PhpAnnotationTag tag;
-        private final PHPCompletionItem.CompletionRequest request;
+        private final int anchorOffset;
         private final PHPDOCTagElement elem;
         private final String providerName;
 
-        public PHPDOCCodeCompletionItem(CompletionRequest request, PhpAnnotationTag tag, String providerName) {
+        public PHPDOCCodeCompletionItem(int anchorOffset, PhpAnnotationTag tag, String providerName) {
             this.tag = tag;
-            this.request = request;
+            this.anchorOffset = anchorOffset;
             this.providerName= providerName;
             elem = new PHPDOCTagElement(tag.getName(), tag.getDocumentation());
         }
 
         @Override
         public int getAnchorOffset() {
-            return request.anchor;
+            return anchorOffset;
         }
 
         @Override
@@ -208,7 +211,10 @@ public class PHPDOCCodeCompletion {
 
         @Override
         public ImageIcon getIcon() {
-            return null;
+            if (ANNOTATION_ICON == null) {
+                ANNOTATION_ICON = new ImageIcon(ImageUtilities.loadImage(PHP_ANNOTATION_ICON));
+            }
+            return ANNOTATION_ICON;
         }
 
         @Override
