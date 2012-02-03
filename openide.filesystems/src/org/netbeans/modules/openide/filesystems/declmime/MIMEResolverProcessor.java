@@ -139,7 +139,7 @@ public class MIMEResolverProcessor extends LayerGeneratingProcessor {
             }
             os.close();
             is.close();
-            final byte[] almostResult = MIMEResolverImpl.toStream(MIMEResolverImpl.forDescriptor(tmp));
+            final byte[] almostResult = MIMEResolverImpl.toStream(MIMEResolverImpl.forDescriptor(tmp, false));
             // XXX: it would be slightly shorter to return the array directly,
             // but the XMLFileSystem insist on deserializing the value, it does
             // not support returning plain byte[]

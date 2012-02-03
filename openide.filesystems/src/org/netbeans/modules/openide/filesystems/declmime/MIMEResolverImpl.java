@@ -87,7 +87,10 @@ public final class MIMEResolverImpl {
     private static final int USER_DEFINED_MIME_RESOLVER_POSITION = 10;
 
     public static MIMEResolver forDescriptor(FileObject fo) {
-        if (!isUserDefined(fo)) {
+        return forDescriptor(fo, true);
+    }
+    static MIMEResolver forDescriptor(FileObject fo, boolean warn) {
+        if (warn && !isUserDefined(fo)) {
             ERR.log(Level.WARNING, "Ineffective registration of resolver {0} use @MIMEResolver.Registration! See bug #191777.", fo.getPath());
             if (ERR.isLoggable(Level.FINE)) {
                 try {
