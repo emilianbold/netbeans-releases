@@ -539,7 +539,6 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 10, 0);
         mainPanel.add(jSeparator2, gridBagConstraints);
 
-        labelRunAs.setFont(labelRunAs.getFont().deriveFont(labelRunAs.getFont().getStyle() | java.awt.Font.BOLD));
         labelRunAs.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelRunAs.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -892,22 +891,49 @@ private void buttonWorkDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN
             radioButtonBEActionRunning = false;
         }
     }//GEN-LAST:event_radioButtonBEActionPerformed
+
+    void runTypeChanged(@NonNull String runTypeString) {
+        if(JFXProjectProperties.isEqual(runTypeString, JFXProjectProperties.RunAsType.ASWEBSTART.getString())) {
+            runTypeChanged(JFXProjectProperties.RunAsType.ASWEBSTART);
+        } else {
+            if(JFXProjectProperties.isEqual(runTypeString, JFXProjectProperties.RunAsType.INBROWSER.getString())) {
+                runTypeChanged(JFXProjectProperties.RunAsType.INBROWSER);
+            } else {
+                runTypeChanged(JFXProjectProperties.RunAsType.STANDALONE);
+            }
+        }
+    }
     
     void runTypeChanged(JFXProjectProperties.RunAsType runType) {
+        final Font basefont = radioButtonWS.getFont();
+        final Font plainfont = basefont.deriveFont(Font.PLAIN);
+        final Font boldfont = basefont.deriveFont(Font.BOLD);
+        final Font emphfont = basefont.deriveFont(Font.ITALIC);
+
         String config = (String) comboConfig.getSelectedItem();
         if (config.length() == 0) {
             config = null;
         }
-        String v = runType.getString();
-        if (v != null && config != null && v.equals(jfxProps.configsGet(null).get(JFXProjectProperties.RUN_AS))) {
-            // default value, do not store as such
-            v = null;
+        String type = runType.getString();
+        String defProp = jfxProps.configsGet(null).get(JFXProjectProperties.RUN_AS);
+        String curProp = config == null ? defProp : jfxProps.configsGet(config).get(JFXProjectProperties.RUN_AS);
+        if (config != null) {
+            if(type.equals(defProp) || (defProp == null && runType == JFXProjectProperties.RunAsType.STANDALONE)) {
+                labelRunAs.setFont(plainfont);
+                if(curProp != null) {
+                    jfxProps.configsGet(config).put(JFXProjectProperties.RUN_AS, type);
+                }
+            } else {
+                labelRunAs.setFont(emphfont);
+                jfxProps.configsGet(config).put(JFXProjectProperties.RUN_AS, type);
+            }
+        } else {
+            labelRunAs.setFont(plainfont);
+            if(defProp != null || runType != JFXProjectProperties.RunAsType.STANDALONE) {
+                jfxProps.configsGet(null).put(JFXProjectProperties.RUN_AS, type);
+            }
         }
-        jfxProps.configsGet(config).put(JFXProjectProperties.RUN_AS, v);
         
-        Font basefont = radioButtonWS.getFont();
-        Font plainfont = basefont.deriveFont(Font.PLAIN);
-        Font boldfont = basefont.deriveFont(Font.BOLD);
         if(runType == JFXProjectProperties.RunAsType.STANDALONE) {
             radioButtonSA.setFont(boldfont);
             radioButtonSA.setSelected(true);
@@ -1167,17 +1193,14 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
 
                 String runType = m.get(JFXProjectProperties.RUN_AS);
                 if(runType == null) {
-                    runTypeChanged(JFXProjectProperties.RunAsType.STANDALONE);
-                } else {
-                    if(runType.equals(JFXProjectProperties.RunAsType.ASWEBSTART.getString())) {
-                        runTypeChanged(JFXProjectProperties.RunAsType.ASWEBSTART);
+                    String runTypeDefaultConfig = def.get(JFXProjectProperties.RUN_AS);
+                    if(runTypeDefaultConfig != null) {
+                        runTypeChanged(runTypeDefaultConfig);
                     } else {
-                        if(runType.equals(JFXProjectProperties.RunAsType.INBROWSER.getString())) {
-                            runTypeChanged(JFXProjectProperties.RunAsType.INBROWSER);
-                        } else {
-                            runTypeChanged(JFXProjectProperties.RunAsType.STANDALONE);
-                        }                
+                        runTypeChanged(JFXProjectProperties.RunAsType.STANDALONE);
                     }
+                } else {
+                    runTypeChanged(runType);
                 }
                 String paramString = getParamsString(jfxProps.getActiveAppParameters(activeConfig));
                 textFieldParams.setText(paramString);
