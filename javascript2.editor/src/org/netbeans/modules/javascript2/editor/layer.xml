@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Editors">
         <file name="org-netbeans-modules-javascript2-editor-embedding-JsEmbeddingProvider$Factory.instance">
@@ -85,24 +85,23 @@
                     </folder>
                 </folder>
             </folder>
-
-            <folder name="x-javascript-comment">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript.editing.Bundle"/>
+            <folder name="javascript-comment">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.javascript2.editor.Bundle#Editors/text/javascript-comment"/>
                 <file name="language.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId.language"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript2.editor.doclets.JsDocTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
-                            <file name="coloring.xml" url="commentColors.xml">
+                            <file name="coloring.xml" url="fontsColors-comment.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript.editing.Bundle"/>
                             </file>
                         </folder>
                     </folder>
                 </folder>
             </folder>
-
+            
             <folder name="x-json">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript.editing.Bundle"/>
 

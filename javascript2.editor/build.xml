@@ -4,8 +4,8 @@
     <import file="../nbbuild/templates/projectized.xml"/>
     
     <!-- for generationg lexer and parser, uncomment the tasks and set up the right classpath -->
-    <!-- JFlex 1.4.3 -->
 
+    <!-- JFlex 1.4.3 -->
     <!-- <taskdef name="jflex"
         classname="JFlex.anttask.JFlexTask"
         classpath="/home/sickboy/software/jflex/lib/JFlex.jar" />
@@ -20,6 +20,20 @@
     </target>
 
     <target name="gen-lexer" depends="-gen-lexer,-patch-lexer"/> -->
+
+    <!-- JSDoc section -->
+    <!-- for generationg JSDoc lexer, uncomment following targets, jflex task and set up the right classpath -->
+
+<!--    <target name="-gen-jsdoc-lexer">
+        <jflex file="tools/jsDocColoringScanner.flex" destdir="src" nobak="true"/>
+    </target>
+
+    <target name="-patch-jsdoc-lexer">
+        <patch patchfile="tools/lexer-jsdoc.patch"
+            dir="src/org/netbeans/modules/javascript2/editor/doclets"/>
+    </target>
+
+    <target name="gen-jsdoc-lexer" depends="-gen-jsdoc-lexer,-patch-jsdoc-lexer"/>-->
     
 </project>
 
