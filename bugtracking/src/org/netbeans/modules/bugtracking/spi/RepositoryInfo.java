@@ -79,7 +79,7 @@ public final class RepositoryInfo {
     
     public RepositoryInfo(String id, String connectorId, String url, String displayName, String tooltip, String user, String httpUser, char[] password, char[] httpPassword) {
         map.put(PROPERTY_ID, id);
-        map.put(PROPERTY_CONNECTOR_ID, id);
+        map.put(PROPERTY_CONNECTOR_ID, connectorId);
         map.put(PROPERTY_DISPLAY_NAME, displayName);
         map.put(PROPERTY_TOOLTIP, tooltip);
         map.put(PROPERTY_URL, url);
@@ -102,7 +102,7 @@ public final class RepositoryInfo {
     }
     
     public String getConnectorId() {
-        return map.get(PROPERTY_ID);
+        return map.get(PROPERTY_CONNECTOR_ID);
     }
     
     public String getUrl() {
