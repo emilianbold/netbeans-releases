@@ -1066,13 +1066,8 @@ private void buttonPreloaderActionPerformed(java.awt.event.ActionEvent evt) {//G
 private void buttonWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonWebBrowserActionPerformed
     Object old = comboBoxWebBrowser.getSelectedItem();
     OptionsDisplayer.getDefault().open("General"); //NOI18N
+    // triggers comboBoxWebBrowserActionPerformed
     comboBoxWebBrowser.setSelectedItem(old);
-    String config = (String) comboConfig.getSelectedItem();
-    if (config.length() == 0) {
-        config = null;
-    }
-    String sel = (String)comboBoxWebBrowser.getSelectedItem();
-    jfxProps.configsGet(config).put(JFXProjectProperties.RUN_IN_BROWSER, sel);
 }//GEN-LAST:event_buttonWebBrowserActionPerformed
 
 private void comboBoxPreloaderClassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboBoxPreloaderClassActionPerformed
@@ -1100,8 +1095,16 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
             config = null;
         }
         String sel = (String)comboBoxWebBrowser.getSelectedItem();
-        jfxProps.configsGet(config).put(JFXProjectProperties.RUN_IN_BROWSER, sel);
-        setEmphasized(labelWebBrowser, !JFXProjectProperties.isEqual(sel, jfxProps.configsGet(null).get(JFXProjectProperties.RUN_IN_BROWSER)));
+        String defaultSel = jfxProps.configsGet(null).get(JFXProjectProperties.RUN_IN_BROWSER);
+        if(config == null || ( defaultSel != null && !defaultSel.isEmpty() && !JFXProjectProperties.isEqual(sel, defaultSel) ) ) {
+            jfxProps.configsGet(config).put(JFXProjectProperties.RUN_IN_BROWSER, sel);
+            jfxProps.configsGet(config).put(JFXProjectProperties.RUN_IN_BROWSER_PATH, jfxProps.getBrowserPaths().get(sel));
+            setEmphasized(labelWebBrowser, config != null);
+        } else {
+            jfxProps.configsGet(config).remove(JFXProjectProperties.RUN_IN_BROWSER);
+            jfxProps.configsGet(config).remove(JFXProjectProperties.RUN_IN_BROWSER_PATH);
+            setEmphasized(labelWebBrowser, false);
+        }
         comboBoxWebBrowserActionRunning = false;
     }
 }//GEN-LAST:event_comboBoxWebBrowserActionPerformed
@@ -1209,20 +1212,44 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
                 setEmphasized(checkBoxPreloader, preloaderConfigChanged(activeConfig));
                 setEmphasized(labelPreloaderClass, !JFXProjectProperties.isEqual(m.get(JFXProjectProperties.PRELOADER_CLASS),def.get(JFXProjectProperties.PRELOADER_CLASS)));
 
-                browserSelectionChanged(activeConfig, m.get(JFXProjectProperties.RUN_IN_BROWSER));
+                browserSelectionChanged(m.get(JFXProjectProperties.RUN_IN_BROWSER), def.get(JFXProjectProperties.RUN_IN_BROWSER));
             }
             buttonDelete.setEnabled(activeConfig != null);
             configChangedRunning = false;
         }
     }
-    
-    private void browserSelectionChanged(String config, String browser) {
-        if(browser != null) {
-            comboBoxWebBrowser.setSelectedItem(browser);
-            setEmphasized(labelWebBrowser, !JFXProjectProperties.isEqual(jfxProps.configsGet(config).get(JFXProjectProperties.RUN_IN_BROWSER), jfxProps.configsGet(null).get(JFXProjectProperties.RUN_IN_BROWSER)));
+
+    private boolean isBrowserKnown(String browser) {
+        for(int i = 0; i < comboBoxWebBrowser.getItemCount(); i++) {
+            if(JFXProjectProperties.isEqual(comboBoxWebBrowser.getItemAt(i).toString(), browser)) {
+                return true;
+            }
         }
+        return false;
     }
     
+    private String getDefaultKnownBrowser() {
+        if(comboBoxWebBrowser.getItemCount() > 0) {
+            return comboBoxWebBrowser.getItemAt(0).toString();
+        }
+        return null;
+    }
+    
+    private void browserSelectionChanged(String name, String defaultConfigName) {
+        if(isBrowserKnown(name)) {
+            comboBoxWebBrowser.setSelectedItem(name);
+        } else {
+            if(isBrowserKnown(defaultConfigName)) {
+                comboBoxWebBrowser.setSelectedItem(defaultConfigName);
+            } else {
+                String defaultName = getDefaultKnownBrowser();
+                if(defaultName != null) {
+                    comboBoxWebBrowser.setSelectedItem(defaultName);
+                }
+            }
+        }
+    }
+
     private void preloaderSelectionChanged(String enabled, String projectDir, String jarFilePath, String jarFileName, String cls, Map<String,String> config) {
         checkBoxPreloader.setSelected(JFXProjectProperties.isTrue(enabled));
         if(projectDir != null && !projectDir.isEmpty()) {
@@ -1328,8 +1355,7 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
         return new HelpCtx( JFXRunPanel.class );
     }
 
-    @Override
-    public void resultChanged(LookupEvent ev) {
+    private List<String> updateBrowserList() {
         final ArrayList<String> list = new ArrayList<String> (6);
         jfxProps.resetBrowserPaths();
         for(Lookup.Item<ExtWebBrowser> browser : allBrowsers.allItems()) {
@@ -1338,6 +1364,12 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
             String path = proc.getProcessName();
             jfxProps.getBrowserPaths().put(browser.getDisplayName(), path);
         }
+        return list;
+    }
+    
+    @Override
+    public void resultChanged(LookupEvent ev) {
+        final List<String> list = updateBrowserList();
         final String config = jfxProps.getActiveConfig();
         final String sel = jfxProps.configsGet(config).get(JFXProjectProperties.RUN_IN_BROWSER);
         SwingUtilities.invokeLater(new Runnable() {
@@ -1483,7 +1515,10 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
 
     private void setupWebBrowsersCombo() {
         allBrowsers = Lookup.getDefault().lookupResult(ExtWebBrowser.class);
-        resultChanged(null);
+        final List<String> list = updateBrowserList();
+        final String config = jfxProps.getActiveConfig();
+        final String sel = jfxProps.configsGet(config).get(JFXProjectProperties.RUN_IN_BROWSER);
+        fillWebBrowsersCombo(list, sel);
         allBrowsers.addLookupListener(this);
     }
 

@@ -650,7 +650,7 @@ public final class JFXProjectProperties {
             // can be ignored
         }
         for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER_ENABLED, PRELOADER_TYPE, PRELOADER_PROJECT, PRELOADER_JAR_PATH, PRELOADER_JAR_FILENAME, PRELOADER_CLASS, 
-                                        RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLTEMPLATE, RUN_IN_BROWSER, RUN_AS}) {
+                                        RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLTEMPLATE, RUN_IN_BROWSER, RUN_IN_BROWSER_PATH, RUN_AS}) {
             String v = ep.getProperty(prop);
             if (v == null) {
                 v = pep.getProperty(prop);
@@ -883,7 +883,7 @@ public final class JFXProjectProperties {
             }
         }
     }
-    
+        
     /**
      * A royal mess. (modified from J2SEProjectProperties)
      */
@@ -893,13 +893,14 @@ public final class JFXProjectProperties {
         //System.err.println("storeRunConfigs: " + configs);
         Map<String,String> def = configs.get(null);
         for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER_ENABLED, PRELOADER_TYPE, PRELOADER_PROJECT, PRELOADER_JAR_PATH, PRELOADER_JAR_FILENAME, PRELOADER_CLASS, 
-                                        RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLTEMPLATE, RUN_IN_BROWSER, RUN_AS}) {
+                                        RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLTEMPLATE, RUN_IN_BROWSER, RUN_IN_BROWSER_PATH, RUN_AS}) {
             String v = def.get(prop);
             EditableProperties ep =
                     (//prop.equals(APPLICATION_ARGS) ||
                     prop.equals(RUN_WORK_DIR)  ||
                     prop.equals(RUN_IN_HTMLTEMPLATE)  ||
                     prop.equals(RUN_IN_BROWSER)  ||
+                    prop.equals(RUN_IN_BROWSER_PATH)  ||
                     prop.equals(RUN_AS)  ||
                     privateProperties.containsKey(prop)) ?
                 privateProperties : projectProperties;
@@ -963,6 +964,7 @@ public final class JFXProjectProperties {
                          prop.equals(RUN_WORK_DIR) ||
                          prop.equals(RUN_IN_HTMLTEMPLATE)  ||
                          prop.equals(RUN_IN_BROWSER)  ||
+                         prop.equals(RUN_IN_BROWSER_PATH)  ||
                          prop.equals(RUN_AS)  ||
                          privateCfgProps.containsKey(prop)) ?
                     privateCfgProps : sharedCfgProps;
@@ -974,6 +976,14 @@ public final class JFXProjectProperties {
                     }
                     privatePropsChanged |= ep == privateCfgProps;
                 }
+            }
+            if( !c.containsKey(RUN_IN_BROWSER) && privateCfgProps.containsKey(RUN_IN_BROWSER) ) {
+                privateCfgProps.remove(RUN_IN_BROWSER);
+                privatePropsChanged = true;
+            }
+            if( !c.containsKey(RUN_IN_BROWSER_PATH) && privateCfgProps.containsKey(RUN_IN_BROWSER_PATH) ) {
+                privateCfgProps.remove(RUN_IN_BROWSER_PATH);
+                privatePropsChanged = true;
             }
             index = 0;
             List<Map<String,String/*|null*/>> paramsConfig = params.get(config);
@@ -1272,7 +1282,6 @@ public final class JFXProjectProperties {
         final FileObject projPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         final EditableProperties pep = new EditableProperties(true);
         final FileObject privPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        final String selectedBrowserPath = getSelectedBrowserPath();
         
         try {
             final InputStream is = projPropsFO.getInputStream();
@@ -1296,9 +1305,6 @@ public final class JFXProjectProperties {
                     }
                     fxPropGroup.store(ep);
                     storeRest(ep, pep);
-                    if(selectedBrowserPath != null) {
-                        pep.setProperty(RUN_IN_BROWSER_PATH, selectedBrowserPath);
-                    }
                     storeRunConfigs(RUN_CONFIGS, APP_PARAMS, ep, pep);
                     storeActiveConfig();
                     OutputStream os = null;
