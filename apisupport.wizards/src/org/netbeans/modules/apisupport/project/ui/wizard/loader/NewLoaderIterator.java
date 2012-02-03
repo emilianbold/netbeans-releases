@@ -217,12 +217,15 @@ public final class NewLoaderIterator extends BasicWizardIterator {
 
         boolean loaderlessObject;
         boolean lookupReadyObject;
+        boolean annotationReadyObject;
         try {
             SpecificationVersion current = model.getModuleInfo().getDependencyVersion("org.openide.loaders"); // NOI18N
+            annotationReadyObject = current == null || current.compareTo(new SpecificationVersion("7.36")) >= 0; // NOI18N
             loaderlessObject = current == null || current.compareTo(new SpecificationVersion("7.1")) >= 0; // NOI18N
             lookupReadyObject = current == null || current.compareTo(new SpecificationVersion("6.0")) >= 0; // NOI18N
         } catch (IOException ex) {
             Logger.getLogger(NewLoaderIterator.class.getName()).log(Level.INFO, null, ex);
+            annotationReadyObject = false;
             loaderlessObject = false;
             lookupReadyObject = false;
         }
@@ -234,8 +237,19 @@ public final class NewLoaderIterator extends BasicWizardIterator {
         replaceTokens.put("PREFIX", namePrefix);//NOI18N
         replaceTokens.put("PACKAGENAME", packageName);//NOI18N
         replaceTokens.put("MIMETYPE", mime);//NOI18N
-        replaceTokens.put("EXTENSIONS", formatExtensions(model.isExtensionBased(), model.getExtension(), mime));//NOI18N
-        replaceTokens.put("NAMESPACES", formatNameSpace(model.isExtensionBased(), model.getNamespace(), mime));//NOI18N
+        if (model.isExtensionBased()) {
+            if (annotationReadyObject) {
+                replaceTokens.put("EXTENSIONS", formatToList(model.getExtension())); // NOI18N
+            } else {
+                replaceTokens.put("EXTENSIONS", formatExtensions(model.isExtensionBased(), model.getExtension(), mime));//NOI18N
+            }
+        } else {
+            if (annotationReadyObject) {
+                replaceTokens.put("NAMESPACES", formatToList(model.getNamespace())); // NOI18N
+            } else {
+                replaceTokens.put("NAMESPACES", formatNameSpace(model.isExtensionBased(), model.getNamespace(), mime));//NOI18N
+            }
+        }
         
         // Copy action icon
         File origIconPath = model.getIconPath();
@@ -282,20 +296,25 @@ public final class NewLoaderIterator extends BasicWizardIterator {
         
         String doName = model.getDefaultPackagePath(namePrefix + "DataObject.java", false); // NOI18N
         template = null;
-        if (loaderlessObject) {
+        if (annotationReadyObject) {
+            template = CreatedModifiedFiles.getTemplate("templateDataObjectAnno.java");//NOI18N
+            if (model.isUseMultiview()) {
+                replaceTokens.put("MULTIVIEW", "true"); // NOI18N
+            }
+        } else if (loaderlessObject) {
             if (model.isUseMultiview()) {
                 template = CreatedModifiedFiles.getTemplate("templateDataObjectMulti.java");//NOI18N
             } else {
                 template = CreatedModifiedFiles.getTemplate("templateDataObjectInLayer.java");//NOI18N
             }
-        } else {
-            if (lookupReadyObject) {
-                template = CreatedModifiedFiles.getTemplate("templateDataObjectWithLookup.java");//NOI18N
-            }
+        } else if (lookupReadyObject) {
+            template = CreatedModifiedFiles.getTemplate("templateDataObjectWithLookup.java");//NOI18N
         }
         if (template == null) {
             template = CreatedModifiedFiles.getTemplate("templateDataObject.java");//NOI18N
         }
+        
+        
         fileChanges.add(fileChanges.createFileWithSubstitutions(doName, template, replaceTokens));
         if (model.isUseMultiview()) {
             String formName = model.getDefaultPackagePath(namePrefix + "VisualElement.form", false); // NOI18N
@@ -313,13 +332,15 @@ public final class NewLoaderIterator extends BasicWizardIterator {
             fileChanges.add(fileChanges.createFileWithSubstitutions(nodeName, template, replaceTokens));
         }
         
-        // 4. mimetyperesolver file
-        template = CreatedModifiedFiles.getTemplate("templateresolver.xml");//NOI18N
-        fileChanges.add(fileChanges.createLayerEntry("Services/MIMEResolver/" + namePrefix + "Resolver.xml", //NOI18N
-                template,
-                replaceTokens,
-                namePrefix + " Files",//NOI18N
-                null));
+        if (!annotationReadyObject) {
+            // 4. mimetyperesolver file
+            template = CreatedModifiedFiles.getTemplate("templateresolver.xml");//NOI18N
+            fileChanges.add(fileChanges.createLayerEntry("Services/MIMEResolver/" + namePrefix + "Resolver.xml", //NOI18N
+                    template,
+                    replaceTokens,
+                    namePrefix + " Files",//NOI18N
+                    null));
+        }
         
         //5. update project.xml with dependencies
         fileChanges.add(fileChanges.addModuleDependency("org.openide.filesystems")); //NOI18N
@@ -338,6 +359,10 @@ public final class NewLoaderIterator extends BasicWizardIterator {
             fileChanges.add(fileChanges.addModuleDependency("org.netbeans.core.multiview")); //NOI18N
             fileChanges.add(fileChanges.addModuleDependency("org.openide.awt")); //NOI18N
         }
+        if (annotationReadyObject) {
+            fileChanges.add(fileChanges.addModuleDependency("org.openide.awt")); //NOI18N
+            fileChanges.add(fileChanges.addModuleDependency("org.openide.dialogs")); // NOI18N
+        }
 
         if (!loaderlessObject) {
         // 6. update/create bundle file
@@ -345,9 +370,11 @@ public final class NewLoaderIterator extends BasicWizardIterator {
         fileChanges.add(fileChanges.bundleKey(bundlePath, "LBL_" + namePrefix + "_loader_name",  // NOI18N
                 namePrefix + " Files")); //NOI18N
         }
-        
-        if (loaderlessObject) {
+        if (annotationReadyObject) {
+            // registration via processors
+        } else if (loaderlessObject) {
             // 7. register in layer
+            if (!annotationReadyObject) {
             String path = "Loaders/" + mime + "/Factories/" + namePrefix + "DataLoader.instance";
             Map<String,Object> attrs = new HashMap<String, Object>();
             attrs.put("instanceCreate", "methodvalue:org.openide.loaders.DataLoaderPool.factory"); //NOI18N
@@ -359,7 +386,7 @@ public final class NewLoaderIterator extends BasicWizardIterator {
             fileChanges.add(
                 fileChanges.createLayerEntry(path, null, null, null, attrs)
             );
-            
+            }
         } else {
             // 7. register manifest entry
             boolean isXml = Pattern.matches("(application/([a-zA-Z0-9_.-])*\\+xml|text/([a-zA-Z0-9_.-])*\\+xml)", //NOI18N
@@ -377,7 +404,8 @@ public final class NewLoaderIterator extends BasicWizardIterator {
         
         //8. create layerfile actions subsection
         
-        fileChanges.add(fileChanges.layerModifications(new CreatedModifiedFiles.LayerOperation() {
+        if (!annotationReadyObject) fileChanges.add(fileChanges.layerModifications(new CreatedModifiedFiles.LayerOperation() {
+            @Override
             public void run(FileSystem layer) throws IOException {
                 List<String> actions = new ArrayList<String>();
                 if (isEditable) {
@@ -432,6 +460,8 @@ public final class NewLoaderIterator extends BasicWizardIterator {
                 assert false: ex;
             }
         }
+        replaceTokens.put("TEMPLATE_NAME", suffix);
+        
         boolean useTR = false;
         NbModuleProvider nbmp = model.getModuleInfo();
         try {
@@ -446,14 +476,16 @@ public final class NewLoaderIterator extends BasicWizardIterator {
         String templateName = namePrefix + suffix;
         if (useTR) {
             fileChanges.add(fileChanges.createFileWithSubstitutions(model.getDefaultPackagePath(templateName, true), template, replaceTokens));
-            Map<String,Map<String,?>> annos = new LinkedHashMap<String,Map<String,?>>();
-            Map<String,Object> tr = new LinkedHashMap<String,Object>();
-            tr.put("folder", "Other");
-            tr.put("displayName", "#" + namePrefix + "template_displayName");
-            tr.put("content", templateName);
-            annos.put("org.netbeans.api.templates.TemplateRegistration", tr);
-            annos.put("org.openide.util.NbBundle.Messages", Collections.singletonMap("value", namePrefix + "template_displayName=" + displayName));
-            fileChanges.add(fileChanges.packageInfo(packageName, annos));
+            if (!annotationReadyObject) {
+                Map<String,Map<String,?>> annos = new LinkedHashMap<String,Map<String,?>>();
+                Map<String,Object> tr = new LinkedHashMap<String,Object>();
+                tr.put("folder", "Other");
+                tr.put("displayName", "#" + namePrefix + "template_displayName");
+                tr.put("content", templateName);
+                annos.put("org.netbeans.api.templates.TemplateRegistration", tr);
+                annos.put("org.openide.util.NbBundle.Messages", Collections.singletonMap("value", namePrefix + "template_displayName=" + displayName));
+                fileChanges.add(fileChanges.packageInfo(packageName, annos));
+            }
         } else {
             fileChanges.add(fileChanges.createLayerEntry("Templates/Other/" + templateName, template, replaceTokens, displayName, Collections.singletonMap("template", true)));
         }
@@ -476,7 +508,21 @@ public final class NewLoaderIterator extends BasicWizardIterator {
         buff.append("        <resolver mime=\"").append(mime).append("\"/>"); //NOI18N
         return buff.toString();
     }
-    
+
+    private static String formatToList(String ext) {
+        StringBuilder buff = new StringBuilder();
+        buff.append("{ ");
+        StringTokenizer tokens = new StringTokenizer(ext, " ,"); // NOI18N
+        String sep = "";
+        while (tokens.hasMoreTokens()) {
+            String element = tokens.nextToken().trim();
+            buff.append(sep).append("\"").append(element).append("\"");
+            sep = ", ";
+        }
+        buff.append(" }");
+        return buff.toString();
+    }
+
     private static String getFirstExtension(String ext) {
         StringTokenizer tokens = new StringTokenizer(ext," ,"); // NOI18N
         String element = "someextension"; // NOI18N

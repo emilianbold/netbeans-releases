@@ -72,6 +72,7 @@ made subject to such option by the copyright holder.
             <file name="templateDataNode.java" url="../loader/templateDataNode.javx"/>
             <file name="templateDataObject.java" url="../loader/templateDataObject.javx"/>
             <file name="templateDataObjectWithLookup.java" url="../loader/templateDataObjectWithLookup.javx"/>
+            <file name="templateDataObjectAnno.java" url="../loader/templateDataObjectAnno.javx"/>
             <file name="templateDataObjectMulti.java" url="../loader/templateDataObjectMulti.javx"/>
             <file name="templateDataObjectMultiForm.java" url="../loader/templateDataObjectMultiVisual.javx"/>
             <file name="templateDataObjectMultiForm.form" url="../loader/templateDataObjectMultiVisual.forx"/>
