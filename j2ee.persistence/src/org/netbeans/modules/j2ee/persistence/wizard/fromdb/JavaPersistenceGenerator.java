@@ -673,7 +673,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 String memberType = getMemberType(m);
 
                 String columnName = (String) dbMappings.getCMPFieldMapping().get(memberName);
-                if(!useDefaults || memberName.equalsIgnoreCase(columnName)){
+                if(!useDefaults || !memberName.equalsIgnoreCase(columnName)){
                     columnAnnArguments.add(genUtils.createAnnotationArgument("name", columnName)); //NOI18N
                 }
 
@@ -997,12 +997,14 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             private HashMap<TypeMirror, ArrayList<String>> existingJoinColumnss = new HashMap<TypeMirror, ArrayList<String>>();
             private HashMap<String, ArrayList<String>> existingJoinTables = new HashMap<String, ArrayList<String>>();
             private HashMap<String, Tree> existingMappings = new HashMap<String, Tree>();
+            private final boolean useDefaults;
 
             public EntityClassGenerator(WorkingCopy copy, EntityClass entityClass) throws IOException {
                 super(copy, entityClass);
                 entityClassName = entityClass.getClassName();
                 assert typeElement.getSimpleName().contentEquals(entityClassName);
                 entityFQClassName = entityClass.getPackage() + "." + entityClassName;
+                this.useDefaults = entityClass.getUseDefaults();
             }
 
             @Override
@@ -1027,7 +1029,11 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 } else {
                     newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Entity")); // NOI18N
                     List<ExpressionTree> tableAnnArgs = new ArrayList<ExpressionTree>();
-                    tableAnnArgs.add(genUtils.createAnnotationArgument("name", dbMappings.getTableName())); // NOI18N
+                    if(useDefaults && entityClassName.equalsIgnoreCase(dbMappings.getTableName())){
+                        //skip
+                    } else {
+                        tableAnnArgs.add(genUtils.createAnnotationArgument("name", dbMappings.getTableName())); // NOI18N
+                    }
                     if (fullyQualifiedTableNames) {
                         String schemaName = entityClass.getSchemaName();
                         String catalogName = entityClass.getCatalogName();
@@ -1057,7 +1063,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                         tableAnnArgs.add(genUtils.createAnnotationArgument("uniqueConstraints", uniqueConstraintAnnotations)); // NOI18N
                     }
 
-                    newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Table", tableAnnArgs));
+                    if(!useDefaults || !tableAnnArgs.isEmpty()) newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Table", tableAnnArgs));
 
                     if (generateJAXBAnnotations) {
                         newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.xml.bind.annotation.XmlRootElement"));
