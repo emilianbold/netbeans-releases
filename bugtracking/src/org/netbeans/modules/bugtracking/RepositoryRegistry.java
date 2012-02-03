@@ -211,6 +211,12 @@ public class RepositoryRegistry {
     // private 
     ////////////////////////////////////////////////////////////////////////////////////////
     
+    /**
+     * for testing
+     */
+    void flushRepositories() {
+        repositories = null;
+    }
     private RepositoriesMap getStoredRepositories() {
         if (repositories == null) {
             repositories = new RepositoriesMap();
@@ -242,12 +248,15 @@ public class RepositoryRegistry {
         return getKeysWithPrefix(REPO_ID);
     }
     
-    private void putRepository(String connectorID, RepositoryProvider repository) {
+    /**
+     * for testing 
+     */
+    void putRepository(String connectorID, RepositoryProvider repository) {
         RepositoryInfo info = repository.getInfo();
         final String key = REPO_ID + DELIMITER + connectorID + DELIMITER + info.getId();
         SPIAccessor.IMPL.store(getPreferences(), info, key);
 
-        char[] password =info.getPassword();
+        char[] password = info.getPassword();
         char[] httpPassword = info.getHttpPassword();
         BugtrackingUtil.savePassword(password, null, info.getUsername(), info.getUrl());
         BugtrackingUtil.savePassword(httpPassword, "http", info.getHttpUsername(), info.getUrl()); // NOI18N

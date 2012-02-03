@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.openide.util.Lookup;
+import org.openide.util.NbPreferences;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -76,10 +77,7 @@ public class RepositoryRegistryTest extends NbTestCase {
 
     @Override
     protected void tearDown() throws Exception {   
-        RepositoryProvider[] repos = RepositoryRegistry.getInstance().getRepositories();
-        for (RepositoryProvider r : repos) {
-            RepositoryRegistry.getInstance().removeRepository(r);
-        }
+        RepositoryRegistry.getInstance().flushRepositories();
     }
 
     public void testEmpty() {
@@ -201,8 +199,22 @@ public class RepositoryRegistryTest extends NbTestCase {
         assertNull(l.oldRepos);
     }
     
-    private class MyRepository extends RepositoryProvider {
+    public void testStoredRepository() {
+        RepositoryInfo info = new RepositoryInfo("repoid", MyConnector.ID, "http://url", null, null, null, null, null, null);
+        RepositoryRegistry.getInstance().putRepository(MyConnector.ID, new MyRepository(info));
+        
+        RepositoryProvider[] repos = RepositoryRegistry.getInstance().getRepositories(MyConnector.ID);
+        assertEquals(1, repos.length);
+        assertEquals("repoid", repos[0].getInfo().getId());
+        assertEquals(MyConnector.ID, repos[0].getInfo().getConnectorId());
+    }
+    
+    private static class MyRepository extends RepositoryProvider {
         private RepositoryInfo info;
+
+        public MyRepository(RepositoryInfo info) {
+            this.info = info;
+        }
 
         public MyRepository(String id) {
             this(id, id);
@@ -266,6 +278,30 @@ public class RepositoryRegistryTest extends NbTestCase {
         public IssueProvider[] simpleSearch(String criteria) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-        
     }
+    
+    @BugtrackingConnector.Registration (
+        id=MyConnector.ID,
+        displayName="ManagerTestConector",
+        tooltip="ManagerTestConector"
+    )    
+    public static class MyConnector extends BugtrackingConnector {
+        static final String ID = "RepoRegistryTestConnector";
+        public MyConnector() {
+        }
+
+        @Override
+        public RepositoryProvider createRepository() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Lookup getLookup() {
+            return Lookup.EMPTY;
+        }
+
+        @Override
+        public RepositoryProvider createRepository(RepositoryInfo info) {
+            return new MyRepository(info);
+        }
+    }    
 }
