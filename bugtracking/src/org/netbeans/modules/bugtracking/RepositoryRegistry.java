@@ -102,8 +102,13 @@ public class RepositoryRegistry {
 
     public RepositoryProvider[] getRepositories(String connectorID) {
         synchronized(REPOSITORIES_LOCK) {
-            Collection<RepositoryProvider> l = getStoredRepositories().get(connectorID).values();
-            return l.toArray(new RepositoryProvider[l.size()]);
+            final Map<String, RepositoryProvider> m = getStoredRepositories().get(connectorID);
+            if(m != null) {
+                Collection<RepositoryProvider> c = m.values();
+                return c.toArray(new RepositoryProvider[c.size()]);
+            } else {
+                return new RepositoryProvider[0];
+            }
         }
     }
 
