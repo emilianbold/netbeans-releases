@@ -51,6 +51,7 @@ import java.util.List;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
@@ -190,6 +191,13 @@ public class ModelVisitor extends PathNodeVisitor {
                             }
                         }
                     }
+                }
+            } else if(binaryNode.tokenType() != TokenType.ASSIGN) {
+                if (binaryNode.lhs() instanceof IdentNode) {
+                    addOccurence((IdentNode)binaryNode.lhs());
+                }
+                if (binaryNode.rhs() instanceof IdentNode) {
+                    addOccurence((IdentNode)binaryNode.rhs());
                 }
             }
         }
@@ -576,5 +584,15 @@ public class ModelVisitor extends PathNodeVisitor {
             }
         }
         return false;
+    }
+    
+    private void addOccurence(IdentNode iNode) {
+        DeclarationScope scope = modelBuilder.getCurrentDeclarationScope();
+        while (scope != null && ((JsObject) scope).getProperty(iNode.getName()) == null) {
+            scope = scope.getInScope();
+        }
+        if (scope != null) {
+            ((JsObjectImpl) ((JsObjectImpl) scope).getProperty(iNode.getName())).addOccurrence(ModelUtils.documentOffsetRange(parserResult, iNode.getStart(), iNode.getFinish()));
+        }
     }
 }

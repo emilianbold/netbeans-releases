@@ -119,11 +119,18 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                     }
                     break;
                 case PROPERTY:
-                    highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.FIELD_SET);
-                    for(Occurrence occurence: object.getOccurrences()) {
-                        highlights.put(occurence.getOffsetRange(), ColoringAttributes.FIELD_SET);
+                    if(object.isDeclared()) {
+                        highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.FIELD_SET);
+                        for(Occurrence occurence: object.getOccurrences()) {
+                            highlights.put(occurence.getOffsetRange(), ColoringAttributes.FIELD_SET);
+                        }
                     }
                     break;
+                case FIELD:
+                    highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.FIELD_SET);
+                    for (Occurrence occurence : object.getOccurrences()) {
+                        highlights.put(occurence.getOffsetRange(), ColoringAttributes.FIELD_SET);
+                    }
                 case VARIABLE:
                     if (parent.getParent() == null) {
                         highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.GLOBAL_SET);
