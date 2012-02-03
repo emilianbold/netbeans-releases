@@ -213,8 +213,10 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     @Override
     protected void shutdown() {
         try {
-            framework.stop();
-            framework.waitForStop(10000);
+            if (framework != null) {
+                framework.stop();
+                framework.waitForStop(10000);
+            }
             framework = null;
             frameworkLoader = null;
         } catch (InterruptedException ex) {
