@@ -54,15 +54,17 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.spi.java.hints.matching.CopyFinder.Cancel;
 import org.netbeans.spi.java.hints.matching.CopyFinder.Options;
 import org.netbeans.spi.java.hints.matching.CopyFinder.State;
 import org.netbeans.spi.java.hints.matching.CopyFinder.VariableAssignments;
+import org.openide.util.Cancellable;
 
 /**Searches for occurrences of a {@link Pattern}.
  *
  * @author lahvac
  */
-public class Matcher {
+public class Matcher implements Cancellable {
 
     /**Create the Matcher for the given {@link CompilationInfo}. See the set methods for default
      * settings of the Matcher.
@@ -70,12 +72,13 @@ public class Matcher {
      * @param info for which the Matcher should be created
      * @return newly created Matcher
      */
-    public static Matcher create(CompilationInfo info) {
+    public static @NonNull Matcher create(@NonNull CompilationInfo info) {
         return new Matcher(info);
     }
 
     private final CompilationInfo info;
-    private       AtomicBoolean cancel;
+    private       AtomicBoolean givenCancel;
+    private final AtomicBoolean privateCancel = new AtomicBoolean();
     private       TreePath root;
     private Set<Options> options = EnumSet.noneOf(Options.class);
     private Map<String, TreePath> variables;
@@ -94,7 +97,7 @@ public class Matcher {
      * @param root where to start the search
      * @return the matcher itself
      */
-    public Matcher setSearchRoot(TreePath root) {
+    public @NonNull Matcher setSearchRoot(@NonNull TreePath root) {
         this.root = root;
         return this;
     }
@@ -105,7 +108,7 @@ public class Matcher {
      *
      * @return the matcher itself
      */
-    public Matcher setTreeTopSearch() {
+    public @NonNull Matcher setTreeTopSearch() {
         this.options.remove(Options.ALLOW_GO_DEEPER);
         return this;
     }
@@ -115,7 +118,7 @@ public class Matcher {
      *
      * @return the matcher itself
      */
-    public Matcher setUntypedMatching() {
+    public @NonNull Matcher setUntypedMatching() {
         this.options.add(Options.NO_ELEMENT_VERIFY);
         return this;
     }
@@ -131,7 +134,7 @@ public class Matcher {
      * @param variables2Names
      * @return the matcher itself
      */
-    public Matcher setPresetVariable(Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variables2Names) {
+    public @NonNull Matcher setPresetVariable(@NonNull Map<String, TreePath> variables, @NonNull Map<String, Collection<? extends TreePath>> multiVariables, @NonNull Map<String, String> variables2Names) {
         this.variables = variables;
         this.multiVariables = multiVariables;
         this.variables2Names = variables2Names;
@@ -143,8 +146,8 @@ public class Matcher {
      * @param cancel {@link AtomicBoolean} which should be set to {@code true} to stop the matching as soon as possible
      * @return the matcher itself
      */
-    public Matcher setCancel(AtomicBoolean cancel) {
-        this.cancel = cancel;
+    public @NonNull Matcher setCancel(@NonNull AtomicBoolean cancel) {
+        this.givenCancel = cancel;
         return this;
     }
 
@@ -176,11 +179,23 @@ public class Matcher {
             preinitializeState = null;
         }
 
+        Cancel cancel = new Cancel() {
+            @Override public boolean isCancelled() {
+                return privateCancel.get() || (givenCancel != null && givenCancel.get());
+            }
+        };
+
         for (Entry<TreePath, VariableAssignments> e : CopyFinder.internalComputeDuplicates(info, pattern.pattern, root, preinitializeState, pattern.remappable, cancel, pattern.variable2Type, opts.toArray(new Options[opts.size()])).entrySet()) {
             result.add(new Occurrence(e.getKey(), e.getValue().variables, e.getValue().multiVariables, e.getValue().variables2Names, e.getValue().variablesRemapToElement, e.getValue().variablesRemapToTrees));
         }
 
         return Collections.unmodifiableCollection(result);
+    }
+
+    @Override
+    public boolean cancel() {
+        privateCancel.set(true);
+        return true;
     }
 
 }

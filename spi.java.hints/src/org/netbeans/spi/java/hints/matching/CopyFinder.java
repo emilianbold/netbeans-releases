@@ -120,7 +120,7 @@ class CopyFinder extends TreeScanner<Boolean, TreePath> {
     private State preinitializeState = State.empty();
     private boolean allowVariablesRemap = false;
     private boolean nocheckOnAllowVariablesRemap = false;
-    private AtomicBoolean cancel;
+    private final Cancel cancel;
     private static final String CLASS = "class"; //NOI18N
     private final Set<Options> options;
 
@@ -134,18 +134,18 @@ class CopyFinder extends TreeScanner<Boolean, TreePath> {
         return result;
     }
 
-    private CopyFinder(TreePath searchingFor, CompilationInfo info, AtomicBoolean cancel, Options... options) {
+    private CopyFinder(TreePath searchingFor, CompilationInfo info, Cancel cancel, Options... options) {
         this(searchingFor, info, cancel, options(options));
     }
 
-    private CopyFinder(TreePath searchingFor, CompilationInfo info, AtomicBoolean cancel, Set<Options> options) {
+    private CopyFinder(TreePath searchingFor, CompilationInfo info, Cancel cancel, Set<Options> options) {
         this.searchingFor = searchingFor;
         this.info = info;
         this.cancel = cancel;
         this.options = options;
     }
 
-    public static Map<TreePath, VariableAssignments> internalComputeDuplicates(CompilationInfo info, Collection<? extends TreePath> searchingFor, TreePath scope, State preinitializedState, Collection<? extends VariableElement> variablesWithAllowedRemap, AtomicBoolean cancel, Map<String, TypeMirror> designedTypeHack, Options... options) {
+    public static Map<TreePath, VariableAssignments> internalComputeDuplicates(CompilationInfo info, Collection<? extends TreePath> searchingFor, TreePath scope, State preinitializedState, Collection<? extends VariableElement> variablesWithAllowedRemap, Cancel cancel, Map<String, TypeMirror> designedTypeHack, Options... options) {
         TreePath first = searchingFor.iterator().next();
         Set<Options> optionsSet = EnumSet.noneOf(Options.class);
 
@@ -315,7 +315,7 @@ class CopyFinder extends TreeScanner<Boolean, TreePath> {
 
     @Override
     public Boolean scan(Tree node, TreePath p) {
-        if (cancel.get()) {
+        if (cancel.isCancelled()) {
             return false;
         }
 
@@ -1679,5 +1679,9 @@ class CopyFinder extends TreeScanner<Boolean, TreePath> {
         }
 
         return false;
+    }
+
+    interface Cancel {
+        public boolean isCancelled();
     }
 }
