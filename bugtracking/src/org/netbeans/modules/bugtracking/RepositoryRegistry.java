@@ -150,7 +150,7 @@ public class RepositoryRegistry {
         synchronized(REPOSITORIES_LOCK) {
             oldRepos = Collections.unmodifiableCollection(new LinkedList<RepositoryProvider>(getStoredRepositories().getRepositories()));
             String connectorID = repository.getInfo().getConnectorId();
-            getStoredRepositories().put(connectorID, repository); // cache
+            getStoredRepositories().put(repository.getInfo().getConnectorId(), repository); // cache
             putRepository(connectorID, repository); // persist
             newRepos = Collections.unmodifiableCollection(getStoredRepositories().getRepositories());
 
@@ -163,9 +163,7 @@ public class RepositoryRegistry {
         Collection<RepositoryProvider> newRepos;
         synchronized(REPOSITORIES_LOCK) {
             oldRepos = Collections.unmodifiableCollection(getStoredRepositories().getRepositories());
-            
-            String connectorID = repoToConnector.get(repository);
-            assert connectorID != null;
+            String connectorID = repository.getInfo().getConnectorId();
             // persist remove
             getPreferences().remove(REPO_ID + DELIMITER + connectorID + DELIMITER + repository.getInfo().getId()); 
             // remove from cache
@@ -173,8 +171,6 @@ public class RepositoryRegistry {
             
             newRepos = Collections.unmodifiableCollection(getStoredRepositories().getRepositories());
         }
-        // XXX notify APIAccessor.IMPL.removed(repository);                                
-        
         fireRepositoriesChanged(oldRepos, newRepos);
     }
     
@@ -198,9 +194,7 @@ public class RepositoryRegistry {
         return getKeysWithPrefix(REPO_ID);
     }
     
-    private Map<RepositoryProvider, String> repoToConnector = new HashMap<RepositoryProvider, String>();
     private void putRepository(String connectorID, RepositoryProvider repository) {
-        repoToConnector.put(repository, connectorID);
         RepositoryInfo info = repository.getInfo();
         final String key = REPO_ID + DELIMITER + connectorID + DELIMITER + info.getId();
         SPIAccessor.IMPL.store(getPreferences(), info, key);
