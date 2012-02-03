@@ -43,9 +43,7 @@ package org.netbeans.modules.bugtracking.spi;
 
 import java.util.*;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -68,15 +66,12 @@ public final class RepositoryInfo {
     private static final String PROPERTY_TOOLTIP = "tooltip";                   // NOI18N    
     private static final String PROPERTY_USERNAME = "username";                 // NOI18N    
     private static final String PROPERTY_HTTP_USERNAME = "httpUsername";        // NOI18N    
-    private char[] password;
-    private char[] httpPassword;
-    
+
     private RepositoryInfo(Map<String, String> properties, char[] password, char[] httpPassword) {
         this.map.putAll(properties);
-        this.password = password;
-        this.httpPassword = httpPassword;
+        storePasswords(password, httpPassword);
     }
-    
+
     public RepositoryInfo(String id, String connectorId, String url, String displayName, String tooltip, String user, String httpUser, char[] password, char[] httpPassword) {
         map.put(PROPERTY_ID, id);
         map.put(PROPERTY_CONNECTOR_ID, connectorId);
@@ -85,8 +80,7 @@ public final class RepositoryInfo {
         map.put(PROPERTY_URL, url);
         map.put(PROPERTY_USERNAME, user);
         map.put(PROPERTY_HTTP_USERNAME, httpUser);
-        this.password = password;
-        this.httpPassword = httpPassword;
+        storePasswords(password, httpPassword);
     }
 
     public String getDisplayName() {
@@ -94,7 +88,11 @@ public final class RepositoryInfo {
     }
 
     public char[] getHttpPassword() {
-        return httpPassword;
+        if(BugtrackingUtil.isNbRepository(map.get(PROPERTY_URL))) {
+            return new char[0];
+        } else {
+            return BugtrackingUtil.readPassword(null, "http", getHttpUsername(), getUrl()); // NOI18N
+        }
     }
 
     public String getId() {
@@ -110,7 +108,11 @@ public final class RepositoryInfo {
     }
 
     public char[] getPassword() {
-        return password;
+        if(BugtrackingUtil.isNbRepository(map.get(PROPERTY_URL))) {
+            return BugtrackingUtil.getNBPassword();
+        } else {
+            return BugtrackingUtil.readPassword(null, null, getUsername(), getUrl());
+        }
     }
 
     public String getTooltip() {
@@ -134,7 +136,7 @@ public final class RepositoryInfo {
     }
 
     static RepositoryInfo read(Preferences preferences, String key) {
-        String str = getPreferences().get(key, "");                             // NOI18N    
+        String str = preferences.get(key, "");                                  // NOI18N    
         if(str.equals("")) {                                                    // NOI18N    
             return null;
         }
@@ -155,14 +157,7 @@ public final class RepositoryInfo {
     
     void store(Preferences preferences, String key) {
         boolean isNetbeans = BugtrackingUtil.isNbRepository(map.get(PROPERTY_URL));
-        getPreferences().put(key, getStringValue(isNetbeans));
-        if(isNetbeans) {
-            BugtrackingUtil.saveNBUsername(map.get(PROPERTY_USERNAME));
-            BugtrackingUtil.saveNBPassword(password);
-        } else {
-            BugtrackingUtil.savePassword(password, null, getUsername(), getUrl());
-            BugtrackingUtil.savePassword(httpPassword, "http", getHttpUsername(), getUrl()); // NOI18N
-        }
+        preferences.put(key, getStringValue(isNetbeans));
     }
     
     private String getStringValue(boolean dropUser) {
@@ -194,7 +189,12 @@ public final class RepositoryInfo {
         return m;
     }   
     
-    private static Preferences getPreferences() {
-        return NbPreferences.forModule(RepositoryRegistry.class);
-    }       
+    private void storePasswords(char[] password, char[] httpPassword) throws MissingResourceException {
+        if(BugtrackingUtil.isNbRepository(map.get(PROPERTY_URL))) {
+            BugtrackingUtil.saveNBPassword(password);
+        } else {
+            BugtrackingUtil.savePassword(password, null, getUsername(), getUrl());
+            BugtrackingUtil.savePassword(httpPassword, "http", getHttpUsername(), getUrl()); // NOI18N
+        }
+    }    
 }
