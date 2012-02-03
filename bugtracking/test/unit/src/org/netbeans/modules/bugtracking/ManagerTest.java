@@ -49,7 +49,6 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
 
@@ -90,7 +89,7 @@ public class ManagerTest extends NbTestCase {
     }
 
     @BugtrackingConnector.Registration (
-        id=BugzillaConnector.ID,
+        id="ManagerTestConnector",
         displayName="ManagerTestConector",
         tooltip="ManagerTestConector"
     )    

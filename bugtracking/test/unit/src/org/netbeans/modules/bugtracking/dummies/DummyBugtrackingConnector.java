@@ -42,13 +42,11 @@
 
 package org.netbeans.modules.bugtracking.dummies;
 
-import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.openide.util.Lookup;
 
 /**

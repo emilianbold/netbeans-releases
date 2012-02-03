@@ -55,7 +55,6 @@ import javax.swing.JPanel;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
-import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
