@@ -71,8 +71,7 @@ public class LuceneIndexFactory implements IndexFactoryImpl {
     private final Map<URL,LayeredDocumentIndex> indexes = new HashMap<URL, LayeredDocumentIndex>();
 
     
-    // accessible for tests; see CslTestBase
-    LuceneIndexFactory(){}
+    private LuceneIndexFactory(){}
 
     @Override
     @NonNull

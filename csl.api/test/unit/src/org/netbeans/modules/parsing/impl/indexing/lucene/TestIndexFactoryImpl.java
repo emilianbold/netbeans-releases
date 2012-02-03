@@ -46,6 +46,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.Index.Status;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
@@ -63,17 +64,19 @@ import org.openide.filesystems.FileObject;
  * 
  * @author sdedic
  */
-public class TestIndexFactoryImpl extends LuceneIndexFactory {
+public class TestIndexFactoryImpl implements IndexFactoryImpl {
             // --------------------------------------------------------------------
         // IndexFactoryImpl implementation
         // --------------------------------------------------------------------
+    
+        private static final IndexFactoryImpl delegate = LuceneIndexFactory.getDefault();
 
         public @Override IndexDocument createDocument(Indexable indexable) {
-            return new TestIndexDocumentImpl(indexable, super.createDocument(indexable));
+            return new TestIndexDocumentImpl(indexable, delegate.createDocument(indexable));
         }
 
         public @Override LayeredDocumentIndex createIndex(Context ctx) throws IOException {
-            DocumentIndex ii = super.createIndex(ctx);
+            DocumentIndex ii = delegate.createIndex(ctx);
             Reference<LayeredDocumentIndex> ttiRef = indexImpls.get(ii);
             LayeredDocumentIndex lii = ttiRef != null ? ttiRef.get() : null;
             
@@ -87,13 +90,13 @@ public class TestIndexFactoryImpl extends LuceneIndexFactory {
         }
         
         public TestIndexImpl getTestIndex(FileObject indexFolder) throws IOException {
-            DocumentIndex ii = super.getIndex(indexFolder);
+            DocumentIndex ii = delegate.getIndex(indexFolder);
             Reference<TestIndexImpl> tii = testImpls.get(ii);
             return tii == null ? null : tii.get();
         }
 
         public @Override LayeredDocumentIndex getIndex(FileObject indexFolder) throws IOException {
-            DocumentIndex ii = super.getIndex(indexFolder);
+            DocumentIndex ii = delegate.getIndex(indexFolder);
             Reference<LayeredDocumentIndex> ttiRef = indexImpls.get(ii);
             return ttiRef != null ? ttiRef.get() : null;
         }
