@@ -45,17 +45,23 @@ package org.netbeans.libs.git;
 import org.netbeans.libs.git.jgit.Utils;
 
 /**
- *
- * @author ondra
+ * When there is a merge conflict in a file from a repository, the file's status 
+ * provides instance of this class and you can get more information about the conflict.
+ * Can be acquired with {@link GitStatus#getConflictDescriptor() } method.
+ * 
+ * @author Ondra Vrabec
  */
 public final class GitConflictDescriptor {
     private Type type;
 
-    public GitConflictDescriptor (Type type) {
+    GitConflictDescriptor (Type type) {
         this.type = type;
     }
     
     public static enum Type {
+        /**
+         * Deleted in both branches.
+         */
         BOTH_DELETED {
             @Override
             public String getDescription () {
@@ -67,6 +73,9 @@ public final class GitConflictDescriptor {
                 return Utils.getBundle(GitConflictDescriptor.class).getString("MSG_GitConflictDescriptor_BOTH_DELETED.shortDesc"); //NOI18N
             }
         },
+        /**
+         * Added by us
+         */
         ADDED_BY_US {
             @Override
             public String getDescription () {
@@ -92,6 +101,9 @@ public final class GitConflictDescriptor {
                 return Utils.getBundle(GitConflictDescriptor.class).getString("MSG_GitConflictDescriptor_DELETED_BY_THEM.shortDesc"); //NOI18N
             }
         },
+        /**
+         * Added by them
+         */
         ADDED_BY_THEM {
             @Override
             public String getDescription () {
@@ -149,6 +161,9 @@ public final class GitConflictDescriptor {
         public abstract String getDescription ();
     }
 
+    /**
+     * @return type of the merge conflict
+     */
     public Type getType () {
         return type;
     }

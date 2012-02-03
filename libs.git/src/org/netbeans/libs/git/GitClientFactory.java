@@ -50,8 +50,18 @@ import org.netbeans.libs.git.jgit.JGitRepository;
 import org.netbeans.libs.git.jgit.JGitSshSessionFactory;
 
 /**
- * Factory class used to create git clients bound to a specific local repository
- * @author ondra
+ * Factory class used to create git clients bound to a specific local repository.
+ * <p>Clients are bound to a local repository. If the repository does not exist yet, you 
+ * still have to provide a local file which indicates where the repository would be created when 
+ * {@link GitClient#init(org.netbeans.libs.git.progress.ProgressMonitor) } was called.</p>
+ * <p>Internally the factory keeps a pool of git repositories and caches data needed to operate
+ * with the repository and to return a client as fast as possible. The repository data are cached under
+ * a weak reference to the instance of the local file passed in the {@link #getClient(java.io.File) } method.<br/>
+ * It means that subsequent call to the <code>getClient</code> method with the same instance of the file 
+ * will not have to load all data needed to reconstruct the repository in memory. <strong>It is up to a caller's
+ * responsibility to hold a strong reference to the file</strong>.
+ * 
+ * @author Ondra Vrabec
  */
 public final class GitClientFactory {
 
@@ -68,16 +78,17 @@ public final class GitClientFactory {
      */
     public static synchronized GitClientFactory getInstance () {
         if (instance == null) {
-            instance = instance = new GitClientFactory();
+            instance = new GitClientFactory();
         }
         return instance;
     }
 
     /**
-     * Returns a git client bound to a given local git repository
-     * @param repositoryLocation repository root location
-     * @return git client
-     * @throws GitException
+     * Returns a git client bound to a given local git repository. The repository may or may not exist yet, however most
+     * git commands work only on an existing repository.
+     * @param repositoryLocation repository root location, the file may or may not exist.
+     * @return an instance of a git client
+     * @throws GitException when an error occurs while loading repository data from disk.
      */
     public GitClient getClient (File repositoryLocation) throws GitException {
         synchronized (repositoryPool) {
