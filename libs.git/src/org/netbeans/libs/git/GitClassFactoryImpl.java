@@ -101,6 +101,11 @@ final class GitClassFactoryImpl extends GitClassFactory {
     }
 
     @Override
+    public GitPushResult createPushResult (Map<String, GitTransportUpdate> remoteRepositoryUpdates, Map<String, GitTransportUpdate> localRepositoryUpdates) {
+        return new GitPushResult(remoteRepositoryUpdates, localRepositoryUpdates);
+    }
+
+    @Override
     public GitRemoteConfig createRemoteConfig (RemoteConfig remoteConfig) {
         return GitRemoteConfig.fromRemoteConfig(remoteConfig);
     }
