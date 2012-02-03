@@ -73,7 +73,8 @@ public class OccurrencesSupport {
     
     private Occurrence findOccurrence(JsObject object, int offset) {
         Occurrence result = null;
-        if (object.getDeclarationName().getOffsetRange().containsInclusive(offset)
+        if (object.getJSKind() != JsElement.Kind.ANONYMOUS_OBJECT 
+                && object.getDeclarationName().getOffsetRange().containsInclusive(offset)
                 && !ModelUtils.isGlobal(object)) {
             result = new OccurrenceImpl(object.getDeclarationName().getOffsetRange(), object);
         } else {

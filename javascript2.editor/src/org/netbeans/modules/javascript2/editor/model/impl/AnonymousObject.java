@@ -39,42 +39,39 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor.model.impl;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.EnumSet;
+import java.util.Set;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Petr Pisl
  */
-public interface JsObject extends JsElement {
-    public Identifier getDeclarationName();
-    public Map <String, ? extends JsObject> getProperties();
-    public void addProperty(String name, JsObject property);
-    public JsObject getProperty(String name);
+public class AnonymousObject extends JsObjectImpl {
+
+    public AnonymousObject(JsObjectImpl parent, String name, OffsetRange offsetRange) {
+        super(parent, name, true, offsetRange, EnumSet.of(Modifier.PRIVATE));
+    }
+
+    @Override
+    public Kind getJSKind() {
+        return JsElement.Kind.ANONYMOUS_OBJECT;
+    }
     
-    /**
-     * 
-     * @return the object within this is declared
-     */
-    public JsObject getParent();
+    @Override
+    public boolean isAnonymous() {
+        return true;
+    }
+
+    @Override
+    public int getOffset() {
+        return getOffsetRange(null).getStart();
+    }
     
-    /**
-     * 
-     * @return if is really declared in the source
-     */
-    public boolean isDeclared();
     
-    List<Occurrence> getOccurrences();
-   
-    /**
-     * 
-     * @param offset
-     * @return 
-     */
-    Collection<String> getAssignmentTypeNames(int offset);
-    
-    public boolean isAnonymous();
 }

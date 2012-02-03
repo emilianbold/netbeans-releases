@@ -62,7 +62,8 @@ public interface JsElement extends ElementHandle {
         VARIABLE(6),
         FIELD(7),
         FILE(8),
-        PARAMETER(9);
+        PARAMETER(9),
+        ANONYMOUS_OBJECT(10);
         
         private final int id;
         private static Map<Integer, Kind> lookup = new HashMap<Integer, Kind>();

@@ -341,7 +341,10 @@ public class ModelVisitor extends PathNodeVisitor {
         if (onset) {
             if(previousVisited instanceof CallNode) {
                 // TODO there should be handled anonymous object that are going as parameter to a funciton
-                return null;
+                //create anonymous object
+                JsObjectImpl object = ModelElementFactory.createAnonymousObject(parserResult, objectNode, (CallNode)previousVisited, modelBuilder);
+                modelBuilder.setCurrentObject(object);
+                return super.visit(objectNode, onset);
             }
             if (!(previousVisited instanceof ReturnNode 
                     || previousVisited instanceof CallNode)) {
@@ -375,8 +378,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 modelBuilder.setCurrentObject(objectScope);
             }
         } else {
-            if (!(previousVisited instanceof ReturnNode
-                    || previousVisited instanceof CallNode)) {
+            if (!(previousVisited instanceof ReturnNode)) {
                 modelBuilder.reset();
             }
         }
