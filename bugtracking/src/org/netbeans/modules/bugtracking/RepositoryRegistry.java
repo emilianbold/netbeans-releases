@@ -102,7 +102,7 @@ public class RepositoryRegistry {
 
     public RepositoryProvider[] getRepositories(String connectorID) {
         synchronized(REPOSITORIES_LOCK) {
-            Collection<RepositoryProvider> l = getStoredRepositories().getRepositories(connectorID).values();
+            Collection<RepositoryProvider> l = getStoredRepositories().get(connectorID).values();
             return l.toArray(new RepositoryProvider[l.size()]);
         }
     }
@@ -255,27 +255,22 @@ public class RepositoryRegistry {
     }
 
     private class RepositoriesMap extends HashMap<String, Map<String, RepositoryProvider>> {
-
         public void remove(String connectorID, RepositoryProvider repository) {
-            Map<String, RepositoryProvider> l = getRepositories(connectorID);
-            if(l != null) {
-                l.remove(repository.getInfo().getId());
+            Map<String, RepositoryProvider> m = get(connectorID);
+            if(m != null) {
+                m.remove(repository.getInfo().getId());
             }
         }
         public void put(String connectorID, RepositoryProvider repository) {
-            getRepositories(connectorID).put(repository.getInfo().getId(), repository);
-        }
-        Map<String, RepositoryProvider> getRepositories(String connectorID) {
             Map<String, RepositoryProvider> m = get(connectorID);
             if(m == null) {
                 m = new HashMap<String, RepositoryProvider>();
                 put(connectorID, m);
             }
-            return m;
+            m.put(repository.getInfo().getId(), repository);
         }
         List<RepositoryProvider> getRepositories() {
             List<RepositoryProvider> ret = new LinkedList<RepositoryProvider>();
-            Set<Entry<String, Map<String, RepositoryProvider>>> s = entrySet();
             for (Entry<String, Map<String, RepositoryProvider>> e : entrySet()) {
                 ret.addAll(e.getValue().values());
             }
