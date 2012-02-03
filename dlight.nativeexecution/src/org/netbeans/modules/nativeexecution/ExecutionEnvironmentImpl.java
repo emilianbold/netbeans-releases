@@ -114,7 +114,7 @@ final public class ExecutionEnvironmentImpl implements ExecutionEnvironment, Ser
             this.host = host;
         }
 
-        if (!HostInfoUtils.isLocalhost(host) && sshPort == 0) {
+        if (sshPort == 0 && !HostInfoUtils.isLocalhost(host)) {
             this.sshPort = 22;
         } else {
             this.sshPort = sshPort;
