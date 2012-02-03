@@ -673,7 +673,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 String memberType = getMemberType(m);
 
                 String columnName = (String) dbMappings.getCMPFieldMapping().get(memberName);
-                if(!useDefaults || memberName.equalsIgnoreCase(columnName)){
+                if(!useDefaults || !memberName.equalsIgnoreCase(columnName)){
                     columnAnnArguments.add(genUtils.createAnnotationArgument("name", columnName)); //NOI18N
                 }
 
