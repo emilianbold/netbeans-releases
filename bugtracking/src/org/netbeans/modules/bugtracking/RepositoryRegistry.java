@@ -107,10 +107,6 @@ public class RepositoryRegistry {
         }
     }
 
-//    private DelegatingConnector getConnector(RepositoryProvider repository) {
-//        return APIAccessor.IMPL.getConnector(repository);
-//    }
-
     private RepositoriesMap getStoredRepositories() {
         if (repositories == null) {
             repositories = new RepositoriesMap();
