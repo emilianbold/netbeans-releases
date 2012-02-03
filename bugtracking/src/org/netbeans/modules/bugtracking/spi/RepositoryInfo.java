@@ -133,10 +133,6 @@ public final class RepositoryInfo {
         map.put(key, value);
     }
 
-    Map<String, String> getMap() {
-        return map;
-    }
-
     static RepositoryInfo read(Preferences preferences, String key) {
         String str = getPreferences().get(key, "");                             // NOI18N    
         if(str.equals("")) {                                                    // NOI18N    
@@ -189,7 +185,7 @@ public final class RepositoryInfo {
         return sb.toString();
     }
 
-    static Map<String, String> fromString(String string) {
+    private static Map<String, String> fromString(String string) {
         String[] values = string.split(DELIMITER);
         Map<String, String> m = new HashMap<String, String>(); 
         for (int i = 0; i < values.length; i++) {
