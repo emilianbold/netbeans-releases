@@ -37,78 +37,69 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.vcs;
+package org.netbeans.modules.bugtracking.spi;
 
-import java.awt.Image;
-import java.util.Collection;
-import org.netbeans.modules.bugtracking.spi.*;
-import org.openide.util.Lookup;
+import java.io.IOException;
+import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
+import org.openide.util.HelpCtx;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class HookRepository extends RepositoryProvider {
-    private RepositoryInfo info = new RepositoryInfo("HookRepository", "HookRepository", "http://url", "HookRepository", "HookRepository", null, null, null, null);
+public interface RepositoryController {
 
-    @Override
-    public RepositoryInfo getInfo() {
-        return info;
-    }
+    /**
+     * Returns a visual component representing the repository this controller is meant for
+     * 
+     * @return a visual component representing a repository
+     */
+    public JComponent getComponent();
 
+    /**
+     * Returns the help context associated with this controllers visual component
+     * @return
+     */
+    public HelpCtx getHelpCtx();
+
+    /**
+     * Return true if data in this controllers visual component are valid
+     * @return
+     */
+    public boolean isValid();
+
+    /**
+     * Populate the controllers component
+     */
+    public void populate();
     
+    /**
+     * Return an error message in case the controller isn't valid
+     * @return
+     */
+    public String getErrorMessage();
     
-    @Override
-    public Image getIcon() {
-        return null;
-    }
+    /**
+     * Is called when the changes made in the
+     * controllers visual component are confirmed
+     */
+    public void applyChanges() throws IOException; 
 
-    @Override
-    public IssueProvider getIssue(String id) {
-        return HookIssue.instance;
-    }
+    /**
+     * Registers a ChangeListener
+     * @param l
+     */
+    public void addChangeListener(ChangeListener l);
 
-    @Override
-    public void remove() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public RepositoryController getController() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public QueryProvider createQuery() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public IssueProvider createIssue() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public QueryProvider[] getQueries() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Collection<RepositoryUser> getUsers() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public IssueProvider[] simpleSearch(String criteria) {
-        return new IssueProvider[] {HookIssue.instance};
-    }
-
-    @Override
-    public Lookup getLookup() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+    /**
+     * Unregisters a ChangeListener
+     * @param l
+     */
+    public void removeChangeListener(ChangeListener l);
+    
 
 }

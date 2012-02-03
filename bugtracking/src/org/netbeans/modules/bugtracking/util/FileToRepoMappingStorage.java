@@ -56,6 +56,7 @@ import org.openide.util.NbPreferences;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.logging.Level.WARNING;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 
 /**
  * Stores mappings between {@code File}s and bugtracking repositories.
@@ -158,9 +159,9 @@ class FileToRepoMappingStorage {
     }
 
     private RepositoryProvider getRepositoryByUrl(String requestedUrl) {
-        RepositoryProvider[] repositories = BugtrackingManager.getInstance().getRepositories();
+        RepositoryProvider[] repositories = RepositoryRegistry.getInstance().getRepositories();
         for (RepositoryProvider repository : repositories) {
-            String repositoryUrl = cutTrailingSlashes(repository.getUrl());
+            String repositoryUrl = cutTrailingSlashes(repository.getInfo().getUrl());
             if (repositoryUrl.equals(requestedUrl)) {
                 return repository;
             }
@@ -175,7 +176,7 @@ class FileToRepoMappingStorage {
             return;
         }
 
-        String repositoryUrl = cutTrailingSlashes(repository.getUrl());
+        String repositoryUrl = cutTrailingSlashes(repository.getInfo().getUrl());
         String value = new StringBuilder(1 + repositoryUrl.length())
                 .append(firm ? '!' : '?')
                 .append(repositoryUrl)

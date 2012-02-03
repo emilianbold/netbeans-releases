@@ -456,7 +456,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         LOG.finest("going to display the list of repositories");        //NOI18N
         if ((knownDefaultRepo != null) && (LOG.isLoggable(FINEST))) {
             LOG.finest("  - default repository: "                       //NOI18N
-                       + knownDefaultRepo.getDisplayName());
+                       + knownDefaultRepo.getInfo().getDisplayName());
         }
         try {
             setRepositories(repositories, knownDefaultRepo);
@@ -507,7 +507,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         assert EventQueue.isDispatchThread();
 
         if (LOG.isLoggable(Level.FINER)) {
-            LOG.finer("preselectRepository(" + repoToPreselect.getDisplayName() + ')'); //NOI18N
+            LOG.finer("preselectRepository(" + repoToPreselect.getInfo().getDisplayName() + ')'); //NOI18N
         }
 
         if (comboBox.isPopupVisible()) {
@@ -543,7 +543,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
 
     private static String getItemName(Object item) {
         if (item instanceof RepositoryProvider) {
-            return ((RepositoryProvider) item).getDisplayName();
+            return ((RepositoryProvider) item).getInfo().getDisplayName();
         } else{
             return item.toString();
         }
@@ -648,7 +648,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
 
         if (result != null) {
             if (LOG.isLoggable(FINEST)) {
-                LOG.finest(" - default repository: " + result.getDisplayName()); //NOI18N
+                LOG.finest(" - default repository: " + result.getInfo().getDisplayName()); //NOI18N
             }
             defaultRepo = result;
         } else {

@@ -52,6 +52,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JLabel;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
@@ -270,4 +271,8 @@ public class KenaiUtil {
         return null;
     }
 
+    public static void addRepository(RepositoryProvider repository) {
+        RepositoryRegistry.getInstance().addRepository(repository);
+    }
+    
 }

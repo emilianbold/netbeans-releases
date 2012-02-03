@@ -69,8 +69,10 @@ import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
+import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
@@ -286,7 +288,7 @@ public final class BugzillaIssueProvider extends TaskListIssueProvider implement
     }
 
     private static URL getUrl (BugzillaIssue issue) {
-        return getUrl(issue.getRepository().getUrl(), issue.getID());
+        return getUrl(issue.getRepository().getInfo().getUrl(), issue.getID());
     }
 
     private static URL getUrl(String repositoryUrl, String issueId) {
@@ -392,8 +394,9 @@ public final class BugzillaIssueProvider extends TaskListIssueProvider implement
     }
 
     private void addCommonIssues (Map<String, List<String>> repositoryIssues) {
-        BugzillaRepository[] repositories = Bugzilla.getInstance().getRepositories();
-        for (BugzillaRepository repository : repositories) {
+        RepositoryProvider[] repositories = BugtrackingUtil.getRepositories(BugzillaConnector.ID);
+        for (RepositoryProvider rp : repositories) {
+            BugzillaRepository repository = (BugzillaRepository)rp;
             // all issues for this repository
             List<String> issueAttributes = repositoryIssues.get(repository.getUrl());
             if (issueAttributes != null && issueAttributes.size() > 1) {

@@ -86,7 +86,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     private String host;
     private final KenaiProject kenaiProject;
 
-    KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String userName, String password, String urlParam, String product) {
+    KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String userName, char[] password, String urlParam, String product) {
         super(getRepositoryId(repoName, url), repoName, url, userName, password, null, null); // use name as id - can't be changed anyway
         this.urlParam = urlParam;
         icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -201,7 +201,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         return kc;
     }
 
-    protected void setCredentials(String user, String password) {
+    protected void setCredentials(String user, char[] password) {
         super.setCredentials(user, password, null, null);
     }
 
@@ -220,7 +220,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         String user = pa.getUserName();
         char[] password = pa.getPassword();
 
-        setCredentials(user, new String(password));
+        setCredentials(user, password);
 
         return true;
     }
@@ -251,12 +251,12 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         return "";                                                              // NOI18N
     }
 
-    private static String getKenaiPassword(KenaiProject kenaiProject) {
+    private static char[] getKenaiPassword(KenaiProject kenaiProject) {
         PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false);
         if(pa != null) {
-            return new String(pa.getPassword());
+            return pa.getPassword();
         }
-        return "";                                                              // NOI18N
+        return new char[0];                                                     // NOI18N
     }
 
     @Override
@@ -298,15 +298,15 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
             // XXX move to spi?
             // get kenai credentials
             String user;
-            String psswd;
+            char[] psswd;
             PasswordAuthentication pa = 
                     KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false); // do not force login
             if(pa != null) {
                 user = pa.getUserName();
-                psswd = new String(pa.getPassword());
+                psswd = pa.getPassword();
             } else {
                 user = "";                                                      // NOI18N
-                psswd = "";                                                     // NOI18N
+                psswd = new char[0];                                            // NOI18N
             }
 
             setCredentials(user, psswd);

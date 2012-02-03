@@ -57,14 +57,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.spi.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.HtmlBrowser;
@@ -213,12 +209,12 @@ public class JiraUpdater {
             return new JiraProxyRepository();
         }
         @Override
-        public RepositoryProvider[] getRepositories() {
-            return new RepositoryProvider[0];
-        }
-        @Override
         public Lookup getLookup() {
             return Lookup.EMPTY;
+        }
+        @Override
+        public RepositoryProvider createRepository(RepositoryInfo info) {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 
@@ -228,20 +224,8 @@ public class JiraUpdater {
             return null;
         }
         @Override
-        public String getDisplayName() {
-            throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
-        }
-        @Override
-        public String getTooltip() {
-            throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
-        }
-        @Override
-        public String getID() {
-            throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
-        }
-        @Override
-        public String getUrl() {
-            throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
+        public RepositoryInfo getInfo() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
         @Override
         public IssueProvider getIssue(String id) {
@@ -250,7 +234,7 @@ public class JiraUpdater {
         @Override
         public void remove() { }
         @Override
-        public BugtrackingController getController() {
+        public RepositoryController getController() {
             return new JiraProxyController();
         }
         @Override
@@ -279,7 +263,7 @@ public class JiraUpdater {
         }
     }
 
-    private class JiraProxyController extends BugtrackingController {
+    private class JiraProxyController implements RepositoryController {
         private JPanel panel;
         @Override
         public JComponent getComponent() {
@@ -338,6 +322,20 @@ public class JiraUpdater {
 
             return panel;
         }
+
+        @Override
+        public void populate() {}
+
+        @Override
+        public String getErrorMessage() {
+            return null;
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener l) {}
+
+        @Override
+        public void removeChangeListener(ChangeListener l) {}
 
     }
 }

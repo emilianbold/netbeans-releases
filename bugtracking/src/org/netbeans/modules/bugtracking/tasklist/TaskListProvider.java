@@ -456,7 +456,7 @@ public final class TaskListProvider extends PushTaskScanner {
                     LOG.log(Level.FINER, "getRepositoriesFor: repository: {0} for {1} after {2}", new Object[] {repository, p, (System.currentTimeMillis() - startTime)});
                 }
                 if (repository != null) {
-                    repositoryUrls.add(repository.getUrl());
+                    repositoryUrls.add(repository.getInfo().getUrl());
                 }
             }
         }

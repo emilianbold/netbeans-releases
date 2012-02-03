@@ -89,7 +89,7 @@ public class JiraAutoupdate {
      * an update is available on the UC.
      *
      * @param repository the repository to check the version for
-     * @return true if things are ok or if the user desided to continue even with a
+     * @return true if things are ok or if the user decided to continue even with a
      *         outdated version. False in case a new plugin version is abut to be
      *         downloaded
      */

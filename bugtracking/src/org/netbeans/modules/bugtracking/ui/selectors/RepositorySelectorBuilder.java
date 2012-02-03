@@ -751,7 +751,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
             if (value == null) {
                 text = null;
             } else if (value instanceof RepositoryProvider) {
-                text = ((RepositoryProvider) value).getDisplayName();
+                text = ((RepositoryProvider) value).getInfo().getDisplayName();
             } else if (value instanceof NewRepositoryInfo) {
                 String connectorName = ((NewRepositoryInfo) value).connector
                                        .getDisplayName();

@@ -19,9 +19,7 @@ import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableC
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.openide.nodes.Node.Property;
 import org.openide.util.Lookup;
@@ -371,8 +369,16 @@ public class QueryTableCellRendererTest {
 
     private class RendererRepository extends RepositoryProvider {
         private RendererIssue issue;
+        private RepositoryInfo info;
         public RendererRepository() {
+            info = new RepositoryInfo("testrepo", "testconnector", null, null, null, null, null, null, null);
         }
+
+        @Override
+        public RepositoryInfo getInfo() {
+            return info;
+        }
+        
         public void setIssue(RendererIssue issue) {
             this.issue = issue;
         }
@@ -380,22 +386,7 @@ public class QueryTableCellRendererTest {
         public Image getIcon() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-        @Override
-        public String getDisplayName() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        @Override
-        public String getTooltip() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        @Override
-        public String getID() {
-            return "testrepo";
-        }
-        @Override
-        public String getUrl() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+        
         @Override
         public IssueProvider getIssue(String id) {
             throw new UnsupportedOperationException("Not supported yet.");
@@ -405,7 +396,7 @@ public class QueryTableCellRendererTest {
             throw new UnsupportedOperationException("Not supported yet.");
         }
         @Override
-        public BugtrackingController getController() {
+        public RepositoryController getController() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
         @Override

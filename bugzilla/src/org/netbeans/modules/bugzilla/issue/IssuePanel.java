@@ -2727,7 +2727,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void showInBrowserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showInBrowserButtonActionPerformed
         try {
-            URL url = new URL(issue.getRepository().getUrl() + BugzillaConstants.URL_SHOW_BUG + issue.getID());
+            URL url = new URL(issue.getBugzillaRepository().getUrl() + BugzillaConstants.URL_SHOW_BUG + issue.getID());
             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
         } catch (MalformedURLException muex) {
             Bugzilla.LOG.log(Level.INFO, "Unable to show the issue in the browser.", muex); // NOI18N
@@ -2744,7 +2744,7 @@ private void urlButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         url = new URL(urlString);
     } catch (MalformedURLException muex) {
         if(issue != null) {
-            String repoUrlString = issue.getRepository().getUrl();
+            String repoUrlString = issue.getBugzillaRepository().getUrl();
             urlString = repoUrlString + (repoUrlString.endsWith("/") ? "" : "/") + urlString; // NOI18N
             try {
                 url = new URL(urlString);

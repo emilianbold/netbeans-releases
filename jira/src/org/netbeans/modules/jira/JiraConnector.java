@@ -49,6 +49,7 @@ import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.jira.issue.JiraIssueFinder;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -79,6 +80,11 @@ public class JiraConnector extends BugtrackingConnector {
     static JiraConnector getInstance() {
         return instance;
     }
+
+    @Override
+    public RepositoryProvider createRepository(RepositoryInfo info) {
+        return new JiraRepository(info);
+    }
     
     @Override
     public RepositoryProvider createRepository() {
@@ -92,15 +98,6 @@ public class JiraConnector extends BugtrackingConnector {
             return null;
         }
         return new JiraRepository();
-    }
-
-    @Override
-    public RepositoryProvider[] getRepositories() {
-        Jira jira = getJira();
-        if(jira != null) {
-            return jira.getRepositories();
-        }
-        return new RepositoryProvider[0];
     }
 
     public static String getConnectorName() {
@@ -123,11 +120,6 @@ public class JiraConnector extends BugtrackingConnector {
             return Lookups.singleton(jira.getKenaiSupport());
         }
         return Lookup.EMPTY;
-    }
-
-    @Override
-    protected void fireRepositoriesChanged(Collection<RepositoryProvider> oldRepositories, Collection<RepositoryProvider> newRepositories) {
-        super.fireRepositoriesChanged(oldRepositories, newRepositories);
     }
 
     private Jira getJira() {

@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -116,13 +117,8 @@ public class DelegatingConnector extends BugtrackingConnector {
     }
 
     @Override
-    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
-        getDelegate().removePropertyChangeListener(listener);
-    }
-
-    @Override
-    public RepositoryProvider[] getRepositories() {
-        return getDelegate().getRepositories();
+    public RepositoryProvider createRepository(RepositoryInfo info) {
+        return getDelegate().createRepository(info);
     }
 
     @Override
@@ -133,11 +129,6 @@ public class DelegatingConnector extends BugtrackingConnector {
     @Override
     public RepositoryProvider createRepository() {
         return getDelegate().createRepository();
-    }
-
-    @Override
-    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
-        getDelegate().addPropertyChangeListener(listener);
     }
 
     @Override

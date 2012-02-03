@@ -53,13 +53,8 @@ import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -208,34 +203,22 @@ public class QTCTestHidden extends NbTestCase {
         MyQuery newquery;
         private static int c = 0;
         private final int i;
+        private RepositoryInfo info;
         public MyRepository() {
             this.newquery = new MyQuery(this);
             this.i = c++;
+            String name = "repoid" + i;
+            info = new RepositoryInfo(name, name, "http://repo", name, name, null, null, null, null);
         }
 
         @Override
-        public String getID() {
-            return "repoid";
+        public RepositoryInfo getInfo() {
+            return info;
         }
 
         @Override
         public Image getIcon() {
             return null;
-        }
-
-        @Override
-        public String getDisplayName() {
-            return "repo"+i;
-        }
-
-        @Override
-        public String getTooltip() {
-            return "repo"+i;
-        }
-
-        @Override
-        public String getUrl() {
-            return "http://repo";
         }
 
         @Override
@@ -249,7 +232,7 @@ public class QTCTestHidden extends NbTestCase {
         }
 
         @Override
-        public BugtrackingController getController() {
+        public RepositoryController getController() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -368,13 +351,13 @@ public class QTCTestHidden extends NbTestCase {
                 throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
-        public RepositoryProvider[] getRepositories() {
-            return new RepositoryProvider[] {repo};
-        }
-
         public Lookup getLookup() {
             return Lookup.EMPTY;
+        }
+
+        @Override
+        public RepositoryProvider createRepository(RepositoryInfo info) {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 

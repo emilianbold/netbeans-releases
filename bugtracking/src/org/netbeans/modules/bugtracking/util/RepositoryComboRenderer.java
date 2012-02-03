@@ -76,7 +76,7 @@ public class RepositoryComboRenderer extends DefaultListCellRenderer {
             text = null;
         } else if (value instanceof RepositoryProvider) {
             repo = (RepositoryProvider) value;
-            text = repo.getDisplayName();
+            text = repo.getInfo().getDisplayName();
         } else {
             if (value == RepositoryComboSupport.LOADING_REPOSITORIES) {
                 text = loadingReposText;

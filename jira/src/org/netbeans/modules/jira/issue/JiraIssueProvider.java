@@ -74,6 +74,7 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.DialogDisplayer;
@@ -394,8 +395,9 @@ public final class JiraIssueProvider extends TaskListIssueProvider implements Pr
     }
 
     private void addCommonIssues (Map<String, List<String>> repositoryIssues) {
-        JiraRepository[] repositories = Jira.getInstance().getRepositories();
-            for (JiraRepository repository : repositories) {
+        RepositoryProvider[] repositories = BugtrackingUtil.getRepositories(JiraConnector.ID);
+            for (RepositoryProvider rp : repositories) {
+                JiraRepository repository = (JiraRepository) rp;
                 // all issues for this repository
                 List<String> issueAttributes = repositoryIssues.get(repository.getUrl());
                 if (issueAttributes != null && issueAttributes.size() > 1) {

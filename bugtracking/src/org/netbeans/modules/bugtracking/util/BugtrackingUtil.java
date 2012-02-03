@@ -70,8 +70,10 @@ import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
 import org.netbeans.api.keyring.Keyring;
+import org.netbeans.modules.bugtracking.BugtrackingConfig;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
@@ -87,10 +89,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
-import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.*;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.TopComponent;
 
@@ -509,7 +508,7 @@ public class BugtrackingUtil {
      * @return true if the given repository is the netbenas bugzilla, otherwise false
      */
     public static boolean isNbRepository(RepositoryProvider repo) {
-        String url = repo.getUrl();
+        String url = repo.getInfo().getUrl();
         return isNbRepository(url);
     }
 
@@ -534,8 +533,12 @@ public class BugtrackingUtil {
      * @throws MissingResourceException
      */
     public static void savePassword(String password, String prefix, String user, String url) throws MissingResourceException {
-        if (password != null && !password.trim().equals("")) {                  // NOI18N
-            Keyring.save(getPasswordKey(prefix, user, url), password.toCharArray(), NbBundle.getMessage(BugtrackingUtil.class, "password_keyring_description", url)); // NOI18N
+        savePassword(password.toCharArray(), prefix, user, url);
+    }
+    
+    public static void savePassword(char[] password, String prefix, String user, String url) throws MissingResourceException {
+        if (password != null && password.length != 0) {                  
+            Keyring.save(getPasswordKey(prefix, user, url), password, NbBundle.getMessage(BugtrackingUtil.class, "password_keyring_description", url)); // NOI18N
         } else {
             Keyring.delete(getPasswordKey(prefix, user, url));
         }
@@ -550,7 +553,7 @@ public class BugtrackingUtil {
      * @return
      */
     public static char[] readPassword(String scrambledPassword, String keyPrefix, String user, String url) {
-        if (!scrambledPassword.equals("")) {                                    // NOI18N
+        if (scrambledPassword != null && !scrambledPassword.equals("")) {                                    // NOI18N
             return BugtrackingUtil.descramble(scrambledPassword).toCharArray();
         } else {
             char[] password = Keyring.read(getPasswordKey(keyPrefix, user, url));
@@ -603,14 +606,68 @@ public class BugtrackingUtil {
         IssueAction.createIssue(repo);
     }
 
-    public static String getPasswordLog(String psswd) {
+    public static String getPasswordLog(char[] psswd) {
         if(psswd == null) {
             return ""; // NOI18N
         }
         if("true".equals(System.getProperty("org.netbeans.modules.bugtracking.logPasswords", "false"))) { // NOI18N
-            return psswd; 
+            return new String(psswd); 
         }
         return "******"; // NOI18N
     }
+
+    public static RepositoryProvider[] getRepositories(String id) {
+        return RepositoryRegistry.getInstance().getRepositories(id);
+    }    
     
+    private static final String NB_BUGZILLA_PASSWORD = "nbbugzilla.password";                // NOI18N
+    private static final String NB_BUGZILLA_USERNAME = "nbbugzilla.username";                // NOI18N
+    
+    /**
+     * Returns the netbeans.org username
+     * Shouldn't be called in awt
+     *
+     * @return username
+     */
+    public static String getNBUsername() {
+        String user = BugtrackingConfig.getInstance().getPreferences().get(NB_BUGZILLA_USERNAME, ""); // NOI18N
+        return user.equals("") ? null : user;                         // NOI18N
+    }
+
+    /**
+     * Returns the netbeans.org password
+     * Shouldn't be called in awt
+     *
+     * @return password
+     */
+    public static char[] getNBPassword() {
+        return Keyring.read(NB_BUGZILLA_PASSWORD);
+    }
+
+    /**
+     * Save the given username as a netbeans.org username.
+     * Shouldn't be called in awt
+     */
+    public static void saveNBUsername(String username) {
+        BugtrackingConfig.getInstance().getPreferences().put(NB_BUGZILLA_USERNAME, username);
+    }
+
+    /**
+     * Saves the given value as a netbeans.org password
+     * Shouldn't be called in awt
+     */
+    public static void saveNBPassword(char[] password) {
+        if(password == null) {
+            Keyring.delete(NB_BUGZILLA_PASSWORD);
+        } else {
+            Keyring.save(
+                NB_BUGZILLA_PASSWORD,
+                password,
+                NbBundle.getMessage(
+                    BugtrackingUtil.class,
+                    "NBRepositorySupport.password_keyring_description"));       // NOI18N
+
+        }
+    }
+      
 }

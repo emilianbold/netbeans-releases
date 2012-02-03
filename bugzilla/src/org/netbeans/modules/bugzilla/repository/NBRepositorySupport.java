@@ -44,7 +44,9 @@ package org.netbeans.modules.bugzilla.repository;
 
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
 import org.openide.util.NbBundle;
 
@@ -73,28 +75,28 @@ public class NBRepositorySupport extends BugzillaRepository {
      * @return a BugzillaRepository
      */
     public static BugzillaRepository findNbRepository() {
-        BugzillaRepository[] repos;
+        RepositoryProvider[] repos;
         if(nbRepository != null) {
             // check if repository wasn't removed since the last time it was used
             if(!isKenai) {
-                repos = Bugzilla.getInstance().getRepositories();
+                repos = BugtrackingUtil.getRepositories(BugzillaConnector.ID);
                 boolean registered = false;
-                for (BugzillaRepository repo : repos) {
+                for (RepositoryProvider repo : repos) {
                     if(BugtrackingUtil.isNbRepository(repo)) {
                         registered = true;
                         break;
                     }
                 }
                 if(!registered) {
-                    Bugzilla.getInstance().addRepository(nbRepository);
+                    KenaiUtil.addRepository(nbRepository);
                 }
             }
             return nbRepository;
         }
-        repos = Bugzilla.getInstance().getRepositories();
-        for (BugzillaRepository repo : repos) {
+        repos = BugtrackingUtil.getRepositories(BugzillaConnector.ID);
+        for (RepositoryProvider repo : repos) {
             if(BugtrackingUtil.isNbRepository(repo)) {
-                return repo;
+                return (BugzillaRepository) repo;
             }
         }
 
@@ -111,7 +113,7 @@ public class NBRepositorySupport extends BugzillaRepository {
 
         if(nbRepository == null) {                              // no nb repo yet ...
             nbRepository = createRepositoryIntern();            // ... create ...
-            Bugzilla.getInstance().addRepository(nbRepository); // ... and register in services/issue tracking
+            KenaiUtil.addRepository(nbRepository); // ... and register in services/issue tracking
         } 
 
         return nbRepository;
@@ -124,7 +126,7 @@ public class NBRepositorySupport extends BugzillaRepository {
                       NbBundle.getMessage(NBRepositorySupport.class, "LBL_NBRepository"),      // NOI18N
                       NB_BUGZILLA_URL,
                       username,
-                      password != null ? new String(password) : null,
+                      password,
                       null, null); // NOI18N
     }
 }

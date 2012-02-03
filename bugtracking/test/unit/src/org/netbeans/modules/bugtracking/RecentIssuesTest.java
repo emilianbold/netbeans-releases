@@ -55,11 +55,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.spi.*;
 import org.openide.util.Lookup;
 
 /**
@@ -120,8 +116,8 @@ public class RecentIssuesTest extends NbTestCase {
         Map<String, List<RecentIssue>> allIssues = BugtrackingManager.getInstance().getAllRecentIssues();
         assertNotNull(allIssues);
         assertEquals(1, allIssues.size());
-        assertTrue(allIssues.containsKey(repo.getID()));
-        assertEquals(issue1.getID(), allIssues.get(repo.getID()).iterator().next().getIssue().getID());
+        assertTrue(allIssues.containsKey(repo.getInfo().getId()));
+        assertEquals(issue1.getID(), allIssues.get(repo.getInfo().getId()).iterator().next().getIssue().getID());
 
         // add issue2
         BugtrackingManager.getInstance().addRecentIssue(repo, issue2);
@@ -137,8 +133,8 @@ public class RecentIssuesTest extends NbTestCase {
         allIssues = BugtrackingManager.getInstance().getAllRecentIssues();
         assertNotNull(allIssues);
         assertEquals(1, allIssues.size());
-        assertTrue(allIssues.containsKey(repo.getID()));
-        assertRecentIssues(allIssues.get(repo.getID()), new IssueProvider[] {issue2, issue1});
+        assertTrue(allIssues.containsKey(repo.getInfo().getId()));
+        assertRecentIssues(allIssues.get(repo.getInfo().getId()), new IssueProvider[] {issue2, issue1});
     }
 
     public void testAddRecentIssuesMoreThan5() throws MalformedURLException, CoreException, IOException {
@@ -204,10 +200,10 @@ public class RecentIssuesTest extends NbTestCase {
 
         // getAll -> repo1 issues 1..7 are returned and repo2 issues 1..7 are returned
         Map<String, List<RecentIssue>> map = BugtrackingManager.getInstance().getAllRecentIssues();
-        List<RecentIssue> ri = map.get(repo1.getID());
+        List<RecentIssue> ri = map.get(repo1.getInfo().getId());
         assertRecentIssues(ri, new IssueProvider[] {repo1issue7, repo1issue6, repo1issue5, repo1issue4, repo1issue3, repo1issue2, repo1issue1});
 
-        ri = map.get(repo2.getID());
+        ri = map.get(repo2.getInfo().getId());
         assertRecentIssues(ri, new IssueProvider[] {repo2issue7, repo2issue6, repo2issue5, repo2issue4, repo2issue3, repo2issue2, repo2issue1});
     }
 
@@ -220,26 +216,23 @@ public class RecentIssuesTest extends NbTestCase {
 
     private class TestRepository extends RepositoryProvider {
         private final String name;
+        private RepositoryInfo info;
 
         public TestRepository(String name) {
             this.name = name;
-        }
-        public String getDisplayName() {
-            return name;
-        }
-        public String getTooltip() {
-            return name;
-        }
-        public String getID() {
-            return getDisplayName();
+            info = new RepositoryInfo(name, name, null, name, name, null, null, null, null);
         }
 
+        @Override
+        public RepositoryInfo getInfo() {
+            return info;
+        }
+        
         public Image getIcon() { throw new UnsupportedOperationException("Not supported yet."); }
-        public String getUrl() { throw new UnsupportedOperationException("Not supported yet."); }
         public Lookup getLookup() { throw new UnsupportedOperationException("Not supported yet."); }
         public IssueProvider getIssue(String id) { throw new UnsupportedOperationException("Not supported yet."); }
         public void remove() { throw new UnsupportedOperationException("Not supported yet."); }
-        public BugtrackingController getController() { throw new UnsupportedOperationException("Not supported yet.");}
+        public RepositoryController getController() { throw new UnsupportedOperationException("Not supported yet.");}
         public QueryProvider createQuery() { throw new UnsupportedOperationException("Not supported yet.");}
         public IssueProvider createIssue() {throw new UnsupportedOperationException("Not supported yet.");}
         public QueryProvider[] getQueries() {throw new UnsupportedOperationException("Not supported yet.");}

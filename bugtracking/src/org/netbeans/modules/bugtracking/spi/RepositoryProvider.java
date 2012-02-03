@@ -73,30 +73,13 @@ public abstract class RepositoryProvider implements Lookup.Provider {
      */
     public final static String EVENT_ATTRIBUTES_CHANGED = "bugtracking.repository.attributes.changed"; //NOI18N
 
+    public abstract RepositoryInfo getInfo();
+    
     /**
      * Returns the icon for this repository
      * @return
      */
     public abstract Image getIcon();
-
-    /**
-     * Returns the display name for this repository
-     * @return
-     */
-    public abstract String getDisplayName();
-
-    /**
-     * Returs the tooltip for this repository
-     * @return
-     */
-    public abstract String getTooltip();
-
-    /**
-     * Returns a unique ID for this repository
-     * 
-     * @return
-     */
-    public abstract String getID();
 
     /**
      * Returns a {@link Node} representing this repository
@@ -109,12 +92,6 @@ public abstract class RepositoryProvider implements Lookup.Provider {
         }
         return node;
     }
-
-    /**
-     * Returns the repositories url
-     * @return
-     */
-    public abstract String getUrl();
 
     /**
      * Returns an issue with the given ID
@@ -138,7 +115,7 @@ public abstract class RepositoryProvider implements Lookup.Provider {
      * Returns the {@link BugtrackignController} for this repository
      * @return
      */
-    public abstract BugtrackingController getController();
+    public abstract RepositoryController getController();
 
     /**
      * Creates a new query instance. Might block for a longer time.

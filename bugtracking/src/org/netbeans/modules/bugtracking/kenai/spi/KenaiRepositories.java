@@ -131,7 +131,7 @@ abstract class KenaiRepositories {
             BugtrackingManager.LOG.log(
                     Level.FINER,
                     "returning repository {0}:{1} for {2}", // NOI18N
-                    new Object[]{repository != null ? repository.getDisplayName() : "null", repository != null ? repository.getUrl() : "", repositoryKey});  // NOI18N
+                    new Object[]{repository != null ? repository.getInfo().getDisplayName() : "null", repository != null ? repository.getInfo().getUrl() : "", repositoryKey});  // NOI18N
             return repository;
         }
     }

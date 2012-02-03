@@ -45,6 +45,7 @@ package org.netbeans.modules.bugtracking.ui.selectors;
 import java.util.Arrays;
 import java.util.MissingResourceException;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
+import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.ConnectorComparator;
 import org.openide.DialogDescriptor;
@@ -96,7 +97,7 @@ public class SelectorPanel {
     RepositoryProvider getRepository() {
         return builder.getSelectedRepository();
     }
-
+    
     void setConnectors(DelegatingConnector[] connectors) {
         Arrays.sort(connectors, new ConnectorComparator());
         builder.setBugtrackingConnectors(connectors);

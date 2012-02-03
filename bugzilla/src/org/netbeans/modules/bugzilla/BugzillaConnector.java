@@ -47,6 +47,7 @@ import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssueFinder;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -75,16 +76,16 @@ public class BugzillaConnector extends BugtrackingConnector {
     static BugzillaConnector getInstance() {
         return instance;
     }
+
+    @Override
+    public RepositoryProvider createRepository(RepositoryInfo info) {
+        return new BugzillaRepository(info);
+    }
     
     @Override
     public RepositoryProvider createRepository() {
         Bugzilla.init();
         return new BugzillaRepository();
-    }
-
-    @Override
-    public RepositoryProvider[] getRepositories() {
-        return Bugzilla.getInstance().getRepositories();
     }
 
     public static String getConnectorName() {
@@ -102,11 +103,6 @@ public class BugzillaConnector extends BugtrackingConnector {
     @Override
     public Lookup getLookup() {
         return Lookups.singleton(Bugzilla.getInstance().getKenaiSupport());
-    }
-
-    @Override
-    public void fireRepositoriesChanged(Collection<RepositoryProvider> oldRepos, Collection<RepositoryProvider> newRepos) {
-        super.fireRepositoriesChanged(oldRepos, newRepos);
     }
 
 }

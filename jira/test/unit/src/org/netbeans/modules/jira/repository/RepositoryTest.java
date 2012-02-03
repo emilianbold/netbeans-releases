@@ -55,10 +55,7 @@ import java.util.List;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.JiraTestUtil;
@@ -72,7 +69,7 @@ import org.openide.util.Lookup;
  */
 public class RepositoryTest extends NbTestCase {
 
-    private static String REPO_NAME = "Beautiful";
+    private static String REPO_NAME;
     private static String QUERY_NAME = "Hilarious";
 
     public RepositoryTest(String arg0) {
@@ -82,6 +79,7 @@ public class RepositoryTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        REPO_NAME = "Beautiful-" + System.currentTimeMillis();
         JiraTestUtil.initClient(getWorkDir());
         JiraTestUtil.cleanProject(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()));
     }
@@ -89,12 +87,11 @@ public class RepositoryTest extends NbTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        JiraConfig.getInstance().removeRepository(REPO_NAME);
     }
 
 
     public void testController() throws Throwable, NoSuchFieldException, NoSuchFieldException, NoSuchFieldException, NoSuchFieldException, NoSuchFieldException {
-        RepositoryController c = getController();
+        JiraRepositoryController c = getController();
 
         // populate
         // only name
@@ -137,7 +134,7 @@ public class RepositoryTest extends NbTestCase {
     }
 
     public void testControllerOnValidate() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, Throwable {
-        RepositoryController c = getController();
+        JiraRepositoryController c = getController();
 
         checkOnValidate(c, REPO_NAME, JiraTestUtil.REPO_URL, null, JiraTestUtil.REPO_PASSWD, false);
 
@@ -154,7 +151,7 @@ public class RepositoryTest extends NbTestCase {
         checkOnValidate(c, REPO_NAME, JiraTestUtil.REPO_URL, JiraTestUtil.REPO_USER, JiraTestUtil.REPO_PASSWD, true);
     }
 
-    private void checkOnValidate(RepositoryController c, String repoName, String repoUrl, String user, String psswd, boolean assertWorked) throws Throwable {
+    private void checkOnValidate(JiraRepositoryController c, String repoName, String repoUrl, String user, String psswd, boolean assertWorked) throws Throwable {
 
         populate(c, repoName, repoUrl, user, psswd); //
         assertTrue(c.isValid());
@@ -219,7 +216,7 @@ public class RepositoryTest extends NbTestCase {
         long ts = System.currentTimeMillis();
         String summary1 = "somary";
         String summary2 = "somar";
-        JiraRepository repo = new JiraRepository(REPO_NAME, REPO_NAME, JiraTestUtil.REPO_URL, JiraTestUtil.REPO_USER, JiraTestUtil.REPO_PASSWD, null, null);
+        JiraRepository repo = new JiraRepository(REPO_NAME, REPO_NAME, JiraTestUtil.REPO_URL, JiraTestUtil.REPO_USER, JiraTestUtil.REPO_PASSWD.toCharArray(), null, null);
 
         RepositoryResponse rr = JiraTestUtil.createIssue(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()), summary1, "Alles Kaputt!", "Bug");
         assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_CREATED);
@@ -276,11 +273,11 @@ public class RepositoryTest extends NbTestCase {
         return bc;
     }
 
-    private RepositoryController getController() {
+    private JiraRepositoryController getController() {
         JiraConnector bc = getConnector();
         JiraRepository repo = (JiraRepository) bc.createRepository();
         assertNotNull(repo);
-        RepositoryController c = (RepositoryController) repo.getController();
+        JiraRepositoryController c = (JiraRepositoryController) repo.getController();
         assertNotNull(c);
         assertFalse(c.isValid());
         return c;
@@ -298,13 +295,13 @@ public class RepositoryTest extends NbTestCase {
         return ret.toArray(new QueryProvider[ret.size()]);
     }
 
-    private RepositoryPanel getRepositoryPanel(BugtrackingController c) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+    private RepositoryPanel getRepositoryPanel(RepositoryController c) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         Field f = c.getClass().getDeclaredField("panel");
         f.setAccessible(true);
         return (RepositoryPanel) f.get(c);
     }
 
-    private void populate(BugtrackingController c, String name, String url, String user, String psswd) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+    private void populate(RepositoryController c, String name, String url, String user, String psswd) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         RepositoryPanel panel = getRepositoryPanel(c);
         resetPanel(panel);
         panel.nameField.setText(name);
@@ -337,7 +334,7 @@ public class RepositoryTest extends NbTestCase {
         return i.getID();
     }
 
-    private void onValidate(RepositoryController c) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    private void onValidate(JiraRepositoryController c) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         Method m = c.getClass().getDeclaredMethod("onValidate");
         m.setAccessible(true);
         m.invoke(c);

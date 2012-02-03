@@ -243,7 +243,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         return c;
     }
 
-    protected void setCredentials(String user, String password) {
+    protected void setCredentials(String user, char[] password) {
         super.setCredentials(user, password, null, null);
     }
 
@@ -265,7 +265,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         String user = pa.getUserName();
         char[] password = pa.getPassword();
 
-        setCredentials(user, new String(password));
+        setCredentials(user, password);
 
         return true;
     }
@@ -278,12 +278,12 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         return "";                                                              // NOI18N
     }
 
-    private static String getKenaiPassword(KenaiProject kenaiProject) {
+    private static char[] getKenaiPassword(KenaiProject kenaiProject) {
         PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false);
         if(pa != null) {
-            return new String(pa.getPassword());
+            return pa.getPassword();
         }
-        return "";                                                              // NOI18N
+        return new char[0];                                                              
     }
 
     /**
@@ -345,15 +345,15 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
             // XXX move to spi?
             // get kenai credentials
             String user;
-            String psswd;
+            char[] psswd;
             PasswordAuthentication pa =
                 KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false); // do not force login
             if(pa != null) {
                 user = pa.getUserName();
-                psswd = new String(pa.getPassword());
+                psswd = pa.getPassword();
             } else {
                 user = "";                                                      // NOI18N
-                psswd = "";                                                     // NOI18N
+                psswd = new char[0]; 
             }
 
             setCredentials(user, psswd);

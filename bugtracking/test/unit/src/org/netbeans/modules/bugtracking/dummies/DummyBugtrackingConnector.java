@@ -46,6 +46,7 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.openide.util.Lookup;
@@ -55,12 +56,12 @@ import org.openide.util.Lookup;
  * @author Marian Petras
  */
 @BugtrackingConnector.Registration (
-    id=BugzillaConnector.ID,
+    id=DummyBugtrackingConnector.ID,
     displayName="Dummy bugtracking connector",
     tooltip="bugtracking connector created for testing purposes"
 )    
 public class DummyBugtrackingConnector extends BugtrackingConnector {
-
+    public static final String ID = "DummyBugtrackingConnector";
     private char newRepositoryName = 'A';
     private int newRepositoryNumber = 0;
     private List<RepositoryProvider> repositories;
@@ -96,15 +97,6 @@ public class DummyBugtrackingConnector extends BugtrackingConnector {
         repositories.add(repository);
     }
 
-    @Override
-    public RepositoryProvider[] getRepositories() {
-        if (repositories == null) {
-            return new RepositoryProvider[0];
-        }
-
-        return repositories.toArray(new RepositoryProvider[repositories.size()]);
-    }
-
     void removeRepository(DummyRepository repository) {
         if (repositories == null) {
             return;
@@ -119,5 +111,10 @@ public class DummyBugtrackingConnector extends BugtrackingConnector {
 
     public Lookup getLookup() {
         return Lookup.EMPTY;
+    }
+
+    @Override
+    public RepositoryProvider createRepository(RepositoryInfo info) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

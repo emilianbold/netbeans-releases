@@ -53,7 +53,6 @@ import java.util.Map;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import java.awt.Image;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -75,11 +74,12 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
+import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.commands.JiraExecutor;
 import org.netbeans.modules.jira.commands.NamedFiltersCommand;
@@ -105,7 +105,7 @@ public class JiraRepository extends RepositoryProvider {
 
     private String name;
     private TaskRepository taskRepository;
-    private RepositoryController controller;
+    private JiraRepositoryController controller;
     private Set<QueryProvider> queries = null;
     private Set<QueryProvider> remoteFilters = null;
     private IssueCache<TaskData> cache;
@@ -132,7 +132,17 @@ public class JiraRepository extends RepositoryProvider {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
     }
 
-    public JiraRepository(String repoID, String repoName, String url, String user, String password, String httpUser, String httpPassword) {
+    public JiraRepository(RepositoryInfo info) {
+        this(info.getId(), 
+            info.getDisplayName(), 
+            info.getUrl(), 
+            info.getUsername(), 
+            info.getPassword(), 
+            info.getHttpUsername(), 
+            info.getHttpPassword());
+    }
+    
+    public JiraRepository(String repoID, String repoName, String url, String user, char[] password, String httpUser, char[] httpPassword) {
         this();
         id = repoID;
         name = repoName;
@@ -140,12 +150,17 @@ public class JiraRepository extends RepositoryProvider {
             user = "";                                                          // NOI18N
         }
         if(password == null) {
-            password = "";                                                      // NOI18N
+            password = new char[0];
         }
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
     }
 
     @Override
+    public RepositoryInfo getInfo() {
+        RepositoryInfo info = new RepositoryInfo(id, JiraConnector.ID, getUrl(), getDisplayName(), getTooltip(), getUsername(), getHttpUsername(), getPassword(), getHttpPassword());
+        return info;
+    }
+    
     public String getID() {
         if(id == null) {
             id = name + System.currentTimeMillis();
@@ -182,12 +197,10 @@ public class JiraRepository extends RepositoryProvider {
         return new NbJiraIssue(data, this);
     }
 
-    @Override
     public String getDisplayName() {
         return name;
     }
 
-    @Override
     public String getTooltip() {
         return name + " : " + taskRepository.getCredentials(AuthenticationType.REPOSITORY).getUserName() + "@" + taskRepository.getUrl(); // NOI18N
     }
@@ -216,11 +229,11 @@ public class JiraRepository extends RepositoryProvider {
             return null;
         }
     }
-
+    
     @Override
-    public BugtrackingController getController() {
+    public RepositoryController getController() {
         if(controller == null) {
-            controller = new RepositoryController(this);
+            controller = new JiraRepositoryController(this);
         }
         return controller;
     }
@@ -237,7 +250,6 @@ public class JiraRepository extends RepositoryProvider {
         return new Object[] { getIssueCache() };
     }
 
-    @Override
     public String getUrl() {
         return taskRepository != null ? taskRepository.getUrl() : null;
     }
@@ -250,7 +262,6 @@ public class JiraRepository extends RepositoryProvider {
                 removeQuery((JiraQuery) q);
             }
         }
-        Jira.getInstance().removeRepository(this);
         resetRepository(true);
     }
 
@@ -418,7 +429,7 @@ public class JiraRepository extends RepositoryProvider {
         name = newName;
     }
 
-    protected void setTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
+    protected void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
         HashMap<String, Object> oldAttributes = createAttributesMap();
 
         String oldUrl = taskRepository != null ? taskRepository.getUrl() : "";
@@ -430,16 +441,15 @@ public class JiraRepository extends RepositoryProvider {
         
         resetRepository(oldUrl.equals(url) && oldUser.equals(user) && oldPassword.equals(password)); // XXX reset the configuration only if the host changed
                                                                                                      //     on psswd and user change reset only taskrepository
-        Jira.getInstance().addRepository(this);
         HashMap<String, Object> newAttributes = createAttributesMap();
         fireAttributesChanged(oldAttributes, newAttributes);
     }
 
-    public void setCredentials(String user, String password, String httpUser, String httpPassword) {
+    public void setCredentials(String user, char[] password, String httpUser, char[] httpPassword) {
         MylynUtils.setCredentials(taskRepository, user, password, httpUser, httpPassword);
     }
 
-    static TaskRepository createTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword) {
+    static TaskRepository createTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
         TaskRepository repository =
                 new TaskRepository(
                     Jira.getInstance().getRepositoryConnector().getConnectorKind(),
@@ -453,9 +463,9 @@ public class JiraRepository extends RepositoryProvider {
         return c != null ? c.getUserName() : ""; // NOI18N
     }
 
-    public String getPassword() {
+    public char[] getPassword() {
         AuthenticationCredentials c = getTaskRepository().getCredentials(AuthenticationType.REPOSITORY);
-        return c != null ? c.getPassword() : ""; // NOI18N
+        return c != null ? c.getPassword().toCharArray() : new char[0]; 
     }
 
     public String getHttpUsername() {
@@ -463,9 +473,9 @@ public class JiraRepository extends RepositoryProvider {
         return c != null ? c.getUserName() : ""; // NOI18N
     }
 
-    public String getHttpPassword() {
+    public char[] getHttpPassword() {
         AuthenticationCredentials c = getTaskRepository().getCredentials(AuthenticationType.HTTP);
-        return c != null ? c.getPassword() : ""; // NOI18N
+        return c != null ? c.getPassword().toCharArray() : new char[0]; 
     }
 
     void resetRepository(boolean keepConfiguration) {

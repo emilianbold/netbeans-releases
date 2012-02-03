@@ -50,6 +50,7 @@ import java.net.URL;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
@@ -57,22 +58,20 @@ import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.RepositoryController;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.Jira;
-import org.netbeans.modules.jira.JiraConfig;
+import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.commands.ValidateCommand;
-import org.openide.util.Cancellable;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.util.*;
 import org.openide.util.RequestProcessor.Task;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class RepositoryController extends BugtrackingController implements DocumentListener, ActionListener {
+public class JiraRepositoryController implements RepositoryController, DocumentListener, ActionListener {
     private JiraRepository repository;
     private RepositoryPanel panel;
     private String errorMessage;
@@ -80,8 +79,9 @@ public class RepositoryController extends BugtrackingController implements Docum
     private boolean populated = false;
     private RequestProcessor rp;
     private TaskRunner taskRunner;
-
-    RepositoryController(JiraRepository repository) {
+    private final ChangeSupport support = new ChangeSupport(this);
+    
+    JiraRepositoryController(JiraRepository repository) {
         this.repository = repository;
         panel = new RepositoryPanel(this);
         panel.nameField.getDocument().addDocumentListener(this);
@@ -119,16 +119,16 @@ public class RepositoryController extends BugtrackingController implements Docum
         return panel.userField.getText();
     }
 
-    private String getPassword() {
-        return new String(panel.psswdField.getPassword());
+    private char[] getPassword() {
+        return panel.psswdField.getPassword();
     }
 
     private String getHttpUser() {
         return panel.httpCheckBox.isSelected() ? panel.httpUserField.getText() : null;
     }
 
-    private String getHttpPassword() {
-        return panel.httpCheckBox.isSelected() ? new String(panel.httpPsswdField.getPassword()) : null;
+    private char[] getHttpPassword() {
+        return panel.httpCheckBox.isSelected() ? panel.httpPsswdField.getPassword() : new char[0];
     }
 
     private boolean validate() {
@@ -146,17 +146,17 @@ public class RepositoryController extends BugtrackingController implements Docum
         // check name
         String name = panel.nameField.getText().trim();
         if(name.equals("")) { // NOI18N
-            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_MISSING_NAME");  // NOI18N
+            errorMessage = NbBundle.getMessage(JiraRepositoryController.class, "MSG_MISSING_NAME");  // NOI18N
             return false;
         }
 
         // is name unique?
-        String[] repositories = null;
+        RepositoryProvider[] repositories = null;
         if(repository.getTaskRepository() == null) {
-            repositories = JiraConfig.getInstance().getRepositories();
-            for (String repoId : repositories) {
-                if(name.equals(JiraConfig.getInstance().getRepositoryName(repoId))) {
-                    errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_NAME_ALREADY_EXISTS");  // NOI18N
+            repositories = BugtrackingUtil.getRepositories(JiraConnector.ID);
+            for (RepositoryProvider rp : repositories) {
+                if(name.equals(rp.getInfo().getDisplayName())) {
+                    errorMessage = NbBundle.getMessage(JiraRepositoryController.class, "MSG_NAME_ALREADY_EXISTS");  // NOI18N
                     return false;
                 }
             }
@@ -165,14 +165,14 @@ public class RepositoryController extends BugtrackingController implements Docum
         // check url
         String url = getUrl();
         if(url.equals("")) { // NOI18N
-            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_MISSING_URL");  // NOI18N
+            errorMessage = NbBundle.getMessage(JiraRepositoryController.class, "MSG_MISSING_URL");  // NOI18N
             return false;
         }
         try {
             new URL(url); // check this first even if URL is an URI
             new URI(url);
         } catch (Exception ex) {
-            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_WRONG_URL_FORMAT");  // NOI18N
+            errorMessage = NbBundle.getMessage(JiraRepositoryController.class, "MSG_WRONG_URL_FORMAT");  // NOI18N
             Jira.LOG.log(Level.FINEST, errorMessage, ex);
             return false;
         }
@@ -182,11 +182,9 @@ public class RepositoryController extends BugtrackingController implements Docum
 
         // is url unique?
         if(repository.getTaskRepository() == null) {
-            for (String repositoryName : repositories) {
-                JiraRepository repo = Jira.getInstance().getRepository(repositoryName);
-                if(repo == null) continue;
-                if(url.trim().equals(repo.getUrl())) {
-                    errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_URL_ALREADY_EXISTS");  // NOI18N
+            for (RepositoryProvider rp : repositories) {
+                if(url.trim().equals(rp.getInfo().getUrl())) {
+                    errorMessage = NbBundle.getMessage(JiraRepositoryController.class, "MSG_URL_ALREADY_EXISTS");  // NOI18N
                     return false;
                 }
             }
@@ -216,11 +214,10 @@ public class RepositoryController extends BugtrackingController implements Docum
             getPassword(),
             getHttpUser(),
             getHttpPassword());
-        Jira.getInstance().addRepository(repository);
         repository.getNode().setName(newName);
     }
 
-    void populate() {
+    public void populate() {
         taskRunner = new TaskRunner(NbBundle.getMessage(RepositoryPanel.class, "LBL_ReadingRepoData")) {  // NOI18N
             @Override
             protected void preRun() {
@@ -234,7 +231,6 @@ public class RepositoryController extends BugtrackingController implements Docum
             }
             @Override
             void execute() {
-                JiraConfig.getInstance().setupCredentials(repository);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -261,7 +257,7 @@ public class RepositoryController extends BugtrackingController implements Docum
                             panel.nameField.setText(repository.getDisplayName());
                         }
                         populated = true;
-                        fireDataChanged();
+                        fireChange();
                     }
                 });
             }
@@ -273,21 +269,21 @@ public class RepositoryController extends BugtrackingController implements Docum
     public void insertUpdate(DocumentEvent e) {
         if(!populated) return;
         validateErrorOff(e);
-        fireDataChanged();
+        fireChange();
     }
 
     @Override
     public void removeUpdate(DocumentEvent e) {
         if(!populated) return;
         validateErrorOff(e);
-        fireDataChanged();
+        fireChange();
     }
 
     @Override
     public void changedUpdate(DocumentEvent e) {
         if(!populated) return;
         validateErrorOff(e);
-        fireDataChanged();
+        fireChange();
     }
 
     @Override
@@ -309,8 +305,8 @@ public class RepositoryController extends BugtrackingController implements Docum
                 String url = getUrl();
                 String user = getUser();
                 String httpUser = getHttpUser();
-                String password = getPassword();
-                String httpPassword = getHttpPassword();
+                char[] password = getPassword();
+                char[] httpPassword = getHttpPassword();
                 TaskRepository taskRepo = JiraRepository.createTaskRepository(
                         name,
                         url,
@@ -325,7 +321,7 @@ public class RepositoryController extends BugtrackingController implements Docum
                     if(cmd.getErrorMessage() == null) {
                         logValidateMessage("validate for [{0},{1},{2},{3},{4},{5}] has failed, yet the returned error message is null.", // NOI18N
                                            Level.WARNING, name, url, user, password, httpUser, httpPassword);
-                        errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_VALIDATION_FAILED");  // NOI18N
+                        errorMessage = NbBundle.getMessage(JiraRepositoryController.class, "MSG_VALIDATION_FAILED");  // NOI18N
                     } else {
                         errorMessage = cmd.getErrorMessage();
                         logValidateMessage("validate for [{0},{1},{2},{3},{4},{5}] has failed: " + errorMessage, // NOI18N
@@ -337,10 +333,10 @@ public class RepositoryController extends BugtrackingController implements Docum
                                        Level.INFO, name, url, user, password, httpUser, httpPassword);
                     panel.connectionLabel.setVisible(true);
                 }
-                fireDataChanged();
+                fireChange();
             }
 
-            private void logValidateMessage(String msg, Level level, String name, String url, String user, String password, String httpUser, String httpPassword) {
+            private void logValidateMessage(String msg, Level level, String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
                 Jira.LOG.log(level, msg, new Object[] {name, url, user, BugtrackingUtil.getPasswordLog(password), httpUser, BugtrackingUtil.getPasswordLog(httpPassword)});
             }
         };
@@ -440,4 +436,19 @@ public class RepositoryController extends BugtrackingController implements Docum
         }
         return rp;
     }
+    
+    
+    @Override
+    public void addChangeListener(ChangeListener l) {
+        support.addChangeListener(l);
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener l) {
+        support.removeChangeListener(l);
+    }
+    
+    protected void fireChange() {
+        support.fireChange();
+    }        
 }

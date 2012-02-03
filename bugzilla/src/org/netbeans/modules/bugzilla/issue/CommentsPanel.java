@@ -509,7 +509,7 @@ public class CommentsPanel extends JPanel {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                Collection<Long> s = IssueSettingsStorage.getInstance().loadCollapsedCommenst(issue.getRepository().getUrl(), issue.getID());
+                Collection<Long> s = IssueSettingsStorage.getInstance().loadCollapsedCommenst(issue.getBugzillaRepository().getUrl(), issue.getID());
                 for (Long l : s) {
                     if(!touchedCommenst.contains(l)) {
                         collapsedComments.add(l);
@@ -521,7 +521,7 @@ public class CommentsPanel extends JPanel {
     
     void storeSettings() {
         if(issue != null) {
-            IssueSettingsStorage.getInstance().storeCollapsedComments(collapsedComments, issue.getRepository().getUrl(), issue.getID());
+            IssueSettingsStorage.getInstance().storeCollapsedComments(collapsedComments, issue.getBugzillaRepository().getUrl(), issue.getID());
         }
     }    
     

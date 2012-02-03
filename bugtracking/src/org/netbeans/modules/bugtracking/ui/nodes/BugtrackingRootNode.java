@@ -59,6 +59,7 @@ import javax.swing.Action;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.*;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -133,10 +134,7 @@ public class BugtrackingRootNode extends AbstractNode {
          * Creates a new instance of RootNodeChildren
          */
         public RootNodeChildren() {
-            BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
-            for (BugtrackingConnector c : connectors) {
-                c.addPropertyChangeListener(this);
-            }
+            RepositoryRegistry.getInstance().addPropertyChangeListener(this);
         }
 
         @Override
@@ -145,14 +143,14 @@ public class BugtrackingRootNode extends AbstractNode {
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            if(evt.getPropertyName().equals(BugtrackingConnector.EVENT_REPOSITORIES_CHANGED)) {
+            if(evt.getPropertyName().equals(RepositoryRegistry.EVENT_REPOSITORIES_CHANGED)) {
                 refresh(false);
             }
         }
 
         @Override
         protected boolean createKeys(List<RepositoryProvider> toPopulate) {
-            toPopulate.addAll(Arrays.asList(BugtrackingManager.getInstance().getRepositories()));
+            toPopulate.addAll(Arrays.asList(RepositoryRegistry.getInstance().getRepositories()));
             Collections.sort(toPopulate, new RepositoryComparator());
             return true;
         }
@@ -163,7 +161,7 @@ public class BugtrackingRootNode extends AbstractNode {
             if(r1 == null && r2 == null) return 0;
             if(r1 == null) return -1;
             if(r2 == null) return 1;
-            return r1.getDisplayName().compareTo(r2.getDisplayName());
+            return r1.getInfo().getDisplayName().compareTo(r2.getInfo().getDisplayName());
         }
     }
     

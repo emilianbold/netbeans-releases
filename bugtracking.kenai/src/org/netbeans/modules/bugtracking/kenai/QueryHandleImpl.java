@@ -161,7 +161,7 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
         if(stringValue == null) {
             StringBuilder sb = new StringBuilder();
             sb.append("[");                                                     // NOI18N
-            sb.append(query.getRepository().getDisplayName());
+            sb.append(query.getRepository().getInfo().getDisplayName());
             sb.append(",");                                                     // NOI18N
             sb.append(query.getDisplayName());
             sb.append("]");                                                     // NOI18N

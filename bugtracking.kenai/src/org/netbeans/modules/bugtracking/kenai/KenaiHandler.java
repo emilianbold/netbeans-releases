@@ -247,11 +247,11 @@ class KenaiHandler {
         KenaiRepositoryListener krl = null;
         synchronized (kenaiRepoListeners) {
             String url = project.getKenaiProject().getKenai().getUrl().toString();
-            krl = kenaiRepoListeners.get(repo.getID());
+            krl = kenaiRepoListeners.get(repo.getInfo().getId());
             if (krl == null) {
                 krl = new KenaiRepositoryListener(repo, project);
                 repo.addPropertyChangeListener(krl);
-                kenaiRepoListeners.put(repo.getID(), krl);
+                kenaiRepoListeners.put(repo.getInfo().getId(), krl);
             }
         }
     }
@@ -322,7 +322,7 @@ class KenaiHandler {
         if(support != null) {
             return support.getType();
         } else {
-            assert false : "no KenaiSupport available for repository [" + repo.getDisplayName() + "]";  // NOI18N
+            assert false : "no KenaiSupport available for repository [" + repo.getInfo().getDisplayName() + "]";  // NOI18N
         }
         return null;
     }

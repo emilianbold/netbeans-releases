@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,78 +37,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.bugtracking;
 
-package org.netbeans.modules.bugtracking.vcs;
-
-import java.awt.Image;
-import java.util.Collection;
-import org.netbeans.modules.bugtracking.spi.*;
-import org.openide.util.Lookup;
+import java.util.prefs.Preferences;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class HookRepository extends RepositoryProvider {
-    private RepositoryInfo info = new RepositoryInfo("HookRepository", "HookRepository", "http://url", "HookRepository", "HookRepository", null, null, null, null);
-
-    @Override
-    public RepositoryInfo getInfo() {
-        return info;
-    }
-
+public abstract class SPIAccessor {
     
+    public static SPIAccessor IMPL;
     
-    @Override
-    public Image getIcon() {
-        return null;
-    }
-
-    @Override
-    public IssueProvider getIssue(String id) {
-        return HookIssue.instance;
-    }
-
-    @Override
-    public void remove() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public RepositoryController getController() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public QueryProvider createQuery() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public IssueProvider createIssue() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public QueryProvider[] getQueries() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Collection<RepositoryUser> getUsers() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public IssueProvider[] simpleSearch(String criteria) {
-        return new IssueProvider[] {HookIssue.instance};
-    }
-
-    @Override
-    public Lookup getLookup() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
+    static {
+        // invokes static initializer of RepositoryInfo.class
+        // that will assign value to the IMPL field above
+        Class c = RepositoryInfo.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }  
+    
+    public abstract RepositoryInfo read(Preferences preferences, String key);
+    public abstract void store(Preferences preferences, RepositoryInfo info, String key);
+    
 }

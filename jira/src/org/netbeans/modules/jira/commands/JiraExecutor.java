@@ -107,8 +107,6 @@ public class JiraExecutor {
                     checkAutoupdate();
                 }
 
-                ensureCredentials();
-
                 cmd.execute();
 
                 cmd.setFailed(false);
@@ -167,10 +165,6 @@ public class JiraExecutor {
                 Jira.LOG.log(Level.SEVERE, null, re);
             }
         }
-    }
-
-    private void ensureCredentials() {
-        JiraConfig.getInstance().setupCredentials(repository);
     }
 
     public boolean handleIOException(IOException io) {

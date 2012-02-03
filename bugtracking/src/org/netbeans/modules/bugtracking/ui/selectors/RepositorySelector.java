@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.jira.JiraUpdater;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
@@ -75,6 +76,7 @@ public class RepositorySelector {
         final RepositoryProvider repo = selectorPanel.getRepository();
         try {
             repo.getController().applyChanges();
+            RepositoryRegistry.getInstance().addRepository(repo);
         } catch (IOException ex) {
             BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
             return null;
@@ -82,7 +84,7 @@ public class RepositorySelector {
         BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                BugtrackingRootNode.selectNode(repo.getDisplayName());
+                BugtrackingRootNode.selectNode(repo.getInfo().getDisplayName());
             }
         });
         return repo;
@@ -95,6 +97,8 @@ public class RepositorySelector {
         RepositoryProvider repo = selectorPanel.getRepository();
         try {
             repo.getController().applyChanges();
+            // no repo on edit
+            RepositoryRegistry.getInstance().addRepository(repo);
         } catch (IOException ex) {
             BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
             return false;

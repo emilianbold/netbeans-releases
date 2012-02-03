@@ -101,6 +101,7 @@ import static javax.swing.SwingConstants.NORTH;
 import static javax.swing.SwingConstants.SOUTH;
 import static javax.swing.SwingConstants.WEST;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 
 /**
  * Top component which displays something.
@@ -135,10 +136,7 @@ public final class QueryTopComponent extends TopComponent
     private Node[] context;
 
     QueryTopComponent() {
-        BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
-        for (BugtrackingConnector c : connectors) {
-            c.addPropertyChangeListener(this);
-        }
+        RepositoryRegistry.getInstance().addPropertyChangeListener(this);
         repositoryComboBox = new javax.swing.JComboBox();
         newButton = new LinkButton();
 
@@ -403,7 +401,7 @@ public final class QueryTopComponent extends TopComponent
             }
         } else if(evt.getPropertyName().equals(RepositoryProvider.EVENT_QUERY_LIST_CHANGED)) {
             updateSavedQueries();
-        } else if(evt.getPropertyName().equals(BugtrackingConnector.EVENT_REPOSITORIES_CHANGED)) {
+        } else if(evt.getPropertyName().equals(RepositoryRegistry.EVENT_REPOSITORIES_CHANGED)) {
             if(query != null) {
                 Object cNew = evt.getNewValue();
                 Object cOld = evt.getOldValue();
@@ -442,7 +440,7 @@ public final class QueryTopComponent extends TopComponent
     private boolean contains(Collection c, RepositoryProvider r) {
         for (Object o : c) {
             assert o instanceof RepositoryProvider;
-            if(((RepositoryProvider)o).getID().equals(r.getID())) {
+            if(((RepositoryProvider)o).getInfo().getId().equals(r.getInfo().getId())) {
                 return true;
             }
         }
@@ -600,8 +598,8 @@ public final class QueryTopComponent extends TopComponent
             @Override
             public void run() {
                 if(query != null && query.getDisplayName() != null) {
-                    setName(NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{query.getRepository().getDisplayName(), query.getDisplayName()})); // NOI18N
-                    setToolTipText(NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{query.getRepository().getDisplayName(), query.getTooltip()})); // NOI18N
+                    setName(NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{query.getRepository().getInfo().getDisplayName(), query.getDisplayName()})); // NOI18N
+                    setToolTipText(NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{query.getRepository().getInfo().getDisplayName(), query.getTooltip()})); // NOI18N
                 } else {
                     setName(NbBundle.getMessage(QueryTopComponent.class, "CTL_QueryTopComponent")); // NOI18N
                     setToolTipText(NbBundle.getMessage(QueryTopComponent.class, "HINT_QueryTopComponent")); // NOI18N
@@ -635,7 +633,7 @@ public final class QueryTopComponent extends TopComponent
         if(repo == null) {
             return;
         }
-        BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} start", new Object[] {repo.getDisplayName()} );
+        BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} start", new Object[] {repo.getInfo().getDisplayName()} );
         QueryProvider[] queries = repo.getQueries();
         final QueryProvider[] finQueries;
         synchronized (LOCK) {
@@ -649,9 +647,9 @@ public final class QueryTopComponent extends TopComponent
             public void run() {
                 repoPanel.setQueries(finQueries);
                 if(finQueries == null || finQueries.length == 0) {
-                    BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} finnished. No queries.", new Object[] {repo.getDisplayName()} );
+                    BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} finnished. No queries.", new Object[] {repo.getInfo().getDisplayName()} );
                 } else {
-                    BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} finnished. {1} saved queries.", new Object[] {repo.getDisplayName(), savedQueries.length} );
+                    BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} finnished. {1} saved queries.", new Object[] {repo.getInfo().getDisplayName(), savedQueries.length} );
                 }
             }
         });

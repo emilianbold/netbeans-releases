@@ -57,10 +57,10 @@ import java.awt.event.ActionListener;
  * @author Tomas Stupka
  */
 public class RepositoryPanel extends javax.swing.JPanel implements ActionListener {
-    private RepositoryController controller;
+    private JiraRepositoryController controller;
 
     /** Creates new form RepositoryPanel */
-    public RepositoryPanel(RepositoryController controller) {
+    public RepositoryPanel(JiraRepositoryController controller) {
         initComponents();
         this.controller = controller;
         validateLabel.setVisible(false);

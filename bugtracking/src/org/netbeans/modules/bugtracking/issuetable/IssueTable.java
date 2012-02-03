@@ -786,7 +786,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         if(name == null) {
             name = "#find#issues#hitlist#table#";               // NOI18N
         }
-        return query.getRepository().getID() + ":" + name;      // NOI18N
+        return query.getRepository().getInfo().getId() + ":" + name;      // NOI18N
     }
 
     private class StoreColumnsHandler implements Runnable {

@@ -56,11 +56,7 @@ import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -414,32 +410,28 @@ public class CacheTest extends NbTestCase {
     private class TestRepository extends RepositoryProvider {
         private final String name;
         private final TestCache cache;
+        private RepositoryInfo info;
         public TestRepository(String name) {
             this.name = name;
             cache = new TestCache(name);
+            info = new RepositoryInfo(name, name, "http://" + name + ".org", name, name, null, null, null, null);
         }
         public Image getIcon() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-        public String getDisplayName() {
-            return name;
+
+        @Override
+        public RepositoryInfo getInfo() {
+            return info;
         }
-        public String getTooltip() {
-            return getDisplayName();
-        }
-        public String getID() {
-            return getDisplayName();
-        }
-        public String getUrl() {
-            return "http://" + getDisplayName() + ".org";
-        }
+
         public Lookup getLookup() {
             return Lookups.singleton(cache);
         }
 
         public IssueProvider getIssue(String id) {throw new UnsupportedOperationException("Not supported yet.");}
         public void remove() {throw new UnsupportedOperationException("Not supported yet.");}
-        public BugtrackingController getController() {throw new UnsupportedOperationException("Not supported yet.");}
+        public RepositoryController getController() {throw new UnsupportedOperationException("Not supported yet.");}
         public QueryProvider createQuery() {throw new UnsupportedOperationException("Not supported yet.");}
         public IssueProvider createIssue() {throw new UnsupportedOperationException("Not supported yet.");}
         public QueryProvider[] getQueries() {throw new UnsupportedOperationException("Not supported yet.");}

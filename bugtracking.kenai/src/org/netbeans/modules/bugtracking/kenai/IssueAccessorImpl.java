@@ -107,7 +107,7 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
         RepositoryProvider[] knownRepos = BugtrackingUtil.getKnownRepositories(false);
         Map<String, RepositoryProvider> repoMap = new HashMap<String, RepositoryProvider>(knownRepos.length);
         for (RepositoryProvider repository : knownRepos) {
-            repoMap.put(repository.getID(), repository);
+            repoMap.put(repository.getInfo().getId(), repository);
         }
 
         Map<String, KenaiProjectImpl> issueToKenaiProject = new HashMap<String, KenaiProjectImpl>();

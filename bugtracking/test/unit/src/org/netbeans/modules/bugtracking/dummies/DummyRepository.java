@@ -44,11 +44,7 @@ package org.netbeans.modules.bugtracking.dummies;
 
 import java.awt.Image;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.spi.*;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 
@@ -63,10 +59,12 @@ public class DummyRepository extends RepositoryProvider {
 
     private final DummyBugtrackingConnector connector;
     private final String id;
+    private RepositoryInfo info;
 
     public DummyRepository(DummyBugtrackingConnector connector, String id) {
         this.connector = connector;
         this.id = id;
+        info = new RepositoryInfo(id, DummyBugtrackingConnector.ID, null, "Dummy repository \"" + id + '"', "dummy repository created for testing purposes", null, null, null, null);
     }
 
     @Override
@@ -75,24 +73,8 @@ public class DummyRepository extends RepositoryProvider {
     }
 
     @Override
-    public String getDisplayName() {
-        return "Dummy repository \"" + getID() + '"';
-    }
-
-    @Override
-    public String getTooltip() {
-        return "dummy repository created for testing purposes";
-    }
-
-    @Override
-    public String getID() {
-        return id;
-    }
-
-    @Override
-    public String getUrl() {
-        assert false : "This was assumed to be never called.";
-        return null;
+    public RepositoryInfo getInfo() {
+        return info;
     }
 
     @Override
@@ -107,7 +89,7 @@ public class DummyRepository extends RepositoryProvider {
     }
 
     @Override
-    public BugtrackingController getController() {
+    public RepositoryController getController() {
         assert false : "This was assumed to be never called.";
         return null;
     }
@@ -148,7 +130,7 @@ public class DummyRepository extends RepositoryProvider {
 
     @Override
     public String toString() {
-        return getDisplayName();
+        return getInfo().getDisplayName();
     }
 
 }

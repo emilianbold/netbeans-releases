@@ -174,7 +174,7 @@ public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, 
     private KenaiRepository getKenaiRepository() throws IOException {
         KenaiProject kp = KenaiUtil.getKenaiProject("https://testjava.net", "nb-jnet-test");
         // even if the actually used repository is different, it should have no effect on the result
-        return new KenaiRepository(kp, REPO_NAME, REPO_URL, REPO_HOST, REPO_USER, REPO_PASSWD, "product=" + TEST_PROJECT, TEST_PROJECT);
+        return new KenaiRepository(kp, REPO_NAME, REPO_URL, REPO_HOST, REPO_USER, REPO_PASSWD.toCharArray(), "product=" + TEST_PROJECT, TEST_PROJECT);
     }
 
 

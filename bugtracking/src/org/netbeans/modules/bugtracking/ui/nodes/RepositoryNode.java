@@ -68,7 +68,7 @@ public class RepositoryNode extends AbstractNode {
     public RepositoryNode(RepositoryProvider repository) {
         super(Children.LEAF);
         this.repository = repository;
-        setName(repository.getDisplayName());
+        setName(repository.getInfo().getDisplayName());
     }
 
     @Override
@@ -97,7 +97,7 @@ public class RepositoryNode extends AbstractNode {
             new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_RemoveRepository")) { // NOI18N
                 public void actionPerformed(ActionEvent e) {
                     NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                        NbBundle.getMessage(RepositoryNode.class, "MSG_RemoveRepository", new Object[] { repository.getDisplayName() }), // NOI18N
+                        NbBundle.getMessage(RepositoryNode.class, "MSG_RemoveRepository", new Object[] { repository.getInfo().getDisplayName() }), // NOI18N
                         NbBundle.getMessage(RepositoryNode.class, "CTL_RemoveRepository"),      // NOI18N
                         NotifyDescriptor.OK_CANCEL_OPTION);
 

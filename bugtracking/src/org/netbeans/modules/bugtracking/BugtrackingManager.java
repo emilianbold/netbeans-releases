@@ -115,27 +115,11 @@ public final class BugtrackingManager implements LookupListener {
      */
     public RepositoryProvider[] getKnownRepositories(boolean pingOpenProjects) {
         RepositoryProvider[] kenaiRepos = KenaiUtil.getRepositories(pingOpenProjects);
-        RepositoryProvider[] otherRepos = getRepositories();
+        RepositoryProvider[] otherRepos = RepositoryRegistry.getInstance().getRepositories();
         RepositoryProvider[] ret = new RepositoryProvider[kenaiRepos.length + otherRepos.length];
         System.arraycopy(kenaiRepos, 0, ret, 0, kenaiRepos.length);
         System.arraycopy(otherRepos, 0, ret, kenaiRepos.length, otherRepos.length);
         return ret;
-    }
-
-    /**
-     * Returns all user defined repositories
-     * @return
-     */
-    public RepositoryProvider[] getRepositories() {
-        List<RepositoryProvider> repos = new ArrayList<RepositoryProvider>(10);
-        BugtrackingConnector[] conns = getConnectors();
-        for (BugtrackingConnector bc : conns) {
-            RepositoryProvider[] rs = bc.getRepositories();
-            if(rs != null) {
-                repos.addAll(Arrays.asList(rs));
-            }
-        }
-        return repos.toArray(new RepositoryProvider[repos.size()]);
     }
 
     public RequestProcessor getRequestProcessor() {
@@ -158,7 +142,7 @@ public final class BugtrackingManager implements LookupListener {
 
     public List<IssueProvider> getRecentIssues(RepositoryProvider repo) {
         assert repo != null;
-        List<RecentIssue> l = getRecentIssues().get(repo.getID());
+        List<RecentIssue> l = getRecentIssues().get(repo.getInfo().getId());
         if(l == null) {
             return Collections.EMPTY_LIST;
         }
@@ -174,10 +158,10 @@ public final class BugtrackingManager implements LookupListener {
         if (issue.getID() == null) {
             return;
         }
-        List<RecentIssue> l = getRecentIssues().get(repo.getID());
+        List<RecentIssue> l = getRecentIssues().get(repo.getInfo().getId());
         if(l == null) {
             l = new LinkedList<RecentIssue>();
-            getRecentIssues().put(repo.getID(), l);
+            getRecentIssues().put(repo.getInfo().getId(), l);
         }
         for (RecentIssue i : l) {
             if(i.getIssue().getID().equals(issue.getID())) {
@@ -193,7 +177,7 @@ public final class BugtrackingManager implements LookupListener {
                         Level.FINE,
                         "recent issue: [{0}, {1}, {2}]",                        // NOI18N
                         new Object[]{
-                            ri.getIssue().getRepository().getDisplayName(),
+                            ri.getIssue().getRepository().getInfo().getDisplayName(),
                             ri.getIssue().getID(),
                             f.format(new Date(ri.getTimestamp()))});                                                   // NOI18N
             }
