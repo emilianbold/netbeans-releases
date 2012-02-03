@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,35 +37,58 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans;
 
-package org.netbeans.core.netigso;
-
-import java.util.HashMap;
-import org.osgi.framework.Bundle;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Enumeration;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-final class NetigsoActivator extends HashMap<Bundle,ClassLoader> {
-    private final Netigso netigso;
+final class NetigsoLoader extends ClassLoader {
+    private final Module mi;
 
-    public NetigsoActivator(Netigso netigso) {
-        this.netigso = netigso;
+    public NetigsoLoader(Module mi) {
+        this.mi = mi;
     }
 
     @Override
-    public ClassLoader get(Object o) {
-        if (o instanceof Bundle) {
-            String loc = ((Bundle) o).getLocation();
-            final String pref = "netigso://"; // NOI18N
-            if (loc != null && loc.startsWith(pref)) {
-                String cnb = loc.substring(pref.length());
-                return netigso.findClassLoader(cnb);
+    public Class<?> loadClass(String string) throws ClassNotFoundException {
+        return getDelegate().loadClass(string);
+    }
+
+    @Override
+    public Enumeration<URL> getResources(String string) throws IOException {
+        return getDelegate().getResources(string);
+    }
+
+    @Override
+    public InputStream getResourceAsStream(String string) {
+        return getDelegate().getResourceAsStream(string);
+    }
+
+    @Override
+    public URL getResource(String string) {
+        return getDelegate().getResource(string);
+    }
+
+    private ClassLoader getDelegate() {
+        if (!mi.isEnabled()) {
+            try {
+                mi.getManager().enable(mi, false);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvalidException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
-        return null;
+        return mi.getClassLoader();
     }
-}
+    
+} // end of DelegateLoader
