@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
+import com.oracle.nashorn.ir.CallNode;
 import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.IdentNode;
 import com.oracle.nashorn.ir.LiteralNode;
@@ -118,4 +119,10 @@ class ModelElementFactory {
         return (JsObjectImpl)newObject;
     }
     
+    static JsObjectImpl createAnonymousObject(JsParserResult parserResult, ObjectNode objectNode, CallNode callNode, ModelBuilder modelBuilder) {
+        JsObjectImpl result = new AnonymousObject(modelBuilder.getGlobal(),
+                    "Anonym", ModelUtils.documentOffsetRange(parserResult, objectNode.getStart(), objectNode.getFinish()));
+        modelBuilder.getCurrentDeclarationScope().addProperty("Anonym", result);
+        return result;
+    }
 }

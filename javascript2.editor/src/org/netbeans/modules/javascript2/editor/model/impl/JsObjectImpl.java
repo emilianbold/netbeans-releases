@@ -47,6 +47,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -58,7 +59,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     final private Identifier declarationName;
     final private JsObject parent;
     final private List<Occurrence> occurrences;
-    final private HashMap<Integer, Collection<String>> assignments;
+    final private Map<Integer, Collection<String>> assignments;
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange) {
         super((parent != null ? parent.getFileObject() : null), name.getName(), false,  offsetRange, EnumSet.of(Modifier.PUBLIC));
@@ -68,7 +69,15 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.occurrences = new ArrayList<Occurrence>();
         this.assignments = new HashMap<Integer, Collection<String>>();
     }
-    
+  
+    protected JsObjectImpl(JsObject parent, String name, boolean isDeclared, OffsetRange offsetRange, Set<Modifier> modifiers) {
+        super((parent != null ? parent.getFileObject() : null), name, isDeclared, offsetRange, modifiers);
+        this.properties = new HashMap<String, JsObject>();
+        this.declarationName = null;
+        this.parent = parent;
+        this.occurrences = Collections.EMPTY_LIST;
+        this.assignments = Collections.EMPTY_MAP;
+    }
     @Override
     public Identifier getDeclarationName() {
         return declarationName;
@@ -81,6 +90,9 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             return Kind.FILE;
         }
         if (getProperties().isEmpty()) {
+            if (getParent().isAnonymous() && (getParent() instanceof AnonymousObject)) {
+                return Kind.PROPERTY;
+            }
             if (getParent().getParent() == null || getModifiers().contains(Modifier.PRIVATE)) {
                 // variable or the global object
                 return Kind.VARIABLE;
@@ -145,5 +157,10 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         }
         
         return result;
+    }
+
+    @Override
+    public boolean isAnonymous() {
+        return false;
     }
 }

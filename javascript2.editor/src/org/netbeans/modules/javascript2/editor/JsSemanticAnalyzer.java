@@ -52,6 +52,7 @@ import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -108,7 +109,12 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                     highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.METHOD_SET);
                     break;
                 case OBJECT:
-                    if (object.isDeclared()) {
+                    if (parent.getParent() == null) {
+                        highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.GLOBAL_SET);
+                        for (Occurrence occurence : object.getOccurrences()) {
+                            highlights.put(occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
+                        }
+                    } else if (object.isDeclared()) {
                         highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.CLASS_SET);
                     }
                     break;

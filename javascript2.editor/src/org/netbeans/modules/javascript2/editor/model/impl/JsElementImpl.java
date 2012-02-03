@@ -88,6 +88,7 @@ public abstract class JsElementImpl implements JsElement {
                 result = ElementKind.METHOD;
                 break;
             case OBJECT:
+            case ANONYMOUS_OBJECT:
                 result = ElementKind.CLASS;
                 break;
             case PROPERTY:
