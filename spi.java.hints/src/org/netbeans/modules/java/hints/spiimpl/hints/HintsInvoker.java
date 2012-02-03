@@ -100,7 +100,7 @@ import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.Hint.Severity;
 import org.netbeans.spi.java.hints.Hint.Severity;
 import org.netbeans.spi.java.hints.matching.Matcher;
-import org.netbeans.spi.java.hints.matching.Matcher.OccurrenceDescription;
+import org.netbeans.spi.java.hints.matching.Occurrence;
 import org.netbeans.spi.java.hints.matching.Pattern;
 import org.openide.util.Exceptions;
 
@@ -497,14 +497,14 @@ public class HintsInvoker {
                 Pattern pattern = PatternCompiler.compile(info, occ.getKey(), constraints, d.getImports());
 
                 for (TreePath candidate : occ.getValue()) {
-                    Iterator<? extends OccurrenceDescription> verified = Matcher.create(info).setCancel(cancel).setSearchRoot(candidate).setTreeTopSearch().match(pattern).iterator();
+                    Iterator<? extends Occurrence> verified = Matcher.create(info).setCancel(cancel).setSearchRoot(candidate).setTreeTopSearch().match(pattern).iterator();
 
                     if (!verified.hasNext()) {
                         continue;
                     }
 
                     Set<String> suppressedWarnings = new HashSet<String>(Utilities.findSuppressedWarnings(info, candidate));
-                    OccurrenceDescription verifiedVariables = verified.next();
+                    Occurrence verifiedVariables = verified.next();
 
                     for (HintDescription hd : patternHints.get(d)) {
                         HintMetadata hm = hd.getMetadata();

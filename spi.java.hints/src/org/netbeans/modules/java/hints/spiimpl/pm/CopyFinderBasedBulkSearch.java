@@ -57,7 +57,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription.AdditionalQueryConstraints;
 import org.netbeans.spi.java.hints.matching.Matcher;
-import org.netbeans.spi.java.hints.matching.Matcher.OccurrenceDescription;
+import org.netbeans.spi.java.hints.matching.Occurrence;
 import org.netbeans.spi.java.hints.matching.Pattern;
 import org.openide.util.Parameters;
 
@@ -78,7 +78,7 @@ public class CopyFinderBasedBulkSearch extends BulkSearch {
         TreePath topLevel = new TreePath(info.getCompilationUnit());
         
         for (Entry<Tree, String> e : ((BulkPatternImpl) pattern).pattern2Code.entrySet()) {
-            for (OccurrenceDescription od : Matcher.create(info).setCancel(new AtomicBoolean()).setUntypedMatching().match(Pattern.createPatternWithFreeVariables(new TreePath(topLevel, e.getKey()), Collections.<String, TypeMirror>emptyMap()))) {
+            for (Occurrence od : Matcher.create(info).setCancel(new AtomicBoolean()).setUntypedMatching().match(Pattern.createPatternWithFreeVariables(new TreePath(topLevel, e.getKey()), Collections.<String, TypeMirror>emptyMap()))) {
                 Collection<TreePath> c = result.get(e.getValue());
 
                 if (c == null) {

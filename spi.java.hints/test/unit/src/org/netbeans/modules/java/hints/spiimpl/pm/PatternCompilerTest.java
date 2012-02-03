@@ -54,7 +54,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.java.hints.spiimpl.TestBase;
 import org.netbeans.modules.java.hints.infrastructure.Pair;
 import org.netbeans.spi.java.hints.matching.Matcher;
-import org.netbeans.spi.java.hints.matching.Matcher.OccurrenceDescription;
+import org.netbeans.spi.java.hints.matching.Occurrence;
 
 /**
  *
@@ -167,7 +167,7 @@ public class PatternCompilerTest extends TestBase {
         assertNotNull(tp);
 
         //XXX:
-        Iterator<? extends OccurrenceDescription> vars = Matcher.create(info).setCancel(new AtomicBoolean()).setSearchRoot(tp).setTreeTopSearch().match(PatternCompilerUtilities.compile(info, pattern)).iterator();
+        Iterator<? extends Occurrence> vars = Matcher.create(info).setCancel(new AtomicBoolean()).setSearchRoot(tp).setTreeTopSearch().match(PatternCompilerUtilities.compile(info, pattern)).iterator();
 
         if (duplicates == null) {
             assertFalse(vars.hasNext());

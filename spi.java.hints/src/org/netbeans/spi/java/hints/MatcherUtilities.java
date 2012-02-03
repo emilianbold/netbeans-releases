@@ -59,7 +59,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.hints.spiimpl.Utilities;
 import org.netbeans.modules.java.hints.spiimpl.pm.PatternCompiler;
 import org.netbeans.spi.java.hints.matching.Matcher;
-import org.netbeans.spi.java.hints.matching.Matcher.OccurrenceDescription;
+import org.netbeans.spi.java.hints.matching.Occurrence;
 import org.netbeans.spi.java.hints.matching.Pattern;
 
 /**XXX: cancelability
@@ -82,10 +82,10 @@ public class MatcherUtilities {
         Map<String, TreePath> variables = new HashMap<String, TreePath>(ctx.getVariables());
         Map<String, Collection<? extends TreePath>> multiVariables = new HashMap<String, Collection<? extends TreePath>>(ctx.getMultiVariables());
         Map<String, String> variables2Names = new HashMap<String, String>(ctx.getVariableNames());
-        Iterable<? extends OccurrenceDescription> occurrences = Matcher.create(ctx.getInfo()).setCancel(new AtomicBoolean()).setPresetVariable(variables, multiVariables, variables2Names).setSearchRoot(variable).setTreeTopSearch().match(p);
+        Iterable<? extends Occurrence> occurrences = Matcher.create(ctx.getInfo()).setCancel(new AtomicBoolean()).setPresetVariable(variables, multiVariables, variables2Names).setSearchRoot(variable).setTreeTopSearch().match(p);
 
         if (occurrences.iterator().hasNext()) {
-            OccurrenceDescription od = occurrences.iterator().next();
+            Occurrence od = occurrences.iterator().next();
             outVariables(outVariables, od.getVariables(), ctx.getVariables());
             outVariables(outMultiVariables, od.getMultiVariables(), ctx.getMultiVariables());
             outVariables(outVariables2Names, od.getVariables2Names(), ctx.getVariableNames());
@@ -120,13 +120,13 @@ public class MatcherUtilities {
         while (variableIt.hasNext() && patternTreesIt.hasNext()) {
             TreePath patternTreePath = new TreePath(new TreePath(ctx.getInfo().getCompilationUnit()), patternTreesIt.next());
             Pattern p = Pattern.createPatternWithFreeVariables(patternTreePath, Collections.<String, TypeMirror>emptyMap());
-            Iterable<? extends OccurrenceDescription> occurrences = Matcher.create(ctx.getInfo()).setCancel(new AtomicBoolean()).setPresetVariable(variables, multiVariables, variables2Names).setSearchRoot(variableIt.next()).setTreeTopSearch().match(p);
+            Iterable<? extends Occurrence> occurrences = Matcher.create(ctx.getInfo()).setCancel(new AtomicBoolean()).setPresetVariable(variables, multiVariables, variables2Names).setSearchRoot(variableIt.next()).setTreeTopSearch().match(p);
 
             if (!occurrences.iterator().hasNext()) {
                 return false;
             }
 
-            OccurrenceDescription od = occurrences.iterator().next();
+            Occurrence od = occurrences.iterator().next();
 
             variables = od.getVariables();
             multiVariables = od.getMultiVariables();

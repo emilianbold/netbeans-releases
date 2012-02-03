@@ -74,7 +74,7 @@ import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.JavaFixUtilities;
-import org.netbeans.spi.java.hints.matching.Matcher.OccurrenceDescription;
+import org.netbeans.spi.java.hints.matching.Occurrence;
 import org.openide.util.NbBundle;
 
 /**
@@ -122,7 +122,7 @@ public class JoinCatches {
 
             for (int j = i + 1; j < catches.size(); j++) {
                 Pattern pattern = Pattern.createPatternWithRemappableVariables(new TreePath(toTestPath, toTest.getBlock()), Collections.singleton(excVar), false);
-                Iterable<? extends OccurrenceDescription> found = Matcher.create(ctx.getInfo()).setCancel(new AtomicBoolean()).setPresetVariable(ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames()).setSearchRoot(new TreePath(new TreePath(ctx.getPath(), catches.get(j)), ((CatchTree)catches.get(j)).getBlock())).setTreeTopSearch().match(pattern);
+                Iterable<? extends Occurrence> found = Matcher.create(ctx.getInfo()).setCancel(new AtomicBoolean()).setPresetVariable(ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames()).setSearchRoot(new TreePath(new TreePath(ctx.getPath(), catches.get(j)), ((CatchTree)catches.get(j)).getBlock())).setTreeTopSearch().match(pattern);
 
                 if (found.iterator().hasNext()) {
                     TreePath catchPath = new TreePath(ctx.getPath(), catches.get(j));

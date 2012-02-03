@@ -47,7 +47,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.spi.java.hints.matching.Matcher;
-import org.netbeans.spi.java.hints.matching.Matcher.OccurrenceDescription;
+import org.netbeans.spi.java.hints.matching.Occurrence;
 import org.netbeans.spi.java.hints.matching.Pattern;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -60,7 +60,7 @@ public class CopyFinderService {
     public static Set<TreePath> computeDuplicates(CompilationInfo info, TreePath searchingFor, TreePath scope, AtomicBoolean cancel) {
         Set<TreePath> result = new HashSet<TreePath>();
         
-        for (OccurrenceDescription od : Matcher.create(info).setCancel(cancel).setSearchRoot(scope).match(Pattern.createSimplePattern(searchingFor))) {
+        for (Occurrence od : Matcher.create(info).setCancel(cancel).setSearchRoot(scope).match(Pattern.createSimplePattern(searchingFor))) {
             result.add(od.getOccurrenceRoot());
         }
 

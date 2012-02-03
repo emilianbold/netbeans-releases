@@ -136,7 +136,7 @@ import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
-import org.netbeans.spi.java.hints.matching.Matcher.OccurrenceDescription;
+import org.netbeans.spi.java.hints.matching.Occurrence;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -2016,7 +2016,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                         Pattern p = Pattern.createPatternWithRemappableVariables(statementsPaths, parameters, true);
 
-                        for (OccurrenceDescription desc : Matcher.create(copy).setCancel(new AtomicBoolean()).match(p)) {
+                        for (Occurrence desc : Matcher.create(copy).setCancel(new AtomicBoolean()).match(p)) {
                             TreePath firstLeaf = desc.getOccurrenceRoot();
                             List<? extends StatementTree> parentStatements = getStatements(new TreePath(new TreePath(firstLeaf.getParentPath().getParentPath(), resolveRewritten(rewritten, firstLeaf.getParentPath().getLeaf())), firstLeaf.getLeaf()));
                             int dupeStart = parentStatements.indexOf(firstLeaf.getLeaf());
@@ -2282,7 +2282,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         Document doc = copy.getDocument();
                         Pattern p = Pattern.createPatternWithRemappableVariables(expression, parameters, true);
 
-                        for (OccurrenceDescription desc : Matcher.create(copy).setCancel(new AtomicBoolean()).match(p)) {
+                        for (Occurrence desc : Matcher.create(copy).setCancel(new AtomicBoolean()).match(p)) {
                             TreePath firstLeaf = desc.getOccurrenceRoot();
                             int startOff = (int) copy.getTrees().getSourcePositions().getStartPosition(copy.getCompilationUnit(), firstLeaf.getLeaf());
                             int endOff = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), firstLeaf.getLeaf());
