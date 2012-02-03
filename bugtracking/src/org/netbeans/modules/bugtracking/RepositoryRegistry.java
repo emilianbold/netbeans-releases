@@ -51,7 +51,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -68,12 +67,13 @@ import org.openide.util.NbPreferences;
 public class RepositoryRegistry {
 
 
-    private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
-
     /**
-     * a repository from this connector was created, removed or changed
+     * A repository was created or removed, where old value is a Collection of all repositories 
+     * before the change and new value a Collection of all repositories after the change.
      */
     public final static String EVENT_REPOSITORIES_CHANGED = "bugtracking.repositories.changed"; // NOI18N
+    
+    private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     
     private static final String REPO_ID           = "bugracking.repository_";   // NOI18N
     private static final String DELIMITER         = "<=>";                      // NOI18N    
@@ -86,6 +86,11 @@ public class RepositoryRegistry {
         
     private RepositoryRegistry() {}
     
+    /**
+     * Returns the singleton RepositoryRegistry instance
+     * 
+     * @return 
+     */
     public static synchronized RepositoryRegistry getInstance() {
         if(instance == null) {
             instance = new RepositoryRegistry();
@@ -93,6 +98,11 @@ public class RepositoryRegistry {
         return instance;
     }
     
+    /**
+     * Returns all repositories
+     * 
+     * @return 
+     */
     public RepositoryProvider[] getRepositories() {
         synchronized(REPOSITORIES_LOCK) {
             List<RepositoryProvider> l = getStoredRepositories().getRepositories();
@@ -100,6 +110,12 @@ public class RepositoryRegistry {
         }
     }
 
+    /**
+     * Returns all repositories for the connector with the given ID
+     * 
+     * @param connectorID
+     * @return 
+     */
     public RepositoryProvider[] getRepositories(String connectorID) {
         synchronized(REPOSITORIES_LOCK) {
             final Map<String, RepositoryProvider> m = getStoredRepositories().get(connectorID);
@@ -112,6 +128,89 @@ public class RepositoryRegistry {
         }
     }
 
+    /**
+     * Add the given repository
+     * 
+     * @param repository 
+     */
+    public void addRepository(RepositoryProvider repository) {
+        assert repository != null;
+        if(KenaiUtil.isKenai(repository) && !BugtrackingUtil.isNbRepository(repository)) {
+            // we don't store kenai repositories - XXX  shouldn't be even called
+            return;        
+        }
+        Collection<RepositoryProvider> oldRepos;
+        Collection<RepositoryProvider> newRepos;
+        synchronized(REPOSITORIES_LOCK) {
+            oldRepos = Collections.unmodifiableCollection(new LinkedList<RepositoryProvider>(getStoredRepositories().getRepositories()));
+            String connectorID = repository.getInfo().getConnectorId();
+            getStoredRepositories().put(repository.getInfo().getConnectorId(), repository); // cache
+            putRepository(connectorID, repository); // persist
+            newRepos = Collections.unmodifiableCollection(getStoredRepositories().getRepositories());
+
+        }
+        fireRepositoriesChanged(oldRepos, newRepos);
+    }    
+
+    /**
+     * Remove the given repository
+     * 
+     * @param repository 
+     */
+    public void removeRepository(RepositoryProvider repository) {
+        Collection<RepositoryProvider> oldRepos;
+        Collection<RepositoryProvider> newRepos;
+        synchronized(REPOSITORIES_LOCK) {
+            oldRepos = Collections.unmodifiableCollection(getStoredRepositories().getRepositories());
+            String connectorID = repository.getInfo().getConnectorId();
+            // persist remove
+            getPreferences().remove(REPO_ID + DELIMITER + connectorID + DELIMITER + repository.getInfo().getId()); 
+            // remove from cache
+            getStoredRepositories().remove(connectorID, repository);
+            
+            newRepos = Collections.unmodifiableCollection(getStoredRepositories().getRepositories());
+        }
+        fireRepositoriesChanged(oldRepos, newRepos);
+    }
+    
+    /**
+     * Returns all known repositories incl. the Kenai ones
+     *
+     * @param pingOpenProjects if {@code false}, search only Kenai projects
+     *                          that are currently open in the Kenai dashboard;
+     *                          if {@code true}, search also all Kenai projects
+     *                          currently opened in the IDE
+     * @return repositories
+     */
+    public RepositoryProvider[] getKnownRepositories(boolean pingOpenProjects) {
+        RepositoryProvider[] kenaiRepos = KenaiUtil.getRepositories(pingOpenProjects);
+        RepositoryProvider[] otherRepos = getRepositories();
+        RepositoryProvider[] ret = new RepositoryProvider[kenaiRepos.length + otherRepos.length];
+        System.arraycopy(kenaiRepos, 0, ret, 0, kenaiRepos.length);
+        System.arraycopy(otherRepos, 0, ret, kenaiRepos.length, otherRepos.length);
+        return ret;
+    }
+    
+    /**
+     * remove a listener from this connector
+     * @param listener
+     */
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.removePropertyChangeListener(listener);
+    }
+
+    /**
+     * Add a listener to this connector to listen on events
+     * @param listener
+     */
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.addPropertyChangeListener(listener);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////
+    // private 
+    ////////////////////////////////////////////////////////////////////////////////////////
+    
     private RepositoriesMap getStoredRepositories() {
         if (repositories == null) {
             repositories = new RepositoriesMap();
@@ -137,57 +236,6 @@ public class RepositoryRegistry {
             }
         }
         return repositories;
-    }
-  
-    public void addRepository(RepositoryProvider repository) {
-        assert repository != null;
-        if(KenaiUtil.isKenai(repository) && !BugtrackingUtil.isNbRepository(repository)) {
-            // we don't store kenai repositories - XXX  shouldn't be even called
-            return;        
-        }
-        Collection<RepositoryProvider> oldRepos;
-        Collection<RepositoryProvider> newRepos;
-        synchronized(REPOSITORIES_LOCK) {
-            oldRepos = Collections.unmodifiableCollection(new LinkedList<RepositoryProvider>(getStoredRepositories().getRepositories()));
-            String connectorID = repository.getInfo().getConnectorId();
-            getStoredRepositories().put(repository.getInfo().getConnectorId(), repository); // cache
-            putRepository(connectorID, repository); // persist
-            newRepos = Collections.unmodifiableCollection(getStoredRepositories().getRepositories());
-
-        }
-        fireRepositoriesChanged(oldRepos, newRepos);
-    }    
-
-    public void removeRepository(RepositoryProvider repository) {
-        Collection<RepositoryProvider> oldRepos;
-        Collection<RepositoryProvider> newRepos;
-        synchronized(REPOSITORIES_LOCK) {
-            oldRepos = Collections.unmodifiableCollection(getStoredRepositories().getRepositories());
-            String connectorID = repository.getInfo().getConnectorId();
-            // persist remove
-            getPreferences().remove(REPO_ID + DELIMITER + connectorID + DELIMITER + repository.getInfo().getId()); 
-            // remove from cache
-            getStoredRepositories().remove(connectorID, repository);
-            
-            newRepos = Collections.unmodifiableCollection(getStoredRepositories().getRepositories());
-        }
-        fireRepositoriesChanged(oldRepos, newRepos);
-    }
-    
-    /**
-     *
-     * Returns all known repositories incl. the Kenai ones
-     *
-     * @param pingOpenProjects 
-     * @return repositories
-     */
-    public RepositoryProvider[] getKnownRepositories(boolean pingOpenProjects) {
-        RepositoryProvider[] kenaiRepos = KenaiUtil.getRepositories(pingOpenProjects);
-        RepositoryProvider[] otherRepos = getRepositories();
-        RepositoryProvider[] ret = new RepositoryProvider[kenaiRepos.length + otherRepos.length];
-        System.arraycopy(kenaiRepos, 0, ret, 0, kenaiRepos.length);
-        System.arraycopy(otherRepos, 0, ret, kenaiRepos.length, otherRepos.length);
-        return ret;
     }
   
     private String[] getRepositoryIds() {
@@ -229,27 +277,11 @@ public class RepositoryRegistry {
     }
     
     /**
-     * remove a listener from this connector
-     * @param listener
-     */
-    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
-        changeSupport.removePropertyChangeListener(listener);
-    }
-
-    /**
-     * Add a listener to this connector to listen on events
-     * @param listener
-     */
-    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
-        changeSupport.addPropertyChangeListener(listener);
-    }
-
-    /**
      *
      * @param oldRepositories - lists repositories which were available for the connector before the change
      * @param newRepositories - lists repositories which are available for the connector after the change
      */
-    public void fireRepositoriesChanged(Collection<RepositoryProvider> oldRepositories, Collection<RepositoryProvider> newRepositories) {
+    private void fireRepositoriesChanged(Collection<RepositoryProvider> oldRepositories, Collection<RepositoryProvider> newRepositories) {
         changeSupport.firePropertyChange(EVENT_REPOSITORIES_CHANGED, oldRepositories, newRepositories);
     }
 
