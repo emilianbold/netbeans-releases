@@ -39,17 +39,17 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.phpunit.annotations;
+package org.netbeans.modules.php.doctrine2.annotations;
 
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.openide.util.NbBundle;
 
-public class ExpectedExceptionMessageTag extends PhpAnnotationTag {
+public class IndexTag extends PhpAnnotationTag {
 
-    public ExpectedExceptionMessageTag() {
-        super("expectedExceptionMessage", // NOI18N
-                "@expectedExceptionMessage ${someMessage}", // NOI18N
-                NbBundle.getMessage(ExpectedExceptionMessageTag.class, "ExpectedExceptionMessageTag.documentation"));
+    public IndexTag() {
+        super("Index", // NOI18N
+                "@Index(name=\"${index_name}\", columns={\"${column1}\", \"${column2}\"})", // NOI18N
+                NbBundle.getMessage(IndexTag.class, "IndexTag.documentation"));
     }
 
 }

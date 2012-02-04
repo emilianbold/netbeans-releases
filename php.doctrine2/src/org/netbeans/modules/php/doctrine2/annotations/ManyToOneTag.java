@@ -39,17 +39,17 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.phpunit.annotations;
+package org.netbeans.modules.php.doctrine2.annotations;
 
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.openide.util.NbBundle;
 
-public class ExpectedExceptionMessageTag extends PhpAnnotationTag {
+public class ManyToOneTag extends PhpAnnotationTag {
 
-    public ExpectedExceptionMessageTag() {
-        super("expectedExceptionMessage", // NOI18N
-                "@expectedExceptionMessage ${someMessage}", // NOI18N
-                NbBundle.getMessage(ExpectedExceptionMessageTag.class, "ExpectedExceptionMessageTag.documentation"));
+    public ManyToOneTag() {
+        super("ManyToOne", // NOI18N
+                "@ManyToOne(targetEntity=\"${Entity}\", cascade={\"${all}\"}, fetch=\"${LAZY}\")", // NOI18N
+                NbBundle.getMessage(ManyToOneTag.class, "ManyToOneTag.documentation"));
     }
 
 }

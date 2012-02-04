@@ -48,7 +48,7 @@ public class AssertTag extends PhpAnnotationTag {
 
     public AssertTag() {
         super("assert", // NOI18N
-                "@assert (${u1 default=\"param1\"}) == ${u2 default=\"expectedResult\"}", // NOI18N
+                "@assert (${param1}, ${param2}) == ${expectedResult}", // NOI18N
                 NbBundle.getMessage(AssertTag.class, "AssertTag.documentation"));
     }
 

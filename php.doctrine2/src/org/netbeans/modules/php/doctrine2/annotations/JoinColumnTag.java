@@ -39,17 +39,17 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.phpunit.annotations;
+package org.netbeans.modules.php.doctrine2.annotations;
 
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.openide.util.NbBundle;
 
-public class ExpectedExceptionMessageTag extends PhpAnnotationTag {
+public class JoinColumnTag extends PhpAnnotationTag {
 
-    public ExpectedExceptionMessageTag() {
-        super("expectedExceptionMessage", // NOI18N
-                "@expectedExceptionMessage ${someMessage}", // NOI18N
-                NbBundle.getMessage(ExpectedExceptionMessageTag.class, "ExpectedExceptionMessageTag.documentation"));
+    public JoinColumnTag() {
+        super("JoinColumn", // NOI18N
+                "@JoinColumn(name=\"${foreign_column}\", referencedColumnName=\"${column}\")", // NOI18N
+                NbBundle.getMessage(JoinColumnTag.class, "JoinColumnTag.documentation"));
     }
 
 }
