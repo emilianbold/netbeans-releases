@@ -88,7 +88,7 @@ public final class RepositoryInfo {
     }
 
     public char[] getHttpPassword() {
-        if(BugtrackingUtil.isNbRepository(map.get(PROPERTY_URL))) {
+        if(isNbRepository()) {
             return new char[0];
         } else {
             return BugtrackingUtil.readPassword(null, "http", getHttpUsername(), getUrl()); // NOI18N
@@ -108,7 +108,7 @@ public final class RepositoryInfo {
     }
 
     public char[] getPassword() {
-        if(BugtrackingUtil.isNbRepository(map.get(PROPERTY_URL))) {
+        if(isNbRepository()) {
             return BugtrackingUtil.getNBPassword();
         } else {
             return BugtrackingUtil.readPassword(null, null, getUsername(), getUrl());
@@ -156,7 +156,7 @@ public final class RepositoryInfo {
     }
     
     void store(Preferences preferences, String key) {
-        boolean isNetbeans = BugtrackingUtil.isNbRepository(map.get(PROPERTY_URL));
+        boolean isNetbeans = isNbRepository();
         preferences.put(key, getStringValue(isNetbeans));
     }
     
@@ -190,11 +190,16 @@ public final class RepositoryInfo {
     }   
     
     private void storePasswords(char[] password, char[] httpPassword) throws MissingResourceException {
-        if(BugtrackingUtil.isNbRepository(map.get(PROPERTY_URL))) {
+        if(isNbRepository()) {
             BugtrackingUtil.saveNBPassword(password);
         } else {
             BugtrackingUtil.savePassword(password, null, getUsername(), getUrl());
             BugtrackingUtil.savePassword(httpPassword, "http", getHttpUsername(), getUrl()); // NOI18N
         }
-    }    
+    }
+
+    private boolean isNbRepository() {
+        String url = map.get(PROPERTY_URL);
+        return url != null ? BugtrackingUtil.isNbRepository(url) : false;
+    }
 }
