@@ -63,9 +63,9 @@ import org.openide.util.Lookup;
  *  this base class is the renaming of the PROP_name property to show an extension.
  */
 @MIMEResolver.Registration(
-    displayName="#ExtBasedResolver",
+    displayName="#ExtBasedResolver", // NOI18N
     position=138,
-    resource="../resources/mime-resolver-ext-based.xml"
+    resource="../resources/mime-resolver-ext-based.xml" // NOI18N
 )
 public class CndDataNode extends DataNode {
 

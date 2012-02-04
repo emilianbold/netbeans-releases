@@ -59,9 +59,9 @@ import org.openide.util.lookup.InstanceContent;
  *
  */
 @MIMEResolver.Registration(
-    displayName="#HexBasedResolver",
+    displayName="#HexBasedResolver", // NOI18N
     position=500,
-    resource="../resources/mime-resolver-hex-based.xml"
+    resource="../resources/mime-resolver-hex-based.xml" // NOI18N
 )
 public class ExeObject extends MultiDataObject {
     //private static final Logger LOG = Logger.getLogger(ExeObject.class.getName());
