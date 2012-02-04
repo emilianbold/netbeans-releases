@@ -43,7 +43,8 @@
 package org.netbeans.libs.git;
 
 /**
- * Identification of a git user
+ * Identification of a git user.
+ * User is specified by a name and e-mail address.
  * @author Jan Becicka
  * @author Tomas Stupka
  */
@@ -52,22 +53,27 @@ public final class GitUser {
     private final String name;
     private final String email;
 
+    /**
+     * 
+     * @param name user's human readable name
+     * @param email user's address
+     */
     public GitUser (String name, String email) {
         this.name = name;
         this.email = email;
     }
 
     /**
-     * user's name
-     * @return
+     * Returns user's name
+     * @return user's name
      */
     public String getName() {
         return name;
     }
 
     /**
-     * user's email address
-     * @return
+     * Returns user's email address
+     * @return user's email address
      */
     public String getEmailAddress() {
         return email;
