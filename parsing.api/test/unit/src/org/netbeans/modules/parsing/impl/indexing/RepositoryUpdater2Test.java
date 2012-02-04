@@ -195,7 +195,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
         };
         MockLookup.setInstances(new testAddIndexingJob_PathRecognizer());
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), factory);
-        Util.allMimeTypes = Collections.singleton("text/plain");
+        RepositoryUpdaterTest.setMimeTypes("text/plain");
 
         ruSync.reset(RepositoryUpdaterTest.TestHandler.Type.FILELIST, 2);
         RepositoryUpdater.getDefault().addIndexingJob(srcRoot1.getURL(), Collections.singleton(file1.getURL()), false, false, false, true, true, null);
@@ -334,7 +334,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
 
         final testRootsWorkCancelling_CustomIndexer indexer = new testRootsWorkCancelling_CustomIndexer();
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer));
-        Util.allMimeTypes = Collections.singleton("text/plain");
+        RepositoryUpdaterTest.setMimeTypes("text/plain");
 
         assertEquals("No roots should be indexed yet", 0, indexer.indexedRoots.size());
         final RepositoryUpdaterTest.MutableClassPathImplementation mcpi = new RepositoryUpdaterTest.MutableClassPathImplementation();
@@ -410,7 +410,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
         };
         final ActionCustomIndexer indexer = new ActionCustomIndexer(action);
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer), new FixedParserFactory(new EmptyParser()));
-        Util.allMimeTypes = Collections.singleton("text/plain");
+        RepositoryUpdaterTest.setMimeTypes("text/plain");
 
         assertEquals("No roots should be indexed yet", 0, indexer.indexedRoots.size());
         final RepositoryUpdaterTest.MutableClassPathImplementation mcpi = new RepositoryUpdaterTest.MutableClassPathImplementation();
@@ -678,7 +678,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
 
         final testClasspathDeps1_Indexer indexer = new testClasspathDeps1_Indexer();
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer));
-        Util.allMimeTypes = Collections.singleton("text/plain");
+        RepositoryUpdaterTest.setMimeTypes("text/plain");
 
         assertEquals("No roots should be indexed yet", 0, indexer.indexedRoots.size());
 
@@ -797,7 +797,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
 
         final TestCustomIndexer indexer = new TestCustomIndexer();
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer), new FixedParserFactory(new EmptyParser()));
-        Util.allMimeTypes = Collections.singleton("text/plain");
+        RepositoryUpdaterTest.setMimeTypes("text/plain");
 
         assertEquals("No roots should be indexed yet", 0, indexer.indexed.size());
 
@@ -844,7 +844,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
 
         final TestCustomIndexer indexer = new TestCustomIndexer();
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer), new FixedParserFactory(new EmptyParser()));
-        Util.allMimeTypes = Collections.singleton("text/plain");
+        RepositoryUpdaterTest.setMimeTypes("text/plain");
 
         assertEquals("No roots should be indexed yet", 0, indexer.indexed.size());
 
