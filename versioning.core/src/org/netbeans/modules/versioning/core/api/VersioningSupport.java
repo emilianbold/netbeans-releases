@@ -178,6 +178,7 @@ public final class VersioningSupport {
                     Set<VCSFileProxy> set = proxyMap.get(fileProxyOperations);
                     if (set == null) {
                         set = new HashSet<VCSFileProxy>();
+                        proxyMap.put(fileProxyOperations, set);
                     }
                     set.add(file);
                 }
