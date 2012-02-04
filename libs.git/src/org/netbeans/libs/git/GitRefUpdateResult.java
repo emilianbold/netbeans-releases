@@ -43,11 +43,11 @@
 package org.netbeans.libs.git;
 
 /**
- *
- * @author ondra
+ * Result of a local or remote reference update.
+ * 
+ * @author Ondra Vrabec
  */
 public enum GitRefUpdateResult {
-    // TODO should be split into remote and local update
     
     /** The ref update/delete has not been attempted by the caller. */
     NOT_ATTEMPTED,
