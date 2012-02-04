@@ -145,4 +145,34 @@ public class RepositoryInfoTest extends NbTestCase {
         assertEquals(storedInfo.getValue("key1"), readInfo.getValue("key1"));
         assertEquals(storedInfo.getValue("key2"), readInfo.getValue("key2"));
     }
+    
+    public void testNoPassword() {
+        RepositoryInfo info = 
+            new RepositoryInfo(
+                "id", 
+                "cid", 
+                "http://url", 
+                "displayName", 
+                "tooltip", 
+                "user", 
+                "httpUser", 
+                null, 
+                null);        
+        assertEquals(0, info.getHttpPassword().length);
+        assertEquals(0, info.getHttpPassword().length);
+        
+        info = 
+            new RepositoryInfo(
+                "id", 
+                "cid", 
+                "http://url", 
+                "displayName", 
+                "tooltip", 
+                "user", 
+                "httpUser", 
+                new char[0], 
+                new char[0]);        
+        assertEquals(0, info.getHttpPassword().length);
+        assertEquals(0, info.getHttpPassword().length);
+    }
 }
