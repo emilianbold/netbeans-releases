@@ -71,7 +71,7 @@ const char *PlatformLauncher::OPT_JDK_HOME = "-Djdk.home=";
 const char *PlatformLauncher::OPT_NB_PLATFORM_HOME = "-Dnetbeans.home=";
 const char *PlatformLauncher::OPT_NB_CLUSTERS = "-Dnetbeans.dirs=";
 const char *PlatformLauncher::OPT_NB_USERDIR = "-Dnetbeans.user=";
-const char *PlatformLauncher::OPT_DEFAULT_USERDIR_ROOT = "-Dnetbeans.default_userdir_root";
+const char *PlatformLauncher::OPT_DEFAULT_USERDIR_ROOT = "-Dnetbeans.default_userdir_root=";
 const char *PlatformLauncher::OPT_HTTP_PROXY = "-Dnetbeans.system_http_proxy=";
 const char *PlatformLauncher::OPT_HTTP_NONPROXY = "-Dnetbeans.system_http_non_proxy_hosts=";
 const char *PlatformLauncher::OPT_SOCKS_PROXY = "-Dnetbeans.system_socks_proxy=";

@@ -336,10 +336,12 @@ public class AutoupdateSettings {
         
         // 2. get superId from OS specific place
         File superFile = getSuperFileOsSpecific();
-        err.log (Level.FINE, "Does OS specific " + superFile + " exist? " + superFile.exists ());
-        
-        if (superFile != null && superFile.exists()) {
-            return superFile;
+        if (superFile != null) {
+            err.log (Level.FINE, "Does OS specific " + superFile + " exist? " + superFile.exists ());
+
+            if (superFile != null && superFile.exists()) {
+                return superFile;
+            }
         }
         
         // 3. get superIf from .netbeans (a old place)
@@ -364,6 +366,7 @@ public class AutoupdateSettings {
         String defaultUserdirRoot = System.getProperty ("netbeans.default_userdir_root", null); // NOI18N
         err.log (Level.FINER, "netbeans.default_userdir_root: " + defaultUserdirRoot);
         if (defaultUserdirRoot == null) {
+            err.warning("The property \"netbeans.default_userdir_root\" was not set!");
             return null;
         }
         File nbDir = new File (defaultUserdirRoot);
