@@ -120,7 +120,10 @@ public class Utils {
     public static void populateModel(final FileObject implClass, final ServiceModel serviceModel) {
         JavaSource javaSource = JavaSource.forFileObject(implClass);
         if (javaSource != null) {
-            CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+            CancellableTask<CompilationController> task = 
+                new CancellableTask<CompilationController>() {
+                
+                @Override
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     //CompilationUnitTree cut = controller.getCompilationUnit();
@@ -129,65 +132,88 @@ public class Utils {
                     if (classEl !=null) {
                         //ClassTree javaClass = srcUtils.getClassTree();
                         // find if class is Injection Target
-                        TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
-                        if (wsElement!=null) {
-                            List<? extends AnnotationMirror> annotations = classEl.getAnnotationMirrors();
-                            AnnotationMirror webServiceAn=null;
-                            for (AnnotationMirror anMirror : annotations) {
-                                if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
+                        List<? extends AnnotationMirror> annotations = 
+                            classEl.getAnnotationMirrors();
+                        AnnotationMirror webServiceAn=null;
+                        for (AnnotationMirror anMirror : annotations) {
+                            Element annotationElement = anMirror.getAnnotationType().
+                                asElement();
+                            if ( annotationElement instanceof TypeElement ){
+                                javax.lang.model.element.Name qName = 
+                                    ((TypeElement)annotationElement).getQualifiedName();
+                                if ( qName.contentEquals("javax.jws.WebService")){  // NOI18N
                                     webServiceAn = anMirror;
                                     break;
                                 }
                             }
-                            if (webServiceAn==null) {
-                                serviceModel.status = ServiceModel.STATUS_NOT_SERVICE;
-                                return;
-                            }
+                        }
+                        if (webServiceAn==null) {
+                            serviceModel.status = ServiceModel.STATUS_NOT_SERVICE;
+                            return;
+                        }
 
-                            Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = webServiceAn.getElementValues();
-                            boolean nameFound=false;
-                            boolean serviceNameFound=false;
-                            boolean portNameFound=false;
-                            boolean tnsFound = false;
-                            for(ExecutableElement ex:expressions.keySet()) {
-                                if (ex.getSimpleName().contentEquals("serviceName")) { //NOI18N
-                                    serviceModel.serviceName = (String)expressions.get(ex).getValue();
-                                    serviceNameFound=true;
-                                } else if (ex.getSimpleName().contentEquals("name")) { //NOI18N
-                                    serviceModel.name = (String)expressions.get(ex).getValue();
-                                    nameFound=true;
-                                } else if (ex.getSimpleName().contentEquals("portName")) { //NOI18N
-                                    serviceModel.portName = (String)expressions.get(ex).getValue();
-                                    portNameFound=true;
-                                } else if (ex.getSimpleName().contentEquals("targetNamespace")) { //NOI18N
-                                    serviceModel.targetNamespace = (String)expressions.get(ex).getValue();
-                                    tnsFound = true;
-                                } else if (ex.getSimpleName().contentEquals("endpointInterface")) { //NOI18N
-                                    serviceModel.endpointInterface = (String)expressions.get(ex).getValue();
-                                } else if (ex.getSimpleName().contentEquals("wsdlLocation")) { //NOI18N
-                                    serviceModel.wsdlLocation = (String)expressions.get(ex).getValue();
-                                }
+                        Map<? extends ExecutableElement, 
+                                ? extends AnnotationValue> expressions = 
+                                    webServiceAn.getElementValues();
+                        boolean nameFound=false;
+                        boolean serviceNameFound=false;
+                        boolean portNameFound=false;
+                        boolean tnsFound = false;
+                        for(ExecutableElement ex:expressions.keySet()) {
+                            if (ex.getSimpleName().contentEquals("serviceName")) { //NOI18N
+                                serviceModel.serviceName = (String)expressions.
+                                    get(ex).getValue();
+                                serviceNameFound=true;
+                            } else if (ex.getSimpleName().contentEquals("name")) { //NOI18N
+                                serviceModel.name = (String)expressions.get(ex).
+                                    getValue();
+                                nameFound=true;
+                            } else if (ex.getSimpleName().contentEquals("portName")) { //NOI18N
+                                serviceModel.portName = (String)expressions.get(ex).getValue();
+                                portNameFound=true;
+                            } else if (ex.getSimpleName().contentEquals(
+                                    "targetNamespace"))  //NOI18N
+                            {
+                                serviceModel.targetNamespace = (String)expressions.
+                                    get(ex).getValue();
+                                tnsFound = true;
+                            } else if (ex.getSimpleName().contentEquals(
+                                    "endpointInterface")) //NOI18N
+                            {
+                                serviceModel.endpointInterface = (String)expressions.
+                                    get(ex).getValue();
+                            } else if (ex.getSimpleName().contentEquals("wsdlLocation")) { //NOI18N
+                                serviceModel.wsdlLocation = (String)expressions.
+                                    get(ex).getValue();
                             }
-                            // set default names
-                            if (!nameFound) serviceModel.name=implClass.getName();
-                            if (!portNameFound) serviceModel.portName = serviceModel.getName()+"Port"; //NOI18N
-                            if (!serviceNameFound) serviceModel.serviceName = implClass.getName()+"Service"; //NOI18N
-                            if (!tnsFound) {
-                                String qualifName = classEl.getQualifiedName().toString();
-                                int ind = qualifName.lastIndexOf(".");
-                                String packageName = ind>=0 ? qualifName.substring(0,ind) : ""; //NOI18N
-                                String ns = getPackageReverseOrder(packageName);
-                                serviceModel.targetNamespace = "http://"+ns+"/"; //NOI18N
-                            }
+                        }
+                        // set default names
+                        if (!nameFound) {
+                            serviceModel.name=implClass.getName();
+                        }
+                        if (!portNameFound) {
+                            serviceModel.portName = serviceModel.getName()+"Port"; //NOI18N
+                        }
+                        if (!serviceNameFound) {
+                            serviceModel.serviceName = implClass.getName()+"Service"; //NOI18N
+                        }
+                        if (!tnsFound) {
+                            String qualifName = classEl.getQualifiedName().toString();
+                            int ind = qualifName.lastIndexOf(".");
+                            String packageName = ind>=0 ? 
+                                    qualifName.substring(0,ind) : ""; //NOI18N
+                            String ns = getPackageReverseOrder(packageName);
+                            serviceModel.targetNamespace = "http://"+ns+"/"; //NOI18N
+                        }
 
                             //TODO: Also have to apply JAXWS/JAXB rules regarding collision of names
-                        }
 
 
                         // use SEI class annotations if endpointInterface annotation is specified
                         TypeElement seiClassEl = null;
                         if (serviceModel.endpointInterface!=null) {
-                            seiClassEl = controller.getElements().getTypeElement(serviceModel.endpointInterface);
+                            seiClassEl = controller.getElements().getTypeElement(
+                                    serviceModel.endpointInterface);
                             if (seiClassEl != null) {
                                 classEl = seiClassEl;
                             }
@@ -281,11 +307,13 @@ public class Utils {
                         serviceModel.status = ServiceModel.STATUS_INCORRECT_SERVICE;
                     }
                 }
-                public void cancel() {}
+                @Override
+                public void cancel() {
+                }
             };
 
             try {
-                javaSource.runUserActionTask(task, true);
+                javaSource.runWhenScanFinished(task, true);
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
@@ -640,15 +668,19 @@ public class Utils {
     }
     
     public static void setJavadoc(final FileObject implClass, final MethodModel methodModel, final String text) {
-        JavaSource javaSource = JavaSource.forFileObject(implClass);
-        CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+        final JavaSource javaSource = JavaSource.forFileObject(implClass);
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+            @Override
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree classTree = SourceUtils.getPublicTopLevelTree(workingCopy);
                 List<? extends Tree> members = classTree.getMembers();
-                TypeElement methodAnotationEl = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
-                if (methodAnotationEl==null) return;
+                TypeElement methodAnotationEl = workingCopy.getElements().
+                    getTypeElement("javax.jws.WebMethod"); //NOI18N
+                if (methodAnotationEl==null) {
+                    return;
+                }
                 MethodTree targetMethod=null;
                 for (Tree member:members) {
                     if (Tree.Kind.METHOD==member.getKind()) {
@@ -684,7 +716,7 @@ public class Utils {
                     Comment comment = Comment.create(Style.JAVADOC, 0,0,0, text);
                     MethodTree newMethod = make.setLabel(targetMethod, targetMethod.getName());
                     
-                    ElementHandle methodHandle = methodModel.getMethodHandle();
+                    ElementHandle<?> methodHandle = methodModel.getMethodHandle();
                     Element method = methodHandle.resolve(workingCopy);
                     if ( method == null ){
                         return;
@@ -709,17 +741,21 @@ public class Utils {
                 }
                 
             }
-            public void cancel() {}
+            @Override
+            public void cancel() {
+                
+            }
             
         };
         try {
-            javaSource.runModificationTask(modificationTask).commit();
-            javaSource.runUserActionTask( new Task<CompilationController>(){
+            javaSource.runWhenScanFinished(new Task<CompilationController>(){
 
                 @Override
                 public void run(CompilationController controller) throws Exception {
+                    javaSource.runModificationTask(modificationTask).commit();
+                    
                     controller.toPhase(Phase.RESOLVED);
-                    ElementHandle methodHandle = methodModel.getMethodHandle();
+                    ElementHandle<?> methodHandle = methodModel.getMethodHandle();
                     Element method = methodHandle.resolve(controller);
                     if ( method == null ){
                         return;
@@ -785,19 +821,20 @@ public class Utils {
     public static String getCurrentJavaName(final MethodModel method){
         final String[] javaName = new String[1];
         final JavaSource javaSource = JavaSource.forFileObject(method.getImplementationClass());
-        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
-            public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(Phase.RESOLVED);
-                ElementHandle methodHandle = method.getMethodHandle();
-                Element methodEl = methodHandle.resolve(workingCopy);
+        final CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+            @Override
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(Phase.RESOLVED);
+                ElementHandle<?> methodHandle = method.getMethodHandle();
+                Element methodEl = methodHandle.resolve(controller);
                 javaName[0] =  methodEl.getSimpleName().toString();
             }
-            
+            @Override
             public void cancel() {
             }
         };
         try {
-            javaSource.runModificationTask(modificationTask).commit();
+            javaSource.runUserActionTask(task, true);
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }
@@ -815,15 +852,32 @@ public class Utils {
         JavaSource javaSource = JavaSource.forFileObject(clazz);
         final String[] attributeValue = new String[]{""};
         if (javaSource!=null) {
-            CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+            CancellableTask<CompilationController> task = 
+                new CancellableTask<CompilationController>() 
+                {
+                
+                @Override
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
-                    TypeElement wsElement = controller.getElements().getTypeElement(annotationClass);
-                    if(typeElement != null && wsElement != null){
-                        List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
+                    if(typeElement != null ){
+                        List<? extends AnnotationMirror> annotations = 
+                            typeElement.getAnnotationMirrors();
                         for (AnnotationMirror anMirror : annotations) {
-                            Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
+                            Element annotationElement = anMirror.getAnnotationType().
+                                asElement();
+                            if ( annotationElement instanceof TypeElement ){
+                                javax.lang.model.element.Name fqn  = 
+                                    ((TypeElement)annotationElement).getQualifiedName();
+                                if ( !fqn.contentEquals( annotationClass )){
+                                    continue;
+                                }
+                            }
+                            else {
+                                continue;
+                            }
+                            Map<? extends ExecutableElement, ? extends AnnotationValue> 
+                                expressions = anMirror.getElementValues();
                             for(ExecutableElement ex:expressions.keySet()) {
                                 if (ex.getSimpleName().contentEquals(attributeName)) {
                                     String interfaceName =  (String)expressions.get(ex).getValue();
@@ -837,7 +891,9 @@ public class Utils {
                         }
                     }
                 }
-                public void cancel() {}
+                @Override
+                public void cancel() {
+                }
             };
             try {
                 javaSource.runUserActionTask(task, true);

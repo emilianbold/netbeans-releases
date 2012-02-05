@@ -62,10 +62,10 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
 @MIMEResolver.ExtensionRegistration(
-    displayName="#AsmResolver",
+    displayName="#AsmResolver", // NOI18N
     position=458,
-    extension={ "s", "S", "asm", "ASM", "as", "il" },
-    mimeType="text/x-asm"
+    extension={ "s", "S", "asm", "ASM", "as", "il" }, // NOI18N
+    mimeType="text/x-asm" // NOI18N
 )
 public class AsmDataObject extends MultiDataObject {
     public AsmDataObject(FileObject fo, AsmDataLoader loader) throws DataObjectExistsException, IOException {
