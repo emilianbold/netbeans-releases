@@ -48,7 +48,7 @@ public class CoversTag extends PhpAnnotationTag {
 
     public CoversTag() {
         super("covers", // NOI18N
-                "@covers ${u1 default=\"className\"}::${u2 default=\"methodName\"}", // NOI18N
+                "@covers ${className}::${methodName}", // NOI18N
                 NbBundle.getMessage(CoversTag.class, "CoversTag.documentation"));
     }
 

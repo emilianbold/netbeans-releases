@@ -48,7 +48,7 @@ public class ExpectedExceptionTag extends PhpAnnotationTag {
 
     public ExpectedExceptionTag() {
         super("expectedException", // NOI18N
-                "@expectedException ${u1 default=\"exceptionClass\"}", // NOI18N
+                "@expectedException ${exceptionClass}", // NOI18N
                 NbBundle.getMessage(ExpectedExceptionTag.class, "ExpectedExceptionTag.documentation"));
     }
 

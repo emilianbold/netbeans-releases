@@ -131,10 +131,10 @@ public class EjbFacadeGenerator implements FacadeGenerator {
 
         final Set<FileObject> createdFiles = new HashSet<FileObject>();
         final String entitySimpleName = JavaIdentifiers.unqualify(entityFQN);
-        final String variableName = entitySimpleName.toLowerCase().charAt(0) + entitySimpleName.substring(1);
+        final String variableName = entitySimpleName.toLowerCase().charAt(0) + 
+            entitySimpleName.substring(1);
 
         //create the abstract facade class
-        Task<CompilationController> waiter = null;
         final String afName = pkg + "." + FACADE_ABSTRACT;
         FileObject afFO = targetFolder.getFileObject(FACADE_ABSTRACT, "java");
         if (afFO == null){
@@ -146,35 +146,48 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                 @Override
                 public void run(WorkingCopy workingCopy) throws Exception {
                     workingCopy.toPhase(Phase.RESOLVED);
-                    ClassTree classTree = SourceUtils.getPublicTopLevelTree(workingCopy);
+                    ClassTree classTree = SourceUtils.getPublicTopLevelTree(
+                            workingCopy);
                     assert classTree != null;
                     TreeMaker maker = workingCopy.getTreeMaker();
-                    GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                    TreePath classTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), classTree);
-                    TypeElement classElement = (TypeElement)workingCopy.getTrees().getElement(classTreePath);
+                    GenerationUtils genUtils = GenerationUtils.newInstance(
+                            workingCopy);
+                    TreePath classTreePath = workingCopy.getTrees().getPath(
+                            workingCopy.getCompilationUnit(), classTree);
+                    TypeElement classElement = (TypeElement)workingCopy.getTrees().
+                        getElement(classTreePath);
 
                     String genericsTypeName = "T";      //NOI18N
-                    List<GenerationOptions> methodOptions = getAbstractFacadeMethodOptions(entityNames, genericsTypeName, "entity"); //NOI18N
+                    List<GenerationOptions> methodOptions = 
+                        getAbstractFacadeMethodOptions(entityNames, 
+                                genericsTypeName, "entity"); //NOI18N
                     List<Tree> members = new ArrayList();
                     String entityClassVar = "entityClass";                                              //NOI18N
-                    Tree classObjectTree = genUtils.createType("java.lang.Class<" + genericsTypeName + ">", classElement);     //NOI18N
-                    members.add(maker.Variable(genUtils.createModifiers(Modifier.PRIVATE),entityClassVar,classObjectTree,null));
+                    Tree classObjectTree = genUtils.createType("java.lang.Class<" + 
+                            genericsTypeName + ">", classElement);     //NOI18N
+                    members.add(maker.Variable(genUtils.createModifiers(Modifier.PRIVATE),
+                            entityClassVar,classObjectTree,null));
                     members.add(maker.Constructor(
                             genUtils.createModifiers(Modifier.PUBLIC),
                             Collections.EMPTY_LIST,
-                            Arrays.asList(new VariableTree[]{genUtils.createVariable(entityClassVar,classObjectTree)}),
+                            Arrays.asList(new VariableTree[]{genUtils.
+                                    createVariable(entityClassVar,classObjectTree)}),
                             Collections.EMPTY_LIST,
                             "{this." + entityClassVar + " = " + entityClassVar + ";}"));    //NOI18N
                     for(GenerationOptions option: methodOptions) {
-                        Tree returnType = (option.getReturnType() == null || option.getReturnType().equals("void"))?  //NOI18N
+                        Tree returnType = (option.getReturnType() == null || 
+                                option.getReturnType().equals("void"))?  //NOI18N
                                                 maker.PrimitiveType(TypeKind.VOID):
-                                                genUtils.createType(option.getReturnType(), classElement);
-                        List<VariableTree> vars = option.getParameterName() == null ? Collections.EMPTY_LIST :
-                            Arrays.asList(new VariableTree[] {
-                            genUtils.createVariable(
-                                    option.getParameterName(),
-                                    genUtils.createType(option.getParameterType(), classElement)
-                                    )
+                                                genUtils.createType(option.getReturnType(), 
+                                                        classElement);
+                        List<VariableTree> vars = option.getParameterName() == 
+                            null ? Collections.EMPTY_LIST :
+                                Arrays.asList(new VariableTree[] {
+                                        genUtils.createVariable(
+                                                option.getParameterName(),
+                                                genUtils.createType(
+                                                        option.getParameterType(), 
+                                                        classElement))
                         });
 
                         if (option.getOperation() == null){
@@ -195,15 +208,20 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                                     (List<TypeParameterTree>)Collections.EMPTY_LIST,
                                     vars,
                                     (List<ExpressionTree>)Collections.EMPTY_LIST,
-                                    "{" + option.getCallLines("getEntityManager()", entityClassVar, project!=null ? PersistenceUtils.getJPAVersion(project) : Persistence.VERSION_1_0) + "}", //NOI18N
+                                    "{" + option.getCallLines("getEntityManager()", 
+                                            entityClassVar, project!=null ? 
+                                                    PersistenceUtils.getJPAVersion(project) : 
+                                                        Persistence.VERSION_1_0) + "}", //NOI18N
                                     null));
                         }
                     }
 
                     ClassTree newClassTree = maker.Class(
-                            maker.Modifiers(EnumSet.of(Modifier.PUBLIC, Modifier.ABSTRACT)),
+                            maker.Modifiers(EnumSet.of(Modifier.PUBLIC, 
+                                    Modifier.ABSTRACT)),
                             classTree.getSimpleName(),
-                            Arrays.asList(maker.TypeParameter(genericsTypeName, Collections.EMPTY_LIST)),
+                            Arrays.asList(maker.TypeParameter(genericsTypeName, 
+                                    Collections.EMPTY_LIST)),
                             null,
                             Collections.EMPTY_LIST,
                             members);
@@ -212,15 +230,11 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                 }
             }).commit();
 
-            waiter = new Task<CompilationController>(){
-                public void run(CompilationController cc) throws Exception {
-                    cc.toPhase(Phase.ELEMENTS_RESOLVED);
-                }
-            };
         }
 
         // create the facade
-        FileObject existingFO = targetFolder.getFileObject(entitySimpleName + REST_FACADE_SUFFIX, "java");
+        FileObject existingFO = targetFolder.getFileObject(entitySimpleName + 
+                REST_FACADE_SUFFIX, "java");
         if (existingFO != null) {
             if (overrideExisting) {
                 existingFO.delete();
@@ -228,21 +242,27 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                 throw new IOException("file alerady exists exception: "+existingFO);
             }
         }
-        final FileObject facade = GenerationUtils.createClass(targetFolder, entitySimpleName + REST_FACADE_SUFFIX, null);
+        final FileObject facade = GenerationUtils.createClass(targetFolder, 
+                entitySimpleName + REST_FACADE_SUFFIX, null);
         createdFiles.add(facade);
 
         // create the interfaces
-        final String localInterfaceFQN = pkg + "." + getUniqueClassName(entitySimpleName + FACADE_LOCAL_SUFFIX, targetFolder);
-        final String remoteInterfaceFQN = pkg + "." + getUniqueClassName(entitySimpleName + FACADE_REMOTE_SUFFIX, targetFolder);
+        final String localInterfaceFQN = pkg + "." + 
+            getUniqueClassName(entitySimpleName + FACADE_LOCAL_SUFFIX, targetFolder);
+        final String remoteInterfaceFQN = pkg + "." + 
+            getUniqueClassName(entitySimpleName + FACADE_REMOTE_SUFFIX, targetFolder);
 
-        List<GenerationOptions> intfOptions = getAbstractFacadeMethodOptions(entityNames, entityFQN, variableName);
+        List<GenerationOptions> intfOptions = getAbstractFacadeMethodOptions(
+                entityNames, entityFQN, variableName);
         if (hasLocal) {
-            FileObject local = createInterface(JavaIdentifiers.unqualify(localInterfaceFQN), EJB_LOCAL, targetFolder);
+            FileObject local = createInterface(JavaIdentifiers.unqualify(localInterfaceFQN), 
+                    EJB_LOCAL, targetFolder);
             addMethodToInterface(intfOptions, local);
             createdFiles.add(local);
         }
         if (hasRemote) {
-            FileObject remote = createInterface(JavaIdentifiers.unqualify(remoteInterfaceFQN), EJB_REMOTE, targetFolder);
+            FileObject remote = createInterface(JavaIdentifiers.unqualify(remoteInterfaceFQN), 
+                    EJB_REMOTE, targetFolder);
             addMethodToInterface(intfOptions, remote);
             createdFiles.add(remote);
         }
@@ -253,17 +273,22 @@ public class EjbFacadeGenerator implements FacadeGenerator {
             @Override
             public void run(WorkingCopy wc) throws Exception {
                 wc.toPhase(Phase.RESOLVED);
-                TypeElement classElement = wc.getElements().getTypeElement(pkg + "." + entitySimpleName + REST_FACADE_SUFFIX);
+                TypeElement classElement = SourceUtils.getPublicTopLevelElement(wc);
                 ClassTree classTree = wc.getTrees().getTree(classElement);
                 assert classTree != null;
                 GenerationUtils genUtils = GenerationUtils.newInstance(wc);
                 TreeMaker maker = wc.getTreeMaker();
 
-                List<Tree> implementsClause = new ArrayList(classTree.getImplementsClause());
-                if (hasLocal)
-                    implementsClause.add(genUtils.createType(localInterfaceFQN, classElement));
-                if (hasRemote)
-                    implementsClause.add(genUtils.createType(remoteInterfaceFQN, classElement));
+                List<Tree> implementsClause = new ArrayList<Tree>(
+                        classTree.getImplementsClause());
+                if (hasLocal) {
+                    implementsClause.add(genUtils.createType(localInterfaceFQN, 
+                            classElement));
+                }
+                if (hasRemote){
+                    implementsClause.add(genUtils.createType(remoteInterfaceFQN, 
+                            classElement));
+                }
                 
                 List<Tree> members = new ArrayList<Tree>(classTree.getMembers());
                 MethodTree constructor = maker.Constructor(
@@ -274,14 +299,19 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                         "{super(" + entitySimpleName + ".class);}");            //NOI18N
                 members.add(constructor);
 
-                List<RestGenerationOptions> restGenerationOptions = getRestFacadeMethodOptions(entityFQN, idClass);
+                List<RestGenerationOptions> restGenerationOptions = 
+                    getRestFacadeMethodOptions(entityFQN, idClass);
 
-                ModifiersTree publicModifiers = genUtils.createModifiers(Modifier.PUBLIC);
-                ModifiersTree paramModifier = maker.Modifiers(Collections.<Modifier>emptySet());
+                ModifiersTree publicModifiers = genUtils.createModifiers(
+                        Modifier.PUBLIC);
+                ModifiersTree paramModifier = maker.Modifiers(
+                        Collections.<Modifier>emptySet());
                 for(RestGenerationOptions option: restGenerationOptions) {
 
                     ModifiersTree modifiersTree =
-                            maker.addModifiersAnnotation(publicModifiers, genUtils.createAnnotation(option.getRestMethod().getMethod()));
+                            maker.addModifiersAnnotation(publicModifiers, 
+                                    genUtils.createAnnotation(
+                                            option.getRestMethod().getMethod()));
 
                      // add @Path annotation
                     String uriPath = option.getRestMethod().getUriPath();
@@ -289,14 +319,17 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                         ExpressionTree annArgument = maker.Literal(uriPath);
                         modifiersTree =
                                 maker.addModifiersAnnotation(modifiersTree,
-                                genUtils.createAnnotation(RestConstants.PATH, Collections.<ExpressionTree>singletonList(annArgument)));
+                                genUtils.createAnnotation(RestConstants.PATH, 
+                                        Collections.<ExpressionTree>singletonList(
+                                                annArgument)));
 
                     }
                     
                     if ( option.getRestMethod().overrides() ){
                         modifiersTree =
                             maker.addModifiersAnnotation(modifiersTree,
-                            genUtils.createAnnotation(Override.class.getCanonicalName()));
+                                    genUtils.createAnnotation(
+                                            Override.class.getCanonicalName()));
                     }
                     // add @Produces annotation
                     String[] produces = option.getProduces();
@@ -309,11 +342,15 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                             for (int i=0; i< produces.length; i++) {
                                 literals.add(maker.Literal(produces[i]));
                             }
-                            annArguments = maker.NewArray(null, Collections.<ExpressionTree>emptyList(), literals);
+                            annArguments = maker.NewArray(null, 
+                                    Collections.<ExpressionTree>emptyList(), 
+                                    literals);
                         }
                         modifiersTree =
                                 maker.addModifiersAnnotation(modifiersTree,
-                                genUtils.createAnnotation(RestConstants.PRODUCE_MIME, Collections.<ExpressionTree>singletonList(annArguments)));
+                                        genUtils.createAnnotation(
+                                                RestConstants.PRODUCE_MIME, 
+                                                Collections.<ExpressionTree>singletonList(annArguments)));
                     }
                     // add @Consumes annotation
                     String[] consumes = option.getConsumes();
@@ -326,17 +363,21 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                             for (int i=0; i< consumes.length; i++) {
                                 literals.add(maker.Literal(consumes[i]));
                             }
-                            annArguments = maker.NewArray(null, Collections.<ExpressionTree>emptyList(), literals);
+                            annArguments = maker.NewArray(null, 
+                                    Collections.<ExpressionTree>emptyList(), literals);
                         }
                         modifiersTree =
                                 maker.addModifiersAnnotation(modifiersTree,
-                                genUtils.createAnnotation(RestConstants.CONSUME_MIME, Collections.<ExpressionTree>singletonList(annArguments)));
+                                        genUtils.createAnnotation(
+                                                RestConstants.CONSUME_MIME, 
+                                                Collections.<ExpressionTree>singletonList(annArguments)));
                     }
 
                     // create arguments list
                     List<VariableTree> vars = new ArrayList<VariableTree>();
                     String[] paramNames = option.getParameterNames();
-                    int paramLength = paramNames == null ? 0 : option.getParameterNames().length ;
+                    int paramLength = paramNames == null ? 0 : 
+                        option.getParameterNames().length ;
 
                     if (paramLength > 0) {
                         String[] paramTypes = option.getParameterTypes();
@@ -345,20 +386,29 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                         for (int i = 0; i<paramLength; i++) {
                             ModifiersTree pathParamTree = paramModifier;
                             if (pathParams != null && pathParams[i] != null) {
-                                List<ExpressionTree> annArguments = Collections.<ExpressionTree>singletonList(maker.Literal(pathParams[i]));
+                                List<ExpressionTree> annArguments = 
+                                    Collections.<ExpressionTree>singletonList(
+                                            maker.Literal(pathParams[i]));
                                 pathParamTree =
-                                    maker.addModifiersAnnotation(paramModifier, genUtils.createAnnotation(RestConstants.PATH_PARAM, annArguments));
+                                    maker.addModifiersAnnotation(paramModifier, 
+                                            genUtils.createAnnotation(
+                                                    RestConstants.PATH_PARAM, 
+                                                    annArguments));
                             }
-                            Tree paramTree = genUtils.createType(paramTypes[i], classElement);
-                            VariableTree var = maker.Variable(pathParamTree, paramNames[i], paramTree, null); //NOI18N
+                            Tree paramTree = genUtils.createType(paramTypes[i], 
+                                    classElement);
+                            VariableTree var = maker.Variable(pathParamTree, 
+                                    paramNames[i], paramTree, null); //NOI18N
                             vars.add(var);
 
                         }
                     }
 
-                    Tree returnType = (option.getReturnType() == null || option.getReturnType().equals("void"))?  //NOI18N
+                    Tree returnType = (option.getReturnType() == null || 
+                            option.getReturnType().equals("void"))?  //NOI18N
                                             maker.PrimitiveType(TypeKind.VOID):
-                                            genUtils.createType(option.getReturnType(), classElement);
+                                            genUtils.createType(option.getReturnType(), 
+                                                    classElement);
 
                     members.add(
                                 maker.Method(
@@ -375,11 +425,15 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                 }
 
                 ModifiersTree modifiersTree =
-                        maker.addModifiersAnnotation(classTree.getModifiers(), genUtils.createAnnotation(EJB_STATELESS));
+                        maker.addModifiersAnnotation(classTree.getModifiers(), 
+                                genUtils.createAnnotation(EJB_STATELESS));
 
                 ExpressionTree annArgument = maker.Literal(entityFQN.toLowerCase());
                 modifiersTree =
-                        maker.addModifiersAnnotation(modifiersTree, genUtils.createAnnotation(RestConstants.PATH, Collections.<ExpressionTree>singletonList(annArgument)));
+                        maker.addModifiersAnnotation(modifiersTree, 
+                                genUtils.createAnnotation(RestConstants.PATH, 
+                                        Collections.<ExpressionTree>singletonList(
+                                                annArgument)));
                 
                 ClassTree newClassTree = maker.Class(
                         modifiersTree,
@@ -395,13 +449,6 @@ public class EjbFacadeGenerator implements FacadeGenerator {
             }
         };
 
-        if (waiter != null){
-            try {
-                JavaSource.forFileObject(afFO).runWhenScanFinished(waiter, true).get();
-            } catch (InterruptedException ex) {
-            } catch (ExecutionException ex) {
-            }
-        }
         JavaSource.forFileObject(facade).runModificationTask(modificationTask).commit();
         
         // generate methods for the facade
@@ -424,6 +471,7 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         }
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
+            @Override
             public void run(WorkingCopy workingCopy) throws Exception {
                 
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -445,10 +493,11 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                             if ( methodNames.contains(method.getSimpleName().
                                     toString()) )
                             {
-                                MethodTree methodTree = workingCopy.getTrees().getTree( method );
+                                MethodTree methodTree = workingCopy.getTrees().
+                                    getTree( method );
                                 Set<Modifier> modifiers = method.getModifiers();
                                 AnnotationTree annotation = make.Annotation(
-                                        make.Identifier(Override.class.getCanonicalName()),
+                                        make.QualIdent(Override.class.getCanonicalName()),
                                         Collections.<ExpressionTree>emptyList());
                                 ModifiersTree newModifs = make.Modifiers(
                                         modifiers, 
@@ -465,7 +514,9 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         JavaSource.forFileObject(fileObject).runModificationTask(task).commit();
     }
 
-    private List<GenerationOptions> getAbstractFacadeMethodOptions(Map<String, String> entityNames, String entityFQN, String variableName){
+    private List<GenerationOptions> getAbstractFacadeMethodOptions(Map<String, 
+            String> entityNames, String entityFQN, String variableName)
+    {
 
         GenerationOptions getEMOptions = new GenerationOptions();
         getEMOptions.setMethodName("getEntityManager"); //NOI18N
@@ -521,14 +572,18 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         countOptions.setReturnType("int");//NOI18N
         countOptions.setQueryAttribute(getEntityName(entityNames, entityFQN));
 
-        return Arrays.<GenerationOptions>asList(getEMOptions, createOptions, editOptions, destroyOptions, findOptions, findAllOptions, findSubOptions, countOptions);
+        return Arrays.<GenerationOptions>asList(getEMOptions, createOptions, 
+                editOptions, destroyOptions, findOptions, findAllOptions, 
+                    findSubOptions, countOptions);
     }
 
     /**
      * @return the options representing the methods for a facade, i.e. create/edit/
      * find/remove/findAll.
      */
-    private List<GenerationOptions> getMethodOptions(String entityFQN, String variableName){
+    private List<GenerationOptions> getMethodOptions(String entityFQN, 
+            String variableName)
+    {
 
         GenerationOptions getEMOptions = new GenerationOptions();
         getEMOptions.setMethodName("getEntityManager"); //NOI18N
@@ -557,7 +612,9 @@ public class EjbFacadeGenerator implements FacadeGenerator {
      *
      * @return the generated interface.
      */
-    private FileObject createInterface(String name, final String annotationType, FileObject targetFolder) throws IOException {
+    private FileObject createInterface(String name, final String annotationType, 
+            FileObject targetFolder) throws IOException 
+    {
         FileObject sourceFile = GenerationUtils.createInterface(targetFolder, name, null);
         JavaSource source = JavaSource.forFileObject(sourceFile);
         ModificationResult result = source.runModificationTask(new Task<WorkingCopy>() {
@@ -570,8 +627,13 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                 GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
                 TreeMaker make = workingCopy.getTreeMaker();
                 AnnotationTree annotations = genUtils.createAnnotation(annotationType);
-                ModifiersTree modifiers = make.Modifiers(clazz.getModifiers(), Collections.<AnnotationTree>singletonList(annotations));
-                ClassTree modifiedClass = make.Class(modifiers, clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), Collections.<ExpressionTree>emptyList(), Collections.<Tree>emptyList());
+                ModifiersTree modifiers = make.Modifiers(clazz.getModifiers(), 
+                        Collections.<AnnotationTree>singletonList(annotations));
+                ClassTree modifiedClass = make.Class(modifiers, 
+                        clazz.getSimpleName(), clazz.getTypeParameters(), 
+                            clazz.getExtendsClause(), 
+                                Collections.<ExpressionTree>emptyList(), 
+                                    Collections.<Tree>emptyList());
                 workingCopy.rewrite(clazz, modifiedClass);
             }
         });
@@ -591,7 +653,9 @@ public class EjbFacadeGenerator implements FacadeGenerator {
      * @param parameterType the FQN type of the parameter.
      * @param target the target interface.
      */
-    private void addMethodToInterface(final List<GenerationOptions> options, final FileObject target) throws IOException {
+    private void addMethodToInterface(final List<GenerationOptions> options, 
+            final FileObject target) throws IOException 
+    {
 
         JavaSource source = JavaSource.forFileObject(target);
         ModificationResult result = source.runModificationTask(new Task<WorkingCopy>() {
@@ -606,11 +670,17 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                 ClassTree modifiedClass = original;
                 TreeMaker make = copy.getTreeMaker();
                 for (GenerationOptions each : options) {
-                    if (each.getModifiers().size() == 1 && each.getModifiers().contains(Modifier.PUBLIC)){
-                        MethodTree method = make.Method(make.Modifiers(Collections.<Modifier>emptySet()),
-                            each.getMethodName(), utils.createType(each.getReturnType(), typeElement),
-                            Collections.<TypeParameterTree>emptyList(), getParameterList(each, make, utils, typeElement),
-                            Collections.<ExpressionTree>emptyList(), (BlockTree) null, null);
+                    if (each.getModifiers().size() == 1 && 
+                            each.getModifiers().contains(Modifier.PUBLIC))
+                    {
+                        MethodTree method = make.Method(make.Modifiers(
+                                Collections.<Modifier>emptySet()),
+                                each.getMethodName(), 
+                                utils.createType(each.getReturnType(), typeElement),
+                                Collections.<TypeParameterTree>emptyList(), 
+                                getParameterList(each, make, utils, typeElement),
+                                Collections.<ExpressionTree>emptyList(), 
+                                (BlockTree) null, null);
                         modifiedClass = make.addClassMember(modifiedClass, method);
                     }
                 }
@@ -620,18 +690,24 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         result.commit();
     }
 
-    private List<VariableTree> getParameterList(GenerationOptions options, TreeMaker make, GenerationUtils utils, TypeElement scope){
+    private List<VariableTree> getParameterList(GenerationOptions options, 
+            TreeMaker make, GenerationUtils utils, TypeElement scope)
+    {
         if (options.getParameterName() == null){
             return Collections.<VariableTree>emptyList();
         }
-        VariableTree vt = make.Variable(make.Modifiers(Collections.<Modifier>emptySet()),
-                options.getParameterName(), utils.createType(options.getParameterType(), scope), null);
+        VariableTree vt = make.Variable(make.Modifiers(
+                Collections.<Modifier>emptySet()),
+                options.getParameterName(), utils.createType(
+                        options.getParameterType(), scope), null);
         return Collections.<VariableTree>singletonList(vt);
     }
     
-    private List<RestGenerationOptions> getRestFacadeMethodOptions(String entityFQN, String idClass){
-
-        String paramArg = "java.lang.Character".equals(idClass) ? "id.charAt(0)" : "id"; //NOI18N
+    private List<RestGenerationOptions> getRestFacadeMethodOptions(
+            String entityFQN, String idClass)
+    {
+        String paramArg = "java.lang.Character".equals(idClass) ? 
+                "id.charAt(0)" : "id"; //NOI18N
         String idType = "id".equals(paramArg) ? idClass : "java.lang.String"; //NOI18N
 
         RestGenerationOptions createOptions = new RestGenerationOptions();
@@ -639,7 +715,8 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         createOptions.setReturnType("void"); //NOI18N
         createOptions.setParameterNames(new String[]{"entity"}); //NOI18N
         createOptions.setParameterTypes(new String[]{entityFQN});
-        createOptions.setConsumes(new String[]{"application/xml", "application/json"}); //NOI18N
+        createOptions.setConsumes(new String[]{"application/xml", 
+                "application/json"}); //NOI18N
         createOptions.setBody("super.create(entity);"); //NOI18N
 
         RestGenerationOptions editOptions = new RestGenerationOptions();
@@ -647,7 +724,8 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         editOptions.setReturnType("void");//NOI18N
         editOptions.setParameterNames(new String[]{"entity"}); //NOI18N
         editOptions.setParameterTypes(new String[]{entityFQN}); //NOI18N
-        editOptions.setConsumes(new String[]{"application/xml", "application/json"}); //NOI18N
+        editOptions.setConsumes(new String[]{"application/xml", 
+                "application/json"}); //NOI18N
         editOptions.setBody("super.edit(entity);"); //NOI18N
 
         RestGenerationOptions destroyOptions = new RestGenerationOptions();
@@ -676,9 +754,11 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         RestGenerationOptions findSubOptions = new RestGenerationOptions();
         findSubOptions.setRestMethod(Operation.FIND_RANGE);
         findSubOptions.setReturnType("java.util.List<" + entityFQN + ">");//NOI18N
-        findSubOptions.setProduces(new String[]{"application/xml", "application/json"}); //NOI18N
+        findSubOptions.setProduces(new String[]{"application/xml", 
+                "application/json"}); //NOI18N
         findSubOptions.setParameterNames(new String[]{"from", "to"}); //NOI18N
-        findSubOptions.setParameterTypes(new String[]{"java.lang.Integer", "java.lang.Integer"}); //NOI18N
+        findSubOptions.setParameterTypes(new String[]{"java.lang.Integer", 
+                "java.lang.Integer"}); //NOI18N
         findSubOptions.setPathParams(new String[]{"from", "to"}); //NOI18N
         findSubOptions.setBody("return super.findRange(new int[] {from, to});"); //NOI18N
 

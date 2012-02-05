@@ -83,7 +83,7 @@ public class HttpMethodsChildren extends ChildFactory<HttpMethodNode> {
     @Override
     protected boolean createKeys( final List<HttpMethodNode> keys ) {
         try {
-            model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
+            model.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>() {
                 public Void run(RestServicesMetadata metadata) throws IOException {
                     RestServices root = metadata.getRoot();
                     RestServiceDescription desc = root.getRestServiceDescription(

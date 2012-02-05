@@ -70,8 +70,11 @@ import javax.lang.model.element.TypeElement;
 import javax.xml.bind.JAXBException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
@@ -280,7 +283,7 @@ public class ClientJavaSourceHelper {
     }
 
     private static void addJerseyClient (
-            JavaSource source,
+            final JavaSource source,
             final String className,
             final String resourceUri,
             final RestServiceDescription restServiceDesc,
@@ -288,7 +291,7 @@ public class ClientJavaSourceHelper {
             final PathFormat pf,
             final Security security) {
         try {
-            ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
+            final Task<WorkingCopy> task = new AbstractTask<WorkingCopy>() {
 
                 @Override
                 public void run(WorkingCopy copy) throws java.io.IOException {
@@ -304,9 +307,19 @@ public class ClientJavaSourceHelper {
 
                     copy.rewrite(tree, modifiedTree);
                 }
-            });
+            };
+            ModificationResult result = source.runModificationTask(task);
 
-            result.commit();
+            if ( SourceUtils.isScanInProgress() ){
+                source.runWhenScanFinished( new Task<CompilationController>(){
+                    public void run(CompilationController controller) throws Exception {
+                        source.runModificationTask(task).commit();
+                    }
+                }, true);
+            }
+            else {
+                result.commit();
+            }
         } catch (java.io.IOException ex) {
             Exceptions.printStackTrace(ex);
         }
