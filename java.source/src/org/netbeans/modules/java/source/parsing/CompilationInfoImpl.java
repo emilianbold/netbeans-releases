@@ -681,6 +681,11 @@ public final class CompilationInfoImpl {
             return formatter.format(delegate, locale);
         }
 
+        @Override
+        public String toString() {
+            return delegate.toString();
+        }
+
         public static Diagnostic wrap(Diagnostic d, DiagnosticFormatter<JCDiagnostic> df) {
             if (d instanceof JCDiagnostic) {
                 return new RichDiagnostic((JCDiagnostic) d, df);

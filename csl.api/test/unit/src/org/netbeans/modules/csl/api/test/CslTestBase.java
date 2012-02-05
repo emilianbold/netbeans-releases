@@ -185,7 +185,11 @@ import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
+import org.netbeans.modules.parsing.impl.indexing.lucene.LayeredDocumentIndex;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
+import org.netbeans.modules.parsing.impl.indexing.lucene.TestIndexFactoryImpl;
+import org.netbeans.modules.parsing.impl.indexing.lucene.TestIndexFactoryImpl.TestIndexDocumentImpl;
+import org.netbeans.modules.parsing.impl.indexing.lucene.TestIndexFactoryImpl.TestIndexImpl;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.Queries;
@@ -1581,7 +1585,7 @@ public abstract class CslTestBase extends NbTestCase {
             }
         }
 
-        TestIndexImpl tii = ((TestIndexImpl) tifi.getIndex(context.getIndexFolder()));
+        TestIndexImpl tii = tifi.getTestIndex(context.getIndexFolder());
         if (tii != null) {
             List<TestIndexDocumentImpl> list = tii.documents.get(indexable.getRelativePath());
             if (list != null) {
@@ -4285,170 +4289,6 @@ public abstract class CslTestBase extends NbTestCase {
             throw new IllegalStateException("Can't enforce caret offset on " + source, e);
         }
     }
-
-    private static final class TestIndexFactoryImpl extends LuceneIndexFactory {
-        // --------------------------------------------------------------------
-        // IndexFactoryImpl implementation
-        // --------------------------------------------------------------------
-
-        public @Override IndexDocument createDocument(Indexable indexable) {
-            return new TestIndexDocumentImpl(indexable, super.createDocument(indexable));
-        }
-
-        public @Override DocumentIndex createIndex(Context ctx) throws IOException {
-            DocumentIndex ii = super.createIndex(ctx);
-            Reference<TestIndexImpl> ttiRef = indexImpls.get(ii);
-            TestIndexImpl tii = ttiRef != null ? ttiRef.get() : null;
-            if (tii == null) {
-                tii = new TestIndexImpl(ii);
-                indexImpls.put(ii, new SoftReference<TestIndexImpl>(tii));
-            }
-            return tii;
-        }
-
-        public @Override DocumentIndex getIndex(FileObject indexFolder) throws IOException {
-            DocumentIndex ii = super.getIndex(indexFolder);
-            Reference<TestIndexImpl> ttiRef = indexImpls.get(ii);
-            return ttiRef != null ? ttiRef.get() : null;
-        }
-
-        private final Map<DocumentIndex, Reference<TestIndexImpl>> indexImpls = new WeakHashMap<DocumentIndex, Reference<TestIndexImpl>>();
-
-    } // End of TestIndexFactoryImpl class
-
-    private static final class TestIndexImpl implements DocumentIndex {
-
-        public TestIndexImpl(DocumentIndex original) {
-            this.original = original;
-        }
-
-        @Override
-        public Status getStatus() throws IOException {
-            return Status.VALID;
-        }
-
-        // --------------------------------------------------------------------
-        // IndexImpl implementation
-        // --------------------------------------------------------------------
-
-        @Override
-        public void addDocument(IndexDocument document) {
-            assert document instanceof TestIndexDocumentImpl;
-
-            original.addDocument(((TestIndexDocumentImpl) document).getOriginal());
-
-            TestIndexDocumentImpl tidi = (TestIndexDocumentImpl) document;
-            List<TestIndexDocumentImpl> list = documents.get(tidi.getIndexable().getRelativePath());
-            if (list == null) {
-                list = new ArrayList<TestIndexDocumentImpl>();
-                documents.put(tidi.getIndexable().getRelativePath(), list);
-            }
-            list.add(tidi);
-        }
-
-        @Override
-        public void removeDocument(String relativePath) {
-            original.removeDocument(relativePath);
-
-            Collection<String> toRemove = new HashSet<String>();
-            for(String rp : documents.keySet()) {
-                if (rp.equals(relativePath)) {
-                    toRemove.add(rp);
-                }
-            }
-            documents.keySet().removeAll(toRemove);
-        }
-
-        @Override
-        public void store(boolean optimize) throws IOException {
-            original.store(optimize);
-        }
-
-        @Override
-        public Collection<? extends IndexDocument> query(String fieldName, String value, Queries.QueryKind kind, String... fieldsToLoad) throws IOException, InterruptedException {
-            return original.query(fieldName, value, kind, fieldsToLoad);
-        }
-
-        @Override
-        public Collection<? extends IndexDocument> findByPrimaryKey(String primaryKeyValue, QueryKind kind, String... fieldsToLoad) throws IOException, InterruptedException {
-            return original.findByPrimaryKey(primaryKeyValue, kind, fieldsToLoad);
-        }                
-        
-        @Override
-        public void close() throws IOException {
-            original.close();
-        }
-
-        @Override
-        public void markKeyDirty(String primaryKey) {            
-        }
-
-        @Override
-        public void removeDirtyKeys(Collection<? extends String> dirtyKeys) {
-        }
-
-        @Override
-        public Collection<? extends String> getDirtyKeys() {
-            return Collections.<String>emptySet();
-        }
-        
-        // --------------------------------------------------------------------
-        // private implementation
-        // --------------------------------------------------------------------
-
-        private final DocumentIndex original;
-        private Map<String, List<TestIndexDocumentImpl>> documents = new HashMap<String, List<TestIndexDocumentImpl>>();
-        
-    } // End of TestIndexImpl class
-
-    private static final class TestIndexDocumentImpl implements IndexDocument {
-
-        public final List<String> indexedKeys = new ArrayList<String>();
-        public final List<String> indexedValues = new ArrayList<String>();
-        public final List<String> unindexedKeys = new ArrayList<String>();
-        public final List<String> unindexedValues = new ArrayList<String>();
-
-        private final Indexable indexable;
-        private final IndexDocument original;
-
-        public TestIndexDocumentImpl(Indexable indexable, IndexDocument original) {
-            this.indexable = indexable;
-            this.original = original;
-        }
-
-        public Indexable getIndexable() {
-            return indexable;
-        }
-
-        public IndexDocument getOriginal() {
-            return original;
-        }
-
-        public @Override void addPair(String key, String value, boolean searchable, boolean stored) {
-            original.addPair(key, value, searchable, stored);
-
-            if (searchable) {
-                indexedKeys.add(key);
-                indexedValues.add(value);
-            } else {
-                unindexedKeys.add(key);
-                unindexedValues.add(value);
-            }
-        }
-
-        public String getValue(String key) {
-            return original.getValue(key);
-        }
-
-        public String[] getValues(String key) {
-            return original.getValues(key);
-        }
-
-        public String getPrimaryKey() {
-            return original.getPrimaryKey();
-        }
-
-    } // End of TestIndexFactoryImpl class
 
     protected Map<String, ClassPath> createClassPathsForTest() {
         return null;

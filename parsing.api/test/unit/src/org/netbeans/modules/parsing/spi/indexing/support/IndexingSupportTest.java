@@ -44,23 +44,40 @@ package org.netbeans.modules.parsing.spi.indexing.support;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
+import java.net.URL;
+import java.util.*;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
-import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
-import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.indexing.*;
+import org.netbeans.modules.parsing.impl.indexing.lucene.DocumentBasedIndexManager;
+import org.netbeans.modules.parsing.impl.indexing.lucene.LayeredDocumentIndex;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
+import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomas Zezula
  */
 public class IndexingSupportTest extends NbTestCase {
+    
+    private static final String MIME = "text/x-foo";    //NOI18N
+    private static final String SCP = "FOO-SOURCES"; //NOI18N
 
     private FileObject root;
     private FileObject cache;
@@ -86,6 +103,7 @@ public class IndexingSupportTest extends NbTestCase {
         assert f1 != null;
         f2 = FileUtil.createData(root,"folder/b.foo");
         assert f2 != null;
+        FileUtil.setMIMEType("foo", MIME);  //NOI18N
     }
 
     public void testIndexingSupportInstances () throws Exception {
@@ -195,13 +213,26 @@ public class IndexingSupportTest extends NbTestCase {
         is.addDocument(doc2);
         SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder()).store(true);
 
-        class LIF extends LuceneIndexFactory {
+        class LIF implements IndexFactoryImpl {
+            
+            private final IndexFactoryImpl delegate = LuceneIndexFactory.getDefault();
+            
             boolean getIndexCalled = false;
 
             @Override
-            public DocumentIndex getIndex(FileObject indexFolder) throws IOException {
+            public org.netbeans.modules.parsing.lucene.support.IndexDocument createDocument(Indexable indexable) {
+                return delegate.createDocument(indexable);
+            }
+
+            @Override
+            public LayeredDocumentIndex createIndex(Context ctx) throws IOException {
+                return delegate.createIndex(ctx);
+            }
+            
+            @Override
+            public LayeredDocumentIndex getIndex(FileObject indexFolder) throws IOException {
                 getIndexCalled = true;
-                return super.getIndex(indexFolder);
+                return delegate.getIndex(indexFolder);
             }
         }
         final LIF lif = new LIF();
@@ -221,4 +252,273 @@ public class IndexingSupportTest extends NbTestCase {
         qs2.query("", "", QuerySupport.Kind.EXACT);
         assertFalse("Expecting getIndex not called", lif.getIndexCalled);
     }
+    
+    public void testTransientUpdates() throws Exception {
+        MockMimeLookup.setInstances(MimePath.get(MIME), new CIF());
+        MockServices.setServices(PR.class, CPP.class);
+        CPP.scp = ClassPathSupport.createClassPath(root);
+        RepositoryUpdaterTest.setMimeTypes(MIME);
+        Map<URL,Map<String,Collection<String>>> attrs = new HashMap<URL, Map<String, Collection<String>>>();
+        Map<String,Collection<String>> ca = new HashMap<String, Collection<String>>();
+        ca.put("name",Collections.<String>singleton(f1.getName()));            //NOI18N
+        ca.put("class",Collections.<String>singleton(f1.getName()));           //NOI18N
+        attrs.put(f1.toURL(), ca);
+        ca = new HashMap<String, Collection<String>>();
+        ca.put("name",Collections.<String>singleton(f2.getName()));            //NOI18N
+        ca.put("class",Collections.<String>singleton(f2.getName()));           //NOI18N
+        attrs.put(f2.toURL(), ca);
+        CI.attrs = attrs;
+        GlobalPathRegistry.getDefault().register(SCP, new ClassPath[]{CPP.scp});
+        try {
+            IndexingManager.getDefault().refreshIndexAndWait(root.toURL(), null);
+            final QuerySupport qs = QuerySupport.forRoots("fooIndexer", 1, root);   //NOI18N
+            Collection<? extends IndexResult> result = qs.query("name", f1.getName(), QuerySupport.Kind.EXACT, "class");   //NOI18N
+            assertEquals(1, result.size());
+            assertEquals(1, result.iterator().next().getValues("class").length);    //NOI18N
+            assertEquals(f1.getName(), result.iterator().next().getValue("class")); //NOI18N
+            final FileObject indexFolder = CacheFolder.getDataFolder(root.toURL()).getFileObject("fooIndexer/1/1"); //NOI18N
+            assertNotNull(indexFolder);
+            final DocumentIndex base = DocumentBasedIndexManager.getDefault().getIndex(
+                indexFolder.toURL(),
+                DocumentBasedIndexManager.Mode.OPENED);
+            assertNotNull(base);
+            Collection<? extends org.netbeans.modules.parsing.lucene.support.IndexDocument> baseResult =
+                base.query("name", f1.getName(), Queries.QueryKind.EXACT, "class");   //NOI18N
+            assertEquals(1, baseResult.size());
+            assertEquals(1, baseResult.iterator().next().getValues("class").length);    //NOI18N
+            assertEquals(f1.getName(), baseResult.iterator().next().getValue("class")); //NOI18N
+            result = qs.query("name", f2.getName(), QuerySupport.Kind.EXACT, "class");   //NOI18N
+            assertEquals(1, result.size());
+            assertEquals(1, result.iterator().next().getValues("class").length);    //NOI18N
+            assertEquals(f2.getName(), result.iterator().next().getValue("class")); //NOI18N
+            baseResult = base.query("name", f2.getName(), Queries.QueryKind.EXACT, "class");   //NOI18N
+            assertEquals(1, baseResult.size());
+            assertEquals(1, baseResult.iterator().next().getValues("class").length);    //NOI18N
+            assertEquals(f2.getName(), baseResult.iterator().next().getValue("class")); //NOI18N
+            
+            //Now add new field into f1 document as transient and verify that disk index
+            //did not changed
+            attrs = new HashMap<URL, Map<String, Collection<String>>>();
+            ca = new HashMap<String, Collection<String>>();
+            ca.put("name",Collections.<String>singleton(f1.getName()));            //NOI18N
+            ca.put("class",Arrays.asList(f1.getName(),"another_a_class"));         //NOI18N
+            attrs.put(f1.toURL(), ca);
+            ca = new HashMap<String, Collection<String>>();
+            ca.put("name",Collections.<String>singleton(f2.getName()));            //NOI18N
+            ca.put("class",Collections.<String>singleton(f2.getName()));           //NOI18N
+            attrs.put(f2.toURL(), ca);
+            CI.attrs = attrs;
+            //Mark index as transiently modified and do query - f1 should have 2 classes
+            final LayeredDocumentIndex ldi = LuceneIndexFactory.getDefault().getIndex(indexFolder.getParent());
+            assertNotNull(ldi);
+            ldi.markKeyDirty(FileUtil.getRelativePath(root, f1));
+            result = qs.query("name", f1.getName(), QuerySupport.Kind.EXACT, "class");   //NOI18N
+            assertEquals(1, result.size());
+            String[] expected = new String[] {f1.getName(), "another_a_class"}; //NOI18N
+            Arrays.sort(expected);
+            String[] fields = result.iterator().next().getValues("class"); //NOI18N
+            Arrays.sort(fields);
+            assertEquals(Arrays.asList(expected),Arrays.asList(fields));
+            //Verify that disk index is not changed
+            baseResult =
+                base.query("name", f1.getName(), Queries.QueryKind.EXACT, "class");   //NOI18N
+            assertEquals(1, baseResult.size());
+            assertEquals(1, baseResult.iterator().next().getValues("class").length);    //NOI18N
+            assertEquals(f1.getName(), baseResult.iterator().next().getValue("class")); //NOI18N
+            //Verify that f2 document is not changed
+            result = qs.query("name", f2.getName(), QuerySupport.Kind.EXACT, "class");   //NOI18N
+            assertEquals(1, result.size());
+            assertEquals(1, result.iterator().next().getValues("class").length);    //NOI18N
+            assertEquals(f2.getName(), result.iterator().next().getValue("class")); //NOI18N
+            baseResult = base.query("name", f2.getName(), Queries.QueryKind.EXACT, "class");   //NOI18N
+            assertEquals(1, baseResult.size());
+            assertEquals(1, baseResult.iterator().next().getValues("class").length);    //NOI18N
+            assertEquals(f2.getName(), baseResult.iterator().next().getValue("class")); //NOI18N
+            
+            //Make changes persistent -> changes should be visible also in disk index
+            IndexingManager.getDefault().refreshIndexAndWait(root.toURL(), null);
+            result = qs.query("name", f1.getName(), QuerySupport.Kind.EXACT, "class");   //NOI18N
+            assertEquals(1, result.size());
+            fields = result.iterator().next().getValues("class"); //NOI18N
+            Arrays.sort(fields);
+            assertEquals(Arrays.asList(expected),Arrays.asList(fields));
+            baseResult =
+                base.query("name", f1.getName(), Queries.QueryKind.EXACT, "class");   //NOI18N
+            assertEquals(1, baseResult.size());            
+            fields = baseResult.iterator().next().getValues("class"); //NOI18N
+            Arrays.sort(fields);
+            assertEquals(Arrays.asList(expected),Arrays.asList(fields));
+            //Verify that f2 document is not changed
+            result = qs.query("name", f2.getName(), QuerySupport.Kind.EXACT, "class");   //NOI18N
+            assertEquals(1, result.size());
+            assertEquals(1, result.iterator().next().getValues("class").length);    //NOI18N
+            assertEquals(f2.getName(), result.iterator().next().getValue("class")); //NOI18N
+            baseResult = base.query("name", f2.getName(), Queries.QueryKind.EXACT, "class");   //NOI18N
+            assertEquals(1, baseResult.size());
+            assertEquals(1, baseResult.iterator().next().getValues("class").length);    //NOI18N
+            assertEquals(f2.getName(), baseResult.iterator().next().getValue("class")); //NOI18N
+            
+            //Now delete second document from f1 and mark transient - > should not be visible
+            //in the query but should stay on disk
+            attrs = new HashMap<URL, Map<String, Collection<String>>>();
+            ca = new HashMap<String, Collection<String>>();
+            ca.put("name",Collections.<String>singleton(f1.getName()));            //NOI18N
+            ca.put("class",Collections.<String>singleton(f1.getName()));           //NOI18N
+            attrs.put(f1.toURL(), ca);
+            ca = new HashMap<String, Collection<String>>();
+            ca.put("name",Collections.<String>singleton(f2.getName()));            //NOI18N
+            ca.put("class",Collections.<String>singleton(f2.getName()));           //NOI18N
+            attrs.put(f2.toURL(), ca);
+            CI.attrs = attrs;
+            ldi.markKeyDirty(FileUtil.getRelativePath(root, f1));
+            result = qs.query("name", f1.getName(), QuerySupport.Kind.EXACT, "class");   //NOI18N
+            assertEquals(1, result.size());
+            assertEquals(1, result.iterator().next().getValues("class").length);    //NOI18N
+            assertEquals(f1.getName(), result.iterator().next().getValue("class")); //NOI18N
+            
+            baseResult = base.query("name", f1.getName(), Queries.QueryKind.EXACT, "class");   //NOI18N
+            fields = baseResult.iterator().next().getValues("class"); //NOI18N
+            Arrays.sort(fields);
+            assertEquals(Arrays.asList(expected),Arrays.asList(fields));
+            
+            result = qs.query("name", f2.getName(), QuerySupport.Kind.EXACT, "class");   //NOI18N
+            assertEquals(1, result.size());
+            assertEquals(1, result.iterator().next().getValues("class").length);    //NOI18N
+            assertEquals(f2.getName(), result.iterator().next().getValue("class")); //NOI18N
+            baseResult = base.query("name", f2.getName(), Queries.QueryKind.EXACT, "class");   //NOI18N
+            assertEquals(1, baseResult.size());
+            assertEquals(1, baseResult.iterator().next().getValues("class").length);    //NOI18N
+            assertEquals(f2.getName(), baseResult.iterator().next().getValue("class")); //NOI18N
+            
+            //Make changes persistent -> changes should be visible also in disk index
+            IndexingManager.getDefault().refreshIndexAndWait(root.toURL(), null);
+            result = qs.query("name", f1.getName(), QuerySupport.Kind.EXACT, "class");   //NOI18N
+            assertEquals(1, result.size());
+            assertEquals(1, result.iterator().next().getValues("class").length);    //NOI18N
+            assertEquals(f1.getName(), result.iterator().next().getValue("class")); //NOI18N
+            baseResult = base.query("name", f1.getName(), Queries.QueryKind.EXACT, "class");   //NOI18N
+            assertEquals(1, baseResult.size());
+            assertEquals(1, baseResult.iterator().next().getValues("class").length);    //NOI18N
+            assertEquals(f1.getName(), baseResult.iterator().next().getValue("class")); //NOI18N
+            result = qs.query("name", f2.getName(), QuerySupport.Kind.EXACT, "class");   //NOI18N
+            assertEquals(1, result.size());
+            assertEquals(1, result.iterator().next().getValues("class").length);    //NOI18N
+            assertEquals(f2.getName(), result.iterator().next().getValue("class")); //NOI18N
+            baseResult = base.query("name", f2.getName(), Queries.QueryKind.EXACT, "class");   //NOI18N
+            assertEquals(1, baseResult.size());
+            assertEquals(1, baseResult.iterator().next().getValues("class").length);    //NOI18N
+            assertEquals(f2.getName(), baseResult.iterator().next().getValue("class")); //NOI18N
+            
+            
+        } finally {
+            GlobalPathRegistry.getDefault().unregister(SCP, new ClassPath[]{CPP.scp});
+        }
+    }
+    
+    public static class CIF extends CustomIndexerFactory {
+
+        @Override
+        public CustomIndexer createIndexer() {
+            return new CI();
+        }
+
+        @Override
+        public boolean supportsEmbeddedIndexers() {
+            return false;
+        }
+
+        @Override
+        public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
+            try {
+                final IndexingSupport is = IndexingSupport.getInstance(context);
+                for (final Indexable indexable : deleted) {
+                    is.removeDocuments(indexable);
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        @Override
+        public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
+        }
+
+        @Override
+        public String getIndexerName() {
+            return "fooIndexer";    //NOI18N
+        }
+
+        @Override
+        public int getIndexVersion() {
+            return 1;
+        }
+    }
+    
+    private static class CI extends CustomIndexer {
+        
+        static volatile Map<URL,Map<String,Collection<String>>> attrs;
+        
+        @Override
+        protected void index(Iterable<? extends Indexable> files, Context context) {
+            final Map<URL,Map<String,Collection<String>>> ca = attrs;
+            if (ca != null) {
+                try {
+                    final IndexingSupport is = IndexingSupport.getInstance(context);
+                    for (Indexable indexable : files) {
+                        final Map<String,Collection<String>> as = attrs.get(indexable.getURL());
+                        if (as != null)  {
+                            final IndexDocument doc = is.createDocument(indexable);
+                            doc.addPair("path", indexable.getRelativePath(), true, true);   //NOI18N
+                            for (Map.Entry<String,Collection<String>> e : as.entrySet()) {
+                                for (String val : e.getValue()) {
+                                    doc.addPair(e.getKey(), val, true, true);
+                                }
+                            }
+                            is.addDocument(doc);
+                        }
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
+    
+    public static class PR extends PathRecognizer {
+
+        @Override
+        public Set<String> getSourcePathIds() {
+            return Collections.<String>singleton(SCP);
+        }
+
+        @Override
+        public Set<String> getLibraryPathIds() {
+            return Collections.<String>emptySet();
+        }
+
+        @Override
+        public Set<String> getBinaryLibraryPathIds() {
+            return Collections.<String>emptySet();
+        }
+
+        @Override
+        public Set<String> getMimeTypes() {
+            return Collections.<String>singleton(MIME);
+        }
+        
+    }
+    
+    public static class CPP implements ClassPathProvider {
+        
+        static volatile ClassPath scp;
+
+        @Override
+        public ClassPath findClassPath(FileObject file, String type) {
+            if (SCP.equals(type) && scp != null && scp.contains(file)) {
+                return scp;
+            }
+            return null;
+        }
+        
+      }
 }

@@ -68,7 +68,7 @@ public final class JFXDeploymentCategoryProvider implements ProjectCustomizer.Co
                     && !JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty("javafx.preloader")); //NOI18N
         }
         if(fxProjectEnabled) {
-            jfxProps = JFXProjectProperties.getInstance(context);
+            jfxProps = JFXProjectProperties.getInstancePerSession(context, CAT_DEPLOYMENT);
             return ProjectCustomizer.Category.create(CAT_DEPLOYMENT,
                     NbBundle.getMessage(JFXDeploymentCategoryProvider.class, "LBL_Category_Deployment"), null); //NOI18N
         }

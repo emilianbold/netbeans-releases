@@ -1968,6 +1968,7 @@ org.netbeans.modules.parsing.lucene.spi.ScanSuspendImplementation
 org.netbeans.modules.parsing.lucene.support.Index$Transactional
 org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask
 org.netbeans.modules.parsing.spi.TaskIndexingMode
+
 com.sun.tools.javac.api.ClientCodeWrapper
 com.sun.tools.javac.api.ClientCodeWrapper$Trusted
 com.sun.tools.javac.code.DeferredLintHandler
@@ -2057,3 +2058,4 @@ org.netbeans.modules.parsing.spi.ParseException
 org.netbeans.modules.parsing.spi.indexing.ConstrainedBinaryIndexer
 org.netbeans.modules.project.ui.Bundle
 org.netbeans.modules.project.ui.actions.Bundle
+

@@ -333,6 +333,8 @@ public class JavaMembersPanel extends javax.swing.JPanel {
             "HighlightsLayerExcludes", // NOI18N
             "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" // NOI18N
         );
+        
+        signatureEditorPane.putClientProperty("text-line-wrap", "none");    //NOI18N
 
         signatureEditorPane.registerKeyboardAction(
                 new ActionListener() {

@@ -104,7 +104,7 @@ public final class Context {
         this.rootURL = rootURL;
         this.indexerName = indexerName;
         this.indexerVersion = indexerVersion;
-        this.factory = factory != null ? factory : new LuceneIndexFactory();
+        this.factory = factory != null ? factory : LuceneIndexFactory.getDefault();
         this.followUpJob = followUpJob;
         this.checkForEditorModifications = checkForEditorModifications;
         this.sourceForBinaryRoot = sourceForBinaryRoot;
