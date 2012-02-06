@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations;
 
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.openide.util.NbBundle;
 
@@ -50,6 +51,15 @@ public class SequenceGeneratorTag extends PhpAnnotationTag {
         super("SequenceGenerator", // NOI18N
                 "@SequenceGenerator(sequenceName=\"${table_seq}\", initialValue=${1}, allocationSize=${100})", // NOI18N
                 NbBundle.getMessage(SequenceGeneratorTag.class, "SequenceGeneratorTag.documentation"));
+    }
+
+    @Override
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText("("); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("sequenceName=\"table_seq\", initialValue=1, allocationSize=100"); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText(")"); //NOI18N
     }
 
 }

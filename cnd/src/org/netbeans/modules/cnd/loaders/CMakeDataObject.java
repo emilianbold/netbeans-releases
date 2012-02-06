@@ -65,7 +65,7 @@ import org.openide.windows.TopComponent;
  */
 @MIMEResolver.Registration(
     displayName="#NameExtResolver", // NOI18N
-    position=215,
+    position=138,
     resource="../resources/mime-resolver-name-ext.xml" // NOI18N
 )
 public class CMakeDataObject extends MultiDataObject {

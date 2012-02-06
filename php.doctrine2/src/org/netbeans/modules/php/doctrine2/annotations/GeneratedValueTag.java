@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations;
 
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.openide.util.NbBundle;
 
@@ -50,6 +51,15 @@ public class GeneratedValueTag extends PhpAnnotationTag {
         super("GeneratedValue", // NOI18N
                 "@GeneratedValue(strategy=\"${IDENTITY}\")", // NOI18N
                 NbBundle.getMessage(GeneratedValueTag.class, "GeneratedValueTag.documentation"));
+    }
+
+    @Override
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText("("); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("strategy=\"IDENTITY\""); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText(")"); //NOI18N
     }
 
 }
