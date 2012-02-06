@@ -80,8 +80,9 @@ public class JsStructureScanner implements StructureScanner {
         for (JsObject child : properties) {
             List<StructureItem> children = new ArrayList<StructureItem>();
             children = getEmbededItems(result, child, children);
-            if (child.getJSKind() == JsElement.Kind.FUNCTION || child.getJSKind() == JsElement.Kind.METHOD
-                    || child.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
+            System.out.println(child.getName() + ": "+ child.getDeclarationName().getOffsetRange());
+            if (child.hasExactName() && (child.getJSKind() == JsElement.Kind.FUNCTION || child.getJSKind() == JsElement.Kind.METHOD
+                    || child.getJSKind() == JsElement.Kind.CONSTRUCTOR)) {
                 if (((JsFunction)child).isAnonymous()) {
                     collectedItems.addAll(children);
                 } else {

@@ -72,6 +72,9 @@ public class AnonymousObject extends JsObjectImpl {
     public int getOffset() {
         return getOffsetRange(null).getStart();
     }
-    
-    
+
+    @Override
+    public boolean hasExactName() {
+        return false;
+    }
 }

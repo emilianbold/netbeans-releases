@@ -60,6 +60,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     final private JsObject parent;
     final private List<Occurrence> occurrences;
     final private Map<Integer, Collection<String>> assignments;
+    final private boolean hasName;
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange) {
         super((parent != null ? parent.getFileObject() : null), name.getName(), false,  offsetRange, EnumSet.of(Modifier.PUBLIC));
@@ -68,6 +69,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.parent = parent;
         this.occurrences = new ArrayList<Occurrence>();
         this.assignments = new HashMap<Integer, Collection<String>>();
+        this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
     }
   
     protected JsObjectImpl(JsObject parent, String name, boolean isDeclared, OffsetRange offsetRange, Set<Modifier> modifiers) {
@@ -77,7 +79,9 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.parent = parent;
         this.occurrences = Collections.EMPTY_LIST;
         this.assignments = Collections.EMPTY_MAP;
+        this.hasName = false;
     }
+    
     @Override
     public Identifier getDeclarationName() {
         return declarationName;
@@ -163,4 +167,11 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     public boolean isAnonymous() {
         return false;
     }
+
+    @Override
+    public boolean hasExactName() {
+        return hasName;
+    }
+    
+    
 }

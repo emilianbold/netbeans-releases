@@ -77,4 +77,11 @@ public interface JsObject extends JsElement {
     Collection<String> getAssignmentTypeNames(int offset);
     
     public boolean isAnonymous();
+    
+    /**
+     * 
+     * @return true if the object/function is identified by a name. 
+     * False if the function is declared as an item in array or the name is an expression
+     */ 
+    public boolean hasExactName();
 }
