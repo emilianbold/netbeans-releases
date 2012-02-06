@@ -60,11 +60,19 @@ public enum JsDocTokenId implements TokenId {
 
     // IMPORTANT - Categories of JavaScript tokenIds should be shared across
     //  all JavaScript documentation tools to preserve coloring settings.
-    JSDOC_COMMENT("COMMENT"), //NOI18N
-    JSDOC_ANNOTATION("COMMENT_KEYWORD"); //NOI18N
+    KEYWORD("COMMENT_KEYWORD"), //NOI18N
+    COMMENT_START("COMMENT"), //NOI18N
+    COMMENT_BLOCK("COMMENT"), //NOI18N
+    COMMENT_NOCODE_BEGIN("COMMENT_NOCODE"), //NOI18N
+    COMMENT_NOCODE_END("COMMENT_NOCODE"), //NOI18N
+    COMMENT_LINE("COMMENT"), //NOI18N
+    COMMENT_END("COMMENT"), //NOI18N
+    COMMENT_CODE("COMMENT"), //NOI18N
+    COMMENT_SHARED_END("COMMENT"), //NOI18N
+    COMMENT_SHARED_BEGIN("COMMENT"), //NOI18N
+    UNKNOWN("UNKNOWN"); //NOI18N
 
     public static final String JSDOC_MIME_TYPE = "text/javascript-comment"; //NOI18N
-
     private final String primaryCategory;
 
     JsDocTokenId(String primaryCategory) {
@@ -90,8 +98,7 @@ public enum JsDocTokenId implements TokenId {
 
                 @Override
                 protected Map<String, Collection<JsDocTokenId>> createTokenCategories() {
-                    Map<String, Collection<JsDocTokenId>> cats =
-                        new HashMap<String, Collection<JsDocTokenId>>();
+            Map<String, Collection<JsDocTokenId>> cats = new HashMap<String, Collection<JsDocTokenId>>();
                     return cats;
                 }
 
@@ -101,8 +108,7 @@ public enum JsDocTokenId implements TokenId {
                 }
 
                 @Override
-                protected LanguageEmbedding<?> embedding(Token<JsDocTokenId> token,
-                            LanguagePath languagePath, InputAttributes inputAttributes) {
+                protected LanguageEmbedding<?> embedding(Token<JsDocTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
                     
                     // No embedding
                     return null; 
