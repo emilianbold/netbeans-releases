@@ -52,6 +52,7 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.maven.jaxws._RetoucheUtil;
 import org.netbeans.modules.websvc.api.support.AddOperationCookie;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.openide.filesystems.FileObject;
@@ -90,26 +91,31 @@ public class AddOperationAction extends NodeAction  {
 
             CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
 
+                @Override
                 public void run(CompilationController controller) throws java.io.IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
-                    TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
-                    if (typeElement != null && wsElement != null) {
-                        List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
-                        for (AnnotationMirror anMirror : annotations) {
-                            if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
-                                Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
-                                for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : expressions.entrySet()) {
-                                    if (entry.getKey().getSimpleName().contentEquals("wsdlLocation")) { //NOI18N
-                                        fromWsdl[0] = true;
-                                        return;
-                                    }
-                                }
-                            }
+                    if ( typeElement == null ){
+                        return;
+                    }
+                    AnnotationMirror annMirror = _RetoucheUtil.getAnnotation(
+                            controller, typeElement, "javax.jws.WebService");   //NOI18N
+                    if ( annMirror == null ){
+                        return;
+                    }
+                    Map<? extends ExecutableElement, ? extends AnnotationValue> 
+                        expressions = annMirror.getElementValues();
+                    for (Map.Entry<? extends ExecutableElement, 
+                            ? extends AnnotationValue> entry : expressions.entrySet()) 
+                    {
+                        if (entry.getKey().getSimpleName().contentEquals("wsdlLocation")) { //NOI18N
+                            fromWsdl[0] = true;
+                            return;
                         }
                     }
                 }
 
+                @Override
                 public void cancel() {
                 }
 
