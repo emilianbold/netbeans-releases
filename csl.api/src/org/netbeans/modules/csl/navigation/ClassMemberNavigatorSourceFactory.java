@@ -53,8 +53,7 @@ import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.openide.util.Lookup;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.*;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -108,11 +107,12 @@ public final class ClassMemberNavigatorSourceFactory extends AbstractTaskFactory
         return context;
     }
 
-    private final class ProxyElementScanningTask extends ParserResultTask<ParserResult> {
+    private final class ProxyElementScanningTask extends IndexingAwareParserResultTask<ParserResult> {
         private ElementScanningTask task = null;
         private Class<? extends Scheduler> clazz;
 
         public ProxyElementScanningTask(Class<? extends Scheduler> c) {
+            super(TaskIndexingMode.ALLOWED_DURING_SCAN);
             this.clazz = c;
         }
 

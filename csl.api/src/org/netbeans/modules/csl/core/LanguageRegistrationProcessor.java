@@ -178,9 +178,13 @@ public class LanguageRegistrationProcessor extends LayerGeneratingProcessor {
     }
 
     private static File instanceFile(LayerBuilder b, String folder, String name, Class implClass, String factoryMethod, Class... instanceOf) {
+        return instanceFile(b, folder, name, implClass == null ? null : implClass.getName(), factoryMethod, instanceOf);
+    }
+    
+    private static File instanceFile(LayerBuilder b, String folder, String name, String implClass, String factoryMethod, Class... instanceOf) {
         String basename;
         if (name == null) {
-            basename = implClass.getName().replace('.', '-'); //NOI18N
+            basename = implClass.replace('.', '-'); //NOI18N
             if (factoryMethod != null) {
                 basename += "-" + factoryMethod; //NOI18N
             }
@@ -191,9 +195,9 @@ public class LanguageRegistrationProcessor extends LayerGeneratingProcessor {
         File f = b.file(folder + "/" + basename + ".instance"); //NOI18N
         if (implClass != null) {
             if (factoryMethod != null) {
-                f.methodvalue("instanceCreate", implClass.getName(), factoryMethod); //NOI18N
+                f.methodvalue("instanceCreate", implClass, factoryMethod); //NOI18N
             } else {
-                f.stringvalue("instanceClass", implClass.getName()); //NOI18N
+                f.stringvalue("instanceClass", implClass); //NOI18N
             }
         }
         
@@ -212,7 +216,7 @@ public class LanguageRegistrationProcessor extends LayerGeneratingProcessor {
         f.boolvalue("useMultiview", useMultiview); //NOI18N
         f.write();
         
-        f = instanceFile(b, "CslPlugins/" + mimeType, "language", null, null); //NOI18N
+        f = instanceFile(b, "CslPlugins/" + mimeType, "language", (String) null, null); //NOI18N
         f.stringvalue("instanceClass", language.getQualifiedName().toString()); //NOI18N
         f.write();
     }
@@ -265,6 +269,7 @@ public class LanguageRegistrationProcessor extends LayerGeneratingProcessor {
     private static void registerCodeCompletion(LayerBuilder b, String mimeType) {
         instanceFile(b, "Editors/" + mimeType + "/CompletionProviders", null, CodeTemplateCompletionProvider.class, null).write(); //NOI18N
         instanceFile(b, "Editors/" + mimeType + "/CompletionProviders", null, GsfCompletionProvider.class, null).write(); //NOI18N
+        instanceFile(b, "Editors/" + mimeType + "/CompletionProviders", null, "org.netbeans.modules.parsing.ui.WaitScanFinishedCompletionProvider", null).write(); //NOI18N
 //        // Code Completion
 //        Element completionFolder = mkdirs(doc, "Editors/" + mimeType + "/CompletionProviders"); // NOI18N
 //        createFile(doc, completionFolder, "org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance"); // NOI18N
