@@ -86,6 +86,7 @@ public final class MIMENames {
     /** Makefiles */
     public static final String MAKEFILE_MIME_TYPE = "text/x-make"; //NOI18N
     public static final String CMAKE_MIME_TYPE = "text/x-cmake"; //NOI18N
+    public static final String CMAKE_INCLUDE_MIME_TYPE = "text/x-cmake-include"; //NOI18N
     public static final String QTPROJECT_MIME_TYPE = "text/x-qtproject"; //NOI18N
 
     /** Shell */

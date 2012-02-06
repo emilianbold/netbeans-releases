@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.loaders;
 import java.io.IOException;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
@@ -58,17 +59,15 @@ import org.openide.windows.TopComponent;
     resource = "../resources/mime-resolver-ext-based.xml" // NOI18N
 )
 public class CMakeIncludeDataObject extends MultiDataObject {
-    private static final String CMAKE_INCLUDE_MIME_TYPE="text/cmake"; //NOI18N
-
     public CMakeIncludeDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        registerEditor(CMAKE_INCLUDE_MIME_TYPE, true);
+        registerEditor(MIMENames.CMAKE_INCLUDE_MIME_TYPE, true);
     }
 
     @MultiViewElement.Registration(displayName = "#Source",
     iconBase = "org/netbeans/modules/cnd/loaders/cmake.png", //NOI18N
     persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
-    mimeType = CMAKE_INCLUDE_MIME_TYPE,
+    mimeType = MIMENames.CMAKE_INCLUDE_MIME_TYPE,
     preferredID = "cmakeincludefile.source", //NOI18N
     position = 1)
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
