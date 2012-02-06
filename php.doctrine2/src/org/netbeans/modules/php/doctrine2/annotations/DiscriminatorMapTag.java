@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations;
 
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.openide.util.NbBundle;
 
@@ -50,6 +51,15 @@ public class DiscriminatorMapTag extends PhpAnnotationTag {
         super("DiscriminatorMap", // NOI18N
                 "@DiscriminatorMap({\"${table1}\" = \"${Entity1}\"}, {\"${table2}\" = \"${Entity2}\"})", // NOI18N
                 NbBundle.getMessage(DiscriminatorMapTag.class, "DiscriminatorMapTag.documentation"));
+    }
+
+    @Override
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText("("); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("{\"table1\" = \"Entity1\"}, {\"table2\" = \"Entity2\"}"); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText(")"); //NOI18N
     }
 
 }

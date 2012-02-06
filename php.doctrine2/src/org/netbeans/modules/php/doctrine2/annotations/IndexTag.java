@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations;
 
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.openide.util.NbBundle;
 
@@ -50,6 +51,15 @@ public class IndexTag extends PhpAnnotationTag {
         super("Index", // NOI18N
                 "@Index(name=\"${index_name}\", columns={\"${column1}\", \"${column2}\"})", // NOI18N
                 NbBundle.getMessage(IndexTag.class, "IndexTag.documentation"));
+    }
+
+    @Override
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText("("); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("name=\"index_name\", columns={\"column1\", \"column2\"}"); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText(")"); //NOI18N
     }
 
 }
