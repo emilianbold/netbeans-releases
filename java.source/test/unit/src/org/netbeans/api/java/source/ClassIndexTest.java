@@ -258,6 +258,7 @@ public class ClassIndexTest extends NbTestCase {
         assertExpectedEvents (et, testListener.getEventLog());
     }
     
+    @SuppressWarnings("deprecation")
     public void testholdsWriteLock () throws Exception {
         //Test basics
         IndexManager.readAccess(new IndexManager.Action<Void>() {

@@ -182,7 +182,7 @@ public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
             @NullAllowed final FileObject resource) {
         final List<WhiteListIndex.Problem> result = new ArrayList<WhiteListIndex.Problem>();
         try {
-            IndexManager.readAccess(new IndexManager.Action<Void>() {
+            IndexManager.priorityAccess(new IndexManager.Action<Void>() {
                 @Override
                 public Void run() throws IOException, InterruptedException {
                     final DocumentIndex index = getIndex(root);
