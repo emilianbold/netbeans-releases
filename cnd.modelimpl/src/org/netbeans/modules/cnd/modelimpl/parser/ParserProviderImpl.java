@@ -112,7 +112,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
         }
 
         @Override
-        public void init(CsmObject object, TokenStream ts) {
+        public void init(CsmObject object, TokenStream ts, CsmParseCallback callback) {
             assert parser == null : "parser can not be reused " + parser;
             assert object != null;
             assert ts != null;
@@ -120,7 +120,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             if(TraceFlags.CPP_PARSER_ACTION) {
                 objects = new HashMap<Integer, CsmObject>();
             }
-            parser = CPPParserEx.getInstance(file, ts, flags, objects);
+            parser = CPPParserEx.getInstance(file, ts, flags, objects, (CppParserAction)callback);
         }
 
         @Override
@@ -233,7 +233,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
         }
         
         @Override
-        public void init(CsmObject object, TokenStream ts) {
+        public void init(CsmObject object, TokenStream ts, CsmParseCallback callback) {
             parser = new FortranParserEx(ts);
         }
 
@@ -302,7 +302,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
         }
 
         @Override
-        public void init(CsmObject object, TokenStream ts) {
+        public void init(CsmObject object, TokenStream ts, CsmParseCallback callback) {
             assert parser == null : "parser can not be reused " + parser;
             assert ts != null;
             org.netbeans.modules.cnd.antlr.TokenBuffer tb = new org.netbeans.modules.cnd.antlr.TokenBuffer(ts);            

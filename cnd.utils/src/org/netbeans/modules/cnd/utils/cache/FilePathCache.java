@@ -61,6 +61,7 @@ public class FilePathCache  extends APTStringManager {
     private FilePathCache() {
     }
     
+    @Override
     public CharSequence getString(CharSequence text) {
         text = CharSequences.create(text);
         return instance.getString(text);
@@ -74,6 +75,7 @@ public class FilePathCache  extends APTStringManager {
         return out;
     }
 
+    @Override
     public void dispose() {
         instance.dispose();
     }
