@@ -144,7 +144,9 @@ public class SftpClient implements RemoteClient {
             sftpSession.setUserInfo(new SftpUserInfo(configuration));
             sftpSession.setTimeout(timeout);
             // keep-alive
-            sftpSession.setServerAliveInterval(keepAliveInterval);
+            if (keepAliveInterval > 0) {
+                sftpSession.setServerAliveInterval(keepAliveInterval);
+            }
             sftpSession.connect(timeout);
 
             channel = sftpSession.openChannel("sftp"); // NOI18N
