@@ -754,34 +754,27 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         parameterSpan = info.getTreeUtilities().findMethodParameterSpan(tree);
         
         List<? extends VariableElement> pars = method.getParameters();
-
-        Collection<ExecutableElement> allMethods = new ArrayList();
-        allMethods.addAll(JavaRefactoringUtils.getOverriddenMethods(method, info));
-        allMethods.addAll(JavaRefactoringUtils.getOverridingMethods(method, info));
-        allMethods.add(method);
         
-        for (ExecutableElement currentMethod: allMethods) {
-            int originalIndex = 0;
-            for (VariableElement par:currentMethod.getParameters()) {
-                VariableTree parTree = (VariableTree) info.getTrees().getTree(par);
-                String typeRepresentation;
-                if (method.isVarArgs() && originalIndex == pars.size()-1) {
-                    typeRepresentation = getTypeStringRepresentation(parTree).replace("[]", "..."); // NOI18N
-                } else {
-                    typeRepresentation = getTypeStringRepresentation(parTree);
-                }
-                LocalVarScanner scan = new LocalVarScanner(info, null);
-                scan.scan(path, par);
-                Boolean removable = !scan.hasRefernces();
-                if (model.getRowCount()<=originalIndex) {
-                    Object[] parRep = new Object[] { typeRepresentation, par.toString(), "", new Integer(originalIndex), removable };
-                    model.addRow(parRep);
-                } else {
-                    removable = Boolean.valueOf(model.isRemovable(originalIndex) && removable.booleanValue());
-                    ((Vector) model.getDataVector().get(originalIndex)).set(4, removable);
-                }
-                originalIndex++;
+        int originalIndex = 0;
+        for (VariableElement par:method.getParameters()) {
+            VariableTree parTree = (VariableTree) info.getTrees().getTree(par);
+            String typeRepresentation;
+            if (method.isVarArgs() && originalIndex == pars.size()-1) {
+                typeRepresentation = getTypeStringRepresentation(parTree).replace("[]", "..."); // NOI18N
+            } else {
+                typeRepresentation = getTypeStringRepresentation(parTree);
             }
+            LocalVarScanner scan = new LocalVarScanner(info, null);
+            scan.scan(path, par);
+            Boolean removable = !scan.hasRefernces();
+            if (model.getRowCount()<=originalIndex) {
+                Object[] parRep = new Object[] { typeRepresentation, par.toString(), "", new Integer(originalIndex), removable };
+                model.addRow(parRep);
+            } else {
+                removable = Boolean.valueOf(model.isRemovable(originalIndex) && removable.booleanValue());
+                ((Vector) model.getDataVector().get(originalIndex)).set(4, removable);
+            }
+            originalIndex++;
         }
         if(preConfiguration != null) {
             List<Object[]> newModel = new LinkedList<Object[]>();
