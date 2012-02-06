@@ -687,7 +687,9 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
     }
 
     private void performProjectAction(String projectName, String actionName) throws IOException {
-        ProjectRootNode node = new ProjectsTabOperator().getProjectRootNode(projectName);
+        ProjectsTabOperator pto = new ProjectsTabOperator();
+        pto.pressMouse(); // to get focus, otherwise performing popup action won't work
+        ProjectRootNode node = pto.getProjectRootNode(projectName);
         node.performPopupAction(actionName);
         OutputTabOperator oto = new OutputTabOperator(projectName);
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 600000); //NOI18N
