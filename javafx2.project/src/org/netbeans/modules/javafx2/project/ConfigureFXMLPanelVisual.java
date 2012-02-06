@@ -52,6 +52,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -393,12 +394,14 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
     private void controllerCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_controllerCheckBoxItemStateChanged
         controllerNameLabel.setEnabled(controllerCheckBox.isSelected());
         controllerNameTextField.setEnabled(controllerCheckBox.isSelected());
+        updateText();
         fireChange();
     }//GEN-LAST:event_controllerCheckBoxItemStateChanged
 
     private void cssCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cssCheckBoxItemStateChanged
         cssNameLabel.setEnabled(cssCheckBox.isSelected());
         cssNameTextField.setEnabled(cssCheckBox.isSelected());
+        updateText();
         fireChange();
     }//GEN-LAST:event_cssCheckBoxItemStateChanged
 
@@ -442,7 +445,10 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
     // DocumentListener implementation -----------------------------------------
     @Override
     public void changedUpdate(DocumentEvent e) {
-        updateText();
+        final Document d = e.getDocument();
+        if (d != controllerNameTextField.getDocument() && d != cssNameTextField.getDocument()) {
+            updateText();
+        }
         fireChange();
     }
 
@@ -491,8 +497,8 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
             SourceGroup g = (SourceGroup) selectedItem;
             FileObject rootFolder = g.getRootFolder();
             String packageName = getPackageFileName();
-            String fxmlName = fxmlNameTextField.getText().trim();
-            if (fxmlName.length() > 0) {
+            String fxmlName = getFXMLName();
+            if (fxmlName != null && fxmlName.length() > 0) {
                 fxmlName = fxmlName + FXML_FILE_EXTENSION;
             }
             createdFileName = FileUtil.getFileDisplayName(rootFolder)
@@ -505,6 +511,25 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
             createdFileName = "";   //NOI18N
         }
         resultTextField.setText(createdFileName.replace('/', File.separatorChar)); // NOI18N
+        
+        if (controllerCheckBox.isSelected()) {
+            String controllerName = getControllerName();
+            if (controllerName == null) {
+                controllerName = getFXMLName();
+                String firstChar = String.valueOf(controllerName.charAt(0)).toUpperCase();
+                String otherChars = controllerName.substring(1);
+                controllerName = firstChar + otherChars + "Controller"; // NOI18N
+            }
+            controllerNameTextField.setText(controllerName);
+        }
+        
+        if (cssCheckBox.isSelected()) {
+            String cssName = getCSSName();
+            if (cssName == null) {
+                cssName = getFXMLName();
+            }
+            cssNameTextField.setText(cssName);
+        }
     }
 
     private SourceGroup getPreselectedGroup(FileObject folder) {

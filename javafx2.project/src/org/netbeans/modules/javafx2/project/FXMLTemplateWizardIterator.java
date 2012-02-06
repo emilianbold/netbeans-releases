@@ -41,7 +41,9 @@
 package org.netbeans.modules.javafx2.project;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -64,7 +66,6 @@ import org.openide.util.NbBundle;
  */
 // TODO register via annotations instead of layer.xml
 // TODO logging: process exceptions
-// TODO use templates from SceneBuilder team
 public class FXMLTemplateWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     
     static final String JAVA_CONTROLLER_NAME_PROPERTY = "JavaController"; // NOI18N
@@ -76,7 +77,6 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
     public static WizardDescriptor.InstantiatingIterator<WizardDescriptor> create() {
         return new FXMLTemplateWizardIterator();
     }
-
 
     private FXMLTemplateWizardIterator() {
     }
@@ -118,10 +118,13 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
     public Set instantiate() throws IOException, IllegalArgumentException {
         Set<FileObject> set = new HashSet<FileObject>(3);
         //set.addAll(delegateIterator.instantiate());
-        
+
         FileObject dir = Templates.getTargetFolder(wizard);
-        String targetName = Templates.getTargetName(wizard);
         DataFolder df = DataFolder.findFolder(dir);
+
+        String targetName = Templates.getTargetName(wizard);
+        String controller = (String) wizard.getProperty(FXMLTemplateWizardIterator.JAVA_CONTROLLER_NAME_PROPERTY);
+        String css = (String) wizard.getProperty(FXMLTemplateWizardIterator.CSS_NAME_PROPERTY);
 
 //        FileObject mainTemplate = FileUtil.getConfigFile("Templates/javafx/FXML.java"); // NOI18N
 //        DataObject dMainTemplate = DataObject.find(mainTemplate);
@@ -131,16 +134,33 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
 //        DataObject dobj1 = dMainTemplate.createFromTemplate(df, mainName, params); // NOI18N
 //        set.add(dobj1.getPrimaryFile());
 
+        Map<String, String> params = new HashMap<String, String>();
+        if (controller != null) {
+            params.put("controller", controller); // NOI18N
+        }
+        if (css != null) {
+            params.put("css", css); // NOI18N
+        }
+
         FileObject xmlTemplate = FileUtil.getConfigFile("Templates/javafx/FXML.fxml"); // NOI18N
         DataObject dXMLTemplate = DataObject.find(xmlTemplate);
-        DataObject dobj = dXMLTemplate.createFromTemplate(df, targetName);
+        DataObject dobj = dXMLTemplate.createFromTemplate(df, targetName, params);
         set.add(dobj.getPrimaryFile());
-        
-        FileObject javaTemplate = FileUtil.getConfigFile("Templates/javafx/FXML2.java"); // NOI18N
-        DataObject dJavaTemplate = DataObject.find(javaTemplate);
-        DataObject dobj2 = dJavaTemplate.createFromTemplate(df, targetName); // NOI18N
-        set.add(dobj2.getPrimaryFile());
-        
+
+        if (controller != null) {
+            FileObject javaTemplate = FileUtil.getConfigFile("Templates/javafx/FXMLController.java"); // NOI18N
+            DataObject dJavaTemplate = DataObject.find(javaTemplate);
+            DataObject dobj2 = dJavaTemplate.createFromTemplate(df, controller); // NOI18N
+            set.add(dobj2.getPrimaryFile());
+        }
+
+        if (css != null) {
+            FileObject cssTemplate = FileUtil.getConfigFile("Templates/javafx/FXML.css"); // NOI18N
+            DataObject dCSSTemplate = DataObject.find(cssTemplate);
+            DataObject dobj3 = dCSSTemplate.createFromTemplate(df, css); // NOI18N
+            set.add(dobj3.getPrimaryFile());
+        }
+
         return set;
     }
 
