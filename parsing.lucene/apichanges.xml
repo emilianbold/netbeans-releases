@@ -110,6 +110,24 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="PriorityAccess">
+    <api name="LuceneSupport"/>
+    <summary>Added <code>IndexManager.priorityAccess</code> to suspend IO during query</summary>
+    <version major="2" minor="9"/>
+    <date day="6" month="2" year="2012"/>
+    <author login="tzezula"/>
+    <compatibility source="compatible" binary="compatible" addition="yes"/>
+    <description>
+        <p>
+            Added <code>IndexManager.priorityAccess</code> to suspend background scan
+            and checking for external changes during query. The methods <code>IndexManager.readAccess</code>
+            and <code>IndexManager.writeAccess</code> were deprecated. The <code>Index</code> is now self
+            guarded and global lock is not needed for correct synchronization.
+        </p>
+    </description>
+    <class package="org.netbeans.modules.parsing.lucene.support" name="IndexManager"/>
+    <issue number="207915"/>
+  </change>
   <change id="MemoryIndex">
     <api name="LuceneSupport"/>
     <summary>Added RAM implementation of Index</summary>
