@@ -69,6 +69,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -160,6 +161,11 @@ public class EditorTestLookup extends ProxyLookup {
             } else {
                 throw new IOException("Expecting .xml or .zip layers, but not '" + layer.getPath() + "'");
             }
+        }
+
+        //for MIMEResolver to work:
+        for (URL url : NbCollections.iterable(EditorTestLookup.class.getClassLoader().getResources("META-INF/generated-layer.xml"))) {
+            xmlLayers.add(url);
         }
         
         if (!xmlLayers.isEmpty()) {
