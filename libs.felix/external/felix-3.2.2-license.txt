@@ -1,9 +1,9 @@
 Name: Felix
-Version: 3.2.2
-Description: Apache Felix OSGi container (minus org.osgi.** packages).
+Version: 4.0.2
+Description: Apache Felix OSGi container.
 License: Apache-2.0
 OSR: 13360
-Files: felix-3.2.2.jar
+Files: felix-4.0.2.jar
 Origin: http://archive.apache.org/dist/felix/
 
                                  Apache License

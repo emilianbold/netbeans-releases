@@ -47,6 +47,7 @@ package org.netbeans.core.netigso;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.List;
@@ -447,6 +448,36 @@ public class NetigsoSelfQueryTest extends NetigsoHid {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
+        public <A> A adapt(Class<A> type) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public int compareTo(Bundle o) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public <S> ServiceRegistration<S> registerService(Class<S> type, S s, Dictionary<String, ?> dctnr) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public <S> ServiceReference<S> getServiceReference(Class<S> type) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public <S> Collection<ServiceReference<S>> getServiceReferences(Class<S> type, String string) throws InvalidSyntaxException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Bundle getBundle(String string) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
     }
 
     private static final class MockBundle implements Bundle, BundleContent {
@@ -613,6 +644,21 @@ public class NetigsoSelfQueryTest extends NetigsoHid {
 
         @Override
         public Version getVersion() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public <A> A adapt(Class<A> type) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public File getDataFile(String string) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public int compareTo(Bundle o) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

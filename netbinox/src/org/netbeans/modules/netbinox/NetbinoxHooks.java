@@ -47,14 +47,7 @@ import java.io.Writer;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.ProtectionDomain;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.eclipse.osgi.baseadaptor.BaseAdaptor;
@@ -83,13 +76,14 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
 
 /**
  *
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
 public final class NetbinoxHooks implements HookConfigurator, ClassLoadingHook,
-BundleFileFactoryHook, FrameworkLog, AdaptorHook, LookupListener {
+BundleFileFactoryHook, FrameworkLog, FrameworkListener, AdaptorHook, LookupListener {
     private static Map<Bundle,ClassLoader> map;
     private static NetigsoArchive archive;
     private static Lookup.Result<HookConfigurator> configurators;
@@ -204,6 +198,21 @@ BundleFileFactoryHook, FrameworkLog, AdaptorHook, LookupListener {
             }
 
             @Override
+            public List<URL> findEntries(String string, String string1, int i) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            public Collection<String> listResources(String string, String string1, int i) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            public Collection<String> listLocalResources(String string, String string1, int i) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
             protected URL findResource(String name) {
                 return findLocalResource(name);
             }
@@ -260,6 +269,13 @@ BundleFileFactoryHook, FrameworkLog, AdaptorHook, LookupListener {
     }
 
     @Override
+    public void frameworkEvent(FrameworkEvent ev) {
+		if (ev.getType() == FrameworkEvent.ERROR) {
+            log(ev);
+		}
+    }
+    
+    @Override
     public void log(FrameworkEvent fe) {
         Level l = Level.FINE;
         if ((fe.getType() & FrameworkEvent.ERROR) != 0) {
@@ -310,10 +326,12 @@ BundleFileFactoryHook, FrameworkLog, AdaptorHook, LookupListener {
 
     @Override
     public void frameworkStart(BundleContext bc) throws BundleException {
+        bc.addFrameworkListener(this);
     }
 
     @Override
     public void frameworkStop(BundleContext bc) throws BundleException {
+        bc.removeFrameworkListener(this);
     }
 
     @Override

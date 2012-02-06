@@ -44,18 +44,22 @@
 
 package org.netbeans.core.netigso;
 
+import java.util.logging.Level;
 import org.netbeans.core.startup.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
+import java.util.logging.Logger;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
+import org.osgi.framework.Bundle;
 
 public class NetigsoReloadTest extends NetigsoHid {
     private static Module m1;
     private static ModuleManager mgr;
     private File withActivator;
     private File withoutA;
+    private Logger LOG;
 
     public NetigsoReloadTest(String name) {
         super(name);
@@ -64,6 +68,8 @@ public class NetigsoReloadTest extends NetigsoHid {
     protected @Override void setUp() throws Exception {
         Locale.setDefault(Locale.US);
         clearWorkDir();
+        
+        LOG = Logger.getLogger("TEST." + getName());
 
         File ud = new File(getWorkDir(), "ud");
         ud.mkdirs();
@@ -76,7 +82,7 @@ public class NetigsoReloadTest extends NetigsoHid {
         withoutA = changeManifest(withActivator, "Manifest-Version: 1.0\n" +
                 "Bundle-SymbolicName: org.activate\n" +
                 "Import-Package: org.osgi.framework\n" +
-                "Bundle-Version: 1.2\n");
+                "Bundle-Version: 1.1\n");
     }
 
     public void testCanReloadAModule() throws Exception {
@@ -90,11 +96,20 @@ public class NetigsoReloadTest extends NetigsoHid {
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
+        
+        Bundle b = NetigsoServicesTest.findBundle("org.activate");
+        assertEquals("version 1.1", "1.1.0", b.getVersion().toString());
 
+        LOG.info("deleting old version and replacing the JAR");
         assertTrue("Delete is OK", withoutA.delete());
         assertTrue("Rename is OK", withActivator.renameTo(withoutA));
-
+        LOG.log(Level.INFO, "jar {0} replaced, redeploying", withoutA);
         TestModuleDeployer.deployTestModule(withoutA);
+        LOG.info("Deployed new module");
+        
+        Bundle newB = NetigsoServicesTest.findBundle("org.activate");
+//        assertEquals("new version 1.2.1", "1.2.1", newB.getVersion());
+        
         Class<?> main = m1.getClassLoader().loadClass("org.activate.Main");
         Object s = main.getField("start").get(null);
         assertNotNull("Bundle started, its context provided", s);

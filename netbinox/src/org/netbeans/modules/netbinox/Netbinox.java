@@ -44,6 +44,7 @@ package org.netbeans.modules.netbinox;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.Dictionary;
 import java.util.Map;
 import java.util.Properties;
@@ -104,7 +105,7 @@ class Netbinox extends Equinox {
         public Context(BundleContext delegate) {
             this.delegate = delegate;
         }
-
+        
         public boolean ungetService(ServiceReference sr) {
             return delegate.ungetService(sr);
         }
@@ -140,6 +141,18 @@ class Netbinox extends Equinox {
             }
             return delegate.installBundle(url, in);
         }
+        
+        public <S extends Object> Collection<ServiceReference<S>> getServiceReferences(Class<S> type, String string) throws InvalidSyntaxException {
+            return delegate.getServiceReferences(type, string);
+        }
+        
+        public <S extends Object> ServiceReference<S> getServiceReference(Class<S> type) {
+            return delegate.getServiceReference(type);
+        }
+
+        public <S extends Object> ServiceRegistration<S> registerService(Class<S> type, S s, Dictionary<String, ?> dctnr) {
+            return delegate.registerService(type, s, dctnr);
+        }
 
         public ServiceReference[] getServiceReferences(String string, String string1) throws InvalidSyntaxException {
             return delegate.getServiceReferences(string, string1);
@@ -171,6 +184,10 @@ class Netbinox extends Equinox {
 
         public Bundle getBundle() {
             return delegate.getBundle();
+        }
+        
+        public Bundle getBundle(String s) {
+            return delegate.getBundle(s);
         }
 
         public ServiceReference[] getAllServiceReferences(String string, String string1) throws InvalidSyntaxException {

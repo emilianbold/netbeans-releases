@@ -442,10 +442,23 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             // Just finite number of files in a cache
             return false;
         }
+        if (file.contains("/var/cache/netigso/org.eclipse.core.runtime/.")) {
+            // Just finite number of files in a cache
+            return false;
+        }
+        if (file.contains("/var/cache/netigso/.settings/")) {
+            // Just finite number of files in a cache
+            return false;
+        }
+        if (file.contains("/var/cache/netigso/org.eclipse.equinox.app/.")) {
+            // Just finite number of files in a cache
+            return false;
+        }
         if (
             file.equals(System.getProperty("netbeans.user")) ||
             file.equals(System.getProperty("netbeans.home")) ||
             file.matches(".*/modules/ext/org\\.eclipse\\.osgi_[0-9\\.]*v[0-9]*\\.jar") ||
+            file.endsWith("modules/ext/org.eclipse.osgi_3.7.1.R37x_v20110808-1106.jar") ||
             file.endsWith("modules/org-netbeans-modules-netbinox.jar") ||
             file.endsWith("var/cache/netigso") ||
             file.endsWith("var/cache/netigso/org.eclipse.osgi")

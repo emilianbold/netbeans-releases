@@ -179,12 +179,16 @@ public class NetigsoServicesTest extends SetupHid implements LookupListener {
 
     public static Bundle findBundle(String bsn) throws Exception {
         Bundle[] arr = findFramework().getBundleContext().getBundles();
+        Bundle candidate = null;
         for (Bundle b : arr) {
             if (bsn.equals(b.getSymbolicName())) {
-                return b;
+                candidate = b;
+                if ((b.getState() & Bundle.ACTIVE) != 0) {
+                    return b;
+                }
             }
         }
-        return null;
+        return candidate;
     }
 
     private File changeManifest(File orig, String manifest) throws IOException {

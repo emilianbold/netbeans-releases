@@ -229,7 +229,7 @@ class OSGiProcess {
         /* Would need to introspect manifestContents above:
         assertTrue(new File(bundles, "custom-1.0.0.jar").isFile());
          */
-        Map<String,Object> config = new HashMap<String,Object>();
+        Map<String,String> config = new HashMap<String,String>();
         File cache = new File(workDir, "cache");
         config.put(Constants.FRAMEWORK_STORAGE, cache.toString());
         Framework f = ServiceLoader.load(FrameworkFactory.class).iterator().next().newFramework(config);
