@@ -45,6 +45,7 @@ import java.util.*;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.openide.filesystems.FileObject;
@@ -100,6 +101,9 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             if (getParent().getParent() == null || getModifiers().contains(Modifier.PRIVATE)) {
                 // variable or the global object
                 return Kind.VARIABLE;
+            }
+            if (getParent() instanceof JsFunction) {
+                return isDeclared() ? Kind.VARIABLE : Kind.PROPERTY;
             }
             return Kind.PROPERTY;
         }
