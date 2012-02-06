@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations;
 
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.openide.util.NbBundle;
 
@@ -50,6 +51,15 @@ public class OneToOneTag extends PhpAnnotationTag {
         super("OneToOne", // NOI18N
                 "@OneToOne(targetEntity=\"${Entity}\")", // NOI18N
                 NbBundle.getMessage(OneToOneTag.class, "OneToOneTag.documentation"));
+    }
+
+    @Override
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText("("); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("targetEntity=\"Entity\""); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText(")"); //NOI18N
     }
 
 }

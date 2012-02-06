@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations;
 
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.openide.util.NbBundle;
 
@@ -50,6 +51,15 @@ public class TableTag extends PhpAnnotationTag {
         super("Table", // NOI18N
                 "@Table(name=\"${table}\")", // NOI18N
                 NbBundle.getMessage(TableTag.class, "TableTag.documentation"));
+    }
+
+    @Override
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText("("); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("name=\"table\""); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText(")"); //NOI18N
     }
 
 }

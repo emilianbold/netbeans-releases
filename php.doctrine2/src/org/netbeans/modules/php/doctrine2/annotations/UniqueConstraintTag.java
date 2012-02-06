@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations;
 
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.openide.util.NbBundle;
 
@@ -50,6 +51,15 @@ public class UniqueConstraintTag extends PhpAnnotationTag {
         super("UniqueConstraint", // NOI18N
                 "@UniqueConstraint(name=\"${search_idx}\", columns={\"${column1}\"})", // NOI18N
                 NbBundle.getMessage(UniqueConstraintTag.class, "UniqueConstraintTag.documentation"));
+    }
+
+    @Override
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText("("); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("name=\"search_idx\", columns={\"column1\"}"); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText(")"); //NOI18N
     }
 
 }

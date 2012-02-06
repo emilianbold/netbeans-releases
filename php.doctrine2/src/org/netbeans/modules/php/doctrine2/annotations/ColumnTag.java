@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations;
 
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.openide.util.NbBundle;
 
@@ -50,6 +51,15 @@ public class ColumnTag extends PhpAnnotationTag {
         super("Column", // NOI18N
                 "@Column(type=\"${string}\", ${length}=${32}, ${unique}=${true}, ${nullable}=${false})", // NOI18N
                 NbBundle.getMessage(ColumnTag.class, "ColumnTag.documentation"));
+    }
+
+    @Override
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText("("); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("type=\"string\", length=32, unique=true, nullable=false"); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText(")"); //NOI18N
     }
 
 }
