@@ -672,7 +672,7 @@ public class JaxWsCodeGenerator {
                 @Override
                 public void run() {
                     try {
-                        targetSource.runWhenScanFinished(task, true);
+                        targetSource.runUserActionTask(task, true);
                     }
                     catch (IOException ex) {
                         Logger.getLogger(JaxWsCodeGenerator.class.getName()).log(
@@ -745,7 +745,8 @@ public class JaxWsCodeGenerator {
             }
 
             // @insert WebServiceRef injection
-            if (!task.containsWsRefInjection()) {             
+            if (!task.containsWsRefInjection()) {        
+                // scan should be finished already due previous scan task
                 InsertTask modificationTask = new InsertTask(serviceJavaName, serviceFName[0], wsdlUrl);
                 targetSource.runModificationTask(modificationTask).commit();
             }

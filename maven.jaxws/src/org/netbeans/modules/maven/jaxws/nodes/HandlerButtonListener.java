@@ -124,12 +124,12 @@ public class HandlerButtonListener implements ActionListener{
                         ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
                         if (javaClass!=null) {
                             TreeMaker make = workingCopy.getTreeMaker();
-                            TypeElement chainElement = workingCopy.getElements().getTypeElement("javax.jws.HandlerChain"); //NOI18N
                             List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
-                            AssignmentTree attr1 = make.Assignment(make.Identifier("file"), make.Literal(handlerFileName + ".xml"));
+                            AssignmentTree attr1 = make.Assignment(make.Identifier("file"), 
+                                    make.Literal(handlerFileName + ".xml"));        //NOI18N
                             attrs.add(attr1);
                             AnnotationTree chainAnnotation = make.Annotation(
-                                    make.QualIdent(chainElement),
+                                    make.QualIdent("javax.jws.HandlerChain"),       //NOI18N
                                     attrs
                                     );
                             GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
@@ -137,7 +137,9 @@ public class HandlerButtonListener implements ActionListener{
                             workingCopy.rewrite(javaClass, modifiedClass);
                         }
                     }
-                    public void cancel() {}
+                    @Override
+                    public void cancel() {
+                    }
                 };
                 JavaSource targetSource = JavaSource.forFileObject(implBeanClass);
                 try {
@@ -195,12 +197,18 @@ public class HandlerButtonListener implements ActionListener{
                         TypeElement typeElement = SourceUtils.getPublicTopLevelElement(workingCopy);
                         if (typeElement!=null) {
                             TreeMaker make = workingCopy.getTreeMaker();
-                            AnnotationMirror chainAnnotation = _RetoucheUtil.getAnnotation(workingCopy, typeElement, "javax.jws.HandlerChain"); //NOI18N
+                            AnnotationMirror chainAnnotation = _RetoucheUtil.
+                                getAnnotation(workingCopy, typeElement, 
+                                        "javax.jws.HandlerChain"); //NOI18N
                             if (chainAnnotation!=null) {
-                                ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
-                                AnnotationTree anotTree = (AnnotationTree)workingCopy.getTrees().getTree(typeElement,chainAnnotation);
+                                ClassTree classTree = workingCopy.getTrees().
+                                    getTree(typeElement);
+                                AnnotationTree anotTree = 
+                                    (AnnotationTree)workingCopy.getTrees().
+                                        getTree(typeElement,chainAnnotation);
                                 ClassTree modifiedClass = make.Class(
-                                        make.removeModifiersAnnotation(classTree.getModifiers(), anotTree),
+                                        make.removeModifiersAnnotation(classTree.
+                                                getModifiers(), anotTree),
                                         classTree.getSimpleName(),
                                         classTree.getTypeParameters(),
                                         classTree.getExtendsClause(),
@@ -210,7 +218,9 @@ public class HandlerButtonListener implements ActionListener{
                             }
                         }
                     }
-                    public void cancel() {}
+                    @Override
+                    public void cancel() {
+                    }
                 };
                 JavaSource targetSource = JavaSource.forFileObject(implBeanClass);
                 try {
