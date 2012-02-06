@@ -39,27 +39,49 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.annotations;
+package org.netbeans.modules.cnd.loaders;
 
-import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
-import org.openide.util.NbBundle;
+import java.io.File;
+import java.io.IOException;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
-public class ColumnTag extends PhpAnnotationTag {
-
-    public ColumnTag() {
-        super("Column", // NOI18N
-                "@Column(type=\"${string}\", ${length}=${32}, ${unique}=${true}, ${nullable}=${false})", // NOI18N
-                NbBundle.getMessage(ColumnTag.class, "ColumnTag.documentation"));
+/**
+ *
+ * @author Vladimir Voskresensky
+ */
+public class MakeDataObjectTestCase extends NbTestCase {
+    public MakeDataObjectTestCase(String testName) {
+        super(testName);
     }
 
     @Override
-    public void formatParameters(HtmlFormatter formatter) {
-        formatter.appendText("("); //NOI18N
-        formatter.parameters(true);
-        formatter.appendText("type=\"string\", length=32, unique=true, nullable=false"); //NOI18N
-        formatter.parameters(false);
-        formatter.appendText(")"); //NOI18N
+    protected int timeOut() {
+        return 500000;
     }
 
+    public void testCMakeDataObject1() throws Exception {
+        File newFile = new File(super.getWorkDir(), "CMakeLists.txt"); // NOI18N
+        checkCMake(newFile, MIMENames.CMAKE_MIME_TYPE, CMakeDataObject.class);
+    }
+
+    public void testCMakeDataObject2() throws Exception {
+        File newFile = new File(super.getWorkDir(), "qq.cmake"); // NOI18N
+        checkCMake(newFile, MIMENames.CMAKE_INCLUDE_MIME_TYPE, CMakeIncludeDataObject.class);
+    }
+
+    private void checkCMake(File newFile, String mime, Class<?> cls) throws IOException, DataObjectNotFoundException {
+        newFile.createNewFile();
+        assertTrue("Not created file " + newFile, newFile.exists());
+        FileObject fo = CndFileUtils.toFileObject(newFile);
+        assertNotNull("Not found file object for file" + newFile, fo);
+        assertTrue("File object not valid for file" + newFile, fo.isValid());
+        assertEquals("Not text/x-cmake mime type", mime, fo.getMIMEType());
+        DataObject dob = DataObject.find(fo);
+        assertTrue("data object is not recognized by default infrastructure:" + dob.getClass(), cls.isInstance(dob));
+    }
 }

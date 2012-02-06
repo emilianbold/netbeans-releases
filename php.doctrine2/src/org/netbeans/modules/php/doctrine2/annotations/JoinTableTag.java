@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations;
 
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.openide.util.NbBundle;
 
@@ -50,6 +51,15 @@ public class JoinTableTag extends PhpAnnotationTag {
         super("JoinTable", // NOI18N
                 "@JoinTable(name=\"${table}\", joinColumns={${p1 default=\"\"}}, inverseJoinColumns={${p2 default=\"\"}})", // NOI18N
                 NbBundle.getMessage(JoinTableTag.class, "JoinTableTag.documentation"));
+    }
+
+    @Override
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText("("); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("name=\"table\", joinColumns={...}, inverseJoinColumns={...}"); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText(")"); //NOI18N
     }
 
 }
