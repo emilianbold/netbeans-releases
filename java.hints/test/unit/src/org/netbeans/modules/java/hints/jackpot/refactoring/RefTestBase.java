@@ -193,7 +193,6 @@ public class RefTestBase extends NbTestCase {
             "org/netbeans/modules/java/source/resources/layer.xml",
             "org/netbeans/modules/java/editor/resources/layer.xml",
             "org/netbeans/modules/java/hints/resources/layer.xml",
-            "org/netbeans/libs/freemarker/layer.xml",
             "META-INF/generated-layer.xml"}, new Object[] {
             new ClassPathProvider() {
             @Override
