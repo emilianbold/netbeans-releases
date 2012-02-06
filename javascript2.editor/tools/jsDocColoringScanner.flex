@@ -51,8 +51,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %caseless
 %char
 
-%state ST_IN_TAG
-%state ST_NO_TAG
+%state JSDOC
+%state IN_TAG
+%state NO_TAG
 
 %{
     private LexerInput input;
@@ -133,27 +134,84 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 %}
 
+/* base structural elements */
+LineTerminator = \r|\n|\r\n
+InputCharacter = [^\r\n]
+WhiteSpace = {LineTerminator} | [ \t\f]
+
+/* comment types */
+DocumentationComment = "/**"
+CommentEnd = ["*"]? + "/"
+/* TODO - can be removed once jsDoc will be embedded from general doc lexer */
+TraditionalComment = "/*" [^*] ~"*/" | "/*" "*"+ "/"
+EndOfLineComment = "//" {InputCharacter}* {LineTerminator}
+
+
 ANY_CHAR=(.|[\n])
 IDENTIFIER=[[:letter:][:digit:]_\\-]+
 
 
 %%
 
-<YYINITIAL> "@" {
-    yybegin(ST_IN_TAG);
-    yypushback(1);
+<YYINITIAL> {
+
+    /* TODO - can be removed once jsDoc will be embedded from general doc lexer */
+    {TraditionalComment}            { return JsDocTokenId.COMMENT_CODE; }
+    {EndOfLineComment}              { return JsDocTokenId.COMMENT_LINE; }
+
+    /* No code comments */
+    "/**#nocode+*/"                 { return JsDocTokenId.COMMENT_NOCODE_BEGIN; }
+    "/**#nocode-*/"                 { return JsDocTokenId.COMMENT_NOCODE_END; }
+
+    /* Shared tag comments */
+    "/**#@+"                        {
+                                        yybegin(JSDOC);
+                                        return JsDocTokenId.COMMENT_SHARED_BEGIN;
+                                    }
+    "/**#@-*/"                      { return JsDocTokenId.COMMENT_SHARED_END; }
+
+
+    {DocumentationComment}          {
+                                        yybegin(JSDOC);
+                                        return JsDocTokenId.COMMENT_CODE;
+                                    }
+    {CommentEnd}                    { return JsDocTokenId.COMMENT_END; }
+
+    /* Error fallback */
+    .|\n                            { }
+    <<EOF>>                         {
+        if (input.readLength() > 0) {
+            // backup eof
+            input.backup(1);
+            //and return the text as error token
+            //System.err.println("Illegal character <"+ yytext()+">");
+            return JsDocTokenId.UNKNOWN;
+        } else {
+            return null;
+        }
+    }
 }
 
-<YYINITIAL>[^@]* {
-    return JsDocTokenId.JSDOC_COMMENT;
+<JSDOC> {
+    "@"                             {
+                                        yybegin(IN_TAG);
+                                        yypushback(1);
+                                    }
+    
+    {CommentEnd}                    {
+                                        yybegin(YYINITIAL);
+                                        return JsDocTokenId.COMMENT_END;
+                                    }
+    [^@]*                           { return JsDocTokenId.COMMENT_CODE; }
 }
 
-<ST_IN_TAG> {
-    "@"{IDENTIFIER}  {yybegin(YYINITIAL); return JsDocTokenId.JSDOC_ANNOTATION;}
-    {ANY_CHAR}       {yybegin(ST_NO_TAG); yypushback(1);}
+<IN_TAG> {
+    "@"{IDENTIFIER}                 { yybegin(JSDOC); return JsDocTokenId.KEYWORD; }    {ANY_CHAR}                      { yybegin(NO_TAG); yypushback(1); }
 }
 
-<ST_NO_TAG> "@"[^@]* {
-    yybegin(YYINITIAL);
-    return JsDocTokenId.JSDOC_COMMENT;
+<NO_TAG> {
+    "@"[^@]*                        {
+                                        yybegin(JSDOC);
+                                        return JsDocTokenId.COMMENT_CODE;
+                                    }
 }
