@@ -102,14 +102,17 @@ public class EAWizardIterator extends BaseWizardIterator {
         // For every single created project we need to setup server correctly
         Set<FileObject> projects = ArchetypeWizards.openProjects(rootFile, earFile);
         for (FileObject projectFile : projects) {
-            saveSettingsToNbConfiguration(projectFile);
+            Project project = ProjectManager.getDefault().findProject(projectFile);
+            if (project == null) {
+                continue;
+            }
+            
+            saveSettingsToNbConfiguration(project);
 
             // We don't want to set server in pom.xml for pom-packaging module
             String projectDirName = projectFile.getName();
             if (projectDirName.endsWith("-ejb") || projectDirName.endsWith("-ear") || projectDirName.endsWith("-web")) { // NOI18N
-                Project project = ProjectManager.getDefault().findProject(projectFile);
                 saveServerToPom(project);
-                
                 MavenProjectSupport.changeServer(project, true);
             }
         }
