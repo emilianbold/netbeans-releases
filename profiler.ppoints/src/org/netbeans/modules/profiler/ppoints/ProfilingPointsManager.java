@@ -106,6 +106,7 @@ import org.netbeans.lib.profiler.TargetAppRunner;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.project.ProjectStorage;
+import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointReport;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.util.RequestProcessor;
@@ -618,6 +619,7 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
                     CommonUtils.runInEventDispatchThread(new Runnable() {
                             public void run() {
                                 ProfilingPointsWindow.getDefault().notifyProfilingStateChanged(); // this needs to be called on EDT
+                                ProfilingPointReport.refreshOpenReports();
                             }
                         });
                 }

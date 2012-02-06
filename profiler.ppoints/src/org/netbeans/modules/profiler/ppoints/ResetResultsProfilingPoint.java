@@ -67,6 +67,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
+import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointReport;
 import org.openide.util.Lookup;
 
 
@@ -110,7 +111,7 @@ public final class ResetResultsProfilingPoint extends CodeProfilingPoint.Single 
         }
     }
 
-    private class Report extends TopComponent {
+    private class Report extends ProfilingPointReport {
         //~ Instance fields ------------------------------------------------------------------------------------------------------
 
         private HTMLTextArea dataArea;
@@ -121,20 +122,12 @@ public final class ResetResultsProfilingPoint extends CodeProfilingPoint.Single 
         public Report() {
             initDefaults();
             initComponents();
-            refreshData();
+            refresh();
         }
 
         //~ Methods --------------------------------------------------------------------------------------------------------------
 
-        public int getPersistenceType() {
-            return TopComponent.PERSISTENCE_NEVER;
-        }
-
-        protected String preferredID() {
-            return this.getClass().getName();
-        }
-
-        void refreshData() {
+        protected void refresh() {
             StringBuilder headerAreaTextBuilder = new StringBuilder();
 
             headerAreaTextBuilder.append(getHeaderName());
@@ -159,8 +152,8 @@ public final class ResetResultsProfilingPoint extends CodeProfilingPoint.Single 
             StringBuilder dataAreaTextBuilder = new StringBuilder();
 
             synchronized(resultsSync) {
-                if (results.size() == 0) {
-                    dataAreaTextBuilder.append("&nbsp;&nbsp;&lt;").append(Bundle.ResetResultsProfilingPoint_NoHitsString()).append("&gt;"); // NOI18N
+                if (results.isEmpty()) {
+                    dataAreaTextBuilder.append(ProfilingPointReport.getNoDataHint(ResetResultsProfilingPoint.this));
                 } else {
                     for (int i = 0; i < results.size(); i++) {
                         dataAreaTextBuilder.append("&nbsp;&nbsp;");
@@ -332,7 +325,7 @@ public final class ResetResultsProfilingPoint extends CodeProfilingPoint.Single 
                 report.refreshProperties();
             }
 
-            report.refreshData();
+            report.refresh();
         }
     }
 

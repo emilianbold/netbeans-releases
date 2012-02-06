@@ -79,6 +79,7 @@ import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.project.ProjectStorage;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
+import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointReport;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 
@@ -95,7 +96,6 @@ import org.openide.util.Lookup;
     "TimedTakeSnapshotProfilingPoint_NHitsString=<b>{0} hits</b>, last at {1}, <a href='#'>report</a>",
     "TimedTakeSnapshotProfilingPoint_NoResultsString=No results available",
     "TimedTakeSnapshotProfilingPoint_ReportAccessDescr=Report of {0}",
-    "TimedTakeSnapshotProfilingPoint_NoHitsString=no hits",
     "TimedTakeSnapshotProfilingPoint_HeaderTypeString=<b>Type:</b> {0}",
     "TimedTakeSnapshotProfilingPoint_HeaderEnabledString=<b>Enabled:</b> {0}",
     "TimedTakeSnapshotProfilingPoint_HeaderProjectString=<b>Project:</b> {0}",
@@ -113,7 +113,7 @@ import org.openide.util.Lookup;
 public final class TimedTakeSnapshotProfilingPoint extends TimedGlobalProfilingPoint implements PropertyChangeListener {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
-    private class Report extends TopComponent {
+    private class Report extends ProfilingPointReport {
         //~ Instance fields ------------------------------------------------------------------------------------------------------
 
         private HTMLTextArea dataArea;
@@ -124,20 +124,12 @@ public final class TimedTakeSnapshotProfilingPoint extends TimedGlobalProfilingP
         public Report() {
             initDefaults();
             initComponents();
-            refreshData();
+            refresh();
         }
 
         //~ Methods --------------------------------------------------------------------------------------------------------------
 
-        public int getPersistenceType() {
-            return TopComponent.PERSISTENCE_NEVER;
-        }
-
-        protected String preferredID() {
-            return this.getClass().getName();
-        }
-
-        void refreshData() {
+        protected void refresh() {
             StringBuilder headerAreaTextBuilder = new StringBuilder();
 
             headerAreaTextBuilder.append(getHeaderName());
@@ -168,8 +160,8 @@ public final class TimedTakeSnapshotProfilingPoint extends TimedGlobalProfilingP
             StringBuilder dataAreaTextBuilder = new StringBuilder();
 
             synchronized(resultsSync) {
-                if (!hasResults()) {
-                    dataAreaTextBuilder.append("&nbsp;&nbsp;&lt;").append(Bundle.TimedTakeSnapshotProfilingPoint_NoHitsString()).append("&gt;"); // NOI18N
+                if (results.isEmpty()) {
+                    dataAreaTextBuilder.append(ProfilingPointReport.getNoDataHint(TimedTakeSnapshotProfilingPoint.this));
                 } else {
                     for (int i = 0; i < results.size(); i++) {
                         dataAreaTextBuilder.append("&nbsp;&nbsp;");
@@ -449,7 +441,7 @@ public final class TimedTakeSnapshotProfilingPoint extends TimedGlobalProfilingP
                 report.refreshProperties();
             }
 
-            report.refreshData();
+            report.refresh();
         }
     }
 
