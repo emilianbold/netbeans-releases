@@ -47,6 +47,7 @@ package org.netbeans.modules.maven.jaxws;
 import java.io.IOException;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -80,14 +81,19 @@ public final class _RetoucheUtil {
         return result[0];
     }
 
-    public static AnnotationMirror getAnnotation(CompilationController controller, TypeElement typeElement, String annotationType) {
-        TypeElement anElement = controller.getElements().getTypeElement(annotationType);
-        if (anElement != null) {
-            List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
-            for (AnnotationMirror annotation : annotations) {
-                if (controller.getTypes().isSameType(anElement.asType(), annotation.getAnnotationType())) {
-                    return annotation;
-                }
+    public static AnnotationMirror getAnnotation(CompilationController controller, 
+            Element subject, String annotationType) 
+    {
+        List<? extends AnnotationMirror> annotations = subject
+                .getAnnotationMirrors();
+        for (AnnotationMirror annotation : annotations) {
+            Element element = annotation.getAnnotationType().asElement();
+            String fqn = null;
+            if (element instanceof TypeElement) {
+                fqn = ((TypeElement) element).getQualifiedName().toString();
+            }
+            if (annotationType.equals(fqn)) {
+                return annotation;
             }
         }
         return null;
