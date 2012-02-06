@@ -62,6 +62,9 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.openide.awt.AcceleratorBinding;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
+import org.openide.util.lookup.ServiceProvider;
 
 
 /**
@@ -1288,6 +1291,18 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
             } catch (Exception e) {
                 throw new IllegalStateException(e);
             }
+        }
+    }
+
+    @ServiceProvider(service=MIMEResolver.class)
+    public static final class MIMEResolverImpl extends MIMEResolver {
+
+        public MIMEResolverImpl() {
+            super("text/x-nbeditor-keybindingsettings");
+        }
+
+        @Override public String findMIMEType(FileObject fo) {
+            return fo.getPath().contains("Keybindings") ? "text/x-nbeditor-keybindingsettings" : null;
         }
     }
 
