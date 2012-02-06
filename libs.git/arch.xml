@@ -5,6 +5,7 @@
 
 <api-answers
   question-version="1.29"
+  module="Git Library API"
   author="ovrabec@netbeans.org"
 >
 
@@ -29,7 +30,7 @@
 -->
  <answer id="arch-overall">
   <p>
-    The library is a facade over a java implementation of Git client - <a href="http://eclipse.org/jgit/">JGit</a>. Because JGit does not provide the full-featured high-level API
+    The library is a facade over a java implementation of Git client - <a href="http://eclipse.org/jgit/">JGit</a>. Because JGit does not provide a full-featured high-level API
     (on the level of whole git commands), this library groups the JGit low-level API into bigger pieces and exports the API in the form of full Git commandline commands 
     (e.g. status, commit, checkout, reset, etc.).
     <api name="GitlibraryAPI" group="java" type="export" category="friend">
@@ -74,8 +75,8 @@
 -->
  <answer id="arch-time">
    <ul>      
-    <li>Module already implemented</li>
-    <li>Estimated time for the API stabilization: 2 weeks</li>    
+    <li>Module and the API already implemented</li>
+    <li>Estimated time for the API stabilization and incorporating external comments: 1 week</li>    
    </ul>
  </answer>
 
@@ -97,15 +98,37 @@
         </question>
 -->
  <answer id="arch-usecases">
-  <p>
-   Not much to describe, the library tries providing as many use-cases as the Git commandline client does.:
-  <usecase id="1" name="Create Client">
-   You must get the client bound to a specific repository run preferred Git commands with.
+  <usecase id="1" name="Get Git client">
+   Before you can run preferred Git commands, you must get an instance of <a href="@TOP@/org/netbeans/libs/git/GitClient.html">GitClient</a> bound to a specific repository.<br/>
+   Instances of <code>GitClient</code> are provided by <a href="@TOP@/org/netbeans/libs/git/GitClientFactory.html#getClient(java.io.File)">GitClientFactory</a>. The method takes
+   the root of the repository the client will be bound to as a parameter.
+   <p></p>
+   The correct way to achieve this is to call <code><a href="@TOP@/org/netbeans/libs/git/GitClientFactory.html">GitClientFactory</a>.getInstance().getClient(repositoryRoot)</code>.
   </usecase>
-  <usecase id="2" name="Create Client">
-   Run a Git command offered by the client as one of its methods.
+  <usecase id="2" name="Run Git commands">
+   To run a Git command simply call a method mapped to the command on an instance of GitClient.
   </usecase>
-  </p>
+  <usecase id="3" name="Control Git command's workflow">
+   You are able to control a Git command's work and listen for warning and error messages and informative messages indicating start and finish of the command via
+   <a href="@TOP@/org/netbeans/libs/git/progress/ProgressMonitor.html">ProgressMonitor</a>. Every method of <code>GitClient</code> mapped to a Git command accepts an instance of
+   <code>ProgressMonitor</code> as a parameter. Through an instance of this class you can cancel a command, an implementation of such a command periodically calls
+   <a href="@TOP@/org/netbeans/libs/git/progress/ProgressMonitor.html#isCanceled()">isCanceled</a> and interrupts its work if the method returns <code>true</code>.<br/>
+   Its basic implementation at <a href="@TOP@/org/netbeans/libs/git/progress/ProgressMonitor.DefaultProgressMonitor.html">ProgressMonitor.DefaultProgressMonitor</a> supports canceling commands
+   while implementing other methods as no-op.
+  </usecase>
+  <usecase id="4" name="Recieve notifications">
+   Some Git commands may take a noticeable amount of time to finish and waiting that long for the full result returned by the command may not be sufficient. Git API provides a way
+   to follow the process of building the result of such commands.<br/>
+   Let's say you want to get all revisions from the Git history. The log command is expensive especially on large repositories and you do not want to wait for it to finish but want to
+   be notified when a single revision from the history is fetched and added to the result. This way you can <em>incrementally</em> present the result in the UI without the need for 
+   waiting indefinitely for the command to finish.
+   <p>
+   Package <a href="@TOP@/org/netbeans/libs/git/progress/package-summary.html">org.netbeans.libs.git.progress</a> offers
+   a set of listeners extending the <a href="@TOP@/org/netbeans/libs/git/progress/NotificationListener.html">NotificationListener</a> interface which you can attach to an instance of
+   <code>GitClient</code> via <a href="@TOP@/org/netbeans/libs/git/GitClient.html#addNotificationListener(org.netbeans.libs.git.progress.NotificationListener)">addNotificationListener()</a>
+   and through which you can closely monitor building of the result.
+   </p>
+  </usecase>
  </answer>
 
 
@@ -122,7 +145,7 @@
 -->
  <answer id="arch-what">
   <p>
-      The library provides a Java implementation of git client allowing you to work with Git repositories and run a set of Git commands.
+      The library provides a Java implementation of git client allowing you to work with and get information about Git repositories and run Git commands.
   </p>
  </answer>
 
@@ -157,7 +180,7 @@
 -->
  <answer id="compat-deprecation">
   <p>
-   XXX no answer for compat-deprecation
+   No influence on the product.
   </p>
  </answer>
 
@@ -175,7 +198,8 @@
 -->
  <answer id="compat-i18n">
   <p>
-   XXX no answer for compat-i18n
+   No plans to internationalize the library. It contains no UI and besides description of enum values and exception messages it returns no strings needed to internationalize.
+   I think it is best to leave it up to an API client to process and deliver these messages to user in its own way.
   </p>
  </answer>
 
@@ -574,7 +598,7 @@
  <answer id="exec-property">
   <p>
    Properties:
-   <api name="org.netbeans.libs.git.trackSymLinks" group="property" category="private" type="export">
+   <api name="org.netbeans.libs.git.trackSymLinks" group="property" category="private" type="import">
       Java 6 has no direct support for symbolic links and the library then treats them as regular file and folders. This causes serious inconveniences when traversing
       a folder tree. Symbolic links are followed and stepped into as if normal folders, thus taking a lot of time to finish a command. The status of such files and folders 
       is then incorrectly detected as a pair deleted/added.<br/>
@@ -630,7 +654,7 @@
 -->
  <answer id="exec-threading">
   <p>
-   The single-threaded model is used, everything runs in a single thread. Callbacks are called and events are fired synchronously during a command's execution time.
+   The single-threaded model is used, everything runs in a single thread. Callbacks are called and events are fired synchronously during a command's execution.
   </p>
  </answer>
 
