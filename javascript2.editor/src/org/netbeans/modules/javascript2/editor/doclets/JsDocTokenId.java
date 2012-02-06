@@ -61,6 +61,7 @@ public enum JsDocTokenId implements TokenId {
     // IMPORTANT - Categories of JavaScript tokenIds should be shared across
     //  all JavaScript documentation tools to preserve coloring settings.
     KEYWORD("COMMENT_KEYWORD"), //NOI18N
+    COMMENT_START("COMMENT"), //NOI18N
     COMMENT_BLOCK("COMMENT"), //NOI18N
     COMMENT_NOCODE_BEGIN("COMMENT_NOCODE"), //NOI18N
     COMMENT_NOCODE_END("COMMENT_NOCODE"), //NOI18N

@@ -52,8 +52,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %char
 
 %state JSDOC
-%state IN_TAG
-%state NO_TAG
+%state STAR
+%state AT
 
 %{
     private LexerInput input;
@@ -148,7 +148,7 @@ EndOfLineComment = "//" {InputCharacter}* {LineTerminator}
 
 
 ANY_CHAR=(.|[\n])
-IDENTIFIER=[[:letter:][:digit:]_\\-]+
+IDENTIFIER=[[:letter:][:digit:]]+
 
 
 %%
@@ -164,21 +164,15 @@ IDENTIFIER=[[:letter:][:digit:]_\\-]+
     "/**#nocode-*/"                 { return JsDocTokenId.COMMENT_NOCODE_END; }
 
     /* Shared tag comments */
-    "/**#@+"                        {
-                                        yybegin(JSDOC);
-                                        return JsDocTokenId.COMMENT_SHARED_BEGIN;
-                                    }
+    "/**#@+"                        { yybegin(JSDOC); return JsDocTokenId.COMMENT_SHARED_BEGIN; }
     "/**#@-*/"                      { return JsDocTokenId.COMMENT_SHARED_END; }
 
 
-    {DocumentationComment}          {
-                                        yybegin(JSDOC);
-                                        return JsDocTokenId.COMMENT_CODE;
-                                    }
+    {DocumentationComment}          { yybegin(JSDOC); return JsDocTokenId.COMMENT_START; }
     {CommentEnd}                    { return JsDocTokenId.COMMENT_END; }
 
     /* Error fallback */
-    .|\n                            { }
+    {ANY_CHAR}                      { }
     <<EOF>>                         {
         if (input.readLength() > 0) {
             // backup eof
@@ -193,25 +187,18 @@ IDENTIFIER=[[:letter:][:digit:]_\\-]+
 }
 
 <JSDOC> {
-    "@"                             {
-                                        yybegin(IN_TAG);
-                                        yypushback(1);
-                                    }
-    
-    {CommentEnd}                    {
-                                        yybegin(YYINITIAL);
-                                        return JsDocTokenId.COMMENT_END;
-                                    }
-    [^@]*                           { return JsDocTokenId.COMMENT_CODE; }
+    "@"                             { yybegin(AT); yypushback(1); }
+    "*"                             { yybegin(STAR); yypushback(1); }
+    [^(@|*)]*                       { return JsDocTokenId.COMMENT_BLOCK; }
 }
 
-<IN_TAG> {
-    "@"{IDENTIFIER}                 { yybegin(JSDOC); return JsDocTokenId.KEYWORD; }    {ANY_CHAR}                      { yybegin(NO_TAG); yypushback(1); }
+<STAR> {
+    {CommentEnd}                    { yybegin(YYINITIAL); return JsDocTokenId.COMMENT_END; }
+    "@"                             { yybegin(JSDOC); yypushback(1); return JsDocTokenId.COMMENT_BLOCK; }
+    {ANY_CHAR}                      { yybegin(JSDOC); return JsDocTokenId.COMMENT_BLOCK; }
 }
 
-<NO_TAG> {
-    "@"[^@]*                        {
-                                        yybegin(JSDOC);
-                                        return JsDocTokenId.COMMENT_CODE;
-                                    }
+<AT> {
+    "@"{IDENTIFIER}                 { yybegin(JSDOC); return JsDocTokenId.KEYWORD; }
+    {ANY_CHAR}                      { yybegin(JSDOC); return JsDocTokenId.COMMENT_BLOCK; }
 }
