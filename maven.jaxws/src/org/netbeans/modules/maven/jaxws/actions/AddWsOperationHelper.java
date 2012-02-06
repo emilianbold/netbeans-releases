@@ -56,6 +56,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -80,6 +81,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.Comment.Style;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
@@ -333,53 +335,62 @@ public class AddWsOperationHelper {
                     }
                 }
             }
-            public void cancel() {}
+            @Override
+            public void cancel() {
+            }
         };
-        
+        final Runnable runnable = new Runnable() {
+            
+            @Override
+            public void run() {
+                doAddOperation(implClassFo, targetSource, handle, seiClass,
+                        modificationTask);                
+            }
+        };
+        final String title = NbBundle.getMessage(AddWsOperationHelper.class, 
+                "LBL_AddOperation");        // NOI18N
         if (SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    try {
-                        targetSource.runModificationTask(modificationTask).commit();
-                        // add method to SEI class
-                        if (seiClass[0] != null) {
-                            ClassPath sourceCP = ClassPath.getClassPath(implClassFo, ClassPath.SOURCE);
-                            FileObject seiFo = sourceCP.findResource(seiClass[0].replace('.', '/')+".java"); //NOI18N
-                            if (seiFo != null) {
-                                JavaSource seiSource = JavaSource.forFileObject(seiFo);
-                                seiSource.runModificationTask(modificationTask).commit();
-                                saveFile(seiFo);
-                            }
-                        }
-                        saveFile(implClassFo);
-                    } catch (IOException ex) {
-                        ErrorManager.getDefault().notify(ex);
-                    } finally {
-                        handle.finish();
-                    }                
-                }
-            });
+            ScanDialog.runWhenScanFinished( runnable, title );
         } else {
-            try {
-                targetSource.runModificationTask(modificationTask).commit();
-                // add method to SEI class
-                if (seiClass[0] != null) {
-                    ClassPath sourceCP = ClassPath.getClassPath(implClassFo, ClassPath.SOURCE);
-                    FileObject seiFo = sourceCP.findResource(seiClass[0].replace('.', '/')+".java"); //NOI18N
-                    if (seiFo != null) {
-                        JavaSource seiSource = JavaSource.forFileObject(seiFo);
-                        seiSource.runModificationTask(modificationTask).commit();
-                        saveFile(seiFo);
-                    }
+            SwingUtilities.invokeLater( new Runnable() {
+                
+                @Override
+                public void run() {
+                    ScanDialog.runWhenScanFinished( runnable, title );                    
                 }
-                saveFile(implClassFo);
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-            } finally {
-                handle.finish();
-            }            
+            });       
         }
 
+    }
+
+    private void doAddOperation( final FileObject implClassFo,
+            final JavaSource targetSource, final ProgressHandle handle,
+            final String[] seiClass,
+            final CancellableTask<WorkingCopy> modificationTask )
+    {
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    targetSource.runModificationTask(modificationTask).commit();
+                    // add method to SEI class
+                    if (seiClass[0] != null) {
+                        ClassPath sourceCP = ClassPath.getClassPath(implClassFo, ClassPath.SOURCE);
+                        FileObject seiFo = sourceCP.findResource(seiClass[0].replace('.', '/')+".java"); //NOI18N
+                        if (seiFo != null) {
+                            JavaSource seiSource = JavaSource.forFileObject(seiFo);
+                            seiSource.runModificationTask(modificationTask).commit();
+                            saveFile(seiFo);
+                        }
+                    }
+                    saveFile(implClassFo);
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                } finally {
+                    handle.finish();
+                }                
+            }
+        });
     }
 
     private String getEndpointInterface(TypeElement classEl, CompilationController controller) {
@@ -489,16 +500,22 @@ public class AddWsOperationHelper {
      */
     
     private Collection<MethodModel> getExistingMethods(FileObject implClass) {
-        JavaSource javaSource = JavaSource.forFileObject(implClass);
+        final JavaSource javaSource = JavaSource.forFileObject(implClass);
         final ResultHolder<MethodModel> result = new ResultHolder<MethodModel>();
         if (javaSource!=null) {
-            CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+            final CancellableTask<CompilationController> task = 
+                new CancellableTask<CompilationController>() 
+                {
+                
+                @Override
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                    TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                    TypeElement typeElement = SourceUtils.
+                        getPublicTopLevelElement(controller);
                     if (typeElement!=null) {
                         // find methods
-                        List<ExecutableElement> allMethods = getMethods(controller, typeElement);
+                        List<ExecutableElement> allMethods = getMethods(controller, 
+                                typeElement);
                         Collection<MethodModel> wsOperations = new ArrayList<MethodModel>();
                         boolean foundWebMethodAnnotation=false;
                         for(ExecutableElement method:allMethods) {
@@ -515,19 +532,49 @@ public class AddWsOperationHelper {
                                 }
                             }
                             if (validParamTypes) {
-                                MethodModel methodModel = MethodModelSupport.createMethodModel(controller, method);
+                                MethodModel methodModel = MethodModelSupport.
+                                    createMethodModel(controller, method);
                                 wsOperations.add(methodModel);
                             }
                         } // for
                         result.setResult(wsOperations);
                     }
                 }
+                @Override
                 public void cancel() {}
             };
-            try {
-                javaSource.runUserActionTask(task, true);
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+            final Runnable runnable = new Runnable() {
+                
+                @Override
+                public void run() {
+                    try {
+                        javaSource.runUserActionTask(task, true);
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                    }
+                }
+            };
+            final String title = NbBundle.getMessage(AddWsOperationHelper.class,
+                    "LBL_FindMethods") ;                // NOI18N
+            if ( SwingUtilities.isEventDispatchThread() ){
+                ScanDialog.runWhenScanFinished(runnable,title  );
+            }
+            else {
+                try {
+                    SwingUtilities.invokeAndWait( new Runnable() {
+                    
+                        @Override
+                        public void run() {
+                            ScanDialog.runWhenScanFinished(runnable,title  );                        
+                        }
+                    });
+                }
+                catch (InvocationTargetException e ){
+                    ErrorManager.getDefault().notify(e);
+                }
+                catch( InterruptedException e ){
+                    ErrorManager.getDefault().notify(e);
+                }
             }
         }
         return result.getResult();
