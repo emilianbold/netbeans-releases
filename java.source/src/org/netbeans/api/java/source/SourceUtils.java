@@ -542,27 +542,22 @@ public class SourceUtils {
     private static FileObject findSource (final String binaryName, final FileObject... fos) throws IOException {
         final ClassIndexManager cim = ClassIndexManager.getDefault();
         try {
-            return IndexManager.readAccess(new IndexManager.Action<FileObject>() {
-
-                public FileObject run() throws IOException, InterruptedException {
-                    for (FileObject fo : fos) {
-                        ClassIndexImpl ci = cim.getUsagesQuery(fo.getURL(), true);
-                        if (ci != null) {
-                            String sourceName = ci.getSourceName(binaryName);
-                            if (sourceName != null) {
-                                FileObject result = fo.getFileObject(sourceName);
-                                if (result != null) {
-                                    return result;
-                                }
-                            }
+            for (FileObject fo : fos) {
+                ClassIndexImpl ci = cim.getUsagesQuery(fo.getURL(), true);
+                if (ci != null) {
+                    String sourceName = ci.getSourceName(binaryName);
+                    if (sourceName != null) {
+                        FileObject result = fo.getFileObject(sourceName);
+                        if (result != null) {
+                            return result;
                         }
                     }
-                    return null;
                 }
-            });
+            }
         } catch (InterruptedException e) {
-            return null;
+            //canceled, pass - returns null
         }
+        return null;
     }
 
     private static abstract class Match {

@@ -1825,7 +1825,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
                             @Override
                             public void run() {
                                 try {
-                                    IndexManager.readAccess(new IndexManager.Action<Void>() {
+                                    IndexManager.priorityAccess(new IndexManager.Action<Void>() {
                                         @Override
                                         public Void run() throws IOException, InterruptedException {
                                             return null;
