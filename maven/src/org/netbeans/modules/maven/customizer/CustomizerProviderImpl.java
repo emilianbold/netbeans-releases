@@ -42,32 +42,24 @@
 
 package org.netbeans.modules.maven.customizer;
 
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.StringReader;
+import java.io.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.maven.project.MavenProject;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.modules.maven.configurations.M2ConfigProvider;
-import org.netbeans.modules.maven.configurations.M2Configuration;
-import org.codehaus.plexus.util.IOUtil;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.jdom.DefaultJDOMFactory;
 import org.jdom.Document;
@@ -78,8 +70,12 @@ import org.jdom.output.Format;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
+import org.netbeans.modules.maven.configurations.M2ConfigProvider;
+import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.model.io.jdom.NetbeansBuildActionJDOMWriter;
@@ -125,6 +121,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         this.project = project;
     }
     
+    @Override
     public void showCustomizer() {
         showCustomizer( null );
     }
@@ -269,6 +266,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         
         // Listening to OK button ----------------------------------------------
         
+        @Override
         public void actionPerformed( ActionEvent e ) {
             if (SwingUtilities.isEventDispatchThread()) { // OK option listener
                 if ( dialog != null ) {
@@ -292,6 +290,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                         }
                         try {
                             project.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                                @Override
                                 public void run() throws IOException {
                                     project.getLookup().lookup(MavenProjectPropsImpl.class).commitTransaction();
                                     writeAll(handle, project.getLookup().lookup(NbMavenProjectImpl.class));
@@ -391,6 +390,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     
     private static void writeNbActionsModel(final Project project, final FileObject pomDir, final ActionToGoalMapping mapping, final String path) throws IOException {
         pomDir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+            @Override
             public void run() throws IOException {
                 JDOMFactory factory = new DefaultJDOMFactory();
                 
@@ -457,11 +457,12 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         }
 
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (fo != null) {
                 try {
                     DataObject dobj = DataObject.find(fo);
-                    EditCookie edit = dobj.getCookie(EditCookie.class);
+                    EditCookie edit = dobj.getLookup().lookup(EditCookie.class);
                     edit.edit();
                 } catch (DataObjectNotFoundException ex) {
                     ex.printStackTrace();
