@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2012 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2012 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.declarative;
@@ -42,8 +42,9 @@ package org.netbeans.modules.java.hints.declarative;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -67,14 +68,14 @@ public class Utilities {
 
             return sb.toString();
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger(Utilities.class.getName()).log(Level.FINE, null, ex);
             return null;
         } finally {
             if (r != null) {
                 try {
                     r.close();
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    Logger.getLogger(Utilities.class.getName()).log(Level.FINE, null, ex);
                 }
             }
         }
