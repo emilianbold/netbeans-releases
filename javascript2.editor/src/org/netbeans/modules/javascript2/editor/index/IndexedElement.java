@@ -113,8 +113,8 @@ public class IndexedElement extends JsElementImpl {
         result.append(jsKind.getId()).append(';');  //NOI18N
         result.append(property.isDeclared() ? "1" : "0").append(';'); //NOI18N
         if (jsKind == JsElement.Kind.FUNCTION || jsKind == JsElement.Kind.METHOD || jsKind == JsElement.Kind.CONSTRUCTOR) {
-            for (Iterator<? extends Identifier> it = ((JsFunction)property).getParameters().iterator(); it.hasNext();) {
-                Identifier parametr = it.next();
+            for (Iterator<? extends JsObject> it = ((JsFunction)property).getParameters().iterator(); it.hasNext();) {
+                JsObject parametr = it.next();
                 result.append(parametr.getName());
                 if (it.hasNext()) {
                     result.append(',');

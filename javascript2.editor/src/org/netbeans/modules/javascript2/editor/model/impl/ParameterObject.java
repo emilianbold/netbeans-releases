@@ -39,15 +39,30 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor.model.impl;
 
-import java.util.Collection;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
 
 /**
  *
  * @author Petr Pisl
  */
-public interface JsFunction  extends JsObject{
-    public Collection<? extends JsObject> getParameters();
-    public JsObject getParameter(String name);
+public class ParameterObject extends JsObjectImpl {
+
+    public ParameterObject(JsObject parent, Identifier name) {
+        super(parent, name, name.getOffsetRange());
+    }
+
+    @Override
+    public boolean isDeclared() {
+        return true;
+    }
+
+    @Override
+    public Kind getJSKind() {
+        return JsElement.Kind.PARAMETER;
+    }
+    
 }
