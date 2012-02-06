@@ -41,28 +41,18 @@
  */
 package org.netbeans.modules.ide.ergonomics.fod;
 
-import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.core.startup.layers.LayerCacheManager;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.MultiFileSystem;
+import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -71,65 +61,27 @@ import org.openide.util.lookup.ServiceProviders;
  * @author Jirka Rechtacek
  */
 @ServiceProviders({
-    @ServiceProvider(service=FileSystem.class),
-    @ServiceProvider(service=FoDFileSystem.class)
+    @ServiceProvider(service=Repository.LayerProvider.class),
+    @ServiceProvider(service=FoDLayersProvider.class)
 })
-public final class FoDFileSystem extends MultiFileSystem
-implements Runnable, ChangeListener, LookupListener {
-    private static final LayerCacheManager manager = LayerCacheManager.create("all-ergonomics.dat"); // NOI18N
-    final static Logger LOG = Logger.getLogger (FoDFileSystem.class.getPackage().getName());
+public final class FoDLayersProvider extends Repository.LayerProvider
+implements LookupListener, Runnable {
+    final static Logger LOG = Logger.getLogger (FoDLayersProvider.class.getPackage().getName());
     private static RequestProcessor RP = new RequestProcessor("Ergonomics"); // NOI18N
     private RequestProcessor.Task refresh = RP.create(this, true);
     private Lookup.Result<ProjectFactory> factories;
     private Lookup.Result<?> ants;
-    private boolean forcedRefresh;
-    private final ChangeListener weakL;
 
-    public FoDFileSystem() {
-        setPropagateMasks(true);
-        weakL = WeakListeners.change(this, FeatureManager.getInstance());
-        FileSystem fs;
-        try {
-            fs = manager.loadCache();
-            if (fs != null) {
-                LOG.fine("Using cached layer"); // NOI18N
-                setDelegates(fs);
-                return;
-            }
-        } catch (IOException ex) {
-            LOG.log(Level.WARNING, "Cannot read cache", ex); // NOI18N
-        }
-        refresh();
-    }
-
-    public static FoDFileSystem getInstance() {
-        return Lookup.getDefault().lookup(FoDFileSystem.class);
-    }
-    
-    public void initListener() {
-        FeatureManager.getInstance().addChangeListener(weakL);
-    }
-
-    public void refresh() {
-        refresh.schedule(0);
-        refresh.waitFinished();
-    }
-    public void refreshForce() {
-        forcedRefresh = true;
-        refresh.schedule(0);
-        refresh.waitFinished();
-    }
-
-    public void waitFinished() {
-        refresh.waitFinished();
+    public static FoDLayersProvider getInstance() {
+        return Lookup.getDefault().lookup(FoDLayersProvider.class);
     }
 
     @Override
-    public void run() {
+    protected void registerLayers(Collection<? super URL> context) {
         boolean empty = true;
         LOG.fine("collecting layers"); // NOI18N
         List<URL> urls = new ArrayList<URL>();
-        urls.add(0, FoDFileSystem.class.getResource("common.xml")); // NOI18N
+        urls.add(0, FoDLayersProvider.class.getResource("common.xml")); // NOI18N
         for (FeatureInfo info : FeatureManager.features()) {
             if (!info.isPresent()) {
                 continue;
@@ -144,26 +96,11 @@ implements Runnable, ChangeListener, LookupListener {
         }
         if (empty && noAdditionalProjects() && !FoDEditorOpened.anEditorIsOpened) {
             LOG.fine("adding default layer"); // NOI18N
-            urls.add(0, FoDFileSystem.class.getResource("default.xml")); // NOI18N
-        }
-        if (forcedRefresh) {
-            forcedRefresh = false;
-            LOG.log(Level.INFO, "Forced refresh. Setting delegates to empty"); // NOI18N
-            setDelegates();
-            LOG.log(Level.INFO, "New delegates count: {0}", urls.size()); // NOI18N
-            LOG.log(Level.INFO, "{0}", urls); // NOI18N
+            urls.add(0, FoDLayersProvider.class.getResource("default.xml")); // NOI18N
         }
         LOG.log(Level.FINE, "delegating to {0} layers", urls.size()); // NOI18N
+        context.addAll(urls);
         LOG.log(Level.FINEST, "{0}", urls); // NOI18N
-
-        try {
-            FileSystem fs = getDelegates().length == 0 ?
-                manager.createEmptyFileSystem() : getDelegates()[0];
-            fs = manager.store(fs, urls);
-            setDelegates(fs);
-        } catch (IOException ex) {
-            LOG.log(Level.WARNING, "Cannot save cache", ex);
-        }
         LOG.fine("done");
         FeatureManager.dumpModules();
     }
@@ -192,13 +129,18 @@ implements Runnable, ChangeListener, LookupListener {
     }
 
     @Override
-    public void stateChanged(ChangeEvent e) {
+    public void resultChanged(LookupEvent ev) {
         refresh.schedule(500);
     }
-
+    public void refreshForce() {
+        super.refresh();
+    }
     @Override
-    public void resultChanged(LookupEvent ev) {
-        refresh.schedule(0);
+    public void run() {
+        super.refresh();
+    }
+    public void waitFinished() {
+        refresh.waitFinished();
     }
 
     private boolean noAdditionalProjects() {

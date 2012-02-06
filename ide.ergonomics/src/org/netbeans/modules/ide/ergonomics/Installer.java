@@ -43,7 +43,6 @@ package org.netbeans.modules.ide.ergonomics;
 
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
-import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
 
@@ -57,7 +56,6 @@ public class Installer extends ModuleInstall {
     @Override
     public void restored() {
         WarmUp.init();
-        FoDFileSystem.getInstance().initListener();
     }
     
     @Override

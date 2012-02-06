@@ -187,7 +187,7 @@ public final class FeatureInfo {
                         fs = new XMLFileSystem(url);
                         return fs;
                     } catch (SAXException ex) {
-                        FoDFileSystem.LOG.log(Level.SEVERE, "Cannot parse: " + url, ex);
+                        FoDLayersProvider.LOG.log(Level.SEVERE, "Cannot parse: " + url, ex);
                         Exceptions.printStackTrace(ex);
                     }
                 }
@@ -223,7 +223,7 @@ public final class FeatureInfo {
                                 try {
                                     required[1] = e = XPathFactory.newInstance().newXPath().compile((String) r1);
                                 } catch (XPathExpressionException ex) {
-                                    FoDFileSystem.LOG.log(Level.WARNING, "Cannot parse " + r1, ex);
+                                    FoDLayersProvider.LOG.log(Level.WARNING, "Cannot parse " + r1, ex);
                                     continue;
                                 }
                             } else {

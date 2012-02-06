@@ -54,11 +54,13 @@ import java.util.List;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.core.startup.NbRepository;
 import org.netbeans.core.startup.StartLog;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
+import org.openide.filesystems.Repository.LayerProvider;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
@@ -78,11 +80,13 @@ implements LookupListener {
     
     static final Logger err = Logger.getLogger("org.netbeans.core.projects"); // NOI18N
 
-    /** lookup result we listen on */
-    private static Lookup.Result<FileSystem> result = Lookup.getDefault().lookupResult(FileSystem.class);
+    /** lookup result for registered filesystems */
+    private static Lookup.Result<FileSystem> fsResult = Lookup.getDefault().lookupResult(FileSystem.class);
+    private static Lookup.Result<LayerProvider> layerResult = Lookup.getDefault().lookupResult(LayerProvider.class);
 
     /** current list of URLs - r/o; or null if not yet set */
     private List<URL> urls;
+    private List<URL> prevs;
     /** cache manager */
     private LayerCacheManager manager;
     /** writable layer */
@@ -130,15 +134,15 @@ implements LookupListener {
         
         urls = null;
 
-        result.addLookupListener(this);
-        result.allItems();
+        fsResult.addLookupListener(this);
+        layerResult.addLookupListener(this);
     }
     
     private static FileSystem[] appendLayers(FileSystem fs1, boolean addLookupBefore, FileSystem[] fs2s, FileSystem fs3, boolean addClasspathLayers) {
         List<FileSystem> l = new ArrayList<FileSystem>(fs2s.length + 2);
         l.add(fs1);
         if (addLookupBefore) {
-            for (FileSystem f : result.allInstances()) {
+            for (FileSystem f : fsResult.allInstances()) {
                 if (Boolean.TRUE.equals(f.getRoot().getAttribute("fallback"))) { // NOI18N
                     continue;
                 }
@@ -163,7 +167,7 @@ implements LookupListener {
             }
         }
         if (!addLookupBefore) {
-            for (FileSystem f : result.allInstances()) {
+            for (FileSystem f : fsResult.allInstances()) {
                 if (Boolean.TRUE.equals(f.getRoot().getAttribute("fallback"))) { // NOI18N
                     l.add(f);
                 }
@@ -222,12 +226,22 @@ implements LookupListener {
     /** Change the list of module layers URLs.
      * @param urls the urls describing module layers to use. List<URL>
      */
-    public void setURLs (final List<URL> urls) throws Exception {
+    public void setURLs (List<URL> urls) throws Exception {
+        if (urls == null) {
+            urls = this.prevs;
+        }
+        if (urls == null) {
+            return;
+        }
         if (urls.contains(null)) {
             throw new NullPointerException("urls=" + urls);
         } // NOI18N
         if (err.isLoggable(Level.FINE)) {
             err.log(Level.FINE, "setURLs: {0}", urls);
+        }
+        List<URL> orig = urls;
+        if (this == ModuleLayeredFileSystem.getInstallationModuleLayer()) {
+            urls = ((NbRepository)NbRepository.getDefault()).additionalLayers(urls);
         }
         if (this.urls != null && urls.equals(this.urls)) {
             err.fine("no-op");
@@ -248,6 +262,7 @@ implements LookupListener {
         }
         
         this.urls = urls;
+        this.prevs = orig;
         firePropertyChange ("layers", null, null); // NOI18N
         
         StartLog.logEnd("setURLs"); // NOI18N
@@ -261,8 +276,8 @@ implements LookupListener {
         }
         // Add to the front: #23609.
         ArrayList<URL> arr = new ArrayList<URL>(urls);
-        if (this.urls != null) {
-            arr.addAll(this.urls);
+        if (this.prevs != null) {
+            arr.addAll(this.prevs);
         }
         setURLs(arr);
     }
@@ -274,8 +289,8 @@ implements LookupListener {
             throw new NullPointerException("urls=" + urls);
         }
         ArrayList<URL> arr = new ArrayList<URL>();
-        if (this.urls != null) {
-            arr.addAll(this.urls);
+        if (this.prevs != null) {
+            arr.addAll(this.prevs);
         }
         arr.removeAll(urls);
         setURLs(arr);
@@ -283,7 +298,21 @@ implements LookupListener {
     
     /** Refresh layers */
     @Override public void resultChanged(LookupEvent ev) {
-        setDelegates(appendLayers(writableLayer, addLookupBefore, otherLayers, cacheLayer, addLookupBefore));
+        if (ev.getSource() == fsResult) {
+            setDelegates(appendLayers(writableLayer, addLookupBefore, otherLayers, cacheLayer, addLookupBefore));
+            return;
+        }
+        if (ev.getSource() == layerResult) {
+            if (prevs != null) {
+                try {
+                    setURLs(prevs);
+                } catch (Exception ex) {
+                    err.log(Level.INFO, null, ex);
+                }
+            }
+            return;
+        }
+        throw new IllegalStateException("Unknown source: " + ev.getSource());
     }
     
     public static List<URL> collectLayers(ClassLoader loader) throws IOException {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,55 +34,61 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
- */
-package org.netbeans.modules.ide.ergonomics.fod;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.JDialog;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.ide.ergonomics.Utilities;
-import org.openide.awt.Actions;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-
-/**
  *
- * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-public class FeatureAction implements ActionListener {
-    private FileObject fo;
-    private ProgressHandle handle;
-    private JDialog dialog;
+package org.openide.filesystems;
 
-    private FeatureAction(FileObject fo) {
-        this.fo = fo;
+import java.net.URL;
+import java.util.Collection;
+import org.netbeans.junit.MockServices;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.Repository.LayerProvider;
+import org.openide.util.Lookup;
+
+public class ContentProviderTest extends NbTestCase {
+    static {
+        MockServices.setServices(MyProvider.class);
     }
 
-    public static ActionListener create(FileObject fo) {
-        return new FeatureAction(fo);
+    public ContentProviderTest(String name) {
+        super(name);
     }
 
-    public void actionPerformed(ActionEvent e) {
-        FeatureInfo info = FoDLayersProvider.getInstance().whichProvides(fo);
-        String n = Actions.cutAmpersand((String)fo.getAttribute("displayName")); // NOI18N
-        boolean success = Utilities.featureDialog(info, n, n);
-        if (!success) {
-            return;
-        }
+    public void testCheckAFileFromOurLayer() {
+        FileObject fo = FileUtil.getConfigFile("foo/bar");
+        assertNotNull("foo/bar is provided", fo);
+        assertEquals("value is val", "val", fo.getAttribute("x"));
+    }
+    
+    public void testRefreshTheProvider() throws Exception {
+        MyProvider my = Lookup.getDefault().lookup(MyProvider.class);
+        assertNotNull("My provider found", my);
         
-        FileObject newFile = FileUtil.getConfigFile(fo.getPath());
-        if (newFile == null) {
-            throw new IllegalStateException("Cannot find file: " + fo.getPath());
-        }
+        my.clear();
         
-        Object obj = newFile.getAttribute("instanceCreate"); // NOI18N
-        if (obj instanceof ActionListener) {
-            ((ActionListener)obj).actionPerformed(e);
+        FileObject fo = FileUtil.getConfigFile("foo/bar");
+        assertNull("foo/bar is no longer available", fo);
+        
+    }
+    
+    public static final class MyProvider extends LayerProvider {
+        private boolean empty;
+        
+        @Override
+        protected void registerLayers(Collection<? super URL> context) {
+            assertTrue("Context is empty: " + context, context.isEmpty());
+            if (empty) {
+                return;
+            }
+            context.add(ContentProviderTest.class.getResource("test-layer-attribs.xml"));
+        }
+
+        final void clear() throws Exception {
+            empty = true;
+            refresh();
         }
     }
 }

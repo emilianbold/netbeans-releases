@@ -61,7 +61,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureManager;
-import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
+import org.netbeans.modules.ide.ergonomics.fod.FoDLayersProvider;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
@@ -125,7 +125,7 @@ public class EnableStep implements WizardDescriptor.FinishablePanel<WizardDescri
                     RequestProcessor.Task enable = activator.getEnableTask ();
                     enable.schedule (0);
                     enable.waitFinished ();
-                    FoDFileSystem.getInstance().refresh();
+                    FoDLayersProvider.getInstance().refreshForce();
                     waitForDelegateWizard ();
                 }
             }
@@ -153,7 +153,7 @@ public class EnableStep implements WizardDescriptor.FinishablePanel<WizardDescri
         Object templateO = settings.getProperty (FeatureOnDemandWizardIterator.CHOSEN_TEMPLATE);
         assert templateO != null && templateO instanceof FileObject : templateO + " is not null and instanceof FileObject.";
         FileObject templateFO = (FileObject) templateO;
-        FeatureInfo info = FoDFileSystem.getInstance().whichProvides(templateFO);
+        FeatureInfo info = FoDLayersProvider.getInstance().whichProvides(templateFO);
         RequestProcessor.Task t = FeatureManager.getInstance().create(doEnable(info));
         t.schedule(0);
     }

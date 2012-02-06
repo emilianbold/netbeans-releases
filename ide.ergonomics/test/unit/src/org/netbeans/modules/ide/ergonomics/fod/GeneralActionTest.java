@@ -122,7 +122,7 @@ public class GeneralActionTest extends NbTestCase {
         root = FileUtil.toFileObject(getWorkDir());
         assertNotNull("fileobject found", root);
         
-        FoDFileSystem.getInstance().refresh();
+        FoDLayersProvider.getInstance().refreshForce();
 
         actionFile = FileUtil.getConfigFile("Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance");
         assertNotNull("testing layer is loaded: ", actionFile);
