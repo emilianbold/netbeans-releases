@@ -66,6 +66,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.maven.jaxws._RetoucheUtil;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.openide.actions.PropertiesAction;
@@ -146,93 +147,121 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
                     if (implClass != null) {
                         JavaSource javaSource = JavaSource.forFileObject(implClass);
                         if (javaSource!=null) {
-                            CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+                            CancellableTask<CompilationController> task = 
+                                new CancellableTask<CompilationController>() 
+                                {
+                                @Override
                                 public void run(CompilationController controller) throws IOException {
                                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                                    TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
-                                    if (typeElement!=null) {
-                                        // find WS operations
-                                        // either annotated (@WebMethod) public mathods 
-                                        // or all public methods
-                                        List<ExecutableElement> publicMethods = getPublicMethods(controller, typeElement);
-                                        List<ExecutableElement> webMethods = new ArrayList<ExecutableElement>();
-                                        List<WebOperationInfo> webOperations = new ArrayList<WebOperationInfo>();
-                                        TypeElement webMethodEl = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
-                                        if (webMethodEl != null) {
-                                            boolean foundWebMethodAnnotation=false;
-                                            for(ExecutableElement method:publicMethods) {
-                                                List<? extends AnnotationMirror> annotations = method.getAnnotationMirrors();
-                                                boolean hasWebMethodAnnotation=false;
-                                                for (AnnotationMirror an:annotations) {                                       
-                                                    if (controller.getTypes().isSameType(webMethodEl.asType(), an.getAnnotationType())) {
-                                                        hasWebMethodAnnotation=true;
-                                                        break;
-                                                    }
+                                    TypeElement typeElement = SourceUtils.
+                                        getPublicTopLevelElement(controller);
+                                    if (typeElement ==null) {
+                                        return;
+                                    }
+                                    // find WS operations
+                                    // either annotated (@WebMethod) public mathods 
+                                    // or all public methods
+                                    List<ExecutableElement> publicMethods = 
+                                        getPublicMethods(controller, typeElement);
+                                    List<ExecutableElement> webMethods = 
+                                        new ArrayList<ExecutableElement>();
+                                    List<WebOperationInfo> webOperations = 
+                                        new ArrayList<WebOperationInfo>();
+                                    boolean foundWebMethodAnnotation=false;
+                                    for(ExecutableElement method:publicMethods) {
+                                        List<? extends AnnotationMirror> annotations = 
+                                            method.getAnnotationMirrors();
+                                        boolean hasWebMethodAnnotation=
+                                            _RetoucheUtil.getAnnotation(controller, 
+                                                    method, "javax.jws.WebMethod")!=null; // NOI18N
+                                        if (hasWebMethodAnnotation) {
+                                            if (!foundWebMethodAnnotation) {
+                                                foundWebMethodAnnotation=true;
+                                                // remove all methods added before
+                                                // because only annotated methods should be added
+                                                if (webMethods.size()>0) {
+                                                    webMethods.clear();
                                                 }
-                                                if (hasWebMethodAnnotation) {
-                                                    if (!foundWebMethodAnnotation) {
-                                                        foundWebMethodAnnotation=true;
-                                                        // remove all methods added before
-                                                        // because only annotated methods should be added
-                                                        if (webMethods.size()>0) webMethods.clear();
-                                                    }
-                                                    webMethods.add(method);
-                                                } else if (!foundWebMethodAnnotation) {
-                                                    // there are only non-annotated methods present until now
-                                                    webMethods.add(method);
-                                                }
-                                            } // for
+                                            }
+                                            webMethods.add(method);
+                                        } 
+                                        else if (!foundWebMethodAnnotation) {
+                                            // there are only non-annotated methods present until now
+                                            webMethods.add(method);
+                                        }
+                                    } // for
 
-                                            // create list of operations;                                      
-                                            for (ExecutableElement webMethod:webMethods) {
-                                                // web operation name
-                                                WebOperationInfo webOperation = new WebOperationInfo();
-                                                List<? extends AnnotationMirror> annotations = webMethod.getAnnotationMirrors();
-                                                for (AnnotationMirror an:annotations) {
-                                                    if (controller.getTypes().isSameType(webMethodEl.asType(), an.getAnnotationType())) {
-                                                        java.util.Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = an.getElementValues();
-                                                        for(Entry<? extends ExecutableElement, ? extends AnnotationValue> entry: expressions.entrySet()) {
-                                                            if (entry.getKey().getSimpleName().contentEquals("operationName")) { //NOI18N
-                                                                webOperation.setOperationName((String)expressions.get(entry.getKey()).getValue());
-                                                            }
-                                                        }
-                                                    }
+                                    // create list of operations;                                      
+                                    for (ExecutableElement webMethod:webMethods) {
+                                        // web operation name
+                                        WebOperationInfo webOperation = new WebOperationInfo();
+                                        List<? extends AnnotationMirror> annotations = 
+                                            webMethod.getAnnotationMirrors();
+                                        AnnotationMirror an = _RetoucheUtil.
+                                            getAnnotation(controller, webMethod, 
+                                                "javax.jws.WebMethod");     // NOI18N
+                                        if ( an == null ){
+                                            continue;
+                                        }
+                                        for(Entry<? extends ExecutableElement, 
+                                                ? extends AnnotationValue> entry: 
+                                                    an.getElementValues().entrySet()) 
+                                        {
+                                            if (entry.getKey().getSimpleName().
+                                                    contentEquals("operationName"))  //NOI18N
+                                            {
+                                                Object value = entry.getValue().getValue();
+                                                if ( value != null ){
+                                                    webOperation.setOperationName(
+                                                        value.toString());
                                                 }
-                                                if (webOperation.getOperationName() == null) {
-                                                    webOperation.setOperationName(webMethod.getSimpleName().toString());
-                                                }
-                                                
-                                                // return type
-                                                TypeMirror returnType = webMethod.getReturnType();
-                                                if (returnType.getKind() == TypeKind.DECLARED) {
-                                                    TypeElement element = (TypeElement)((DeclaredType)returnType).asElement();
-                                                    webOperation.setReturnType(element.getQualifiedName().toString());
-                                                } else { // for primitive type
-                                                    webOperation.setReturnType(returnType.toString());
-                                                }                                               
-                                                
-                                                // parameter types
-                                                List<? extends VariableElement> params = webMethod.getParameters();
-                                                List<String> paramTypes = new ArrayList<String>();
-                                                for (VariableElement param:params) {
-                                                    TypeMirror type = param.asType();
-                                                    if (type.getKind() == TypeKind.DECLARED) {
-                                                        TypeElement element = (TypeElement)((DeclaredType)type).asElement();
-                                                        paramTypes.add(element.getQualifiedName().toString());
-                                                    } else { // for primitive type
-                                                        paramTypes.add(type.toString());
-                                                    }
-                                                }
-                                                webOperation.setParamTypes(paramTypes);
-                                                
-                                                webOperations.add(webOperation);
                                             }
                                         }
-                                        keys[0] = webOperations;
-                                    }
+                                        if (webOperation.getOperationName() == null) {
+                                            webOperation.setOperationName(
+                                                    webMethod.getSimpleName().
+                                                        toString());
+                                        }
+                                                
+                                        // return type
+                                        TypeMirror returnType = webMethod.getReturnType();
+                                        if (returnType instanceof DeclaredType) {
+                                            TypeElement element = (TypeElement)
+                                                ((DeclaredType)returnType).asElement();
+                                                    webOperation.setReturnType(
+                                                            element.getQualifiedName().
+                                                                toString());
+                                        } 
+                                        else { // for primitive type
+                                            webOperation.setReturnType(returnType.toString());
+                                        }                                               
+                                                
+                                        // parameter types
+                                        List<? extends VariableElement> params = 
+                                            webMethod.getParameters();
+                                        List<String> paramTypes = new ArrayList<String>();
+                                        for (VariableElement param:params) {
+                                            TypeMirror type = param.asType();
+                                            if (type instanceof DeclaredType ) {
+                                                TypeElement element = (TypeElement)
+                                                    ((DeclaredType)type).asElement();
+                                                        paramTypes.add(
+                                                                element.getQualifiedName().
+                                                                toString());
+                                            } else { // for primitive type
+                                                paramTypes.add(type.toString());
+                                            }
+                                        }
+                                        webOperation.setParamTypes(paramTypes);
+                                                
+                                        webOperations.add(webOperation);
+                                        }
+                                    keys[0] = webOperations;
                                 }
                                 
-                                public void cancel() {}
+                                @Override
+                                public void cancel() {
+                                }
                             };
                             try {
                                 javaSource.runUserActionTask(task, true);

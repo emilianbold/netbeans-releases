@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations;
 
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.openide.util.NbBundle;
 
@@ -50,6 +51,15 @@ public class JoinColumnTag extends PhpAnnotationTag {
         super("JoinColumn", // NOI18N
                 "@JoinColumn(name=\"${foreign_column}\", referencedColumnName=\"${column}\")", // NOI18N
                 NbBundle.getMessage(JoinColumnTag.class, "JoinColumnTag.documentation"));
+    }
+
+    @Override
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText("("); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("name=\"foreign_column\", referencedColumnName=\"column\""); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText(")"); //NOI18N
     }
 
 }
