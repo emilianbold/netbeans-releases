@@ -80,15 +80,14 @@ public class JsStructureScanner implements StructureScanner {
         for (JsObject child : properties) {
             List<StructureItem> children = new ArrayList<StructureItem>();
             children = getEmbededItems(result, child, children);
-            System.out.println(child.getName() + ": "+ child.getDeclarationName().getOffsetRange());
-            if (child.hasExactName() && (child.getJSKind() == JsElement.Kind.FUNCTION || child.getJSKind() == JsElement.Kind.METHOD
+            if ((child.hasExactName() || child.isAnonymous()) && (child.getJSKind() == JsElement.Kind.FUNCTION || child.getJSKind() == JsElement.Kind.METHOD
                     || child.getJSKind() == JsElement.Kind.CONSTRUCTOR)) {
                 if (((JsFunction)child).isAnonymous()) {
                     collectedItems.addAll(children);
                 } else {
                     collectedItems.add(new JsFunctionStructureItem((JsFunction) child, children, result));
                 }
-            } else if ((child.getJSKind() == JsElement.Kind.OBJECT || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) && child.isDeclared()) {
+            } else if ((child.getJSKind() == JsElement.Kind.OBJECT || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) && hasDeclaredProperty(child)) {
                 collectedItems.add(new JsObjectStructureItem(child, children, result));
             } else if (child.getJSKind() == JsElement.Kind.PROPERTY) {
                 if(child.getModifiers().contains(Modifier.PUBLIC)
@@ -158,6 +157,19 @@ public class JsStructureScanner implements StructureScanner {
     public Configuration getConfiguration() {
         // TODO return a configuration to alow filter items. 
         return null;
+    }
+
+    private boolean hasDeclaredProperty(JsObject jsObject) {
+        boolean result =  false;
+        if (jsObject.isDeclared()) {
+            result = true;
+        } else {
+            Iterator <? extends JsObject> it = jsObject.getProperties().values().iterator();
+            while (!result && it.hasNext()) {
+                result = hasDeclaredProperty(it.next());
+            }
+        }
+        return result;
     }
     
     
