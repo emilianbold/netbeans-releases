@@ -189,7 +189,6 @@ public class RefactoringTestBase extends NbTestCase {
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/openide/loaders/layer.xml",
             "org/netbeans/modules/java/source/resources/layer.xml",
             "org/netbeans/modules/java/editor/resources/layer.xml",
-            "org/netbeans/libs/freemarker/layer.xml",
             "org/netbeans/modules/refactoring/java/test/resources/layer.xml", "META-INF/generated-layer.xml"}, new Object[] {
             new ClassPathProvider() {
             @Override
