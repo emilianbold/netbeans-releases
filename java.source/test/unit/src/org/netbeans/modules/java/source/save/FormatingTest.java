@@ -3054,6 +3054,10 @@ public class FormatingTest extends NbTestCase {
         EditorCookie ec = (EditorCookie)testSourceDO.getCookie(EditorCookie.class);
         final Document doc = ec.openDocument();
         doc.putProperty(Language.class, JavaTokenId.language());
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+
+        preferences.putBoolean("enableBlockCommentFormatting", true);
+        
         String content =
                 "package hierbas.del.litoral;\n"
                 + "public class Test{\n"
@@ -3078,7 +3082,6 @@ public class FormatingTest extends NbTestCase {
                 + "}\n"
                 + "}\n";
 
-        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.putInt("text-limit-width", 45);
         preferences.putBoolean("generateParagraphTagOnBlankLines", true);
 
