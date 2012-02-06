@@ -43,10 +43,12 @@
 package org.netbeans.modules.java.hints.jackpot.impl;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -59,7 +61,6 @@ import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.jackpot.spi.HintProvider;
 import org.netbeans.modules.java.hints.options.HintsSettings;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 
@@ -81,7 +82,7 @@ public class RulesManager {
         reload();
     }
     
-    public void reload() {
+    public final void reload() {
         for (HintProvider p : Lookup.getDefault().lookupAll(HintProvider.class)) {
             Map<HintMetadata, ? extends Collection<? extends HintDescription>> pHints = p.computeHints();
 
@@ -99,18 +100,12 @@ public class RulesManager {
         }
 
         ClasspathInfo cpInfo = info.getClasspathInfo();
-        List<ClassPath> cps = new LinkedList<ClassPath>();
+        Set<ClassPath> cps = new HashSet<ClassPath>();
         
         cps.add(cpInfo.getClassPath(PathKind.BOOT));
         cps.add(cpInfo.getClassPath(PathKind.COMPILE));
-        cps.add(cpInfo.getClassPath(PathKind.SOURCE));
 
-        ClassPath compound = ClassPathSupport.createProxyClassPath(cps.toArray(new ClassPath[0]));
-
-        for (ClassPathBasedHintProvider p : cpBasedProviders) {
-            outHints.addAll(p.computeHints(compound));
-        }
-
+        outHints.addAll(Utilities.listClassPathHints(Collections.singleton(cpInfo.getClassPath(PathKind.SOURCE)), cps));
     }
 
     /** Gets preferences node, which stores the options for given hint. 
