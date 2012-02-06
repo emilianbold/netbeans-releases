@@ -176,8 +176,8 @@ public class JsCompletionItem implements CompletionProposal {
             Collection<String> allParameters = new ArrayList<String>();
             
             if(getElement() instanceof JsFunction) {
-                for (Identifier identifier: ((JsFunction)getElement()).getParameters()) {
-                    allParameters.add(identifier.getName());
+                for (JsObject jsObject: ((JsFunction)getElement()).getParameters()) {
+                    allParameters.add(jsObject.getName());
                 }
             } else if (getElement() instanceof IndexedElement.FunctionIndexedElement) {
                 allParameters = ((IndexedElement.FunctionIndexedElement)getElement()).getParameters();

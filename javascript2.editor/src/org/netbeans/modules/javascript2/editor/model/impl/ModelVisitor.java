@@ -54,6 +54,7 @@ import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -192,6 +193,9 @@ public class ModelVisitor extends PathNodeVisitor {
                         }
                     }
                 }
+                if (binaryNode.rhs() instanceof IdentNode) {
+                    addOccurence((IdentNode)binaryNode.rhs());
+                }
             } else if(binaryNode.tokenType() != TokenType.ASSIGN) {
                 if (binaryNode.lhs() instanceof IdentNode) {
                     addOccurence((IdentNode)binaryNode.lhs());
@@ -226,6 +230,12 @@ public class ModelVisitor extends PathNodeVisitor {
                                 parent.addProperty(property.getName(), property);
                             }
                         } 
+                    }
+                    
+                    for(Node argument : callNode.getArgs()) {
+                        if (argument instanceof IdentNode) {
+                            addOccurence((IdentNode)argument);
+                        }
                     }
 //                    JsObject property = parent.getProperty(name.get(name.size() - 1).getName());
 //                    if (property ==  null && (parent.getParent() != null && (parent.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
@@ -445,6 +455,18 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     @Override
+    public Node visit(ReturnNode returnNode, boolean onset) {
+        if (onset) {
+            Node expression = returnNode.getExpression(); 
+            if (expression instanceof IdentNode) {
+                addOccurence((IdentNode)expression);
+            }
+        }
+        return super.visit(returnNode, onset);
+    }
+
+    
+    @Override
     public Node visit(UnaryNode unaryNode, boolean onset) {
         if (onset) {
             if (Token.descType(unaryNode.getToken()) == TokenType.NEW) {
@@ -588,11 +610,17 @@ public class ModelVisitor extends PathNodeVisitor {
     
     private void addOccurence(IdentNode iNode) {
         DeclarationScope scope = modelBuilder.getCurrentDeclarationScope();
-        while (scope != null && ((JsObject) scope).getProperty(iNode.getName()) == null) {
+        JsObject property = null;
+        while (scope != null && property == null) {
+            JsFunction function = (JsFunction)scope;
+            property = function.getParameter(iNode.getName());
+            if (property == null) {
+                property = function.getProperty(iNode.getName());
+            }
             scope = scope.getInScope();
         }
-        if (scope != null) {
-            ((JsObjectImpl) ((JsObjectImpl) scope).getProperty(iNode.getName())).addOccurrence(ModelUtils.documentOffsetRange(parserResult, iNode.getStart(), iNode.getFinish()));
+        if (property != null) {
+            ((JsObjectImpl)property).addOccurrence(ModelUtils.documentOffsetRange(parserResult, iNode.getStart(), iNode.getFinish()));
         }
     }
 }

@@ -73,7 +73,8 @@ public class OccurrencesSupport {
     
     private Occurrence findOccurrence(JsObject object, int offset) {
         Occurrence result = null;
-        if (object.getJSKind() != JsElement.Kind.ANONYMOUS_OBJECT 
+        JsElement.Kind kind = object.getJSKind();
+        if (kind != JsElement.Kind.ANONYMOUS_OBJECT 
                 && object.getDeclarationName().getOffsetRange().containsInclusive(offset)
                 && !ModelUtils.isGlobal(object)) {
             result = new OccurrenceImpl(object.getDeclarationName().getOffsetRange(), object);
@@ -81,6 +82,17 @@ public class OccurrencesSupport {
             for(Occurrence occurrence: object.getOccurrences()) {
                 if (occurrence.getOffsetRange().containsInclusive(offset)) {
                     return occurrence;
+                }
+            }
+            if (kind == JsElement.Kind.CONSTRUCTOR || kind == JsElement.Kind.FUNCTION || kind == JsElement.Kind.METHOD) {
+                for(JsObject param : ((JsFunction)object).getParameters()) {
+                 result = findOccurrence(param, offset);
+                    if (result != null) {
+                        break;
+                    }   
+                }
+                if (result != null) {
+                    return result;
                 }
             }
             for(JsObject property: object.getProperties().values()) {

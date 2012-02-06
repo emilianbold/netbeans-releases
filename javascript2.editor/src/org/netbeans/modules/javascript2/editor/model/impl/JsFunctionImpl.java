@@ -43,11 +43,7 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.*;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
-import org.netbeans.modules.javascript2.editor.model.JsFunction;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.*;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -56,12 +52,19 @@ import org.openide.filesystems.FileObject;
  */
 public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
 
-    final private List <? extends Identifier> parameters;
+    final private HashMap <String, JsObject> parametersByName;
+    final private List<JsObject> parameters;
     private boolean isAnonymous;
     
     public JsFunctionImpl(DeclarationScope scope, JsObject parentObject, Identifier name, List<Identifier> parameters, OffsetRange offsetRange) {
         super(scope, parentObject, name, offsetRange);
-        this.parameters = parameters; 
+        this.parametersByName = new HashMap<String, JsObject>(parameters.size());
+        this.parameters = new ArrayList<JsObject>(parameters.size());
+        for (Identifier identifier : parameters) {
+            JsObject parameter = new ParameterObject(this, identifier);
+            this.parametersByName.put(identifier.getName(), parameter);
+            this.parameters.add(parameter);
+        }
         this.isAnonymous = false;
         setDeclared(true);
     }
@@ -77,8 +80,8 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     }
     
     @Override
-    public Collection<? extends Identifier> getParameters() {
-        return new ArrayList(parameters);
+    public Collection<? extends JsObject> getParameters() {
+        return this.parameters;
     }
 
     @Override
@@ -109,6 +112,12 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
 
     public void setAnonymous(boolean isAnonymous) {
         this.isAnonymous = isAnonymous;
+    }
+
+    @Override
+    public JsObject getParameter(String name) {
+        JsObject result = parametersByName.get(name);
+        return result;
     }
     
     

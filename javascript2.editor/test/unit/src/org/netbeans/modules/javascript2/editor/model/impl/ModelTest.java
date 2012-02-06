@@ -128,12 +128,11 @@ public class ModelTest extends JsTestBase {
         assertEquals(1, global.getProperties().size());
         JsFunction function = (JsFunction)global.getProperty("createInfo");
         assertEquals(3, function.getParameters().size());
-        final Iterator<? extends Identifier> iterator = function.getParameters().iterator();
-        Identifier param = iterator.next();
+        JsObject param = function.getParameter("text");
         assertEquals("text", param.getName());
-        param = iterator.next();
+        param = function.getParameter("name");
         assertEquals("name", param.getName());
-        param = iterator.next();
+        param = function.getParameter("description");;
         assertEquals("description", param.getName());
     }
     
