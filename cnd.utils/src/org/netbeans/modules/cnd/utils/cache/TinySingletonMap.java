@@ -75,6 +75,7 @@ public final class TinySingletonMap<K, V> implements Map<K, V> {
         return value;
     }
     
+    @Override
     public int size() {
         if (key == null) {
             return 0;
@@ -82,6 +83,7 @@ public final class TinySingletonMap<K, V> implements Map<K, V> {
         return 1;
     }
 
+    @Override
     public boolean isEmpty() {
         if (key == null) {
             return true;
@@ -89,6 +91,7 @@ public final class TinySingletonMap<K, V> implements Map<K, V> {
         return false;
     }
 
+    @Override
     public boolean containsKey(Object aKey) {
         if (key == null) {
             return false;
@@ -96,10 +99,12 @@ public final class TinySingletonMap<K, V> implements Map<K, V> {
         return key.equals(aKey);
     }
 
+    @Override
     public boolean containsValue(Object aValue) {
         return value != null && value.equals(aValue);
     }
 
+    @Override
     public V get(Object aKey) {
         if (key != null && key.equals(aKey)) {
             return value;
@@ -107,6 +112,7 @@ public final class TinySingletonMap<K, V> implements Map<K, V> {
         return null;
     }
 
+    @Override
     public V put(K aKey, V aMacro) {
         V out = null;
         if (key != null && key.equals(aKey)) {
@@ -117,6 +123,7 @@ public final class TinySingletonMap<K, V> implements Map<K, V> {
         return out;
     }
 
+    @Override
     public V remove(Object aKey) {
         if (key == null) {
             return null;
@@ -130,15 +137,18 @@ public final class TinySingletonMap<K, V> implements Map<K, V> {
         return null;
     }
 
+    @Override
     public void putAll(Map<? extends K, ? extends V> t) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public void clear() {
         key = null;
         value = null;
     }
 
+    @Override
     public Set<K> keySet() {
         if (key == null) {
             return Collections.<K>emptySet();
@@ -147,6 +157,7 @@ public final class TinySingletonMap<K, V> implements Map<K, V> {
         }
     }
 
+    @Override
     public Collection<V> values() {
         if (key == null) {
             return Collections.<V>emptyList();
@@ -155,33 +166,42 @@ public final class TinySingletonMap<K, V> implements Map<K, V> {
         }
     }
 
+    @Override
     public Set<Entry<K, V>> entrySet() {
         if (key == null) {
             return Collections.<Entry<K, V>>emptySet();
         } else {
             return new Set<Entry<K, V>>() {
+                @Override
                 public int size() {
                     return 1;
                 }
+                @Override
                 public boolean isEmpty() {
                     return false;
                 }
+                @Override
                 public Iterator<Entry<K, V>> iterator() {
                     return new Iterator<Entry<K, V>>(){
                         private boolean last = false;
+                        @Override
                         public boolean hasNext() {
                             return !last;
                         }
+                        @Override
                         public Entry<K, V> next() {
                             if (!last) {
                                 last = true;
                                 return new Entry<K, V>(){
+                                    @Override
                                     public K getKey() {
                                         return key;
                                     }
+                                    @Override
                                     public V getValue() {
                                         return value;
                                     }
+                                    @Override
                                     public V setValue(V value) {
                                         V res = TinySingletonMap.this.value;
                                         TinySingletonMap.this.value = value;
@@ -191,38 +211,49 @@ public final class TinySingletonMap<K, V> implements Map<K, V> {
                             }
                             return null;
                         }
+                        @Override
                         public void remove() {
                             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                         }
                     };
                 }
+                @Override
                 public boolean contains(Object o) {
                     throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                 }
+                @Override
                 public Object[] toArray() {
                     throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                 }
+                @Override
                 public <T> T[] toArray(T[] a) {
                     throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                 }
+                @Override
                 public boolean add(Entry<K, V> o) {
                     throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                 }
+                @Override
                 public boolean remove(Object o) {
                     throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                 }
+                @Override
                 public boolean containsAll(Collection<?> c) {
                     throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                 }
+                @Override
                 public boolean addAll(Collection<? extends Entry<K, V>> c) {
                     throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                 }
+                @Override
                 public boolean retainAll(Collection<?> c) {
                     throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                 }
+                @Override
                 public boolean removeAll(Collection<?> c) {
                     throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                 }
+                @Override
                 public void clear() {
                     throw new UnsupportedOperationException("Not supported yet."); // NOI18N
                 }
