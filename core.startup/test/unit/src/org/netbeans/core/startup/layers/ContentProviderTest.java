@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,83 +37,81 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.core.startup.layers;
 
-package org.netbeans.modules.ide.ergonomics.fod;
-
-import org.netbeans.modules.ide.Factory;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Collection;
 import junit.framework.Test;
+import org.netbeans.core.startup.MainLookup;
+import org.netbeans.core.startup.NbRepository;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.XMLFileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.filesystems.Repository.LayerProvider;
 import org.openide.util.Lookup;
-
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class AdditionalProjectFactoryTest extends NbTestCase {
-    private Logger LOG;
-    
-    public AdditionalProjectFactoryTest(String name) {
+public class ContentProviderTest extends NbTestCase {
+    public ContentProviderTest(String name) {
         super(name);
     }
-
+    
     public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.emptyConfiguration().addTest(AdditionalProjectFactoryTest.class).
-            gui(false).
-            clusters("ergonomics.*").
-            clusters(".*").
-            enableModules("ide[0-9]*", ".*")
-        );
+        return NbModuleSuite.createConfiguration(ContentProviderTest.class)
+            .gui(false).suite();
     }
-
-    @Override
-    protected Level logLevel() {
-        return Level.FINER;
+    
+    public void testBeforeRest() {
+        FileObject fo = FileUtil.getConfigFile("foo/bar");
+        assertNull("no foo/bar provided", fo);
     }
-
-    @Override
-    protected void setUp() throws Exception {
-        LOG = Logger.getLogger("test." + getName());
-        URL u = AdditionalProjectFactoryTest.class.getResource("default.xml");
-        assertNotNull("Default layer found", u);
-        XMLFileSystem xml = new XMLFileSystem(u);
-        FileObject fo = xml.findResource("Menu/Edit_hidden");
-        assertNotNull("File found", fo);
-    }
-
-    public void testIfProjectFactoryInstalled() throws Exception {
-        FileObject fo = FileUtil.getConfigFile("Menu/Edit");
-        assertNull("Default layer is on and Edit is hidden", fo);
-
-        LOG.info("about to create config data");
-        FileUtil.createData(FileUtil.getConfigRoot(), 
-            "Services/" + Factory.class.getName().replace('.', '-') + ".instance"
-        );
-        LOG.info("looking up Factory.class");
-        Factory f = Lookup.getDefault().lookup(Factory.class);
-        assertNotNull("Factory found", f);
-        LOG.info("Factory found");
-        FoDLayersProvider.getInstance().waitFinished();
-        LOG.info("Refresh finished");
-        
-        for (int i = 0; i < 100; i++) {
-            fo = FileUtil.getConfigFile("Menu/Edit");
-            if (fo != null) {
-                break;
-            }
-            LOG.log(Level.INFO, "No Menu/Edit found, in round {0}", i);
-            Thread.sleep(500);
+    
+    public void testUsingNbRepositoryAndInit() {
+        if (Repository.getDefault() instanceof NbRepository) {
+            MainLookup.register(new MyProvider());
+            return;
         }
-        assertNotNull("Default layer is off and Edit is visible", fo);
+        fail("Wrong repository: " + Repository.getDefault());
     }
+    
+    public void testCheckAFileFromOurLayer() {
+        FileObject fo = FileUtil.getConfigFile("foo/bar");
+        assertNotNull("foo/bar is provided", fo);
+        assertEquals("value is val", "val", fo.getAttribute("x"));
+    }
+    
+    public void testReturnEmptyLayers() throws Exception {
+        MyProvider my = Lookup.getDefault().lookup(MyProvider.class);
+        my.makeEmpty();
+        FileObject fo = FileUtil.getConfigFile("foo/bar");
+        assertNull("no foo/bar is provided anymore", fo);
+        
+    }
+
+    public static final class MyProvider extends LayerProvider {
+        private boolean empty;
+        
+        final void makeEmpty() {
+            empty = true;
+            refresh();
+        }
+        
+        @Override
+        protected void registerLayers(Collection<? super URL> context) {
+            assertTrue("Context is empty: " + context, context.isEmpty());
+            if (empty) {
+                return;
+            }
+            context.add(ContentProviderTest.class.getResource("ContentProviderTest.xml"));
+            assertFalse("No nulls", context.contains(null));
+        }
+    }
+    
 }

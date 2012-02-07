@@ -63,11 +63,10 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  * Interface that provides basic information about a virtual filesystem.
@@ -79,30 +78,48 @@ import org.openide.util.actions.SystemAction;
  * <p>The system filesystem may be gotten from {@link FileUtil#getConfigRoot} and
  * normally includes XML layers created using {@link XMLFileSystem}.</p>
  * <p>Since version 7.1 you can dynamically change the content of the system filesystem.
- * As the system filesystem contains various definitions (in NetBeans Platform menus,
- * toolbars, layout of windows, etc.), you can make nonpersistent changes to these settings.
- * First create a filesystem implementation, then register it in default lookup.
- * It is easiest to subclass {@code MultiFileSystem} so you can proxy to filesystems
- * created by other means not amenable to subclassing. For example:</p>
+ * Either by inserting your own implementation of a filesystem directly or by
+ * registering so called {@link Repository.LayerProvider}. With the 
+ * {@link Repository.LayerProvider provider} you can show a dialog letting the user log in 
+ * to some server and only later make {@link XMLFileSystem additional XML layers}
+ * available.
+ * <p> 
+ * In case you need to insert a dynamic file system with various definitions (NetBeans Platform menus,
+ * toolbars, layout of windows, etc.), you can create a filesystem implementation, 
+ * then register it in default lookup.
+ * It is easiest to subclass {@link AbstractFileSystem} and implement 
+ * few simple query interfaces ({@link AbstractFileSystem.List}, 
+ * {@link AbstractFileSystem.Info}, {@link AbstractFileSystem.Change}).
+ * For example:</p>
  * <pre>
-&#64;ServiceProvider(service=FileSystem.class)
-public class LoginFileSystem extends MultiFileSystem {
-    private static LoginFileSystem INSTANCE;
+{@code @}{@link ServiceProviders}({
+    {@code @}{@link ServiceProvider}(service=FileSystem.class),
+    {@code @}{@link ServiceProvider}(service=LoginFileSystem.class)
+})
+public class LoginFileSystem extends AbstractFileSystem implements
+{@link AbstractFileSystem.List}, {@link AbstractFileSystem.Info}, {@link AbstractFileSystem.Change} {
     public LoginFileSystem() {
-        INSTANCE = this;
-        setPropagateMasks(true); // in case you want to use *_hidden masks
-        // initially empty (no delegates)
+        this.info = this;
+        this.change = this;
+        this.list = this;
     }
-    public static void injectLayer(URL u) throws SAXException {
-        INSTANCE.setDelegates(new XMLFileSystem(u));
+    public static void initialize() throws SAXException {
+        LoginFileSystem lfs = {@link Lookup}.getDefault().lookup(LoginFileSystem.class);
+        lfs.initializeSomehow();
     }
+     
+    private void initializeSomehow() {
+        // do some initialization
+        super.refresh();
+    } 
+    
+    public String[] children(String path) {
+        // compute list of children somehow
+    }
+    
+    // other method implementations follow...
 }
  * </pre>
- * <p>If you show a dialog letting the user log in to some server, you can call
- * {@code LoginFileSystem.injectLayer(...)} with the URL to an XML layer.
- * The contents of the layer will become available only after login.
- * You could also use {@link FileUtil#createMemoryFileSystem} to programmatically
- * construct entries rather than using a static layer, and so on.</p>
  * <p>Since version 7.3 you can also return {@link Boolean#TRUE} from a call to
  * {@code yourFS.getRoot().getAttribute("fallback")} so as to place your filesystem
  * behind all layers provided by standard modules.</p>
