@@ -45,7 +45,6 @@ package org.netbeans.modules.j2ee.jboss4.ide;
 
 import java.net.URISyntaxException;
 import java.util.Collections;
-import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import java.io.IOException;
@@ -117,7 +116,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
         String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
         fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName))); //NOI18N
         mode = MODE.DEBUG;
-        RequestProcessor.getDefault().post(new JBStartRunnable(null, dm, this), 0, Thread.NORM_PRIORITY);
+        RequestProcessor.getDefault().post(new JBStartRunnable(dm, this), 0, Thread.NORM_PRIORITY);
         addDebugModeUri();
         return this;
     }
@@ -151,11 +150,11 @@ public class JBStartServer extends StartServer implements ProgressObject{
     /**
      * Starts the server in profiling mode.
      */
-    public ProgressObject startProfiling(Target target, ProfilerServerSettings settings) {
+    public ProgressObject startProfiling(Target target) {
         String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
         fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_PROFILED_SERVER_IN_PROGRESS", serverName))); //NOI18N
         mode = MODE.PROFILE;
-        RequestProcessor.getDefault().post(new JBStartRunnable(settings, dm, this), 0, Thread.NORM_PRIORITY);
+        RequestProcessor.getDefault().post(new JBStartRunnable(dm, this), 0, Thread.NORM_PRIORITY);
         removeDebugModeUri();
         return this;
     }
@@ -188,7 +187,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
         String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
         fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName)));//NOI18N
         mode = MODE.RUN;
-        RequestProcessor.getDefault().post(new JBStartRunnable(null, dm, this), 0, Thread.NORM_PRIORITY);
+        RequestProcessor.getDefault().post(new JBStartRunnable(dm, this), 0, Thread.NORM_PRIORITY);
         removeDebugModeUri();
         return this;
     }

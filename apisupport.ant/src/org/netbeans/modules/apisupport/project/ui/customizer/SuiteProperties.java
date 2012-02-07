@@ -91,7 +91,6 @@ public final class SuiteProperties extends ModuleProperties {
     public static final String DISABLED_CLUSTERS_PROPERTY = "disabled.clusters"; // NOI18N
     
     public static final String NB_PLATFORM_PROPERTY = "nbPlatform"; // NOI18N
-    public static final String JAVA_PLATFORM_PROPERTY = "nbjdk.active"; // NOI18N
     public static final String ACTIVE_NB_PLATFORM_PROPERTY = "nbplatform.active";    // NOI18N
     public static final String ACTIVE_NB_PLATFORM_DIR_PROPERTY = "nbplatform.active.dir";    // NOI18N
     public static final String CLUSTER_PATH_PROPERTY = "cluster.path";    // NOI18N
@@ -158,7 +157,7 @@ public final class SuiteProperties extends ModuleProperties {
         this.subModules = subModules;
         this.moduleListModel = null;
         activePlatform = project.getPlatform(true);
-        activeJavaPlatform = ModuleProperties.findJavaPlatformByID(getEvaluator().getProperty("nbjdk.active")); // NOI18N
+        activeJavaPlatform = getJavaPlatform();
         firePropertiesRefreshed();
     }
     

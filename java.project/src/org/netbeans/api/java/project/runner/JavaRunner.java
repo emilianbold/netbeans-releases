@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.project.Project;
 import org.netbeans.spi.java.project.runner.JavaRunnerImplementation;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
@@ -174,7 +175,9 @@ public final class JavaRunner {
     public static final String PROP_WORK_DIR = "work.dir";
 
     /** JVM arguments to be used for the execution. Should be an {@link Iterable} of {@link String}s.
-     * 
+     * <p>Arguments may also be contributed by {@link org.netbeans.api.extexecution.startup.StartupExtender}s;
+     * the {@link JavaPlatform} (see {@link #PROP_PLATFORM}) will be in the context,
+     * as will a {@link Project} if available from {@link #PROP_EXECUTE_FILE} or {@link #PROP_WORK_DIR}.
      * @since 1.22
      */
     public static final String PROP_RUN_JVMARGS = "run.jvmargs";
