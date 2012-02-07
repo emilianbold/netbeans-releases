@@ -278,6 +278,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
     
     protected void removeRemoteDirIfNotNull(String path) throws Exception {
         if (path != null) {
+            ProcessUtils.execute(execEnv, "chmod", "-R", "u+w", path);
             CommonTasksSupport.rmDir(execEnv, path, true, new OutputStreamWriter(System.err)).get();
         }
     }
