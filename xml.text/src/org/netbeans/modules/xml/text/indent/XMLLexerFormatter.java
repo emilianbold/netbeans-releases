@@ -233,6 +233,7 @@ public class XMLLexerFormatter {
             int firstAttributeIndent = -1;
             int lineIndent = -1;
             int processingStart = -1;
+            boolean onlyWhitespace = false;
             
             while (tokenSequence.moveNext()) {
                 int indentLineStart = 1;
@@ -375,6 +376,7 @@ public class XMLLexerFormatter {
                         String[] lines = image.split("\n");
                         int lno = indentLineStart; // skip 1st line = up to the 1st newline
                         int currentOffset = tokenSequence.offset();
+                        onlyWhitespace = true;
                         while (lno < lines.length) {
                             currentOffset += lno == 0 ? 0 : lines[lno - 1].length() + 1; // add 1 for newline
                             int lineEnd = currentOffset + lines[lno].length();
@@ -390,11 +392,70 @@ public class XMLLexerFormatter {
                                     false
                                 ));
                             }
+                            onlyWhitespace = nonWhiteStart > -1;
                             lno++;
                         }
                         break;
                     }
-                    case BLOCK_COMMENT:
+
+                    /**
+                     * Block comments are aligned as follows:
+                     * - if there is some preceeding non-whitespace, do not format anything. E.g. comments after element. Skip entire comment from formatting
+                     * - align 1st and last line at the appropriate indent level
+                     * - compute "shift" from the last line & indent level
+                     * - shift INTERIOR of the comment by the computed shift
+                     * 
+                     * This algorithm tries to preserve internal formatting of the comment
+                     */
+                    case BLOCK_COMMENT: {
+                        int currentOffset = tokenSequence.offset();
+                        
+                        String[] lines = image.split("\n");
+
+                        int lineStart = Utilities.getRowStart(basedoc, currentOffset);
+
+                        if (lineStart < currentOffset && 
+                             Utilities.getFirstNonWhiteBwd(basedoc, currentOffset, lineStart) > -1) {
+                            // we cannot indent comment start, will not touch even the rest of the comment.
+                            break;
+                        }
+                        
+                        int lastLineStart = Utilities.getRowStart(basedoc, currentOffset + token.length() - 1);
+                        int lastIndent = IndentUtils.lineIndent(basedoc, lastLineStart);
+
+                        // align 1st and last row here:
+                        int baseIndent = indentLevel + spacesPerTab;
+                        // shift the rest of lines by this offset
+                        int indentShift = baseIndent - lastIndent;
+
+                        // how much to shift the interior of the comment
+                        
+                        for (int lno = 0; lno < lines.length; lno++) {
+                            // indent 1st comment line, as if it was text:
+                            int lineEnd = Utilities.getRowEnd(basedoc, currentOffset);
+                            
+                            int desiredIndent;
+                            if (lno == 0 || lno == lines.length -1) {
+                                desiredIndent = baseIndent;
+                            } else {
+                                desiredIndent = IndentUtils.lineIndent(basedoc, currentOffset) + indentShift;
+                            }
+                            
+                            if ((currentOffset >= startOffset || currentOffset + lines[lno].length() > endOffset) && currentOffset < endOffset) {
+                                tags.add(new TokenIndent(
+                                    new TokenElement(TokenType.TOKEN_CHARACTER_DATA, 
+                                            tokenId.name(), 
+                                            currentOffset, lineEnd,
+                                            Math.max(0, desiredIndent)), 
+                                    false
+                                ));
+                            }
+                            currentOffset += lines[lno].length() + 1;
+                        }
+                        break;
+                    }
+                        
+
                     case CDATA_SECTION:
                     case CHARACTER:
                     case OPERATOR:
@@ -453,6 +514,7 @@ public class XMLLexerFormatter {
                 if (tokenId != XMLTokenId.WS && tokenId != XMLTokenId.TEXT) {
                     // clear indicator of the newline
                     lineIndent = -1;
+                    onlyWhitespace = false;
                 }
             }
         } finally {
@@ -460,7 +522,7 @@ public class XMLLexerFormatter {
         }
         return tags;
     }
-
+    
     public boolean isOneLiner(int start, int end, BaseDocument doc) {
         try {
             return Utilities.getLineOffset(doc, start) ==
