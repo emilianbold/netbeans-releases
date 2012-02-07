@@ -114,9 +114,11 @@ class ModalMessageDlgCancellablePane extends javax.swing.JPanel {
         lblMessage.setText(NbBundle.getMessage(getClass(), "MSG_Cancelling"));
         btnCancel.setEnabled(false);
         Thread thread = new Thread(new Runnable() {
+            @Override
             public void run() {
                 if (!cancellable.cancel()) {
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             if (ModalMessageDlgCancellablePane.this.isVisible()) {
                                 lblMessage.setText(NbBundle.getMessage(getClass(), "MSG_CancelFailed", message));

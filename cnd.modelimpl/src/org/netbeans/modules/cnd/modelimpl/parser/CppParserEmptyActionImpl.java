@@ -42,6 +42,8 @@
 package org.netbeans.modules.cnd.modelimpl.parser;
 
 import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
 
 /**
  * @author nick
@@ -136,5 +138,8 @@ public class CppParserEmptyActionImpl implements CppParserAction {
     @Override
     public void simple_type_id(Token token) {
     }
-    
+
+    @Override
+    public void onInclude(CsmFile inclFile, State stateBefore) {
+    }
 }

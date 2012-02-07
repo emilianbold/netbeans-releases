@@ -74,9 +74,12 @@ import java.util.Hashtable;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 
 /**
  * Extends CPPParser to implement logic, ported from Support.cpp.
@@ -125,15 +128,15 @@ public class CPPParserEx extends CPPParser {
     }
 
     public static CPPParserEx getInstance(CsmFile file, TokenStream ts, int flags) {
-        return getInstance(file, ts, flags, null);
+        return getInstance(file, ts, flags, null, null);
     }
     
-    public static CPPParserEx getInstance(CsmFile file, TokenStream ts, int flags, Map<Integer, CsmObject> objects) {
+    public static CPPParserEx getInstance(CsmFile file, TokenStream ts, int flags, Map<Integer, CsmObject> objects, CppParserAction callback) {
         assert (ts != null);
         assert (file != null);
         CPPParserEx parser = new CPPParserEx(ts);
         parser.init(file.getName().toString(), flags);
-        parser.init2(file, objects);
+        parser.init2(file, objects, callback);
         return parser;
 
     }
@@ -148,17 +151,26 @@ public class CPPParserEx extends CPPParser {
         super.init(filename, flags);
     }
 
-    private void init2(CsmFile file, Map<Integer, CsmObject> objects) {
-        if(objects == null || file == null) {
+    private void init2(CsmFile file, Map<Integer, CsmObject> objects, CppParserAction callback) {
+        if (callback != null) {
+            action = callback;
+        } else if(objects == null || file == null) {
             action = new CppParserEmptyActionImpl();
         } else {
             action = new CppParserActionImpl(file, objects);        
         }
-        skipIncludeTokensIfNeeded(1);
+//        skipIncludeTokensIfNeeded(1);
     }
 
     private void onIncludeToken(Token t) {
-        // TODO: update semantic context of action if needed
+        if (t instanceof APTToken) {
+            APTToken aptToken = (APTToken) t;
+            APTPreprocHandler.State stateBefore = (APTPreprocHandler.State) aptToken.getProperty(APTPreprocHandler.State.class);
+            CsmFile inclFile = (CsmFile) aptToken.getProperty(CsmFile.class);
+            if (stateBefore != null && inclFile != null) {
+                action.onInclude(inclFile, stateBefore);
+            }
+        }
     }
 
     // Number of active markers
@@ -212,7 +224,7 @@ public class CPPParserEx extends CPPParser {
         do {
             int LA = super.LA(++superIndex);
             if (isIncludeToken(LA)) {
-                if (nMarkers == 0 && superIndex == 1) {
+                if (nMarkers == 0 && superIndex == 1 && guessing == 0) {
                     // consume if the first an no markers
                     Token t = super.LT(superIndex);
                     onIncludeToken(t);

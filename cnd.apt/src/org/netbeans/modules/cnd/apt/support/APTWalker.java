@@ -44,9 +44,12 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import java.util.HashMap;
+import java.util.IdentityHashMap;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.impl.support.APTPreprocessorToken;
 import org.netbeans.modules.cnd.apt.structure.APT;
@@ -55,6 +58,7 @@ import org.netbeans.modules.cnd.apt.structure.APTStream;
 import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.TokenBasedTokenStream;
+import org.netbeans.modules.cnd.utils.cache.TinySingletonMap;
 
 /**
  * base Tree walker for APT
@@ -368,6 +372,18 @@ public abstract class APTWalker {
         }
     }
     
+    private final Map<APT, Map<Object, Object>> nodeProperties = new IdentityHashMap<APT, Map<Object, Object>>();
+    protected final void putNodeProperty(APT node, Object key, Object value) {
+        Map<Object, Object> props = nodeProperties.get(node);
+        if (props == null) {
+            nodeProperties.put(node, new TinySingletonMap<Object, Object>(key, value));
+            return;
+        } else if (props instanceof TinySingletonMap) {
+            nodeProperties.put(node, props = new HashMap<Object, Object>(props));
+        }
+        props.put(key, value);
+    }
+    
     private void fillTokensIfNeeded(APT node) {
         if (walkerUsedForTokenStreamGeneration == Boolean.TRUE) {
             // only token stream nodes contain tokens as TokenStream
@@ -383,7 +399,7 @@ public abstract class APTWalker {
                     case APT.Type.INCLUDE_NEXT:
                     {
                         if (needPPTokens()) {
-                            tokens.addFirst(new TokenBasedTokenStream(new APTPreprocessorToken(node)));
+                            tokens.addFirst(new TokenBasedTokenStream(new APTPreprocessorToken(node, nodeProperties.get(node))));
                         }
                         break;
                     }
