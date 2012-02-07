@@ -135,8 +135,7 @@ WhiteSpace = [ \t\f]+
 /* comments */
 TraditionalComment = "/*" [^*] ~"*/" | "/*" "*"+ "/"
 EndOfLineComment = "//" {InputCharacter}*
-DocumentationComment = "/**" {CommentContent} "*"+ "/"
-CommentContent       = ( [^*] | \*+ [^/*] )*
+DocumentationComment = "/*" "*"+ [^/*] ~"*/"
 
 /* identifiers */
 IdentifierPart = [:jletterdigit:]
