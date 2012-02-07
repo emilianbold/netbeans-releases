@@ -2588,10 +2588,21 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         String mi_name = results.valueOf("name").asConst().value(); // NOI18N
         String type = results.valueOf("type").asConst().value(); // NOI18N
         String numchild = results.valueOf("numchild").asConst().value(); // NOI18N
+        
+        MIValue dynamicVal = results.valueOf("dynamic"); //NOI18N
+        if (dynamicVal != null) {
+            boolean dynamic = "1".equals(dynamicVal.asConst().value()); // NOI18N
+            v.setDynamic(dynamic);
+            MIValue hasMoreVal = results.valueOf("has_more"); //NOI18N
+            if (hasMoreVal != null) {
+                numchild = hasMoreVal.asConst().value(); // NOI18N
+            }
+        }
 
         v.setMIName(mi_name);
         v.setType(type);
         v.setNumChild(numchild); // also set children if there is any
+        
 	Variable wv = variableBag.get(mi_name, true, VariableBag.FROM_BOTH);
         if (wv == null) {
             variableBag.add(v);
