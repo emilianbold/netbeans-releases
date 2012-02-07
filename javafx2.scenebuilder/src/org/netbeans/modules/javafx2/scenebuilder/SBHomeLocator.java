@@ -71,7 +71,7 @@ public class SBHomeLocator {
         }
     };
     private static final HomeLocator MAC_HOME_LOCATOR = new HomeLocator() {
-        final private static String WKIP = "Applications/JavaFX Scene Builder/JavaFX Scene Builder 1.0.app/Contents/MacOS/Resources/SceneBuilder"; // NOI18N
+        final private static String WKIP = "/Applications/JavaFX Scene Builder 1.0.app/Contents/Resources/SceneBuilder"; // NOI18N
         @Override
         public Home locateHome() {
             return getHomeForPath(WKIP);
