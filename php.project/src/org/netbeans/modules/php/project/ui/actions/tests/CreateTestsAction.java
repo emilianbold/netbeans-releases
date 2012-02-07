@@ -122,6 +122,7 @@ public final class CreateTestsAction extends NodeAction {
 
         // ensure that test sources directory exists
         final PhpProject phpProject = PhpProjectUtils.getPhpProject(activatedNodes[0]);
+        assert phpProject != null : "PHP project must be found for " + activatedNodes[0];
 
         // programs available?
         PhpUnitSkelGen skelGen = CommandUtils.getPhpUnitSkelGen(false);
@@ -131,7 +132,6 @@ public final class CreateTestsAction extends NodeAction {
             CommandUtils.getPhpUnitSkelGen(true);
             return;
         }
-        assert phpProject != null : "PHP project must be found for " + activatedNodes[0];
         if (ProjectPropertiesSupport.getTestDirectory(phpProject, true) == null) {
             return;
         }
