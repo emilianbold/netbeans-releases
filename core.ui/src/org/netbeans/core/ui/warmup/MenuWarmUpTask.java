@@ -105,6 +105,9 @@ public final class MenuWarmUpTask implements Runnable {
                     }
                 }
             });
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            return;
         } catch (Exception e) { // bail out!
             return;
         }
