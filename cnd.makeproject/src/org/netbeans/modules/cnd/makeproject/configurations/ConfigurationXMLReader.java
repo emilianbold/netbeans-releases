@@ -157,8 +157,15 @@ public class ConfigurationXMLReader extends XMLDocReader {
                 configurationDescriptor,
                 relativeOffset);
         registerXMLDecoder(decoder);
-        InputStream inputStream = xml.getInputStream();
-        success = read(inputStream, xml.getPath());
+        InputStream inputStream = null;
+        try {
+            inputStream = xml.getInputStream();
+            success = read(inputStream, xml.getPath());
+        } finally {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+        }
         deregisterXMLDecoder(decoder);
 
         if (!success) {
@@ -178,8 +185,15 @@ public class ConfigurationXMLReader extends XMLDocReader {
             XMLDecoder auxDecoder =
                     new AuxConfigurationXMLCodec(tag, configurationDescriptor);
             registerXMLDecoder(auxDecoder);
-            inputStream = xml.getInputStream();
-            success = read(inputStream, projectDirectory.getName());
+            inputStream = null;
+            try {
+                inputStream = xml.getInputStream();
+                success = read(inputStream, projectDirectory.getName());
+            } finally {
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+            }
             deregisterXMLDecoder(auxDecoder);
 
             if (!success) {
