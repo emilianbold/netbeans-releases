@@ -71,6 +71,30 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/model/simpleObject.js", "getCo^lor: function () {", true);
     }
     
+    public void testAssignments01() throws Exception {
+        checkOccurrences("testfiles/model/parameters01.js", "var he^ad = \"head\";", true);
+    }
+    
+    public void testAssignments02() throws Exception {
+        checkOccurrences("testfiles/model/parameters01.js", "head = bo^dy;", true);
+    }
+    
+    public void testFunctionParameters01() throws Exception {
+        checkOccurrences("testfiles/model/parameters01.js", "function Joke (name, autor, descri^ption) {", true);
+    }
+    
+    public void testFunctionParameters02() throws Exception {
+        checkOccurrences("testfiles/model/parameters01.js", "this.name = na^me;", true);
+    }
+    
+    public void testFunctionParameters03() throws Exception {
+        checkOccurrences("testfiles/model/parameters01.js", "formatter.println(\"Author: \" + au^tor);", true);
+    }
+    
+    public void testMethod01() throws Exception {
+        checkOccurrences("testfiles/model/parameters01.js", "formatter.println(\"Name: \" + this.getNa^me());", true);
+    }
+
     @Override
     protected void assertDescriptionMatches(FileObject fileObject,
             String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
