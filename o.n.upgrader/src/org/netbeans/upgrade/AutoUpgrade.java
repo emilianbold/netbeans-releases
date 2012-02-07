@@ -61,6 +61,7 @@ import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.xml.sax.SAXException;
 
 /** pending
@@ -72,6 +73,12 @@ public final class AutoUpgrade {
     private static final Logger LOGGER = Logger.getLogger(AutoUpgrade.class.getName());
 
     public static void main (String[] args) throws Exception {
+        // show warning if starts for the 1st time on changed userdir (see issue 196075)
+        String noteChangedDefaults = "";
+        if (madeObsoleteMessagesLog()) {
+            noteChangedDefaults = NbBundle.getMessage (AutoUpgrade.class, "MSG_ChangedDefaults", System.getProperty ("netbeans.user", "")); // NOI18N
+        }
+        
         // try new place
         File sourceFolder = checkPreviousOnOsSpecificPlace (NEWER_VERSION_TO_CHECK);
         if (sourceFolder == null) {
@@ -79,12 +86,15 @@ public final class AutoUpgrade {
             sourceFolder = checkPrevious (VERSION_TO_CHECK);
         }
         if (sourceFolder != null) {
-            if (!showUpgradeDialog (sourceFolder)) {
+            if (!showUpgradeDialog (sourceFolder, noteChangedDefaults)) {
                 throw new org.openide.util.UserCancelException ();
             }
             copyToUserdir(sourceFolder);
             //migrates SystemOptions, converts them as a Preferences
             Importer.doImport();
+        } else if (! noteChangedDefaults.isEmpty()) {
+            // show a note only
+            showNoteDialog(noteChangedDefaults);
         }
     }
 
@@ -148,10 +158,35 @@ public final class AutoUpgrade {
         }
     }
     
-    private static boolean showUpgradeDialog (final File source) {
+    private static boolean madeObsoleteMessagesLog() {
+        String ud = System.getProperty ("netbeans.user", "");
+        if ((Utilities.isMac() || Utilities.isWindows()) && ud.endsWith(File.separator + "dev")) { // NOI18N
+            String defaultUserdirRoot = System.getProperty ("netbeans.default_userdir_root", null); // NOI18N
+            if (defaultUserdirRoot != null) {
+                if (new File(ud).getParentFile().equals(new File(defaultUserdirRoot))) {
+                    // check the former default root
+                    String userHome = System.getProperty("user.home"); // NOI18N
+                    if (userHome != null) {
+                        File oldUserdir = new File(new File (userHome).getAbsolutePath (), ".netbeans/dev"); // NOI18N
+                        if (oldUserdir.exists() && ! oldUserdir.equals(new File(ud))) {
+                            // 1. modify messages log
+                            File log = new File (oldUserdir, "/var/log/messages.log");
+                            File obsolete = new File (oldUserdir, "/var/log/messages.log.obsolete");
+                            if (! obsolete.exists() && log.exists()) {
+                                return log.renameTo(obsolete);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
+    private static boolean showUpgradeDialog (final File source, String note) {
         Util.setDefaultLookAndFeel();
         JOptionPane p = new JOptionPane (
-            new AutoUpgradePanel (source.getAbsolutePath ()),
+            new AutoUpgradePanel (source.getAbsolutePath (), note),
             JOptionPane.QUESTION_MESSAGE,
             JOptionPane.YES_NO_OPTION
         );
@@ -159,6 +194,13 @@ public final class AutoUpgrade {
         d.setVisible (true);
 
         return new Integer (JOptionPane.YES_OPTION).equals (p.getValue ());
+    }
+
+    private static void showNoteDialog (String note) {
+        Util.setDefaultLookAndFeel();
+        JOptionPane p = new JOptionPane(new AutoUpgradePanel (null, note), JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION);
+        JDialog d = Util.createJOptionDialog(p, NbBundle.getMessage (AutoUpgrade.class, "MSG_Note_Title"));
+        d.setVisible (true);
     }
 
     static void doUpgrade (File source, String oldVersion) 
