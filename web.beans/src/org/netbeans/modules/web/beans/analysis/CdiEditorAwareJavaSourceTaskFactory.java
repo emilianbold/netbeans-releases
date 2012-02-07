@@ -45,6 +45,7 @@ package org.netbeans.modules.web.beans.analysis;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
+import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.openide.filesystems.FileObject;
 
 
@@ -57,7 +58,8 @@ public abstract class CdiEditorAwareJavaSourceTaskFactory extends
 {
 
     protected CdiEditorAwareJavaSourceTaskFactory( Priority priority ) {
-        super(Phase.RESOLVED,  priority, "text/x-java");    // NOI18N
+        super(Phase.RESOLVED,  priority, TaskIndexingMode.ALLOWED_DURING_SCAN ,
+                "text/x-java");    // NOI18N
     }
     
     void restart( FileObject fileObject ){
