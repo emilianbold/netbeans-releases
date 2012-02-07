@@ -43,8 +43,9 @@
 package org.netbeans.libs.git;
 
 /**
- *
- * @author ondra
+ * All supported kinds of git objects.
+ * 
+ * @author Ondra Vrabec
  */
 public enum GitObjectType {
     COMMIT {

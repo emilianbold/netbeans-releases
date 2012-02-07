@@ -82,6 +82,20 @@ public class RefactoringActionsProviderExt { //extends RefactoringActionsProvide
 
         return null;
     }
+    
+    private static RefactoringUI doReplaceConstructorWithBuilderImpl(TreePathHandle selectedElement, CompilationInfo info) {
+        Element selected = selectedElement.resolveElement(info);
+        if (selected==null) {
+//            logger().log(Level.INFO, "doRename: " + selectedElement, new NullPointerException("selected")); // NOI18N
+            return null;
+        }
+        if (selected.getKind() == ElementKind.CONSTRUCTOR) {
+            return new ReplaceConstructorWithBuilderUI(selectedElement, info);
+        }
+
+        return null;
+    }
+    
 
     public static void doReplaceConstructor(final Lookup lookup) {
         Runnable task;
@@ -114,6 +128,37 @@ public class RefactoringActionsProviderExt { //extends RefactoringActionsProvide
         ScanDialog.runWhenScanFinished(task, "Remove Constructor");//getActionName(RefactoringActionsFactory.renameAction()));
     }
 
+    public static void doReplaceConstructorWithBuilder(final Lookup lookup) {
+        Runnable task;
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        if (isFromEditor(ec)) {
+            task = new RefactoringActionsProvider.TextComponentTask(ec) {
+                @Override
+                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, final CompilationInfo info) {
+                    return doReplaceConstructorWithBuilderImpl(selectedElement, info);
+                }
+            };
+        } else {
+            task = new RefactoringActionsProvider.TreePathHandleTask(new HashSet<Node>(lookup.lookupAll(Node.class)), true) {
+
+                RefactoringUI ui;
+
+                @Override
+                protected void treePathHandleResolved(TreePathHandle handle, CompilationInfo javac) {
+                    ui = doReplaceConstructorWithBuilderImpl(handle, javac);
+                }
+
+                @Override
+                protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
+                    return ui;
+                }
+
+            };
+        }
+        
+        ScanDialog.runWhenScanFinished(task, "Remove Constructor");//getActionName(RefactoringActionsFactory.renameAction()));
+    }
+    
     private static RefactoringUI doInvertBooleanImpl(TreePathHandle selectedElement, CompilationInfo info) {
         Element selected = selectedElement.resolveElement(info);
         if (selected==null) {
@@ -171,6 +216,11 @@ public class RefactoringActionsProviderExt { //extends RefactoringActionsProvide
     public static boolean canReplaceConstructor(Lookup lookup) {
         return canRefactor(lookup);
     }
+    
+    public static boolean canReplaceConstructorWithBuilder(Lookup lookup) {
+        return canRefactor(lookup);
+    }
+    
 
     public static boolean canInvertBoolean(Lookup lookup) {
         return canRefactor(lookup);

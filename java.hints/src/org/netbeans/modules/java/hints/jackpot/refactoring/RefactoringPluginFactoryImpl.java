@@ -56,6 +56,10 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
             return new InvertBooleanRefactoringPluginImpl((InvertBooleanRefactoring) refactoring);
         }
         
+        if (refactoring instanceof ReplaceConstructorWithBuilderRefactoring) {
+            return new ReplaceConstructorWithBuilderPlugin((ReplaceConstructorWithBuilderRefactoring) refactoring);
+        }
+        
 
         return null;
     }

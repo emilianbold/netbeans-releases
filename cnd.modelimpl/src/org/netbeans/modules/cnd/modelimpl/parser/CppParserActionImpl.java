@@ -53,6 +53,8 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
@@ -361,7 +363,13 @@ public class CppParserActionImpl implements CppParserAction {
         }
         return false;
     }
-    
+
+    @Override
+    public void onInclude(CsmFile inclFile, APTPreprocHandler.State stateBefore) {
+        assert inclFile instanceof FileImpl;
+        ((FileImpl)inclFile).parseOnInclude(stateBefore, this);
+    }
+        
     private SymTabStack createGlobal() {
         SymTabStack out = SymTabStack.create();
         // TODO: need to push symtab for predefined types

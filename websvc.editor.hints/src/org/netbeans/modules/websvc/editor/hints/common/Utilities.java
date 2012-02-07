@@ -357,9 +357,8 @@ public class Utilities {
             annotation = make.removeAnnotationAttrValue(annotation, oldArgTree);
         ExpressionTree argumentValueTree = null;
         if(argumentValue instanceof Enum) {
-            TypeElement enumClassElement = workingCopy.getElements().getTypeElement(
-                    argumentValue.getClass().getCanonicalName());
-            argumentValueTree =  make.MemberSelect(make.QualIdent(enumClassElement),
+            argumentValueTree =  make.MemberSelect(make.QualIdent(
+                    argumentValue.getClass().getCanonicalName()),
                     ((Enum)argumentValue).name());
         } else {
             try {
@@ -435,10 +434,8 @@ public class Utilities {
         if (oldTree == null) {
             return;
         }
-        TypeElement annotationElement = workingCopy.getElements().getTypeElement(
-                annotationName);
         TreeMaker make = workingCopy.getTreeMaker();
-        AnnotationTree annotationTree = make.Annotation(make.QualIdent(annotationElement), 
+        AnnotationTree annotationTree = make.Annotation(make.QualIdent(annotationName), 
                 Collections.<ExpressionTree>emptyList());
         ModifiersTree newTree = make.addModifiersAnnotation(oldTree, annotationTree);
         workingCopy.rewrite(oldTree, newTree);

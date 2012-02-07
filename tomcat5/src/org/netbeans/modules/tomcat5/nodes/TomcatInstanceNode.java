@@ -68,6 +68,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.util.Utilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -186,6 +187,11 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
      * @param context
      * @return 
      */
+    @MIMEResolver.Registration(
+        displayName="org.netbeans.modules.tomcat5.resources.Bundle#TomcatResolver",
+        position=380,
+        resource="../resources/tomcat-mime-resolver.xml"
+    )
     @MultiViewElement.Registration(
         displayName="org.netbeans.modules.tomcat5.nodes.Bundle#CTL_SourceTabCaption",
         iconBase="org/netbeans/modules/tomcat5/resources/tomcat5.gif",

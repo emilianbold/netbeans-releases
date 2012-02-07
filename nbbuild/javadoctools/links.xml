@@ -212,3 +212,4 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-modules-java-hints-legacy-spi}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-java-hints-legacy-spi"/>
 <link href="${javadoc.docs.org-netbeans-modules-java-hints-providers-spi}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-java-hints-providers-spi"/>
 <link href="${javadoc.docs.org-netbeans-modules-java-hints-test}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-java-hints-test"/>
+<link href="${javadoc.docs.org-netbeans-libs-git}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-libs-git"/>

@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.asm.core.editor.AsmEditorSupport;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
@@ -60,6 +61,12 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
+@MIMEResolver.ExtensionRegistration(
+    displayName="#AsmResolver", // NOI18N
+    position=458,
+    extension={ "s", "S", "asm", "ASM", "as", "il" }, // NOI18N
+    mimeType="text/x-asm" // NOI18N
+)
 public class AsmDataObject extends MultiDataObject {
     public AsmDataObject(FileObject fo, AsmDataLoader loader) throws DataObjectExistsException, IOException {
         super(fo, loader); 

@@ -48,7 +48,7 @@ public class BackupGlobalsTag extends PhpAnnotationTag {
 
     public BackupGlobalsTag() {
         super("backupGlobals", // NOI18N
-                "@backupGlobals ${u1 default=\"disabled\"}", // NOI18N
+                "@backupGlobals ${disabled}", // NOI18N
                 NbBundle.getMessage(BackupGlobalsTag.class, "BackupGlobalsTag.documentation"));
     }
 

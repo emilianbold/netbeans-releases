@@ -44,6 +44,7 @@ package org.netbeans.modules.javafx2.editor.fxml;
 
 import java.io.IOException;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
@@ -54,6 +55,7 @@ import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import org.openide.text.DataEditorSupport;
 
+@MIMEResolver.ExtensionRegistration(extension="fxml", mimeType="text/x-fxml+xml", position=8739, displayName="#LBL_FXML_loader_name")
 public class FXMLDataObject extends MultiDataObject {
 
     public FXMLDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {

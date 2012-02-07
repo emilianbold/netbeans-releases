@@ -63,6 +63,7 @@ import org.netbeans.libs.git.GitConflictDescriptor;
 import org.netbeans.libs.git.GitConflictDescriptor.Type;
 import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.GitPullResult;
+import org.netbeans.libs.git.GitPushResult;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRevertResult;
 import org.netbeans.libs.git.GitRevisionInfo;
@@ -87,6 +88,8 @@ public abstract class GitClassFactory {
     public abstract GitMergeResult createMergeResult (MergeResult mergeResult, File workTree);
 
     public abstract GitPullResult createPullResult (Map<String, GitTransportUpdate> fetchUpdates, GitMergeResult mergeResult);
+
+    public abstract GitPushResult createPushResult (Map<String, GitTransportUpdate> remoteRepositoryUpdates, Map<String, GitTransportUpdate> localRepositoryUpdates);
 
     public abstract GitRemoteConfig createRemoteConfig (RemoteConfig remoteConfig);
 

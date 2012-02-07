@@ -991,17 +991,7 @@ public class Actions {
             if (action instanceof SystemAction) {
                 if (base instanceof String) {
                     String b = (String) base;
-                    ImageIcon imgIcon = null;
-
-                    if (!useSmallIcon) {
-                        imgIcon = ImageUtilities.loadImageIcon(insertBeforeSuffix(b, "24"), true); // NOI18N
-                        if (imgIcon == null) {
-                            imgIcon = ImageUtilities.loadImageIcon(b, true);
-                        }
-                    } else {
-                        imgIcon = ImageUtilities.loadImageIcon(b, true);
-                    }
-
+                    ImageIcon imgIcon = loadImage(b, useSmallIcon, null);
                     if (imgIcon != null) {
                         i = imgIcon;
                         button.setIcon(imgIcon);
@@ -1022,17 +1012,7 @@ public class Actions {
                 //Try to get icon from iconBase for non SystemAction action
                 if (base instanceof String) {
                     String b = (String) base;
-                    ImageIcon imgIcon = null;
-
-                    if (!useSmallIcon) {
-                        imgIcon = ImageUtilities.loadImageIcon(insertBeforeSuffix(b, "24"), true); // NOI18N
-                        if (imgIcon == null) {
-                            imgIcon = ImageUtilities.loadImageIcon(b, true);
-                        }
-                    } else {
-                        imgIcon = ImageUtilities.loadImageIcon(b, true);
-                    }
-
+                    ImageIcon imgIcon = loadImage(b, useSmallIcon, null); // NOI18N
                     if (imgIcon != null) {
                         i = imgIcon;
                         button.setIcon((Icon) i);
@@ -1060,56 +1040,67 @@ public class Actions {
             if (base instanceof String) {
                 String b = (String) base;
 
-                if (!useSmallIcon) {
-                    b = insertBeforeSuffix(b, "24"); //NOI18N
-                }
-
                 ImageIcon imgIcon = null;
 
                 if (i == null) {
                     // even for regular icon
-                    imgIcon = ImageUtilities.loadImageIcon(b, true);
+                    imgIcon = loadImage(b, useSmallIcon, null);
                     if (imgIcon != null) {
                         button.setIcon(imgIcon);
                     }
                     i = imgIcon;
                 }
 
-                ImageIcon pImgIcon = ImageUtilities.loadImageIcon(insertBeforeSuffix(b, "_pressed"), true); // NOI18N
+                ImageIcon pImgIcon = loadImage(b, useSmallIcon, "_pressed"); // NOI18N
                 if (pImgIcon != null) {
                     button.setPressedIcon(pImgIcon);
                 }
 
-                ImageIcon rImgIcon = ImageUtilities.loadImageIcon(insertBeforeSuffix(b, "_rollover"), true); // NOI18N
+                ImageIcon rImgIcon = loadImage(b, useSmallIcon, "_rollover"); // NOI18N
                 if (rImgIcon != null) {
                     button.setRolloverIcon(rImgIcon);
                 }
 
-                ImageIcon dImgIcon = ImageUtilities.loadImageIcon(insertBeforeSuffix(b, "_disabled"), true); // NOI18N
+
+                ImageIcon dImgIcon = loadImage(b, useSmallIcon, "_disabled"); // NOI18N
                 if (dImgIcon != null) {
                     button.setDisabledIcon(dImgIcon);
                 } else if (imgIcon != null) {
                     button.setDisabledIcon(ImageUtilities.createDisabledIcon(imgIcon));
                 }
 
-                ImageIcon sImgIcon = ImageUtilities.loadImageIcon(insertBeforeSuffix(b, "_selected"), true); // NOI18N
+                ImageIcon sImgIcon = loadImage(b, useSmallIcon, "_selected"); // NOI18N
                 if (sImgIcon != null) {
                     button.setSelectedIcon(sImgIcon);
                 }
 
-                sImgIcon = ImageUtilities.loadImageIcon(insertBeforeSuffix(b, "_rolloverSelected"), true); // NOI18N
+                sImgIcon = loadImage(b, useSmallIcon, "_rolloverSelected"); // NOI18N
                 if (sImgIcon != null) {
                     button.setRolloverSelectedIcon(sImgIcon);
                 }
 
-                sImgIcon = ImageUtilities.loadImageIcon(insertBeforeSuffix(b, "_disabledSelected"), true); // NOI18N
+                sImgIcon = loadImage(b, useSmallIcon, "_disabledSelected"); // NOI18N
                 if (sImgIcon != null) {
                     button.setDisabledSelectedIcon(sImgIcon);
                 }
             }
         }
 
+        static ImageIcon loadImage(String iconBase, boolean useSmallIcon, String suffix) {
+            if (!useSmallIcon) {
+                String bigBase = insertBeforeSuffix(iconBase, "24"); // NOI18N
+                ImageIcon icon = ImageUtilities.loadImageIcon(insertBeforeSuffix(bigBase, suffix), true);
+                if (icon != null) {
+                    return icon;
+                }
+            }
+            return ImageUtilities.loadImageIcon(insertBeforeSuffix(iconBase, suffix), true); // NOI18N
+        }
+        
         static String insertBeforeSuffix(String path, String toInsert) {
+            if (toInsert == null) {
+                return path;
+            }
             String withoutSuffix = path;
             String suffix = ""; // NOI18N
 

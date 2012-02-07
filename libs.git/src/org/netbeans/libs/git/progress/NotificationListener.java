@@ -42,9 +42,14 @@
 
 package org.netbeans.libs.git.progress;
 
+import org.netbeans.libs.git.GitClient;
+
 /**
- *
- * @author ondra
+ * General interface used as the parent for all other notification listeners.
+ * To receive notifications through any instance of <code>NotificationListener</code>
+ * register it with an instance of {@link GitClient} using its <code>addNotificationListener</code>.
+ * To stop listening for the notifications, unregister the instance using the 
+ * <code>removeNotificationListener</code> method of an <code>GitClient</code> instance.
  */
 public interface NotificationListener {
 

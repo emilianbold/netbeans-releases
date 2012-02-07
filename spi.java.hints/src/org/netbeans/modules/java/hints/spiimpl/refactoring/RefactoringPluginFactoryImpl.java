@@ -39,10 +39,6 @@
 
 package org.netbeans.modules.java.hints.spiimpl.refactoring;
 
-//import org.netbeans.modules.jackpot30.impl.refactoring.findusages.GlobalFindUsagesRefactoring;
-//import org.netbeans.modules.jackpot30.impl.refactoring.findusages.GlobalFindUsagesRefactoringPlugin;
-//import org.netbeans.modules.jackpot30.impl.refactoring.upgrade.UpgradeRefactoring;
-//import org.netbeans.modules.jackpot30.impl.refactoring.upgrade.UpgradeRefactoringPlugin;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;

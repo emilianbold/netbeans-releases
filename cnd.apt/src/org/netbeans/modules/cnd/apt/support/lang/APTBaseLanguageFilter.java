@@ -281,6 +281,11 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
         public String toString() {
             return "FilterToken: " + APTUtils.getAPTTokenName(type) + ((origToken == null) ? "null" : origToken.toString()); // NOI18N
         }
+        
+        @Override
+        public Object getProperty(Object key) {
+            return null;
+        }        
     }
 
 }

@@ -239,4 +239,9 @@ public class APTBaseToken implements APTToken {
         hash = 23 * hash + (this.text != null ? this.text.hashCode() : 0);
         return hash;
     }
+    
+    @Override
+    public Object getProperty(Object key) {
+        return null;
+    }    
 }

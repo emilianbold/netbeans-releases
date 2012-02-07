@@ -124,7 +124,9 @@ public class PHPDOCCodeCompletion {
         }
         List<PhpAnnotationsProvider> providers = PhpAnnotations.getDefault().getProviders(request.info.getSnapshot().getSource().getFileObject());
         ASTNode nodeAfterOffset = Utils.getNodeAfterOffset(request.result, request.anchor);
+        int priority = 0;
         for (PhpAnnotationsProvider annotationProvider : providers) {
+            priority++;
             List<PhpAnnotationTag> annotations = null;
             if (nodeAfterOffset instanceof TypeDeclaration) {
                 annotations = annotationProvider.getTypeAnnotations();
@@ -139,7 +141,7 @@ public class PHPDOCCodeCompletion {
             }
             for (PhpAnnotationTag tag : annotations) {
                 if (tag.getName().startsWith(prefix)) {
-                    completionResult.add(new PHPDOCCodeCompletionItem(request.anchor, tag, annotationProvider.getName()));
+                    completionResult.add(new PHPDOCCodeCompletionItem(request.anchor, tag, annotationProvider.getName(), priority));
                 }
             }
         }
@@ -152,11 +154,13 @@ public class PHPDOCCodeCompletion {
         private final int anchorOffset;
         private final PHPDOCTagElement elem;
         private final String providerName;
+        private final int priority;
 
-        public PHPDOCCodeCompletionItem(int anchorOffset, PhpAnnotationTag tag, String providerName) {
+        public PHPDOCCodeCompletionItem(int anchorOffset, PhpAnnotationTag tag, String providerName, int priority) {
             this.tag = tag;
             this.anchorOffset = anchorOffset;
             this.providerName= providerName;
+            this.priority = priority;
             elem = new PHPDOCTagElement(tag.getName(), tag.getDocumentation());
         }
 
@@ -182,7 +186,7 @@ public class PHPDOCCodeCompletion {
 
         @Override
         public String getSortText() {
-            return getName();
+            return priority + providerName + getName();
         }
 
         @Override

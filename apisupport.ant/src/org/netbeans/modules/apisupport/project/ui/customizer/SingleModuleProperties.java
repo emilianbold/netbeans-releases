@@ -194,7 +194,6 @@ public final class SingleModuleProperties extends ModuleProperties {
     private DefaultListModel wrappedJarsListModel;
     private boolean wrappedJarsChanged; // #171125
     public static final String NB_PLATFORM_PROPERTY = "nbPlatform"; // NOI18N
-    public static final String JAVA_PLATFORM_PROPERTY = "nbjdk.active"; // NOI18N
     public static final String DEPENDENCIES_PROPERTY = "moduleDependencies"; // NOI18N
 
     /**
@@ -264,13 +263,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             }
             originalPlatform = activePlatform = plaf;
         }
-        String activeJdk = getEvaluator().getProperty("nbjdk.active"); // NOI18N
-        if (activeJdk != null) {
-            activeJavaPlatform = ModuleProperties.findJavaPlatformByID(activeJdk); // NOI18N
-        } else {
-            String activeJdkHome = getEvaluator().getProperty("nbjdk.home"); // NOI18N
-            activeJavaPlatform = ModuleProperties.findJavaPlatformByLocation(activeJdkHome);
-        }
+        activeJavaPlatform = getJavaPlatform();
         javaPlatformChanged = false;
         getPublicPackagesModel().reloadData(loadPublicPackages());
         requiredTokens = Collections.unmodifiableSortedSet(

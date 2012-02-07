@@ -42,12 +42,15 @@
 package org.netbeans.modules.cnd.modelimpl.parser;
 
 import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 
 /**
  *
  * @author nick
  */
-public interface CppParserAction {
+public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
     
     void enum_declaration(Token token);
     void enum_name(Token token);
@@ -77,5 +80,7 @@ public interface CppParserAction {
     void simple_type_id(Token token);
     
     boolean isType(String name);
+
+    public void onInclude(CsmFile inclFile, APTPreprocHandler.State stateBefore);
 
 }

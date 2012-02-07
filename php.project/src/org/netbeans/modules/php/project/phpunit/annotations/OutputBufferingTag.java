@@ -48,7 +48,7 @@ public class OutputBufferingTag extends PhpAnnotationTag {
 
     public OutputBufferingTag() {
         super("outputBuffering", // NOI18N
-                "@outputBuffering ${u1 default=\"disabled\"}", // NOI18N
+                "@outputBuffering ${disabled}", // NOI18N
                 NbBundle.getMessage(OutputBufferingTag.class, "OutputBufferingTag.documentation"));
     }
 

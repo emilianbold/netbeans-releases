@@ -1123,7 +1123,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 }
                 for (DirEntry entry : entriesToFireCreated) {
                     RemoteFileObjectBase fo = createFileObject(entry);
-                    if (interceptor != null && !expectedCreated.equals(entry)) {
+                    if (interceptor != null && expectedCreated != null && !expectedCreated.equals(entry)) {
                         interceptor.createdExternally(FilesystemInterceptorProvider.toFileProxy(fo));
                     }
                     fireRemoteFileObjectCreated(fo);

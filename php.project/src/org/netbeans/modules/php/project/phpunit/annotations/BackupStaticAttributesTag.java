@@ -48,7 +48,7 @@ public class BackupStaticAttributesTag extends PhpAnnotationTag {
 
     public BackupStaticAttributesTag() {
         super("backupStaticAttributes", // NOI18N
-                "@backupStaticAttributes ${u1 default=\"disabled\"}", // NOI18N
+                "@backupStaticAttributes ${disabled}", // NOI18N
                 NbBundle.getMessage(BackupStaticAttributesTag.class, "BackupStaticAttributesTag.documentation"));
     }
 

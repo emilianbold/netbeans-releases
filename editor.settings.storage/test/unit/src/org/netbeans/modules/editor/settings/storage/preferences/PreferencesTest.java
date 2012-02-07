@@ -113,10 +113,10 @@ public class PreferencesTest extends NbTestCase {
         
         prefs.put("simple-value-setting-A", "New-Written-Value");
         assertEquals("Wrong value for 'simple-value-setting-A'", "New-Written-Value", prefs.get("simple-value-setting-A", null));
+
+        prefs.flush();
         }
 
-        Thread.sleep(500);
-        
         {
         // read the settings right from the file
         StorageImpl<String, TypedValue> storage = new StorageImpl<String, TypedValue>(new PreferencesStorage(), null);

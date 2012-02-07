@@ -750,12 +750,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         sendResumptive("-exec-continue"); // NOI18N
     }
     
+    private boolean targetAttach = false;
+    
     private void doMIAttach(GdbDebuggerInfo gdi) {
         String cmdString;
         long pid = -1;
-        String remoteTarget = gdi.getRemoteTarget();
+        String remoteTarget = gdi.getTargetCommand();
         if (remoteTarget != null) {
-            cmdString = "target remote " + remoteTarget;  //NOI18N
+            cmdString = "target " + remoteTarget;  //NOI18N
+            targetAttach = true;
         } else {
             pid = gdi.getPid();
             // MI command "-target-attach pid | file" does not available in
@@ -856,7 +859,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         // ... so we interrupt
 	int pid = (int) session().getPid();
 	if (pid > 0) {
-	    return gdb.pause(pid, silentStop);
+	    return gdb.pause(pid, silentStop, targetAttach);
         }
         return false;
     }
@@ -1225,6 +1228,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private static final int PRINT_REPEAT = Integer.getInteger("gdb.print.repeat", 0); //NOI18N
     private static final int STACK_MAX_DEPTH = Integer.getInteger("gdb.stack.maxdepth", 1024); // NOI18N
     private static final int PRINT_ELEMENTS = Integer.getInteger("gdb.print.elements", 0); // NOI18N
+    private static final boolean ENABLE_PRETTY_PRINTING = !Boolean.getBoolean("gdb.pretty.disable"); //NOI18N
 
     public FileMapper fmap() {
         return fmap;
@@ -1261,6 +1265,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         send("-gdb-set print repeat " + PRINT_REPEAT); // NOI18N
         send("-gdb-set backtrace limit " + STACK_MAX_DEPTH); // NOI18N
         send("-gdb-set print elements " + PRINT_ELEMENTS); // NOI18N
+        
+        if (ENABLE_PRETTY_PRINTING) {
+            sendSilent("-enable-pretty-printing"); // NOI18N
+        }
         
         // set extra source folders
         String sourceFolders = DebuggerOption.GDB_SOURCE_DIRS.getCurrValue(optionLayers());
@@ -2580,10 +2588,21 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         String mi_name = results.valueOf("name").asConst().value(); // NOI18N
         String type = results.valueOf("type").asConst().value(); // NOI18N
         String numchild = results.valueOf("numchild").asConst().value(); // NOI18N
+        
+        MIValue dynamicVal = results.valueOf("dynamic"); //NOI18N
+        if (dynamicVal != null) {
+            boolean dynamic = "1".equals(dynamicVal.asConst().value()); // NOI18N
+            v.setDynamic(dynamic);
+            MIValue hasMoreVal = results.valueOf("has_more"); //NOI18N
+            if (hasMoreVal != null) {
+                numchild = hasMoreVal.asConst().value(); // NOI18N
+            }
+        }
 
         v.setMIName(mi_name);
         v.setType(type);
         v.setNumChild(numchild); // also set children if there is any
+        
 	Variable wv = variableBag.get(mi_name, true, VariableBag.FROM_BOTH);
         if (wv == null) {
             variableBag.add(v);

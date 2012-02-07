@@ -72,7 +72,7 @@ made subject to such option by the copyright holder.
     </condition>
 
 
-    <property name="test.run.args" value="-Dnetbeans.keyring.no.master=true -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.full.hack=true -client -Xss2m -Xms64m -Xmx512m -XX:PermSize=64m -XX:MaxPermSize=300m -Xverify:none -Dsun.java2d.noddraw=true -Dcom.sun.aas.installRoot=&quot;${j2ee.appserver.path}&quot; -Dtomcat.installRoot=&quot;${tomcat.webserver.path}&quot; -Dorg.netbeans.performance.repeat=&quot;${repeat}&quot;"/>
+    <property name="test.run.args" value="-Dnetbeans.keyring.no.master=true -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.full.hack=true -DSuspendSupport.disabled=true -client -Xss2m -Xms64m -Xmx512m -XX:PermSize=64m -XX:MaxPermSize=300m -Xverify:none -Dsun.java2d.noddraw=true -Dcom.sun.aas.installRoot=&quot;${j2ee.appserver.path}&quot; -Dtomcat.installRoot=&quot;${tomcat.webserver.path}&quot; -Dorg.netbeans.performance.repeat=&quot;${repeat}&quot;"/>
 
     <import file="../nbbuild/templates/projectized.xml"/>
 

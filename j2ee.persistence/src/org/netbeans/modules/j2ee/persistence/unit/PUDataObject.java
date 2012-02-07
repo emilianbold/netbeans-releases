@@ -74,6 +74,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -90,7 +91,11 @@ import org.xml.sax.SAXException;
  * @author Martin Adamek
  * @author Erno Mononen
  */
-
+@MIMEResolver.Registration(
+    displayName="",
+    position=220,
+    resource="../ui/resources/PUResolver.xml"
+)
 public class PUDataObject extends XmlMultiViewDataObject {
     
     public static final String HELP_ID_DESIGN_PERSISTENCE_UNIT

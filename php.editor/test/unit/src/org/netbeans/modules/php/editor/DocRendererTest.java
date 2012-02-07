@@ -71,9 +71,6 @@ public class DocRendererTest extends TestBase {
                 "<b1>test5</ b>",
                 "&lt;b1>test5</ b>");
         testCases.put(
-                "<code>test6</code>",
-                "<pre>test6</pre>");
-        testCases.put(
                 "<input>",
                 "&lt;input>");
         // #183594

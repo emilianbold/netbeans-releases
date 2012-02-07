@@ -48,7 +48,7 @@ public class GroupTag extends PhpAnnotationTag {
 
     public GroupTag() {
         super("group", // NOI18N
-                "@group ${u1 default=\"groupName\"}", // NOI18N
+                "@group ${groupName}", // NOI18N
                 NbBundle.getMessage(GroupTag.class, "GroupTag.documentation"));
     }
 
