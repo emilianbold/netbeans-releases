@@ -38,9 +38,13 @@
 package org.netbeans.modules.javascript2.editor.parser;
 
 import com.oracle.nashorn.ir.FunctionNode;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.javascript2.editor.doclets.JsDocParser;
+import org.netbeans.modules.javascript2.editor.model.JsComment;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -72,7 +76,7 @@ public class JsParser extends Parser {
         } catch (Exception ex) {
             LOGGER.log (Level.FINE, "Exception during parsing: {0}", ex);
             // TODO create empty result
-            lastResult = new JsParserResult(snapshot, null);
+            lastResult = new JsParserResult(snapshot, null, Collections.<JsComment>emptyList());
         }
         long endTime = System.currentTimeMillis();        
         LOGGER.log(Level.FINE, "Parsing took: {0}ms source: {1}", new Object[]{endTime - startTime, snapshot.getSource().getFileObject()}); //NOI18N
@@ -97,7 +101,10 @@ public class JsParser extends Parser {
         com.oracle.nashorn.parser.Parser parser = new com.oracle.nashorn.parser.Parser(compiler);
         com.oracle.nashorn.ir.FunctionNode node = parser.parse(com.oracle.nashorn.codegen.CompilerConstants.runScriptName);
         
-        JsParserResult result = new JsParserResult(snapshot, node);
+        // process comment elements
+        List<? extends JsComment> comments = null; //TODO - JsDocParser.parse(text);
+
+        JsParserResult result = new JsParserResult(snapshot, node, comments);
         long endTime = System.currentTimeMillis();        
 //        LOGGER.log(Level.FINE, "Parsing took: {0}ms source: {1}", new Object[]{endTime - startTime, scriptname}); //NOI18N
         return result;
