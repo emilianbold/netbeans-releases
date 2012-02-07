@@ -114,7 +114,6 @@ import org.netbeans.spi.java.hints.JavaFix.TransformationContext;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle.Messages;
 
 /**Factory methods for various predefined {@link JavaFix} implementations.
  *
@@ -122,8 +121,19 @@ import org.openide.util.NbBundle.Messages;
  */
 public class JavaFixUtilities {
 
-    public static Fix rewriteFix(HintContext ctx, String displayName, TreePath what, final String to, String... imports) {
-        return rewriteFix(ctx.getInfo(), displayName, what, to, ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames(), Collections.<String, TypeMirror>emptyMap(), Collections.<String, String>emptyMap(), imports);
+    /**Prepare a fix that will replace the given tree node ({@code what}) with the
+     * given code. Any variables in the {@code to} pattern will be replaced with their
+     * values from {@link HintContext#getVariables() }, {@link HintContext#getMultiVariables() }
+     * and {@link HintContext#getVariableNames() }.
+     *
+     * @param ctx basic context for which the fix should be created
+     * @param displayName the display name of the fix
+     * @param what the tree node that should be replaced
+     * @param to the new code that should replaced the {@code what} tree node
+     * @return an editor fix that performs the required transformation
+     */
+    public static Fix rewriteFix(HintContext ctx, String displayName, TreePath what, final String to) {
+        return rewriteFix(ctx.getInfo(), displayName, what, to, ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames(), Collections.<String, TypeMirror>emptyMap(), Collections.<String, String>emptyMap());
     }
 
     static Fix rewriteFix(CompilationInfo info, String displayName, TreePath what, final String to, Map<String, TreePath> parameters, Map<String, Collection<? extends TreePath>> parametersMulti, final Map<String, String> parameterNames, Map<String, TypeMirror> constraints, Map<String, String> options, String... imports) {
@@ -158,11 +168,14 @@ public class JavaFixUtilities {
         return new JavaFixRealImpl(info, what, options, displayName, to, params, paramsMulti, parameterNames, constraintsHandles, Arrays.asList(imports)).toEditorFix();
     }
 
-    @Messages("FIX_RemoveFromParent=Remove {0} from parent")
-    public static Fix removeFromParent(HintContext ctx, TreePath what) {
-        return removeFromParent(ctx, Bundle.FIX_RemoveFromParent(/*TODO: better short name:*/what.getLeaf().toString()), what);
-    }
-
+    /**Creates a fix that removes the given code corresponding to the given tree
+     * node from the source code.
+     * 
+     * @param ctx basic context for which the fix should be created
+     * @param displayName the display name of the fix
+     * @param what the tree node that should be removed
+     * @return an editor fix that removes the give tree from the source code
+     */
     public static Fix removeFromParent(HintContext ctx, String displayName, TreePath what) {
         return new RemoveFromParent(displayName, ctx.getInfo(), what).toEditorFix();
     }
@@ -971,6 +984,15 @@ public class JavaFixUtilities {
         OPERATOR_PRIORITIES.put(Kind.XOR_ASSIGNMENT, 15);
     }
 
+    /**Checks whether putting {@code inner} tree into {@code outter} tree,
+     * when {@code original} is being replaced with {@code inner} requires parentheses.
+     *
+     * @param inner    the new tree node that will be placed under {@code outter}
+     * @param original the tree node that is being replaced with {@code inner}
+     * @param outter   the future parent node of {@code inner}
+     * @return true if and only if inner needs to be wrapped using {@link TreeMaker#Parenthesized(com.sun.source.tree.ExpressionTree) }
+     *              to keep the original meaning.
+     */
     public static boolean requiresParenthesis(Tree inner, Tree original, Tree outter) {
         if (!ExpressionTree.class.isAssignableFrom(inner.getKind().asInterface())) return false;
         if (!ExpressionTree.class.isAssignableFrom(outter.getKind().asInterface())) return false;

@@ -60,7 +60,31 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface TriggerPattern {
 
+    /**The pattern consists of:
+     * <ul>
+     *     <li>a single Java expression</li>
+     *     <li>a single Java statement</li>
+     *     <li>multiple Java statements</li>
+     *     <li>a Java field, method or class</li>
+     * </ul>
+     *
+     * Variables (identifiers starting with '$') can be used to replace part of the pattern.
+     * During matching, the actual part of the AST that corresponds to the variable in the pattern
+     * will be 'bound' to the variable. Variables whose names that do not end with a '$' ('single' variables)
+     * will be bound to exactly one AST node, whereas variables whose names end with a '$' ('multi' variables)
+     * will be bound to any number of consecutive AST nodes (with the same AST node as a parent).
+     *
+     * The actual AST nodes that were bound to single variables are available through {@link HintContext#getVariables() },
+     * nodes bound to multi variables are available through {@link HintContext#getMultiVariables() }.
+     *
+     * For variables that represent an expression, a type constraint can be specified using the
+     * {@link #constraints() } attribute.
+     *
+     * All classes should be referred to using FQNs.
+     */
     public String value();
+    /**Expected types for variables from the {@link #value() pattern}.
+     */
     public ConstraintVariableType[] constraints() default {};
 
 }

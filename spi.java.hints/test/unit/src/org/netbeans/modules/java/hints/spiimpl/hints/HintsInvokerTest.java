@@ -718,8 +718,10 @@ public class HintsInvokerTest extends TestBase {
         HintMetadata metadata = HintMetadata.Builder.create("no-id").addOptions(Options.NON_GUI).addSuppressWarnings("test").build();
         test2Hint.put("testSuppressWarnings", HintDescriptionFactory.create().setTrigger(PatternDescription.create("$Test.test", Collections.<String, String>singletonMap("$Test", "test.Test"))).setWorker(new WorkerImpl("$Test.getTest()")).setMetadata(metadata).produce());
         test2Hint.put("testRewriteOneToMultipleClassMembers", HintDescriptionFactory.create().setTrigger(PatternDescription.create("private int i;", Collections.<String, String>emptyMap())).setWorker(new WorkerImpl("private int i; public int getI() { return i; }")).produce());
-        test2Hint.put("testImports1", HintDescriptionFactory.create().setTrigger(PatternDescription.create("new LinkedList()", Collections.<String, String>emptyMap(), "import java.util.LinkedList;")).setWorker(new WorkerImpl("new ArrayList()", "import java.util.ArrayList;\n")).produce());
-        test2Hint.put("testImports2", HintDescriptionFactory.create().setTrigger(PatternDescription.create("LinkedList $0;", Collections.<String, String>emptyMap(), "import java.util.LinkedList;")).setWorker(new WorkerImpl("ArrayList $0;", "import java.util.ArrayList;\n")).produce());
+//        test2Hint.put("testImports1", HintDescriptionFactory.create().setTrigger(PatternDescription.create("new LinkedList()", Collections.<String, String>emptyMap(), "import java.util.LinkedList;")).setWorker(new WorkerImpl("new ArrayList()", "import java.util.ArrayList;\n")).produce());
+//        test2Hint.put("testImports2", HintDescriptionFactory.create().setTrigger(PatternDescription.create("LinkedList $0;", Collections.<String, String>emptyMap(), "import java.util.LinkedList;")).setWorker(new WorkerImpl("ArrayList $0;", "import java.util.ArrayList;\n")).produce());
+        test2Hint.put("testImports1", HintDescriptionFactory.create().setTrigger(PatternDescription.create("new LinkedList()", Collections.<String, String>emptyMap(), "import java.util.LinkedList;")).setWorker(new WorkerImpl("new java.util.ArrayList()")).produce());
+        test2Hint.put("testImports2", HintDescriptionFactory.create().setTrigger(PatternDescription.create("LinkedList $0;", Collections.<String, String>emptyMap(), "import java.util.LinkedList;")).setWorker(new WorkerImpl("java.util.ArrayList $0;")).produce());
         test2Hint.put("testMultiParameters", HintDescriptionFactory.create().setTrigger(PatternDescription.create("java.util.Arrays.asList($1$)", Collections.<String,String>emptyMap())).setWorker(new WorkerImpl("java.util.Arrays.asList(\"d\", $1$)")).produce());
         test2Hint.put("testTypeParametersMethod", HintDescriptionFactory.create().setTrigger(PatternDescription.create("java.util.Arrays.<$T>asList($1$)", Collections.<String,String>emptyMap())).setWorker(new WorkerImpl("java.util.Arrays.<$T>asList(\"d\", $1$)")).produce());
         test2Hint.put("testTypeParametersNewClass", HintDescriptionFactory.create().setTrigger(PatternDescription.create("new java.util.HashSet<$T1$>(java.util.Arrays.<$T$>asList($1$))", Collections.<String,String>emptyMap())).setWorker(new WorkerImpl("new java.util.HashSet<$T1$>(java.util.Arrays.<$T$>asList(\"d\", $1$))")).produce());
@@ -760,7 +762,6 @@ public class HintsInvokerTest extends TestBase {
     private static final class WorkerImpl implements Worker {
 
         private final String fix;
-        private final Collection<String> imports;
 
         public WorkerImpl() {
             this(null);
@@ -768,14 +769,6 @@ public class HintsInvokerTest extends TestBase {
 
         public WorkerImpl(String fix) {
             this.fix = fix;
-            this.imports = Collections.emptyList();
-        }
-
-        public WorkerImpl(String fix, String firstImport, String... imports) {
-            this.fix = fix;
-            this.imports = new LinkedList<String>();
-            this.imports.add(firstImport);
-            this.imports.addAll(Arrays.asList(imports));
         }
 
         public Collection<? extends ErrorDescription> createErrors(HintContext ctx) {
@@ -786,7 +779,7 @@ public class HintsInvokerTest extends TestBase {
             List<Fix> fixes = new LinkedList<Fix>();
 
             if (fix != null) {
-                fixes.add(JavaFixUtilities.rewriteFix(ctx, "Rewrite", ctx.getPath(), fix, imports.toArray(new String[0])));
+                fixes.add(JavaFixUtilities.rewriteFix(ctx, "Rewrite", ctx.getPath(), fix));
             }
             
             return Collections.singletonList(ErrorDescriptionFactory.forName(ctx, ctx.getPath(), "HINT", fixes.toArray(new Fix[0])));

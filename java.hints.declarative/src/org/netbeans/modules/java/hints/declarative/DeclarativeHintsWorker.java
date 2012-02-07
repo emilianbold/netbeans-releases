@@ -57,6 +57,7 @@ import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.HintContext.MessageKind;
 import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -90,6 +91,7 @@ class DeclarativeHintsWorker implements Worker {
         return fixes;
     }
 
+    @Messages("FIX_RemoveFromParent=Remove {0} from parent")
     @Override
     public Collection<? extends ErrorDescription> createErrors(HintContext ctx) {
         Context context = new Context(ctx);
@@ -137,7 +139,7 @@ class DeclarativeHintsWorker implements Worker {
                     if (   (   !fix.getOptions().containsKey(DeclarativeHintsOptions.OPTION_ERROR)
                             && !fix.getOptions().containsKey(DeclarativeHintsOptions.OPTION_WARNING))
                         || fix.getOptions().containsKey(DeclarativeHintsOptions.OPTION_REMOVE_FROM_PARENT)) {
-                        editorFixes.add(JavaFixUtilities.removeFromParent(ctx, ctx.getPath()));
+                        editorFixes.add(JavaFixUtilities.removeFromParent(ctx, Bundle.FIX_RemoveFromParent(/*TODO: better short name:*/ctx.getPath().getLeaf().toString()), ctx.getPath()));
                     }
                     //not realizing empty fixes
                 } else {
