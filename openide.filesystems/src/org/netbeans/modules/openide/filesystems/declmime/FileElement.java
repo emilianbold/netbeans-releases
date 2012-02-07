@@ -104,7 +104,7 @@ final class FileElement {
                 return mime;
             }
         } catch (IOException io) {
-            Logger.getLogger(MIMEResolverImpl.class.getName()).log(Level.INFO, null, io);
+            Logger.getLogger(MIMEResolverImpl.class.getName()).log(Level.INFO, "IOException in resolver " + this, io);
         }
         return null;
     }
