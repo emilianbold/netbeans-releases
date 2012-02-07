@@ -50,7 +50,7 @@ import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.icons.LanguageIcons;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.api.java.SourcePackageInfo;
-import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 
 /**
@@ -67,6 +67,10 @@ public class PackageNode extends ContainerNode {
      * A private implementation of package children
      */
     private static class PackageChildren extends SelectorChildren<PackageNode> {
+        public PackageChildren(PackageNode parent) {
+            super(parent);
+        }
+        
         @Override
         protected List<SelectorNode> prepareChildren(PackageNode parent) {
             List<SelectorNode> nodes = new ArrayList<SelectorNode>();
@@ -129,7 +133,7 @@ public class PackageNode extends ContainerNode {
     public PackageNode(SourcePackageInfo pkg, ContainerNode parent) {
         super(pkg != null ? pkg.getSimpleName() : Bundle.LBL_Unknown(), 
               defaultizeName(pkg != null ? pkg.getBinaryName() : Bundle.LBL_Unknown()), 
-              Icons.getIcon(LanguageIcons.PACKAGE), parent);
+              Icons.getIcon(LanguageIcons.PACKAGE), parent, Lookups.singleton(pkg));
         
         boolean flat = false;
         Collection<SourcePackageInfo> subpkgs = pkg.getSubpackages();
@@ -150,7 +154,7 @@ public class PackageNode extends ContainerNode {
 
     @Override
     final protected SelectorChildren getChildren() {
-        return new PackageChildren();
+        return new PackageChildren(this);
     }
 
     @Override

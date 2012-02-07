@@ -68,9 +68,11 @@ import org.netbeans.lib.profiler.utils.formatting.DefaultMethodNameFormatter;
 import org.netbeans.lib.profiler.utils.formatting.MethodNameFormatterFactory;
 import org.netbeans.modules.profiler.api.GestureSubmitter;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
+import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.api.java.SourceMethodInfo;
 import org.netbeans.modules.profiler.selector.api.nodes.*;
 import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
+import org.netbeans.modules.profiler.selector.api.SelectionTreeBuilderType;
 import org.netbeans.modules.profiler.utilities.trees.NodeFilter;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -149,26 +151,16 @@ public class RootSelectorTree extends JPanel {
     public static final String SELECTION_TREE_VIEW_LIST_PROPERTY = "SELECTION_TREE_VIEW_LIST"; // NO18N
     private final Set<SourceCodeSelection> currentSelectionSet = new HashSet<SourceCodeSelection>();
     private ProgressDisplayer progress = ProgressDisplayer.DEFAULT;
-    private NodeFilter<SelectorNode> nodeFilter = DEFAULT_FILTER_INNER;
+//    private NodeFilter<SelectorNode> nodeFilter = DEFAULT_FILTER_INNER;
     private Lookup context = Lookup.EMPTY;
-    private SelectionTreeBuilder.Type builderType = null;
+    private SelectionTreeBuilderType builderType = null;
     private SearchPanel searchPanel = null;
-    
-    public RootSelectorTree(BuilderUsageCalculator usageCalculator) {
-        this(ProgressDisplayer.DEFAULT, DEFAULT_FILTER_INNER);
-    }
+    final private TreePathSearch.ClassIndex ci;
 
-    public RootSelectorTree(ProgressDisplayer pd) {
-        this(pd, DEFAULT_FILTER_INNER);
-    }
-
-    public RootSelectorTree(NodeFilter<SelectorNode> filter) {
-        this(ProgressDisplayer.DEFAULT, filter);
-    }
-
-    public RootSelectorTree(ProgressDisplayer pd, NodeFilter<SelectorNode> filter) {
+    public RootSelectorTree(ProgressDisplayer pd, TreePathSearch.ClassIndex ci) {
         this.progress = pd;
-        this.nodeFilter = filter;
+        this.ci = ci;
+//        this.nodeFilter = filter;
         init();
     }
 
@@ -230,16 +222,16 @@ public class RootSelectorTree extends JPanel {
         return currentSelectionSet.toArray(new SourceCodeSelection[currentSelectionSet.size()]);
     }
 
-    public List<SelectionTreeBuilder.Type> getBuilderTypes() {
+    public List<SelectionTreeBuilderType> getBuilderTypes() {
 //      **** useful for testing *******
 //      return Collections.EMPTY_LIST;
 //      *******************************
         class TypeEntry {
 
-            SelectionTreeBuilder.Type type;
+            SelectionTreeBuilderType type;
             int frequency;
 
-            public TypeEntry(SelectionTreeBuilder.Type type) {
+            public TypeEntry(SelectionTreeBuilderType type) {
                 this.type = type;
                 frequency = 0;
             }
@@ -271,7 +263,7 @@ public class RootSelectorTree extends JPanel {
 
         for (SelectionTreeBuilder builder : context.lookupAll(SelectionTreeBuilder.class)) {
             if (builder.estimatedNodeCount() == -1) continue; // builder can't build the tree for some reason
-            SelectionTreeBuilder.Type type = builder.getType();
+            SelectionTreeBuilderType type = builder.getType();
             TypeEntry te = new TypeEntry(type);
             if (entries.contains(te)) {
                 int index = entries.indexOf(te);
@@ -297,7 +289,7 @@ public class RootSelectorTree extends JPanel {
             }
         });
 
-        List<SelectionTreeBuilder.Type> types = new ArrayList<SelectionTreeBuilder.Type>(entries.size());
+        List<SelectionTreeBuilderType> types = new ArrayList<SelectionTreeBuilderType>(entries.size());
         for (TypeEntry entry : entries) {
             types.add(entry.type);
         }
@@ -305,7 +297,7 @@ public class RootSelectorTree extends JPanel {
         return types;
     }
 
-    public void setBuilderType(SelectionTreeBuilder.Type type) {
+    public void setBuilderType(SelectionTreeBuilderType type) {
         builderType = type;
         refreshTree();
     }
@@ -534,7 +526,7 @@ public class RootSelectorTree extends JPanel {
     private void findNode(final String searchText) {
         GestureSubmitter.logRMSSearch(searchText);
         
-        sCont = new TreePathSearch((TreeNode)tree.getModel().getRoot(), searchText);
+        sCont = new TreePathSearch((TreeNode)tree.getModel().getRoot(), searchText, ci);
         find(false);
     }
     
