@@ -155,8 +155,7 @@ public class EnablingAutoloadLeavesFeatureDisabledTest extends NbTestCase {
             ParseXMLContentTest.class.getResource("TestBundle4.properties")
         );
         ic.add(info);
-        FoDFileSystem.getInstance().refresh();
-        FoDFileSystem.getInstance().waitFinished();
+        FoDLayersProvider.getInstance().refreshForce();
     }
 
 
