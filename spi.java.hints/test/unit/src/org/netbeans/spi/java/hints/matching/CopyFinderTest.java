@@ -67,6 +67,7 @@ import org.netbeans.modules.java.hints.introduce.IntroduceHint;
 import org.netbeans.modules.java.hints.spiimpl.pm.BulkSearch;
 import org.netbeans.modules.java.hints.spiimpl.pm.BulkSearch.BulkPattern;
 import org.netbeans.modules.java.hints.spiimpl.pm.PatternCompiler;
+import org.netbeans.spi.java.hints.matching.CopyFinder.Cancel;
 import org.netbeans.spi.java.hints.matching.CopyFinder.Options;
 import org.netbeans.spi.java.hints.matching.CopyFinder.VariableAssignments;
 import org.openide.cookies.EditorCookie;
@@ -1238,7 +1239,7 @@ public class CopyFinderTest extends NbTestCase {
     }
 
     protected VariableAssignments computeVariables(CompilationInfo info, TreePath searchingFor, TreePath scope, AtomicBoolean cancel, Map<String, TypeMirror> designedTypeHack) {
-        Collection<VariableAssignments> values = CopyFinder.internalComputeDuplicates(info, Collections.singletonList(searchingFor), scope, null, null, cancel, designedTypeHack, Options.ALLOW_VARIABLES_IN_PATTERN).values();
+        Collection<VariableAssignments> values = CopyFinder.internalComputeDuplicates(info, Collections.singletonList(searchingFor), scope, null, null, new AtomicBooleanCancel(cancel), designedTypeHack, Options.ALLOW_VARIABLES_IN_PATTERN).values();
 
         if (values.iterator().hasNext()) {
             return values.iterator().next();
@@ -1248,7 +1249,7 @@ public class CopyFinderTest extends NbTestCase {
     }
 
     protected Map<TreePath, VariableAssignments> computeDuplicates(CompilationInfo info, TreePath searchingFor, TreePath scope, AtomicBoolean cancel, Map<String, TypeMirror> designedTypeHack) {
-        return CopyFinder.internalComputeDuplicates(info, Collections.singletonList(searchingFor), scope, null, null, cancel, designedTypeHack, Options.ALLOW_VARIABLES_IN_PATTERN, Options.ALLOW_GO_DEEPER);
+        return CopyFinder.internalComputeDuplicates(info, Collections.singletonList(searchingFor), scope, null, null, new AtomicBooleanCancel(cancel), designedTypeHack, Options.ALLOW_VARIABLES_IN_PATTERN, Options.ALLOW_GO_DEEPER);
     }
 
     private void performRemappingTest(String code, String remappableVariables, Options... options) throws Exception {
@@ -1296,7 +1297,7 @@ public class CopyFinderTest extends NbTestCase {
 
         opts.addAll(Arrays.asList(options));
 
-        Map<TreePath, VariableAssignments> result = CopyFinder.internalComputeDuplicates(info, searchFor, new TreePath(info.getCompilationUnit()), null, vars, new AtomicBoolean(), Collections.<String, TypeMirror>emptyMap(), opts.toArray(new Options[0]));
+        Map<TreePath, VariableAssignments> result = CopyFinder.internalComputeDuplicates(info, searchFor, new TreePath(info.getCompilationUnit()), null, vars, new AtomicBooleanCancel(), Collections.<String, TypeMirror>emptyMap(), opts.toArray(new Options[0]));
         Set<List<Integer>> realSpans = new HashSet<List<Integer>>();
 
         for (Entry<TreePath, VariableAssignments> e : result.entrySet()) {
@@ -1334,7 +1335,7 @@ public class CopyFinderTest extends NbTestCase {
     }
 
     protected Collection<TreePath> computeDuplicates(TreePath path) {
-        return CopyFinder.internalComputeDuplicates(info, Collections.singletonList(path), new TreePath(info.getCompilationUnit()), null, null, new AtomicBoolean(), null, Options.ALLOW_GO_DEEPER).keySet();
+        return CopyFinder.internalComputeDuplicates(info, Collections.singletonList(path), new TreePath(info.getCompilationUnit()), null, null, new AtomicBooleanCancel(), null, Options.ALLOW_GO_DEEPER).keySet();
     }
 
     public static final class Pair<A, B> {
@@ -1352,6 +1353,25 @@ public class CopyFinderTest extends NbTestCase {
 
         public B getB() {
             return b;
+        }
+
+    }
+
+    private static final class AtomicBooleanCancel implements Cancel {
+
+        private final AtomicBoolean cancel;
+
+        public AtomicBooleanCancel() {
+            this(new AtomicBoolean());
+        }
+
+        public AtomicBooleanCancel(AtomicBoolean cancel) {
+            this.cancel = cancel;
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return cancel.get();
         }
 
     }
