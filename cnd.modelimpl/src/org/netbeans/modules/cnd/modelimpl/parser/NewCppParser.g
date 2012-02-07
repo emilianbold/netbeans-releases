@@ -45,16 +45,12 @@
  * @author Fedor Sergeev
  */
 
-parser grammar CXX_grammar;
+parser grammar NewCppParser;
 
 options {
+    tokenVocab = APTTokenTypes;
     backtrack = false;
-    language = C;
 }
-
-import CXX_tokens;
-//import CXX_lexer;
-
 
 scope QualName {
     int qual;
@@ -67,11 +63,77 @@ scope Declaration {
     int type_specifiers_count;
 }
 
-@includes {
-    #include "grammar_types.h"
+@header {
+package org.netbeans.modules.cnd.modelimpl.parser.generated;
+
+import java.util.HashMap;
 }
 
 @members {
+    public void displayRecognitionError(String[] tokenNames,
+                                        RecognitionException e) {
+        // do nothing
+    }
+
+    class pCXX_grammar {
+    }
+
+    decl_kind blockscope_decl = null;
+    decl_kind tparm_decl = null;
+    decl_kind parm_decl = null;
+    decl_kind field_decl = null;
+    decl_kind object_decl = null;
+
+    Object NULL = null;
+    class decl_kind{
+    }
+    class type_specifier_t{
+    }
+    class name_specifier_t{
+    }
+    class declarator_type_t{
+        public void init() {
+        }
+        public boolean is_function() {
+            return true;
+        }
+        public void set_ident() {
+        }
+        public void set_ref() {
+        }
+        public void set_ptr(Object o1, Object o2) {
+        }
+        public void apply_array(Object o1) {
+        }
+        public void apply_parameters(Object o1) {
+        }
+        public void apply_ptr(Object o1) {
+        }
+        public void set_constructor(Object o1) {
+        }
+
+    }
+    class declaration_specifiers_t{
+        public void init(Object o) {
+        }
+        public void add_type(Object o1, Object o2) {
+        }
+        public void apply_specifier(Object o1, Object o2) {
+        }
+    }
+    class qualifier_t{
+    }
+    class parameters_and_qualifiers_t{
+    }
+    class expression_t{
+    }
+
+    void println(Object o) {
+    }
+    void println(Object o1,Object o2) {
+    }
+
+    pCXX_grammar CTX;
 
     static int IDT_CLASS_NAME=1;
     static int IDT_ENUM_NAME=2;
@@ -89,33 +151,40 @@ scope Declaration {
     boolean type_specifier_already_present(pCXX_grammar ctx)
     {
         boolean result = false;
-        if ($Declaration->size($Declaration) > 0) {
-            result = $Declaration::type_specifiers_count != 0;
-        }
-        trace("type_specifier_already_present()=",result);
+//        if ($Declaration->size($Declaration) > 0) {
+//            result = $Declaration::type_specifiers_count != 0;
+//        }
+//        trace("type_specifier_already_present()=",result);
         return result;
     }
     boolean identifier_is(int x) {
-        trace("identifier_is()=",true);
+//        trace("identifier_is()=",true);
         return true;
     }
     boolean top_level_of_template_arguments() {
-        trace("top_level_of_template_arguments()=",true);
+//        trace("top_level_of_template_arguments()=",true);
         return true;
     }
     boolean operator_is_template() {
-        trace("operator_is_template()=",true);
+//        trace("operator_is_template()=",true);
         return true;
     }
 
-    void qual_setup() {  }
-    void qual_add_colon2() { }
+    void qual_setup() {
+    }
+    void qual_add_colon2() {
+    }
 
     void store_type_specifier(type_specifier_t ts, pCXX_grammar ctx) {
-        $Declaration::type_specifiers_count++;
-        trace("store_type_specifier->", $Declaration::type_specifiers_count);
+//        $Declaration::type_specifiers_count++;
+//        trace("store_type_specifier->", $Declaration::type_specifiers_count);
     }
 }
+
+compilation_unit: translation_unit;
+
+
+/*START*/
 
 // [gram.basic] 
 translation_unit:
@@ -157,25 +226,25 @@ labeled_statement:
     ;
 
 expression_statement:
-        expression? SEMI
+        expression? SEMICOLON
     ;
 
 expression_or_declaration_statement
     :
         (declaration_statement)=> declaration_statement
     |
-        expression SEMI
+        expression SEMICOLON
     ;
 
 
 compound_statement:
-        LCURL statement* RCURL
+        LCURLY statement* RCURLY
     ;
 
 selection_statement:
-        IF LPAR condition RPAR statement ( (ELSE)=> ELSE statement )?
+        IF LPAREN condition RPAREN statement ( (ELSE)=> ELSE statement )?
     |
-        SWITCH LPAR condition RPAR statement
+        SWITCH LPAREN condition RPAREN statement
     ;
 
 /*
@@ -192,11 +261,11 @@ scope Declaration;
     ;
 
 iteration_statement:
-        WHILE LPAR condition RPAR statement
+        WHILE LPAREN condition RPAREN statement
     |
-        DO statement WHILE LPAR expression RPAR SEMI
+        DO statement WHILE LPAREN expression RPAREN SEMICOLON
     |
-        FOR LPAR for_init_statement condition? SEMI expression? RPAR statement
+        FOR LPAREN for_init_statement condition? SEMICOLON expression? RPAREN statement
     ;
 /*
  * The same expression-declaration ambiguity as in statement rule.
@@ -209,13 +278,13 @@ for_init_statement:
 
     ;
 jump_statement:
-        BREAK SEMI
+        BREAK SEMICOLON
     |
-        CONTINUE SEMI
+        CONTINUE SEMICOLON
     |
-        RETURN expression? SEMI
+        RETURN expression? SEMICOLON
     |
-        GOTO IDENT SEMI
+        GOTO IDENT SEMICOLON
     ;
 
 /*
@@ -333,7 +402,7 @@ lookup_nested_name_specifier:
  * original rule:
 
 simle_declaration
-        decl_specifier* (init_declarator (COMMA init_declarator)*)* SEMI
+        decl_specifier* (init_declarator (COMMA init_declarator)*)* SEMICOLON
     ;
 
  * construtor_declarator introduced into init_declarator part to resolve ambiguity
@@ -346,7 +415,7 @@ scope Declaration;
     :
         decl_specifier*
         (
-            SEMI
+            SEMICOLON
         |
             (
                 (constructor_declarator)=> constructor_declarator
@@ -354,7 +423,7 @@ scope Declaration;
                 init_declarator
             )
             // this is a continuation of init_declarator_list after constructor_declarator/init_declarator
-            (COMMA init_declarator)* SEMI
+            (COMMA init_declarator)* SEMICOLON
         )
     ;
 
@@ -370,13 +439,13 @@ scope Declaration;
     :
         decl_specifier*
         (
-            SEMI
+            SEMICOLON
         |
             (constructor_declarator)=>
                 constructor_declarator
                 (
                     // this is a continuation of init_declarator_list after constructor_declarator
-                    ( COMMA init_declarator )* SEMI
+                    ( COMMA init_declarator )* SEMICOLON
                 |
                     function_definition_after_declarator
                 )
@@ -388,7 +457,7 @@ scope Declaration;
                     function_definition_after_declarator
             |
                 // this is a continuation of init_declarator_list after greedy_declarator
-                initializer? ( COMMA init_declarator )* SEMI
+                initializer? ( COMMA init_declarator )* SEMICOLON
             )
         )
     ;
@@ -460,12 +529,12 @@ type_specifier returns [type_specifier_t ts]
         (CLASS COLON2)=>
             elaborated_type_specifier
     |
-        // thus we need to make serious lookahead here to catch LCURL
-        (class_head LCURL)=>
+        // thus we need to make serious lookahead here to catch LCURLY
+        (class_head LCURLY)=>
             class_specifier
     |
         // enum_specifier start sequence is simple
-        (ENUM IDENT? LCURL)=>
+        (ENUM IDENT? LCURLY)=>
             enum_specifier
     |
         simple_type_specifier
@@ -576,7 +645,7 @@ enum_name:
  *
  */
 enum_specifier:
-        ENUM IDENT? LCURL enumerator_list? RCURL
+        ENUM IDENT? LCURLY enumerator_list? RCURLY
     ;
 enumerator_list:
         enumerator_definition (COMMA enumerator_definition)* 
@@ -621,20 +690,20 @@ named_namespace_definition:
         extension_namespace_definition
     ;
 original_namespace_definition:
-        NAMESPACE IDENT LCURL namespace_body RCURL
+        NAMESPACE IDENT LCURLY namespace_body RCURLY
     ;
 extension_namespace_definition:
-        NAMESPACE original_namespace_name LCURL namespace_body RCURL
+        NAMESPACE original_namespace_name LCURLY namespace_body RCURLY
     ;
 
 unnamed_namespace_definition:
-        NAMESPACE LCURL namespace_body RCURL
+        NAMESPACE LCURLY namespace_body RCURLY
     ;
 
  * This is all unnecessarily complicated. We can easily handle it by one single rule:
  */
 namespace_definition:
-        NAMESPACE IDENT? LCURL namespace_body RCURL
+        NAMESPACE IDENT? LCURLY namespace_body RCURLY
     ;
 
 namespace_body:
@@ -646,7 +715,7 @@ namespace_alias:
     ;
 
 namespace_alias_definition:
-        NAMESPACE IDENT ASG qualified_namespace_specifier SEMI
+        NAMESPACE IDENT ASG qualified_namespace_specifier SEMICOLON
     ;
 
 qualified_namespace_specifier:
@@ -657,9 +726,9 @@ qualified_namespace_specifier:
  * original rule:
 
 using-declaration:
-        USING TYPENAME? COLON2? nested_name_specifier unqualified_id SEMI
+        USING TYPENAME? COLON2? nested_name_specifier unqualified_id SEMICOLON
      |
-        USING COLON2 unqualified_id SEMI
+        USING COLON2 unqualified_id SEMICOLON
      ;
 
  * Ambiguity in COLON2 between two alternatives resolved by collapsing them into one.
@@ -667,20 +736,20 @@ using-declaration:
  * It should be ruled out after the parsing.
  */
 using_declaration
-     : USING TYPENAME? COLON2? nested_name_specifier? unqualified_id SEMI
+     : USING TYPENAME? COLON2? nested_name_specifier? unqualified_id SEMICOLON
     ;
 
 using_directive:
-        USING NAMESPACE COLON2? nested_name_specifier? IDENT SEMI
+        USING NAMESPACE COLON2? nested_name_specifier? IDENT SEMICOLON
     ;
 
 
 asm_definition:
-        ASM LPAR STRINGCONST RPAR SEMI
+        ASM LPAREN STRINGCONST RPAREN SEMICOLON
     ;
 
 linkage_specification [decl_kind kind]:
-        EXTERN STRINGCONST LCURL declaration[kind] * RCURL
+        EXTERN STRINGCONST LCURLY declaration[kind] * RCURLY
     |
         EXTERN STRINGCONST declaration[kind]
     ;
@@ -720,7 +789,7 @@ noptr_declarator:
     |
         noptr_declarator LBRACK constant_expression? RBRACK
     |
-        LPAR ptr_declarator RPAR
+        LPAREN ptr_declarator RPAREN
     ;
  * Ambiguity on nested_name qualifier is caused by ptr_operator vs declarator_id (of direct declarator).
  * It qualifies either STAR (for ptr_operator) or type_name (for declarator_id).
@@ -748,7 +817,7 @@ noptr_declarator returns [declarator_type_t type]
             declarator_id
                 {{ type = $declarator_id.type; }}
         |
-            LPAR declarator RPAR
+            LPAREN declarator RPAREN
                 {{ type = $declarator.type; }}
         ) // continued
         (
@@ -814,8 +883,8 @@ noptr_abstract_declarator returns [declarator_type_t type]
     :
         ( parameters_and_qualifiers | LBRACK constant_expression? RBRACK )+
     |
-        (LPAR abstract_declarator RPAR)=>
-            LPAR abstract_declarator RPAR ( parameters_and_qualifiers | LBRACK constant_expression? RBRACK )*
+        (LPAREN abstract_declarator RPAREN)=>
+            LPAREN abstract_declarator RPAREN ( parameters_and_qualifiers | LBRACK constant_expression? RBRACK )*
     ;
 
 universal_declarator returns [declarator_type_t type]
@@ -847,7 +916,7 @@ greedy_nonptr_declarator returns [declarator_type_t type]
             declarator_id
                 {{ type = $declarator_id.type; }}
         |
-            LPAR greedy_declarator RPAR
+            LPAREN greedy_declarator RPAREN
                 {{ type = $greedy_declarator.type; }}
         ) // continued
         (
@@ -869,13 +938,13 @@ ptr_operator returns [ declarator_type_t type ]
             {{ type.set_ref(); }}
     |
         COLON2? nested_name_specifier STAR cv_qualifier*
-            {{ type.set_ptr(& $nested_name_specifier.namequal, $cv_qualifier.qual); }}
+/*DIFF*/ //           {{ type.set_ptr(& $nested_name_specifier.namequal, $cv_qualifier.qual); }}
     ;
 
 cv_qualifier returns [ qualifier_t qual ]:
-        CONST {{ qual = CONST; }}
+/*DIFF*/        CONST //{{ qual = CONST; }}
     |
-        VOLATILE {{ qual = VOLATILE; }}
+/*DIFF*/        VOLATILE //{{ qual = VOLATILE; }}
     ;
 
 /*
@@ -903,7 +972,7 @@ type_id:
 parameters_and_qualifiers returns [ parameters_and_qualifiers_t pq ]
     :
 
-        LPAR parameter_declaration_clause RPAR cv_qualifier* exception_specification?
+        LPAREN parameter_declaration_clause RPAREN cv_qualifier* exception_specification?
     ;
 
 parameter_declaration_clause
@@ -974,14 +1043,14 @@ function_body:
 initializer:
         ASG initializer_clause 
     |
-        LPAR expression_list RPAR 
+        LPAREN expression_list RPAREN 
     ;
 initializer_clause:
         assignment_expression 
     |
-        LCURL initializer_list COMMA? RCURL
+        LCURLY initializer_list COMMA? RCURLY
     |
-        LCURL RCURL
+        LCURLY RCURLY
     ;
 initializer_list:
         initializer_clause (COMMA initializer_clause )*
@@ -993,7 +1062,7 @@ class_name:
     ;
 
 class_specifier:
-        class_head LCURL member_specification? RCURL
+        class_head LCURLY member_specification? RCURLY
     ;
 
 /*
@@ -1036,11 +1105,11 @@ member_specification :
  * original rule (part that was rewritten)
 
  member_declaration:
-        decl_specifier* member_declarator_list? SEMI
+        decl_specifier* member_declarator_list? SEMICOLON
     |
-        function_definition SEMI?
+        function_definition SEMICOLON?
     |
-        COLON2? nested_name_specifier TEMPLATE? unqualified_id SEMI
+        COLON2? nested_name_specifier TEMPLATE? unqualified_id SEMICOLON
     |
 
 member_declarator:
@@ -1050,7 +1119,7 @@ member_declarator:
     ;
 
  *
- * (optional SEMI? deleted after function_defition, as the first alternative takes care of it already)
+ * (optional SEMICOLON? deleted after function_defition, as the first alternative takes care of it already)
  * Conflict on decl_specifier between first alternative and second one (function_definition) resolved
  * by factorizing on common parts of the first member_declarator (decl_specifier* declarator).
  * It was pretty involved, and besides member_declaration also affecting 3 other rules.
@@ -1066,13 +1135,13 @@ scope Declaration;
         decl_specifier*
         (
             (IDENT? COLON)=>
-                member_bitfield_declarator ( COMMA member_declarator )* SEMI
+                member_bitfield_declarator ( COMMA member_declarator )* SEMICOLON
         |
             (constructor_declarator)=>
                 constructor_declarator
                 (
                     // this was member_declarator_list
-                    ( COMMA member_declarator )* SEMI
+                    ( COMMA member_declarator )* SEMICOLON
                 |
                     function_definition_after_declarator
                 )
@@ -1083,14 +1152,14 @@ scope Declaration;
                     function_definition_after_declarator
             |
                 // this was member_declarator_list
-                constant_initializer? ( COMMA member_declarator )* SEMI
+                constant_initializer? ( COMMA member_declarator )* SEMICOLON
             )
         |
-            SEMI
+            SEMICOLON
         )
     |
         /* this is likely to be covered by decl_specifier/declarator part of member_declarator
-            COLON2? nested_name_specifier TEMPLATE? unqualified_id SEMI
+            COLON2? nested_name_specifier TEMPLATE? unqualified_id SEMICOLON
     |
         */
 
@@ -1187,7 +1256,7 @@ mem_initializer_list:
     ;
 
 mem_initializer:
-        mem_initializer_id LPAR expression_list? RPAR 
+        mem_initializer_id LPAREN expression_list? RPAREN 
     ;
 
 /*
@@ -1220,7 +1289,7 @@ operator_id returns [int id]:
         NOT | ASG | LSS | GTR | PLUS_ASG | MINUS_ASG | MUL_ASG | DIV_ASG | MOD_ASG |
         XOR_ASG | AND_ASG | OR_ASG | LSHIFT | RSHIFT | RSHIFT_ASG | LSHIFT_ASG | EQ | NEQ |
         LEQ | GEQ | AND | OR | PLUSPLUS | MINUSMINUS | COMMA | ARROWSTAR | ARROW | 
-        LPAR RPAR | LBRACK RBRACK
+        LPAREN RPAREN | LBRACK RBRACK
     ;
 
 // [gram.temp] 
@@ -1333,7 +1402,7 @@ function_try_block:
     ;
 
 handler:
-        CATCH LPAR exception_declaration RPAR compound_statement 
+        CATCH LPAREN exception_declaration RPAREN compound_statement 
     ;
 
 /*
@@ -1360,7 +1429,7 @@ throw_expression:
         THROW assignment_expression? 
     ;
 exception_specification:
-        THROW LPAR type_id_list? RPAR 
+        THROW LPAREN type_id_list? RPAREN 
     ;
 type_id_list:
         type_id ( COMMA type_id )*
@@ -1373,7 +1442,7 @@ primary_expression:
     |
         THIS
     |
-        LPAR expression RPAR 
+        LPAREN expression RPAREN 
     |
         id_expression 
     ;
@@ -1385,13 +1454,13 @@ postfix_expression:
     |
         postfix_expression LBRACK expression RBRACK
     |
-        postfix_expression LPAR expression_list? RPAR
+        postfix_expression LPAREN expression_list? RPAREN
     |
-        simple_type_specifier LPAR expression_list? RPAR
+        simple_type_specifier LPAREN expression_list? RPAREN
     |
-        TYPENAME COLON2? nested_name_specifier IDENT LPAR expression_list? RPAR
+        TYPENAME COLON2? nested_name_specifier IDENT LPAREN expression_list? RPAREN
     |
-        TYPENAME COLON2? nested_name_specifier TEMPLATE? template_id LPAR expression_list? RPAR
+        TYPENAME COLON2? nested_name_specifier TEMPLATE? template_id LPAREN expression_list? RPAREN
     |
         postfix_expression DOT TEMPLATE? id_expression
     |
@@ -1405,17 +1474,17 @@ postfix_expression:
     |
         postfix_expression MINUSMINUS
     |
-        dynamic_cast LSS type_id GTR LPAR expression RPAR
+        dynamic_cast LSS type_id GTR LPAREN expression RPAREN
     |
-        static_cast LSS type_id GTR LPAR expression RPAR
+        static_cast LSS type_id GTR LPAREN expression RPAREN
     |
-        reinterpret_cast LSS type_id GTR LPAR expression RPAR
+        reinterpret_cast LSS type_id GTR LPAREN expression RPAREN
     |
-        const_cast LSS type_id GTR LPAR expression RPAR
+        const_cast LSS type_id GTR LPAREN expression RPAREN
     |
-        typeid LPAR expression RPAR
+        typeid LPAREN expression RPAREN
     |
-        typeid LPAR type_id RPAR
+        typeid LPAREN type_id RPAREN
     ;
 /*
  * Left recursion removed by moving non-recursive into basic_postfix_expression and applying "recursive"
@@ -1430,7 +1499,7 @@ postfix_expression:
         (
             LBRACK expression RBRACK
         |
-            LPAR expression_list? RPAR
+            LPAREN expression_list? RPAREN
         |
             DOT
             (
@@ -1455,26 +1524,26 @@ postfix_expression:
 basic_postfix_expression:
         primary_expression
     |
-        simple_type_specifier LPAR expression_list? RPAR
+        simple_type_specifier LPAREN expression_list? RPAREN
     |
         TYPENAME COLON2? nested_name_specifier (
-            IDENT LPAR expression_list? RPAR
+            IDENT LPAREN expression_list? RPAREN
         |
-            TEMPLATE? simple_template_id LPAR expression_list? RPAR
+            TEMPLATE? simple_template_id LPAREN expression_list? RPAREN
         )
     |
-        DYNAMIC_CAST LSS type_id GTR LPAR expression RPAR
+        DYNAMIC_CAST LSS type_id GTR LPAREN expression RPAREN
     |
-        STATIC_CAST LSS type_id GTR LPAR expression RPAR
+        STATIC_CAST LSS type_id GTR LPAREN expression RPAREN
     |
-        REINTERPRET_CAST LSS type_id GTR LPAR expression RPAR
+        REINTERPRET_CAST LSS type_id GTR LPAREN expression RPAREN
     |
-        CONST_CAST LSS type_id GTR LPAR expression RPAR
+        CONST_CAST LSS type_id GTR LPAREN expression RPAREN
     |
         // AMB
         // expression and type_id conflict in "simple_type_specifier"
         // rule up type_id, as it should be easier to check
-        TYPEID LPAR ( (type_id)=> type_id |  expression ) RPAR
+        TYPEID LPAREN ( (type_id)=> type_id |  expression ) RPAREN
     ;
 
 expression_list:
@@ -1536,8 +1605,8 @@ unary_expression:
         SIZEOF (
             unary_expression
         |
-            (LPAR type_id RPAR)=>
-                LPAR type_id RPAR
+            (LPAREN type_id RPAREN)=>
+                LPAREN type_id RPAREN
         )
     ;
 
@@ -1554,7 +1623,7 @@ unary_operator_but_not_TILDE:
 new_expression:
         COLON2? NEW new_placement? new_type_id new_initializer? 
     |
-        COLON2? NEW new_placement? LPAR type_id RPAR new_initializer? 
+        COLON2? NEW new_placement? LPAREN type_id RPAREN new_initializer? 
     ;
 
  *
@@ -1564,17 +1633,17 @@ new_expression:
 new_expression:
         COLON2? NEW
         (
-            new_placement ( new_type_id | LPAR type_id RPAR )
+            new_placement ( new_type_id | LPAREN type_id RPAREN )
         |
-            (LPAR type_id RPAR)=>
-                LPAR type_id RPAR
+            (LPAREN type_id RPAREN)=>
+                LPAREN type_id RPAREN
         |
             new_type_id
         ) new_initializer?
     ;
 
 new_placement:
-        LPAR expression_list RPAR 
+        LPAREN expression_list RPAREN 
     ;
 
 /*
@@ -1605,7 +1674,7 @@ direct_new_declarator:
     ;
 
 new_initializer:
-        LPAR expression_list? RPAR
+        LPAREN expression_list? RPAREN
     ;
 delete_expression:
         COLON2? TOK_DELETE cast_expression
@@ -1614,8 +1683,8 @@ delete_expression:
     ;
 
 cast_expression :
-        (LPAR type_id RPAR)=>
-            LPAR type_id RPAR cast_expression
+        (LPAREN type_id RPAREN)=>
+            LPAREN type_id RPAREN cast_expression
     |
         unary_expression
     ;
@@ -1813,9 +1882,9 @@ scope {
                     }
                 }}
         |
-            LPAR {{ npar++; }}
+            LPAREN {{ npar++; }}
         |
-            RPAR {{ if (npar > 0) npar--; }}
+            RPAREN {{ if (npar > 0) npar--; }}
         |
             LBRACK {{ nbrac++; }}
         |
@@ -1827,11 +1896,11 @@ scope {
 
 skip_balanced_Curl
             :
-            LCURL
+            LCURLY
             (options {greedy=false;}:
                 skip_balanced_Curl | .
             )*
-            RCURL
+            RCURLY
         ;
 
 // $>
@@ -1858,9 +1927,9 @@ skip_balanced_Curl
 // THIS: 'this';
 // TYPENAME: 'typename';
 // TYPEID: 'typeid';
-// LPAR: '('; RPAR: ')';
+// LPAREN: '('; RPAREN: ')';
 // LBRACK: '['; RBRACK: ']';
-// LCURL: '{'; RCURL: '}';
+// LCURLY: '{'; RCURLY: '}';
 // LSS: '<'; GTR: '>';
 
 // CHAR: 'char';
@@ -1906,7 +1975,7 @@ skip_balanced_Curl
 // PRIVATE: 'private';
 // PROTECTED: 'protected';
 // PUBLIC: 'public';
-// SEMI: ';';
+// SEMICOLON: ';';
 
 // TRY: 'try'; CATCH: 'catch'; THROW: 'throw';
 
@@ -2028,3 +2097,5 @@ skip_balanced_Curl
 //     |	'a'..'z'
 //     |	'_'
 //     ;
+
+/*END*/
