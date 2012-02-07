@@ -116,7 +116,7 @@ public final class SceneBuilderFXMLOpener extends FXMLOpener {
     private String getExecutablePath() {
         Home home = settings.getSelectedHome();
         if (home != null && home.isValid()) {
-            String postfix = ""; // NOI18N
+            String postfix = ".sh"; // NOI18N
             if (Utilities.isWindows()) {
                 postfix = ".exe"; // NOI18N
             }
