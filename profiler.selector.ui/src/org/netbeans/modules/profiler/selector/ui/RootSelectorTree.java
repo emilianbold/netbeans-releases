@@ -74,6 +74,7 @@ import org.netbeans.modules.profiler.selector.api.nodes.*;
 import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
 import org.netbeans.modules.profiler.selector.api.SelectionTreeBuilderType;
 import org.netbeans.modules.profiler.utilities.trees.NodeFilter;
+import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -156,6 +157,7 @@ public class RootSelectorTree extends JPanel {
     private SelectionTreeBuilderType builderType = null;
     private SearchPanel searchPanel = null;
     final private TreePathSearch.ClassIndex ci;
+    private Cancellable cancellHandler;
 
     public RootSelectorTree(ProgressDisplayer pd, TreePathSearch.ClassIndex ci) {
         this.progress = pd;
@@ -169,11 +171,17 @@ public class RootSelectorTree extends JPanel {
 
         firePropertyChange(SELECTION_TREE_VIEW_LIST_PROPERTY, null, null);
     }
+    
+    public void setCancelHandler(Cancellable cancellable) {
+        this.cancellHandler = cancellable;
+    }
 
+    private AtomicBoolean isActive = new AtomicBoolean(true);
     public void setSelection(final SourceCodeSelection[] selection) {
         new SwingWorker(false) {
             
             protected void doInBackground() {
+                isActive.set(true);
                 removeSelection(getSelection());
                 applySelection(selection);
             }
@@ -189,7 +197,16 @@ public class RootSelectorTree extends JPanel {
                         cl.countDown();
                     }
                 });
-                progress.showProgress(Bundle.MSG_ApplyingSelection());
+                progress.showProgress(Bundle.MSG_ApplyingSelection(), new ProgressDisplayer.ProgressController() {
+                    @Override
+                    public boolean cancel() {
+                        isActive.set(false);
+                        if (cancellHandler != null) {
+                            cancellHandler.cancel();
+                        }
+                        return true;
+                    }
+                });
                 
                 try {
                     cl.await();
@@ -308,6 +325,7 @@ public class RootSelectorTree extends JPanel {
      * Should be called right before trying to show the selector tree
      */
     public void reset() {
+        isActive.set(true);
         tree.setModel(DEFAULTMODEL);
         currentSelectionSet.clear();
         context = Lookup.EMPTY;
@@ -611,12 +629,15 @@ public class RootSelectorTree extends JPanel {
             }
         }
     }
-
+    
     private void applySelection(SourceCodeSelection[] selections) {
+        if (!isActive.get()) return;
+        
         TreeNode root = (TreeNode) tree.getModel().getRoot();
         Enumeration childrenEnum = root.children();
 
         while (childrenEnum.hasMoreElements()) {
+            if (!isActive.get()) return;
             Object child = childrenEnum.nextElement();
 
             if (child instanceof SelectorNode) {
@@ -630,6 +651,7 @@ public class RootSelectorTree extends JPanel {
     }
 
     private void applySelection(SelectorNode node, SourceCodeSelection selection) {
+        if (!isActive.get()) return;
         SourceCodeSelection signature = node.getSignature();
 
         if (signature != null) {
@@ -647,6 +669,7 @@ public class RootSelectorTree extends JPanel {
         Enumeration childrenEnum = node.children();
 
         while (childrenEnum.hasMoreElements()) {
+            if (!isActive.get()) return;
             Object child = childrenEnum.nextElement();
 
             if (child instanceof SelectorNode) {
@@ -765,17 +788,18 @@ public class RootSelectorTree extends JPanel {
     }
 
     private void applyCurrentSelection() {
-        TreeNode root = (TreeNode) tree.getModel().getRoot();
-        Enumeration childrenEnum = root.children();
-
-        while (childrenEnum.hasMoreElements()) {
-            Object child = childrenEnum.nextElement();
-
-            if (child instanceof SelectorNode) {
-                for (SourceCodeSelection selection : currentSelectionSet) {
-                    applySelection((SelectorNode) child, selection);
-                }
-            }
-        }
+        setSelection(currentSelectionSet.toArray(new SourceCodeSelection[currentSelectionSet.size()]));
+//        TreeNode root = (TreeNode) tree.getModel().getRoot();
+//        Enumeration childrenEnum = root.children();
+//
+//        while (childrenEnum.hasMoreElements()) {
+//            Object child = childrenEnum.nextElement();
+//
+//            if (child instanceof SelectorNode) {
+//                for (SourceCodeSelection selection : currentSelectionSet) {
+//                    applySelection((SelectorNode) child, selection);
+//                }
+//            }
+//        }
     }
 }
