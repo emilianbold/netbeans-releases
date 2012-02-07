@@ -2375,30 +2375,19 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 				  MIRecord miRecord,
 				  int level) {
         MITList results = miRecord.results();
-        String count = results.valueOf("numchild").asConst().value(); // NOI18N
         MITList children_list = (MITList) results.valueOf("children"); // NOI18N
-
-        int size = Integer.parseInt(count);
 
         // iterate through children list
 	List<GdbVariable> children = new ArrayList<GdbVariable>();
-        for (int vx = 0; vx < size; vx++) {
-            MIResult childresult = (MIResult) children_list.get(vx);
+        for (MITListItem childresult : children_list) {
+            final MITList childResList = ((MIResult)childresult).value().asTuple();
 
             // full qualified name,
             // e.g. "var31.public.proc.private.p_proc_heap"
-            String qname = childresult.value().asTuple().valueOf("name").asConst().value(); // NOI18N
+            String qname = childResList.valueOf("name").asConst().value(); // NOI18N
             // display name,
             // e.g. "p_proc_heap"
-            String exp = childresult.value().asTuple().valueOf("exp").asConst().value(); // NOI18N
-            String numchild = childresult.value().asTuple().valueOf("numchild").asConst().value(); // NOI18N
-            String value = childresult.value().asTuple().valueOf("value").asConst().value(); // NOI18N
-            MIValue mitype = childresult.value().asTuple().valueOf("type"); // NOI18N
-
-            String type = "";
-            if (mitype != null) {
-                type = mitype.asConst().value();
-            }
+            String exp = childResList.valueOf("exp").asConst().value(); // NOI18N
 
             if (exp.equals("private") || exp.equals("public") || // NOI18N
 					exp.equals("protected")) { // NOI18N
@@ -2413,11 +2402,14 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 }
                 GdbVariable childvar = new GdbVariable(this, parent.getUpdater(),
                         parent, exp, null, null, parent.isWatch());
+                
+                String value = childResList.valueOf("value").asConst().value(); // NOI18N
+                
                 value = processValue(value);
                 childvar.setAsText(value);
-                childvar.setType(type);
-                childvar.setMIName(qname);
-                childvar.setNumChild(numchild);
+                
+                fillVariableFields(childvar, childResList);
+                
                 variableBag.add(childvar);
 		children.add(childvar);
                 attrMIVar(childvar, false);
@@ -2582,26 +2574,43 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 };
         gdb.sendCommand(cmd);
     }
-
-    private void interpVar(GdbVariable v, MIRecord var) {
-        MITList results = var.results();
+    
+    private String fillVariableFields(GdbVariable v, MITList results) {
         String mi_name = results.valueOf("name").asConst().value(); // NOI18N
-        String type = results.valueOf("type").asConst().value(); // NOI18N
-        String numchild = results.valueOf("numchild").asConst().value(); // NOI18N
+        v.setMIName(mi_name);
         
+        String type = "";
+        MIValue mitype = results.valueOf("type"); // NOI18N
+        if (mitype != null) {
+            type = mitype.asConst().value();
+        }
+        v.setType(type);
+        
+        String numchild = results.valueOf("numchild").asConst().value(); // NOI18N
         MIValue dynamicVal = results.valueOf("dynamic"); //NOI18N
         if (dynamicVal != null) {
             boolean dynamic = "1".equals(dynamicVal.asConst().value()); // NOI18N
             v.setDynamic(dynamic);
             MIValue hasMoreVal = results.valueOf("has_more"); //NOI18N
+            MIValue hintVal = results.valueOf("displayhint"); //NOI18N
             if (hasMoreVal != null) {
                 numchild = hasMoreVal.asConst().value(); // NOI18N
+            } else if (hintVal != null) {
+                if ("array".equals(hintVal.asConst().value()) || "map".equals(hintVal.asConst().value())) { // NOI18N
+                    numchild = "1"; // NOI18N
+                }
+            } else {
+                numchild = "1"; // NOI18N
             }
+                  
         }
-
-        v.setMIName(mi_name);
-        v.setType(type);
         v.setNumChild(numchild); // also set children if there is any
+        
+        return mi_name;
+    }
+
+    private void interpVar(GdbVariable v, MIRecord var) {
+        String mi_name = fillVariableFields(v, var.results());
         
 	Variable wv = variableBag.get(mi_name, true, VariableBag.FROM_BOTH);
         if (wv == null) {
