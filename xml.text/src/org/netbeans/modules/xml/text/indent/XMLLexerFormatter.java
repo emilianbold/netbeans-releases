@@ -48,10 +48,10 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.xml.lexer.XMLTokenId;
@@ -59,8 +59,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.editor.structure.formatting.JoinedTokenSequence;
-import org.netbeans.modules.editor.structure.formatting.TagBasedLexerFormatter;
 import org.netbeans.modules.xml.text.folding.TokenElement;
 import org.netbeans.modules.xml.text.folding.TokenElement.TokenType;
 import org.netbeans.modules.xml.text.folding.XmlFoldManager;
@@ -69,7 +67,9 @@ import org.netbeans.modules.xml.text.folding.XmlFoldManager;
  * New XML formatter based on Lexer APIs.
  * @author Samaresh (Samaresh.Panda@Sun.Com)
  */
-public class XMLLexerFormatter extends TagBasedLexerFormatter {
+public class XMLLexerFormatter {
+    
+    private static final Logger logger = Logger.getLogger(XMLLexerFormatter.class.getName());
 
     private static final String TAG_OPENING_PREFIX = "<"; //NOI18N
     private static final String TAG_CLOSING_PREFIX = "</"; //NOI18N
@@ -81,146 +81,11 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
         this.languagePath = languagePath;
     }
 
-    @Override
-    protected boolean isOpeningTag(JoinedTokenSequence jts, int tagTokenOffset) {
-        Token token = getTokenAtOffset(jts, tagTokenOffset);
-        return token != null
-                && token.id() == XMLTokenId.TAG
-                && token.text().toString().startsWith(TAG_OPENING_PREFIX)
-                && !token.text().toString().startsWith(TAG_CLOSING_PREFIX);
-    }
-
-    @Override
-    protected boolean isClosingTag(JoinedTokenSequence jts, int tagTokenOffset) {
-        Token token = getTokenAtOffset(jts, tagTokenOffset);
-        return token != null
-                && token.id() == XMLTokenId.TAG
-                && token.text().toString().startsWith(TAG_CLOSING_PREFIX);
-    }
-
-    @Override
-    protected boolean areTagNamesEqual(String tagName1, String tagName2) {
-        return tagName1.equalsIgnoreCase(tagName2);
-    }
-
-    @Override
-    protected boolean isClosingTagRequired(BaseDocument doc, String tagName) {
-        return true;
-    }
-
-    @Override
-    protected boolean isUnformattableToken(JoinedTokenSequence jts, int tagTokenOffset) {
-        Token token = getTokenAtOffset(jts, tagTokenOffset);
-
-        if (token.id() == XMLTokenId.BLOCK_COMMENT || token.id() == XMLTokenId.CDATA_SECTION) {
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    protected boolean isUnformattableTag(String tag) {
-        return false;
-    }
-
-    @Override
-    protected boolean isTopLevelLanguage(BaseDocument doc) {
-        return true;
-    }
-
     protected LanguagePath supportedLanguagePath() {
         return languagePath;
     }
 
-    @Override
-    protected String extractTagName(JoinedTokenSequence jts, int tagTokenOffset) {
-        Token token = getTokenAtOffset(jts, tagTokenOffset);
-        String tagImage = token.text().toString();
-        int startIndex = -1;
-
-        if (isOpeningTag(jts, tagTokenOffset)) {
-            startIndex = TAG_OPENING_PREFIX.length();
-        } else if (isClosingTag(jts, tagTokenOffset)) {
-            startIndex = TAG_CLOSING_PREFIX.length();
-        }
-
-        if (startIndex >= 0) {
-            String tagName = tagImage.substring(startIndex);
-            return tagName;
-        }
-        return null;
-    }
-
-    @Override
-    protected int getTagEndingAtPosition(JoinedTokenSequence jts,
-            int position) throws BadLocationException {
-        if (position >= 0) {
-            int originalOffset = jts.offset();
-            jts.move(position);
-            jts.moveNext();
-            Token token = jts.token();
-
-            if (token.id() == XMLTokenId.TAG &&
-                    !token.text().toString().endsWith("/>")) { //NOI18N
-
-                while (jts.movePrevious()) {
-                    int tokenOffset = jts.offset();
-
-                    if (isOpeningTag(jts, tokenOffset) || isClosingTag(jts, tokenOffset)) {
-                        int r = jts.offset();
-                        jts.move(originalOffset);
-                        jts.moveNext();
-                        return r;
-                    }
-                }
-            }
-            jts.move(originalOffset);
-            jts.moveNext();
-        }
-        return -1;
-    }
-
-    @Override
-    protected int getTagEndOffset(JoinedTokenSequence jts, int tagStartOffset) {
-        int originalOffset = jts.offset();
-        jts.move(tagStartOffset);
-        jts.moveNext();
-        jts.moveNext();
-        boolean thereAreMoreTokens = true;
-
-        while (thereAreMoreTokens && jts.token().id() != XMLTokenId.TAG) {
-            thereAreMoreTokens &= jts.moveNext();
-        }
-
-        int r = jts.offset() + jts.token().length();
-        jts.move(originalOffset);
-        jts.moveNext();
-        return thereAreMoreTokens ? r : -1;
-    }
-
-    @Override
-    protected int getOpeningSymbolOffset(JoinedTokenSequence jts, int tagTokenOffset) {
-        int originalOffset = jts.offset();
-        jts.move(tagTokenOffset);
-        boolean thereAreMoreTokens = true;
-
-        do {
-            thereAreMoreTokens = jts.movePrevious();
-        } while (thereAreMoreTokens && jts.token().id() != XMLTokenId.TAG);
-
-        if (thereAreMoreTokens) {
-            int r = jts.offset();
-            jts.move(originalOffset);
-            jts.moveNext();
-            return r;
-        }
-        jts.move(originalOffset);
-        jts.moveNext();
-        return -1;
-    }
-
 // # 170343
-    @Override
     public void reformat(Context context, final int startOffset, final int endOffset)
             throws BadLocationException {
         final BaseDocument doc = (BaseDocument) context.document();
@@ -299,7 +164,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                 noNewline = true;
                 // fall through
             default:
-                spaces = tag.getIndentLevel() * spacesPerTab;
+                spaces = tag.getIndentLevel();
                 break;
         }
         String newIndentText = IndentUtils.createIndentString(doc, spaces);
@@ -309,8 +174,12 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
         if(noNewline || temp.indexOf("\n") != -1){
             int i = Utilities.getRowFirstNonWhite(doc, so);
             int rowStart = Utilities.getRowStart(doc, so);
-            doc.insertString(so, newIndentText, null);
-            doc.remove(rowStart, i - rowStart);
+            
+            String currentIndent = doc.getText(rowStart, i - rowStart);
+            if (!currentIndent.equals(newIndentText)) {
+                doc.insertString(so, newIndentText, null);
+                doc.remove(rowStart, i - rowStart);
+            }
         }
         else {
             doc.insertString(so, "\n" + newIndentText, null);
@@ -344,7 +213,8 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
         // argument is xml:space
         boolean settingSpaceValue = false;
 
-        int indentLevel = -1;
+        // this is that 1st PI or tag will increment the level to 0
+        int indentLevel = -spacesPerTab;
         basedoc.readLock();
         try {
             TokenHierarchy tokenHierarchy = TokenHierarchy.get(basedoc);
@@ -363,6 +233,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
             int firstAttributeIndent = -1;
             int lineIndent = -1;
             int processingStart = -1;
+            boolean onlyWhitespace = false;
             
             while (tokenSequence.moveNext()) {
                 int indentLineStart = 1;
@@ -372,7 +243,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                 if (tokenSequence.offset() > endOffset) {
                     break;
                 }
-                boolean tokenInSelectionRange = tokenSequence.offset() >= startOffset;
+                boolean tokenInSelectionRange = tokenSequence.offset() >= startOffset || tokenSequence.offset() + token.length() > endOffset;
                 TokenType tokenType = TokenType.TOKEN_WHITESPACE;
                 switch (tokenId) {
                     case TAG: { // Tag is encountered and the required level of indenting determined.
@@ -383,7 +254,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                         if (image.charAt(len - 1) == '>') {// '/>'
                             if (len == 2) {
                                 if (!preserveWhitespace) {
-                                    --indentLevel;
+                                    indentLevel -=  spacesPerTab;
                                 }
                                 if (!stack.empty()) {
                                     stack.pop();
@@ -407,12 +278,26 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                                 if (indentLevel < 0) {
                                     indentLevel = 0;
                                 }
+                                // look into tag stack, try to find a proper indent level
+                                String tagName = image.substring(2);
+                                int newIndentLevel = -1;
+                                for (int i = stack.size() - 1; newIndentLevel < 0 && i >= 0; i--) {
+                                    TokenElement el = stack.get(i);
+                                    if (el.getName().equals(tagName)) {
+                                        newIndentLevel = el.getIndentLevel();
+                                        stack.subList(i, stack.size() - 1).clear();
+                                    }
+                                }
+                                boolean changeIndent = !preserveNesting_outdent.isEmpty() && !preserveNesting_outdent.getLast();
+                                if (changeIndent) {
+                                    indentLevel = (newIndentLevel >= 0 ? newIndentLevel : indentLevel);
+                                }
                                 if (tokenInSelectionRange) {
                                     TokenElement tag = new TokenElement(tokenType, image, begin, end, indentLevel);
                                     tags.add(new TokenIndent(tag, preservingWhitespaceOnClose));
                                 }
-                                if ( !preserveNesting_outdent.isEmpty() && !preserveNesting_outdent.getLast()) {
-                                    --indentLevel;
+                                if (changeIndent) {
+                                    indentLevel -= spacesPerTab;
                                 }
                                 preserveWhitespace = !preserveNesting_outdent.isEmpty() && preserveNesting_outdent.getLast();
                             } else {
@@ -421,11 +306,17 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                                 int end = begin + image.length();
                                 preserveWhitespace = !preserveNesting_outdent.isEmpty() && preserveNesting_outdent.getLast();
                                 if (!preserveWhitespace) {
-                                    ++indentLevel;
+                                    if (!tokenInSelectionRange) {
+                                        indentLevel = Utilities.getVisualColumn(basedoc, tokenSequence.offset());
+                                        // no increment here, indent level is taken from the current document's layout as absolute pos
+                                    } else {
+                                        indentLevel += spacesPerTab;
+                                    }
                                 }
+                                TokenElement tag = new TokenElement(tokenType, tagName, begin, end, indentLevel);
                                 preserveNesting_outdent.add(preserveWhitespace);
+                                stack.push(tag);
                                 if (tokenInSelectionRange) {
-                                    TokenElement tag = new TokenElement(tokenType, tagName, begin, end, indentLevel);
                                     tags.add(new TokenIndent(tag, preserveWhitespace));
                                 }
                             }
@@ -435,7 +326,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                     }
                     case PI_START: {
                         tokenType = TokenType.TOKEN_PI_START_TAG;
-                        indentLevel++;
+                        indentLevel += spacesPerTab;
                         if (tokenInSelectionRange && !preserveWhitespace) {
                             TokenElement tag = new TokenElement(tokenType, tokenId.name(), tokenSequence.offset(), tokenSequence.offset() + token.length(), indentLevel);
                             tags.add(new TokenIndent(tag, preserveWhitespace));
@@ -443,7 +334,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                         break;
                     }
                     case PI_END: {
-                        indentLevel--;
+                        indentLevel -= spacesPerTab;
                         if (lineIndent > -1 && tokenInSelectionRange) {
                             // 1st item on a new line, will indent according to the opening tag
                             TokenElement tag = new TokenElement(TokenType.TOKEN_PI_END_TAG, image, 
@@ -485,6 +376,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                         String[] lines = image.split("\n");
                         int lno = indentLineStart; // skip 1st line = up to the 1st newline
                         int currentOffset = tokenSequence.offset();
+                        onlyWhitespace = true;
                         while (lno < lines.length) {
                             currentOffset += lno == 0 ? 0 : lines[lno - 1].length() + 1; // add 1 for newline
                             int lineEnd = currentOffset + lines[lno].length();
@@ -496,15 +388,74 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                                     new TokenElement(TokenType.TOKEN_CHARACTER_DATA, 
                                             tokenId.name(), 
                                             nonWhiteStart, lineEnd,
-                                            indentLevel + 1), 
+                                            indentLevel + spacesPerTab), 
                                     false
                                 ));
                             }
+                            onlyWhitespace = nonWhiteStart > -1;
                             lno++;
                         }
                         break;
                     }
-                    case BLOCK_COMMENT:
+
+                    /**
+                     * Block comments are aligned as follows:
+                     * - if there is some preceeding non-whitespace, do not format anything. E.g. comments after element. Skip entire comment from formatting
+                     * - align 1st and last line at the appropriate indent level
+                     * - compute "shift" from the last line & indent level
+                     * - shift INTERIOR of the comment by the computed shift
+                     * 
+                     * This algorithm tries to preserve internal formatting of the comment
+                     */
+                    case BLOCK_COMMENT: {
+                        int currentOffset = tokenSequence.offset();
+                        
+                        String[] lines = image.split("\n");
+
+                        int lineStart = Utilities.getRowStart(basedoc, currentOffset);
+
+                        if (lineStart < currentOffset && 
+                             Utilities.getFirstNonWhiteBwd(basedoc, currentOffset, lineStart) > -1) {
+                            // we cannot indent comment start, will not touch even the rest of the comment.
+                            break;
+                        }
+                        
+                        int lastLineStart = Utilities.getRowStart(basedoc, currentOffset + token.length() - 1);
+                        int lastIndent = IndentUtils.lineIndent(basedoc, lastLineStart);
+
+                        // align 1st and last row here:
+                        int baseIndent = indentLevel + spacesPerTab;
+                        // shift the rest of lines by this offset
+                        int indentShift = baseIndent - lastIndent;
+
+                        // how much to shift the interior of the comment
+                        
+                        for (int lno = 0; lno < lines.length; lno++) {
+                            // indent 1st comment line, as if it was text:
+                            int lineEnd = Utilities.getRowEnd(basedoc, currentOffset);
+                            
+                            int desiredIndent;
+                            if (lno == 0 || lno == lines.length -1) {
+                                desiredIndent = baseIndent;
+                            } else {
+                                desiredIndent = IndentUtils.lineIndent(basedoc, currentOffset) + indentShift;
+                            }
+                            
+                            if ((currentOffset >= startOffset || currentOffset + lines[lno].length() > endOffset) && currentOffset < endOffset) {
+                                tags.add(new TokenIndent(
+                                    new TokenElement(TokenType.TOKEN_CHARACTER_DATA, 
+                                            tokenId.name(), 
+                                            currentOffset, lineEnd,
+                                            Math.max(0, desiredIndent)), 
+                                    false
+                                ));
+                            }
+                            currentOffset += lines[lno].length() + 1;
+                        }
+                        break;
+                    }
+                        
+
                     case CDATA_SECTION:
                     case CHARACTER:
                     case OPERATOR:
@@ -519,8 +470,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                             if (firstAttributeIndent == -1) {
                                 tokenType = TokenType.TOKEN_CHARACTER_DATA;
                                 // this is the 1st attribute, on its own line - we respect the indentation of the XML tags
-                                attrIndent = indentLevel + 1;
-                                firstAttributeIndent = attrIndent * spacesPerTab;
+                                attrIndent = indentLevel + spacesPerTab;
                             } else {
                                 tokenType = TokenType.TOKEN_ATTR_NAME;
                                 attrIndent = firstAttributeIndent;
@@ -564,6 +514,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                 if (tokenId != XMLTokenId.WS && tokenId != XMLTokenId.TEXT) {
                     // clear indicator of the newline
                     lineIndent = -1;
+                    onlyWhitespace = false;
                 }
             }
         } finally {
@@ -571,7 +522,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
         }
         return tags;
     }
-
+    
     public boolean isOneLiner(int start, int end, BaseDocument doc) {
         try {
             return Utilities.getLineOffset(doc, start) ==
@@ -615,5 +566,9 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
         public String toString() {
             return "TokenIndent: name=" + token.getName() + " preserveIndent=" + preserveIndent;
         }
+    }
+
+    void reformat(Context context) throws BadLocationException{
+        reformat(context, context.startOffset(), context.endOffset());
     }
 }
