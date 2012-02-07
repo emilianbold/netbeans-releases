@@ -120,7 +120,7 @@ implements LookupListener {
 
         assertNotNull("Ant found", f);
         LOG.info("waiting for FoDFileSystem to be updated");
-        FoDFileSystem.getInstance().waitFinished();
+        FoDLayersProvider.getInstance().waitFinished();
         LOG.info("waiting for FoDFileSystem to be waitFinished is over");
 
         for (int cnt = 0; cnt < 5; cnt++) {

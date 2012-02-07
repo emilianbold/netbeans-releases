@@ -82,7 +82,7 @@ public class FodDataObjectFactory implements DataObject.Factory {
     
     private FodDataObjectFactory(FileObject fo) {
         this.definition = fo;
-        this.info = FoDFileSystem.getInstance().whichProvides(definition);
+        this.info = FoDLayersProvider.getInstance().whichProvides(definition);
     }
 
 
@@ -154,10 +154,10 @@ public class FodDataObjectFactory implements DataObject.Factory {
         }
 
         private void delegate(boolean open) {
-            FeatureInfo info = FoDFileSystem.getInstance().whichProvides(definition);
+            FeatureInfo info = FoDLayersProvider.getInstance().whichProvides(definition);
             String msg = NbBundle.getMessage(FodDataObjectFactory.class, "MSG_Opening_File", fo.getNameExt());
 
-            FoDFileSystem.LOG.log(Level.FINER, "Opening file {0}", this);
+            FoDLayersProvider.LOG.log(Level.FINER, "Opening file {0}", this);
             this.open = open;
             boolean success = Utilities.featureDialog(info, msg, msg);
             if (success) {
@@ -170,7 +170,7 @@ public class FodDataObjectFactory implements DataObject.Factory {
             ignore.add(getPrimaryFile());
             try {
                 DataObject obj = DataObject.find(fo);
-                FoDFileSystem.LOG.log(Level.FINER, "finishOpen {0}", obj);
+                FoDLayersProvider.LOG.log(Level.FINER, "finishOpen {0}", obj);
                 Class<?> what = open ? OpenCookie.class : EditCookie.class;
                 Object oc = obj.getLookup().lookup(what);
                 if (oc == this) {
@@ -193,8 +193,8 @@ public class FodDataObjectFactory implements DataObject.Factory {
 
         @Override
         public void stateChanged(ChangeEvent e) {
-            FeatureInfo info = FoDFileSystem.getInstance().whichProvides(definition);
-            FoDFileSystem.LOG.log(Level.FINER, "Refresh state of {0}", this);
+            FeatureInfo info = FoDLayersProvider.getInstance().whichProvides(definition);
+            FoDLayersProvider.LOG.log(Level.FINER, "Refresh state of {0}", this);
             ignore.add(getPrimaryFile());
             if (info == null || info.isEnabled()) {
                 dispose();
