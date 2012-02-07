@@ -42,6 +42,7 @@
 
 package org.netbeans.libs.git.progress;
 
+import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitRevisionInfo;
 
 /**
