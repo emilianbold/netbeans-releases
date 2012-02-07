@@ -61,8 +61,10 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.phpunit.PhpUnitSkelGen;
 import org.netbeans.modules.php.project.ui.actions.Command;
+import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.XDebugUrlArguments;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.openide.DialogDisplayer;
@@ -99,11 +101,25 @@ public final class CommandUtils {
     }
 
     /**
-     * Get valid {@link PhpUnit} instance (path from IDE options used) or {@code null}.
+     * Get valid {@link PhpUnit} instance (script for project if provided or from IDE options) or {@code null}.
+     * @param project project to get PhpUnit for
      * @param showCustomizer if @code true}, IDE options dialog is shown if the path of PHPUnit is not valid
      * @return valid {@link PhpUnit} instance or <code>null</code> if the path of PHP Unit is not valid
      */
-    public static PhpUnit getPhpUnit(boolean showCustomizer) {
+    public static PhpUnit getPhpUnit(PhpProject project, boolean showCustomizer) {
+        // project first
+        try {
+            PhpUnit phpUnit = PhpUnit.forProject(project);
+            if (phpUnit != null) {
+                return phpUnit;
+            }
+        } catch (InvalidPhpProgramException ex) {
+            if (showCustomizer) {
+                PhpProjectUtils.openCustomizer(project, CompositePanelProviderImpl.PHP_UNIT);
+            }
+            return null;
+        }
+        // then general
         try {
             return PhpUnit.getDefault();
         } catch (InvalidPhpProgramException ex) {
