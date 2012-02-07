@@ -224,19 +224,53 @@ class JsCodeCompletion implements CodeCompletionHandler {
     }
 
     private void completeExpression(CompletionRequest request, List<CompletionProposal> resultList) {
-        for(JsObject object : request.result.getModel().getVariables(request.anchor)) {
-            if (!(object instanceof JsFunction && ((JsFunction) object).isAnonymous())
-                    && startsWith(object.getName(), request.prefix)) {
-                resultList.add(JsCompletionItem.Factory.create(object, request));
-            }
-        }
+        HashMap <String, JsElement> foundObjects = new HashMap<String, JsElement>();
+        
         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+        // from index
         JsIndex index = JsIndex.get(fo);
         Collection<IndexedElement> fromIndex = index.getGlobalVar(request.prefix);
         for (IndexedElement indexedElement : fromIndex) {
-            resultList.add(JsCompletionItem.Factory.create(indexedElement, request));
+            JsElement object = foundObjects.get(indexedElement.getName());
+            if(object == null) {
+                foundObjects.put(indexedElement.getName(), indexedElement);
+            } else {
+                if (indexedElement.isDeclared()) {
+                    if (object.isDeclared()) {
+                        // put to the cc result both
+                        resultList.add(JsCompletionItem.Factory.create(indexedElement, request));
+                    } else {
+                        // replace with the one, which is declared
+                        foundObjects.put(indexedElement.getName(), indexedElement);
+                    }
+                } 
+            }
         }
         
+        // from model
+        for(JsObject object : request.result.getModel().getVariables(request.anchor)) {
+            if (!(object instanceof JsFunction && ((JsFunction) object).isAnonymous())
+                    && startsWith(object.getName(), request.prefix)) {
+                JsElement fobject = foundObjects.get(object.getName());
+                if(fobject == null) {
+                    foundObjects.put(object.getName(), object);
+                } else {
+                    if (object.isDeclared()) {
+                        if (fobject.isDeclared()) {
+                            // put to the cc result both
+                            resultList.add(JsCompletionItem.Factory.create(object, request));
+                        } else {
+                            // replace with the one, which is declared
+                            foundObjects.put(object.getName(), object);
+                        }
+                    }
+                }
+            }
+        }
+        
+        for(JsElement element: foundObjects.values()) {
+            resultList.add(JsCompletionItem.Factory.create(element, request));
+        }
     }
     
     private void completeObjectProperty(CompletionRequest request, List<CompletionProposal> resultList) {

@@ -52,6 +52,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -196,7 +197,7 @@ public class JsCompletionItem implements CompletionProposal {
 
     public static class Factory {
         
-        public static JsCompletionItem create(JsObject object, CompletionRequest request) {
+        public static JsCompletionItem create(JsElement object, CompletionRequest request) {
             JsCompletionItem result;
             switch (object.getJSKind()) {
                 case CONSTRUCTOR:
@@ -207,21 +208,6 @@ public class JsCompletionItem implements CompletionProposal {
                 default:
                     result = new JsCompletionItem(object, request);
             }
-            return result;
-        }
-        
-        public static JsCompletionItem create(IndexedElement element, CompletionRequest request) {
-            JsCompletionItem result;
-            switch (element.getJSKind()) {
-                case CONSTRUCTOR:
-                case FUNCTION:
-                case METHOD:
-                    result = new JsFunctionCompletionItem(element, request);
-                    break;
-                default:
-                    result = new JsCompletionItem(element, request);
-            }
-
             return result;
         }
     }
