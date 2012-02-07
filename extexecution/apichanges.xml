@@ -104,8 +104,10 @@ is the proper place.
         <apidef name="extexecution_api">External Execution API</apidef>
         <apidef name="extexecution_api_input">External Execution Input API</apidef>
         <apidef name="extexecution_api_print">External Execution Input Printing API</apidef>
-        <apidef name="extexecution_spi_destroy">External Execution Process Destroy SPI</apidef>
+        <apidef name="extexecution_api_startup">External Execution Startup Arguments API</apidef>
         <apidef name="extexecution_spi">External Execution SPI</apidef>
+        <apidef name="extexecution_spi_destroy">External Execution Process Destroy SPI</apidef>
+        <apidef name="extexecution_spi_startup">External Execution Startup Arguments SPI</apidef>
         <!-- etc. -->
     </apidefs>
 
@@ -113,6 +115,23 @@ is the proper place.
 
     <changes>
 
+        <change>
+            <api name="extexecution_api_startup"/>
+            <summary>SPI to allow extending process startup</summary>
+            <version major="1" minor="30"/>
+            <date day="24" month="1" year="2012"/>
+            <author login="phejl"/>
+            <compatibility addition="yes"/>
+            <description>
+                This API/SPI allow third party plugins (such as JRebel) to
+                register extenders of process startup. The interested clients
+                such as projects or servers may optionaly query such
+                extenders and pass additional arguments to the process.
+            </description>
+            <class package="org.netbeans.api.extexecution.startup" name="StartupExtender"/>
+            <class package="org.netbeans.spi.extexecution.startup" name="StartupExtenderImplementation"/>
+            <issue number="206196"/>
+        </change>
         <change>
             <api name="extexecution_api"/>
             <summary>New API method to open IO tab on error</summary>
