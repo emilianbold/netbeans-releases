@@ -278,6 +278,7 @@ public class RootSelectorTree extends JPanel {
                 te = entries.get(index);
                 te.frequency += builder.isPreferred() ? 2 : 1;
             } else {
+                te.frequency = builder.isPreferred() ? 2 : 1;
                 entries.add(te);
             }
         }
@@ -286,9 +287,9 @@ public class RootSelectorTree extends JPanel {
 
             @Override
             public int compare(TypeEntry o1, TypeEntry o2) {
-                if (o1.frequency > o2.frequency) {
+                if (o1.frequency < o2.frequency) {
                     return 1;
-                } else if (o1.frequency < o2.frequency) {
+                } else if (o1.frequency > o2.frequency) {
                     return -1;
                 } else {
                     return 0;
