@@ -56,7 +56,7 @@ import org.openide.util.Utilities;
  *
  * @author S. Aubrecht
  */
-abstract class BrowserFactory implements HtmlBrowser.Factory {
+public abstract class BrowserFactory implements HtmlBrowser.Factory {
     
     static String PROP_EXTRA_BROWSER = "ExtraBrowser"; //NOI18N
 
