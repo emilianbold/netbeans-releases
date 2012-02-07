@@ -43,6 +43,7 @@
 package org.netbeans.libs.git.progress;
 
 import java.io.File;
+import org.netbeans.libs.git.GitClient;
 
 /**
  * The listener interface for receiving notifications triggered when a file is 
