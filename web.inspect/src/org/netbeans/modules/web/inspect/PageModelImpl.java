@@ -158,6 +158,11 @@ public class PageModelImpl extends PageModel {
                 if (xml != ScriptExecutor.ERROR_RESULT) {
                     InputSource source = new InputSource(new StringReader(xml.toString()));
                     document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(source);
+                    // Set document URL
+                    Object url = executeScript("document.URL"); // NOI18N
+                    if (url != ScriptExecutor.ERROR_RESULT) {
+                        document.setDocumentURI(url.toString());
+                    }
                 }
             } catch (SAXException ex) {
                 LOG.log(Level.INFO, null, ex);

@@ -43,10 +43,13 @@ package org.netbeans.modules.web.inspect.ui;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import javax.swing.Action;
 import org.netbeans.modules.web.inspect.PageModel;
+import org.netbeans.modules.web.inspect.actions.GoToElementSourceAction;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.w3c.dom.Element;
@@ -79,6 +82,8 @@ public class ElementNode extends AbstractNode {
     private Element element;
     /** Property sets of the node. */
     private PropertySet[] propertySets;
+    /** Actions of the node. */
+    private Action[] actions;
 
     /**
      * Creates new {@code ElementNode}.
@@ -192,6 +197,21 @@ public class ElementNode extends AbstractNode {
                 "tabName", // NOI18N
                 bundle.getString("DomNode.propertyTab.computedStyle")); // NOI18N
         return new PropertySet[] {attributes, style};
+    }
+
+    @Override
+    public Action getPreferredAction() {
+        return SystemAction.get(GoToElementSourceAction.class);
+    }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        if (actions == null) {
+            actions = new Action[] {
+                SystemAction.get(GoToElementSourceAction.class),
+            };
+        }
+        return actions;
     }
 
     /**
