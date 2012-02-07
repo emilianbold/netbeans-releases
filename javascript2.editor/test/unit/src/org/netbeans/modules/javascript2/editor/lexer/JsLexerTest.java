@@ -352,6 +352,15 @@ public class JsLexerTest extends TestCase {
         TokenSequence ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.LINE_COMMENT, "//");
     }
+    
+    @SuppressWarnings("unchecked")
+    public void testComments10() {
+        String text = "/**/\nfunction x(){}";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+        TokenSequence ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BLOCK_COMMENT, "/**/");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.EOL, "\n");
+    }
 
     public void testStrings() {
         String[] strings =
