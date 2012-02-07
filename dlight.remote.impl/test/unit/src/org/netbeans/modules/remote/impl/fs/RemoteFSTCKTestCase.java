@@ -42,14 +42,13 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.Collection;
 import junit.framework.Test;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -97,21 +96,17 @@ public class RemoteFSTCKTestCase extends FileSystemFactoryHid {
         
         execEnv = NativeExecutionTestSupport.getTestExecutionEnvironment(mspec);
         ConnectionManager.getInstance().connectTo(execEnv);
-        tmpDir = mkTemp(execEnv, true);
+        tmpDir = NativeExecutionTestSupport.mkTemp(execEnv, true);
     }
-    
-    private String mkTemp(ExecutionEnvironment execEnv, boolean directory) throws Exception {        
-        String[] mkTempArgs;
-        if (HostInfoUtils.getHostInfo(execEnv).getOSFamily() == HostInfo.OSFamily.MACOSX) {
-            mkTempArgs = directory ? new String[] { "-t", "/tmp", "-d" } : new String[] { "-t", "/tmp" };
-        } else {
-            mkTempArgs = directory ? new String[] { "-d" } : new String[0];
-        }        
-        ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "mktemp", mkTempArgs);
-        assertEquals("mktemp failed: " + res.error, 0, res.exitCode);
-        return res.output;
-    }    
-    
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        if (tmpDir != null) {
+            CommonTasksSupport.rmDir(execEnv, tmpDir, true, new OutputStreamWriter(System.err));
+        }
+    }
+
     @Override
     protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException {
         RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
