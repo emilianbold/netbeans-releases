@@ -183,7 +183,7 @@ void readDefaultRoots(LauncherProperties *props) {
     WCHAR * localAppDataValue = getStringValue(HKEY_CURRENT_USER,
                         toWCHAR("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders"),
                         toWCHAR("Local AppData"), 0);
-    props->defaultCacheDirRoot = appendStringW(localAppDataValue, toWCHAR("\\NetBeans\\Caches"));
+    props->defaultCacheDirRoot = appendStringW(localAppDataValue, toWCHAR("\\NetBeans\\Cache"));
     writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "defaultCacheDirRoot: ", 0);
     writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, props->defaultCacheDirRoot, 1);
     
