@@ -90,12 +90,16 @@ public class LineBreakHook implements TypedBreakInterceptor {
      * Determines whether the token sequence immediately follows an opening tag
      * (possibly with some whitespace in between the token sequence and the
      * opening tag ending > sign.
+     * <p/>
+     * If the preceding tag is self-closing, the returned offset will be negative offset
+     * just after the 1st tag character (the opening &lt;)
      * 
      * @param seq positioned sequence
-     * @return index just at the opening &lt; sign, or -1 if opening tag is not found
+     * @return index just at the opening &lt; sign, or Integer.MIN_VALUE if opening tag is not found
      */
     private int followsOpeningTag(TokenSequence seq) {
         int closingIndex = -1;
+        boolean selfClose = false;
         while (seq.movePrevious()) {
             Token tukac = seq.token();
             switch ((XMLTokenId)tukac.id()) {
@@ -104,7 +108,7 @@ public class LineBreakHook implements TypedBreakInterceptor {
                 case VALUE:
                     if (closingIndex == -1) {
                         // in the middle of a tag
-                        return -1;
+                        return Integer.MIN_VALUE;
                     }
                     
                 case WS:
@@ -113,25 +117,33 @@ public class LineBreakHook implements TypedBreakInterceptor {
                 case TAG: {
                     String text = tukac.text().toString();
                     // it may be the closing tag
-                    if (">".equals(text)) {
+                    if (text.endsWith(">")) {
                         if (closingIndex > -1) {
-                            return -1;
+                            return Integer.MIN_VALUE;
                         }
                         closingIndex = seq.offset() + tukac.length();
-                        continue;
+                        if (text.endsWith("/>")) {
+                            selfClose = true;
+                        }
+                        break;
                     }
                     if (text.startsWith("<") && text.length() > 1 && text.charAt(1) != '/') {
                         // found start tag
-                        return seq.offset();
-                    }
-                    return -1;
+                        if (selfClose) {
+                            // note: this indicate position just after the opening <
+                            return -seq.offset() - 1;
+                        } else {
+                            return seq.offset();
+                        }
+                    } 
+                    return Integer.MIN_VALUE;
                 }
                     
                 default:
-                    return -1;
+                    return Integer.MIN_VALUE;
             }
         }
-        return -1;
+        return Integer.MIN_VALUE;
     }
 
     @Override
@@ -168,7 +180,7 @@ public class LineBreakHook implements TypedBreakInterceptor {
         int nonWhiteAfter = Utilities.getFirstNonWhiteFwd(doc, caretPos, lineEndPos);
 
         // there is a opening tag preceding on the line && something following the insertion point
-        if (nonWhiteBefore != -1 && nonWhiteAfter != -1 && openOffset != -1) {
+        if (nonWhiteBefore != -1 && nonWhiteAfter != -1 && openOffset >= 0) {
             // check that the following token (after whitespace(s)) is a 
             // opening tag
             seq.move(nonWhiteAfter);
@@ -192,9 +204,11 @@ public class LineBreakHook implements TypedBreakInterceptor {
 
         int desiredIndent;
 
-        if (openOffset >= 0) {
-            desiredIndent = IndentUtils.lineIndent(doc, Utilities.getRowStart(doc, openOffset)) + 
-                    IndentUtils.indentLevelSize(doc);
+        if (openOffset != Integer.MIN_VALUE) {
+            desiredIndent = IndentUtils.lineIndent(doc, Utilities.getRowStart(doc, Math.abs(openOffset)));
+            if (openOffset >= 0) {
+                desiredIndent += IndentUtils.indentLevelSize(doc);
+            }
         } else {
             // align with the current line
             desiredIndent = IndentUtils.lineIndent(doc, lineStartPos);
