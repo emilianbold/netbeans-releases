@@ -120,16 +120,17 @@ public final class CreateTestsAction extends NodeAction {
             return;
         }
 
+        // ensure that test sources directory exists
+        final PhpProject phpProject = PhpProjectUtils.getPhpProject(activatedNodes[0]);
+
         // programs available?
         PhpUnitSkelGen skelGen = CommandUtils.getPhpUnitSkelGen(false);
-        PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
+        PhpUnit phpUnit = CommandUtils.getPhpUnit(phpProject, false);
         if (skelGen == null && phpUnit == null) {
             // prefer skelGen, show customizer
             CommandUtils.getPhpUnitSkelGen(true);
             return;
         }
-        // ensure that test sources directory exists
-        final PhpProject phpProject = PhpProjectUtils.getPhpProject(activatedNodes[0]);
         assert phpProject != null : "PHP project must be found for " + activatedNodes[0];
         if (ProjectPropertiesSupport.getTestDirectory(phpProject, true) == null) {
             return;
@@ -299,7 +300,7 @@ public final class CreateTestsAction extends NodeAction {
             return new PhpUnitSkelGenTestGenerator(skelGen, phpProject, source);
         }
         LOGGER.log(Level.FINE, "Using phpunit-skel-gen for generating a test for {0}", source.getNameExt());
-        PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
+        PhpUnit phpUnit = CommandUtils.getPhpUnit(phpProject, false);
         ConfigFiles configFiles = PhpUnit.getConfigFiles(phpProject, false);
         File parent = FileUtil.toFile(source.getParent());
         File workingDirectory = phpUnit.getWorkingDirectory(configFiles, parent);
