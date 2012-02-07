@@ -110,8 +110,9 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
         isScanStarted = new AtomicBoolean( false );
         isScanFinished = new AtomicBoolean(false);
     }
+
     /**
-     * just gets the array of FOs from lookup.
+     * Just gets the array of FOs from lookup.
      */
     protected static FileObject[] extractFileObjectsfromLookup(Lookup lookup) {
         List<FileObject> files = new ArrayList<FileObject>();
@@ -223,43 +224,48 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
     public String convert(String action, Lookup lookup) {
         if (ActionProvider.COMMAND_RUN_SINGLE.equals(action) ||
             ActionProvider.COMMAND_DEBUG_SINGLE.equals(action)) {
+
             FileObject[] fos = extractFileObjectsfromLookup(lookup);
             if (fos.length > 0) {
                 FileObject fo = fos[0];
                 if ("text/x-java".equals(fo.getMIMEType())) { //NOI18N
-                    //TODO sorty of clashes with .main (if both servlet and main are present.
-                    // also prohitibs any other conversion method.
-                    if ( fo.getAttribute(ATTR_EXECUTION_URI) == null &&
-                            servletFilesScanning( fo ) ) {
-                        return null;
-                    }
-                    Sources srcs = project.getLookup().lookup(Sources.class);
-                    SourceGroup[] sourceGroups = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                    for (SourceGroup group : sourceGroups) {
-                        if (!"2TestSourceRoot".equals(group.getName())) { //NOI18N hack
-                            String relPath = FileUtil.getRelativePath(group.getRootFolder(), fo);
-                            if (relPath != null) {
-                                if (fo.getAttribute(ATTR_EXECUTION_URI) != null ||
-                                        Boolean.TRUE.equals(fo.getAttribute(IS_SERVLET_FILE))) {//NOI18N
-                                    return action + ".deploy"; //NOI18N
-                                }
-                                if (isServletFile(fo,false))  {
-                                    try {
-                                        fo.setAttribute(IS_SERVLET_FILE, Boolean.TRUE); 
-                                    } catch (java.io.IOException ex) {
-                                        //we tried
-                                    }
-                                    return action + ".deploy"; //NOI18N
-                                }
-                            }
-                        }
-                    }
+                    return convertJavaAction(action, fo);
                 }
                 if ("text/x-jsp".equals(fo.getMIMEType())) { //NOI18N
                     return action + ".deploy"; //NOI18N
                 }
                 if ("text/html".equals(fo.getMIMEType())) { //NOI18N
                     return action + ".deploy"; //NOI18N
+                }
+            }
+        }
+        return null;
+    }
+
+    private String convertJavaAction(String action, FileObject fo) {
+        //TODO sorty of clashes with .main (if both servlet and main are present.
+        // also prohitibs any other conversion method.
+        if ( fo.getAttribute(ATTR_EXECUTION_URI) == null && servletFilesScanning(fo)) {
+            return null;
+        }
+        Sources srcs = project.getLookup().lookup(Sources.class);
+        SourceGroup[] sourceGroups = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        for (SourceGroup group : sourceGroups) {
+            if (!"2TestSourceRoot".equals(group.getName())) { //NOI18N hack
+                String relPath = FileUtil.getRelativePath(group.getRootFolder(), fo);
+                if (relPath != null) {
+                    if (fo.getAttribute(ATTR_EXECUTION_URI) != null ||
+                            Boolean.TRUE.equals(fo.getAttribute(IS_SERVLET_FILE))) {//NOI18N
+                        return action + ".deploy"; //NOI18N
+                    }
+                    if (isServletFile(fo,false))  {
+                        try {
+                            fo.setAttribute(IS_SERVLET_FILE, Boolean.TRUE);
+                        } catch (java.io.IOException ex) {
+                            //we tried
+                        }
+                        return action + ".deploy"; //NOI18N
+                    }
                 }
             }
         }
@@ -397,5 +403,4 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
             }
         }
     }
-
 }
