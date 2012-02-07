@@ -514,7 +514,10 @@
     <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel" url="persistence/csh/persist_new_entityclass_db1.html" />
     <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel" url="persistence/csh/persist_new_entityclass_db2.html" />
     <mapID target="org.netbeans.modules.j2ee.persistence.unit.AddEntityPanel" url="persistence/csh/db_persist_addentityclass.html" />
-    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.jpacontroller" url="persistence/general/persist_jpa_fromentity.html" />
+    <!-- JPA controllers from entity classes wizard -->
+    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.jpacontroller" url="persistence/csh/persist_jpacontrollerfromentity_panel1.html" />
+    <!-- need new id here for 2nd panel in wizard #208130 -->
+    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.jpacontroller" url="persistence/csh/persist_jpacontrollerfromentity_panel2.html" />
 
    
    
