@@ -171,6 +171,14 @@ public final class PhpUnit extends PhpProgram {
         return getCustom(PhpOptions.getInstance().getPhpUnit());
     }
 
+    public static PhpUnit forProject(PhpProject project) throws InvalidPhpProgramException {
+        File script = ProjectPropertiesSupport.getPhpUnitScript(project);
+        if (script == null) {
+            return null;
+        }
+        return getCustom(script.getAbsolutePath());
+    }
+
     public static PhpUnit getCustom(String command) throws InvalidPhpProgramException {
         String error = validate(command);
         if (error != null) {
