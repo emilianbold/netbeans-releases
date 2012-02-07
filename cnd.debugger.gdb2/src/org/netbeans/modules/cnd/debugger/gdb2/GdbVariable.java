@@ -68,7 +68,7 @@ class GdbVariable extends Variable {
     private boolean editable;
     private boolean changed;
     private boolean inScope = true;
-
+    private boolean dynamic = false;
 
     public GdbVariable(GdbDebuggerImpl debugger, ModelChangeDelegator updater,
 		       Variable parent,
@@ -80,6 +80,7 @@ class GdbVariable extends Variable {
 	//this.value = value;
     }
 
+    @Override
     public NativeDebugger getDebugger() {
 	return this.debugger;
     }
@@ -161,6 +162,14 @@ class GdbVariable extends Variable {
     @Override
     public int getNumChild() {
 	return this.numchild;
+    }
+
+    public boolean isDynamic() {
+        return dynamic;
+    }
+
+    public void setDynamic(boolean dynamic) {
+        this.dynamic = dynamic;
     }
 
     // override Variable

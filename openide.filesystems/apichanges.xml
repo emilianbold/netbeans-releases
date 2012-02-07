@@ -49,6 +49,25 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="LayersProvider">
+            <api name="filesystems"/>
+            <summary>SPI for Additions to System File System</summary>
+            <version major="7" minor="59"/>
+            <date year="2012" month="2" day="3"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes" deprecation="yes"/>
+            <description>
+                <p>
+                    Those who wish to influence content of 
+                    <a href="@TOP@/org/openide/filesystems/FileUtil.html#getConfigRoot()">
+                    configuration file system</a> have an easier
+                    <a href="@TOP@/org/openide/filesystems/Repository.LayerProvider.html">
+                    way</a> now.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="Repository"/>
+            <issue number="198508"/>
+        </change>
         <change id="MIMEResolver.Registrations">
             <api name="filesystems"/>
             <summary>Annotations to declare MIME type</summary>

@@ -44,6 +44,7 @@ package org.netbeans.modules.netbinox;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -178,7 +179,7 @@ public class CachingAndExternalPathsTest extends NbTestCase {
         LOG.info("testStartAgain - finished");
     }
 
-    static void doNecessarySetup() throws ClassNotFoundException, IOException {
+    static void doNecessarySetup() throws Exception {
         ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
         try {
             Class<?> c = Class.forName("javax.help.HelpSet", true, l);
@@ -192,6 +193,15 @@ public class CachingAndExternalPathsTest extends NbTestCase {
         if (fo != null) {
             fo.delete();
         }
+        waitWarmUpFinished();
+    }
+    private static void waitWarmUpFinished() throws Exception {
+        ClassLoader global = Thread.currentThread().getContextClassLoader();
+        Class<?> warmTask = global.loadClass("org.netbeans.core.startup.MainLookup"); // NOI18N
+        Method warmUp = warmTask.getMethod("warmUp", long.class); // NOI18N
+        Object wait = warmUp.invoke(null, 0L);
+        Method waitUp = wait.getClass().getDeclaredMethod("waitFinished"); // NOI18N
+        waitUp.invoke(wait);
     }
 
     public void testInMiddle() {

@@ -61,9 +61,12 @@ import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 
 /**
@@ -315,4 +318,29 @@ public class NativeExecutionTestSupport {
             return defaultValue;
         }
     }
+    
+    public static String mkTemp(ExecutionEnvironment execEnv, boolean directory) throws Exception {        
+        String[] mkTempArgs;
+        if (HostInfoUtils.getHostInfo(execEnv).getOSFamily() == OSFamily.MACOSX) {
+            mkTempArgs = directory ? new String[] { "-t", "tmp", "-d" } : new String[] { "-t", "tmp" };
+        } else {
+            mkTempArgs = directory ? new String[] { "-d" } : new String[0];
+        }        
+        ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "mktemp", mkTempArgs);
+        if (!res.isOK()) {
+            throw new AssertionError("mktemp failed on " + execEnv + ": " + res.error + " return code: " + res.exitCode);
+        }
+        if (Boolean.getBoolean("trace.mktemp")) {   // trace all mkTemp
+            StackTraceElement caller = null;
+            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+            for (int i = 1; i < stackTrace.length; i++) {
+                if (!stackTrace[i].getMethodName().contains("mkTemp")) {
+                    caller = stackTrace[i];
+                    break;
+                }
+            }
+            System.err.printf("mktemp -> %s called by %s\n", res.output, caller.getClassName() + '.' + caller.getMethodName());
+        }
+        return res.output;
+    }    
 }
