@@ -49,5 +49,11 @@
     "contextMenus",
     "tabs",
     "<all_urls>"
-  ]
+  ],
+
+  "icons": {
+    "16": "netbeans16.png",
+    "48": "netbeans48.png"
+  }
+
 }
