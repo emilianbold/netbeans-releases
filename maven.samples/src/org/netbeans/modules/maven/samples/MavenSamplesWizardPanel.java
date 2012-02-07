@@ -71,6 +71,7 @@ public class MavenSamplesWizardPanel implements WizardDescriptor.Panel,
         this.isFinishPanel = isFinishPanel;
     }
     
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new MavenSamplesPanelVisual(this);
@@ -80,26 +81,33 @@ public class MavenSamplesWizardPanel implements WizardDescriptor.Panel,
         return component;
     }
     
+    @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(MavenSamplesWizardPanel.class);
+        return null;
     }
-    
+
+    @Override
     public boolean isValid() {
         getComponent();
         return component.valid(wizardDescriptor);
     }
     
     private final Set<ChangeListener> listeners = new HashSet(1);
+
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
+
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
     }
+    
     protected final void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {
@@ -111,6 +119,7 @@ public class MavenSamplesWizardPanel implements WizardDescriptor.Panel,
         }
     }
     
+    @Override
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         component.read(wizardDescriptor);
@@ -122,20 +131,22 @@ public class MavenSamplesWizardPanel implements WizardDescriptor.Panel,
             wizardDescriptor.putProperty("NewProjectWizard_Title", substitute); // NOI18N
         }
     }
-    
+
+    @Override
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
         d.putProperty("NewProjectWizard_Title", null); // NOI18N
     }
-    
+
+    @Override
     public boolean isFinishPanel() {
         return isFinishPanel;
     }
-    
+
+    @Override
     public void validate() throws WizardValidationException {
         getComponent();
         component.validate(wizardDescriptor);
     }
-    
 }
