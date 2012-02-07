@@ -154,8 +154,7 @@ public enum GitRefUpdateResult {
     REJECTED_REMOTE_CHANGED,
 
     /**
-     * Remote ref update was rejected for other reason, possibly described
-     * in {@link RemoteRefUpdate#getMessage()}.
+     * Remote ref update was rejected for other reason.
      */
     REJECTED_OTHER_REASON,
 

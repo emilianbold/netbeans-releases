@@ -825,7 +825,7 @@ public final class GitClient {
 
     /**
      * Sets HEAD to the given revision and updates index and working copy accordingly to the given reset type
-     * @param revisionStr revision HEAD will reference to
+     * @param revision revision HEAD will reference to
      * @param resetType type of reset, see git help reset
      * @param monitor progress monitor
      * @throws GitException.MissingObjectException if the given revision does not exist
