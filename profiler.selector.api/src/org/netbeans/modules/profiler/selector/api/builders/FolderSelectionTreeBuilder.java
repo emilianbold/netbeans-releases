@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,59 +34,41 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.profiler.j2ee.selector;
+package org.netbeans.modules.profiler.selector.api.builders;
 
 import java.util.Collections;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.profiler.selector.api.nodes.SelectorChildren;
 import java.util.List;
-import org.netbeans.modules.profiler.j2ee.selector.nodes.ProjectNode;
-import org.netbeans.modules.profiler.j2ee.selector.nodes.web.WebProjectChildren;
 import org.netbeans.modules.profiler.selector.api.SelectionTreeBuilderType;
-import org.netbeans.modules.profiler.selector.api.builders.ProjectSelectionTreeBuilder;
-import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
+import org.netbeans.modules.profiler.selector.api.nodes.FolderNode;
 import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
-import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
-import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.util.NbBundle;
-
+import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-@ProjectServiceProvider(service = SelectionTreeBuilder.class, projectType = {
-    "org-netbeans-modules-j2ee-earproject", // NOI18N
-    "org-netbeans-modules-web-project", // NOI18N
-    "org-netbeans-modules-maven/ear", // NOI18N
-    "org-netbeans-modules-maven/war" // NOI18N
-})
-public class PlainWebSelectionTreeBuilder extends ProjectSelectionTreeBuilder {
-    public PlainWebSelectionTreeBuilder(Project project) {
-        this(project, true);
+public class FolderSelectionTreeBuilder extends SelectionTreeBuilder {
+    public FolderSelectionTreeBuilder() {
+        super(new SelectionTreeBuilderType("classes", Bundle.PackageSelectionTreeViewBuilder_PackageView()), false); // NOI18N
     }
-    
-    @NbBundle.Messages("PlainWebSelectionTreeBuilder_DisplayName=Web Application View")
-    public PlainWebSelectionTreeBuilder(Project project, boolean isPreferred) {
-        super(new SelectionTreeBuilderType("web-application", Bundle.PlainWebSelectionTreeBuilder_DisplayName()), isPreferred, project); // NOI18N
-    }
-    
-    @Override
-    public List<SelectorNode> buildSelectionTree() {
-        SelectorNode projectNode = new ProjectNode(project) {
 
-            @Override
-            protected SelectorChildren getChildren() {
-                return new WebProjectChildren(project);
-            }
-        };
-        return Collections.singletonList(projectNode);
-   }
+    @Override
+    public List<? extends SelectorNode> buildSelectionTree() {
+        FileObject fo = getContext().lookup(FileObject.class);
+        if (fo != null && fo.isFolder()) {
+            return Collections.singletonList(new FolderNode(fo));
+        }
+        return Collections.EMPTY_LIST;
+    }
 
     @Override
     public int estimatedNodeCount() {
-        return project.getLookup().lookup(WebModuleProvider.class) != null ? 1 : -1;
+        return 1;
     }
 }
