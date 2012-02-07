@@ -43,36 +43,47 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 import org.openide.windows.WindowManager;
 
 /**
  *
  * @author Tomas Zezula
+ * @author Petr Somol
+ * @author Anton Chechel
  */
 @ProjectServiceProvider(service=ProjectOpenedHook.class, projectType={"org-netbeans-modules-java-j2seproject"}) // NOI18N
 public final class JFXProjectOpenedHook extends ProjectOpenedHook {
-//public final class JFXProjectOpenedHook extends ProjectOpenedHook implements TaskListener {
 
     private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
+    private final J2SEPropertyEvaluator eval;
     
-//    private volatile RequestProcessor.Task task;
-//    private ProgressHandle progressHandle;
+    public JFXProjectOpenedHook(final Lookup lkp) {
+        this.eval = lkp.lookup(J2SEPropertyEvaluator.class);
+        Parameters.notNull("eval", eval);   //NOI18N
+    }
 
     @Override
     protected synchronized void projectOpened() {
-        logUsage(JFXProjectGenerator.PROJECT_OPEN);
-        
-        // create Default JavaFX platform if necessary
-        // #205341
-        checkPlatforms();
+        if(JFXProjectProperties.isTrue(this.eval.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED))) {
+            logUsage(JFXProjectGenerator.PROJECT_OPEN);
+
+            // create Default JavaFX platform if necessary
+            // #205341
+            checkPlatforms();
+        }
     }
 
     @Override
     protected void projectClosed() {
-        logUsage(JFXProjectGenerator.PROJECT_CLOSE);
+        if(JFXProjectProperties.isTrue(this.eval.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED))) {
+            logUsage(JFXProjectGenerator.PROJECT_CLOSE);
+        }
     }
 
     private static void logUsage(@NonNull final String msg) {
@@ -80,15 +91,6 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
         logRecord.setLoggerName(JFXProjectGenerator.METRICS_LOGGER);
         Logger.getLogger(JFXProjectGenerator.METRICS_LOGGER).log(logRecord);
     }
-
-//    @Override
-//    public synchronized void taskFinished(Task task) {
-//        task.removeTaskListener(this);
-//        this.task = null;
-//        
-//        progressHandle.finish();
-//        progressHandle = null;
-//    }
 
     private void checkPlatforms() {
         if (!JavaFXPlatformUtils.isThereAnyJavaFXPlatform()) {
@@ -104,26 +106,8 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
                 switchDefault();
             }
 
-//            progressHandle = ProgressHandleFactory.createSystemHandle(
-//                    NbBundle.getMessage(PanelOptionsVisual.class, "MSG_Default_Platform_Creation")); // NOI18N
-//            progressHandle.start();
-            
-//            task = RequestProcessor.getDefault().create(new CreatePlatformTask());
-//            task.addTaskListener(this);
-//            task.schedule(0);
         }
     }
-
-//    private class CreatePlatformTask implements Runnable {
-//        @Override
-//        public void run() {
-//            try {
-//                JavaFXPlatformUtils.createDefaultJavaFXPlatform();
-//            } catch (Exception ex) {
-//                LOGGER.log(Level.WARNING, "Can't create Java Platform instance: {0}", ex); // NOI18N
-//            }
-//        }
-//    }
 
     private void switchBusy() {
         SwingUtilities.invokeLater(new Runnable() {
