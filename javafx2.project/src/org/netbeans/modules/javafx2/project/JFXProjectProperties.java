@@ -434,7 +434,7 @@ public final class JFXProjectProperties {
     private static Map<String, JFXProjectProperties> propInstance = new TreeMap<String, JFXProjectProperties>();
 
     /** Keeps set of category markers used to identify validity of JFXProjectProperties instance */
-    private Set<String> instanceMarkers = new TreeSet<String>();
+    private Set<String> instanceMarkers = new HashSet<String>();
     
     public void markInstance(@NonNull String marker) {
         instanceMarkers.add(marker);
