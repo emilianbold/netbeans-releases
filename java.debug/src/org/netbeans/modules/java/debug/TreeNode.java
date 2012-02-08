@@ -69,7 +69,9 @@ import com.sun.source.tree.IfTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LabeledStatementTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -531,6 +533,18 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
         }
 
         @Override
+        public Void visitLambdaExpression(LambdaExpressionTree tree, List<Node> d) {
+            List<Node> below = new ArrayList<Node>();
+
+            addCorrespondingType(below);
+            addCorrespondingComments(below);
+            super.visitLambdaExpression(tree, below);
+
+            d.add(new TreeNode(info, getCurrentPath(), below));
+            return null;
+        }
+
+        @Override
         public Void visitLiteral(LiteralTree tree, List<Node> d) {
             List<Node> below = new ArrayList<Node>();
             
@@ -538,6 +552,20 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
             addCorrespondingComments(below);
             super.visitLiteral(tree, below);
             
+            d.add(new TreeNode(info, getCurrentPath(), below));
+            return null;
+        }
+
+        @Override
+        public Void visitMemberReference(MemberReferenceTree tree, List<Node> d) {
+            List<Node> below = new ArrayList<Node>();
+
+            addCorrespondingElement(below);
+            addCorrespondingType(below);
+            addCorrespondingComments(below);
+
+            super.visitMemberReference(tree, below);
+
             d.add(new TreeNode(info, getCurrentPath(), below));
             return null;
         }
@@ -835,7 +863,7 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
             d.add(new TreeNode(info, getCurrentPath(), below));
             return null;
         }
-        
+
         private void addCorrespondingElement(List<Node> below) {
             Element el = info.getTrees().getElement(getCurrentPath());
             
