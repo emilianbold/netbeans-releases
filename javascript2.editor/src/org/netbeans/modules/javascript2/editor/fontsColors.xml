@@ -27,7 +27,6 @@
 
     <!-- COMMENTS fonts&colors -->
     <fontcolor name="COMMENT" default="comment"/>
-    <fontcolor name="UNKNOWN" default="error"/>
     <fontcolor name="COMMENT_SHARED_TAG" default="comment"/>
     <fontcolor name="COMMENT_NOCODE" default="comment" foreColor="BB9955"/>
     <fontcolor name="COMMENT_KEYWORD" default="comment">

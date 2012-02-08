@@ -170,6 +170,14 @@ public class JsDocLexerTest extends NbTestCase {
         TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_CODE, "/**/");
     }
+    
+    @SuppressWarnings("unchecked")
+    public void testComment03() {
+        String text = "/* muj comment */";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
+        TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_CODE, "/* muj comment */");
+    }
 
     @SuppressWarnings("unchecked")
     public void testSharedTagComment01() {
@@ -242,5 +250,22 @@ public class JsDocLexerTest extends NbTestCase {
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
         TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_NOCODE_END, "/**#nocode-*/");
+    }
+
+    @SuppressWarnings("unchecked")
+    public void testUnfinishedComment01() {
+        String text = "/* \n var Carrot = {";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
+        TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.UNKNOWN, "/* \n var Carrot = {");
+    }
+
+    @SuppressWarnings("unchecked")
+    public void testUnfinishedComment02() {
+        String text = "/** getColor: function () {}, ";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
+        TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " getColor: function () {}, ");
     }
 }

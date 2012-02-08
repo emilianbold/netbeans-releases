@@ -169,7 +169,7 @@ IDENTIFIER=[[:letter:][:digit:]]+
 
 
     {DocumentationComment}          { yybegin(JSDOC); return JsDocTokenId.COMMENT_START; }
-    {CommentEnd}                    { return JsDocTokenId.COMMENT_END; }
+    "*/"                            { return JsDocTokenId.COMMENT_END; }
 
     /* Error fallback */
     {ANY_CHAR}                      { }
@@ -189,7 +189,7 @@ IDENTIFIER=[[:letter:][:digit:]]+
 <JSDOC> {
     "@"                             { yybegin(AT); yypushback(1); }
     "*"                             { yybegin(STAR); yypushback(1); }
-    [^(@|*)]*                       { return JsDocTokenId.COMMENT_BLOCK; }
+    [^@*]*                          { return JsDocTokenId.COMMENT_BLOCK; }
 }
 
 <STAR> {
