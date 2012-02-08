@@ -206,7 +206,7 @@ public class DataObjectFactoryProcessorTest extends NbTestCase {
             assertEquals("Label Ok", "labeltest", fo.getAttribute("displayName"));
             assertEquals("MimeOk", "text/test1", fo.getAttribute("mimeType"));
             Object icon = fo.getAttribute("iconBase");
-            assertEquals("Icon found", "org/openide/loaders/unknow.gif", icon);
+            assertEquals("Icon found", "org/openide/loaders/unknown.gif", icon);
             assertEquals("DataObjectClass found", DoFPDataObject.class.getName(), fo.getAttribute("dataObjectClass"));
 
         }
