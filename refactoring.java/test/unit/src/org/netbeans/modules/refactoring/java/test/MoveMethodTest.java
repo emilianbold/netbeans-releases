@@ -53,7 +53,7 @@ public class MoveMethodTest extends MoveBaseTest {
     public MoveMethodTest(String name) {
         super(name);
     }
-    
+
     public void testMoveImports() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/SourceClass.java", "package t;\n"
@@ -98,7 +98,7 @@ public class MoveMethodTest extends MoveBaseTest {
                 + "\n"
                 + "}\n"));
     }
-    
+
     public void testMoveParameterNotNeeded() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/SourceClass.java", "package t;\n"
@@ -136,7 +136,7 @@ public class MoveMethodTest extends MoveBaseTest {
                 + "\n"
                 + "}\n"));
     }
-    
+
     public void testMoveParameterMissing() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/SourceClass.java", "package t;\n"
@@ -174,7 +174,7 @@ public class MoveMethodTest extends MoveBaseTest {
                 + "\n"
                 + "}\n"));
     }
-    
+
     public void testMoveExists() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -208,7 +208,7 @@ public class MoveMethodTest extends MoveBaseTest {
                 + "}\n"));
         performMove(src.getFileObject("t/A.java"), new int[]{1}, "java.lang.String", Visibility.PUBLIC, new Problem(true, "ERR_MoveToLibrary"));
     }
-    
+
 //    TODO: Fix
 //    public void testMoveFromLibrary() throws Exception {
 //        writeFilesAndWaitForScan(src,
@@ -222,7 +222,6 @@ public class MoveMethodTest extends MoveBaseTest {
 //                + "}\n"));
 //        performMove("java.lang.String", new int[]{1}, src.getFileObject("t/A.java"), Visibility.PUBLIC, new Problem(true, "ERR_MoveFromLibrary"));
 //    }
-
     public void testMoveSubSuper() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -244,6 +243,60 @@ public class MoveMethodTest extends MoveBaseTest {
         performMove(src.getFileObject("t/A.java"), new int[]{1}, src.getFileObject("t/A.java"), Visibility.PUBLIC, false, new Problem(true, "ERR_MoveToSameClass"));
         performMove(src.getFileObject("t/A.java"), new int[]{1}, src.getFileObject("t/B.java"), Visibility.PUBLIC, false, new Problem(true, "ERR_MoveToSubClass"));
         performMove(src.getFileObject("t/B.java"), new int[]{1}, src.getFileObject("t/A.java"), Visibility.PUBLIC, false, new Problem(true, "ERR_MoveToSuperClass"));
+    }
+
+    public void testMoveToStatic() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    /** Something about i */\n"
+                + "    int i() { return 1; }\n"
+                + "    public void foo() {\n"
+                + "        B b = new B();\n"
+                + "        System.out.println(i());\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public static void main(String[] args) {\n"
+                + "        A a = new A();\n"
+                + "        System.out.println(a.i());\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/C.java", "package t;\n"
+                + "public class C {\n"
+                + "    public void foo() {\n"
+                + "        A a = new A();\n"
+                + "        B b = new B();\n"
+                + "        System.out.println(a.i());\n"
+                + "    }\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/A.java"), new int[]{1}, src.getFileObject("t/B.java"), Visibility.PUBLIC, false, new Problem(false, "WRN_NoAccessor"));
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void foo() {\n"
+                + "        B b = new B();\n"
+                + "        System.out.println(b.i());\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public static void main(String[] args) {\n"
+                + "        A a = new A();\n"
+                + "        System.out.println(a.i());\n"
+                + "    }\n"
+                + "    /** Something about i */\n"
+                + "    public int i() { return 1; }\n"
+                + "}\n"),
+                new File("t/C.java", "package t;\n"
+                + "public class C {\n"
+                + "    public void foo() {\n"
+                + "        A a = new A();\n"
+                + "        B b = new B();\n"
+                + "        System.out.println(b.i());\n"
+                + "    }\n"
+                + "}\n"));
     }
 
     public void testMoveStatic() throws Exception {
@@ -293,7 +346,7 @@ public class MoveMethodTest extends MoveBaseTest {
                 + "    }\n"
                 + "}\n"));
     }
-    
+
     public void testMoveNoAccessor() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -345,7 +398,45 @@ public class MoveMethodTest extends MoveBaseTest {
                 + "    }\n"
                 + "}\n"));
     }
-    
+
+    public void testMoveGeneric() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A <E> {\n"
+                + "    /** Something about i */\n"
+                + "    E i() { return null; }\n"
+                + "    public void foo() {\n"
+                + "        B b = new B();\n"
+                + "        System.out.println(i());\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void foo() {\n"
+                + "        A<String> a = new A<String>();\n"
+                + "        System.out.println(a.i());\n"
+                + "    }\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/A.java"), new int[]{1}, src.getFileObject("t/B.java"), Visibility.PUBLIC, false);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A <E> {\n"
+                + "    public void foo() {\n"
+                + "        B b = new B();\n"
+                + "        System.out.println(b.<E>i());\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void foo() {\n"
+                + "        A<String> a = new A<String>();\n"
+                + "        System.out.println(this.<String>i());\n"
+                + "    }\n"
+                + "    /** Something about i */\n"
+                + "    public <E> E i() { return null; }\n"
+                + "}\n"));
+    }
+
     public void testMoveInstance() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -427,7 +518,7 @@ public class MoveMethodTest extends MoveBaseTest {
                 + "        System.out.println(a.i(b));\n"
                 + "    }\n"
                 + "}\n"));
-        
+
         performMove(src.getFileObject("t/A.java"), new int[]{1}, src.getFileObject("t/B.java"), Visibility.PUBLIC, true);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
@@ -1060,6 +1151,255 @@ public class MoveMethodTest extends MoveBaseTest {
                 + "        }\n"
                 + "        return result;\n"
                 + "    }\n"
+                + "}"));
+    }
+
+    public void testVideoStore3() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("video/Movie.java", "package video;\n"
+                + "\n"
+                + "public class Movie {\n"
+                + "    \n"
+                + "    public static final int CHILDRENS = 2;\n"
+                + "    public static final int REGULAR = 0;\n"
+                + "    public static final int NEW_RELEASE = 1;\n"
+                + "\n"
+                + "    private String title;\n"
+                + "    private int priceCode;\n"
+                + "\n"
+                + "    public Movie(String title, int priceCode) {\n"
+                + "        this.title = title;\n"
+                + "        this.priceCode = priceCode;\n"
+                + "    }\n"
+                + "\n"
+                + "    public int getPriceCode() {\n"
+                + "        return priceCode;\n"
+                + "    }\n"
+                + "\n"
+                + "    public void setPriceCode(int priceCode) {\n"
+                + "        this.priceCode = priceCode;\n"
+                + "    }\n"
+                + "\n"
+                + "    public String getTitle() {\n"
+                + "        return title;\n"
+                + "    }\n"
+                + "}"),
+                new File("video/Rental.java", "package video;\n"
+                + "\n"
+                + "public class Rental {\n"
+                + "\n"
+                + "    private Movie movie;\n"
+                + "    private int daysRent;\n"
+                + "\n"
+                + "    public Rental(Movie movie, int daysRent) {\n"
+                + "        this.movie = movie;\n"
+                + "        this.daysRent = daysRent;\n"
+                + "    }\n"
+                + "\n"
+                + "    public Movie getMovie() {\n"
+                + "        return movie;\n"
+                + "    }\n"
+                + "\n"
+                + "    public int getDaysRent() {\n"
+                + "        return daysRent;\n"
+                + "    }\n"
+                + "}"),
+                new File("videostore/Customer.java", "package videostore;\n"
+                + "\n"
+                + "import video.Movie;\n"
+                + "import video.Rental;\n"
+                + "import java.util.Enumeration;\n"
+                + "import java.util.Vector;\n"
+                + "\n"
+                + "public class Customer {\n"
+                + "\n"
+                + "    private String name;\n"
+                + "    private Vector rentals = new Vector();\n"
+                + "\n"
+                + "    public Customer(String name) {\n"
+                + "        this.name = name;\n"
+                + "    }\n"
+                + "    \n"
+                + "    public void addRental(Rental rental) {\n"
+                + "        rentals.addElement(rental);\n"
+                + "    }\n"
+                + "\n"
+                + "    public String getName() {\n"
+                + "        return name;\n"
+                + "    }\n"
+                + "    \n"
+                + "    public String statement() {\n"
+                + "        double totalAmount = 0;\n"
+                + "        int frequentRenterpoints = 0;\n"
+                + "        Enumeration rentalelements = rentals.elements();\n"
+                + "        String result = \"Rental Record for \" + getName() + \"\\n\";\n"
+                + "        while(rentalelements.hasMoreElements()) {\n"
+                + "            Rental each = (Rental) rentalelements.nextElement();\n"
+                + "            double thisAmount = amountFor(each);\n"
+                + "            \n"
+                + "            // add frequent renter points\n"
+                + "            frequentRenterpoints++;\n"
+                + "            // add bonus for a two day new release rental\n"
+                + "            if((each.getMovie().getPriceCode() == Movie.NEW_RELEASE) &&\n"
+                + "                    each.getDaysRent() > 1) frequentRenterpoints++;\n"
+                + "            \n"
+                + "            // show figures for this rental\n"
+                + "            result += \"\\t\" + each.getMovie().getTitle() + \"\\t\" +\n"
+                + "                    String.valueOf(thisAmount) + \"\\n\";\n"
+                + "            totalAmount += thisAmount;\n"
+                + "        }\n"
+                + "        // add footer lines\n"
+                + "        result += \"Amount owed is \" + String.valueOf(totalAmount) + \"\\n\";\n"
+                + "        result += \"You earned \" + String.valueOf(frequentRenterpoints) +\n"
+                + "                \" frequent renter points\";\n"
+                + "        return result;\n"
+                + "    }\n"
+                + "\n"
+                + "    private double amountFor(Rental rental) {\n"
+                + "        // determine amounts for each line\n"
+                + "        double result = 0;\n"
+                + "        switch(rental.getMovie().getPriceCode()) {\n"
+                + "            case Movie.REGULAR:\n"
+                + "                result += 2;\n"
+                + "                if(rental.getDaysRent() > 2)\n"
+                + "                    result += (rental.getDaysRent() - 2) * 1.5;\n"
+                + "                break;\n"
+                + "            case Movie.NEW_RELEASE:\n"
+                + "                result += rental.getDaysRent() * 3;\n"
+                + "                break;\n"
+                + "            case Movie.CHILDRENS:\n"
+                + "                result += 1.5;\n"
+                + "                if(rental.getDaysRent() > 3)\n"
+                + "                    result += (rental.getDaysRent() -3) * 1.5;\n"
+                + "                break;\n"
+                + "        }\n"
+                + "        return result;\n"
+                + "    }\n"
+                + "}"));
+        performMove(src.getFileObject("videostore/Customer.java"), new int[]{6}, src.getFileObject("video/Rental.java"), Visibility.ESCALATE, false);
+        verifyContent(src,
+                new File("video/Movie.java", "package video;\n"
+                + "\n"
+                + "public class Movie {\n"
+                + "    \n"
+                + "    public static final int CHILDRENS = 2;\n"
+                + "    public static final int REGULAR = 0;\n"
+                + "    public static final int NEW_RELEASE = 1;\n"
+                + "\n"
+                + "    private String title;\n"
+                + "    private int priceCode;\n"
+                + "\n"
+                + "    public Movie(String title, int priceCode) {\n"
+                + "        this.title = title;\n"
+                + "        this.priceCode = priceCode;\n"
+                + "    }\n"
+                + "\n"
+                + "    public int getPriceCode() {\n"
+                + "        return priceCode;\n"
+                + "    }\n"
+                + "\n"
+                + "    public void setPriceCode(int priceCode) {\n"
+                + "        this.priceCode = priceCode;\n"
+                + "    }\n"
+                + "\n"
+                + "    public String getTitle() {\n"
+                + "        return title;\n"
+                + "    }\n"
+                + "}"),
+                new File("video/Rental.java", "package video;\n"
+                + "\n"
+                + "public class Rental {\n"
+                + "\n"
+                + "    private Movie movie;\n"
+                + "    private int daysRent;\n"
+                + "\n"
+                + "    public Rental(Movie movie, int daysRent) {\n"
+                + "        this.movie = movie;\n"
+                + "        this.daysRent = daysRent;\n"
+                + "    }\n"
+                + "\n"
+                + "    public Movie getMovie() {\n"
+                + "        return movie;\n"
+                + "    }\n"
+                + "\n"
+                + "    public int getDaysRent() {\n"
+                + "        return daysRent;\n"
+                + "    }\n"
+                + "\n"
+                + "    public double amountFor() {\n"
+                + "        // determine amounts for each line\n"
+                + "        double result = 0;\n"
+                + "        switch (this.getMovie().getPriceCode()) {\n"
+                + "            case Movie.REGULAR:\n"
+                + "                result += 2;\n"
+                + "                if (this.getDaysRent() > 2) {\n"
+                + "                    result += (this.getDaysRent() - 2) * 1.5;\n"
+                + "                }\n"
+                + "                break;\n"
+                + "            case Movie.NEW_RELEASE:\n"
+                + "                result += this.getDaysRent() * 3;\n"
+                + "                break;\n"
+                + "            case Movie.CHILDRENS:\n"
+                + "                result += 1.5;\n"
+                + "                if (this.getDaysRent() > 3) {\n"
+                + "                    result += (this.getDaysRent() - 3) * 1.5;\n"
+                + "                }\n"
+                + "                break;\n"
+                + "        }\n"
+                + "        return result;\n"
+                + "    }\n"
+                + "}"),
+                new File("videostore/Customer.java", "package videostore;\n"
+                + "\n"
+                + "import video.Movie;\n"
+                + "import video.Rental;\n"
+                + "import java.util.Enumeration;\n"
+                + "import java.util.Vector;\n"
+                + "\n"
+                + "public class Customer {\n"
+                + "\n"
+                + "    private String name;\n"
+                + "    private Vector rentals = new Vector();\n"
+                + "\n"
+                + "    public Customer(String name) {\n"
+                + "        this.name = name;\n"
+                + "    }\n"
+                + "    \n"
+                + "    public void addRental(Rental rental) {\n"
+                + "        rentals.addElement(rental);\n"
+                + "    }\n"
+                + "\n"
+                + "    public String getName() {\n"
+                + "        return name;\n"
+                + "    }\n"
+                + "    \n"
+                + "    public String statement() {\n"
+                + "        double totalAmount = 0;\n"
+                + "        int frequentRenterpoints = 0;\n"
+                + "        Enumeration rentalelements = rentals.elements();\n"
+                + "        String result = \"Rental Record for \" + getName() + \"\\n\";\n"
+                + "        while(rentalelements.hasMoreElements()) {\n"
+                + "            Rental each = (Rental) rentalelements.nextElement();\n"
+                + "            double thisAmount = each.amountFor();\n"
+                + "            \n"
+                + "            // add frequent renter points\n"
+                + "            frequentRenterpoints++;\n"
+                + "            // add bonus for a two day new release rental\n"
+                + "            if((each.getMovie().getPriceCode() == Movie.NEW_RELEASE) &&\n"
+                + "                    each.getDaysRent() > 1) frequentRenterpoints++;\n"
+                + "            \n"
+                + "            // show figures for this rental\n"
+                + "            result += \"\\t\" + each.getMovie().getTitle() + \"\\t\" +\n"
+                + "                    String.valueOf(thisAmount) + \"\\n\";\n"
+                + "            totalAmount += thisAmount;\n"
+                + "        }\n"
+                + "        // add footer lines\n"
+                + "        result += \"Amount owed is \" + String.valueOf(totalAmount) + \"\\n\";\n"
+                + "        result += \"You earned \" + String.valueOf(frequentRenterpoints) +\n"
+                + "                \" frequent renter points\";\n"
+                + "        return result;\n"
+                + "    }\n"
+                + "\n"
                 + "}"));
     }
 }

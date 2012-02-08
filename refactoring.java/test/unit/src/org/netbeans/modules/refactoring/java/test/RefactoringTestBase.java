@@ -229,8 +229,8 @@ public class RefactoringTestBase extends NbTestCase {
 
                             @Override
                             public SourceGroup[] getSourceGroups(String type) {
-                                return new SourceGroup[] {GenericSources.group(p, src.getParent(), "", "", null, null)};//,
-//                                                          GenericSources.group(p, test, "testsources", "Test Sources", null, null)};
+                                return new SourceGroup[] {GenericSources.group(p, src.getParent(), "source", "Java Sources", null, null),
+                                                          GenericSources.group(p, test, "testsources", "Test Sources", null, null)};
                             }
 
                             @Override
