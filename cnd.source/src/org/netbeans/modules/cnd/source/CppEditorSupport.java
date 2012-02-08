@@ -59,6 +59,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.source.spi.CndPaneProvider;
 
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.GuardedSectionsFactory;
@@ -187,7 +188,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
             }
             in.close();
         }
-        GuardedSectionsProvider guardedProvider = getGuardedSectionsProvider(doc);
+        GuardedSectionsProvider guardedProvider = getGuardedSectionsProvider(doc, kit);
         if (guardedProvider == null) {
             super.loadFromStreamToKit(doc, stream, kit);
         } else {
@@ -206,7 +207,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
 
     @Override
     protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
-        GuardedSectionsProvider guardedProvider = getGuardedSectionsProvider(doc);
+        GuardedSectionsProvider guardedProvider = getGuardedSectionsProvider(doc, kit);
         if (guardedProvider != null) {
             Charset cs = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
             Writer writer = guardedProvider.createGuardedWriter(stream, cs);
@@ -231,15 +232,15 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
         }
     }
     
-    private GuardedSectionsProvider getGuardedSectionsProvider(final StyledDocument doc) {
+    private GuardedSectionsProvider getGuardedSectionsProvider(final StyledDocument doc, EditorKit kit) {
         Object o = doc.getProperty(GuardedSectionsProvider.class);
         if (o instanceof GuardedSectionsProvider) {
             return (GuardedSectionsProvider) o;
         }        
-        DataObject dataObject = getDataObject();
-        if (dataObject != null) {
-            FileObject fo = dataObject.getPrimaryFile();
-            GuardedSectionsFactory gsf = GuardedSectionsFactory.find(dataObject.getPrimaryFile().getMIMEType());
+        String mimeType = kit.getContentType();
+        CndUtils.assertTrueInConsole(mimeType != null, "unexpected null content type"); // NOI18N
+        if (mimeType != null) {
+            GuardedSectionsFactory gsf = GuardedSectionsFactory.find(mimeType);
             if (gsf != null) {
                 GuardedSectionsProvider gsp = gsf.create(new GuardedEditorSupportImpl(doc));
                 doc.putProperty(GuardedSectionsProvider.class, gsp);
