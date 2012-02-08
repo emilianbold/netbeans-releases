@@ -141,6 +141,8 @@ public enum JavaTokenId implements TokenId {
     SEMICOLON(";", "separator"),
     COMMA(",", "separator"),
     DOT(".", "separator"),
+    COLONCOLON("::", "separator"),
+    ARROW("->", "separator"),
 
     EQ("=", "operator"),
     GT(">", "operator"),

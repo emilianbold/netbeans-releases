@@ -83,7 +83,7 @@ public class JavaLexer implements Lexer<JavaTokenId> {
         assert (info.state() == null); // never set to non-null value in state()
         
         Integer ver = (Integer)info.getAttributeValue("version");
-        this.version = (ver != null) ? ver.intValue() : 7; // TODO: Java 1.7 used by default
+        this.version = (ver != null) ? ver.intValue() : 8; // TODO: Java 1.8 used by default
     }
     
     public Object state() {
@@ -97,10 +97,7 @@ public class JavaLexer implements Lexer<JavaTokenId> {
             switch (c) {
                 case '#':
                     //Support for exotic identifiers has been removed 6999438
-                    if (true || this.version < 7 || input.read() != '"') {
-                        return token(JavaTokenId.ERROR);
-                    }
-                    lookupId = JavaTokenId.IDENTIFIER;
+                    return token(JavaTokenId.ERROR);
                 case '"': // string literal
                     if (lookupId == null) lookupId = JavaTokenId.STRING_LITERAL;
                     while (true)
@@ -240,6 +237,8 @@ public class JavaLexer implements Lexer<JavaTokenId> {
                             return token(JavaTokenId.MINUSMINUS);
                         case '=':
                             return token(JavaTokenId.MINUSEQ);
+                        case '>':
+                            return token(JavaTokenId.ARROW);
                     }
                     input.backup(1);
                     return token(JavaTokenId.MINUS);
@@ -311,6 +310,9 @@ public class JavaLexer implements Lexer<JavaTokenId> {
                 case ';':
                     return token(JavaTokenId.SEMICOLON);
                 case ':':
+                    if (input.read() == ':')
+                        return token(JavaTokenId.COLONCOLON);
+                    input.backup(1);
                     return token(JavaTokenId.COLON);
                 case '?':
                     return token(JavaTokenId.QUESTION);
