@@ -125,6 +125,7 @@
                 <package>org.netbeans.modules.css.lib.api</package>
                 <package>org.netbeans.modules.css.lib.api.model</package>
                 <package>org.netbeans.modules.css.lib.api.properties</package>
+                <package>org.netbeans.modules.css.lib.api.properties.model</package>
             </friend-packages>
         </data>
     </configuration>

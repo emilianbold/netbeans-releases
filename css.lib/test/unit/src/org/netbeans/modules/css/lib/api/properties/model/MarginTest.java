@@ -68,7 +68,7 @@ public class MarginTest extends CssTestBase {
         PropertyModel model = Properties.getPropertyModel("margin");
         ResolvedProperty val = new ResolvedProperty(model, "1px 20% 3px");
 
-        Node root = val.getSimpleParseTree();
+        Node root = val.getParseTree();
         dumpTree(root);
 
         System.out.println("-------------------");
@@ -76,7 +76,7 @@ public class MarginTest extends CssTestBase {
         PropertyModel model2 = Properties.getPropertyModel("margin-left");
         ResolvedProperty val2 = new ResolvedProperty(model2, "1px");
 
-        Node root2 = val2.getSimpleParseTree();
+        Node root2 = val2.getParseTree();
         dumpTree(root2);
 
         NodeVisitor visitor = new NodeVisitor() {
@@ -106,7 +106,7 @@ public class MarginTest extends CssTestBase {
         PropertyModel model = Properties.getPropertyModel("margin");
         ResolvedProperty val = new ResolvedProperty(model, "1px 20% auto");
 
-        Node root = val.getSimpleParseTree();
+        Node root = val.getParseTree();
         dumpTree(root);
 
         ModelBuilderNodeVisitor<NodeModel> modelvisitor = new ModelBuilderNodeVisitor<NodeModel>(PropertyModelId.MARGIN);
@@ -126,8 +126,7 @@ public class MarginTest extends CssTestBase {
             Length len = mw.getLength();
             assertNotNull(len);
 
-            TokenNodeModel lenvalue = len.getLength();
-            String sval = lenvalue.getToken().image().toString();
+            String sval = len.getLength().getValue().toString();
 
             assertEquals("1px", sval);
         }
@@ -139,8 +138,8 @@ public class MarginTest extends CssTestBase {
 
             assertNotNull(mw);
 
-            TokenNodeModel value = mw.getPercentage();
-            String sval = value.getToken().image().toString();
+            Text value = mw.getPercentage();
+            String sval = value.getValue().toString();
 
             assertEquals("20%", sval);
         }
@@ -152,8 +151,8 @@ public class MarginTest extends CssTestBase {
 
             assertNotNull(mw);
 
-            TokenNodeModel value = mw.getAuto();
-            String sval = value.getToken().image().toString();
+            Text value = mw.getAuto();
+            String sval = value.getValue().toString();
 
             assertEquals("auto", sval);
             
@@ -219,7 +218,7 @@ public class MarginTest extends CssTestBase {
         ResolvedProperty val = new ResolvedProperty(model, text);
 
         ModelBuilderNodeVisitor<NodeModel> modelvisitor = new ModelBuilderNodeVisitor<NodeModel>(PropertyModelId.MARGIN);
-        val.getSimpleParseTree().accept(modelvisitor);
+        val.getParseTree().accept(modelvisitor);
 
         Box<MarginWidth> mbox = (Box<MarginWidth>)modelvisitor.getModel();
         
@@ -231,22 +230,20 @@ public class MarginTest extends CssTestBase {
         ResolvedProperty val = new ResolvedProperty(model, value);
 
         ModelBuilderNodeVisitor<NodeModel> modelvisitor = new ModelBuilderNodeVisitor<NodeModel>(PropertyModelId.MARGIN);
-        val.getSimpleParseTree().accept(modelvisitor);
+        val.getParseTree().accept(modelvisitor);
 
         Margin margin = (Margin)modelvisitor.getModel();
         assertNotNull(margin);
         
         System.out.println("margin: " + value);
         System.out.println("-------------------------------");
-        dumpTree(val.getSimpleParseTree());
+        dumpTree(val.getParseTree());
         System.out.println("");
         dumpBox(margin);
     }
     
     private void dumpBox(Box<MarginWidth> box) {
-        System.out.println("\n\t" + box.getEdge(Edge.TOP));
-        System.out.println(box.getEdge(Edge.LEFT) + "\t\t" + box.getEdge(Edge.RIGHT));
-        System.out.println("\t" + box.getEdge(Edge.BOTTOM) + "\n");
+        Utils.dumpBox(box);
     }
 
     

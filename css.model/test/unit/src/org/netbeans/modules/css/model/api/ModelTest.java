@@ -99,7 +99,7 @@ public class ModelTest extends ModelTestBase {
         assertEquals(Difference.ADD, diff.getType());
 
         assertEquals("h1 {\n"
-                + "\tmargin:20px;\n"
+                + "\n\tmargin: 20px;\n"
                 + "\n"
                 + "}\n", diff.getSecondText());
 
@@ -134,7 +134,7 @@ public class ModelTest extends ModelTestBase {
         assertEquals(1, diffs.length);
 
         Difference diff = diffs[0];
-        assertEquals("Difference(ADD, 4, 0, 5, 5)", diff.toString());
+        assertEquals("Difference(ADD, 4, 0, 5, 6)", diff.toString());
 
     }
 

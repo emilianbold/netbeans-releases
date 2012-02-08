@@ -78,7 +78,7 @@ public class StyleSheetTest extends ModelTestBase {
 
         CharSequence code = model.getModelSource();
         assertEquals("\n.myclass, #myid {\n"
-                + "	border-color:green;\n\n"
+                + "\n	border-color: green;\n\n"
                 + "}\n", code.toString());
     }
     

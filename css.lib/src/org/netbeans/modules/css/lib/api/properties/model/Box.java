@@ -45,10 +45,8 @@ package org.netbeans.modules.css.lib.api.properties.model;
  *
  * @author marekfukala
  */
-public interface Box<T extends NodeModel> {
-    
+public interface Box<T extends NodeModel> extends SemanticModel {
+
     public T getEdge(Edge edge);
 
 }
-
-

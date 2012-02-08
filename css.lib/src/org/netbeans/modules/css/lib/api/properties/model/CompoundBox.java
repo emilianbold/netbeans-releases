@@ -48,7 +48,8 @@ import java.util.List;
  *
  * @author marekfukala
  */
-public class CompoundBox<T extends NodeModel> implements EditableBox<T> {
+@Deprecated
+public class CompoundBox <T extends NodeModel> implements EditableBox<T> {
 
     private List<Box<T>> boxes = new ArrayList<Box<T>>();
 
@@ -84,13 +85,16 @@ public class CompoundBox<T extends NodeModel> implements EditableBox<T> {
     @Override
     public void setEdge(Edge edge, T value) {
         modified.setEdge(edge, value);
-        
-        updateTheParseTree();
+    }
+
+    @Override
+    public void addListener(SemanticModelListener listener) {
         
     }
 
-    private void updateTheParseTree() {
-//        throw new UnsupportedOperationException("Not yet implemented");
+    @Override
+    public void removeListener(SemanticModelListener listener) {
+        
     }
 
     private class WBoxI<T extends NodeModel> implements EditableBox {
@@ -132,6 +136,16 @@ public class CompoundBox<T extends NodeModel> implements EditableBox<T> {
                 default:
                     throw new IllegalStateException();
             } 
+            
+        }
+
+        @Override
+        public void addListener(SemanticModelListener listener) {
+            
+        }
+
+        @Override
+        public void removeListener(SemanticModelListener listener) {
             
         }
         

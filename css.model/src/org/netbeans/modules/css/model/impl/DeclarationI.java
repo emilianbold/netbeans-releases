@@ -44,7 +44,11 @@ package org.netbeans.modules.css.model.impl;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyModel;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
+import org.netbeans.modules.css.lib.api.properties.model.ModelBuilderNodeVisitor;
+import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
+import org.netbeans.modules.css.lib.api.properties.model.PropertyModelId;
 import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.Expression;
 import org.netbeans.modules.css.model.api.Prio;
 import org.netbeans.modules.css.model.api.Property;
 import org.netbeans.modules.css.model.api.PropertyValue;
@@ -85,6 +89,7 @@ public class DeclarationI extends ModelElement implements Declaration {
 
         addEmptyElement(Property.class);
         addTextElement(":");
+        addTextElement(" ");
         addEmptyElement(PropertyValue.class);
         addEmptyElement(Prio.class);
     }
@@ -144,5 +149,24 @@ public class DeclarationI extends ModelElement implements Declaration {
         }
         return resolvedProperty;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        b.append(getClass().getSimpleName());
+        b.append("(");
+        Property p = getProperty();
+        b.append(p == null ? "null" : p.getContent());
+        PropertyValue pv = getPropertyValue();
+        b.append(":");
+        Expression e = pv == null ? null : pv.getExpression();
+        b.append(e == null ? "null" : e.getContent());
+        b.append(getPrio() == null ? "" : "!");
+        b.append(")");
+        
+        return b.toString();
+    }
+    
+    
     
 }

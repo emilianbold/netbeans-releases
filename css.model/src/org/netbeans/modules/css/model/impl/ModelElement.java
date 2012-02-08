@@ -48,6 +48,7 @@ import java.util.List;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.Element;
 import org.netbeans.modules.css.model.api.ElementListener;
+import org.netbeans.modules.css.model.api.PlainElement;
 
 /**
  *
@@ -197,11 +198,21 @@ public abstract class ModelElement implements Element {
 
     @Override
     public int getElementIndex(Element e) {
-        //linear search :-(
-        Class clazz = getModelClass(e);
+        //XXX: fix the linear search :-(
         for(int i = 0; i < CLASSELEMENTS.size(); i++) {
             ClassElement ce = CLASSELEMENTS.get(i);
-            if(ce.getClazz().equals(clazz)) {
+            if(ce.getElement().equals(e)) { //identity comparison?!?!
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+    public int getElementIndex(Class elementClass) {
+        //XXX: fix the linear search :-(
+        for(int i = 0; i < CLASSELEMENTS.size(); i++) {
+            ClassElement ce = CLASSELEMENTS.get(i);
+            if(ce.getClazz().equals(elementClass)) {
                 return i;
             }
         }
@@ -237,7 +248,7 @@ public abstract class ModelElement implements Element {
      * @param element
      */
     protected int setElement(Element element, boolean addElementIfSetAlready) {
-        int index = getElementIndex(element);
+        int index = getElementIndex(getModelClass(element));
         if(index == -1) {
             //not fount, just add it
             return addElement(element);
@@ -255,6 +266,62 @@ public abstract class ModelElement implements Element {
                 return index;
             }
         }
+    }
+    
+    protected void removeTokenElementsFw(int fromIndex, String... images) {
+        if(fromIndex < 0 || fromIndex >= getElementsCount()) {
+            return ;
+        }
+        int toIndex = fromIndex;
+        for(int i = fromIndex; i < getElementsCount(); i++) {
+            Element e = getElementAt(i);
+            //XXX consolidate Plain-TokenElements!!!!!!!!
+            if(e instanceof PlainElement) {
+                PlainElement pe = (PlainElement)e;
+                String peImage = pe.getContent().toString().trim();
+                for(String image : images) {
+                    if(image.equals(peImage)) {
+                        toIndex = i;
+                        break;
+                    }
+                }
+            } else {
+                break;
+            }
+        }
+        
+        for(int i = toIndex; i >= fromIndex; i--) {
+            removeElement(i);
+        }
+        
+    }
+    
+    protected void removeTokenElementsBw(int fromIndex, String... images) {
+         if(fromIndex < 0 || fromIndex >= getElementsCount()) {
+            return ;
+        }
+        int toIndex = fromIndex;
+        for(int i = fromIndex; i >= 0; i--) {
+            Element e = getElementAt(i);
+            //XXX consolidate Plain-TokenElements!!!!!!!!
+            if(e instanceof PlainElement) {
+                PlainElement pe = (PlainElement)e;
+                String peImage = pe.getContent().toString().trim();
+                for(String image : images) {
+                    if(image.equals(peImage)) {
+                        toIndex = i;
+                        break;
+                    }
+                }
+            } else {
+                break;
+            }
+        }
+        
+        for(int i = toIndex; i >= fromIndex; i--) {
+            removeElement(i);
+        }
+        
     }
 
     protected abstract ModelElementListener getElementListener();
@@ -276,5 +343,12 @@ public abstract class ModelElement implements Element {
         public Element getElement() {
             return element;
         }
+
+        @Override
+        public String toString() {
+            return getElement().toString();
+        }
+        
+        
     }
 }

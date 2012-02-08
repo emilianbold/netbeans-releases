@@ -51,7 +51,7 @@ import org.netbeans.modules.css.lib.api.properties.Node;
  *
  * @author marekfukala
  */
-public class NodeModel {
+public class NodeModel implements SemanticModel {
 
     private Node node;
     
@@ -61,6 +61,9 @@ public class NodeModel {
         this.node = node;
     }
 
+    protected NodeModel() {
+    }
+    
     protected Node getNode() {
         return node;
     }
@@ -88,8 +91,8 @@ public class NodeModel {
     @Override
     public String toString() {
         return new StringBuilder()
-                .append(getNode().image())
+                .append(getNode() != null ? getNode().image() : super.toString())
                 .toString();
     }
-    
+
 }

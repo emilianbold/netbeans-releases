@@ -386,7 +386,7 @@ public class PropertyValueTest extends CssTestBase {
         PropertyModel p = Properties.getPropertyModel("font-family");
         ResolvedProperty pv = new ResolvedProperty(p, "fantasy, monospace");
         
-        Node root = pv.getSimpleParseTree();
+        Node root = pv.getParseTree();
         dumpTree(root);
         
         assertNotNull(root);

@@ -49,24 +49,58 @@ import org.netbeans.modules.css.lib.api.properties.Token;
  *
  * @author marekfukala
  */
-public class TokenNodeModel extends NodeModel {
+public class TokenNodeModel extends NodeModel implements Text {
 
+    private CharSequence text;
+    
     public TokenNodeModel(Node.ResolvedTokenNode node) {
         super(node);
+        this.text = node.image();
+    }
+
+    public TokenNodeModel(CharSequence text) {
+        this.text = text;
     }
     
-    public Token getToken() {
-        return ((Node.ResolvedTokenNode)getNode()).getToken();
-    }
-    
-    public CharSequence getImage() {
-        return getToken().image();
+//    public Token getToken() {
+//        return ((Node.ResolvedTokenNode)getNode()).getToken();
+//    }
+//    
+    @Override
+    public String toString() {
+        return new StringBuilder(getClass().getSimpleName())
+                .append("(")
+                .append(text != null ? text : "")
+                .append(")").toString();
     }
 
     @Override
-    public String toString() {
-        return getImage().toString();
+    public CharSequence getValue() {
+        return text;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final TokenNodeModel other = (TokenNodeModel) obj;
+        if (this.text != other.text && (this.text == null || !this.text.equals(other.text))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 43 * hash + (this.text != null ? this.text.hashCode() : 0);
+        return hash;
+    }
+    
     
     
 }

@@ -55,9 +55,36 @@ public class Length extends NodeModel {
     public Length(Node node) {
         super(node);
     }
-   
-    public TokenNodeModel getLength() {
+    
+    public Length(TokenNodeModel text) {
+        length = text;
+    }
+
+    public Text getLength() {
         return length;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Length other = (Length) obj;
+        if (this.length != other.length && (this.length == null || !this.length.equals(other.length))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 37 * hash + (this.length != null ? this.length.hashCode() : 0);
+        return hash;
+    }
+    
     
 }
