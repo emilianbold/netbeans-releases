@@ -118,6 +118,8 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
 
         HintsController.setErrors(info.getFileObject(), caretAware ? KEY_SUGGESTIONS : KEY_HINTS, result);
 
+        MimeLookup.getLookup("text/x-java").lookupAll(PositionRefresherHelper.class);
+        
         if (caretAware) {
             MimeLookup.getLookup("text/x-java").lookup(SuggestionsPositionRefresherHelper.class).setVersion(doc, caret);
         } else {
@@ -184,10 +186,7 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
 
     }
 
-    @MimeRegistrations({
-        @MimeRegistration(mimeType="text/x-java", service=PositionRefresherHelper.class),
-        @MimeRegistration(mimeType="text/x-java", service=HintPositionRefresherHelper.class)
-    })
+    @MimeRegistration(mimeType="text/x-java", service=PositionRefresherHelper.class)
     public static final class HintPositionRefresherHelper extends PositionRefresherHelper<DocumentVersion> {
 
         public HintPositionRefresherHelper() {
@@ -213,10 +212,7 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
 
     }
 
-    @MimeRegistrations({
-        @MimeRegistration(mimeType="text/x-java", service=PositionRefresherHelper.class),
-        @MimeRegistration(mimeType="text/x-java", service=SuggestionsPositionRefresherHelper.class)
-    })
+    @MimeRegistration(mimeType="text/x-java", service=PositionRefresherHelper.class)
     public static final class SuggestionsPositionRefresherHelper extends PositionRefresherHelper<SuggestionsDocumentVersion> {
 
         public SuggestionsPositionRefresherHelper() {
