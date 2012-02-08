@@ -39,50 +39,45 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.impl;
+package org.netbeans.modules.css.model.api;
 
-import javax.swing.text.BadLocationException;
-import org.netbeans.modules.css.lib.TestUtil;
-import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
-import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.api.properties.model.Margin;
-import org.netbeans.modules.css.lib.api.properties.model.PropertyModelId;
-import org.netbeans.modules.css.lib.api.properties.model.Utils;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.modules.css.lib.api.properties.model.*;
 import org.netbeans.modules.css.model.ModelTestBase;
-import org.netbeans.modules.css.model.api.Declaration;
-import org.netbeans.modules.css.model.api.Model;
-import org.netbeans.modules.css.model.api.StyleSheet;
-import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.css.model.impl.semantic.DeclarationsMarginBoxModel;
 
 /**
  *
  * @author marekfukala
  */
-public class DeclarationITest extends ModelTestBase {
+public class PropertyModelFactoryTest extends ModelTestBase {
 
-    public DeclarationITest(String name) {
+    public PropertyModelFactoryTest(String name) {
         super(name);
     }
-
-    public void testResolvedProperty() throws BadLocationException, ParseException {
-        String code = "div { padding : 1px 2px }";
+    
+    public void testGetPropertyModel() {
+        String code = "div { margin : 3px auto; }";
         Model model = createModel(code);
         
-        StyleSheet styleSheet = model.getStyleSheet();
-        Declaration d = styleSheet.getBody().getRules().get(0).getDeclarations().getDeclarations().get(0);
-        assertNotNull(d);
+        model.runReadTask(new Model.ModelTask() {
+
+            @Override
+            public void run(Model model) {
+                StyleSheet styleSheet = model.getStyleSheet();
+                Declaration d = styleSheet.getBody().getRules().get(0).getDeclarations().getDeclarations().get(0);
+                assertNotNull(d);
+
+                Margin margin = PropertyModelFactory.getPropertyModel(d, PropertyModelId.MARGIN);
+                assertNotNull(margin);
+
+                Utils.dumpBox(margin);                
+            }
+            
+        });
         
-        ResolvedProperty rp = d.getResolvedProperty();
-        assertNotNull(rp);
         
-        assertTrue(rp.isResolved());
-        Node ptree = rp.getParseTree();
-        
-        assertNotNull(ptree);
     }
     
-    
+
 }

@@ -43,7 +43,6 @@ package org.netbeans.modules.css.model.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.css.model.api.BodyItem;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Declarations;
 
@@ -82,12 +81,26 @@ public class DeclarationsI extends ModelElement implements Declarations {
 
     @Override
     public void addDeclaration(Declaration declaration) {
+        addTextElement("\n");
         addElement(declaration);
         addTextElement(";\n");
+    }
+
+    @Override
+    public void removeDeclaration(Declaration declaration) {
+        int index = getElementIndex(declaration);
+        if(index == -1) {
+            return ;
+        }
+        removeElement(index); //remove the declaration
+        
+        //look if there's a semicolon and some whitespaces after the declaration
+        removeTokenElementsFw(index, ";", "\n", "");
     }
 
     @Override
     protected Class getModelClass() {
         return Declarations.class;
     }
+
 }

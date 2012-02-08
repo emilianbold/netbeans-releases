@@ -46,10 +46,12 @@ package org.netbeans.modules.css.model.api;
  *
  * @author marekfukala
  */
-public interface TokenElement extends Element {
+public interface TokenElement extends PlainElement {
     
+    @Override
     public CharSequence getContent();
     
+    @Override
     public void setContent(CharSequence value);
     
 }

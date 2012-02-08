@@ -47,9 +47,13 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.css.lib.TestUtil;
 import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.lib.api.properties.model.Box;
+import org.netbeans.modules.css.lib.api.properties.model.Edge;
+import org.netbeans.modules.css.lib.api.properties.model.MarginWidth;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -72,9 +76,23 @@ public class ModelTestBase extends NbTestCase {
         ModelAccess.checkModelAccess = false;
     }
     
-    protected Model createModel(String source) throws BadLocationException, ParseException {
-        CssParserResult result = TestUtil.parse(source);
-        return new Model(result);
+    protected Model createModel(String source) {
+        try {
+            CssParserResult result = TestUtil.parse(source);
+            return new Model(result);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+    
+    protected void assertBox(Box<MarginWidth> box, String top, String right, String bottom, String left) {
+        assertEquals(top, box.getEdge(Edge.TOP).getTextRepresentation());
+        assertEquals(right, box.getEdge(Edge.RIGHT).getTextRepresentation());
+        assertEquals(bottom, box.getEdge(Edge.BOTTOM).getTextRepresentation());
+        assertEquals(left, box.getEdge(Edge.LEFT).getTextRepresentation());
     }
     
     protected void dumpTree(org.netbeans.modules.css.lib.api.properties.Node node) {

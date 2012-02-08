@@ -131,7 +131,7 @@ public class ResolvedProperty {
      * 
      * In most cases clients will use this method.
      */    
-    public synchronized Node getSimpleParseTree() {
+    public synchronized Node getParseTree() {
         if(simpleParseTree == null) {
             simpleParseTree = generateParseTree(false);
         }
@@ -143,7 +143,7 @@ public class ResolvedProperty {
      * The parse tree contains also the anonymous group nodes.
      * If false the parse tree contains only named nodes (references)
      * 
-     * Possibly remove from the API later since {@link #getSimpleParseTree()} 
+     * Possibly remove from the API later since {@link #getParseTree()} 
      * is the preferred way for clients wishing to work with the parse tree.
      * 
      * Mostly used for debugging and tests.

@@ -52,21 +52,88 @@ public class MarginWidth extends NodeModel {
     public TokenNodeModel auto;
     public Length length;
     public TokenNodeModel percentage;
-    
+
     public MarginWidth(Node node) {
         super(node);
     }
-    
-    public TokenNodeModel getAuto() {
+
+    public MarginWidth(TokenNodeModel auto, Length length, TokenNodeModel percentage) {
+        this.auto = auto;
+        this.length = length;
+        this.percentage = percentage;
+    }
+
+    public Text getAuto() {
         return auto;
     }
-    
+
     public Length getLength() {
         return length;
     }
-    
-    public TokenNodeModel getPercentage() {
+
+    public Text getPercentage() {
         return percentage;
     }
+
+    public CharSequence getTextRepresentation() {
+        if (auto != null) {
+            return auto.getValue();
+        } else if (getLength() != null) {
+            return getLength().getLength().getValue();
+        } else {
+            return getPercentage().getValue();
+        }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final MarginWidth other = (MarginWidth) obj;
+        if (this.auto != other.auto && (this.auto == null || !this.auto.equals(other.auto))) {
+            return false;
+        }
+        if (this.length != other.length && (this.length == null || !this.length.equals(other.length))) {
+            return false;
+        }
+        if (this.percentage != other.percentage && (this.percentage == null || !this.percentage.equals(other.percentage))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 17 * hash + (this.auto != null ? this.auto.hashCode() : 0);
+        hash = 17 * hash + (this.length != null ? this.length.hashCode() : 0);
+        hash = 17 * hash + (this.percentage != null ? this.percentage.hashCode() : 0);
+        return hash;
+    }
+
+    
+    
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        b.append(getClass().getSimpleName());
+        b.append("(");
+        if (getAuto() != null) {
+            b.append(getAuto());
+        }
+        if (getLength() != null) {
+            b.append(getLength());
+        }
+        if (getPercentage() != null) {
+            b.append(getPercentage());
+        }
+        b.append(")");
+        return b.toString();
+    }
+
     
 }

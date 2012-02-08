@@ -42,6 +42,8 @@
 package org.netbeans.modules.css.model.api;
 
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
+import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
+import org.netbeans.modules.css.lib.api.properties.model.PropertyModelId;
 
 /**
  *

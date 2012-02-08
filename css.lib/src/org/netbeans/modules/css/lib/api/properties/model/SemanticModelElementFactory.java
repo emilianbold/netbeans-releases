@@ -39,50 +39,32 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.impl;
-
-import javax.swing.text.BadLocationException;
-import org.netbeans.modules.css.lib.TestUtil;
-import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
-import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.api.properties.model.Margin;
-import org.netbeans.modules.css.lib.api.properties.model.PropertyModelId;
-import org.netbeans.modules.css.lib.api.properties.model.Utils;
-import org.netbeans.modules.css.model.ModelTestBase;
-import org.netbeans.modules.css.model.api.Declaration;
-import org.netbeans.modules.css.model.api.Model;
-import org.netbeans.modules.css.model.api.StyleSheet;
-import org.netbeans.modules.parsing.spi.ParseException;
+package org.netbeans.modules.css.lib.api.properties.model;
 
 /**
  *
  * @author marekfukala
  */
-public class DeclarationITest extends ModelTestBase {
+public class SemanticModelElementFactory {
 
-    public DeclarationITest(String name) {
-        super(name);
-    }
-
-    public void testResolvedProperty() throws BadLocationException, ParseException {
-        String code = "div { padding : 1px 2px }";
-        Model model = createModel(code);
-        
-        StyleSheet styleSheet = model.getStyleSheet();
-        Declaration d = styleSheet.getBody().getRules().get(0).getDeclarations().getDeclarations().get(0);
-        assertNotNull(d);
-        
-        ResolvedProperty rp = d.getResolvedProperty();
-        assertNotNull(rp);
-        
-        assertTrue(rp.isResolved());
-        Node ptree = rp.getParseTree();
-        
-        assertNotNull(ptree);
+    public static TokenNodeModel createText(CharSequence text) {
+        return new TokenNodeModel(text);
     }
     
+    public static Length createLength(CharSequence text) {
+        return new Length(createText(text));
+    }
+
+    public static MarginWidth createMarginWidth_Auto() {
+        return new MarginWidth(createText("auto"), null, null);
+    }
+
+    public static MarginWidth createMarginWidth_Length(Length length) {
+        return new MarginWidth(null, length, null);
+    }
+
+    public static MarginWidth createMarginWidth_Percentage(CharSequence value) {
+        return new MarginWidth(null, null, createText(value));
+    }
     
 }

@@ -260,11 +260,11 @@ public final class Model {
     /**
      * Returns an instance of {@link ElementFactory}.
      */
-    public ElementFactory getElementFactory() {
+    public static ElementFactory getElementFactory() {
         return getElementFactoryImpl();
     }
 
-    private ElementFactoryImpl getElementFactoryImpl() {
+    private static ElementFactoryImpl getElementFactoryImpl() {
         //possibly get instance from lookup, but ... who'd need that?
         return ElementFactoryImpl.getDefault();
     }

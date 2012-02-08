@@ -39,12 +39,14 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api;
+package org.netbeans.modules.css.lib.api.properties.model;
 
 /**
  *
  * @author marekfukala
  */
-public interface Ws extends Element {
+public interface Text {
+    
+    public CharSequence getValue();
     
 }
