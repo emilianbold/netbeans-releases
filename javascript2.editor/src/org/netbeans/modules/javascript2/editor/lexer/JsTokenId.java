@@ -70,6 +70,7 @@ public enum JsTokenId implements TokenId {
 
     LINE_COMMENT(null, "comment"), // NOI18N
     BLOCK_COMMENT(null, "comment"), // NOI18N
+    DOC_COMMENT(null, "comment"), // NOI18N
 
     STRING_BEGIN(null, "string"), // NOI18N
     STRING(null, "string"), // NOI18N
@@ -232,7 +233,7 @@ public enum JsTokenId implements TokenId {
 
                     // TODO - JsDoc is embedded directly for now. Should be created layer for
                     // detection and embedding specific documenting tool (like ScriptDoc, JSDoc etc.)
-                    if (id == BLOCK_COMMENT) {
+                    if (id == DOC_COMMENT) {
                         return LanguageEmbedding.create(JsDocTokenId.language(), 0, 0);
                     }
 

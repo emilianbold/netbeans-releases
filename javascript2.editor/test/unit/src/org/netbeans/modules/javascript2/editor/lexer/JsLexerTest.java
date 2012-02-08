@@ -334,7 +334,7 @@ public class JsLexerTest extends TestCase {
         String text = "/** This is my\ndoc comment */";
         TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
         TokenSequence ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BLOCK_COMMENT, text);
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.DOC_COMMENT, text);
     }
 
     @SuppressWarnings("unchecked")

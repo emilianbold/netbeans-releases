@@ -533,7 +533,9 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         // eol - true if the caret is at the end of line (ignoring whitespaces)
         boolean eol = lastNonWhite < dotPos;
 
-        if ((token.id() == JsTokenId.BLOCK_COMMENT) || (token.id() == JsTokenId.LINE_COMMENT)) {
+        if ((token.id() == JsTokenId.BLOCK_COMMENT)
+                || (token.id() == JsTokenId.DOC_COMMENT)
+                || (token.id() == JsTokenId.LINE_COMMENT)) {
             return false;
         } else if ((token.id() == JsTokenId.WHITESPACE) && eol && ((dotPos - 1) > 0)) {
             // check if the caret is at the very end of the line comment

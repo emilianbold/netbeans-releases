@@ -46,7 +46,6 @@ package org.netbeans.modules.javascript2.editor.lexer;
 
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 
 /**
  * Test tokens dump of JavaScript code input. Based on the Ruby one.

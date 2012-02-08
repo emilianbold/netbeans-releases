@@ -108,6 +108,7 @@ public class JsBracesMatcher implements BracesMatcher {
                     seq.move(originOffset);
                     if (seq.moveNext()) {
                         if (seq.token().id() == JsTokenId.BLOCK_COMMENT
+                                || seq.token().id() == JsTokenId.DOC_COMMENT
                                 || seq.token().id() == JsTokenId.LINE_COMMENT
                                 // remove once we have a lagueage
                                 || seq.token().id() == JsTokenId.REGEXP

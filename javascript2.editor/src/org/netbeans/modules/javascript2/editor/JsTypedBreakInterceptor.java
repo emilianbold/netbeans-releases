@@ -250,7 +250,8 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             }
         }
 
-        if (id == JsTokenId.BLOCK_COMMENT && offset > ts.offset() && offset < ts.offset()+ts.token().length()) {
+        if ((id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.DOC_COMMENT)
+                && offset > ts.offset() && offset < ts.offset()+ts.token().length()) {
             // Continue *'s
             int begin = Utilities.getRowFirstNonWhite(doc, offset);
             int end = Utilities.getRowEnd(doc, offset)+1;

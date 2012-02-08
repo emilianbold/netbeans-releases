@@ -49,7 +49,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         if (token != null && !JsTokenId.UNKNOWN.equals(token)
                 && !JsTokenId.WHITESPACE.equals(token)
                 && !JsTokenId.LINE_COMMENT.equals(token)
-                && !JsTokenId.BLOCK_COMMENT.equals(token)) {
+                && !JsTokenId.BLOCK_COMMENT.equals(token)
+                && !JsTokenId.DOC_COMMENT.equals(token)) {
             canFollowLiteral = canFollowLiteral(token);
         }
         return token;
@@ -333,7 +334,7 @@ RegexpFirstCharacter  = [^\r\n/\\\[\*] | \\{InputCharacter} | \[{SimpleRegexpCha
   {DoubleLiteral}[dD]            { return JsTokenId.NUMBER; }
 
   /* comments */
-  {DocumentationComment}         { return JsTokenId.BLOCK_COMMENT; }
+  {DocumentationComment}         { return JsTokenId.DOC_COMMENT; }
 
   /* comments */
   {TraditionalComment}           { return JsTokenId.BLOCK_COMMENT; }
