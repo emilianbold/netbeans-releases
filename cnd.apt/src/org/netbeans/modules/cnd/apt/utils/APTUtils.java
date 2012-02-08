@@ -244,7 +244,7 @@ public class APTUtils {
         }
         switch (type) {
             // IDs
-            case APTTokenTypes.ID:
+            case APTTokenTypes.IDENT:
             case APTTokenTypes.ID_DEFINED:
                 // Strings and chars
             case APTTokenTypes.STRING_LITERAL:
@@ -387,7 +387,7 @@ public class APTUtils {
     }
     
     public static boolean isID(Token token) {
-        return token != null && token.getType() == APTTokenTypes.ID;
+        return token != null && token.getType() == APTTokenTypes.IDENT;
     }
 
     public static boolean isFortranKeyword(int tokenType) {
@@ -646,11 +646,11 @@ public class APTUtils {
     public static final APTToken DEF_MACRO_BODY; //support "1" as content of #defined tokens without body IZ#122091
     static {
         VA_ARGS_TOKEN = createAPTToken();
-        VA_ARGS_TOKEN.setType(APTTokenTypes.ID);
+        VA_ARGS_TOKEN.setType(APTTokenTypes.IDENT);
         VA_ARGS_TOKEN.setText("__VA_ARGS__"); // NOI18N
         
         EMPTY_ID_TOKEN = createAPTToken();
-        EMPTY_ID_TOKEN.setType(APTTokenTypes.ID);
+        EMPTY_ID_TOKEN.setType(APTTokenTypes.IDENT);
         EMPTY_ID_TOKEN.setText(""); // NOI18N        
 
         COMMA_TOKEN = createAPTToken(APTTokenTypes.COMMA);

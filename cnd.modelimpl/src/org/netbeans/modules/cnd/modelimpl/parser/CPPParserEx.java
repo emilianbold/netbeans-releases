@@ -308,7 +308,7 @@ public class CPPParserEx extends CPPParser {
         //	"isClassName: %d, guessing %d\n", LT(tmp_k).getLine(),
         //	tmp_k,LT(tmp_k).getType(),isTypeName((LT(tmp_k).getText()).data()),
         //	isClassName((LT(tmp_k).getText()).data()),inputState.guessing);
-        while (LT(tmp_k).getType() == ID && isTypeName((LT(tmp_k).getText()))) {
+        while (LT(tmp_k).getType() == IDENT && isTypeName((LT(tmp_k).getText()))) {
             // If this type is the same as the last type, then ctor
             if (final_type_idx != 0 && strcmp((LT(final_type_idx).getText()),
                     (LT(tmp_k).getText())) == 0) {// Like T::T
@@ -346,7 +346,7 @@ public class CPPParserEx extends CPPParser {
                 tmp_k++;
                 scope_found = true;
             } else {
-                // Series terminated -- last ID in the sequence was a type
+                // Series terminated -- last IDENT in the sequence was a type
                 // Return ctor if last type is in containing class
                 // We already checked for T::T inside loop
 
@@ -369,11 +369,11 @@ public class CPPParserEx extends CPPParser {
             }
         }
 
-        // LT(tmp_k) is not an ID, or it is an ID but not a typename.
+        // LT(tmp_k) is not an IDENT, or it is an IDENT but not a typename.
         //printf("support.cpp qualifiedItemIs second switch reached\n");
         switch (LT(tmp_k).getType()) {
-            case ID:
-                // ID but not a typename
+            case IDENT:
+                // IDENT but not a typename
                 // Do not allow id::
                 if (LT(tmp_k + 1).getType() == SCOPE) {
                     //printf("support.cpp qualifiedItemIs qiInvalid(3) returned\n");
@@ -396,7 +396,7 @@ public class CPPParserEx extends CPPParser {
 
             case TILDE:
                 // check for dtor
-                if (LT(tmp_k + 1).getType() == ID &&
+                if (LT(tmp_k + 1).getType() == IDENT &&
                         isTypeName((LT(tmp_k + 1).getText())) &&
                         LT(tmp_k + 2).getType() != SCOPE) {
                     // Like ~B or A::B::~B
@@ -429,8 +429,8 @@ public class CPPParserEx extends CPPParser {
                 return qiOperator;
 
             default:
-                // Something that neither starts with :: or ID, or
-                // a :: not followed by ID, operator, ~, or *
+                // Something that neither starts with :: or IDENT, or
+                // a :: not followed by IDENT, operator, ~, or *
                 //printf("support.cpp qualifiedItemIs qiInvalid(6) returned\n");
                 return qiInvalid;
         }
@@ -540,19 +540,19 @@ public class CPPParserEx extends CPPParser {
         try {
             //printf("support.cpp scopedItem tmp_k %d\n",tmp_k);
             return (LT(tmp_k).getType() == SCOPE ||
-                    (LT(tmp_k).getType() == ID && !finalQualifier(tmp_k)));
+                    (LT(tmp_k).getType() == IDENT && !finalQualifier(tmp_k)));
         } catch (TokenStreamException e) {
             reportError(e.getMessage());
             return false;
         }
     }
 
-    // Return true if ID<...> or ID is last item in qualified item list.
-    // Return false if LT(tmp_k) is not an ID.
-    // ID must be a type to check for ID<...>,
+    // Return true if IDENT<...> or IDENT is last item in qualified item list.
+    // Return false if LT(tmp_k) is not an IDENT.
+    // IDENT must be a type to check for IDENT<...>,
     // or else we would get confused by "i<3"
     private boolean finalQualifier(int tmp_k) throws TokenStreamException {
-        if (LT(tmp_k).getType() == ID) {
+        if (LT(tmp_k).getType() == IDENT) {
             if (isTypeName((LT(tmp_k).getText())) &&
                     LT(tmp_k + 1).getType() == LESSTHAN) {
                 // Starts with "T<".  Skip <...>
@@ -561,12 +561,12 @@ public class CPPParserEx extends CPPParser {
                 if (tmp_k == -1) {
                     return true;
                 }
-            } else {// skip ID;
+            } else {// skip IDENT;
                 tmp_k++;
             }
             //return (LT(tmp_k).getType() != SCOPE);
             return safeGetType(LT(tmp_k)) != SCOPE;
-        } else {// not an ID
+        } else {// not an IDENT
             return false;
         }
     }
@@ -1054,7 +1054,7 @@ public class CPPParserEx extends CPPParser {
 //	    if (LT(i).getType() == SCOPE) {
 //		i++;
 //	    }
-//	    while ((ref = LT(i)).getType() == ID && LT(i + 1).getType() == SCOPE) {
+//	    while ((ref = LT(i)).getType() == IDENT && LT(i + 1).getType() == SCOPE) {
 //		i += 2;
 //		last = ref;
 //	    }

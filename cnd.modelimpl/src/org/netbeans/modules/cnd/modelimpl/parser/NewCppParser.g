@@ -220,9 +220,9 @@ statement:
 labeled_statement:
         IDENT COLON statement
     |
-        CASE constant_expression COLON statement
+        LITERAL_case constant_expression COLON statement
     |
-        DEFAULT COLON statement
+        LITERAL_default COLON statement
     ;
 
 expression_statement:
@@ -242,9 +242,9 @@ compound_statement:
     ;
 
 selection_statement:
-        IF LPAREN condition RPAREN statement ( (ELSE)=> ELSE statement )?
+        LITERAL_if LPAREN condition RPAREN statement ( (LITERAL_else)=> LITERAL_else statement )?
     |
-        SWITCH LPAREN condition RPAREN statement
+        LITERAL_switch LPAREN condition RPAREN statement
     ;
 
 /*
@@ -254,18 +254,18 @@ condition
 scope Declaration;
 @init { init_declaration(CTX, blockscope_decl); }
     :
-        (type_specifier+ declarator EQ)=>
-            type_specifier+ declarator EQ assignment_expression
+        (type_specifier+ declarator EQUAL)=>
+            type_specifier+ declarator EQUAL assignment_expression
     |
         expression
     ;
 
 iteration_statement:
-        WHILE LPAREN condition RPAREN statement
+        LITERAL_while LPAREN condition RPAREN statement
     |
-        DO statement WHILE LPAREN expression RPAREN SEMICOLON
+        LITERAL_do statement LITERAL_while LPAREN expression RPAREN SEMICOLON
     |
-        FOR LPAREN for_init_statement condition? SEMICOLON expression? RPAREN statement
+        LITERAL_for LPAREN for_init_statement condition? SEMICOLON expression? RPAREN statement
     ;
 /*
  * The same expression-declaration ambiguity as in statement rule.
@@ -278,13 +278,13 @@ for_init_statement:
 
     ;
 jump_statement:
-        BREAK SEMICOLON
+        LITERAL_break SEMICOLON
     |
-        CONTINUE SEMICOLON
+        LITERAL_continue SEMICOLON
     |
-        RETURN expression? SEMICOLON
+        LITERAL_return expression? SEMICOLON
     |
-        GOTO IDENT SEMICOLON
+        LITERAL_goto IDENT SEMICOLON
     ;
 
 /*
@@ -334,7 +334,7 @@ id_expression:
     ;
 
 unqualified_id:
-        (OPERATOR operator_id)=>
+        (LITERAL_OPERATOR operator_id)=>
             operator_function_id
     |
         conversion_function_id
@@ -345,10 +345,10 @@ unqualified_id:
     ;
 
 qualified_id:
-        nested_name_specifier TEMPLATE? unqualified_id
+        nested_name_specifier LITERAL_template? unqualified_id
     |
-        COLON2 (
-            nested_name_specifier TEMPLATE? unqualified_id
+        SCOPE (
+            nested_name_specifier LITERAL_template? unqualified_id
         |
             operator_function_id
         |
@@ -360,40 +360,40 @@ qualified_id:
  *
 
 nested_name_specifier:
-        type-name COLON2
+        type-name SCOPE
     |
-        namespace-name COLON2
+        namespace-name SCOPE
     |
-        nested-name-specifier IDENT COLON2
+        nested-name-specifier IDENT SCOPE
     |
-        nested-name-specifier TEMPLATE? simple-template-id COLON2
+        nested-name-specifier LITERAL_template? simple-template-id SCOPE
     ;
 
- * left-recursion removed here and TEMPLATE/IDENT ambiguity resolved
+ * left-recursion removed here and LITERAL_template/IDENT ambiguity resolved
  */
 
 nested_name_specifier returns [ name_specifier_t namequal ]
     :
-        IDENT COLON2
+        IDENT SCOPE
         (
-            (TEMPLATE lookup_simple_template_id_nocheck COLON2 )=> TEMPLATE simple_template_id_nocheck COLON2
+            (LITERAL_template lookup_simple_template_id_nocheck SCOPE )=> LITERAL_template simple_template_id_nocheck SCOPE
         |
-            (IDENT COLON2) =>
-                IDENT COLON2
+            (IDENT SCOPE) =>
+                IDENT SCOPE
         |
-            (lookup_simple_template_id COLON2)=>
-                simple_template_id COLON2
+            (lookup_simple_template_id SCOPE)=>
+                simple_template_id SCOPE
         )*
     ;
 
 lookup_nested_name_specifier:
-        IDENT COLON2
+        IDENT SCOPE
         (
-            IDENT COLON2
+            IDENT SCOPE
         |
-            TEMPLATE lookup_simple_template_id COLON2
+            LITERAL_template lookup_simple_template_id SCOPE
         |
-            lookup_simple_template_id COLON2
+            lookup_simple_template_id SCOPE
         )*
     ;
 
@@ -470,35 +470,35 @@ decl_specifier
         function_specifier 
         { $Declaration::decl_specifiers.apply_specifier($decl_specifier.start, CTX); }
     |
-        FRIEND
-        { $Declaration::decl_specifiers.apply_specifier($FRIEND, CTX); }
+        LITERAL_friend
+        { $Declaration::decl_specifiers.apply_specifier($LITERAL_friend, CTX); }
     |
-        TYPEDEF
-        { $Declaration::decl_specifiers.apply_specifier($TYPEDEF, CTX); }
+        LITERAL_typedef
+        { $Declaration::decl_specifiers.apply_specifier($LITERAL_typedef, CTX); }
     |
         type_specifier
         { $Declaration::decl_specifiers.add_type($type_specifier.ts, CTX); }
     ;
 
 storage_class_specifier:
-        AUTO 
+        LITERAL_auto 
     |
-        REGISTER 
+        LITERAL_register 
     |
-        STATIC 
+        LITERAL_static 
     |
-        EXTERN 
+        LITERAL_extern 
     |
-        MUTABLE 
+        LITERAL_mutable 
     |
-        THREAD
+        LITERAL___thread
     ;
 function_specifier:
-        INLINE 
+        LITERAL_inline 
     |
-        VIRTUAL 
+        LITERAL_virtual 
     |
-        EXPLICIT 
+        LITERAL_explicit 
     ;
 
 /*
@@ -516,17 +516,17 @@ type_specifier:
         cv_qualifier 
     ;
 
- * Ambiguity in CLASS because of class_specifier vs elaborated_type_specifier conflict
- * Ambiguity in ENUM because of enum_specifier vs elaborated_type_specifier conflict
+ * Ambiguity in LITERAL_class because of class_specifier vs elaborated_type_specifier conflict
+ * Ambiguity in LITERAL_enum because of enum_specifier vs elaborated_type_specifier conflict
  *
- * Note, that (CLASS COLON2) sequence is not valid for class_specifier
- * Similarly (ENUM COLON2) sequence is not valid for enum_specifier
+ * Note, that (LITERAL_class SCOPE) sequence is not valid for class_specifier
+ * Similarly (LITERAL_enum SCOPE) sequence is not valid for enum_specifier
  */
 
 type_specifier returns [type_specifier_t ts]
     :
-        // CLASS COLON2 does not cover all the elaborated_type_specifier cases even with CLASS
-        (CLASS COLON2)=>
+        // LITERAL_class SCOPE does not cover all the elaborated_type_specifier cases even with LITERAL_class
+        (LITERAL_class SCOPE)=>
             elaborated_type_specifier
     |
         // thus we need to make serious lookahead here to catch LCURLY
@@ -534,13 +534,13 @@ type_specifier returns [type_specifier_t ts]
             class_specifier
     |
         // enum_specifier start sequence is simple
-        (ENUM IDENT? LCURLY)=>
+        (LITERAL_enum IDENT? LCURLY)=>
             enum_specifier
     |
         simple_type_specifier
         { store_type_specifier($simple_type_specifier.ts_val, CTX); }
     |
-        // CLASS COLON2 above does not cover all the elaborated_type_specifier cases
+        // LITERAL_class SCOPE above does not cover all the elaborated_type_specifier cases
         elaborated_type_specifier
     |
         cv_qualifier
@@ -550,38 +550,38 @@ simple_type_specifier returns [type_specifier_t ts_val]
 scope QualName;
 @init { qual_setup(); }
     :
-        CHAR
+        LITERAL_char
     |
-        WCHAR_T
+        LITERAL_wchar_t
     |
-        BOOL
+        LITERAL_bool
     |
-        SHORT
+        LITERAL_short
     |
-        INT
+        LITERAL_int
     |
-        LONG
+        LITERAL_long
     |
-        SIGNED
+        LITERAL_signed
     |
-        UNSIGNED
+        LITERAL_unsigned
     |
-        FLOAT
+        LITERAL_float
     |
-        DOUBLE
+        LITERAL_double
     |
-        VOID
+        LITERAL_void
     |
         /*
          * "at most one type-specifier is allowed in the complete decl-specifier-seq of a declaration..."
          * In particular (qualified)type_name is allowed only once.
          */
         { !type_specifier_already_present(CTX) }? =>
-            (COLON2 {{ qual_add_colon2(); }} )?
-            /* note that original rule does not allow empty nested_name_specifier for the TEMPLATE alternative */
+            (SCOPE {{ qual_add_colon2(); }} )?
+            /* note that original rule does not allow empty nested_name_specifier for the LITERAL_template alternative */
             (
                 (lookup_nested_name_specifier)=>
-                    nested_name_specifier (IDENT | TEMPLATE simple_template_id)
+                    nested_name_specifier (IDENT | LITERAL_template simple_template_id)
             |
                 IDENT
             )
@@ -595,32 +595,32 @@ lookup_type_name:
  * original rule:
  *
 elaborated_type_specifier:
-        class_key COLON2? nested_name_specifier? IDENT 
+        class_key SCOPE? nested_name_specifier? IDENT 
     |
-        class_key COLON2? nested_name_specifier? TEMPLATE? simple_template_id 
+        class_key SCOPE? nested_name_specifier? LITERAL_template? simple_template_id 
     |
-        ENUM COLON2? nested_name_specifier? IDENT 
+        LITERAL_enum SCOPE? nested_name_specifier? IDENT 
     |
-        TYPENAME COLON2? nested_name_specifier IDENT 
+        LITERAL_typename SCOPE? nested_name_specifier IDENT 
     |
-        TYPENAME COLON2? nested_name_specifier TEMPLATE? simple_template_id 
+        LITERAL_typename SCOPE? nested_name_specifier LITERAL_template? simple_template_id 
     ;
-* Ambiguity introduced by IDENT COLON2 IDENT sequence in a context of
+* Ambiguity introduced by IDENT SCOPE IDENT sequence in a context of
 * elaborated_type_specifier going right before declarators in simple declaration.
 * Resolved by factoring out nested_name_specifier construct in 'class' situation.
-* Resolved by specifically predicating IDENT COLON2 in 'enum' situation.
+* Resolved by specifically predicating IDENT SCOPE in 'enum' situation.
 */
 
 elaborated_type_specifier:
-        class_key COLON2? (
-            (IDENT COLON2) =>
-                nested_name_specifier (simple_template_id_or_IDENT | TEMPLATE simple_template_id_nocheck)
+        class_key SCOPE? (
+            (IDENT SCOPE) =>
+                nested_name_specifier (simple_template_id_or_IDENT | LITERAL_template simple_template_id_nocheck)
         |
-             (simple_template_id_or_IDENT | TEMPLATE simple_template_id_nocheck)
+             (simple_template_id_or_IDENT | LITERAL_template simple_template_id_nocheck)
         )
     |
-        ENUM COLON2? (
-            (IDENT COLON2)=>
+        LITERAL_enum SCOPE? (
+            (IDENT SCOPE)=>
                 nested_name_specifier IDENT
         |
             nested_name_specifier IDENT
@@ -634,7 +634,7 @@ elaborated_type_specifier:
 
 // In C++0x this is factored out already
 typename_specifier:
-        TYPENAME COLON2? nested_name_specifier ( simple_template_id_or_IDENT  | TEMPLATE simple_template_id_nocheck )
+        LITERAL_typename SCOPE? nested_name_specifier ( simple_template_id_or_IDENT  | LITERAL_template simple_template_id_nocheck )
     ;
 
 /*
@@ -645,7 +645,7 @@ enum_name:
  *
  */
 enum_specifier:
-        ENUM IDENT? LCURLY enumerator_list? RCURLY
+        LITERAL_enum IDENT? LCURLY enumerator_list? RCURLY
     ;
 enumerator_list:
         enumerator_definition (COMMA enumerator_definition)* 
@@ -653,7 +653,7 @@ enumerator_list:
 enumerator_definition:
         enumerator 
     |
-        enumerator ASG constant_expression 
+        enumerator ASSIGNEQUAL constant_expression 
     ;
 
 enumerator:
@@ -690,20 +690,20 @@ named_namespace_definition:
         extension_namespace_definition
     ;
 original_namespace_definition:
-        NAMESPACE IDENT LCURLY namespace_body RCURLY
+        LITERAL_namespace IDENT LCURLY namespace_body RCURLY
     ;
 extension_namespace_definition:
-        NAMESPACE original_namespace_name LCURLY namespace_body RCURLY
+        LITERAL_namespace original_namespace_name LCURLY namespace_body RCURLY
     ;
 
 unnamed_namespace_definition:
-        NAMESPACE LCURLY namespace_body RCURLY
+        LITERAL_namespace LCURLY namespace_body RCURLY
     ;
 
  * This is all unnecessarily complicated. We can easily handle it by one single rule:
  */
 namespace_definition:
-        NAMESPACE IDENT? LCURLY namespace_body RCURLY
+        LITERAL_namespace IDENT? LCURLY namespace_body RCURLY
     ;
 
 namespace_body:
@@ -715,43 +715,43 @@ namespace_alias:
     ;
 
 namespace_alias_definition:
-        NAMESPACE IDENT ASG qualified_namespace_specifier SEMICOLON
+        LITERAL_namespace IDENT ASSIGNEQUAL qualified_namespace_specifier SEMICOLON
     ;
 
 qualified_namespace_specifier:
-        COLON2? nested_name_specifier? IDENT
+        SCOPE? nested_name_specifier? IDENT
     ;
 
 /*
  * original rule:
 
 using-declaration:
-        USING TYPENAME? COLON2? nested_name_specifier unqualified_id SEMICOLON
+        LITERAL_using LITERAL_typename? SCOPE? nested_name_specifier unqualified_id SEMICOLON
      |
-        USING COLON2 unqualified_id SEMICOLON
+        LITERAL_using SCOPE unqualified_id SEMICOLON
      ;
 
- * Ambiguity in COLON2 between two alternatives resolved by collapsing them into one.
- * Note that new rule allows USING unqualified_id w/o COLON2, not allowed before.
+ * Ambiguity in SCOPE between two alternatives resolved by collapsing them into one.
+ * Note that new rule allows LITERAL_using unqualified_id w/o SCOPE, not allowed before.
  * It should be ruled out after the parsing.
  */
 using_declaration
-     : USING TYPENAME? COLON2? nested_name_specifier? unqualified_id SEMICOLON
+     : LITERAL_using LITERAL_typename? SCOPE? nested_name_specifier? unqualified_id SEMICOLON
     ;
 
 using_directive:
-        USING NAMESPACE COLON2? nested_name_specifier? IDENT SEMICOLON
+        LITERAL_using LITERAL_namespace SCOPE? nested_name_specifier? IDENT SEMICOLON
     ;
 
 
 asm_definition:
-        ASM LPAREN STRINGCONST RPAREN SEMICOLON
+        LITERAL_asm LPAREN STRING_LITERAL RPAREN SEMICOLON
     ;
 
 linkage_specification [decl_kind kind]:
-        EXTERN STRINGCONST LCURLY declaration[kind] * RCURLY
+        LITERAL_extern STRING_LITERAL LCURLY declaration[kind] * RCURLY
     |
-        EXTERN STRINGCONST declaration[kind]
+        LITERAL_extern STRING_LITERAL declaration[kind]
     ;
 
 init_declarator_list:
@@ -787,7 +787,7 @@ noptr_declarator:
     |
         noptr_declarator parameters-and-qualifiers
     |
-        noptr_declarator LBRACK constant_expression? RBRACK
+        noptr_declarator LSQUARE constant_expression? RSQUARE
     |
         LPAREN ptr_declarator RPAREN
     ;
@@ -824,7 +824,7 @@ noptr_declarator returns [declarator_type_t type]
             parameters_and_qualifiers
                 {{ type.apply_parameters($parameters_and_qualifiers.pq); }}
          |
-             LBRACK constant_expression? RBRACK
+             LSQUARE constant_expression? RSQUARE
                 {{ type.apply_array($constant_expression.expr); }}
         )*
     ;
@@ -863,7 +863,7 @@ ptr_abstract_declarator:
 noptr_abstract_declarator:
         noptr_abstract_declarator? parameters_and_qualifiers
     |
-        noptr_abstract_declarator? LBRACK constant_expression RBRACK
+        noptr_abstract_declarator? LSQUARE constant_expression RSQUARE
     |
         ( ptr_abstract_declarator )
     ;
@@ -881,10 +881,10 @@ abstract_declarator returns [declarator_type_t type]
 
 noptr_abstract_declarator returns [declarator_type_t type]
     :
-        ( parameters_and_qualifiers | LBRACK constant_expression? RBRACK )+
+        ( parameters_and_qualifiers | LSQUARE constant_expression? RSQUARE )+
     |
         (LPAREN abstract_declarator RPAREN)=>
-            LPAREN abstract_declarator RPAREN ( parameters_and_qualifiers | LBRACK constant_expression? RBRACK )*
+            LPAREN abstract_declarator RPAREN ( parameters_and_qualifiers | LSQUARE constant_expression? RSQUARE )*
     ;
 
 universal_declarator returns [declarator_type_t type]
@@ -924,7 +924,7 @@ greedy_nonptr_declarator returns [declarator_type_t type]
                 parameters_and_qualifiers
                 {{ type.apply_parameters($parameters_and_qualifiers.pq); }}
         |
-            LBRACK constant_expression? RBRACK
+            LSQUARE constant_expression? RSQUARE
                 {{ type.apply_array($constant_expression.expr); }}
         )*
     ;
@@ -937,21 +937,21 @@ ptr_operator returns [ declarator_type_t type ]
         AMPERSAND 
             {{ type.set_ref(); }}
     |
-        COLON2? nested_name_specifier STAR cv_qualifier*
-/*DIFF*/ //           {{ type.set_ptr(& $nested_name_specifier.namequal, $cv_qualifier.qual); }}
+        SCOPE? nested_name_specifier STAR cv_qualifier*
+/*DLITERAL_ifF*/ //           {{ type.set_ptr(& $nested_name_specifier.namequal, $cv_qualifier.qual); }}
     ;
 
 cv_qualifier returns [ qualifier_t qual ]:
-/*DIFF*/        CONST //{{ qual = CONST; }}
+/*DLITERAL_ifF*/        LITERAL_const //{{ qual = LITERAL_const; }}
     |
-/*DIFF*/        VOLATILE //{{ qual = VOLATILE; }}
+/*DLITERAL_ifF*/        LITERAL_volatile //{{ qual = LITERAL_volatile; }}
     ;
 
 /*
  * original rule:
 
     |
-        COLON2? nested_name_specifier? type_name 
+        SCOPE? nested_name_specifier? type_name 
 
  * This alternative deleted, as it actually is contained in id_expression
  */
@@ -979,9 +979,9 @@ parameter_declaration_clause
 scope Declaration; /* need it zero'ed to handle hoisted type_specifier predicate */
 @init { init_declaration(CTX, parm_decl); }
     :
-        DOT3?
+        ELLIPSIS?
     |
-        parameter_declaration_list (COMMA? DOT3)?
+        parameter_declaration_list (COMMA? ELLIPSIS)?
     ;
 
 parameter_declaration_list:
@@ -991,7 +991,7 @@ parameter_declaration [decl_kind kind]
 scope Declaration;
 @init { init_declaration(CTX, kind); }
     :
-        decl_specifier+ universal_declarator? (ASG assignment_expression)?
+        decl_specifier+ universal_declarator? (ASSIGNEQUAL assignment_expression)?
     ;
 
 /*
@@ -1041,7 +1041,7 @@ function_body:
     ;
 
 initializer:
-        ASG initializer_clause 
+        ASSIGNEQUAL initializer_clause 
     |
         LPAREN expression_list RPAREN 
     ;
@@ -1088,11 +1088,11 @@ class_head:
     ;
 
 class_key:
-        CLASS 
+        LITERAL_class 
     |
-        STRUCT
+        LITERAL_struct
     |
-        UNION 
+        LITERAL_union 
     ;
 member_specification :
         member_declaration[field_decl] member_specification?
@@ -1109,7 +1109,7 @@ member_specification :
     |
         function_definition SEMICOLON?
     |
-        COLON2? nested_name_specifier TEMPLATE? unqualified_id SEMICOLON
+        SCOPE? nested_name_specifier LITERAL_template? unqualified_id SEMICOLON
     |
 
 member_declarator:
@@ -1159,7 +1159,7 @@ scope Declaration;
         )
     |
         /* this is likely to be covered by decl_specifier/declarator part of member_declarator
-            COLON2? nested_name_specifier TEMPLATE? unqualified_id SEMICOLON
+            SCOPE? nested_name_specifier LITERAL_template? unqualified_id SEMICOLON
     |
         */
 
@@ -1192,11 +1192,11 @@ member_declarator_list:
 
 // = 0 (not used, as it conflicts with constant_initializer
 pure_specifier:
-        ASG literal
+        ASSIGNEQUAL literal
     ;
 
 constant_initializer:
-        ASG constant_expression 
+        ASSIGNEQUAL constant_expression 
     ;
 
 // [gram.class.derived] 
@@ -1207,23 +1207,23 @@ base_specifier_list:
         base_specifier ( COMMA base_specifier )*
     ;
 base_specifier:
-        COLON2? nested_name_specifier? class_name 
+        SCOPE? nested_name_specifier? class_name 
     |
-        VIRTUAL access_specifier? COLON2? nested_name_specifier? class_name 
+        LITERAL_virtual access_specifier? SCOPE? nested_name_specifier? class_name 
     |
-        access_specifier VIRTUAL? COLON2? nested_name_specifier? class_name 
+        access_specifier LITERAL_virtual? SCOPE? nested_name_specifier? class_name 
     ;
 access_specifier:
-        PRIVATE
+        LITERAL_private
     |
-        PROTECTED
+        LITERAL_protected
     |
-        PUBLIC
+        LITERAL_public
     ;
 
 // [gram.special] 
 conversion_function_id:
-        OPERATOR conversion_type_id 
+        LITERAL_OPERATOR conversion_type_id 
     ;
 /*
  * original rule:
@@ -1262,39 +1262,39 @@ mem_initializer:
 /*
  * original rule:
 mem_initializer_id:
-        COLON2? nested_name_specifier? class_name 
+        SCOPE? nested_name_specifier? class_name 
     |
         IDENT 
     ;
  * Ambiguity resolved by removing special class_name case
  */
 mem_initializer_id:
-        COLON2? nested_name_specifier? IDENT
+        SCOPE? nested_name_specifier? IDENT
     ;
 
 // [gram.over] 
 operator_function_id:
-        OPERATOR operator_id ( { operator_is_template() }?=> LSS template_argument_list? GTR)?
+        LITERAL_OPERATOR operator_id ( { operator_is_template() }?=> LESSTHAN template_argument_list? GREATERTHAN)?
     ;
 /*
  * Ambiguity between operator new/delete and operator new/delete[] resolved towards the latter.
  */
 operator_id returns [int id]:
-        (NEW LBRACK RBRACK)=>
-            NEW LBRACK RBRACK |
-        (TOK_DELETE LBRACK RBRACK)=>
-            TOK_DELETE LBRACK RBRACK |
-        NEW | TOK_DELETE |
-        PLUS | MINUS | STAR | DIV | MOD | XOR | AMPERSAND | BITOR | TILDE |
-        NOT | ASG | LSS | GTR | PLUS_ASG | MINUS_ASG | MUL_ASG | DIV_ASG | MOD_ASG |
-        XOR_ASG | AND_ASG | OR_ASG | LSHIFT | RSHIFT | RSHIFT_ASG | LSHIFT_ASG | EQ | NEQ |
-        LEQ | GEQ | AND | OR | PLUSPLUS | MINUSMINUS | COMMA | ARROWSTAR | ARROW | 
-        LPAREN RPAREN | LBRACK RBRACK
+        (LITERAL_new LSQUARE RSQUARE)=>
+            LITERAL_new LSQUARE RSQUARE |
+        (LITERAL_delete LSQUARE RSQUARE)=>
+            LITERAL_delete LSQUARE RSQUARE |
+        LITERAL_new | LITERAL_delete |
+        PLUS | MINUS | STAR | DIVIDE | MOD | BITWISEXOR | AMPERSAND | BITWISEOR | TILDE |
+        NOT | ASSIGNEQUAL | LESSTHAN | GREATERTHAN | PLUSEQUAL | MINUSEQUAL | TIMESEQUAL | DIVIDEEQUAL | MODEQUAL |
+        BITWISEXOREQUAL | BITWISEANDEQUAL | BITWISEOREQUAL | SHIFTLEFT | SHIFTRIGHT | SHIFTRIGHTEQUAL | SHIFTLEFTEQUAL | EQUAL | NOTEQUAL |
+        LESSTHANOREQUALTO | GREATERTHANOREQUALTO | AND | OR | PLUSPLUS | MINUSMINUS | COMMA | POINTERTOMBR | POINTERTO | 
+        LPAREN RPAREN | LSQUARE RSQUARE
     ;
 
 // [gram.temp] 
 template_declaration [decl_kind kind]:
-        EXPORT? TEMPLATE LSS template_parameter_list GTR declaration[kind]
+        LITERAL_export? LITERAL_template LESSTHAN template_parameter_list GREATERTHAN declaration[kind]
     ;
 
 template_parameter_list:
@@ -1302,16 +1302,16 @@ template_parameter_list:
     ;
 
 /*
- * Ambiguity resolution for CLASS {IDENT,GTR,COMMA,ASG} conflict between type_parameter
+ * Ambiguity resolution for LITERAL_class {IDENT,GREATERTHAN,COMMA,ASSIGNEQUAL} conflict between type_parameter
  * and type_specifier, which starts parameter_declaration.
  * To resolve this ambiguity just make an additional type_parameter syntactically predicated
  * with this fixed lookahead.
  *
- * Note that COMMA comes from template_parameter_list rule and GTR comes even further from 
+ * Note that COMMA comes from template_parameter_list rule and GREATERTHAN comes even further from 
  * template_declaration rule
 */
 template_parameter:
-    (CLASS ( IDENT | GTR | COMMA | ASG ) )=>
+    (LITERAL_class ( IDENT | GREATERTHAN | COMMA | ASSIGNEQUAL ) )=>
         type_parameter
     |
         // this should map the rest of type_parameter that starts differently from above
@@ -1320,42 +1320,42 @@ template_parameter:
         parameter_declaration[tparm_decl]
     ;
 type_parameter:
-        CLASS IDENT? 
+        LITERAL_class IDENT? 
     |
-        CLASS IDENT? ASG type_id 
+        LITERAL_class IDENT? ASSIGNEQUAL type_id 
     |
-        TYPENAME IDENT? 
+        LITERAL_typename IDENT? 
     |
-        TYPENAME IDENT? ASG type_id 
+        LITERAL_typename IDENT? ASSIGNEQUAL type_id 
     |
-        TEMPLATE LSS template_parameter_list GTR CLASS IDENT? (ASG id_expression)?
+        LITERAL_template LESSTHAN template_parameter_list GREATERTHAN LITERAL_class IDENT? (ASSIGNEQUAL id_expression)?
     ;
 
 simple_template_id
     :
-        IDENT LSS { (identifier_is(IDT_TEMPLATE_NAME)) }?
-            template_argument_list? GTR
+        IDENT LESSTHAN { (identifier_is(IDT_TEMPLATE_NAME)) }?
+            template_argument_list? GREATERTHAN
     ;
 lookup_simple_template_id
     :
-        IDENT LSS { (identifier_is(IDT_TEMPLATE_NAME)) }?
+        IDENT LESSTHAN { (identifier_is(IDT_TEMPLATE_NAME)) }?
             look_after_tmpl_args
     ;
 
 simple_template_id_nocheck
     :
-        IDENT LSS template_argument_list? GTR
+        IDENT LESSTHAN template_argument_list? GREATERTHAN
     ;
 lookup_simple_template_id_nocheck
     :
-        IDENT LSS look_after_tmpl_args
+        IDENT LESSTHAN look_after_tmpl_args
     ;
 
 simple_template_id_or_IDENT
     :
         IDENT
-        ( (LSS { (identifier_is(IDT_TEMPLATE_NAME)) }?) =>
-            LSS template_argument_list? GTR
+        ( (LESSTHAN { (identifier_is(IDT_TEMPLATE_NAME)) }?) =>
+            LESSTHAN template_argument_list? GREATERTHAN
         )?
     ;
 
@@ -1363,7 +1363,7 @@ lookup_simple_template_id_or_IDENT
     :
         IDENT
         ( { (identifier_is(IDT_TEMPLATE_NAME)) }?=>
-            LSS look_after_tmpl_args
+            LESSTHAN look_after_tmpl_args
         )?
     ;
 
@@ -1388,21 +1388,21 @@ template_argument:
     ;
 
 explicit_instantiation [decl_kind kind]:
-        TEMPLATE declaration[kind]
+        LITERAL_template declaration[kind]
     ;
 explicit_specialization [decl_kind kind]:
-        TEMPLATE LSS GTR declaration[kind]
+        LITERAL_template LESSTHAN GREATERTHAN declaration[kind]
     ;
 // [gram.except] 
 try_block:
-        TRY compound_statement handler+
+        LITERAL_try compound_statement handler+
     ;
 function_try_block:
-        TRY ctor_initializer? function_body handler+
+        LITERAL_try ctor_initializer? function_body handler+
     ;
 
 handler:
-        CATCH LPAREN exception_declaration RPAREN compound_statement 
+        LITERAL_catch LPAREN exception_declaration RPAREN compound_statement 
     ;
 
 /*
@@ -1412,7 +1412,7 @@ exception_declaration:
     |
         type_specifier+ abstract_declarator?
     |
-        DOT3
+        ELLIPSIS
     ;
 
  * Ambiguity in declarator vs abstract_declarator resolved by moving it into universal_declarator
@@ -1423,13 +1423,13 @@ scope Declaration;
     :
         type_specifier+ universal_declarator?
     |
-        DOT3
+        ELLIPSIS
     ;
 throw_expression:
-        THROW assignment_expression? 
+        LITERAL_throw assignment_expression? 
     ;
 exception_specification:
-        THROW LPAREN type_id_list? RPAREN 
+        LITERAL_throw LPAREN type_id_list? RPAREN 
     ;
 type_id_list:
         type_id ( COMMA type_id )*
@@ -1440,7 +1440,7 @@ type_id_list:
 primary_expression:
         literal
     |
-        THIS
+        LITERAL_this
     |
         LPAREN expression RPAREN 
     |
@@ -1452,35 +1452,35 @@ primary_expression:
 postfix_expression:
         primary_expression
     |
-        postfix_expression LBRACK expression RBRACK
+        postfix_expression LSQUARE expression RSQUARE
     |
         postfix_expression LPAREN expression_list? RPAREN
     |
         simple_type_specifier LPAREN expression_list? RPAREN
     |
-        TYPENAME COLON2? nested_name_specifier IDENT LPAREN expression_list? RPAREN
+        LITERAL_typename SCOPE? nested_name_specifier IDENT LPAREN expression_list? RPAREN
     |
-        TYPENAME COLON2? nested_name_specifier TEMPLATE? template_id LPAREN expression_list? RPAREN
+        LITERAL_typename SCOPE? nested_name_specifier LITERAL_template? template_id LPAREN expression_list? RPAREN
     |
-        postfix_expression DOT TEMPLATE? id_expression
+        postfix_expression DOT LITERAL_template? id_expression
     |
-        postfix_expression ARROW TEMPLATE? id_expression
+        postfix_expression POINTERTO LITERAL_template? id_expression
     |
         postfix_expression DOT pseudo_destructor_name
     |
-        postfix_expression ARROW pseudo_destructor_name
+        postfix_expression POINTERTO pseudo_destructor_name
     |
         postfix_expression PLUSPLUS
     |
         postfix_expression MINUSMINUS
     |
-        dynamic_cast LSS type_id GTR LPAREN expression RPAREN
+        dynamic_cast LESSTHAN type_id GREATERTHAN LPAREN expression RPAREN
     |
-        static_cast LSS type_id GTR LPAREN expression RPAREN
+        static_cast LESSTHAN type_id GREATERTHAN LPAREN expression RPAREN
     |
-        reinterpret_cast LSS type_id GTR LPAREN expression RPAREN
+        reinterpret_cast LESSTHAN type_id GREATERTHAN LPAREN expression RPAREN
     |
-        const_cast LSS type_id GTR LPAREN expression RPAREN
+        const_cast LESSTHAN type_id GREATERTHAN LPAREN expression RPAREN
     |
         typeid LPAREN expression RPAREN
     |
@@ -1497,20 +1497,20 @@ postfix_expression:
 postfix_expression:
         basic_postfix_expression
         (
-            LBRACK expression RBRACK
+            LSQUARE expression RSQUARE
         |
             LPAREN expression_list? RPAREN
         |
             DOT
             (
-                TEMPLATE? id_expression
+                LITERAL_template? id_expression
 //            |
 //                pseudo_destructor_name
             )
         |
-            ARROW
+            POINTERTO
             (
-                TEMPLATE? id_expression
+                LITERAL_template? id_expression
 //            |
 //                pseudo_destructor_name
             )
@@ -1526,24 +1526,24 @@ basic_postfix_expression:
     |
         simple_type_specifier LPAREN expression_list? RPAREN
     |
-        TYPENAME COLON2? nested_name_specifier (
+        LITERAL_typename SCOPE? nested_name_specifier (
             IDENT LPAREN expression_list? RPAREN
         |
-            TEMPLATE? simple_template_id LPAREN expression_list? RPAREN
+            LITERAL_template? simple_template_id LPAREN expression_list? RPAREN
         )
     |
-        DYNAMIC_CAST LSS type_id GTR LPAREN expression RPAREN
+        LITERAL_dynamic_cast LESSTHAN type_id GREATERTHAN LPAREN expression RPAREN
     |
-        STATIC_CAST LSS type_id GTR LPAREN expression RPAREN
+        LITERAL_static_cast LESSTHAN type_id GREATERTHAN LPAREN expression RPAREN
     |
-        REINTERPRET_CAST LSS type_id GTR LPAREN expression RPAREN
+        LITERAL_reinterpret_cast LESSTHAN type_id GREATERTHAN LPAREN expression RPAREN
     |
-        CONST_CAST LSS type_id GTR LPAREN expression RPAREN
+        LITERAL_const_cast LESSTHAN type_id GREATERTHAN LPAREN expression RPAREN
     |
         // AMB
         // expression and type_id conflict in "simple_type_specifier"
         // rule up type_id, as it should be easier to check
-        TYPEID LPAREN ( (type_id)=> type_id |  expression ) RPAREN
+        LITERAL_typeid LPAREN ( (type_id)=> type_id |  expression ) RPAREN
     ;
 
 expression_list:
@@ -1552,11 +1552,11 @@ expression_list:
 /*
  * original rule:
 pseudo_destructor_name:
-        COLON2? nested_name_specifier? type_name COLON2 TILDE type_name
+        SCOPE? nested_name_specifier? type_name SCOPE TILDE type_name
     |
-        COLON2? nested_name_specifier TEMPLATE simple_template_id COLON2 TILDE type_name
+        SCOPE? nested_name_specifier LITERAL_template simple_template_id SCOPE TILDE type_name
     |
-        COLON2? nested_name_specifier? TILDE type_name
+        SCOPE? nested_name_specifier? TILDE type_name
     ;
 
  * A healthy dose of left-factoring solves the issue.
@@ -1564,11 +1564,11 @@ pseudo_destructor_name:
  * This rule is not used anymore
 
 pseudo_destructor_name:
-        COLON2?
+        SCOPE?
         (
-            nested_name_specifier? TEMPLATE? IDENT COLON2 TILDE IDENT
+            nested_name_specifier? LITERAL_template? IDENT SCOPE TILDE IDENT
         |
-            nested_name_specifier TEMPLATE simple_template_id COLON2 TILDE IDENT
+            nested_name_specifier LITERAL_template simple_template_id SCOPE TILDE IDENT
         )
     ;
  *
@@ -1602,7 +1602,7 @@ unary_expression:
     |
         unary_operator_but_not_TILDE cast_expression
     |
-        SIZEOF (
+        LITERAL_sizeof (
             unary_expression
         |
             (LPAREN type_id RPAREN)=>
@@ -1621,9 +1621,9 @@ unary_operator_but_not_TILDE:
  * original rule:
 
 new_expression:
-        COLON2? NEW new_placement? new_type_id new_initializer? 
+        SCOPE? LITERAL_new new_placement? new_type_id new_initializer? 
     |
-        COLON2? NEW new_placement? LPAREN type_id RPAREN new_initializer? 
+        SCOPE? LITERAL_new new_placement? LPAREN type_id RPAREN new_initializer? 
     ;
 
  *
@@ -1631,7 +1631,7 @@ new_expression:
  * Unhealthy dose of left-factoring solves this issue.
  */
 new_expression:
-        COLON2? NEW
+        SCOPE? LITERAL_new
         (
             new_placement ( new_type_id | LPAREN type_id RPAREN )
         |
@@ -1670,16 +1670,16 @@ new_declarator:
     ;
 
 direct_new_declarator:
-        LBRACK expression RBRACK ( LBRACK constant_expression RBRACK )*
+        LSQUARE expression RSQUARE ( LSQUARE constant_expression RSQUARE )*
     ;
 
 new_initializer:
         LPAREN expression_list? RPAREN
     ;
 delete_expression:
-        COLON2? TOK_DELETE cast_expression
+        SCOPE? LITERAL_delete cast_expression
     |
-        COLON2? TOK_DELETE LBRACK RBRACK cast_expression
+        SCOPE? LITERAL_delete LSQUARE RSQUARE cast_expression
     ;
 
 cast_expression :
@@ -1690,7 +1690,7 @@ cast_expression :
     ;
 
 pm_expression :
-        cast_expression ( DOTSTAR cast_expression | ARROWSTAR cast_expression ) *
+        cast_expression ( DOTMBR cast_expression | POINTERTOMBR cast_expression ) *
     ;
 
 multiplicative_expression:
@@ -1698,7 +1698,7 @@ multiplicative_expression:
         (
             STAR pm_expression
         |
-            DIV pm_expression
+            DIVIDE pm_expression
         |
             MOD pm_expression
         )*
@@ -1709,11 +1709,11 @@ additive_expression:
     ;
 
 shift_expression:
-        additive_expression ( LSHIFT additive_expression | RSHIFT additive_expression )*
+        additive_expression ( SHIFTLEFT additive_expression | SHIFTRIGHT additive_expression )*
     ;
 
 /*
- * GTR ambiguity (GTR in relational expression vs GTR closing template arguments list) is one of
+ * GREATERTHAN ambiguity (GREATERTHAN in relational expression vs GREATERTHAN closing template arguments list) is one of
  * C++ dumbest ambiguities. Resolve it by tracking whether expression is a top-level expression (e.g. not
  * parenthesized) and parsed in a context of template argument - then do not accept is as a continuation of
  * relational expression.
@@ -1722,26 +1722,26 @@ relational_expression:
         shift_expression
         ( 
             { !top_level_of_template_arguments() }?=>
-            GTR shift_expression
+            GREATERTHAN shift_expression
           |
-            LSS shift_expression
+            LESSTHAN shift_expression
           |
-            LEQ shift_expression
+            LESSTHANOREQUALTO shift_expression
           |
-            GEQ shift_expression
+            GREATERTHANOREQUALTO shift_expression
         )*
     ;
 equality_expression:
-        relational_expression ( EQ relational_expression | NEQ relational_expression)*
+        relational_expression ( EQUAL relational_expression | NOTEQUAL relational_expression)*
     ;
 and_expression:
         equality_expression ( AMPERSAND equality_expression )*
     ;
 exclusive_or_expression:
-        and_expression ( XOR and_expression )*
+        and_expression ( BITWISEXOR and_expression )*
     ;
 inclusive_or_expression:
-        exclusive_or_expression ( BITOR exclusive_or_expression )*
+        exclusive_or_expression ( BITWISEOR exclusive_or_expression )*
     ;
 logical_and_expression:
         inclusive_or_expression ( AND inclusive_or_expression )*
@@ -1750,9 +1750,9 @@ logical_or_expression:
         logical_and_expression ( OR logical_and_expression )*
     ;
 conditional_expression:
-        logical_or_expression (QUESTION expression COLON assignment_expression)?
+        logical_or_expression (QUESTIONMARK expression COLON assignment_expression)?
     |
-        QUESTION expression COLON assignment_expression
+        QUESTIONMARK expression COLON assignment_expression
     ;
 /*
  * These are the example of "precedence climbing" implementation
@@ -1760,10 +1760,10 @@ conditional_expression:
 
 binary_operator returns [ int prec]:
         PLUS| MINUS |
-        STAR | DIV | MOD | XOR | AMPERSAND | BITOR |
-        NOT | LSS | GTR |
-        LSHIFT | RSHIFT |
-        EQ | NEQ | LEQ | GEQ | AND | OR
+        STAR | DIVIDE | MOD | BITWISEXOR | AMPERSAND | BITWISEOR |
+        NOT | LESSTHAN | GREATERTHAN |
+        SHIFTLEFT | SHIFTRIGHT |
+        EQUAL | NOTEQUAL | LESSTHANOREQUALTO | GREATERTHANOREQUALTO | AND | OR
     ;
 
 fast_expression:
@@ -1795,11 +1795,11 @@ assignment_expression:
  */
 assignment_expression:
         // this is taken from conditional_expression
-        QUESTION expression COLON assignment_expression
+        QUESTIONMARK expression COLON assignment_expression
     |
         logical_or_expression (
             // this is taken from conditional_expression
-            (QUESTION expression COLON assignment_expression)?
+            (QUESTIONMARK expression COLON assignment_expression)?
         |
             assignment_operator assignment_expression
         )
@@ -1808,8 +1808,8 @@ assignment_expression:
     ;
 
 assignment_operator:
-        ASG | MUL_ASG | DIV_ASG | MOD_ASG | PLUS_ASG | MINUS_ASG | RSHIFT_ASG | LSHIFT_ASG |
-        AND_ASG | XOR_ASG | OR_ASG
+        ASSIGNEQUAL | TIMESEQUAL | DIVIDEEQUAL | MODEQUAL | PLUSEQUAL | MINUSEQUAL | SHIFTRIGHTEQUAL | SHIFTLEFTEQUAL |
+        BITWISEANDEQUAL | BITWISEXOREQUAL | BITWISEOREQUAL
     ;
 
 expression:
@@ -1824,7 +1824,7 @@ constant_expression returns [ expression_t expr ]
 // [gram.lex]
 
 literal:
-    INTCONST|REALCONST|CHARCONST|STRINGCONST
+    DECIMALINT|FLOATONE|CHAR_LITERAL|STRING_LITERAL
     ;
 
 // lookahead stuff
@@ -1834,23 +1834,23 @@ literal:
 
 lookahead_tokenset_arg_syms
     :
-        IDENT|INTCONST|REALCONST|CHARCONST|STRINGCONST|
-        PLUS|MINUS|STAR|AMPERSAND|SIZEOF|TILDE|
-        NOT|PLUSPLUS|MINUSMINUS|OPERATOR|NEW|TOK_DELETE|
-        THIS|
-        VOID|CHAR|SHORT|LONG|FLOAT|DOUBLE|SIGNED|UNSIGNED|INT|
-        DIV|LSHIFT|RSHIFT|BITOR|AND|OR|XOR|
-        EQ|LEQ|GEQ|NEQ|
-        ASG|AND_ASG|DIV_ASG|LSHIFT_ASG|RSHIFT_ASG|MINUS_ASG|PLUS_ASG|
-        MOD_ASG|MUL_ASG|OR_ASG|XOR_ASG|DOT|MOD|
-        ARROW|QUESTION|COLON|COLON2|DOTSTAR|ARROWSTAR|COMMA|DOT3|
-        TYPEDEF|EXTERN|STATIC|AUTO|REGISTER|THREAD|
-        CONST|VOLATILE|STRUCT|UNION|CLASS|ENUM|TYPENAME|
-        OFFSETOF|ALIGNOF|THROW|WCHAR_T|TYPEID|
-        CONST_CAST|STATIC_CAST|DYNAMIC_CAST|REINTERPRET_CAST|
-        BOOL|TRUE|FALSE|
-        LD_GLOBAL|LD_SYMBOLIC|LD_HIDDEN|DECLSPEC|
-        ATTRIBUTE|TYPEOF|
+        IDENT|DECIMALINT|FLOATONE|CHAR_LITERAL|STRING_LITERAL|
+        PLUS|MINUS|STAR|AMPERSAND|LITERAL_sizeof|TILDE|
+        NOT|PLUSPLUS|MINUSMINUS|LITERAL_OPERATOR|LITERAL_new|LITERAL_delete|
+        LITERAL_this|
+        LITERAL_void|LITERAL_char|LITERAL_short|LITERAL_long|LITERAL_float|LITERAL_double|LITERAL_signed|LITERAL_unsigned|LITERAL_int|
+        DIVIDE|SHIFTLEFT|SHIFTRIGHT|BITWISEOR|AND|OR|BITWISEXOR|
+        EQUAL|LESSTHANOREQUALTO|GREATERTHANOREQUALTO|NOTEQUAL|
+        ASSIGNEQUAL|BITWISEANDEQUAL|DIVIDEEQUAL|SHIFTLEFTEQUAL|SHIFTRIGHTEQUAL|MINUSEQUAL|PLUSEQUAL|
+        MODEQUAL|TIMESEQUAL|BITWISEOREQUAL|BITWISEXOREQUAL|DOT|MOD|
+        POINTERTO|QUESTIONMARK|COLON|SCOPE|DOTMBR|POINTERTOMBR|COMMA|ELLIPSIS|
+        LITERAL_typedef|LITERAL_extern|LITERAL_static|LITERAL_auto|LITERAL_register|LITERAL___thread|
+        LITERAL_const|LITERAL_volatile|LITERAL_struct|LITERAL_union|LITERAL_class|LITERAL_enum|LITERAL_typename|
+        LITERAL___offsetof|LITERAL___alignof|LITERAL_throw|LITERAL_wchar_t|LITERAL_typeid|
+        LITERAL_const_cast|LITERAL_static_cast|LITERAL_dynamic_cast|LITERAL_reinterpret_cast|
+        LITERAL_bool|LITERAL_true|LITERAL_false|
+        LITERAL___global|LITERAL___symbolic|LITERAL___hidden|LITERAL___declspec|
+        LITERAL___attribute__|LITERAL___typeof__|
         IS_ENUM|IS_UNION|IS_CLASS|IS_POD|IS_ABSTRACT|HAS_VIRT_DESTR|IS_EMPTY|IS_BASEOF|IS_POLYMORPH
     ;
 
@@ -1865,18 +1865,18 @@ scope {
 }
     :
         (
-            // this gets us out if GTR is met when level == 0
-            (GTR {
+            // this gets us out if GREATERTHAN is met when level == 0
+            (GREATERTHAN {
                     ($look_after_tmpl_args::level > 0)
                   }? )=>
-            GTR
+            GREATERTHAN
                 {{ if (npar == 0 && nbrac == 0) {
                             $look_after_tmpl_args::level--;
                             println("level-- (", $look_after_tmpl_args::level);
                         }
                 }}
         |
-            LSS {{ if (npar == 0 && nbrac == 0) {
+            LESSTHAN {{ if (npar == 0 && nbrac == 0) {
                             $look_after_tmpl_args::level++;
                             println("level++ (", $look_after_tmpl_args::level);
                     }
@@ -1886,12 +1886,12 @@ scope {
         |
             RPAREN {{ if (npar > 0) npar--; }}
         |
-            LBRACK {{ nbrac++; }}
+            LSQUARE {{ nbrac++; }}
         |
-            RBRACK {{ if (nbrac > 0) nbrac--; }}
+            RSQUARE {{ if (nbrac > 0) nbrac--; }}
         |
             lookahead_tokenset_arg_syms
-        )* GTR
+        )* GREATERTHAN
     ;
 
 skip_balanced_Curl
@@ -1907,101 +1907,101 @@ skip_balanced_Curl
 // ==============
 //
 
-// TEMPLATE: 'template';
-// COLON: ':'; COLON2: '::';
+// LITERAL_template: 'template';
+// COLON: ':'; SCOPE: '::';
 
-// DOT: '.'; DOT3: '...';
-// MINUS: '-'; PLUS: '+'; MINUSMINUS: '--'; PLUSPLUS: '++'; PLUS_ASG: '+='; MINUS_ASG: '-=';
+// DOT: '.'; ELLIPSIS: '...';
+// MINUS: '-'; PLUS: '+'; MINUSMINUS: '--'; PLUSPLUS: '++'; PLUSEQUAL: '+='; MINUSEQUAL: '-=';
 
-// ARROW: '->'; 
-// STAR: '*'; MUL_ASG: '*='; DOTSTAR: '.*'; ARROWSTAR: '->*';
-// DIV: '/'; DIV_ASG: '/=';
-// MOD: '%'; MOD_ASG: '%=';
+// POINTERTO: '->'; 
+// STAR: '*'; TIMESEQUAL: '*='; DOTMBR: '.*'; POINTERTOMBR: '->*';
+// DIVIDE: '/'; DIVIDEEQUAL: '/=';
+// MOD: '%'; MODEQUAL: '%=';
 // NOT: '!';
-// ASG: '=';
-// EQ: '=='; LEQ: '<='; GEQ: '>='; NEQ: '!=';
-// AMPERSAND: '&'; AND: '&&'; AND_ASG: '&=';
-// BITOR: '|'; OR: '||'; OR_ASG: '|=';
-// XOR_ASG: '^='; XOR: '^'; 
-// LSHIFT: '<<'; RSHIFT: '>>'; LSHIFT_ASG: '<<='; RSHIFT_ASG: '>>=';
-// THIS: 'this';
-// TYPENAME: 'typename';
-// TYPEID: 'typeid';
+// ASSIGNEQUAL: '=';
+// EQUAL: '=='; LESSTHANOREQUALTO: '<='; GREATERTHANOREQUALTO: '>='; NOTEQUAL: '!=';
+// AMPERSAND: '&'; AND: '&&'; BITWISEANDEQUAL: '&=';
+// BITWISEOR: '|'; OR: '||'; BITWISEOREQUAL: '|=';
+// BITWISEXOREQUAL: '^='; BITWISEXOR: '^'; 
+// SHIFTLEFT: '<<'; SHIFTRIGHT: '>>'; SHIFTLEFTEQUAL: '<<='; SHIFTRIGHTEQUAL: '>>=';
+// LITERAL_this: 'this';
+// LITERAL_typename: 'typename';
+// LITERAL_typeid: 'typeid';
 // LPAREN: '('; RPAREN: ')';
-// LBRACK: '['; RBRACK: ']';
+// LSQUARE: '['; RSQUARE: ']';
 // LCURLY: '{'; RCURLY: '}';
-// LSS: '<'; GTR: '>';
+// LESSTHAN: '<'; GREATERTHAN: '>';
 
-// CHAR: 'char';
-// WCHAR_T: 'wchar_t';
-// BOOL: 'bool'; 
-// TRUE: 'true';
-// FALSE: 'false';
-// SHORT: 'short';
-// INT: 'int';
-// LONG: 'long';
-// SIGNED: 'signed';
-// UNSIGNED: 'unsigned';
-// FLOAT: 'float';
-// DOUBLE: 'double';
-// VOID: 'void';
+// LITERAL_char: 'char';
+// LITERAL_wchar_t: 'wchar_t';
+// LITERAL_bool: 'bool'; 
+// LITERAL_true: 'true';
+// LITERAL_false: 'false';
+// LITERAL_short: 'short';
+// LITERAL_int: 'int';
+// LITERAL_long: 'long';
+// LITERAL_signed: 'signed';
+// LITERAL_unsigned: 'unsigned';
+// LITERAL_float: 'float';
+// LITERAL_double: 'double';
+// LITERAL_void: 'void';
 
-// ENUM: 'enum'; CLASS: 'class'; STRUCT: 'struct'; UNION: 'union';
+// LITERAL_enum: 'enum'; LITERAL_class: 'class'; LITERAL_struct: 'struct'; LITERAL_union: 'union';
 
-// DYNAMIC_CAST: 'dynamic_cast';
-// STATIC_CAST: 'static_cast';
-// REINTERPRET_CAST: 'reinterpret_cast';
-// CONST_CAST: 'const_cast';
+// LITERAL_dynamic_cast: 'dynamic_cast';
+// LITERAL_static_cast: 'static_cast';
+// LITERAL_reinterpret_cast: 'reinterpret_cast';
+// LITERAL_const_cast: 'const_cast';
 
 // COMMA: ',';
 // TILDE: '~';
 
-// NEW: 'new'; TOK_DELETE: 'delete';
-// NAMESPACE: 'namespace'; USING: 'using';
+// LITERAL_new: 'new'; LITERAL_delete: 'delete';
+// LITERAL_namespace: 'namespace'; LITERAL_using: 'using';
 
-// OPERATOR: 'operator';
+// LITERAL_OPERATOR: 'operator';
 
-// FRIEND: 'friend';
-// TYPEDEF: 'typedef';
-// AUTO: 'auto';
-// REGISTER: 'register';
-// STATIC: 'static';
-// EXTERN: 'extern';
-// MUTABLE: 'mutable';
-// INLINE: 'inline';
-// VIRTUAL: 'virtual';
-// EXPLICIT: 'explicit';
-// EXPORT: 'export';
-// PRIVATE: 'private';
-// PROTECTED: 'protected';
-// PUBLIC: 'public';
+// LITERAL_friend: 'friend';
+// LITERAL_typedef: 'typedef';
+// LITERAL_auto: 'auto';
+// LITERAL_register: 'register';
+// LITERAL_static: 'static';
+// LITERAL_extern: 'extern';
+// LITERAL_mutable: 'mutable';
+// LITERAL_inline: 'inline';
+// LITERAL_virtual: 'virtual';
+// LITERAL_explicit: 'explicit';
+// LITERAL_export: 'export';
+// LITERAL_private: 'private';
+// LITERAL_protected: 'protected';
+// LITERAL_public: 'public';
 // SEMICOLON: ';';
 
-// TRY: 'try'; CATCH: 'catch'; THROW: 'throw';
+// LITERAL_try: 'try'; LITERAL_catch: 'catch'; LITERAL_throw: 'throw';
 
-// CONST: 'const'; VOLATILE: 'volatile';
-// ASM: 'asm';
-// BREAK: 'break'; CONTINUE: 'continue'; RETURN: 'return';
+// LITERAL_const: 'const'; LITERAL_volatile: 'volatile';
+// LITERAL_asm: 'asm';
+// LITERAL_break: 'break'; LITERAL_continue: 'continue'; LITERAL_return: 'return';
 
-// GOTO: 'goto';
-// FOR: 'for'; WHILE: 'while'; DO: 'do';
-// IF: 'if'; ELSE: 'else';
-// SWITCH: 'switch'; CASE: 'case'; DEFAULT: 'default';
+// LITERAL_goto: 'goto';
+// LITERAL_for: 'for'; LITERAL_while: 'while'; LITERAL_do: 'do';
+// LITERAL_if: 'if'; LITERAL_else: 'else';
+// LITERAL_switch: 'switch'; LITERAL_case: 'case'; LITERAL_default: 'default';
 
-// QUESTION: '?'; SIZEOF: 'sizeof';
-// OFFSETOF: '__offsetof';
-// THREAD: '__thread';
+// QUESTIONMARK: '?'; LITERAL_sizeof: 'sizeof';
+// LITERAL___offsetof: '__offsetof';
+// LITERAL___thread: '__thread';
 
-// LD_GLOBAL: '__global';
-// LD_SYMBOLIC: '__symbolic';
-// LD_HIDDEN: '__hidden';
+// LITERAL___global: '__global';
+// LITERAL___symbolic: '__symbolic';
+// LITERAL___hidden: '__hidden';
 
-// DECLSPEC: '__declspec';
-// ATTRIBUTE: '__attribute__';
-// TYPEOF: '__typeof__';
-// ALIGNOF: '__alignof';
+// LITERAL___declspec: '__declspec';
+// LITERAL___attribute__: '__attribute__';
+// LITERAL___typeof__: '__typeof__';
+// LITERAL___alignof: '__alignof';
 
-// PP_PRAGMA: '_Pragma';
+// LITERAL__Pragma: '_Pragma';
 
 // HAS_TRIVIAL_DESTR: '__oracle_has_trivial_destructor';
 // HAS_VIRTUAL_DESTR: '__oracle_has_virtual_destructor';
@@ -2014,7 +2014,7 @@ skip_balanced_Curl
 // IS_POLYMORPH: '__oracle_is_polymorphic';
 // IS_BASEOF: '__oracle_is_base_of';
 
-// CHARACTER_LITERAL
+// CHAR_LITERAL
 //     :   '\'' ( EscapeSequence | ~('\''|'\\') ) '\''
 //     ;
 
