@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -121,18 +122,20 @@ public interface NbModuleProvider {
     /**
      * add/updates the given dependency to the project
      * @param codeNameBase 
-     * @param releaseVersion 
-     * @param version 
+     * @param releaseVersion major release version, or null for recommended "current" version
+     * @param version specification version, or null for recommended "current" version; should not move a dependency backward, only forward
      * @param useInCompiler 
      * @return true if a dependency was really added
      * @throws IOException
      */
     boolean addDependency(
-            final String codeNameBase, final String releaseVersion,
-            final SpecificationVersion version, final boolean useInCompiler) throws IOException;
+            final String codeNameBase, final @NullAllowed String releaseVersion,
+            final @NullAllowed SpecificationVersion version, final boolean useInCompiler) throws IOException;
     
     /**
-     * checks the declared version of the given dependency
+     * Checks the version of the given dependency.
+     * The return value should be what the module currently compiles against
+     * (which might be different in some harnesses than the minimum runtime dependency).
      * @param codenamebase 
      * @return a known version, or null if unknown
      * @throws IOException
