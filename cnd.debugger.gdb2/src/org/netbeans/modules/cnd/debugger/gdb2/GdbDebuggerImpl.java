@@ -174,7 +174,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             if (frameTuple != null) {
                 pc = Address.parseAddr(frameTuple.getConstValue("addr", "0")); // NOI18N
                 func = frameTuple.getConstValue("func"); // NOI18N
-                src = frameTuple.getConstValue("fullname", srcTuple.getConstValue("fullname", null)); //NOI18N
+                src = frameTuple.getConstValue("fullname", srcTuple != null ? srcTuple.getConstValue("fullname", null) : null); //NOI18N
                 level = Integer.parseInt(frameTuple.getConstValue("level", "0")); // NOI18N
                 line = Integer.parseInt(frameTuple.getConstValue("line", "0")); //NOI18N
             } else {
