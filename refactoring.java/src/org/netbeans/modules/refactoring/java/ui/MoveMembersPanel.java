@@ -181,22 +181,22 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
 //        desc.addFilter(SHOW_INHERITED,
 //                NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowInherited"), //NOI18N
 //                NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowInheritedTip"), //NOI18N
-//                false, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/filterHideInherited.png", false), //NOI18N
+//                false, ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/filterHideInherited.png", false), //NOI18N
 //                null);
         desc.addFilter(SHOW_FIELDS,
                 NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowFields"), //NOI18N
                 NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowFieldsTip"), //NOI18N
-                true, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/filterHideFields.png", false), //NOI18N
+                true, ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/filterHideFields.png", false), //NOI18N
                 null);
         desc.addFilter(SHOW_STATIC,
                 NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowStatic"), //NOI18N
                 NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowStaticTip"), //NOI18N
-                true, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/filterHideStatic.png", false), //NOI18N
+                true, ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/filterHideStatic.png", false), //NOI18N
                 null);
         desc.addFilter(SHOW_NON_PUBLIC,
                 NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowNonPublic"), //NOI18N
                 NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowNonPublicTip"), //NOI18N
-                true, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/filterHideNonPublic.png", false), //NOI18N
+                true, ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/filterHideNonPublic.png", false), //NOI18N
                 null);
         AbstractButton[] res = new AbstractButton[4];
         sortByNameButton = new JToggleButton(new SortActionSupport.SortByNameAction(this));
