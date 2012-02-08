@@ -60,6 +60,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -103,7 +105,6 @@ import org.netbeans.modules.parsing.impl.indexing.errors.TaskCache;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.DownloadedIndexPatcher;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingActivityInterceptor;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
-import org.netbeans.modules.parsing.impl.indexing.lucene.LayeredDocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
@@ -3108,7 +3109,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         protected @Override boolean getDone() {
-            return scanBinary(root, BinaryIndexers.load(), null, null);
+            return scanBinary(root, BinaryIndexers.load(), null);
         }
 
         @Override
@@ -4094,38 +4095,45 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
         protected final boolean scanBinaries(final DependenciesContext ctx) {
             assert ctx != null;
-            long [] scannedRootsCnt = new long [] { 0 };
-            long [] completeTime = new long [] { 0 };
-            boolean finished = true;
-            BinaryIndexers binaryIndexers = null;
+            final AtomicInteger scannedRootsCnt = new AtomicInteger(0);
+            final BinaryIndexers binaryIndexers = ctx.newBinariesToScan.isEmpty()?
+                    null : BinaryIndexers.load();
 
-            for (URL binary : ctx.newBinariesToScan) {
-                if (isCancelled()) {
-                    finished = false;
-                    break;
-                }
-
-                if (binaryIndexers == null) {
-                    binaryIndexers = BinaryIndexers.load();
-                }
-
-                if (scanBinary(binary, binaryIndexers, scannedRootsCnt, completeTime)) {
-                    ctx.scannedBinaries.add(binary);
-                } else {
-                    finished = true;
-                    break;
-                }
-            }
-
+            final IndexBinaryWorkPool pool = new IndexBinaryWorkPool(
+                    new IndexBinaryWorkPool.Function<URL, Boolean>() {
+                        @Override
+                        public Boolean apply(URL root) {
+                            return scanBinary(
+                                    root,
+                                    binaryIndexers,
+                                    scannedRootsCnt);
+                        }
+                    },
+                    new Callable<Boolean>() {
+                        @Override
+                        public Boolean call() throws Exception {
+                            return isCancelled();
+                        }
+                    },
+                    ctx.newBinariesToScan);
+            final long binaryScanStart = System.currentTimeMillis();
+            final Pair<Boolean,Collection<? extends URL>> res = pool.execute();
+            final long binaryScanEnd = System.currentTimeMillis();
+            ctx.scannedBinaries.addAll(res.second);
             if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.info(String.format("Complete indexing of %d binary roots took: %d ms", scannedRootsCnt[0], completeTime[0])); //NOI18N
+                LOGGER.log(
+                    Level.INFO,
+                    "Complete indexing of {0} binary roots took: {1} ms",   //NOI18N
+                    new Object[] {
+                        scannedRootsCnt.get(),
+                        binaryScanEnd - binaryScanStart
+                    });
             }
             TEST_LOGGER.log(Level.FINEST, "scanBinary", ctx.newBinariesToScan);       //NOI18N
-
-            return finished;
+            return res.first;
         }
 
-        protected final boolean scanBinary(URL root, BinaryIndexers binaryIndexers, long [] scannedRootsCnt, long [] completeTime) {
+        protected final boolean scanBinary(URL root, BinaryIndexers binaryIndexers, AtomicInteger scannedRootsCnt) {
             final long tmStart = System.currentTimeMillis();
             final Map<BinaryIndexerFactory, Context> contexts = new HashMap<BinaryIndexerFactory, Context>();
             try {
@@ -4162,11 +4170,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 LOGGER.log(Level.WARNING, null, ioe);
             } finally {
                 final long time = System.currentTimeMillis() - tmStart;
-                if (completeTime != null) {
-                    completeTime[0] += time;
-                }
                 if (scannedRootsCnt != null) {
-                    scannedRootsCnt[0]++;
+                    scannedRootsCnt.incrementAndGet();
                 }
                 reportRootScan(root, time);
                 if (LOGGER.isLoggable(Level.FINE)) {
