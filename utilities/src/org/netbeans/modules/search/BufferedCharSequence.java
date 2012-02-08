@@ -51,7 +51,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.filesystems.FileObject;
 import sun.nio.cs.ThreadLocalCoders;
 
 /**
@@ -98,7 +100,7 @@ public class BufferedCharSequence implements CharSequence {
      *
      * @see #setMaxBufferSize(int) 
      */
-    private static final int MAX_SOURCE_BUFFER_SIZE = 4 * K;
+    private static final int MAX_SOURCE_BUFFER_SIZE = 16 * K;
     /**
      * Max subsequence length that will be processed by this implementation by
      * default.
@@ -157,14 +159,34 @@ public class BufferedCharSequence implements CharSequence {
                              .onUnmappableCharacter(CodingErrorAction.REPLACE), size);
     }
 
-
+    /**
+     * Creates {@code BufferedCharSequence} for the specified {@code stream}.
+     *
+     * @param size size of the file.
+     * @deprecated Can cause OutOfMemoryError for big files.
+     */
+    @Deprecated
     public BufferedCharSequence(final InputStream stream,
                                 CharsetDecoder decoder, long size) {
         this.source = new Source(stream, size);
         this.decoder = decoder;
         this.sink = new Sink(this.source);
-        LOG.finer("<init> " + this.source + "; decoder = " + this.decoder +
-                "; " + this.sink); // NOI18N
+    }
+
+    /**
+     * Creates {@code BufferedCharSequence} for specified FileObject {@code fo}.
+     *
+     * @param fo FileObject containing character data.
+     * @param decoder Charset decoder.
+     * @param size file size.
+     */
+    public BufferedCharSequence(final FileObject fo,
+            CharsetDecoder decoder, long size) {
+        this.source = new Source(fo, size);
+        this.decoder = decoder;
+        this.sink = new Sink(this.source);
+        LOG.log(Level.FINER, "<init> {0}; decoder = {1}; {2}", // NOI18N
+                new Object[]{this.source, this.decoder, this.sink});
     }
 
     /**
@@ -473,14 +495,25 @@ public class BufferedCharSequence implements CharSequence {
        private class Source {
         private int maxBufferSize = MAX_SOURCE_BUFFER_SIZE;
 
+        private FileObject fo = null;
         private ByteBuffer buffer;
+        private InputStream istream;
         private BufferedInputStream bstream;
         private int bufferSize;
         
+        @Deprecated
         public Source(InputStream inputStream, long bufferSize) {
             this.bstream = new BufferedInputStream(inputStream);
             this.bstream.mark(Integer.MAX_VALUE);
             this.bufferSize = getBufferSize(bufferSize);
+            buffer = newBuffer();
+            buffer.position(buffer.limit());
+        }
+
+        public Source(FileObject fo, long bufferSize) {
+            this.fo = fo;
+            this.bufferSize = getBufferSize(bufferSize);
+            initStreams();
             buffer = newBuffer();
             buffer.position(buffer.limit());
         }
@@ -494,12 +527,17 @@ public class BufferedCharSequence implements CharSequence {
             return ByteBuffer.allocate(bufferSize);
         }
 
-       public void reset() {        
-            try {                
-                bstream.reset();
+       public void reset() {
+            try {
+                if (fo == null) {
+                    bstream.reset(); // the deprecated way
+                } else {
+                    closeStreams();
+                    initStreams();
+                }
             } catch (IOException ex) {
                 throw new SourceIOException(ex);
-            }            
+            }
             buffer.clear();
             buffer.position(buffer.limit());
         }
@@ -533,7 +571,46 @@ public class BufferedCharSequence implements CharSequence {
         }
 
         public void close() throws IOException {
-            bstream.close();
+            closeStreams();
+        }
+
+        /**
+        * Initialize input stream and buffered input stream.
+        */
+        private void initStreams() {
+            try {
+                istream = fo.getInputStream();
+                try {
+                    bstream = new BufferedInputStream(istream, bufferSize);
+                } catch (Throwable t) {
+                    if (istream != null) {
+                        istream.close();
+                    }
+                    throw t;
+                }
+            } catch (Throwable t) {
+                throw new SourceIOException(new IOException(t));
+            }
+        }
+
+        /** Close input streams. */
+        private void closeStreams() throws IOException {
+            IOException t = null;
+            try {
+                if (bstream != null) {
+                    bstream.close();
+                    bstream = null;
+                }
+            } catch (IOException e) {
+                t = e;
+            }
+            if (istream != null) {
+                istream.close();
+                istream = null;
+            }
+            if (t != null) {
+                throw t;
+            }
         }
 
         public int getSize(long size) {
