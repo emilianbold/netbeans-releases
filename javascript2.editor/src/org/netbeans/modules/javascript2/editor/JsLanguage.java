@@ -65,8 +65,8 @@ public class JsLanguage extends DefaultLanguageConfig {
     @MultiViewElement.Registration(displayName = "#LBL_JSEditorTab",
         iconBase = "org/netbeans/modules/javascript2/editor/resources/javascript.png",
         persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
-        preferredID = "css.source",
-        mimeType = "text/javascript",
+        preferredID = "javascript.source",
+        mimeType = JsTokenId.JAVASCRIPT_MIME_TYPE,
         position = 1)
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
         return new MultiViewEditorElement(context);
