@@ -669,14 +669,10 @@ public final class PhpUnit extends PhpProgram {
         return String.format(filename, i == 0 ? "" : i); // NOI18N
     }
 
-    @NbBundle.Messages("PhpUnit.script.error=PHPUnit: {0}")
+    @NbBundle.Messages("PhpUnit.script.label=PHPUnit script")
     @Override
     public String validate() {
-        String error = FileUtils.validateFile(getProgram(), false);
-        if (error != null) {
-            return Bundle.PhpUnit_script_error(error);
-        }
-        return null;
+        return FileUtils.validateFile(Bundle.PhpUnit_script_label(), getProgram(), false);
     }
 
     public static String validate(String command) {

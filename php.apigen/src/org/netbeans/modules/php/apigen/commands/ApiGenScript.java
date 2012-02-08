@@ -131,14 +131,10 @@ public final class ApiGenScript extends PhpProgram {
         return new ApiGenScript(command).validate();
     }
 
-    @NbBundle.Messages("ApiGenScript.prefix=ApiGen script: {0}")
+    @NbBundle.Messages("ApiGenScript.script.label=ApiGen script")
     @Override
     public String validate() {
-        String error = FileUtils.validateFile(getProgram(), false);
-        if (error == null) {
-            return null;
-        }
-        return Bundle.ApiGenScript_prefix(error);
+        return FileUtils.validateFile(Bundle.ApiGenScript_script_label(), getProgram(), false);
     }
 
     @NbBundle.Messages({
