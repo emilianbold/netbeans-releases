@@ -260,28 +260,53 @@ public final class FileUtils {
     /**
      * Validate a file path and return {@code null} if it is valid, otherwise an error.
      * <p>
-     * A valid file means that the <tt>filePath</tt> represents a valid, readable file
-     * with absolute file path.
+     * This method simply calls {@link #validateFile(String, String, boolean)} with "File"
+     * (localized) as a {@code source}.
      * @param filePath a file path to validate
      * @param writable {@code true} if the file must be writable, {@code false} otherwise
      * @return {@code null} if it is valid, otherwise an error
-     * @see #validateDirectory(String, boolean)
+     * @see #validateFile(String, String, boolean)
      * @since 1.53
      */
+    @NbBundle.Messages("FileUtils.validateFile.file=File")
     public static String validateFile(String filePath, boolean writable) {
+        return validateDirectory(Bundle.FileUtils_validateFile_file(), filePath, writable);
+    }
+
+    /**
+     * Validate a file path and return {@code null} if it is valid, otherwise an error.
+     * <p>
+     * A valid file means that the <tt>filePath</tt> represents a valid, readable file
+     * with absolute file path.
+     * @param source source used in error message (e.g. "Script", "Config file")
+     * @param filePath a file path to validate
+     * @param writable {@code true} if the file must be writable, {@code false} otherwise
+     * @return {@code null} if it is valid, otherwise an error
+     * @see #validateDirectory(String, String, boolean)
+     * @since 1.64
+     */
+    @NbBundle.Messages({
+        "# 0 - source",
+        "FileUtils.validateFile.missing={0} must be selected.",
+        "FileUtils.validateFile.notAbsolute={0} must be an absolute path.",
+        "FileUtils.validateFile.notFile={0} must be a valid file.",
+        "FileUtils.validateFile.notReadable={0} is not readable.",
+        "FileUtils.validateFile.notWritable={0} is not writable."
+    })
+    public static String validateFile(String source, String filePath, boolean writable) {
         if (!StringUtils.hasText(filePath)) {
-            return NbBundle.getMessage(FileUtils.class, "MSG_FileEmpty");
+            return Bundle.FileUtils_validateFile_missing(source);
         }
 
         File file = new File(filePath);
         if (!file.isAbsolute()) {
-            return NbBundle.getMessage(FileUtils.class, "MSG_FileNotAbsolute");
+            return Bundle.FileUtils_validateFile_notAbsolute(source);
         } else if (!file.isFile()) {
-            return NbBundle.getMessage(FileUtils.class, "MSG_NotFile");
+            return Bundle.FileUtils_validateFile_notFile(source);
         } else if (!file.canRead()) {
-            return NbBundle.getMessage(FileUtils.class, "MSG_FileCannotRead");
+            return Bundle.FileUtils_validateFile_notReadable(source);
         } else if (writable && !file.canWrite()) {
-            return NbBundle.getMessage(FileUtils.class, "MSG_FileNotWritable");
+            return Bundle.FileUtils_validateFile_notWritable(source);
         }
         return null;
     }
@@ -308,29 +333,54 @@ public final class FileUtils {
     /**
      * Validate a directory path and return {@code null} if it is valid, otherwise an error.
      * <p>
-     * A valid directory means that the <tt>dirPath</tt> represents an existing, readable, optionally
-     * writable directory with absolute file path.
+     * This method simply calls {@link #validateDirectory(String, String, boolean)} with "Directory"
+     * (localized) as a {@code source}.
      * @param dirPath a file path to validate
      * @param writable {@code true} if the directory must be writable, {@code false} otherwise
      * @return {@code null} if it is valid, otherwise an error
-     * @see #validateScript(String, String)
+     * @see #validateDirectory(String, String, boolean)
      * @see #isDirectoryWritable(File)
      * @since 1.53
      */
+    @NbBundle.Messages("FileUtils.validateDirectory.directory=Directory")
     public static String validateDirectory(String dirPath, boolean writable) {
+        return validateDirectory(Bundle.FileUtils_validateDirectory_directory(), dirPath, writable);
+    }
+
+    /**
+     * Validate a directory path and return {@code null} if it is valid, otherwise an error.
+     * <p>
+     * A valid directory means that the <tt>dirPath</tt> represents an existing, readable, optionally
+     * writable directory with absolute file path.
+     * @param source source used in error message (e.g. "Project directory", "Working directory")
+     * @param dirPath a file path to validate
+     * @param writable {@code true} if the directory must be writable, {@code false} otherwise
+     * @return {@code null} if it is valid, otherwise an error
+     * @see #isDirectoryWritable(File)
+     * @since 1.64
+     */
+    @NbBundle.Messages({
+        "# {0} - source",
+        "FileUtils.validateDirectory.missing={0} must be selected.",
+        "FileUtils.validateDirectory.notAbsolute={0} must be an absolute path.",
+        "FileUtils.validateDirectory.notDir={0} must be a valid directory.",
+        "FileUtils.validateDirectory.notReadable={0} is not readable.",
+        "FileUtils.validateDirectory.notWritable={0} is not writable."
+    })
+    public static String validateDirectory(String source, String dirPath, boolean writable) {
         if (!StringUtils.hasText(dirPath)) {
-            return NbBundle.getMessage(FileUtils.class, "MSG_DirEmpty");
+            return Bundle.FileUtils_validateDirectory_missing(source);
         }
 
         File dir = new File(dirPath);
         if (!dir.isAbsolute()) {
-            return NbBundle.getMessage(FileUtils.class, "MSG_DirNotAbsolute");
+            return Bundle.FileUtils_validateDirectory_notAbsolute(source);
         } else if (!dir.isDirectory()) {
-            return NbBundle.getMessage(FileUtils.class, "MSG_NotDir");
+            return Bundle.FileUtils_validateDirectory_notDir(source);
         } else if (!dir.canRead()) {
-            return NbBundle.getMessage(FileUtils.class, "MSG_DirNotReadable");
+            return Bundle.FileUtils_validateDirectory_notReadable(source);
         } else if (writable && !isDirectoryWritable(dir)) {
-            return NbBundle.getMessage(FileUtils.class, "MSG_DirNotWritable");
+            return Bundle.FileUtils_validateDirectory_notWritable(source);
         }
         return null;
     }

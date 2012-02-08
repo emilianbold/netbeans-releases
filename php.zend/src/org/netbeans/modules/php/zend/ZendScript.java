@@ -143,13 +143,10 @@ public class ZendScript extends PhpProgram {
         return lineProcessor.getHelp();
     }
 
+    @NbBundle.Messages("ZendScript.script.label=Zend script")
     @Override
     public String validate() {
-        String error = FileUtils.validateFile(getProgram(), false);
-        if (error == null) {
-            return null;
-        }
-        return NbBundle.getMessage(ZendScript.class, "LBL_ZendScriptPrefix", error);
+        return FileUtils.validateFile(Bundle.ZendScript_script_label(), getProgram(), false);
     }
 
     public static String validate(String command) {
