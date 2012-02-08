@@ -171,7 +171,7 @@ public class XMLLexerFormatter {
         //String newIndentText = formatter.getIndentString(doc, tag.getIndentLevel());
         int previousEndOffset = Utilities.getFirstNonWhiteBwd(doc, so) + 1;
         String temp = doc.getText(previousEndOffset, so - previousEndOffset);
-        if(noNewline || temp.indexOf("\n") != -1){
+        if(noNewline || so == 0 || temp.indexOf("\n") != -1){
             int i = Utilities.getRowFirstNonWhite(doc, so);
             int rowStart = Utilities.getRowStart(doc, so);
             
@@ -232,8 +232,6 @@ public class XMLLexerFormatter {
             // will be set to indent of 1st attribute of a tag. Will be reset to -1 by start tag
             int firstAttributeIndent = -1;
             int lineIndent = -1;
-            int processingStart = -1;
-            boolean onlyWhitespace = false;
             
             while (tokenSequence.moveNext()) {
                 int indentLineStart = 1;
@@ -376,7 +374,6 @@ public class XMLLexerFormatter {
                         String[] lines = image.split("\n");
                         int lno = indentLineStart; // skip 1st line = up to the 1st newline
                         int currentOffset = tokenSequence.offset();
-                        onlyWhitespace = true;
                         while (lno < lines.length) {
                             currentOffset += lno == 0 ? 0 : lines[lno - 1].length() + 1; // add 1 for newline
                             int lineEnd = currentOffset + lines[lno].length();
@@ -392,7 +389,6 @@ public class XMLLexerFormatter {
                                     false
                                 ));
                             }
-                            onlyWhitespace = nonWhiteStart > -1;
                             lno++;
                         }
                         break;
@@ -514,7 +510,6 @@ public class XMLLexerFormatter {
                 if (tokenId != XMLTokenId.WS && tokenId != XMLTokenId.TEXT) {
                     // clear indicator of the newline
                     lineIndent = -1;
-                    onlyWhitespace = false;
                 }
             }
         } finally {
