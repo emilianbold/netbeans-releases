@@ -187,13 +187,14 @@ class GdbVariable extends Variable {
                 
         waitingForDebugger = true;           // reset in setChildren()
         Runnable r = new Runnable() {
-           public void run() {
-               try {
-		   setChildren();
-               } catch (Exception e) {
-                   Exceptions.printStackTrace(e);
-               }
-           }
+            @Override
+            public void run() {
+                try {
+                    setChildren();
+                } catch (Exception e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
         };
         SwingUtilities.invokeLater(r);
         
@@ -206,6 +207,7 @@ class GdbVariable extends Variable {
     }
 
     // interface Variable
+    @Override
     public void noteExpanded(boolean isWatch) {
         if (isExpanded())
             return;
@@ -213,12 +215,14 @@ class GdbVariable extends Variable {
     }
 
     // interface Variable
+    @Override
     public void noteCollapsed(boolean isWatch) {
         setExpanded(false);
     }
 
 
     // for assign new value from view nodes
+    @Override
     public void setVariableValue(String assigned_v) {
         // no need to update to the same value
         if (!assigned_v.equals(value)) {
@@ -228,20 +232,24 @@ class GdbVariable extends Variable {
         }
     }
 
+    @Override
     public void removeAllDescendantFromOpenList(boolean isLocal) {
     }
 
     // interface Variable
+    @Override
     public String getDebugInfo() {
 	return "";
     }
 
     // implement Variable
+    @Override
     public boolean getDelta() {
         return false;
     }
 
     // interface Variable
+    @Override
     public Action[] getActions(boolean isWatch) {
 	if (isWatch) {
 	    return new Action[] {
@@ -268,17 +276,20 @@ class GdbVariable extends Variable {
     }
 
     // interface Variable
+    @Override
     public boolean isArrayBrowsable() {
 	// No array browser for gdb
 	return false;
     }
 
     // interface Variable
+    @Override
     public void postFormat(String format) {
 	debugger.postVarFormat(this, format);
     }
 
     // interface Variable
+    @Override
     public String getFormat() {
 	return mi_format;
     }
