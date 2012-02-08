@@ -118,6 +118,7 @@ public class CompilerSettings {
         if (get(p, ENABLE_LINT_RAWTYPES))
             sb.append("-Xlint:rawtypes ");
 
+        sb.append("-XDidentifyLambdaCandidate=true ");
         sb.append("-XDfindDiamond ");
         
         if (sb.length() > 0 && sb.charAt(sb.length() - 1) == ' ') {
