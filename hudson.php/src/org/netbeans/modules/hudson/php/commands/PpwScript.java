@@ -93,14 +93,10 @@ public class PpwScript extends PhpProgram {
         return new PpwScript(command).validate();
     }
 
-    @NbBundle.Messages("LBL_PpwScriptPrefix=PPW script: {0}")
+    @NbBundle.Messages("PpwScript.script.label=PPW script")
     @Override
     public String validate() {
-        String error = FileUtils.validateFile(getProgram(), false);
-        if (error == null) {
-            return null;
-        }
-        return Bundle.LBL_PpwScriptPrefix(error);
+        return FileUtils.validateFile(Bundle.PpwScript_script_label(), getProgram(), false);
     }
 
     @NbBundle.Messages({

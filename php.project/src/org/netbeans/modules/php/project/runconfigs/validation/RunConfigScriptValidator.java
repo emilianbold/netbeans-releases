@@ -116,17 +116,13 @@ public final class RunConfigScriptValidator {
         return null;
     }
 
-    @NbBundle.Messages("RunConfigScriptValidator.workDir.prefix=Working Directory: {0}")
+    @NbBundle.Messages("RunConfigScriptValidator.workDir.label=Working directory")
     static String validateWorkDir(String workDir, boolean allowEmptyString) {
         boolean hasText = StringUtils.hasText(workDir);
         if (allowEmptyString && !hasText) {
             return null;
         }
-        String error = FileUtils.validateDirectory(workDir, false);
-        if (error != null) {
-            return Bundle.RunConfigScriptValidator_workDir_prefix(error);
-        }
-        return null;
+        return FileUtils.validateDirectory(Bundle.RunConfigScriptValidator_workDir_label(), workDir, false);
     }
 
 }
