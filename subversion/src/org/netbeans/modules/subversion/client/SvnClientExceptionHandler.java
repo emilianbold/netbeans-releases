@@ -697,7 +697,7 @@ public class SvnClientExceptionHandler {
 //      svn: URL 'file:///data/subversion/dilino' non-existent in revision 88
         msg = msg.toLowerCase();
         return msg.indexOf("(not a valid url)") > - 1 ||                                      // NOI18N
-               (msg.indexOf("svn: url") > -1 && msg.indexOf("non-existent in") > - 1 ) ||
+               (msg.contains("svn:") && msg.contains("url") && msg.contains("non-existent in")) || //NOI18N
                (msg.indexOf("bad url passed to ra layer") > - 1 );
     }
 
