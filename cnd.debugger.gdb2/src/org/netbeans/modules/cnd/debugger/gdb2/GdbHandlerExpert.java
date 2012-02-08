@@ -286,35 +286,18 @@ public class GdbHandlerExpert implements HandlerExpert {
 
     private void setGenericProperties(Handler handler, MITList props) {
 	// enabled
-	MIValue enabledValue = props.valueOf("enabled");	// NOI18N
-	String enabledString = enabledValue.asConst().value();
-
-	if (IpeUtils.sameString(enabledString, "y"))		// NOI18N
-	    handler.setEnabled(true);
-	else if (IpeUtils.sameString(enabledString, "n"))	// NOI18N
-	    handler.setEnabled(false);
-	else
-	    handler.setEnabled(false);
-
+	String enabledString = props.getConstValue("enabled"); // NOI18N
+        handler.setEnabled("y".equals(enabledString)); //NOI18N
+        
 	// 'number'
-	MIValue numberValue = props.valueOf("number");		// NOI18N
-	String numberString = numberValue.asConst().value();
-	int number = Integer.parseInt(numberString);
+	int number = Integer.parseInt(props.getConstValue("number")); // NOI18N
 	handler.setId(number);
     }
 
-    private void setGenericProperties(NativeBreakpoint breakpoint,
-				      MITList props) {
-
+    private void setGenericProperties(NativeBreakpoint breakpoint, MITList props) {
 	// temporary
-	MIValue dispValue = props.valueOf("disp");		// NOI18N
-	String dispString = dispValue.asConst().value();
-	if ("keep".equals(dispString))				// NOI18N
-	    breakpoint.setTemp(false);
-	else if ("del".equals(dispString))			// NOI18N
-	    breakpoint.setTemp(true);
-	else
-	    breakpoint.setTemp(false);
+	String dispString = props.getConstValue("disp"); // NOI18N
+        breakpoint.setTemp("del".equals(dispString)); //NOI18N
 
 	// count
 	MIValue ignoreValue = props.valueOf("ignore");		// NOI18N
@@ -332,22 +315,10 @@ public class GdbHandlerExpert implements HandlerExpert {
 	}
 
 	// thread
-	MIValue threadValue = props.valueOf("thread");		// NOI18N
-	if (threadValue != null) {
-	    String threadString = threadValue.asConst().value();
-	    breakpoint.setThread(threadString);
-	} else {
-            breakpoint.setThread(null);
-        }
+        breakpoint.setThread(props.getConstValue("thread", null)); //NOI18N
 
 	// condition
-	MIValue condValue = props.valueOf("cond");		// NOI18N
-	if (condValue != null) {
-	    String condString = condValue.asConst().value();
-	    breakpoint.setCondition(condString);
-	} else {
-            breakpoint.setCondition(null);
-        }
+        breakpoint.setCondition(props.getConstValue("cond", null)); //NOI18N
 
 	// action
 	Action action = Action.STOP;

@@ -55,9 +55,13 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.ModelChangeDelegator;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.VariableModel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.WatchModel;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MITList;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 import org.openide.util.Exceptions;
 
 class GdbVariable extends Variable {
+    static enum DisplayHint {NONE, ARRAY, MAP, STRING}
+    
     protected final GdbDebuggerImpl debugger;
     private final boolean isWatch;
 
@@ -69,6 +73,7 @@ class GdbVariable extends Variable {
     private boolean changed;
     private boolean inScope = true;
     private boolean dynamic = false;
+    private DisplayHint displayHint = DisplayHint.NONE;
 
     public GdbVariable(GdbDebuggerImpl debugger, ModelChangeDelegator updater,
 		       Variable parent,
@@ -104,6 +109,39 @@ class GdbVariable extends Variable {
     public boolean isInScope() {
 	return inScope;
     }
+    
+    void populateFields(MITList results) {
+        setMIName(results.getConstValue("name")); // NOI18N
+        setType(results.getConstValue("type"));
+        
+        String numchild_l = results.getConstValue("numchild"); // NOI18N
+        MIValue dynamicVal = results.valueOf("dynamic"); //NOI18N
+        if (dynamicVal != null) {
+            setDynamic("1".equals(dynamicVal.asConst().value())); // NOI18N
+            String hintVal = results.getConstValue("displayhint"); //NOI18N
+            try {
+                displayHint = DisplayHint.valueOf(hintVal.toUpperCase());
+            } catch (Exception e) {
+                displayHint = DisplayHint.NONE;
+            }
+            String hasMoreVal = results.getConstValue("has_more"); //NOI18N
+            if (!hasMoreVal.isEmpty()) {
+                numchild_l = hasMoreVal; // NOI18N
+            } else {
+                switch (displayHint) {
+                    case ARRAY:
+                    case MAP:
+                    case NONE:
+                        numchild_l = "1";
+                }
+            }
+        }
+        setNumChild(numchild_l); // also set children if there is any
+    }
+
+    public DisplayHint getDisplayHint() {
+        return displayHint;
+    }
 
     // override Variable
     @Override
@@ -132,7 +170,7 @@ class GdbVariable extends Variable {
 	return editable;
     }
 
-    protected void setMIName(String mi_name) {
+    void setMIName(String mi_name) {
 	this.mi_name = mi_name;
     }
 
@@ -168,7 +206,7 @@ class GdbVariable extends Variable {
         return dynamic;
     }
 
-    public void setDynamic(boolean dynamic) {
+    void setDynamic(boolean dynamic) {
         this.dynamic = dynamic;
     }
 
@@ -187,13 +225,14 @@ class GdbVariable extends Variable {
                 
         waitingForDebugger = true;           // reset in setChildren()
         Runnable r = new Runnable() {
-           public void run() {
-               try {
-		   setChildren();
-               } catch (Exception e) {
-                   Exceptions.printStackTrace(e);
-               }
-           }
+            @Override
+            public void run() {
+                try {
+                    setChildren();
+                } catch (Exception e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
         };
         SwingUtilities.invokeLater(r);
         
@@ -206,6 +245,7 @@ class GdbVariable extends Variable {
     }
 
     // interface Variable
+    @Override
     public void noteExpanded(boolean isWatch) {
         if (isExpanded())
             return;
@@ -213,12 +253,14 @@ class GdbVariable extends Variable {
     }
 
     // interface Variable
+    @Override
     public void noteCollapsed(boolean isWatch) {
         setExpanded(false);
     }
 
 
     // for assign new value from view nodes
+    @Override
     public void setVariableValue(String assigned_v) {
         // no need to update to the same value
         if (!assigned_v.equals(value)) {
@@ -228,20 +270,24 @@ class GdbVariable extends Variable {
         }
     }
 
+    @Override
     public void removeAllDescendantFromOpenList(boolean isLocal) {
     }
 
     // interface Variable
+    @Override
     public String getDebugInfo() {
 	return "";
     }
 
     // implement Variable
+    @Override
     public boolean getDelta() {
         return false;
     }
 
     // interface Variable
+    @Override
     public Action[] getActions(boolean isWatch) {
 	if (isWatch) {
 	    return new Action[] {
@@ -268,17 +314,20 @@ class GdbVariable extends Variable {
     }
 
     // interface Variable
+    @Override
     public boolean isArrayBrowsable() {
 	// No array browser for gdb
 	return false;
     }
 
     // interface Variable
+    @Override
     public void postFormat(String format) {
 	debugger.postVarFormat(this, format);
     }
 
     // interface Variable
+    @Override
     public String getFormat() {
 	return mi_format;
     }
