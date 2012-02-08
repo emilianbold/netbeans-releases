@@ -87,6 +87,7 @@ public class JsParserResult extends ParserResult {
         synchronized(this) {
             if (model == null) {
                 model = ModelFactory.getModel(this);
+                System.out.println("modle for: " + getSnapshot().getSource().getFileObject().getName());
             }
         }
         return model;

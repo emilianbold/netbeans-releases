@@ -47,6 +47,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.text.Document;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.util.CharSequences;
 
 /**
  * Parses jsDoc comment blocks and returns list of these blocks and contained {@code JsDocElement}s.
@@ -56,41 +64,51 @@ import java.util.regex.Pattern;
 public class JsDocParser {
 
     private static final Logger LOGGER = Logger.getLogger(JsDocParser.class.getName());
-    private static final Pattern PATTERN_DOC_COMMENT = Pattern.compile("/\\*(?:.|[\\n\\r])*?\\*/");
+//    private static final Pattern PATTERN_DOC_COMMENT = Pattern.compile("/\\*(?:.|[\\n\\r])*?\\*/");
 
     /**
      * Parses given script text and returns list of all jsDoc blocks.
      * @param scriptText text to parse
      * @return list of blocks
      */
-    public static List<JsDocBlock> parse(final String scriptText) {
+    public static List<JsDocBlock> parse(Snapshot snapshot) {
         List<JsDocBlock> blocks = new LinkedList<JsDocBlock>();
-
-        Matcher matcher = PATTERN_DOC_COMMENT.matcher(scriptText);
-        String comment;
-        int beginIndex;
-        int endIndex;
-
-        if (scriptText == null || scriptText.length() == 0) {
-            return blocks;
-        }
         
-        while(matcher.find()) {
-            beginIndex = matcher.start();
-            endIndex = matcher.end();
-
-            comment = scriptText.substring(beginIndex, endIndex);
-            JsDocCommentType commentType = getCommentType(comment);
-            LOGGER.log(Level.FINE, "JsDocParser:comment block offset=[{0}-{1}],type={2},text={3}",
-                    new Object[]{beginIndex, endIndex, commentType, comment});
+        List<CommentBlock> commentBlocks = getCommentBlocks(snapshot);
+        for (CommentBlock commentBlock : commentBlocks) {
+            JsDocCommentType commentType = getCommentType(commentBlock.getContent());
+            LOGGER.log(Level.FINE, "JsDocParser:comment block offset=[{0}-{1}],type={2},text={3}", new Object[]{
+                commentBlock.getBeginOffset(), commentBlock.getEndOffset(), commentType, commentBlock.getContent()});
             
+            // just continue in cases of traditional /* */ blocks
             if (commentType == JsDocCommentType.TRADITIONAL) {
                 continue;
             }
-            
-            
         }
 
+        
+            
+
+        return blocks;
+    }
+
+    private static List<CommentBlock> getCommentBlocks(Snapshot snapshot) {
+        List<CommentBlock> blocks = new LinkedList<CommentBlock>();
+
+        TokenSequence tokenSequence = LexUtilities.getJsTokenSequence(snapshot);
+        if (tokenSequence == null) {
+            return blocks;
+        }
+
+        while(tokenSequence.moveNext()) {
+            Token<? extends JsTokenId> token = tokenSequence.token();
+            if (token.id() == JsTokenId.BLOCK_COMMENT) {
+                int startOffset = token.offset(snapshot.getTokenHierarchy());
+                int endOffset = startOffset + token.length();
+                blocks.add(new CommentBlock(startOffset, endOffset, token.toString()));
+            }
+        }
+        tokenSequence.moveStart();
         return blocks;
     }
 
@@ -115,5 +133,30 @@ public class JsDocParser {
 //    private static JsDocBlock blockForComment(String commentBlock) {
 //
 //    }
+    
+    private static class CommentBlock {
+
+        private final int beginOffset;
+        private final int endOffset;
+        private final String content;
+
+        public CommentBlock(int beginOffset, int endOffset, String content) {
+            this.beginOffset = beginOffset;
+            this.endOffset = endOffset;
+            this.content = content;
+        }
+
+        public int getBeginOffset() {
+            return beginOffset;
+        }
+
+        public String getContent() {
+            return content;
+        }
+
+        public int getEndOffset() {
+            return endOffset;
+        }
+    }
 
 }
