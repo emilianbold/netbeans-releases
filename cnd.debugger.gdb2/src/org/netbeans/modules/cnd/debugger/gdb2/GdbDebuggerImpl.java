@@ -746,7 +746,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         }
                         //see IZ 197786, we set breakpoints here not on prog load
                         ((GdbDebuggerSettingsBridge)profileBridge).noteAttached();
-                        requestStack(null);
+                        
+                        // continue, see IZ 198495
+                        if (DebuggerOption.RUN_AUTOSTART.isEnabled(optionLayers())) {
+                            go();
+                        } else {
+                            requestStack(null);
+                        }
                         finish();
                     }
             };
