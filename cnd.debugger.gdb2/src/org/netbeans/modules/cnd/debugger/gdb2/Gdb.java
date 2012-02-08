@@ -1136,7 +1136,7 @@ public class Gdb {
             if (record.token() == 0) {
                 if (record.cls().equals("thread-group-started")) { //NOI18N
                     debugger.session().setSessionEngine(GdbEngineCapabilityProvider.getGdbEngineType());
-                    debugger.session().setPid(Long.valueOf(record.results().valueOf("pid").asConst().value())); //NOI18N
+                    debugger.session().setPid(Long.valueOf(record.results().getConstValue("pid"))); //NOI18N
                 } else if (record.cls().equals("thread-group-added") || //NOI18N
                     record.cls().equals("thread-group-removed") || //NOI18N
                     record.cls().equals("thread-group-exited") || //NOI18N

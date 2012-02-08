@@ -60,7 +60,7 @@ public class MIParserTestCase extends TestCase {
         MIParser parser = new MIParser("Cp1251");
         parser.setup("*stopped,fullname=\"" + testLine + "\"");
         MIRecord result = parser.parse();
-        assertEquals("E:\\\\test\\\\Мои", result.results().valueOf("fullname").asConst().value());
+        assertEquals("E:\\\\test\\\\Мои", result.results().getConstValue("fullname"));
     }
     
     @Test
@@ -69,7 +69,7 @@ public class MIParserTestCase extends TestCase {
         MIParser parser = new MIParser("Cp1251");
         parser.setup("*stopped,fullname=\"" + testLine + "\"");
         MIRecord result = parser.parse();
-        assertEquals("E:\\\\test\\\\Not Мои", result.results().valueOf("fullname").asConst().value());
+        assertEquals("E:\\\\test\\\\Not Мои", result.results().getConstValue("fullname"));
     }
     
     @Test
@@ -78,7 +78,7 @@ public class MIParserTestCase extends TestCase {
         MIParser parser = new MIParser("Cp1251");
         parser.setup("*stopped,value=\"" + testLine + "\"");
         MIRecord result = parser.parse();
-        assertEquals(testLine, result.results().valueOf("value").asConst().value());
+        assertEquals(testLine, result.results().getConstValue("value"));
     }
     
     @Test
