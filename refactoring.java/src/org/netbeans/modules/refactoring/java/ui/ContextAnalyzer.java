@@ -524,7 +524,7 @@ public final class ContextAnalyzer {
         return false;
     }
 
-    private static ShowUI SHOW = new ShowUI() {
+    public static ShowUI SHOW = new ShowUI() {
         @Override
         public void show(RefactoringUI ui, TopComponent activetc) {
             if (ui!=null) {
@@ -534,7 +534,7 @@ public final class ContextAnalyzer {
             }
         }
     };
-    private interface ShowUI {
+    public interface ShowUI {
         public void show(RefactoringUI ui, TopComponent activetc);
     }    
 }
