@@ -1020,7 +1020,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 AST colonAST;
                 if (idAST == null) {
                     break;
-                } else if (idAST.getType() == CPPTokenTypes.ID) {
+                } else if (idAST.getType() == CPPTokenTypes.IDENT) {
                     colonAST = idAST.getNextSibling();
                 } else if (idAST.getType() == CPPTokenTypes.COLON){
                     colonAST = idAST;

@@ -168,7 +168,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         }
         child = AstRenderer.getFirstSiblingSkipInline(child);
         child = AstRenderer.getFirstSiblingSkipQualifiers(child);
-	if( child != null && child.getType() == CPPTokenTypes.ID ) {
+	if( child != null && child.getType() == CPPTokenTypes.IDENT ) {
 	    AST next = child.getNextSibling();
 	    if( next != null && next.getType() == CPPTokenTypes.LESSTHAN ) {
                 next = AstRenderer.skipTemplateParameters(next);
@@ -180,7 +180,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 		begin:
 		for( next = next.getNextSibling(); next != null; next = next.getNextSibling() ) {
 		    switch( next.getType() ) {
-			case CPPTokenTypes.ID:
+			case CPPTokenTypes.IDENT:
 			    l.add(manager.getString(AstUtil.getText(next)));
                             break;
 			case CPPTokenTypes.SCOPE:
@@ -210,7 +210,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
             for( AST token = qid.getFirstChild(); token != null; token = token.getNextSibling() ) {
                 int type2 = token.getType();
                 switch (type2) {
-                    case CPPTokenTypes.ID:
+                    case CPPTokenTypes.IDENT:
                         id = new StringBuilder(token.getText());
                         break;
                     case CPPTokenTypes.GREATERTHAN:
