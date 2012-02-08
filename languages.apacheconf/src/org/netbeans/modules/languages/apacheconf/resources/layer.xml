@@ -80,7 +80,7 @@
                 <attr name="displayName" bundlevalue="org.netbeans.modules.languages.apacheconf.resources.Bundle#Templates/Other/ApacheConfTemplate.conf"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/apacheconf/resources/ApacheConfFileDescription.html"/>
-                <attr name="position" intvalue="910"/>
+                <attr name="position" intvalue="920"/>
                 <attr name="templateCategory" stringvalue="simple-files"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/apacheconf/resources/apache_conf_file_16.png"/>
             </file>
