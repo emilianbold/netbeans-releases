@@ -45,16 +45,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.openide.util.CharSequences;
 
 /**
  * Parses jsDoc comment blocks and returns list of these blocks and contained {@code JsDocElement}s.
@@ -64,7 +59,6 @@ import org.openide.util.CharSequences;
 public class JsDocParser {
 
     private static final Logger LOGGER = Logger.getLogger(JsDocParser.class.getName());
-//    private static final Pattern PATTERN_DOC_COMMENT = Pattern.compile("/\\*(?:.|[\\n\\r])*?\\*/");
 
     /**
      * Parses given script text and returns list of all jsDoc blocks.
@@ -80,10 +74,6 @@ public class JsDocParser {
             LOGGER.log(Level.FINE, "JsDocParser:comment block offset=[{0}-{1}],type={2},text={3}", new Object[]{
                 commentBlock.getBeginOffset(), commentBlock.getEndOffset(), commentType, commentBlock.getContent()});
             
-            // just continue in cases of traditional /* */ blocks
-            if (commentType == JsDocCommentType.TRADITIONAL) {
-                continue;
-            }
         }
 
         
@@ -102,7 +92,7 @@ public class JsDocParser {
 
         while(tokenSequence.moveNext()) {
             Token<? extends JsTokenId> token = tokenSequence.token();
-            if (token.id() == JsTokenId.BLOCK_COMMENT) {
+            if (token.id() == JsTokenId.DOC_COMMENT) {
                 int startOffset = token.offset(snapshot.getTokenHierarchy());
                 int endOffset = startOffset + token.length();
                 blocks.add(new CommentBlock(startOffset, endOffset, token.toString()));
@@ -114,9 +104,7 @@ public class JsDocParser {
 
     private static JsDocCommentType getCommentType(String commentBlock) {
         assert commentBlock.length() >= 4;
-        if (commentBlock.startsWith("/* ")) {
-            return JsDocCommentType.TRADITIONAL;
-        } else if (commentBlock.startsWith("/**#")) {
+        if (commentBlock.startsWith("/**#")) {
             if ("/**#nocode+*/".equals(commentBlock)) {
                 return JsDocCommentType.DOC_NO_CODE_START;
             } else if ("/**#nocode-*/".equals(commentBlock)) {
