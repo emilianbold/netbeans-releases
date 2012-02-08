@@ -666,9 +666,9 @@ public final class JFXProjectProperties {
             def.put(RUN_APP_HEIGHT, DEFAULT_APP_HEIGHT);
         }
         m.put(null, def);
-        FileObject configs = project.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
-        if (configs != null) {
-            for (FileObject kid : configs.getChildren()) {
+        FileObject configsFO = project.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
+        if (configsFO != null) {
+            for (FileObject kid : configsFO.getChildren()) {
                 if (!kid.hasExt("properties")) { // NOI18N
                     continue;
                 }
@@ -681,9 +681,9 @@ public final class JFXProjectProperties {
                 m.put(kid.getName(), new TreeMap<String,String>(cep) );
             }
         }
-        configs = project.getProjectDirectory().getFileObject("nbproject/private/configs"); // NOI18N
-        if (configs != null) {
-            for (FileObject kid : configs.getChildren()) {
+        configsFO = project.getProjectDirectory().getFileObject("nbproject/private/configs"); // NOI18N
+        if (configsFO != null) {
+            for (FileObject kid : configsFO.getChildren()) {
                 if (!kid.hasExt("properties")) { // NOI18N
                     continue;
                 }
@@ -757,9 +757,9 @@ public final class JFXProjectProperties {
         }       
         p.put(null, def);
 
-        FileObject configs = project.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
-        if (configs != null) {
-            for (FileObject kid : configs.getChildren()) {
+        FileObject configsFO = project.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
+        if (configsFO != null) {
+            for (FileObject kid : configsFO.getChildren()) {
                 if (!kid.hasExt("properties")) { // NOI18N
                     continue;
                 }
@@ -792,9 +792,9 @@ public final class JFXProjectProperties {
                 p.put(kid.getName(), params );
             }
         }
-        configs = project.getProjectDirectory().getFileObject("nbproject/private/configs"); // NOI18N
-        if (configs != null) {
-            for (FileObject kid : configs.getChildren()) {
+        configsFO = project.getProjectDirectory().getFileObject("nbproject/private/configs"); // NOI18N
+        if (configsFO != null) {
+            for (FileObject kid : configsFO.getChildren()) {
                 if (!kid.hasExt("properties")) { // NOI18N
                     continue;
                 }
@@ -883,7 +883,15 @@ public final class JFXProjectProperties {
             }
         }
     }
-        
+
+    private boolean removePropertyIfEmptyInConfig(@NonNull Map<String, String> c, @NonNull String prop, @NonNull EditableProperties props) {
+        if( !c.containsKey(prop) && props.containsKey(prop) ) {
+            props.remove(prop);
+            return true;
+        }
+        return false;
+    }
+    
     /**
      * A royal mess. (modified from J2SEProjectProperties)
      */
@@ -977,14 +985,17 @@ public final class JFXProjectProperties {
                     privatePropsChanged |= ep == privateCfgProps;
                 }
             }
-            if( !c.containsKey(RUN_IN_BROWSER) && privateCfgProps.containsKey(RUN_IN_BROWSER) ) {
-                privateCfgProps.remove(RUN_IN_BROWSER);
-                privatePropsChanged = true;
+            for (String prop : new String[] {RUN_IN_BROWSER, RUN_IN_BROWSER_PATH}) {
+                privatePropsChanged |= removePropertyIfEmptyInConfig(c, prop, privateCfgProps);
             }
-            if( !c.containsKey(RUN_IN_BROWSER_PATH) && privateCfgProps.containsKey(RUN_IN_BROWSER_PATH) ) {
-                privateCfgProps.remove(RUN_IN_BROWSER_PATH);
-                privatePropsChanged = true;
-            }
+//            if( !c.containsKey(RUN_IN_BROWSER) && privateCfgProps.containsKey(RUN_IN_BROWSER) ) {
+//                privateCfgProps.remove(RUN_IN_BROWSER);
+//                privatePropsChanged = true;
+//            }
+//            if( !c.containsKey(RUN_IN_BROWSER_PATH) && privateCfgProps.containsKey(RUN_IN_BROWSER_PATH) ) {
+//                privateCfgProps.remove(RUN_IN_BROWSER_PATH);
+//                privatePropsChanged = true;
+//            }
             index = 0;
             List<Map<String,String/*|null*/>> paramsConfig = params.get(config);
             if(paramsConfig != null) {
@@ -1481,13 +1492,13 @@ public final class JFXProjectProperties {
         }
     }
 
-    private String getSelectedBrowserPath() {
-        if (browserPaths == null) {
-            return null;
-        }
-        String selectedName = configsGet(activeConfig).get(RUN_IN_BROWSER);
-        return browserPaths.get(selectedName);
-    }
+//    private String getSelectedBrowserPath() {
+//        if (browserPaths == null) {
+//            return null;
+//        }
+//        String selectedName = configsGet(activeConfig).get(RUN_IN_BROWSER);
+//        return browserPaths.get(selectedName);
+//    }
     
     public class PreloaderClassComboBoxModel extends DefaultComboBoxModel {
         

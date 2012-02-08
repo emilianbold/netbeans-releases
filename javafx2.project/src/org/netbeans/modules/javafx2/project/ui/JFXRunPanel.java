@@ -1185,14 +1185,13 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
                     }
                     data[i].setText(v);
                 }
-                String preloaderEnabled = m.get(JFXProjectProperties.PRELOADER_ENABLED);
-                preloaderSelectionChanged(
-                        preloaderEnabled,
-                        m.get(JFXProjectProperties.PRELOADER_PROJECT),
-                        m.get(JFXProjectProperties.PRELOADER_JAR_PATH),
-                        m.get(JFXProjectProperties.PRELOADER_JAR_FILENAME),
-                        m.get(JFXProjectProperties.PRELOADER_CLASS),
-                        m);
+                preloaderSelectionChanged(m, def);
+//                        m.get(JFXProjectProperties.PRELOADER_ENABLED),
+//                        m.get(JFXProjectProperties.PRELOADER_PROJECT),
+//                        m.get(JFXProjectProperties.PRELOADER_JAR_PATH),
+//                        m.get(JFXProjectProperties.PRELOADER_JAR_FILENAME),
+//                        m.get(JFXProjectProperties.PRELOADER_CLASS),
+//                        m);
 
                 String runType = m.get(JFXProjectProperties.RUN_AS);
                 if(runType == null) {
@@ -1250,7 +1249,27 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
         }
     }
 
-    private void preloaderSelectionChanged(String enabled, String projectDir, String jarFilePath, String jarFileName, String cls, Map<String,String> config) {
+    private void preloaderSelectionChanged(@NonNull Map<String,String> config, @NonNull Map<String,String> defaultConfig) {
+        String enabled = config.get(JFXProjectProperties.PRELOADER_ENABLED);
+        String projectDir = config.get(JFXProjectProperties.PRELOADER_PROJECT);
+        String jarFilePath = config.get(JFXProjectProperties.PRELOADER_JAR_PATH);
+        String jarFileName = config.get(JFXProjectProperties.PRELOADER_JAR_FILENAME);
+        String cls = config.get(JFXProjectProperties.PRELOADER_CLASS);
+//        if(enabled == null) {
+//            enabled = defaultConfig.get(JFXProjectProperties.PRELOADER_ENABLED);
+//        }
+//        if(projectDir == null) {
+//            projectDir = defaultConfig.get(JFXProjectProperties.PRELOADER_PROJECT);
+//        }
+//        if(jarFilePath == null) {
+//            jarFilePath = defaultConfig.get(JFXProjectProperties.PRELOADER_JAR_PATH);
+//        }
+//        if(jarFileName == null) {
+//            jarFileName = defaultConfig.get(JFXProjectProperties.PRELOADER_JAR_FILENAME);
+//        }
+//        if(cls == null) {
+//            cls = defaultConfig.get(JFXProjectProperties.PRELOADER_CLASS);
+//        }
         checkBoxPreloader.setSelected(JFXProjectProperties.isTrue(enabled));
         if(projectDir != null && !projectDir.isEmpty()) {
             FileObject thisProjDir = project.getProjectDirectory();
