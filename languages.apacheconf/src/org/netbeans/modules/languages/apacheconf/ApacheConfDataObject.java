@@ -66,6 +66,7 @@ import org.openide.windows.TopComponent;
 @Messages("ApacheConfResolver=Apache Conf Files")
 @MIMEResolver.Registration(
     displayName="#ApacheConfResolver",
+    position=131,
     resource="resources/ApacheConfResolver.xml"
 )
 public class ApacheConfDataObject extends MultiDataObject {
