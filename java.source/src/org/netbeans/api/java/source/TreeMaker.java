@@ -46,6 +46,7 @@ package org.netbeans.api.java.source;
 import com.sun.source.tree.*;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.openide.filesystems.FileObject;
+import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import static com.sun.source.tree.Tree.*;
 
 import com.sun.source.util.SourcePositions;
@@ -620,7 +621,11 @@ public final class TreeMaker {
     public LabeledStatementTree LabeledStatement(CharSequence label, StatementTree statement) {
         return delegate.LabeledStatement(label, statement);
     }
-    
+
+    public LambdaExpressionTree LambdaExpression(List<? extends VariableTree> parameters, Tree body) {
+        return delegate.LambdaExpression(parameters, body);
+    }
+
     /**
      * Creates a new LiteralTree.  Only literals which are wrappers for 
      * primitive types (Integer, Boolean, etc.) and String instances can
@@ -632,6 +637,10 @@ public final class TreeMaker {
      */
     public LiteralTree Literal(Object value) {
         return delegate.Literal(value);
+    }
+    
+    public MemberReferenceTree MemberReference(ReferenceMode refMode, CharSequence name, ExpressionTree expression, List<ExpressionTree> typeArguments) {
+        return delegate.MemberReference(refMode, name, expression, typeArguments);
     }
     
     /**

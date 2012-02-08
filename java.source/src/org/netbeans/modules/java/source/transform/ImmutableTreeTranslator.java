@@ -384,6 +384,9 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     public Tree visitLabeledStatement(LabeledStatementTree tree, Object p) {
 	return rewriteChildren(tree);
     }
+    public Tree visitLambdaExpression(LambdaExpressionTree tree, Object p) {
+        return rewriteChildren(tree);
+    }
     public Tree visitSwitch(SwitchTree tree, Object p) {
 	return rewriteChildren(tree);
     }
@@ -455,6 +458,10 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     }
     public Tree visitArrayAccess(ArrayAccessTree tree, Object p) {
 	return rewriteChildren(tree);
+    }
+    @Override
+    public Tree visitMemberReference(MemberReferenceTree tree, Object p) {
+        return rewriteChildren(tree);
     }
     public Tree visitMemberSelect(MemberSelectTree tree, Object p) {
         if (tree instanceof QualIdentTree) {
@@ -730,6 +737,22 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	    tree = n;
 	}
 	return tree;
+    }
+
+    protected final LambdaExpressionTree rewriteChildren(LambdaExpressionTree tree) {
+        Tree body = translate(tree.getBody());
+        List<? extends VariableTree> parameters = translate(tree.getParameters());
+
+        if (body != tree.getBody() ||
+            parameters != tree.getParameters())
+        {
+            LambdaExpressionTree n = make.LambdaExpression(parameters, body);
+            model.setType(n, model.getType(tree));
+	    copyCommentTo(tree,n);
+            copyPosTo(tree,n);
+	    tree = n;
+        }
+        return tree;
     }
 
     protected final SwitchTree rewriteChildren(SwitchTree tree) {
@@ -1193,6 +1216,22 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	    tree = n;
 	}
 	return tree;
+    }
+
+    private Tree rewriteChildren(MemberReferenceTree node) {
+        ExpressionTree qualifierExpression = (ExpressionTree) translate(node.getQualifierExpression());
+        List<ExpressionTree> typeArguments = (List<ExpressionTree>) translate(node.getTypeArguments());
+
+        if (qualifierExpression != node.getQualifierExpression() ||
+            typeArguments != node.getTypeArguments())
+        {
+	    MemberReferenceTree n = make.MemberReference(node.getMode(), node.getName(), qualifierExpression, typeArguments);
+            model.setType(n, model.getType(node));
+	    copyCommentTo(node,n);
+            copyPosTo(node,n);
+	    node = n;
+	}
+	return node;
     }
 
 

@@ -136,11 +136,11 @@ public class NBParserFactory extends ParserFactory {
         }
 
         @Override
-        protected JCTree methodDeclaratorRest(int pos, JCModifiers mods, JCExpression type, Name name, List<JCTypeParameter> typarams, boolean isInterface, boolean isVoid, String dc) {
+        protected JCTree methodDeclaratorRest(int pos, JCModifiers mods, JCExpression type, Name name, List<JCTypeParameter> typarams, boolean isInterface, boolean isAnno, boolean isVoid, String dc) {
             if (cancelService != null) {
                 cancelService.abortIfCanceled();
             }
-            return super.methodDeclaratorRest(pos, mods, type, name, typarams, isInterface, isVoid, dc);
+            return super.methodDeclaratorRest(pos, mods, type, name, typarams, isInterface, isAnno, isVoid, dc);
         }
 
     }
@@ -184,11 +184,11 @@ public class NBParserFactory extends ParserFactory {
         }
 
         @Override
-        protected JCTree methodDeclaratorRest(int pos, JCModifiers mods, JCExpression type, Name name, List<JCTypeParameter> typarams, boolean isInterface, boolean isVoid, String dc) {
+        protected JCTree methodDeclaratorRest(int pos, JCModifiers mods, JCExpression type, Name name, List<JCTypeParameter> typarams, boolean isInterface, boolean isAnno, boolean isVoid, String dc) {
             if (cancelService != null) {
                 cancelService.abortIfCanceled();
             }
-            return super.methodDeclaratorRest(pos, mods, type, name, typarams, isInterface, isVoid, dc);
+            return super.methodDeclaratorRest(pos, mods, type, name, typarams, isInterface, isAnno, isVoid, dc);
         }
 
     }

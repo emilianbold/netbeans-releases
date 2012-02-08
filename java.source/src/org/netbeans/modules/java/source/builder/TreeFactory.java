@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.source.builder;
 
+import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import com.sun.tools.javac.code.Type.ErrorType;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.util.Names;
@@ -368,6 +369,13 @@ public class TreeFactory {
         return make.at(NOPOS).Labelled(names.fromString(label.toString()), (JCStatement)statement);
     }
     
+    public LambdaExpressionTree LambdaExpression(List<? extends VariableTree> parameters, Tree body) {
+        ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
+        for (Tree t : parameters)
+            params.append((JCVariableDecl)t);
+        return make.at(NOPOS).Lambda(params.toList(), (JCTree) body);
+    }
+
     public LiteralTree Literal(Object value) {
         try {
             if (value instanceof Boolean)  // workaround for javac issue 6504896
@@ -456,6 +464,13 @@ public class TreeFactory {
     
     public MethodTree Method(ExecutableElement element, BlockTree body) {
         return make.at(NOPOS).MethodDef((Symbol.MethodSymbol)element, (JCBlock)body);
+    }
+
+    public MemberReferenceTree MemberReference(ReferenceMode refMode, CharSequence name, ExpressionTree expression, List<ExpressionTree> typeArguments) {
+        ListBuffer<JCExpression> targs = new ListBuffer<JCExpression>();
+        for (ExpressionTree t : typeArguments)
+            targs.append((JCExpression)t);
+        return make.at(NOPOS).Reference(refMode, names.fromString(name.toString()), (JCExpression) expression, targs.toList());
     }
     
     public ModifiersTree Modifiers(Set<Modifier> flagset, List<? extends AnnotationTree> annotations) {
@@ -745,7 +760,7 @@ public class TreeFactory {
                 throw new IllegalArgumentException("Unknown wildcard bound " + kind);
         }
         TypeBoundKind tbk = make.at(NOPOS).TypeBoundKind(boundKind);
-        return make.at(NOPOS).Wildcard(tbk, (JCTree)type);
+        return make.at(NOPOS).Wildcard(tbk, (JCExpression)type);
     }
     
     ////////////////////////////////////// makers modification suggested by Tom

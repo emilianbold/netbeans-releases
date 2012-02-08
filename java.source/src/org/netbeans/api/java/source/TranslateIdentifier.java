@@ -392,6 +392,20 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
         return node;
     }
 
+    public Tree visitLambdaExpression(LambdaExpressionTree node, Boolean p) {
+        Tree body = translateTree(node.getBody());
+        List<? extends VariableTree> parameters = translateTree(node.getParameters());
+
+        if (make == null) return node;
+
+        if (body != node.getBody() ||
+            parameters != node.getParameters())
+        {
+            node = make.LambdaExpression(parameters, body);
+        }
+        return node;
+    }
+
     public Tree visitLiteral(LiteralTree node, Boolean p) {
         return node;
     }
@@ -424,6 +438,21 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
                     body,
                     (ExpressionTree) defaultValue
             );
+        }
+        return node;
+    }
+
+    @Override
+    public Tree visitMemberReference(MemberReferenceTree node, Boolean p) {
+        ExpressionTree qualifierExpression = (ExpressionTree) translateTree(node.getQualifierExpression());
+        List<ExpressionTree> typeArguments = (List<ExpressionTree>) translateTree(node.getTypeArguments());
+
+        if (make == null) return node;
+
+        if (qualifierExpression != node.getQualifierExpression() ||
+            typeArguments != node.getTypeArguments())
+        {
+            node = make.MemberReference(node.getMode(), node.getName(), qualifierExpression, typeArguments);
         }
         return node;
     }

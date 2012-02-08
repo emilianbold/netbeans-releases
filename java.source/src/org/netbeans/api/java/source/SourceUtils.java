@@ -67,6 +67,7 @@ import javax.lang.model.util.ElementFilter;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.api.JavacScope;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Scope.ImportScope;
@@ -192,12 +193,18 @@ public class SourceUtils {
         return Collections.emptySet();
     }    
     
+    @Deprecated
     public static boolean checkTypesAssignable(CompilationInfo info, TypeMirror from, TypeMirror to) {
+        LOG.log(Level.SEVERE, "checkTypesAssignable called", new Exception());
+        return true;
+    }
+    
+    public static boolean checkTypesAssignable(@NonNull CompilationInfo info, @NonNull Scope scope, @NonNull TypeMirror from, @NonNull TypeMirror to) {
         Context c = ((JavacTaskImpl) info.impl.getJavacTask()).getContext();
         if (from.getKind() == TypeKind.WILDCARD) {
             from = Types.instance(c).upperBound((Type)from);
         }
-        return Check.instance(c).checkType(null, (Type)from, (Type)to).getKind() != TypeKind.ERROR;
+        return Check.instance(c).checkType(null, ((JavacScope) scope).getEnv(), (Type)from, (Type)to).getKind() != TypeKind.ERROR;
     }
     
     public static TypeMirror getBound(WildcardType wildcardType) {

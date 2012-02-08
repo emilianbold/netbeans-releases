@@ -84,7 +84,8 @@ import com.sun.tools.javac.parser.Parser;
 import com.sun.tools.javac.parser.ParserFactory;
 import com.sun.tools.javac.parser.Scanner;
 import com.sun.tools.javac.parser.ScannerFactory;
-import com.sun.tools.javac.parser.Token;
+import com.sun.tools.javac.parser.Tokens.Token;
+import com.sun.tools.javac.parser.Tokens.TokenKind;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCCatch;
@@ -546,7 +547,7 @@ public class Utilities {
                     pos[0] = new ParserSourcePositions((JavacParser)parser);
                 JCExpression result = parser.parseExpression();
 
-                if (!onlyFullInput || scanner.token() == Token.EOF) {
+                if (!onlyFullInput || scanner.token().kind == TokenKind.EOF) {
                     return result;
                 }
             }
@@ -1121,25 +1122,27 @@ public class Utilities {
     private static class JackpotJavacParser extends NBEndPosParser {
 
         private final Context ctx;
+        private final com.sun.tools.javac.util.Name dollar;
         public JackpotJavacParser(Context ctx, ParserFactory fac,
                          Lexer S,
                          boolean keepDocComments,
                          boolean keepLineMap,
                          CancelService cancelService,
                          Names names) {
-            super(fac, new PushbackLexer(S), keepDocComments, keepLineMap, cancelService);
+            super(fac, S, keepDocComments, keepLineMap, cancelService);
             this.ctx = ctx;
+            this.dollar = names.fromString("$");
         }
 
         @Override
         protected JCModifiers modifiersOpt(JCModifiers partial) {
-            if (S.token() == Token.IDENTIFIER) {
-                String ident = S.stringVal();
+            if (token.kind == TokenKind.IDENTIFIER) {
+                String ident = token.name().toString();
 
                 if (Utilities.isMultistatementWildcard(ident)) {
-                    com.sun.tools.javac.util.Name name = S.name();
+                    com.sun.tools.javac.util.Name name = token.name();
 
-                    S.nextToken();
+                    nextToken();
 
                     return new ModifiersWildcard(name, F.Ident(name));
                 }
@@ -1148,14 +1151,13 @@ public class Utilities {
             return super.modifiersOpt(partial);
         }
 
-        protected JCVariableDecl formalParameter() {
-            if (S.token() == Token.IDENTIFIER) {
-                String ident = S.stringVal();
+        @Override
+        public JCVariableDecl formalParameter() {
+            if (token.kind == TokenKind.IDENTIFIER) {
+                if (token.name().startsWith(dollar)) {
+                    com.sun.tools.javac.util.Name name = token.name();
 
-                if (ident.startsWith("$")) {
-                    com.sun.tools.javac.util.Name name = S.name();
-
-                    S.nextToken();
+                    nextToken();
 
                     return new VariableWildcard(ctx, name, F.Ident(name));
                 }
@@ -1166,63 +1168,42 @@ public class Utilities {
 
         @Override
         protected JCCatch catchClause() {
-            if (S.token() == Token.CATCH) {
-                int origPos = S.pos();
-//                S.pushState();
+            if (token.kind == TokenKind.CATCH) {
+                Token peeked = S.token(1);
                 
-                Token peeked;
-                String ident;
-                
-//                try {
-                    S.nextToken();
-
-                    peeked =  S.token();
-                    ident = S.stringVal();
-//                } finally {
-//                    S.popState();
-//                }
-                
-                if (   peeked == Token.IDENTIFIER
-                    && Utilities.isMultistatementWildcard(ident)) {
-                    accept(Token.CATCH);
+                if (   peeked.kind == TokenKind.IDENTIFIER
+                    && Utilities.isMultistatementWildcard(peeked.name().toString())) {
+                    accept(TokenKind.CATCH);
                     
-                    com.sun.tools.javac.util.Name name = S.name();
+                    com.sun.tools.javac.util.Name name = token.name();
 
-                    accept(Token.IDENTIFIER);
+                    accept(TokenKind.IDENTIFIER);
 
                     return new CatchWildcard(ctx, name, F.Ident(name));
                 } else {
-                    ((PushbackLexer) S).add(Token.CATCH, origPos, null);
-                    ((PushbackLexer) S).add(null, -1, null);
-                    S.nextToken();
+                    nextToken();
                 }
             }
             return super.catchClause();
         }
 
         @Override
-        public com.sun.tools.javac.util.List<JCTree> classOrInterfaceBodyDeclaration(com.sun.tools.javac.util.Name className, boolean isInterface) {
-            if (S.token() == Token.IDENTIFIER) {
-                int identPos = S.pos();
-                String ident = S.stringVal();
+        public com.sun.tools.javac.util.List<JCTree> classOrInterfaceBodyDeclaration(com.sun.tools.javac.util.Name className, boolean isInterface, boolean isAnno) {
+            if (token.kind == TokenKind.IDENTIFIER) {
+                if (token.name().startsWith(dollar)) {
+                    com.sun.tools.javac.util.Name name = token.name();
 
-                if (ident.startsWith("$")) {
-                    com.sun.tools.javac.util.Name name = S.name();
+                    Token peeked = S.token(1);
 
-                    S.nextToken();
-                    
-                    if (S.token() == Token.SEMI) {
-                        S.nextToken();
+                    if (peeked.kind == TokenKind.SEMI) {
+                        nextToken();
+                        nextToken();
                         
                         return com.sun.tools.javac.util.List.<JCTree>of(F.Ident(name));
                     }
-                    
-                    ((PushbackLexer) S).add(Token.IDENTIFIER, identPos, name);
-                    ((PushbackLexer) S).add(null, -1, null);
-                    S.nextToken();
                 }
             }
-            return super.classOrInterfaceBodyDeclaration(className, isInterface);
+            return super.classOrInterfaceBodyDeclaration(className, isInterface, isAnno);
         }
         
         @Override
@@ -1237,31 +1218,27 @@ public class Utilities {
 
         @Override
         protected JCCase switchBlockStatementGroup() {
-            if (S.token() == Token.CASE) {
-                int origPos = S.pos();
+            if (token.kind == TokenKind.CASE) {
+                Token peeked = S.token(1);
 
-                S.nextToken();
-
-                if (S.token() == Token.IDENTIFIER) {
-                    String ident = S.stringVal();
+                if (peeked.kind == TokenKind.IDENTIFIER) {
+                    String ident = peeked.name().toString();
 
                     if (ident.startsWith("$") && ident.endsWith("$")) {
-                        int pos = S.pos();
-                        com.sun.tools.javac.util.Name name = S.name();
+                        nextToken();
+                        
+                        int pos = token.pos;
+                        com.sun.tools.javac.util.Name name = token.name();
 
-                        S.nextToken();
+                        nextToken();
 
-                        if (S.token() == Token.SEMI) {
-                            S.nextToken();
+                        if (token.kind == TokenKind.SEMI) {
+                            nextToken();
                         }
 
                         return new JackpotTrees.CaseWildcard(ctx, name, F.at(pos).Ident(name));
                     }
                 }
-
-                ((PushbackLexer) S).add(Token.CASE, origPos, null);
-                ((PushbackLexer) S).add(null, -1, null);
-                S.nextToken();
             }
 
             return super.switchBlockStatementGroup();
@@ -1270,15 +1247,14 @@ public class Utilities {
 
         @Override
         protected JCTree resource() {
-            if (S.token() == Token.IDENTIFIER && S.stringVal().startsWith("$")) {
-                //XXX: should inspect the next token, not next character:
-                char[] maybeSemicolon = S.getRawCharacters(S.endPos(), S.endPos() + 1);
+            if (token.kind == TokenKind.IDENTIFIER && token.name().startsWith(dollar)) {
+                Token peeked = S.token(1);
 
-                if (maybeSemicolon[0] == ';' || maybeSemicolon[0] == ')') {
-                    int pos = S.pos();
-                    com.sun.tools.javac.util.Name name = S.name();
+                if (peeked.kind == TokenKind.SEMI || peeked.kind == TokenKind.RPAREN) {
+                    int pos = token.pos;
+                    com.sun.tools.javac.util.Name name = token.name();
 
-                    S.nextToken();
+                    nextToken();
 
                     return F.at(pos).Ident(name);
                 }
@@ -1288,109 +1264,6 @@ public class Utilities {
 
     }
 
-    private static final class PushbackLexer implements Lexer {
-
-        private final Lexer delegate;
-        private final List<Token> tokenBuffer;
-        private final List<Integer> posBuffer;
-        private final List<com.sun.tools.javac.util.Name> nameBuffer;
-        private Token currentBufferToken;
-        private int   currentBufferPos;
-        private com.sun.tools.javac.util.Name currentBufferName;
-
-        public PushbackLexer(Lexer delegate) {
-            this.delegate = delegate;
-            this.tokenBuffer = new LinkedList<Token>();
-            this.posBuffer = new LinkedList<Integer>();
-            this.nameBuffer = new LinkedList<com.sun.tools.javac.util.Name>();
-        }
-
-        public void add(Token token, int pos, com.sun.tools.javac.util.Name name) {
-            tokenBuffer.add(token);
-            posBuffer.add(pos);
-            nameBuffer.add(name);
-        }
-        
-        public void token(Token token) {
-            delegate.token(token);
-        }
-
-        public Token token() {
-            if (currentBufferToken != null) return currentBufferToken;
-            return delegate.token();
-        }
-
-        public String stringVal() {
-            if (currentBufferToken != null) return currentBufferName != null ? currentBufferName.toString() : null;
-            return delegate.stringVal();
-        }
-
-        public void resetDeprecatedFlag() {
-            delegate.resetDeprecatedFlag();
-        }
-
-        public int radix() {
-            return delegate.radix();
-        }
-
-        public int prevEndPos() {
-            return delegate.prevEndPos();
-        }
-
-        public int pos() {
-            if (currentBufferToken != null) return currentBufferPos;
-            return delegate.pos();
-        }
-
-        public void nextToken() {
-            if (!tokenBuffer.isEmpty()) {
-                currentBufferToken = tokenBuffer.remove(0);
-                currentBufferPos = posBuffer.remove(0);
-                currentBufferName  = nameBuffer.remove(0);
-            }
-            else delegate.nextToken();
-        }
-
-        public com.sun.tools.javac.util.Name name() {
-            if (currentBufferToken != null) return currentBufferName;
-            return delegate.name();
-        }
-
-        public char[] getRawCharacters(int beginIndex, int endIndex) {
-            return delegate.getRawCharacters(beginIndex, endIndex);
-        }
-
-        public char[] getRawCharacters() {
-            return delegate.getRawCharacters();
-        }
-
-        public LineMap getLineMap() {
-            return delegate.getLineMap();
-        }
-
-        public void errPos(int pos) {
-            delegate.errPos(pos);
-        }
-
-        public int errPos() {
-            return delegate.errPos();
-        }
-
-        public int endPos() {
-            return delegate.endPos();
-        }
-
-        public String docComment() {
-            return delegate.docComment();
-        }
-
-        public boolean deprecatedFlag() {
-            return delegate.deprecatedFlag();
-        }
-        
-        
-    }
-    
     private static final class DummyJFO extends SimpleJavaFileObject {
         private DummyJFO() {
             super(URI.create("dummy.java"), JavaFileObject.Kind.SOURCE);

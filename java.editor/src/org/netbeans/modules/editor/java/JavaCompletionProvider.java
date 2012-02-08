@@ -2780,10 +2780,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                             final Set<? extends TypeMirror> finalSmartTypes = smartTypes;
                             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                                 public boolean accept(Element e, TypeMirror t) {
-                                    return (!isStatic || e.getModifiers().contains(STATIC)) &&
-                                            startsWith(env, e.getSimpleName().toString(), prefix) &&
-                                            tu.isAccessible(scope, e, t) &&
-                                            (e.getKind().isField() && isOfSmartType(env, ((VariableElement)e).asType(), finalSmartTypes) || e.getKind() == METHOD && isOfSmartType(env, ((ExecutableElement)e).getReturnType(), finalSmartTypes));
+                                    try {
+                                        return (!isStatic || e.getModifiers().contains(STATIC)) &&
+                                                startsWith(env, e.getSimpleName().toString(), prefix) &&
+                                                tu.isAccessible(scope, e, t) &&
+                                                (e.getKind().isField() && isOfSmartType(env, ((VariableElement)e).asType(), finalSmartTypes) || e.getKind() == METHOD && isOfSmartType(env, ((ExecutableElement)e).getReturnType(), finalSmartTypes));
+                                    } catch (IOException ex) {
+                                        throw new IllegalStateException(ex);
+                                    }
                                 }
                             };
                             for (Element ee : controller.getElementUtilities().getMembers(type, acceptor)) {
@@ -3986,7 +3990,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             return null;
         }
         
-        private boolean isOfSmartType(Env env, TypeMirror type, Set<? extends TypeMirror> smartTypes) {
+        private boolean isOfSmartType(Env env, TypeMirror type, Set<? extends TypeMirror> smartTypes) throws IOException {
             if (smartTypes == null || smartTypes.isEmpty())
                 return false;
             if (env.isInsideForEachExpression()) {
@@ -4008,7 +4012,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
             }
             for (TypeMirror smartType : smartTypes) {
-                if (SourceUtils.checkTypesAssignable(env.getController(), type, smartType))
+                if (SourceUtils.checkTypesAssignable(env.getController(), env.getScope(), type, smartType))
                     return true;
             }
             return false;
