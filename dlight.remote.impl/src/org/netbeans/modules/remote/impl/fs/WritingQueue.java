@@ -285,7 +285,7 @@ public class WritingQueue {
                 if (progressTotal < entriesCount/2) {                    
                     if (progressTotal == 0) {
                         progressTotal = entriesCount;
-                        progressHandle.switchToDeterminate(progressCurrent);
+                        progressHandle.switchToDeterminate(progressTotal);
                     } else {
                         progressTotal = entriesCount;
                         progressHandle.finish();
