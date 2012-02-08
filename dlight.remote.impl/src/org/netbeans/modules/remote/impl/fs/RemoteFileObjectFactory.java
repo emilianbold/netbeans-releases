@@ -143,7 +143,7 @@ public class RemoteFileObjectFactory {
             fo.invalidate();
             fileObjectsCache.remove(remotePath, fo);
         }
-        fo = RemoteDirectory.createNew(fileSystem, env, parent, remotePath, cacheFile);
+        fo = new RemoteDirectory(fileSystem, env, parent, remotePath, cacheFile);
         if (fo.isValid()) {
             RemoteFileObjectBase result = putIfAbsent(remotePath, fo);
             if (result instanceof RemoteDirectory && result.getParent() == parent) {
@@ -170,7 +170,7 @@ public class RemoteFileObjectFactory {
             fo.invalidate();
             fileObjectsCache.remove(remotePath, fo);
         }
-        fo = RemotePlainFile.createNew(fileSystem, env, parent, remotePath, cacheFile, fileType);
+        fo = new RemotePlainFile(fileSystem, env, parent, remotePath, cacheFile, fileType);
         if (fo.isValid()) {
             RemoteFileObjectBase result = putIfAbsent(remotePath, fo);
             if (result instanceof RemotePlainFile && result.getParent() == parent) {
@@ -197,7 +197,7 @@ public class RemoteFileObjectFactory {
             fo.invalidate();
             fileObjectsCache.remove(remotePath, fo);
         }
-        fo = SpecialRemoteFileObject.createNew(fileSystem, env, parent, remotePath, fileType);
+        fo = new SpecialRemoteFileObject(fileSystem, env, parent, remotePath, fileType);
         if (fo.isValid()) {
             RemoteFileObjectBase result = putIfAbsent(remotePath, fo);
             if (result instanceof SpecialRemoteFileObject && result.getParent() == parent) {
@@ -222,7 +222,7 @@ public class RemoteFileObjectFactory {
 //        if (fo != null) {
 //            fo.invalidate();
 //        }
-        RemoteLink fo = RemoteLink.createNew(fileSystem, env, parent, remotePath, link);        
+        RemoteLink fo = new RemoteLink(fileSystem, env, parent, remotePath, link);
         RemoteFileObjectBase result = putIfAbsent(remotePath, fo);
         if (result instanceof RemoteLink) {
             // (result == fo) means that result was placed into cache => we need to init listeners,
