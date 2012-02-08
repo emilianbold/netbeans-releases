@@ -42,13 +42,13 @@
 
 package org.netbeans.spi.java.hints;
 
-import com.sun.source.util.TreePath;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**Invoke the method for {@link TreePath}s that match the given pattern.
+/**Find parts of the source code that satisfy the given pattern, and invoke the method
+ * that is annotated with this annotation.
  *
  * The method must be {@link public static}, the return type must either be assignable to
  * {@link ErrorDescription} or to {@link Iterable<? extends ErrorDescription>}.
