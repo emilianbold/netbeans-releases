@@ -62,6 +62,18 @@ import org.openide.filesystems.FileSystemFactoryHid;
  */
 public class RemoteFSTCKTestCase extends FileSystemFactoryHid {
     
+    public static final String MSPEC;
+    static {
+        String mspec = System.getProperty("remote.fstck.mspec");
+        if (mspec == null) {
+            mspec = System.getenv("REMOTE_FSTCK_MSPEC");
+            if (mspec == null) {
+                mspec = "intel-S2";
+            }
+        }
+        MSPEC = mspec;
+    }
+    
     private ExecutionEnvironment execEnv = null;
     private String tmpDir;
             
@@ -84,7 +96,7 @@ public class RemoteFSTCKTestCase extends FileSystemFactoryHid {
             if (section.equals("remote.platforms")) {
                 Collection<String> keys = rcFile.getKeys(section);
                 for(String key : keys) {
-                    if (key.equals("intel-S2")) {
+                    if (key.equals(MSPEC)) {
                         String get = rcFile.get(section, key, null);
                         if (get == null) {
                             mspec = key;
@@ -93,7 +105,7 @@ public class RemoteFSTCKTestCase extends FileSystemFactoryHid {
                 }
             }
         }
-        
+        assertNotNull("Can not find key " + MSPEC + " in [remote.platforms] section", mspec);
         execEnv = NativeExecutionTestSupport.getTestExecutionEnvironment(mspec);
         ConnectionManager.getInstance().connectTo(execEnv);
         tmpDir = NativeExecutionTestSupport.mkTemp(execEnv, true);
