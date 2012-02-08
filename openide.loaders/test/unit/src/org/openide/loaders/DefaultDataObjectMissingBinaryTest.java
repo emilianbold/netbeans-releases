@@ -43,40 +43,27 @@
 package org.openide.loaders;
 
 import java.awt.Dialog;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.logging.Level;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.actions.Closable;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeAdapter;
-import org.openide.nodes.NodeEvent;
-import org.openide.nodes.NodeListener;
-import org.openide.text.DataEditorSupport;
-import org.openide.util.*;
+import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -100,11 +87,6 @@ public class DefaultDataObjectMissingBinaryTest extends NbTestCase {
     }
 
     @Override
-    protected int timeOut() {
-        return 15000;
-    }
-    
-    @Override
     protected void setUp() throws Exception {
         MockServices.setServices(FirstDD.class);
         
@@ -116,7 +98,6 @@ public class DefaultDataObjectMissingBinaryTest extends NbTestCase {
         
 
         lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), fsstruct);
-        Repository.getDefault().addFileSystem(lfs);
 
         FileObject fo = lfs.findResource("AA/a.test");
         assertNotNull("file not found", fo);
@@ -206,14 +187,14 @@ public class DefaultDataObjectMissingBinaryTest extends NbTestCase {
         NotifyDescriptor query;
         Object answer;
         
-        synchronized final NotifyDescriptor waitQuery() throws InterruptedException {
+        synchronized NotifyDescriptor waitQuery() throws InterruptedException {
             while (query == null) {
                 wait();
             }
             return query;
         }
         
-        synchronized final void provideAnswer(Object obj) {
+        synchronized void provideAnswer(Object obj) {
             answer = obj;
             notifyAll();
         }
