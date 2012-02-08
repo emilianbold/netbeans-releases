@@ -214,4 +214,17 @@ public class MoveFieldTest extends MoveBaseTest {
                 + "public class C {\n"
                 + "}\n"));
     }
+    
+    
+    public void testMoveGenericField() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A <E> {\n"
+                + "    private E i;\n"
+                + "}\n"),
+                new File("v/B.java", "package v;\n"
+                + "public class B {\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/A.java"), new int[]{1}, src.getFileObject("v/B.java"), Visibility.ASIS, false, new Problem(true, "ERR_MoveGenericField"));
+    }
 }
