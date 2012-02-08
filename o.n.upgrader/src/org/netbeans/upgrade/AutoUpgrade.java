@@ -45,8 +45,6 @@
 package org.netbeans.upgrade;
 import java.beans.PropertyVetoException;
 import java.io.*;
-import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -55,7 +53,6 @@ import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import org.netbeans.upgrade.systemoptions.Importer;
-
 import org.netbeans.util.Util;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
@@ -64,6 +61,7 @@ import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.xml.sax.SAXException;
 
 /** pending
@@ -75,29 +73,28 @@ public final class AutoUpgrade {
     private static final Logger LOGGER = Logger.getLogger(AutoUpgrade.class.getName());
 
     public static void main (String[] args) throws Exception {
-        String[] version = new String[1];
-        File sourceFolder = checkPrevious (version, VERSION_TO_CHECK);
+        // show warning if starts for the 1st time on changed userdir (see issue 196075)
+        String noteChangedDefaults = "";
+        if (madeObsoleteMessagesLog()) {
+            noteChangedDefaults = NbBundle.getMessage (AutoUpgrade.class, "MSG_ChangedDefaults", System.getProperty ("netbeans.user", "")); // NOI18N
+        }
+        
+        // try new place
+        File sourceFolder = checkPreviousOnOsSpecificPlace (NEWER_VERSION_TO_CHECK);
+        if (sourceFolder == null) {
+            // try former place
+            sourceFolder = checkPrevious (VERSION_TO_CHECK);
+        }
         if (sourceFolder != null) {
-            if (!showUpgradeDialog (sourceFolder)) {
+            if (!showUpgradeDialog (sourceFolder, noteChangedDefaults)) {
                 throw new org.openide.util.UserCancelException ();
             }
-            if (version[0].compareTo("6.5") < 0) {  //NOI18N
-                // less than 6.5
-
-                // TODO - this branch can be removed when only import from 6.5 and newer is supported
-                doUpgrade (sourceFolder, version[0]);
-                doNonStandardUpgrade(sourceFolder, version[0]);
-                //#75324 NBplatform settings are not imported
-                upgradeBuildProperties(sourceFolder, version);
-                //migrates SystemOptions, converts them as a Preferences
-                Importer.doImport();
-            } else {
-                //equal or greater than 6.5
-                
-                copyToUserdir(sourceFolder);
-                //migrates SystemOptions, converts them as a Preferences
-                Importer.doImport();
-            }
+            copyToUserdir(sourceFolder);
+            //migrates SystemOptions, converts them as a Preferences
+            Importer.doImport();
+        } else if (! noteChangedDefaults.isEmpty()) {
+            // show a note only
+            showNoteDialog(noteChangedDefaults);
         }
     }
 
@@ -117,9 +114,28 @@ public final class AutoUpgrade {
     // the first one will be choosen for import
     final static private List<String> VERSION_TO_CHECK = 
             Arrays.asList (new String[] { ".netbeans/7.1", ".netbeans/7.0", ".netbeans/6.9" });//NOI18N
+    
+    // userdir on OS specific root of userdir (see issue 196075)
+    static final List<String> NEWER_VERSION_TO_CHECK =
+            Arrays.asList (/*"7.2, ..."*/); //NOI18N
 
             
-    static private File checkPrevious (String[] version, final List<String> versionsToCheck) {        
+    private static File checkPreviousOnOsSpecificPlace (final List<String> versionsToCheck) {
+        String defaultUserdirRoot = System.getProperty ("netbeans.default_userdir_root"); // NOI18N
+        File sourceFolder;
+        if (defaultUserdirRoot != null) {
+            File userHomeFile = new File (defaultUserdirRoot);
+            for (String ver : versionsToCheck) {
+                sourceFolder = new File (userHomeFile.getAbsolutePath (), ver);
+                if (sourceFolder.exists () && sourceFolder.isDirectory ()) {
+                    return sourceFolder;
+                }
+            }
+        }
+        return null;
+    }
+
+    static private File checkPrevious (final List<String> versionsToCheck) {        
         String userHome = System.getProperty ("user.home"); // NOI18N
         File sourceFolder = null;
         
@@ -132,7 +148,6 @@ public final class AutoUpgrade {
                 sourceFolder = new File (userHomeFile.getAbsolutePath (), ver);
                 
                 if (sourceFolder.isDirectory ()) {
-                    version[0] = sourceFolder.getName();
                     break;
                 }
                 sourceFolder = null;
@@ -143,10 +158,35 @@ public final class AutoUpgrade {
         }
     }
     
-    private static boolean showUpgradeDialog (final File source) {
+    private static boolean madeObsoleteMessagesLog() {
+        String ud = System.getProperty ("netbeans.user", "");
+        if ((Utilities.isMac() || Utilities.isWindows()) && ud.endsWith(File.separator + "dev")) { // NOI18N
+            String defaultUserdirRoot = System.getProperty ("netbeans.default_userdir_root", null); // NOI18N
+            if (defaultUserdirRoot != null) {
+                if (new File(ud).getParentFile().equals(new File(defaultUserdirRoot))) {
+                    // check the former default root
+                    String userHome = System.getProperty("user.home"); // NOI18N
+                    if (userHome != null) {
+                        File oldUserdir = new File(new File (userHome).getAbsolutePath (), ".netbeans/dev"); // NOI18N
+                        if (oldUserdir.exists() && ! oldUserdir.equals(new File(ud))) {
+                            // 1. modify messages log
+                            File log = new File (oldUserdir, "/var/log/messages.log");
+                            File obsolete = new File (oldUserdir, "/var/log/messages.log.obsolete");
+                            if (! obsolete.exists() && log.exists()) {
+                                return log.renameTo(obsolete);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
+    private static boolean showUpgradeDialog (final File source, String note) {
         Util.setDefaultLookAndFeel();
         JOptionPane p = new JOptionPane (
-            new AutoUpgradePanel (source.getAbsolutePath ()),
+            new AutoUpgradePanel (source.getAbsolutePath (), note),
             JOptionPane.QUESTION_MESSAGE,
             JOptionPane.YES_NO_OPTION
         );
@@ -154,6 +194,13 @@ public final class AutoUpgrade {
         d.setVisible (true);
 
         return new Integer (JOptionPane.YES_OPTION).equals (p.getValue ());
+    }
+
+    private static void showNoteDialog (String note) {
+        Util.setDefaultLookAndFeel();
+        JOptionPane p = new JOptionPane(new AutoUpgradePanel (null, note), JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION);
+        JDialog d = Util.createJOptionDialog(p, NbBundle.getMessage (AutoUpgrade.class, "MSG_Note_Title"));
+        d.setVisible (true);
     }
 
     static void doUpgrade (File source, String oldVersion) 

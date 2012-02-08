@@ -72,7 +72,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -228,13 +227,8 @@ public final class OptionsChooserPanel extends JPanel {
             }
             LOGGER.fine("Import finished.");  //NOI18N
             // restart IDE
-            if (confirmationPanel.restartNow()) {
-                LifecycleManager.getDefault().markForRestart();
-                LifecycleManager.getDefault().exit();
-            } else {
-                // try to refresh system filesystem at least
-                FileUtil.refreshAll();
-            }
+            LifecycleManager.getDefault().markForRestart();
+            LifecycleManager.getDefault().exit();
         }
     }
 
