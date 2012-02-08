@@ -66,7 +66,7 @@ const char *NbLauncher::REG_DESKTOP_NAME = "Desktop";
 const char *NbLauncher::REG_DEFAULT_USERDIR_ROOT = "AppData";
 const char *NbLauncher::REG_DEFAULT_CACHEDIR_ROOT = "Local AppData";
 const char *NbLauncher::NETBEANS_DIRECTORY = "\\NetBeans\\";
-const char *NbLauncher::NETBEANS_CACHES_DIRECTORY = "\\NetBeans\\Caches\\";
+const char *NbLauncher::NETBEANS_CACHES_DIRECTORY = "\\NetBeans\\Cache\\";
 
 const char *NbLauncher::CON_ATTACH_MSG = 
 "\n\nThe launcher has determined that the parent process has a console and will reuse it for its own console output.\n"
