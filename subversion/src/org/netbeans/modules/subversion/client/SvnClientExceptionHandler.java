@@ -1004,8 +1004,10 @@ public class SvnClientExceptionHandler {
                     WARNING_WC17_DISPLAYED = true;
                     JButton okButton = new JButton();
                     Mnemonics.setLocalizedText(okButton, NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_WC17SwitchToCmd")); //NOI18N
+                    SwitchToCliPanel p = new SwitchToCliPanel();
+                    p.setText(format17WCMessage(exMessage));
                     NotifyDescriptor descriptor = new NotifyDescriptor(
-                            format17WCMessage(exMessage), 
+                            p, 
                             NbBundle.getMessage(SvnClientExceptionHandler.class, "LBL_Error_WCUnsupportedFormat"), //NOI18N
                             NotifyDescriptor.OK_CANCEL_OPTION,
                             NotifyDescriptor.QUESTION_MESSAGE,

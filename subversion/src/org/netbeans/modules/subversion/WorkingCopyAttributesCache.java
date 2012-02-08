@@ -45,6 +45,8 @@ package org.netbeans.modules.subversion;
 import java.awt.EventQueue;
 import java.io.File;
 import java.util.HashSet;
+import java.util.concurrent.ExecutionException;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
@@ -153,12 +155,20 @@ public final class WorkingCopyAttributesCache {
             synchronized (loggedWCs) {
                 loggedWCs.add(topManaged.getAbsolutePath());
             }
-            EventQueue.invokeLater(new Runnable() {
+            Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
                 @Override
                 public void run() {
-                    SvnClientExceptionHandler.notifyException(ex, true, true);
+                    try {
+                        // this exception may be handled really early after the IDE starts, wait till the projects open at least
+                        OpenProjects.getDefault().openProjects().get();
+                    } catch (InterruptedException ex) {
+                        //
+                    } catch (ExecutionException ex) {
+                        //
                     }
-                });
+                    SvnClientExceptionHandler.notifyException(ex, true, true);
+                }
+            });
         }
         throw ex;
     }
