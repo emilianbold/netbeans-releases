@@ -156,8 +156,10 @@ IDENTIFIER=[[:letter:][:digit:]]+
 <YYINITIAL> {
 
     /* TODO - can be removed once jsDoc will be embedded from general doc lexer */
+    /*
     {TraditionalComment}            { return JsDocTokenId.COMMENT_CODE; }
     {EndOfLineComment}              { return JsDocTokenId.COMMENT_LINE; }
+    */
 
     /* No code comments */
     "/**#nocode+*/"                 { return JsDocTokenId.COMMENT_NOCODE_BEGIN; }

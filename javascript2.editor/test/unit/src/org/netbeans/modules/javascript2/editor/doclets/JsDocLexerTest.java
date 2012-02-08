@@ -155,29 +155,30 @@ public class JsDocLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_END, "*/");
     }
 
-    @SuppressWarnings("unchecked")
-    public void testComment01() {
-        String text = "/***/";
-        TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
-        TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_CODE, "/***/");
-    }
-
-    @SuppressWarnings("unchecked")
-    public void testComment02() {
-        String text = "/**/";
-        TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
-        TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_CODE, "/**/");
-    }
-    
-    @SuppressWarnings("unchecked")
-    public void testComment03() {
-        String text = "/* muj comment */";
-        TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
-        TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_CODE, "/* muj comment */");
-    }
+    // Not necessary since it's called just on documentation comments like /** */
+//    @SuppressWarnings("unchecked")
+//    public void testComment01() {
+//        String text = "/***/";
+//        TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
+//        TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_CODE, "/***/");
+//    }
+//
+//    @SuppressWarnings("unchecked")
+//    public void testComment02() {
+//        String text = "/**/";
+//        TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
+//        TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_CODE, "/**/");
+//    }
+//
+//    @SuppressWarnings("unchecked")
+//    public void testComment03() {
+//        String text = "/* muj comment */";
+//        TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
+//        TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
+//        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_CODE, "/* muj comment */");
+//    }
 
     @SuppressWarnings("unchecked")
     public void testSharedTagComment01() {
