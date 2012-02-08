@@ -43,19 +43,27 @@
 package org.netbeans.modules.java.hints.jackpot.refactoring;
 
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.*;
+import javax.lang.model.type.TypeKind;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.ui.JavaRefactoringUIFactory;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -63,16 +71,17 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
-public class ReplaceConstructorWithBuilderUI implements RefactoringUI {
+public class ReplaceConstructorWithBuilderUI implements RefactoringUI, JavaRefactoringUIFactory {
 
-    private final ReplaceConstructorWithBuilderRefactoring refactoring;
+
+    private ReplaceConstructorWithBuilderRefactoring refactoring;
     private String builderFQN;
     private ReplaceConstructorWithBuilderPanel panel;
     private String name;
     private List <String> paramaterNames;
     private List <String> parameterTypes; 
 
-    public ReplaceConstructorWithBuilderUI(TreePathHandle constructor, CompilationInfo info) {
+    private ReplaceConstructorWithBuilderUI(TreePathHandle constructor, CompilationInfo info) {
         this.refactoring = new ReplaceConstructorWithBuilderRefactoring(constructor);
         this.name = constructor.resolveElement(info).getSimpleName().toString();
         MethodTree constTree = (MethodTree) constructor.resolve(info).getLeaf();
@@ -83,6 +92,9 @@ public class ReplaceConstructorWithBuilderUI implements RefactoringUI {
             parameterTypes.add(var.getType().toString());
         }
         builderFQN = ((TypeElement) constructor.resolveElement(info).getEnclosingElement()).getQualifiedName().toString();
+    }
+
+    private ReplaceConstructorWithBuilderUI() {
     }
 
     @Override
@@ -153,6 +165,31 @@ public class ReplaceConstructorWithBuilderUI implements RefactoringUI {
     @Override
     public HelpCtx getHelpCtx() {
         return null;
+    }
+
+    @Override
+    public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
+        assert handles.length == 1;
+        TreePath path = handles[0].resolve(info);
+
+        Set<Tree.Kind> treeKinds = EnumSet.of(
+                Tree.Kind.NEW_CLASS,
+                Tree.Kind.METHOD);
+
+        while (path != null && !treeKinds.contains(path.getLeaf().getKind())) {
+            path = path.getParentPath();
+        }
+        if (path != null && treeKinds.contains(path.getLeaf().getKind())) {
+            Element selected = info.getTrees().getElement(path);
+            if (selected.getKind() == ElementKind.CONSTRUCTOR) {
+                return new ReplaceConstructorWithBuilderUI(TreePathHandle.create(selected, info), info);
+            }
+        }
+        return null;
+    }
+    
+    public static JavaRefactoringUIFactory factory() {
+        return new ReplaceConstructorWithBuilderUI();
     }
 
 }
