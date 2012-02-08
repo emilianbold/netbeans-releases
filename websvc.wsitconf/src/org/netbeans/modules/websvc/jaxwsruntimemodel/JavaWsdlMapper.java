@@ -61,6 +61,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -91,7 +92,7 @@ public class JavaWsdlMapper {
     public static final String PORT_TYPE            = "PortType";   //NOI18N
     public static final String BINDING              = "Binding";    //NOI18N
 
-    private static final String JAVAX_JWS_WEBSERVICE = "javax.jws.WebService";
+    private static final String JAVAX_JWS_WEBSERVICE = "javax.jws.WebService"; // NOI18N
     private static final String UTF8 = "UTF-8";
     
     /** Creates a new instance of JavaWsdlMapper */
@@ -141,7 +142,10 @@ public class JavaWsdlMapper {
         try {    
             JavaSource js = JavaSource.forFileObject(implClass);
             js.runUserActionTask(new AbstractTask<CompilationController>() {
-                 public void run(CompilationController controller) throws java.io.IOException {
+                @Override
+                 public void run(CompilationController controller) 
+                    throws java.io.IOException 
+                 {
                      controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                      SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                      if (sourceUtils == null) return; // see 147028
@@ -151,37 +155,44 @@ public class JavaWsdlMapper {
                      String packageName = getPackageFromClass(te.getQualifiedName().toString());
                      serviceNameQNameARR[1] = getNamespace(packageName);
 
-                     List<? extends AnnotationMirror> annotations = te.getAnnotationMirrors();
-                     for (AnnotationMirror m : annotations) {
-                        Name qualifiedName = ((TypeElement)m.getAnnotationType().asElement()).getQualifiedName();
-                        if (qualifiedName.contentEquals(JAVAX_JWS_WEBSERVICE)) { //NOI18N
-                            String serviceNameAnnot = null;
-                            String targetNamespaceAnnot = null;
+                     AnnotationMirror annotation = getAnnotation(te , JAVAX_JWS_WEBSERVICE);
+                    if (annotation!=null ) { 
+                        String serviceNameAnnot = null;
+                        String targetNamespaceAnnot = null;
 
-                            @SuppressWarnings("unchecked")
-                            Map<ExecutableElement, AnnotationValue> expressions = (Map<ExecutableElement, AnnotationValue>) m.getElementValues();
-                            for (Entry<ExecutableElement, AnnotationValue> ex : expressions.entrySet()) {
-                                ExecutableElement el = ex.getKey();
-                                String val = (String) ex.getValue().getValue();
-                                if (el.getSimpleName().contentEquals("serviceName")) {         //NOI18N
-                                    serviceNameAnnot = val;
-                                    if (serviceNameAnnot!=null) {
-                                        serviceNameAnnot = URLEncoder.encode(serviceNameAnnot,UTF8); //NOI18N
-                                    }
-                                } else if (el.getSimpleName().contentEquals("targetNamespace")) {   //NOI18N
-                                    targetNamespaceAnnot = val;
-                                    if (targetNamespaceAnnot!=null) {
-                                        targetNamespaceAnnot = URLEncoder.encode(targetNamespaceAnnot,UTF8); //NOI18N
-                                    }
+                        Map<? extends ExecutableElement, 
+                                ? extends AnnotationValue> expressions = 
+                                        annotation.getElementValues();
+                        for (Entry<? extends ExecutableElement, 
+                                ? extends AnnotationValue> ex : 
+                                    expressions.entrySet()) 
+                        {
+                            ExecutableElement el = ex.getKey();
+                            String val = (String) ex.getValue().getValue();
+                            if (el.getSimpleName().contentEquals("serviceName")) {  //NOI18N
+                                serviceNameAnnot = val;
+                                if (serviceNameAnnot!=null) {
+                                    serviceNameAnnot = URLEncoder.
+                                    encode(serviceNameAnnot,UTF8); //NOI18N
                                 }
-                                if (targetNamespaceAnnot!=null && serviceNameAnnot!=null) break;
+                            } else if (el.getSimpleName().
+                                    contentEquals("targetNamespace"))   //NOI18N
+                            {
+                                targetNamespaceAnnot = val;
+                                if (targetNamespaceAnnot!=null) {
+                                    targetNamespaceAnnot = URLEncoder.
+                                    encode(targetNamespaceAnnot,UTF8); 
+                                }
                             }
-                            if (serviceNameAnnot != null) {
-                                serviceNameQNameARR[0] = serviceNameAnnot;
+                            if (targetNamespaceAnnot!=null && serviceNameAnnot!=null) {
+                                break;
                             }
-                            if (targetNamespaceAnnot != null) {
-                                serviceNameQNameARR[1] = targetNamespaceAnnot;
-                            }
+                        }
+                        if (serviceNameAnnot != null) {
+                            serviceNameQNameARR[0] = serviceNameAnnot;
+                        }
+                        if (targetNamespaceAnnot != null) {
+                            serviceNameQNameARR[1] = targetNamespaceAnnot;
                         }
                     }
                 }
@@ -225,7 +236,10 @@ public class JavaWsdlMapper {
         try {    
             JavaSource js = JavaSource.forFileObject(implClass);
             js.runUserActionTask(new AbstractTask<CompilationController>() {
-                 public void run(CompilationController controller) throws java.io.IOException {
+                 @Override
+                 public void run(CompilationController controller) 
+                     throws java.io.IOException 
+                 {
                      controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                      SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                      TypeElement te = sourceUtils.getTypeElement();
@@ -234,25 +248,29 @@ public class JavaWsdlMapper {
                      for (ExecutableElement method:methods) {
                         Set<Modifier> modifiers = method.getModifiers();
                         if (modifiers.contains(Modifier.PUBLIC)) {
-                            List<? extends AnnotationMirror> annotations = method.getAnnotationMirrors();
+                            AnnotationMirror an = getAnnotation(method, "javax.jws.WebMethod");    // NOI18N
                             boolean hasWebMethodAnnotation=false;
                             String nameAnnot = null;
-                            for (AnnotationMirror an:annotations) {
-                                TypeElement webMethodEl = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
-                                if (webMethodEl!=null && controller.getTypes().isSameType(webMethodEl.asType(), an.getAnnotationType())) {
-                                    hasWebMethodAnnotation=true;
-                                    @SuppressWarnings("unchecked")
-                                    Map<ExecutableElement, AnnotationValue> expressions = (Map<ExecutableElement, AnnotationValue>) an.getElementValues();
-                                    for (Entry<ExecutableElement, AnnotationValue> ex : expressions.entrySet()) {
-                                        ExecutableElement el = ex.getKey();
-                                        String val = (String) ex.getValue().getValue();
-                                        if (el.getSimpleName().contentEquals("operationName")) {         //NOI18N
-                                            nameAnnot = val;
-                                            if (nameAnnot!=null) nameAnnot = URLEncoder.encode(nameAnnot,UTF8); //NOI18N
-                                        }
-                                        if (nameAnnot!=null) break;
+                            if(hasWebMethodAnnotation) {
+                                Map<? extends ExecutableElement,
+                                        ? extends AnnotationValue> expressions = 
+                                                an.getElementValues();
+                                for (Entry<? extends ExecutableElement, 
+                                        ? extends AnnotationValue> ex : 
+                                            expressions.entrySet()) 
+                                {
+                                    ExecutableElement el = ex.getKey();
+                                    String val = (String) ex.getValue().getValue();
+                                    if (el.getSimpleName().contentEquals(
+                                            "operationName"))          //NOI18N
+                                    {
+                                        nameAnnot = val;
+                                        if (nameAnnot!=null) nameAnnot = 
+                                            URLEncoder.encode(nameAnnot,UTF8); //NOI18N
                                     }
-                                    break;
+                                    if (nameAnnot!=null) {
+                                        break;
+                                    }
                                 }
                             }
                             String opName = method.getSimpleName().toString();
@@ -290,14 +308,19 @@ public class JavaWsdlMapper {
             case LONG : return "long"; // NOI18N
             case SHORT : return "short"; // NOI18N
             case VOID : return "void"; // NOI18N
-            case DECLARED : 
-                Element element = controller.getTypes().asElement(typeMirror);
-                return ((TypeElement) element).getSimpleName().toString();
+            case ERROR :
+            case DECLARED :
+                if ( typeMirror instanceof DeclaredType ){
+                    Element element = controller.getTypes().asElement(typeMirror);
+                    return ((TypeElement) element).getSimpleName().toString();
+                }
+                else {
+                    break;
+                }
             case ARRAY : 
                 ArrayType arrayType = (ArrayType) typeMirror;
                 Element componentTypeElement = controller.getTypes().asElement(arrayType.getComponentType());
                 return ((TypeElement) componentTypeElement).getSimpleName().toString() + "[]";
-            case ERROR :
             case EXECUTABLE :
             case NONE :
             case NULL :
@@ -330,29 +353,39 @@ public class JavaWsdlMapper {
                             List<? extends AnnotationMirror> annotations = method.getAnnotationMirrors();
                             boolean hasWebMethodAnnotation=false;
                             String nameAnnot = null;
-                            for (AnnotationMirror an:annotations) {
-                                TypeElement webMethodEl = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
-                                if (webMethodEl!=null && controller.getTypes().isSameType(webMethodEl.asType(), an.getAnnotationType())) {
-                                    hasWebMethodAnnotation=true;
-                                    @SuppressWarnings("unchecked")
-                                    Map<ExecutableElement, AnnotationValue> expressions = (Map<ExecutableElement, AnnotationValue>) an.getElementValues();
-                                    for(Entry<ExecutableElement, AnnotationValue> ex : expressions.entrySet()) {
-                                        ExecutableElement el = ex.getKey();
-                                        String val = (String) ex.getValue().getValue();
-                                        if (el.getSimpleName().contentEquals("operationName")) {         //NOI18N
-                                            nameAnnot = val;
-                                            if (nameAnnot!=null) nameAnnot = URLEncoder.encode(nameAnnot,UTF8); //NOI18N
+                            AnnotationMirror an = getAnnotation(method, "javax.jws.WebMethod"); // NOI18N
+                            hasWebMethodAnnotation=an!=null;
+                            if ( hasWebMethodAnnotation ) {
+                                Map<? extends ExecutableElement,
+                                        ? extends  AnnotationValue> expressions = 
+                                            an.getElementValues();
+                                for(Entry<? extends ExecutableElement,
+                                        ? extends  AnnotationValue> ex : 
+                                            expressions.entrySet()) 
+                                {
+                                    ExecutableElement el = ex.getKey();
+                                    String val = (String) ex.getValue().getValue();
+                                    if (el.getSimpleName().contentEquals(
+                                            "operationName"))          //NOI18N
+                                    {
+                                        nameAnnot = val;
+                                        if (nameAnnot!=null) {
+                                            nameAnnot = URLEncoder.encode(
+                                                    nameAnnot,UTF8); 
                                         }
-                                        if (nameAnnot!=null) break;
                                     }
-                                    break;
+                                    if (nameAnnot!=null) {
+                                        break;
+                                    }
                                 }
                             }
                             if (hasWebMethodAnnotation) {
                                 if (!foundWebMethodAnnotation) {
                                     foundWebMethodAnnotation=true;
                                     // remove all methods added before because only annotated methods should be added
-                                    if (!operations.isEmpty()) operations.clear();
+                                    if (!operations.isEmpty()) {
+                                        operations.clear();
+                                    }
                                 }
                                 if (nameAnnot != null) {
                                     operations.add(nameAnnot);
@@ -379,47 +412,57 @@ public class JavaWsdlMapper {
         try {    
             JavaSource js = JavaSource.forFileObject(implClass);
             js.runUserActionTask(new AbstractTask<CompilationController>() {
-                 public void run(CompilationController controller) throws java.io.IOException {
+                @Override
+                 public void run(CompilationController controller) throws IOException {
                      controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                      SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                      TypeElement te = sourceUtils.getTypeElement();
                      portTypeQNameARR[0] = te.getSimpleName().toString();
 
-                     List<? extends AnnotationMirror> annotations = te.getAnnotationMirrors();
-                     for (AnnotationMirror m : annotations) {
-                        Name qualifiedName = ((TypeElement)m.getAnnotationType().asElement()).getQualifiedName();
-                        if (qualifiedName.contentEquals(JAVAX_JWS_WEBSERVICE)) { //NOI18N
-                            String nameAnnot = null;
-                            String targetNamespaceAnnot = null;
+                     AnnotationMirror annotation = getAnnotation(te, JAVAX_JWS_WEBSERVICE);
+                     if ( annotation!= null ){
+                        String nameAnnot = null;
+                        String targetNamespaceAnnot = null;
 
-                            @SuppressWarnings("unchecked")
-                            Map<ExecutableElement, AnnotationValue> expressions = (Map<ExecutableElement, AnnotationValue>) m.getElementValues();
-                            for(Entry<ExecutableElement, AnnotationValue> ex : expressions.entrySet()) {
-                                ExecutableElement el = ex.getKey();
-                                String val = (String) ex.getValue().getValue();
-                                if (el.getSimpleName().contentEquals("name")) {         //NOI18N
-                                    nameAnnot = val;
-                                    if (nameAnnot!=null) nameAnnot = URLEncoder.encode(nameAnnot,UTF8); //NOI18N
-                                } else if (el.getSimpleName().contentEquals("targetNamespace")) {   //NOI18N
-                                    targetNamespaceAnnot = val;
-                                    if (targetNamespaceAnnot!=null) targetNamespaceAnnot = URLEncoder.encode(targetNamespaceAnnot,UTF8); //NOI18N
+                        Map<? extends ExecutableElement, ? extends AnnotationValue> 
+                            expressions = annotation.getElementValues();
+                        for(Entry<? extends ExecutableElement, 
+                                ? extends AnnotationValue> ex : expressions.entrySet()) 
+                        {
+                            ExecutableElement el = ex.getKey();
+                            String val = (String) ex.getValue().getValue();
+                            if (el.getSimpleName().contentEquals("name")) {         //NOI18N
+                                nameAnnot = val;
+                                if (nameAnnot!=null) nameAnnot = 
+                                    URLEncoder.encode(nameAnnot,UTF8);
+                            } 
+                            else if (el.getSimpleName().contentEquals(
+                                    "targetNamespace"))    //NOI18N
+                            {
+                                targetNamespaceAnnot = val;
+                                if (targetNamespaceAnnot!=null) {
+                                    targetNamespaceAnnot = URLEncoder.encode(
+                                            targetNamespaceAnnot,UTF8); 
                                 }
-                                if (targetNamespaceAnnot!=null && nameAnnot!=null) break;
                             }
-
-                            if ((nameAnnot != null) && (nameAnnot.length() > 0)) {
-                                portTypeQNameARR[0] = nameAnnot;
+                            if (targetNamespaceAnnot!=null && nameAnnot!=null) {
+                                break;
                             }
-
-                            String pkg = getPackageFromClass(te.getQualifiedName().toString());
-
-                            String targetNamespace = targetNamespaceAnnot;
-                            if ((targetNamespace == null) || (targetNamespace.length() == 0)) {
-                                targetNamespace = getNamespace(pkg);
-                            }
-                            
-                            portTypeQNameARR[1] = targetNamespace;
                         }
+
+                        if ((nameAnnot != null) && (nameAnnot.length() > 0)) {
+                            portTypeQNameARR[0] = nameAnnot;
+                        }
+
+                        String pkg = getPackageFromClass(
+                                te.getQualifiedName().toString());
+
+                        String targetNamespace = targetNamespaceAnnot;
+                        if ((targetNamespace == null) || (targetNamespace.length() == 0)) {
+                            targetNamespace = getNamespace(pkg);
+                        }
+                        
+                        portTypeQNameARR[1] = targetNamespace;
                     }
                 }
             }, true);
@@ -436,28 +479,32 @@ public class JavaWsdlMapper {
             
             JavaSource js = JavaSource.forFileObject(implClass);
             js.runUserActionTask(new AbstractTask<CompilationController>() {
-                 public void run(CompilationController controller) throws java.io.IOException {
+                @Override
+                 public void run(CompilationController controller) throws IOException {
                      controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                      SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                      TypeElement te = sourceUtils.getTypeElement();
-                     List<? extends AnnotationMirror> annotations = te.getAnnotationMirrors();
-                     for (AnnotationMirror m : annotations) {
-                        Name qualifiedName = ((TypeElement)m.getAnnotationType().asElement()).getQualifiedName();
-                        if (qualifiedName.contentEquals(JAVAX_JWS_WEBSERVICE)) { //NOI18N
-                            String wsdlLoc = null;
-                            @SuppressWarnings("unchecked")
-                            Map<ExecutableElement, AnnotationValue> expressions = (Map<ExecutableElement, AnnotationValue>) m.getElementValues();
-                            for(Entry<ExecutableElement, AnnotationValue> ex : expressions.entrySet()) {
-                                ExecutableElement el = ex.getKey();
-                                String val = (String) ex.getValue().getValue();
-                                if (el.getSimpleName().contentEquals("wsdlLocation")) {     //NOI18N
-                                    wsdlLoc = val;
-                                    if (wsdlLoc!=null) wsdlLoc = URLEncoder.encode(wsdlLoc,UTF8); //NOI18N
-                                }
-                                if (wsdlLoc != null) break;
+                     AnnotationMirror annotation = getAnnotation(te, JAVAX_JWS_WEBSERVICE);
+                    if (annotation != null) {
+                        String wsdlLoc = null;
+                        Map<? extends ExecutableElement, ? extends AnnotationValue> 
+                            expressions = annotation.getElementValues();
+                        for (Entry<? extends ExecutableElement, 
+                                ? extends AnnotationValue> ex : expressions.entrySet())
+                        {
+                            ExecutableElement el = ex.getKey();
+                            String val = (String) ex.getValue().getValue();
+                            if (el.getSimpleName()
+                                    .contentEquals("wsdlLocation"))             // NOI18N
+                            { 
+                                wsdlLoc = val;
+                                if (wsdlLoc != null)
+                                    wsdlLoc = URLEncoder.encode(wsdlLoc, UTF8); 
                             }
-                            wsdlLocARR[1] = wsdlLoc;
+                            if (wsdlLoc != null)
+                                break;
                         }
+                        wsdlLocARR[1] = wsdlLoc;
                     }
                 }
             }, true);
@@ -480,52 +527,79 @@ public class JavaWsdlMapper {
         try {    
             JavaSource js = JavaSource.forFileObject(implClass);
             js.runUserActionTask(new AbstractTask<CompilationController>() {
+                @Override
                  public void run(CompilationController controller) throws java.io.IOException {
                      controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                      SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                      TypeElement te = sourceUtils.getTypeElement();
                      String className = te.getSimpleName().toString();
-                     List<? extends AnnotationMirror> annotations = te.getAnnotationMirrors();
-                     for (AnnotationMirror m : annotations) {
-                        Name qualifiedName = ((TypeElement)m.getAnnotationType().asElement()).getQualifiedName();
-                        if (qualifiedName.contentEquals(JAVAX_JWS_WEBSERVICE)) { //NOI18N
-                            String portNameAnnot = null;
-                            String nameAnnot = null;
-                            String targetNamespaceAnnot = null;
+                     AnnotationMirror annotation = getAnnotation(te, JAVAX_JWS_WEBSERVICE);
+                    if (annotation != null) {
+                        String portNameAnnot = null;
+                        String nameAnnot = null;
+                        String targetNamespaceAnnot = null;
 
-                            @SuppressWarnings("unchecked")
-                            Map<ExecutableElement, AnnotationValue> expressions = (Map<ExecutableElement, AnnotationValue>) m.getElementValues();
-                            for(Entry<ExecutableElement, AnnotationValue> ex:expressions.entrySet()) {
-                                ExecutableElement el = ex.getKey();
-                                String val = (String) ex.getValue().getValue();
-                                if (el.getSimpleName().contentEquals("name")) {         //NOI18N
-                                    nameAnnot = val;
-                                    if (nameAnnot!=null) nameAnnot = URLEncoder.encode(nameAnnot,UTF8); //NOI18N
-                                } else if (el.getSimpleName().contentEquals("portName")) {   //NOI18N
-                                    portNameAnnot = val;
-                                    if (portNameAnnot!=null) portNameAnnot = URLEncoder.encode(portNameAnnot,UTF8); //NOI18N
-                                } else if (el.getSimpleName().contentEquals("targetNamespace")) {   //NOI18N
-                                    targetNamespaceAnnot = val;
-                                    if (targetNamespaceAnnot!=null) targetNamespaceAnnot = URLEncoder.encode(targetNamespaceAnnot,UTF8); //NOI18N
-                                }
-                                if (targetNamespaceAnnot!=null && nameAnnot!=null && portNameAnnot != null) break;
+                        Map<? extends ExecutableElement, 
+                                ? extends AnnotationValue> expressions =  annotation
+                                        .getElementValues();
+                        for (Entry<? extends ExecutableElement, 
+                                ? extends AnnotationValue> ex : expressions.entrySet())
+                        {
+                            ExecutableElement el = ex.getKey();
+                            String val = (String) ex.getValue().getValue();
+                            if (el.getSimpleName().contentEquals("name")) { // NOI18N
+                                nameAnnot = val;
+                                if (nameAnnot != null)
+                                    nameAnnot = URLEncoder.encode(nameAnnot,
+                                            UTF8); 
                             }
+                            else if (el.getSimpleName().contentEquals(
+                                    "portName"))            // NOI18N
+                            { 
+                                portNameAnnot = val;
+                                if (portNameAnnot != null)
+                                    portNameAnnot = URLEncoder.encode(
+                                            portNameAnnot, UTF8); // NOI18N
+                            }
+                            else if (el.getSimpleName().contentEquals(
+                                    "targetNamespace"))         // NOI18N
+                            { 
+                                targetNamespaceAnnot = val;
+                                if (targetNamespaceAnnot != null)
+                                    targetNamespaceAnnot = URLEncoder.encode(
+                                            targetNamespaceAnnot, UTF8);
+                            }
+                            if (targetNamespaceAnnot != null
+                                    && nameAnnot != null
+                                    && portNameAnnot != null)
+                            {
+                                break;
+                            }
+                        }
 
-                            if ((portNameAnnot != null) && (portNameAnnot.length() > 0)) {
-                                portNameQNameARR[0] = portNameAnnot;
-                            } else if ((nameAnnot != null) && (nameAnnot.length() > 0)) {
-                                portNameQNameARR[0] = nameAnnot + PORT;
-                            } else {
-                                portNameQNameARR[0] = className + PORT;
+                        if ((portNameAnnot != null)
+                                && (portNameAnnot.length() > 0))
+                        {
+                            portNameQNameARR[0] = portNameAnnot;
+                        }
+                        else if ((nameAnnot != null)
+                                && (nameAnnot.length() > 0))
+                        {
+                            portNameQNameARR[0] = nameAnnot + PORT;
+                        }
+                        else {
+                            portNameQNameARR[0] = className + PORT;
+                        }
+
+                        if (targetNamespace == null) {
+                            if ((targetNamespaceAnnot != null)
+                                    && (targetNamespaceAnnot.length() > 0))
+                            {
+                                portNameQNameARR[1] = targetNamespaceAnnot;
                             }
-                            
-                            if (targetNamespace == null) {
-                                if ((targetNamespaceAnnot != null) && (targetNamespaceAnnot.length() > 0)) {
-                                    portNameQNameARR[1] = targetNamespaceAnnot;
-                                } else {
-                                    String packageName = getPackageFromClass(className);
-                                    portNameQNameARR[1] = getNamespace(packageName);
-                                }
+                            else {
+                                String packageName = getPackageFromClass(className);
+                                portNameQNameARR[1] = getNamespace(packageName);
                             }
                         }
                     }
@@ -539,6 +613,20 @@ public class JavaWsdlMapper {
     
     public static String getPackageFromClass(String fqClassName) {
         return fqClassName.substring(0, fqClassName.lastIndexOf('.'));
-    }    
+    }   
+    
+    private static AnnotationMirror getAnnotation(Element element, String fqn ){
+        List<? extends AnnotationMirror> annotations = element.getAnnotationMirrors();
+        for (AnnotationMirror annotationMirror : annotations) {
+            Element annotation = annotationMirror.getAnnotationType().asElement();
+            if ( annotation instanceof TypeElement ){
+                Name name = ((TypeElement)annotation).getQualifiedName();
+                if ( fqn.contentEquals( name )){
+                    return annotationMirror;
+                }
+            }
+        }
+        return null;
+    }
 
 }
