@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE resources PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions//EN" "http://glassfish.org/dtds/glassfish-resources_1_5.dtd">
+<resources>
+ <jdbc-connection-pool steady-pool-size="1" is-isolation-level-guaranteed="false" 
+ datasource-classname="org.apache.derby.jdbc.ClientDataSource" res-type="javax.sql.DataSource"
+ name="java:app/app-scoped-pool" max-wait-time-in-millis="0">
+      <property name="PortNumber" value="1527"></property>
+      <property name="Password" value="app"></property>
+      <property name="User" value="app"></property>
+      <property name="serverName" value="localhost"></property>
+      <property name="DatabaseName" value="sample"></property>
+      
+    </jdbc-connection-pool>
+<jdbc-resource pool-name="java:app/app-scoped-pool" jndi-name="java:app/app-scoped-resource"></jdbc-resource>
+</resources>
