@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.classpath;
 import java.beans.Customizer;
 import java.net.URL;
 import java.util.Collections;
+import java.util.logging.Level;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
@@ -70,6 +71,14 @@ public class CPExtenderTest extends NbTestCase {
 
     protected @Override void setUp() throws Exception {
         clearWorkDir();
+    }
+
+    @Override protected Level logLevel() {
+        return Level.FINE;
+    }
+
+    @Override protected String logRoot() {
+        return "org.netbeans.modules.maven";
     }
 
     public void testAddRemovePomLib() throws Exception {

@@ -54,6 +54,7 @@ import org.netbeans.api.actions.Openable;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -69,6 +70,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@RandomlyFails // sometimes blocks forever in waitQuery in NB-Core-Build
 public class DefaultDataObjectMissingBinaryTest extends NbTestCase {
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
