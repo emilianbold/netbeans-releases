@@ -782,7 +782,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         if (newPid != -1) {
                             session().setPid(newPid);
                         }
-                        requestStack(null);
+                        // continue, see IZ 198495
+                        if (DebuggerOption.RUN_AUTOSTART.isEnabled(optionLayers())) {
+                            go();
+                        } else {
+                            requestStack(null);
+                        }
                         finish();
                     }
             };
