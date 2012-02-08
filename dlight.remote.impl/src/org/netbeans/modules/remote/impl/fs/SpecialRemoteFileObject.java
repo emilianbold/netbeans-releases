@@ -63,12 +63,8 @@ import org.openide.filesystems.FileObject;
 public class SpecialRemoteFileObject extends RemoteFileObjectFile {
 
     private final char fileTypeChar;
-    public static SpecialRemoteFileObject createNew(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
-            RemoteDirectory parent, String remotePath, FileType fileType) {
-        return new SpecialRemoteFileObject(fileSystem, execEnv, parent, remotePath, fileType);
-    }
             
-    private SpecialRemoteFileObject(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
+    /*package*/ SpecialRemoteFileObject(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
             RemoteDirectory parent, String remotePath, FileType fileType) {
         super(fileSystem, execEnv, parent, remotePath, null);
         fileTypeChar = fileType.toChar(); // TODO: pass when created

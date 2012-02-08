@@ -201,4 +201,27 @@ public class MITList extends MIValue implements Iterable<MITListItem> {
 	}
 	return null;
     }
+    
+    /**
+     * Get const value directly
+     * @param variable - name of the const variable in the list
+     * @return value of the const or the empty string if no such const is in the list
+     */
+    public String getConstValue(String variable) {
+        return getConstValue(variable, "");
+    }
+    
+    /**
+     * Get const value directly
+     * @param variable - name of the const variable in the list
+     * @param defaultValue  - value to return if there is no such const is in the list
+     * @return value of the const or the defaultvalue
+     */
+    public String getConstValue(String variable, String defaultValue) {
+        MIValue val = valueOf(variable);
+        if (val != null) {
+            return val.asConst().value();
+        }
+        return defaultValue;
+    }
 }
