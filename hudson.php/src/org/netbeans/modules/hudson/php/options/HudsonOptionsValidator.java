@@ -63,13 +63,13 @@ public final class HudsonOptionsValidator {
      * @see FileUtils#validateFile(String, boolean)
      */
     @NbBundle.Messages({
-        "HudsonOptionsValidator.error.jobConfig.file=Job Config: {0}",
+        "HudsonOptionsValidator.error.jobConfig.file=Job config",
         "HudsonOptionsValidator.error.jobConfig.name=File 'config.xml' must be selected."
     })
     public static String validateJobConfig(String jobConfig) {
-        String error = FileUtils.validateFile(jobConfig, false);
+        String error = FileUtils.validateFile(Bundle.HudsonOptionsValidator_error_jobConfig_file(), jobConfig, false);
         if (error != null) {
-            return Bundle.HudsonOptionsValidator_error_jobConfig_file(error);
+            return error;
         }
         // check file name
         if (!JOB_CONFIG_NAME.equals(new File(jobConfig).getName())) {

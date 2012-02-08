@@ -166,7 +166,7 @@ tokens {
 	Exponent;
 	Vocabulary;
 	NUMBER;
-	ID;
+	IDENT;
         BINARYINT;
 
     // preprocessor specific tokens
@@ -1257,7 +1257,7 @@ ID_LIKE:
                         setAfterPPDefined(false);
                         $setType(ID_DEFINED);
                     } else {
-                        $setType(ID); 
+                        $setType(IDENT); 
                     }
                 }
            )
@@ -1271,7 +1271,7 @@ ID_LIKE:
                     setFunLikeMacro(true);
                 }
             }
-            $setType(ID);
+            $setType(IDENT);
         }
      |
         // We have checked opposite above

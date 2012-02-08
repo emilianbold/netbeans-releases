@@ -254,7 +254,7 @@ public class TypeFactory {
                         int templateDepth = 0;
                         StringBuilder sb = new StringBuilder();
                         for( AST namePart = tokFirstId; namePart != null; namePart = namePart.getNextSibling() ) {
-                            if( templateDepth == 0 && namePart.getType() == CPPTokenTypes.ID ) {
+                            if( templateDepth == 0 && namePart.getType() == CPPTokenTypes.IDENT ) {
                                 sb.append(namePart.getText());
                                 l.add(NameCache.getManager().getString(AstUtil.getText(namePart)));
                                 //l.add(namePart.getText());

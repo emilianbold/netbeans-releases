@@ -184,7 +184,7 @@ public final class APTMacroImpl implements APTMacro {
             retValue.append("'='"); // NOI18N
             retValue.append(APTUtils.toString(bodyStream));
         }
-        return retValue.toString();
+        return retValue.toString().replace("<IDENT>", "<ID>");
     }       
 
     public void write(RepositoryDataOutput output) throws IOException {
