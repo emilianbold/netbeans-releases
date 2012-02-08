@@ -38,7 +38,9 @@
 package org.netbeans.modules.javascript2.editor.parser;
 
 import com.oracle.nashorn.ir.FunctionNode;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,6 +53,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -102,11 +105,18 @@ public class JsParser extends Parser {
         com.oracle.nashorn.ir.FunctionNode node = parser.parse(com.oracle.nashorn.codegen.CompilerConstants.runScriptName);
         
         // process comment elements
-        List<? extends JsComment> comments = null; //TODO - JsDocParser.parse(text);
-
+        List<? extends JsComment> comments;
+        try {
+            comments = JsDocParser.parse(snapshot);
+        } catch (Exception ex) {
+            // if anything wrong happen during parsing comments
+            LOGGER.log(Level.WARNING, null, ex);
+            comments = new LinkedList<JsComment>();
+        }
+        
         JsParserResult result = new JsParserResult(snapshot, node, comments);
-        long endTime = System.currentTimeMillis();        
-//        LOGGER.log(Level.FINE, "Parsing took: {0}ms source: {1}", new Object[]{endTime - startTime, scriptname}); //NOI18N
+        long endTime = System.currentTimeMillis();
+    //        LOGGER.log(Level.FINE, "Parsing took: {0}ms source: {1}", new Object[]{endTime - startTime, scriptname}); //NOI18N
         return result;
     }
 
