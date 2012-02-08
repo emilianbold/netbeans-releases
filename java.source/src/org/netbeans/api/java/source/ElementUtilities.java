@@ -260,6 +260,7 @@ public final class ElementUtilities {
                 case DECLARED:
                 case UNION:
                     TypeElement te = (TypeElement)((DeclaredType)type).asElement();
+                    if (te == null) break;
                     for (Element member : elements.getAllMembers(te)) {
                         if (acceptor == null || acceptor.accept(member, type)) {
                             if (!isHidden(member, members, elements))

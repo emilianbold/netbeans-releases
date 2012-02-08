@@ -245,9 +245,9 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
 
             setName (element.getSimpleName ().toString ());
             setIcon (ElementIcons.getElementIcon (element.getKind (), element.getModifiers ()));
-            setLabel (Utils.format (element));
-            setFQNLabel (Utils.format (element, false, true));
-            setToolTip (Utils.format (element, true, JavaMembersAndHierarchyOptions.isShowFQN ()));
+            setLabel (Utils.format (compilationInfo, element));
+            setFQNLabel (Utils.format (compilationInfo, element, false, true));
+            setToolTip (Utils.format (compilationInfo, element, true, JavaMembersAndHierarchyOptions.isShowFQN ()));
 
             if (!lazyLoadChildren) {
                 try {

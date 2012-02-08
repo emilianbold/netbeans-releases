@@ -220,9 +220,9 @@ public final class JavaMembersModel extends DefaultTreeModel {
             }
             setIcon(ElementIcons.getElementIcon(element.getKind(),
                     element.getModifiers()));
-            setLabel(Utils.format(element));
-            setFQNLabel(Utils.format(element, false, true));
-            setToolTip(Utils.format(element, true, JavaMembersAndHierarchyOptions.isShowFQN()));
+            setLabel(Utils.format(compilationInfo, element));
+            setFQNLabel(Utils.format(compilationInfo, element, false, true));
+            setToolTip(Utils.format(compilationInfo, element, true, JavaMembersAndHierarchyOptions.isShowFQN()));
             loadChildren(element, compilationInfo);
         }
         

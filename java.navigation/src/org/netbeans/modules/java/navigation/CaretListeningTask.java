@@ -205,7 +205,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
                 break;
             case LOCAL_VARIABLE:
                 lastEh = null; // ElementHandle not supported 
-                setDeclaration(Utils.format(element)); // NOI18N
+                setDeclaration(Utils.format(compilationInfo, element)); // NOI18N
                 setJavadoc(null); // NOI18N
                 return;
             default:

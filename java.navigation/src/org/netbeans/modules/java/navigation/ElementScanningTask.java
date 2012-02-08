@@ -66,11 +66,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
-import javax.lang.model.type.WildcardType;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -240,13 +237,13 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         
         if( e instanceof TypeElement ) {
             d.subs = new HashSet<Description>();
-            d.htmlHeader = createHtmlHeader(  (TypeElement)e, info.getElements().isDeprecated(e),d.isInherited ); 
+            d.htmlHeader = createHtmlHeader(info,  (TypeElement)e, info.getElements().isDeprecated(e),d.isInherited );
         } else if( e instanceof ExecutableElement ) {
-            d.htmlHeader = createHtmlHeader(  (ExecutableElement)e, info.getElements().isDeprecated(e),d.isInherited ); 
+            d.htmlHeader = createHtmlHeader(info,  (ExecutableElement)e, info.getElements().isDeprecated(e),d.isInherited );
         } else if( e instanceof VariableElement ) {
             if( !(e.getKind() == ElementKind.FIELD || e.getKind() == ElementKind.ENUM_CONSTANT) )
                 return null;
-            d.htmlHeader = createHtmlHeader(  (VariableElement)e, info.getElements().isDeprecated(e),d.isInherited ); 
+            d.htmlHeader = createHtmlHeader(info,  (VariableElement)e, info.getElements().isDeprecated(e),d.isInherited );
         }
         
         d.modifiers = e.getModifiers();
@@ -266,7 +263,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
     }
         
    /** Creates HTML display name of the Executable element */
-    private String createHtmlHeader(  ExecutableElement e, boolean isDeprecated,boolean isInherited ) {
+    private String createHtmlHeader(CompilationInfo info, ExecutableElement e, boolean isDeprecated,boolean isInherited ) {
 
         StringBuilder sb = new StringBuilder();
         if ( isDeprecated ) {
@@ -288,7 +285,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             VariableElement param = it.next(); 
             sb.append( "<font color=" + TYPE_COLOR + ">" ); // NOI18N
             final boolean vararg = !it.hasNext() && e.isVarArgs();
-            sb.append(printArg(param.asType(),vararg));
+            sb.append(printArg(info, param.asType(),vararg));
             sb.append("</font>"); // NOI18N
             sb.append(" "); // NOI18N
             sb.append(Utils.escape(param.getSimpleName().toString()));
@@ -305,7 +302,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             if ( rt.getKind() != TypeKind.VOID ) {                               
                 sb.append(" : "); // NOI18N     
                 sb.append( "<font color=" + TYPE_COLOR + ">" ); // NOI18N
-                sb.append(print(e.getReturnType()));
+                sb.append(print(info, e.getReturnType()));
                 sb.append("</font>"); // NOI18N                    
             }
         }
@@ -313,7 +310,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         return sb.toString();
     }
 
-    private String createHtmlHeader(  VariableElement e, boolean isDeprecated,boolean isInherited ) {
+    private String createHtmlHeader(CompilationInfo info, VariableElement e, boolean isDeprecated,boolean isInherited) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -331,14 +328,14 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         if ( e.getKind() != ElementKind.ENUM_CONSTANT ) {
             sb.append( " : " ); // NOI18N
             sb.append( "<font color=" + TYPE_COLOR + ">" ); // NOI18N
-            sb.append(print(e.asType()));
+            sb.append(print(info, e.asType()));
             sb.append("</font>"); // NOI18N
         }
 
         return sb.toString();            
     }
 
-    private String createHtmlHeader( TypeElement e, boolean isDeprecated, boolean isInherited ) {
+    private String createHtmlHeader(CompilationInfo info, TypeElement e, boolean isDeprecated, boolean isInherited) {
 
         StringBuilder sb = new StringBuilder();            
         if ( isDeprecated ) {
@@ -351,7 +348,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         if ( isDeprecated ) {
             sb.append("</s>"); // NOI18N
         }
-        // sb.append(print(e.asType()));            
+        // sb.append(print(info, e.asType()));
         List<? extends TypeParameterElement> typeParams = e.getTypeParameters();
 
         //System.out.println("Element " + e + "type params" + typeParams.size() );
@@ -366,7 +363,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                     List<? extends TypeMirror> bounds = tp.getBounds();
                     //System.out.println( tp.getSimpleName() + "   bounds size " + bounds.size() );
                     if ( !bounds.isEmpty() ) {
-                        sb.append(printBounds(bounds));
+                        sb.append(printBounds(info, bounds));
                     }
                 }
                 catch ( NullPointerException npe ) {
@@ -384,7 +381,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         // Add superclass and implemented interfaces
 
         TypeMirror sc = e.getSuperclass();
-        String scName = print( sc );
+        String scName = print(info,  sc );
 
         if ( sc == null || 
              e.getKind() == ElementKind.ENUM ||
@@ -411,7 +408,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 for (Iterator<? extends TypeMirror> it = ifaces.iterator(); it.hasNext();) {
                     TypeMirror typeMirror = it.next();
                     sb.append( "<font color=" + TYPE_COLOR + ">" ); // NOI18N                
-                    sb.append( print(typeMirror) );
+                    sb.append( print(info, typeMirror) );
                     sb.append("</font>"); // NOI18N
                     if ( it.hasNext() ) {
                         sb.append(", "); // NOI18N
@@ -424,7 +421,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         return sb.toString();            
     }
 
-    private String printBounds( List<? extends TypeMirror> bounds ) {
+    private String printBounds(CompilationInfo info, List<? extends TypeMirror> bounds) {
         if ( bounds.size() == 1 && "java.lang.Object".equals( bounds.get(0).toString() ) ) {
             return "";
         }
@@ -435,7 +432,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
 
         for (Iterator<? extends TypeMirror> it = bounds.iterator(); it.hasNext();) {
             TypeMirror bound = it.next();
-            sb.append(print(bound));
+            sb.append(print(info, bound));
             if ( it.hasNext() ) {
                 sb.append(" & " ); // NOI18N
             }
@@ -445,65 +442,21 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         return sb.toString();
     }
 
-    private String printArg(final TypeMirror tm, final boolean varArg) {
+    private String printArg(CompilationInfo info, final TypeMirror tm, final boolean varArg) {
         if (varArg) {
             if (tm.getKind() == TypeKind.ARRAY) {
                 final ArrayType at = (ArrayType)tm;
-                final StringBuilder sb = new StringBuilder( print(at.getComponentType()) );
+                final StringBuilder sb = new StringBuilder( print(info, at.getComponentType()) );
                 sb.append("...");   //NOI18N
                 return sb.toString();
             } else {
                 assert false : "Expected array: " + tm.toString() + " ( " +tm.getKind() + " )"; //NOI18N
             }
         }
-        return print(tm);
+        return print(info, tm);
     }
 
-    private String print( TypeMirror tm ) {
-        StringBuilder sb;
-
-        switch ( tm.getKind() ) {
-            case DECLARED:
-                DeclaredType dt = (DeclaredType)tm;
-                sb = new StringBuilder( dt.asElement().getSimpleName().toString() );
-                List<? extends TypeMirror> typeArgs = dt.getTypeArguments();
-                if ( !typeArgs.isEmpty() ) {
-                    sb.append("&lt;");
-
-                    for (Iterator<? extends TypeMirror> it = typeArgs.iterator(); it.hasNext();) {
-                        TypeMirror ta = it.next();
-                        sb.append(print(ta));
-                        if ( it.hasNext() ) {
-                            sb.append(", ");
-                        }
-                    }
-                    sb.append("&gt;");
-                }
-
-                return sb.toString(); 
-            case TYPEVAR:
-                TypeVariable tv = (TypeVariable)tm;  
-                sb = new StringBuilder( tv.asElement().getSimpleName().toString() );
-                return sb.toString();
-            case ARRAY:
-                ArrayType at = (ArrayType)tm;
-                sb = new StringBuilder( print(at.getComponentType()) );
-                sb.append("[]");
-                return sb.toString();
-            case WILDCARD:
-                WildcardType wt = (WildcardType)tm;
-                sb = new StringBuilder("?");
-                if ( wt.getExtendsBound() != null ) {
-                    sb.append(" extends "); // NOI18N
-                    sb.append(print(wt.getExtendsBound()));
-                }
-                if ( wt.getSuperBound() != null ) {
-                    sb.append(" super "); // NOI18N
-                    sb.append(print(wt.getSuperBound()));
-                }
-                return sb.toString();
-            default:
-                return Utils.escape(tm.toString());
-        }
+    private String print(CompilationInfo info, TypeMirror tm ) {
+        return info.getTypeUtilities().getTypeName(tm).toString();
     }
 }

@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.java.source.pretty;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
@@ -62,6 +63,7 @@ import static com.sun.tools.javac.code.TypeTags.*;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.*;
+import com.sun.tools.javac.tree.JCTree.JCLambda.BodyKind;
 import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.util.*;
 import com.sun.tools.javac.util.List;
@@ -979,6 +981,18 @@ public final class VeryPretty extends JCTree.Visitor {
         toColExactly(out.leftMargin);
 	printStat(tree.body);
         undent(old);
+    }
+
+    @Override
+    public void visitLambda(JCLambda that) {
+	print("(");
+        wrapTrees(that.params, WrapStyle.WRAP_NEVER, out.col);
+        print(") -> ");
+        if (that.body.getKind() == Kind.BLOCK) {
+            printStat(that.body);
+        } else {
+            printExpr(that.body, TreeInfo.notExpression);
+        }
     }
 
     @Override

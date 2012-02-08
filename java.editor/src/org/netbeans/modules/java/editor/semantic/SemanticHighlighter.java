@@ -62,6 +62,7 @@ import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -85,6 +86,7 @@ import com.sun.source.util.TreeScanner;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -814,10 +816,12 @@ public class SemanticHighlighter extends JavaParserResultTask {
 ////                if (ts.moveNext()) ???
 //                    firstIdentifier(((MemberSelectTree) tree.getMethodSelect()).getIdentifier().toString());
 //            }
-            
-            for (Tree expr : tree.getArguments()) {
-                if (expr instanceof IdentifierTree) {
-                    handlePossibleIdentifier(new TreePath(getCurrentPath(), expr), EnumSet.of(UseTypes.READ));
+
+            if (tree.getArguments() != null) {
+                for (Tree expr : tree.getArguments()) {
+                    if (expr instanceof IdentifierTree) {
+                        handlePossibleIdentifier(new TreePath(getCurrentPath(), expr), EnumSet.of(UseTypes.READ));
+                    }
                 }
             }
             
@@ -1112,6 +1116,8 @@ public class SemanticHighlighter extends JavaParserResultTask {
         @Override
         public Void visitVariable(VariableTree tree, EnumSet<UseTypes> d) {
             tl.moveToOffset(sourcePositions.getStartPosition(info.getCompilationUnit(), tree));
+
+            if (tree.getType() != null) {
             TreePath type = new TreePath(getCurrentPath(), tree.getType());
             
             if (type.getLeaf() instanceof ArrayTypeTree) {
@@ -1120,6 +1126,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
             
             if (type.getLeaf().getKind() == Kind.IDENTIFIER)
                 handlePossibleIdentifier(type, EnumSet.of(UseTypes.CLASS_USE));
+            }
             
             Collection<UseTypes> uses = null;
             
@@ -1455,6 +1462,13 @@ public class SemanticHighlighter extends JavaParserResultTask {
                 handlePossibleIdentifier(new TreePath(getCurrentPath(), node.getBound()), EnumSet.of(UseTypes.CLASS_USE));
             }
             return super.visitWildcard(node, p);
+        }
+
+        @Override
+        public Void visitLambdaExpression(LambdaExpressionTree node, EnumSet<UseTypes> p) {
+            scan(node.getParameters(), EnumSet.of(UseTypes.WRITE));
+            scan(node.getBody(), EnumSet.noneOf(UseTypes.class));
+            return null;
         }
 
         private void typeUsed(Element decl, TreePath expr, Collection<UseTypes> type) {

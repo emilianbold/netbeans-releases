@@ -79,6 +79,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.java.source.TypeUtilities.TypeNameOptions;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -99,9 +100,7 @@ import org.openide.util.WeakListeners;
  */
 public final class Utilities {
     
-    private static final String CAPTURED_WILDCARD = "<captured wildcard>"; //NOI18N
     private static final String ERROR = "<error>"; //NOI18N
-    private static final String UNKNOWN = "<unknown>"; //NOI18N
 
     private static boolean caseSensitive = true;
     private static boolean showDeprecatedMembers = true;
@@ -396,22 +395,15 @@ public final class Utilities {
         }
     }
     
-    @Deprecated public static CharSequence getTypeName(TypeMirror type, boolean fqn) {
-        return getTypeName(null, type, fqn, false);
-    }
-    
-    @Deprecated public static CharSequence getTypeName(TypeMirror type, boolean fqn, boolean varArg) {
-        return getTypeName(null, type, fqn, varArg);
-    }
-    
     public static CharSequence getTypeName(CompilationInfo info, TypeMirror type, boolean fqn) {
         return getTypeName(info, type, fqn, false);
     }
     
     public static CharSequence getTypeName(CompilationInfo info, TypeMirror type, boolean fqn, boolean varArg) {
-	if (type == null)
-            return ""; //NOI18N
-        return new TypeNameVisitor(varArg).visit(type, fqn);
+        Set<TypeNameOptions> options = EnumSet.noneOf(TypeNameOptions.class);
+        if (fqn) options.add(TypeNameOptions.PRINT_FQN);
+        if (varArg) options.add(TypeNameOptions.PRINT_AS_VARARG);
+        return info.getTypeUtilities().getTypeName(type, options.toArray(new TypeNameOptions[0]));
     }
     
     public static CharSequence getElementName(Element el, boolean fqn) {
@@ -640,128 +632,6 @@ public final class Utilities {
         return false;
     }
     
-    private static class TypeNameVisitor extends SimpleTypeVisitor6<StringBuilder,Boolean> {
-        
-        private boolean varArg;
-        private boolean insideCapturedWildcard = false;
-        
-        private TypeNameVisitor(boolean varArg) {
-            super(new StringBuilder());
-            this.varArg = varArg;
-        }
-        
-        @Override
-        public StringBuilder defaultAction(TypeMirror t, Boolean p) {
-            return DEFAULT_VALUE.append(t);
-        }
-        
-        @Override
-        public StringBuilder visitDeclared(DeclaredType t, Boolean p) {
-            Element e = t.asElement();
-            if (e instanceof TypeElement) {
-                TypeElement te = (TypeElement)e;
-                DEFAULT_VALUE.append((p ? te.getQualifiedName() : te.getSimpleName()).toString());
-                Iterator<? extends TypeMirror> it = t.getTypeArguments().iterator();
-                if (it.hasNext()) {
-                    DEFAULT_VALUE.append("<"); //NOI18N
-                    while(it.hasNext()) {
-                        visit(it.next(), p);
-                        if (it.hasNext())
-                            DEFAULT_VALUE.append(", "); //NOI18N
-                    }
-                    DEFAULT_VALUE.append(">"); //NOI18N
-                }
-                return DEFAULT_VALUE;                
-            } else {
-                return DEFAULT_VALUE.append(UNKNOWN); //NOI18N
-            }
-        }
-
-        @Override
-        public StringBuilder visitUnion(UnionType t, Boolean p) {
-            Iterator<? extends TypeMirror> it = t.getAlternatives().iterator();
-            while(it.hasNext()) {
-                visit(it.next(), p);
-                if (it.hasNext())
-                    DEFAULT_VALUE.append(" | "); //NOI18N
-            }
-            return DEFAULT_VALUE;
-        }
-                        
-        @Override
-        public StringBuilder visitArray(ArrayType t, Boolean p) {
-            boolean isVarArg = varArg;
-            varArg = false;
-            visit(t.getComponentType(), p);
-            return DEFAULT_VALUE.append(isVarArg ? "..." : "[]"); //NOI18N
-        }
-
-        @Override
-        public StringBuilder visitTypeVariable(TypeVariable t, Boolean p) {
-            Element e = t.asElement();
-            if (e != null) {
-                String name = e.getSimpleName().toString();
-                if (!CAPTURED_WILDCARD.equals(name))
-                    return DEFAULT_VALUE.append(name);
-            }
-            DEFAULT_VALUE.append("?"); //NOI18N
-            if (!insideCapturedWildcard) {
-                insideCapturedWildcard = true;
-                TypeMirror bound = t.getLowerBound();
-                if (bound != null && bound.getKind() != TypeKind.NULL) {
-                    DEFAULT_VALUE.append(" super "); //NOI18N
-                    visit(bound, p);
-                } else {
-                    bound = t.getUpperBound();
-                    if (bound != null && bound.getKind() != TypeKind.NULL) {
-                        DEFAULT_VALUE.append(" extends "); //NOI18N
-                        if (bound.getKind() == TypeKind.TYPEVAR)
-                            bound = ((TypeVariable)bound).getLowerBound();
-                        visit(bound, p);
-                    }
-                }
-                insideCapturedWildcard = false;
-            }
-            return DEFAULT_VALUE;
-        }
-
-        @Override
-        public StringBuilder visitWildcard(WildcardType t, Boolean p) {
-            int len = DEFAULT_VALUE.length();
-            DEFAULT_VALUE.append("?"); //NOI18N
-            TypeMirror bound = t.getSuperBound();
-            if (bound == null) {
-                bound = t.getExtendsBound();
-                if (bound != null) {
-                    DEFAULT_VALUE.append(" extends "); //NOI18N
-                    if (bound.getKind() == TypeKind.WILDCARD)
-                        bound = ((WildcardType)bound).getSuperBound();
-                    visit(bound, p);
-                } else if (len == 0) {
-                    bound = SourceUtils.getBound(t);
-                    if (bound != null && (bound.getKind() != TypeKind.DECLARED || !((TypeElement)((DeclaredType)bound).asElement()).getQualifiedName().contentEquals("java.lang.Object"))) { //NOI18N
-                        DEFAULT_VALUE.append(" extends "); //NOI18N
-                        visit(bound, p);
-                    }
-                }
-            } else {
-                DEFAULT_VALUE.append(" super "); //NOI18N
-                visit(bound, p);
-            }
-            return DEFAULT_VALUE;
-        }
-
-        @Override
-        public StringBuilder visitError(ErrorType t, Boolean p) {
-            Element e = t.asElement();
-            if (e instanceof TypeElement) {
-                TypeElement te = (TypeElement)e;
-                return DEFAULT_VALUE.append((p ? te.getQualifiedName() : te.getSimpleName()).toString());
-            }
-            return DEFAULT_VALUE;
-        }
-    }
-    
     private static class ElementNameVisitor extends SimpleElementVisitor6<StringBuilder,Boolean> {
         
         private ElementNameVisitor() {
@@ -912,6 +782,8 @@ public final class Utilities {
     }
     
     private static ExecutableElement resolveMethod(CompilationInfo info, List<TypeMirror> foundTypes, DeclaredType on, boolean statik, boolean constr, String name, TypeMirror[] candidateType, int[] index) {
+        if (on.asElement() == null) return null;
+        
         ExecutableElement found = null;
         
         OUTER:

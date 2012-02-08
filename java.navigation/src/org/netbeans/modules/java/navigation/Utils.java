@@ -61,13 +61,11 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
-import static javax.lang.model.type.TypeKind.*;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
-import javax.lang.model.type.WildcardType;
 
+import org.netbeans.api.java.source.CompilationInfo;
+
+import org.netbeans.api.java.source.TypeUtilities.TypeNameOptions;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -75,18 +73,18 @@ import org.openide.xml.XMLUtil;
  * @author Sandip Chitale (Sandip.Chitale@Sun.Com)
  */
 class Utils {
-    static String format(Element element) {
-        return format(element, false, false);
+    static String format(CompilationInfo info, Element element) {
+        return format(info, element, false, false);
     }
     
-    static String format(Element element, boolean forSignature, boolean FQNs) {
+    static String format(CompilationInfo info, Element element, boolean forSignature, boolean FQNs) {
         StringBuilder stringBuilder = new StringBuilder();
-        format(element, stringBuilder, forSignature, FQNs);
+        format(info, element, stringBuilder, forSignature, FQNs);
 
         return stringBuilder.toString();
     }
 
-    static void format(Element element, StringBuilder stringBuilder, boolean forSignature, boolean FQNs) {
+    static void format(CompilationInfo info, Element element, StringBuilder stringBuilder, boolean forSignature, boolean FQNs) {
         if (element == null) {
             return;
         }
@@ -139,7 +137,7 @@ class Utils {
                 ? typeElement.getQualifiedName().toString()
                 : typeElement.getSimpleName().toString());
 
-            formatTypeParameters(typeElement.getTypeParameters(), stringBuilder, FQNs);
+            formatTypeParameters(info, typeElement.getTypeParameters(), stringBuilder, FQNs);
 
             break;
 
@@ -157,14 +155,14 @@ class Utils {
             stringBuilder.append(constructorElement.getEnclosingElement()
                                                    .getSimpleName().toString());
             stringBuilder.append("(");
-            formatVariableElements(constructorElement.getParameters(),
+            formatVariableElements(info, constructorElement.getParameters(),
                 constructorElement.isVarArgs(), stringBuilder, FQNs);
             stringBuilder.append(")");
 
             List<? extends TypeMirror> thrownTypesMirrors = constructorElement.getThrownTypes();
             if (!thrownTypesMirrors.isEmpty()) {
                 stringBuilder.append(" throws "); // NOI18N
-                formatTypeMirrors(thrownTypesMirrors, stringBuilder, FQNs);
+                formatTypeMirrors(info, thrownTypesMirrors, stringBuilder, FQNs);
             }
 
             break;
@@ -184,13 +182,13 @@ class Utils {
                 }
 
                 if ((typeParameters != null) && (typeParameters.size() > 0)) {
-                    formatTypeParameters(typeParameters, stringBuilder, FQNs);
+                    formatTypeParameters(info, typeParameters, stringBuilder, FQNs);
                     if (stringBuilder.length() > 0) {
                         stringBuilder.append(" ");
                     }
                 }
 
-                formatTypeMirror(returnTypeMirror, stringBuilder, FQNs);
+                stringBuilder.append(info.getTypeUtilities().getTypeName(returnTypeMirror, FQNs ? PRINT_FQN : EMPTY_TYPENAMEOPTIONS));
             }
 
             if (stringBuilder.length() > 0) {
@@ -199,14 +197,14 @@ class Utils {
 
             stringBuilder.append(methodElement.getSimpleName().toString());
             stringBuilder.append("(");
-            formatVariableElements(methodElement.getParameters(),
+            formatVariableElements(info, methodElement.getParameters(),
                 methodElement.isVarArgs(), stringBuilder, FQNs);
             stringBuilder.append(")");
 
             List<? extends TypeMirror> thrownTypesMirrorsByMethod = methodElement.getThrownTypes();
             if (!thrownTypesMirrorsByMethod.isEmpty()) {
                 stringBuilder.append(" throws "); // NOI18N
-                formatTypeMirrors(thrownTypesMirrorsByMethod, stringBuilder, FQNs);
+                formatTypeMirrors(info, thrownTypesMirrorsByMethod, stringBuilder, FQNs);
             }
 
             if (forSignature) {
@@ -231,11 +229,11 @@ class Utils {
             } else {
                 stringBuilder.append(":");
 
-                formatTypeMirror(returnTypeMirror, stringBuilder, FQNs);
+                stringBuilder.append(info.getTypeUtilities().getTypeName(returnTypeMirror, FQNs ? PRINT_FQN : EMPTY_TYPENAMEOPTIONS));
 
                 if ((typeParameters != null) && (typeParameters.size() > 0)) {
                     stringBuilder.append(":");
-                    formatTypeParameters(typeParameters, stringBuilder, FQNs);
+                    formatTypeParameters(info, typeParameters, stringBuilder, FQNs);
                 }
 
                 if (JavaMembersAndHierarchyOptions.isShowInherited()) {
@@ -265,7 +263,7 @@ class Utils {
                             } else {
                                 stringBuilder.append(" & "); // NOI18N
                             }
-                            formatTypeMirror(typeMirror, stringBuilder, FQNs);
+                            stringBuilder.append(info.getTypeUtilities().getTypeName(typeMirror, FQNs ? PRINT_FQN : EMPTY_TYPENAMEOPTIONS));
                         }
                     }
                 }
@@ -284,7 +282,7 @@ class Utils {
                     stringBuilder.append(" ");
                 }
 
-                formatTypeMirror(fieldElement.asType(), stringBuilder, FQNs);
+                stringBuilder.append(info.getTypeUtilities().getTypeName(fieldElement.asType(), FQNs ? PRINT_FQN : EMPTY_TYPENAMEOPTIONS));
             }
 
             if (stringBuilder.length() > 0) {
@@ -312,7 +310,7 @@ class Utils {
             } else {
                 stringBuilder.append(":");
 
-                formatTypeMirror(fieldElement.asType(), stringBuilder, FQNs);
+                stringBuilder.append(info.getTypeUtilities().getTypeName(fieldElement.asType(), FQNs ? PRINT_FQN : EMPTY_TYPENAMEOPTIONS));
 
                 if (JavaMembersAndHierarchyOptions.isShowInherited()) {
                     stringBuilder.append(" [");
@@ -337,7 +335,7 @@ class Utils {
         case PARAMETER:
         case LOCAL_VARIABLE:
             VariableElement variableElement = (VariableElement) element;
-            formatTypeMirror(variableElement.asType(), stringBuilder, FQNs);
+            stringBuilder.append(info.getTypeUtilities().getTypeName(variableElement.asType(), FQNs ? PRINT_FQN : EMPTY_TYPENAMEOPTIONS));
             stringBuilder.append(" ");
             stringBuilder.append(element.getSimpleName().toString());
 
@@ -345,89 +343,7 @@ class Utils {
         }
     }
     
-    static void formatTypeMirror(TypeMirror typeMirror,
-        StringBuilder stringBuilder, boolean FQNs) {
-        if (typeMirror == null) {
-            return;
-        }
-
-        boolean first = true;
-
-        switch (typeMirror.getKind()) {
-        case BOOLEAN:
-        case BYTE:
-        case CHAR:
-        case DOUBLE:
-        case FLOAT:
-        case INT:
-        case LONG:
-        case NONE:
-        case NULL:
-        case SHORT:
-        case VOID:
-            stringBuilder.append(typeMirror);
-
-            break;
-
-        case TYPEVAR:
-            TypeVariable typeVariable = (TypeVariable)typeMirror;
-            stringBuilder.append(typeVariable.asElement().getSimpleName().toString());
-            break;
-
-        case WILDCARD:
-            WildcardType wildcardType = (WildcardType)typeMirror;
-            stringBuilder.append("?");
-            if ( wildcardType.getExtendsBound() != null ) {
-                stringBuilder.append(" extends "); // NOI18N
-                formatTypeMirror(wildcardType.getExtendsBound(), stringBuilder, FQNs);
-            }
-            if ( wildcardType.getSuperBound() != null ) {
-                stringBuilder.append(" super "); // NOI18N
-                formatTypeMirror(wildcardType.getSuperBound(), stringBuilder, FQNs);
-            }
-
-            break;
-
-        case DECLARED:
-            DeclaredType declaredType = (DeclaredType) typeMirror;
-            Element element = declaredType.asElement();
-            if (element instanceof TypeElement) {
-                stringBuilder.append(
-                    FQNs ?
-                    ((TypeElement)element).getQualifiedName().toString() :
-                    element.getSimpleName().toString());
-            } else {
-                stringBuilder.append(element.getSimpleName().toString());
-            }
-            List<? extends TypeMirror> typeArgs = declaredType.getTypeArguments();
-            if ( !typeArgs.isEmpty() ) {
-                stringBuilder.append("<");
-                formatTypeMirrors(typeArgs, stringBuilder, FQNs);
-                stringBuilder.append(">");
-            }
-
-            break;
-
-        case ARRAY:
-
-            int dims = 0;
-
-            while (typeMirror.getKind() == ARRAY) {
-                dims++;
-                typeMirror = ((ArrayType) typeMirror).getComponentType();
-            }
-
-            formatTypeMirror(typeMirror, stringBuilder, FQNs);
-
-            for (int i = 0; i < dims; i++) {
-                stringBuilder.append("[]");
-            }
-
-            break;
-        }
-    }
-
-    static void formatTypeParameters(
+    static void formatTypeParameters(CompilationInfo info, 
         List<? extends TypeParameterElement> typeParameters,
         StringBuilder stringBuilder, boolean FQNs) {
         if ((typeParameters == null) || (typeParameters.size() == 0)) {
@@ -446,14 +362,14 @@ class Utils {
                     stringBuilder.append(", ");
                 }
 
-                format(typeParameterElement, stringBuilder, false, FQNs);
+                format(info, typeParameterElement, stringBuilder, false, FQNs);
             }
 
             stringBuilder.append(">");
         }
     }
 
-    static void formatVariableElements(
+    static void formatVariableElements(CompilationInfo info,
         List<? extends VariableElement> variableElements, boolean varArgs,
         StringBuilder stringBuilder, boolean FQNs) {
         if ((variableElements == null) || (variableElements.size() == 0)) {
@@ -469,7 +385,7 @@ class Utils {
                 stringBuilder.append(", ");
             }
 
-           format(variableElement, stringBuilder, false, FQNs);
+           format(info, variableElement, stringBuilder, false, FQNs);
         }
 
         if (varArgs) {
@@ -477,7 +393,7 @@ class Utils {
         }
     }
 
-    static void formatTypeMirrors(List<?extends TypeMirror> thrownTypeMirros,
+    static void formatTypeMirrors(CompilationInfo info, List<?extends TypeMirror> thrownTypeMirros,
         StringBuilder stringBuilder, boolean FQNs) {
         if ((thrownTypeMirros == null) || (thrownTypeMirros.size() == 0)) {
             return;
@@ -492,7 +408,7 @@ class Utils {
                 stringBuilder.append(", ");
             }
 
-            formatTypeMirror(typeMirror, stringBuilder, FQNs);
+            stringBuilder.append(info.getTypeUtilities().getTypeName(typeMirror, FQNs ? PRINT_FQN : EMPTY_TYPENAMEOPTIONS));
         }
     }
 
@@ -747,4 +663,7 @@ class Utils {
         }
         return null;
     }
+
+    private static TypeNameOptions[] PRINT_FQN = new TypeNameOptions[] {TypeNameOptions.PRINT_FQN};
+    private static TypeNameOptions[] EMPTY_TYPENAMEOPTIONS = new TypeNameOptions[0];
 }

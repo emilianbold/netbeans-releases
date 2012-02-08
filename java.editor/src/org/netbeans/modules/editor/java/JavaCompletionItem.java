@@ -177,10 +177,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new VariableItem(info, null, varName, substitutionOffset, newVarName, smartType, -1);
     }
 
-    public static final JavaCompletionItem createExecutableItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, boolean autoImport, int assignToVarPos, WhiteListQuery.WhiteList whiteList) {
+    public static final JavaCompletionItem createExecutableItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, boolean autoImport, int assignToVarPos, boolean memberRef, WhiteListQuery.WhiteList whiteList) {
         switch (elem.getKind()) {
             case METHOD:
-                return new MethodItem(info, elem, type, substitutionOffset, isInherited, isDeprecated, inImport, addSemicolon, smartType, autoImport, assignToVarPos, whiteList);
+                return new MethodItem(info, elem, type, substitutionOffset, isInherited, isDeprecated, inImport, addSemicolon, smartType, autoImport, assignToVarPos, memberRef, whiteList);
             case CONSTRUCTOR:
                 return new ConstructorItem(info, elem, type, substitutionOffset, isDeprecated, smartType, null, whiteList);
             default:
@@ -969,7 +969,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 if (val != 1 || ctor != null) {
                                     final JavaCompletionItem item = val == 0 ? createDefaultConstructorItem(elem, offset, true) :
                                             val == 2 || Utilities.hasAccessibleInnerClassConstructor(elem, scope, trees) ? null :
-                                            createExecutableItem(controller, ctor, (ExecutableType)controller.getTypes().asMemberOf(type, ctor), offset, false, false, false, false, true, false, -1, getWhiteList());
+                                            createExecutableItem(controller, ctor, (ExecutableType)controller.getTypes().asMemberOf(type, ctor), offset, false, false, false, false, true, false, -1, false, getWhiteList());
                                     try {
                                         final Position offPosition = doc.createPosition(offset);
                                         SwingUtilities.invokeLater(new Runnable() {
@@ -1390,6 +1390,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private boolean isDeprecated;
         private boolean inImport;
         private boolean smartType;
+        private boolean memberRef;
         private String simpleName;
         protected Set<Modifier> modifiers;
         private List<ParamDesc> params;
@@ -1403,7 +1404,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private int assignToVarPos;
         private String assignToVarText;
         
-        private MethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, boolean autoImport, int assignToVarPos, WhiteListQuery.WhiteList whiteList) {
+        private MethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, boolean autoImport, int assignToVarPos, boolean memberRef, WhiteListQuery.WhiteList whiteList) {
             super(substitutionOffset, ElementHandle.create(elem), whiteList);
             this.isInherited = isInherited;
             this.isDeprecated = isDeprecated;
@@ -1432,6 +1433,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             this.assignToVarPos = type.getReturnType().getKind() == TypeKind.VOID ? -1 : assignToVarPos;
             this.assignToVarText = this.assignToVarPos < 0 ? null : getAssignToVarText(info, type.getReturnType(), this.simpleName);
+            this.memberRef = memberRef;
         }
         
         public int getSortPriority() {
@@ -1562,8 +1564,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 final BaseDocument doc = (BaseDocument)c.getDocument();
                 final Position startPos = assignToVarPos < 0 ? null : doc.createPosition(assignToVarPos, Position.Bias.Backward);
                 final Position endPos = assignToVarText == null ? null : doc.createPosition(offset);
-                if (inImport || params.isEmpty()) {
-                    String add = inImport ? ";" : CodeStyle.getDefault(c.getDocument()).spaceBeforeMethodCallParen() ? " ()" : "()"; //NOI18N
+                if (inImport || memberRef || params.isEmpty()) {
+                    String add = inImport ? ";" : memberRef ? "" : CodeStyle.getDefault(c.getDocument()).spaceBeforeMethodCallParen() ? " ()" : "()"; //NOI18N
                     if (toAdd != null && !add.startsWith(toAdd))
                         add += toAdd;
                     super.substituteText(c, offset, len, add, assignToVar);
@@ -1765,7 +1767,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String leftText;
         
         private OverrideMethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean implement, WhiteListQuery.WhiteList whiteList) {
-            super(info, elem, type, substitutionOffset, false, false, false, false, false, false, -1, whiteList);
+            super(info, elem, type, substitutionOffset, false, false, false, false, false, false, -1, false, whiteList);
             this.implement = implement;
         }
         

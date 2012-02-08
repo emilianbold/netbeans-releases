@@ -411,6 +411,16 @@ public class DetectorTest extends TestBase {
         performTest("ImportDisambiguation");
     }
 
+    public void testLambdaAndFunctionType() throws Exception {
+        setSourceLevel("1.7");
+        performTest("LambdaAndFunctionType");
+    }
+
+    public void testExtensionMethod() throws Exception {
+        setSourceLevel("1.7");
+        performTest("ExtensionMethod");
+    }
+
     private void performTest(String fileName) throws Exception {
         performTest(fileName, new Performer() {
             public void compute(CompilationController parameter, Document doc, ErrorDescriptionSetter setter) {

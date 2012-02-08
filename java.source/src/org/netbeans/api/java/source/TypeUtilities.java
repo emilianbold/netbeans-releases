@@ -269,5 +269,11 @@ public final class TypeUtilities {
             }
             return DEFAULT_VALUE;
         }
+
+        @Override
+        public StringBuilder visitUnknown(TypeMirror t, Boolean p) {
+            return DEFAULT_VALUE.append("<unknown>");
+        }
+
     }
 }

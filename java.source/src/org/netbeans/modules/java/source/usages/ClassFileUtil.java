@@ -278,11 +278,11 @@ public class ClassFileUtil {
 		break;
 	    case DECLARED:
             {
-		sb.append('L');	    // NOI18N
-		TypeElement te = (TypeElement) ((DeclaredType)type).asElement();
-		encodeClassName(te, sb,'/');
-		sb.append(';');	    // NOI18N
-		break;
+                sb.append('L');	    // NOI18N
+                TypeElement te = (TypeElement) ((DeclaredType)type).asElement();
+                encodeClassName(te, sb,'/');
+                sb.append(';');	    // NOI18N
+                break;
             }
 	    case TYPEVAR:
             {

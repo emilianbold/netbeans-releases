@@ -337,6 +337,8 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
                 return false;
             }
             
+            if (el == null) continue; //XXX: function types
+            
             if (el.getModifiers().contains(Modifier.PUBLIC) || 
                 (el.getModifiers().contains(Modifier.PROTECTED) && //#175818: protected elements of final classes are effectivelly-package private:
                  el.getEnclosingElement() != null &&
