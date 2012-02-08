@@ -74,7 +74,7 @@ public class JavaRefactoringActionsProviderTest extends RefactoringTestBase {
         ec.open();
         ec.getOpenedPanes()[0].setCaretPosition(30);
         final AtomicInteger called = new AtomicInteger();
-        RefactoringActionsProvider.SHOW = new RefactoringActionsProvider.ShowUI() {
+        TestUtils.SHOW = new TestUtils.ShowUI() {
             @Override
             public void show(RefactoringUI ui, TopComponent activetc) {
                 assertNull(ui);

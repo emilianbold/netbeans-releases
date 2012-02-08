@@ -79,7 +79,7 @@ public class MoveRefactoringActionTest extends RefactoringTestBase {
         int expectedCount = 0;
         
         ec.getOpenedPanes()[0].setCaretPosition(file.indexOf("ass B"));
-        RefactoringActionsProvider.SHOW = new RefactoringActionsProvider.ShowUI() {
+        TestUtils.SHOW = new TestUtils.ShowUI() {
             @Override public void show(RefactoringUI ui, TopComponent activetc) {
                 assertTrue(ui instanceof MoveClassUI);
                 called.incrementAndGet();
@@ -89,7 +89,7 @@ public class MoveRefactoringActionTest extends RefactoringTestBase {
         assertEquals(++expectedCount, called.get());
         
         ec.getOpenedPanes()[0].setCaretPosition(file.indexOf("ass C"));
-        RefactoringActionsProvider.SHOW = new RefactoringActionsProvider.ShowUI() {
+        TestUtils.SHOW = new TestUtils.ShowUI() {
             @Override public void show(RefactoringUI ui, TopComponent activetc) {
                 assertTrue(ui instanceof MoveMembersUI);
                 called.incrementAndGet();
@@ -99,7 +99,7 @@ public class MoveRefactoringActionTest extends RefactoringTestBase {
         assertEquals(++expectedCount, called.get());
 
         ec.getOpenedPanes()[0].setCaretPosition(file.indexOf("oo()"));
-        RefactoringActionsProvider.SHOW = new RefactoringActionsProvider.ShowUI() {
+        TestUtils.SHOW = new TestUtils.ShowUI() {
             @Override public void show(RefactoringUI ui, TopComponent activetc) {
                 assertTrue(ui instanceof MoveMembersUI);
                 called.incrementAndGet();
