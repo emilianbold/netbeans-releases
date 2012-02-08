@@ -142,15 +142,6 @@
         </folder>
     </folder>
 
-      <folder name="Services">
-        <folder name="MIMEResolver">
-            <file name="javascript.xml" url="jsresolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript.editing.Bundle"/>
-                <attr name="position" intvalue="190"/>
-            </file>
-        </folder>
-    </folder>
-
     <folder name="OptionsDialog">
 <!--        <folder name="PreviewExamples">
             <folder name="text">
