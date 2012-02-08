@@ -39,14 +39,24 @@
 
 package org.netbeans.modules.java.hints.jackpot.refactoring;
 
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.awt.Component;
+import java.util.EnumSet;
+import java.util.Set;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.ui.JavaRefactoringUIFactory;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -54,16 +64,19 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-public class ReplaceConstructorRefactoringUI implements RefactoringUI {
+public class ReplaceConstructorRefactoringUI implements RefactoringUI, JavaRefactoringUIFactory {
 
-    private final TreePathHandle constructor;
+    private TreePathHandle constructor;
     private String factoryName;
     private ReplaceConstructorWithFactory panel;
     private String name;
 
-    public ReplaceConstructorRefactoringUI(TreePathHandle constructor, String name) {
+    private ReplaceConstructorRefactoringUI(TreePathHandle constructor, String name) {
         this.constructor = constructor;
         this.name = name;
+    }
+
+    private ReplaceConstructorRefactoringUI() {
     }
 
     @Override
@@ -130,6 +143,31 @@ public class ReplaceConstructorRefactoringUI implements RefactoringUI {
     @Override
     public HelpCtx getHelpCtx() {
         return null;
+    }
+
+    @Override
+    public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
+        assert handles.length == 1;
+        TreePath path = handles[0].resolve(info);
+
+        Set<Tree.Kind> treeKinds = EnumSet.of(
+                Tree.Kind.NEW_CLASS,
+                Tree.Kind.METHOD);
+
+        while (path != null && !treeKinds.contains(path.getLeaf().getKind())) {
+            path = path.getParentPath();
+        }
+        if (path != null && treeKinds.contains(path.getLeaf().getKind())) {
+            Element selected = info.getTrees().getElement(path);
+            if (selected.getKind() == ElementKind.CONSTRUCTOR) {
+                return new ReplaceConstructorRefactoringUI(TreePathHandle.create(selected, info), selected.getEnclosingElement().getSimpleName().toString());
+            }
+        }
+        return null;
+    }
+    
+    public static JavaRefactoringUIFactory factory() {
+        return new ReplaceConstructorRefactoringUI();
     }
 
 }

@@ -38,6 +38,9 @@
  */
 package org.netbeans.modules.java.hints.jackpot.refactoring;
 
+import javax.lang.model.element.ElementKind;
+import org.netbeans.api.java.source.ui.ScanDialog;
+import org.netbeans.modules.refactoring.java.ui.ContextAnalyzer;
 import org.netbeans.modules.refactoring.java.ui.JavaRefactoringGlobalAction;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -65,11 +68,12 @@ public final class ReplaceConstructorAction extends JavaRefactoringGlobalAction 
     }
 
     protected boolean enable(Lookup context) {
-        return RefactoringActionsProviderExt.canReplaceConstructor(context);
+        return ContextAnalyzer.canRefactorSingle(context, true);
     }
 
     @Override
     public void performAction(Lookup context) {
-        RefactoringActionsProviderExt.doReplaceConstructor(context);
+        Runnable task = ContextAnalyzer.createTask(context, ReplaceConstructorRefactoringUI.factory());
+        ScanDialog.runWhenScanFinished(task, getName());
     }
 }

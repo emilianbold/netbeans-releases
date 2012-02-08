@@ -39,47 +39,24 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.hints.jackpot.refactoring;
+package org.netbeans.modules.refactoring.java.ui;
 
-import javax.lang.model.element.ElementKind;
-import org.netbeans.api.java.source.ui.ScanDialog;
-import org.netbeans.modules.refactoring.java.ui.ContextAnalyzer;
-import org.netbeans.modules.refactoring.java.ui.JavaRefactoringGlobalAction;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.openide.filesystems.FileObject;
 
 /**
- * @author Jan Becicka
+ * TODO: should be API
+ * @author beci
  */
-@ActionID(id = "org.netbeans.modules.java.hints.jackpot.refactoring.ReplaceConstructorWithBuilderAction", category = "Refactoring")
-@ActionRegistration(displayName = "#LBL_ReplaceConstructorWithBuilderAction")
-@ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "ReplaceConstructorWithBuilderAction", position = 1825)
-public final class ReplaceConstructorWithBuilderAction extends JavaRefactoringGlobalAction {
-
-    public ReplaceConstructorWithBuilderAction() {
-        super(NbBundle.getMessage(ReplaceConstructorAction.class, "LBL_ReplaceConstructorWithBuilderAction"), null); // NOI18N
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-    }
-
-    public org.openide.util.HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    protected boolean asynchronous() {
-        return false;
-    }
-
-    protected boolean enable(Lookup context) {
-        return ContextAnalyzer.canRefactorSingle(context, true);
-    }
-
-    @Override
-    public void performAction(Lookup context) {
-        Runnable task = ContextAnalyzer.createTask(context, ReplaceConstructorWithBuilderUI.factory());
-        ScanDialog.runWhenScanFinished(task, getName());
-    }
+public interface JavaRefactoringUIFactory {
+    
+    public abstract RefactoringUI create(
+            CompilationInfo info,
+            TreePathHandle[] handles,
+            FileObject[] files,
+            NonRecursiveFolder[] packages);
+    
 }
