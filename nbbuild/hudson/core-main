@@ -58,6 +58,7 @@ maven.indexer,\
 maven.junit,\
 maven.model,\
 maven.osgi,\
+netbinox,\
 nbjunit,\
 o.apache.tools.ant.module,\
 o.n.bootstrap,\
