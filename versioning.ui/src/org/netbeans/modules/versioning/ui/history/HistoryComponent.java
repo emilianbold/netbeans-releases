@@ -50,7 +50,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
@@ -73,16 +72,15 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.util.Utils;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.history.LinkButton;
-import org.netbeans.modules.versioning.spi.VersioningSupport;
-import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.ui.history.RevisionNode.Filter;
 import org.netbeans.modules.versioning.ui.options.HistoryOptions;
 import org.openide.cookies.SaveCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
@@ -114,7 +112,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     private Toolbar toolBar;
     private HistoryDiffView diffView;
     
-    private File[] files;
+    private VCSFileProxy[] files;
     private InstanceContent activatedNodesContent;
     private ProxyLookup lookup;
     private VersioningSystem versioningSystem;
@@ -132,33 +130,33 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         this();
         DataObject dataObject = context.lookup(DataObject.class);
 
-        List<File> filesList = new LinkedList<File>();
+        List<VCSFileProxy> filesList = new LinkedList<VCSFileProxy>();
         if (dataObject instanceof DataShadow) {
             dataObject = ((DataShadow) dataObject).getOriginal();
         }
         if (dataObject != null) {
-            Collection<File> doFiles = toFileCollection(dataObject.files());
+            Collection<VCSFileProxy> doFiles = toFileCollection(dataObject.files());
             filesList.addAll(doFiles);
         }
-        files = filesList.toArray(new File[filesList.size()]);
-        VersioningSystem vs = VersioningSupport.getOwner(files[0]);
+        files = filesList.toArray(new VCSFileProxy[filesList.size()]);
+        VersioningSystem vs = files.length > 0 ? Utils.getOwner(files[0]) : null;
         init(vs, files);    
     }
     
-    private Collection<File> toFileCollection(Collection<? extends FileObject> fileObjects) {
-        Set<File> ret = new HashSet<File>(fileObjects.size());
+    private Collection<VCSFileProxy> toFileCollection(Collection<? extends FileObject> fileObjects) {
+        Set<VCSFileProxy> ret = new HashSet<VCSFileProxy>(fileObjects.size());
         for (FileObject fo : fileObjects) {
-            ret.add(FileUtil.toFile(fo));
+            ret.add(VCSFileProxy.createFileProxy(fo));
         }
         ret.remove(null);
         return ret;
     }        
 
-    private void init(VersioningSystem vs, final File... files) {   
+    private void init(VersioningSystem vs, final VCSFileProxy... files) {   
         init(vs, false, files);
     }
     
-    public void init(VersioningSystem vs, boolean refresh, final File... files) {   
+    public void init(VersioningSystem vs, boolean refresh, final VCSFileProxy... files) {   
         this.versioningSystem = vs;
         if(toolBar == null) {
             toolBar = new Toolbar(vs, files);
@@ -199,7 +197,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(Utils.EVENT_VERSIONED_ROOTS.equals(evt.getPropertyName())) {
-            final VersioningSystem vs = VersioningSupport.getOwner(files[0]);
+            final VersioningSystem vs = Utils.getOwner(files[0]);
             if(versioningSystem != vs) {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
@@ -272,7 +270,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         if(files.length == 0) {
             return CloseOperationState.STATE_OK;
         }
-        FileObject fo = FileUtil.toFileObject(files[0]);
+        FileObject fo = files[0].toFileObject();
         if(fo != null) {
             final DataObject dataObject;
             try {
@@ -371,7 +369,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         private final Separator separator1;
         private final Separator separator2;
         
-        private Toolbar(VersioningSystem vs, final File... files) {
+        private Toolbar(VersioningSystem vs, final VCSFileProxy... files) {
             setBorder(new EmptyBorder(0, 0, 0, 0));
             setOpaque(false);
             setFloatable(false);
@@ -456,10 +454,10 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         void setup(VersioningSystem vs) {
             boolean visible = vs != null && vs.getVCSHistoryProvider() != null;
             if(visible) { 
-                searchHistoryButton.setText(NbBundle.getMessage(this.getClass(), "LBL_ShowVersioningHistory", new Object[] {vs.getProperty(VersioningSystem.PROP_DISPLAY_NAME)}));
+                searchHistoryButton.setText(NbBundle.getMessage(this.getClass(), "LBL_ShowVersioningHistory", new Object[] {vs.getDisplayName()}));
                 Filter[] filters = new Filter[] {
                     new AllFilter(), 
-                    new VCSFilter((String) vs.getProperty(VersioningSystem.PROP_DISPLAY_NAME)), 
+                    new VCSFilter(vs.getDisplayName()), 
                     new LHFilter(),
                     new ByUserFilter(),
                     new ByMsgFilter()};
