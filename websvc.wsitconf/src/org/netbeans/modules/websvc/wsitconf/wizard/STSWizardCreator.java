@@ -240,6 +240,7 @@ public class STSWizardCreator {
         JavaSource targetSource = JavaSource.forFileObject(implClassFo);
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
 
+            @Override
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
@@ -248,21 +249,13 @@ public class STSWizardCreator {
                     ClassTree javaClass = genUtils.getClassTree();
                     ClassTree modifiedClass;
                     
-                    // add implementation clause
-                    TypeElement provider = workingCopy.getElements().getTypeElement("javax.xml.ws.Provider"); //NOI18N
-                    TypeElement source = workingCopy.getElements().getTypeElement("javax.xml.transform.Source"); //NOI18N
-                    TypeElement msgContext = workingCopy.getElements().getTypeElement("javax.xml.ws.handler.MessageContext"); //NOI18N
-                    TypeElement resource = workingCopy.getElements().getTypeElement("javax.annotation.Resource"); //NOI18N
-                    TypeElement wsContext = workingCopy.getElements().getTypeElement("javax.xml.ws.WebServiceContext"); //NOI18N
-                    TypeElement wsProvider = workingCopy.getElements().getTypeElement("javax.xml.ws.WebServiceProvider"); //NOI18N
-
                     // not found on classpath, because the runtime jar is not on classpath by default
                     String baseStsImpl = "com.sun.xml.ws.security.trust.sts.BaseSTSImpl"; //NOI18N
 
                     // create parameters
                     List<AnnotationTree> annotations = new ArrayList<AnnotationTree>();
                     AnnotationTree resourceAnnotation = make.Annotation(
-                        make.QualIdent(resource), 
+                        make.QualIdent("javax.annotation.Resource"), //NOI18N
                         Collections.<ExpressionTree>emptyList()
                     );
                     annotations.add(resourceAnnotation);
@@ -275,14 +268,16 @@ public class STSWizardCreator {
                                 annotations
                             ),
                             "context", // name
-                            make.QualIdent(wsContext), // parameter type
+                            make.QualIdent("javax.xml.ws.WebServiceContext"), //NOI18N parameter type
                             null // initializer - does not make sense in parameters.
                     ));
                     
                     modifiedClass = genUtils.addClassFields(javaClass, classField);
                     
-                    ParameterizedTypeTree t = make.ParameterizedType(make.QualIdent(provider), 
-                            Collections.singletonList(make.QualIdent(source)) );
+                    ParameterizedTypeTree t = make.ParameterizedType(
+                            make.QualIdent("javax.xml.ws.Provider"), //NOI18N
+                            Collections.singletonList(
+                                    make.QualIdent("javax.xml.transform.Source"))); //NOI18N
                     modifiedClass = make.addClassImplementsClause(modifiedClass, t);
                     modifiedClass = make.setExtends(modifiedClass, make.Identifier(baseStsImpl));
                     
@@ -297,7 +292,7 @@ public class STSWizardCreator {
                     attrs.add(
                         make.Assignment(make.Identifier("wsdlLocation"), make.Literal(wsdlLocation))); //NOI18N
                     AnnotationTree WSAnnotation = make.Annotation(
-                        make.QualIdent(wsProvider),
+                        make.QualIdent("javax.xml.ws.WebServiceProvider"), //NOI18N
                         attrs
                     );
                     modifiedClass = genUtils.addAnnotation(modifiedClass, WSAnnotation);
@@ -306,9 +301,8 @@ public class STSWizardCreator {
                     TypeElement modeAn = workingCopy.getElements().getTypeElement("javax.xml.ws.ServiceMode"); //NOI18N
                     List<ExpressionTree> attrsM = new ArrayList<ExpressionTree>();
 
-                    TypeElement te = workingCopy.getElements().getTypeElement("javax.xml.ws.Service.Mode");
-                    
-                    ExpressionTree mstree = make.MemberSelect(make.QualIdent(te), "PAYLOAD");
+                    ExpressionTree mstree = make.MemberSelect(
+                            make.QualIdent("javax.xml.ws.Service.Mode"), "PAYLOAD");    // NOI18N
                     
                     attrsM.add(
                         make.Assignment(make.Identifier("value"), mstree)); //NOI18N
@@ -320,12 +314,12 @@ public class STSWizardCreator {
 
                     // add @Stateless annotation
                     if (projectType == EJB_PROJECT_TYPE) {//EJB project
-                        TypeElement StatelessAn = workingCopy.getElements().getTypeElement("javax.ejb.Stateless"); //NOI18N                   
-                        AnnotationTree StatelessAnnotation = make.Annotation(
-                            make.QualIdent(StatelessAn), 
+                        AnnotationTree statelessAnnotation = make.Annotation(
+                                make.QualIdent("javax.ejb.Stateless"),  // NOI18N
                             Collections.<ExpressionTree>emptyList()
                         );
-                        modifiedClass = genUtils.addAnnotation(modifiedClass, StatelessAnnotation);
+                        modifiedClass = genUtils.addAnnotation(modifiedClass, 
+                                statelessAnnotation);
                     }
 
                     // create parameters
@@ -337,7 +331,7 @@ public class STSWizardCreator {
                                 Collections.<AnnotationTree>emptyList()
                             ),
                             "rstElement", // name
-                            make.QualIdent(source), // parameter type
+                            make.QualIdent("javax.xml.transform.Source"), //NOI18N parameter type
                             null // initializer - does not make sense in parameters.
                     ));
 
@@ -352,7 +346,7 @@ public class STSWizardCreator {
                     MethodTree method = make.Method(
                             methodModifiers, // public
                             "invoke", // operation name
-                            make.QualIdent(source), // return type 
+                            make.QualIdent("javax.xml.transform.Source"), //NOI18N return type 
                             Collections.<TypeParameterTree>emptyList(), // type parameters - none
                             params,
                             exc, // throws 
@@ -372,7 +366,7 @@ public class STSWizardCreator {
                     MethodTree methodMsgContext = make.Method(
                             msgContextModifiers, // public
                             "getMessageContext", // operation name
-                            make.QualIdent(msgContext), // return type 
+                            make.QualIdent("javax.xml.ws.handler.MessageContext"), //NOI18N return type 
                             Collections.<TypeParameterTree>emptyList(), // type parameters - none
                             Collections.<VariableTree>emptyList(),
                             excMsg, // throws 
@@ -385,6 +379,7 @@ public class STSWizardCreator {
                 }
             }
 
+            @Override
             public void cancel() { 
             }
         };

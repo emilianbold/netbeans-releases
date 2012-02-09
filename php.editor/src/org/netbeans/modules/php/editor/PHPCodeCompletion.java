@@ -298,11 +298,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             request.prefix = prefix;
             request.index = ElementQueryFactory.getIndexQuery(info);
 
-            try {
-                request.currentlyEditedFileURL = fileObject.getURL().toString();
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            request.currentlyEditedFileURL = fileObject.toURL().toString();
             switch (context) {
                 case DEFAULT_PARAMETER_VALUE:
                     final Prefix nameKindPrefix = NameKind.prefix(prefix);

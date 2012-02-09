@@ -9,7 +9,7 @@
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="PHP_CONTENT" foreColor="000000"/>
-    
+
     <fontcolor name="comment" default="comment" />
     <fontcolor name="phpdockeyword" default="comment">
         <font style="bold"/>
@@ -23,9 +23,10 @@
         <font style="italic"/>
     </fontcolor>
     <fontcolor name="PHP_VARIABLE" foreColor="6d3206"/>
-    <fontcolor name="heredocdelimiter" foreColor="6c3d03"/>    
+    <fontcolor name="heredocdelimiter" foreColor="6c3d03"/>
     <fontcolor name="PHP_STRING" default="identifier">
-    </fontcolor>    
+    </fontcolor>
+    <fontcolor name="number" default="number" foreColor="ff00ff" />
     <!--<fontcolor name="FLOAT_LITERAL" default="number"/>
     <fontcolor name="ANY_OPERATOR" default="operator"/>
     <fontcolor name="INSTANCE_VAR" default="field"/>
@@ -102,8 +103,8 @@
 
     <!--mark occurrences:-->
     <fontcolor name="mark-occurrences" bgColor="ECEBA3"/>
-    
-    <!-- code coverage --> 
+
+    <!-- code coverage -->
     <fontcolor name="covered" default="covered" />
     <fontcolor name="uncovered" default="uncovered" />
     <fontcolor name="inferred" default="inferred" />

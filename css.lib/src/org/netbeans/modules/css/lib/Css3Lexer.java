@@ -1,4 +1,4 @@
-// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2011-12-05 12:10:27
+// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2012-02-09 15:14:26
 
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -202,8 +202,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = GEN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:753:25: ( '@@@' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:753:27: '@@@'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:758:25: ( '@@@' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:758:27: '@@@'
             {
             match("@@@"); if (state.failed) return ;
 
@@ -221,8 +221,8 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "HEXCHAR"
     public final void mHEXCHAR() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:755:25: ( ( 'a' .. 'f' | 'A' .. 'F' | '0' .. '9' ) )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:755:27: ( 'a' .. 'f' | 'A' .. 'F' | '0' .. '9' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:760:25: ( ( 'a' .. 'f' | 'A' .. 'F' | '0' .. '9' ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:760:27: ( 'a' .. 'f' | 'A' .. 'F' | '0' .. '9' )
             {
             if ( (input.LA(1)>='0' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='F')||(input.LA(1)>='a' && input.LA(1)<='f') ) {
                 input.consume();
@@ -246,8 +246,8 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "NONASCII"
     public final void mNONASCII() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:757:25: ( '\\u0080' .. '\\uFFFF' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:757:27: '\\u0080' .. '\\uFFFF'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:762:25: ( '\\u0080' .. '\\uFFFF' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:762:27: '\\u0080' .. '\\uFFFF'
             {
             matchRange('\u0080','\uFFFF'); if (state.failed) return ;
 
@@ -262,12 +262,12 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "UNICODE"
     public final void mUNICODE() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:759:25: ( '\\\\' HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR )? )? )? )? )? ( '\\r' | '\\n' | '\\t' | '\\f' | ' ' )* )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:759:27: '\\\\' HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR )? )? )? )? )? ( '\\r' | '\\n' | '\\t' | '\\f' | ' ' )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:764:25: ( '\\\\' HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR )? )? )? )? )? ( '\\r' | '\\n' | '\\t' | '\\f' | ' ' )* )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:764:27: '\\\\' HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR )? )? )? )? )? ( '\\r' | '\\n' | '\\t' | '\\f' | ' ' )*
             {
             match('\\'); if (state.failed) return ;
             mHEXCHAR(); if (state.failed) return ;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:760:33: ( HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR )? )? )? )? )?
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:765:33: ( HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR )? )? )? )? )?
             int alt5=2;
             int LA5_0 = input.LA(1);
 
@@ -276,10 +276,10 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt5) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:760:34: HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR )? )? )? )?
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:765:34: HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR )? )? )? )?
                     {
                     mHEXCHAR(); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:761:37: ( HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR )? )? )? )?
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:766:37: ( HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR )? )? )? )?
                     int alt4=2;
                     int LA4_0 = input.LA(1);
 
@@ -288,10 +288,10 @@ public class Css3Lexer extends Lexer {
                     }
                     switch (alt4) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:761:38: HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:766:38: HEXCHAR ( HEXCHAR ( HEXCHAR ( HEXCHAR )? )? )?
                             {
                             mHEXCHAR(); if (state.failed) return ;
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:762:41: ( HEXCHAR ( HEXCHAR ( HEXCHAR )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:767:41: ( HEXCHAR ( HEXCHAR ( HEXCHAR )? )? )?
                             int alt3=2;
                             int LA3_0 = input.LA(1);
 
@@ -300,10 +300,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt3) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:762:42: HEXCHAR ( HEXCHAR ( HEXCHAR )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:767:42: HEXCHAR ( HEXCHAR ( HEXCHAR )? )?
                                     {
                                     mHEXCHAR(); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:763:45: ( HEXCHAR ( HEXCHAR )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:768:45: ( HEXCHAR ( HEXCHAR )? )?
                                     int alt2=2;
                                     int LA2_0 = input.LA(1);
 
@@ -312,10 +312,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt2) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:763:46: HEXCHAR ( HEXCHAR )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:768:46: HEXCHAR ( HEXCHAR )?
                                             {
                                             mHEXCHAR(); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:763:54: ( HEXCHAR )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:768:54: ( HEXCHAR )?
                                             int alt1=2;
                                             int LA1_0 = input.LA(1);
 
@@ -324,7 +324,7 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt1) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:763:54: HEXCHAR
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:768:54: HEXCHAR
                                                     {
                                                     mHEXCHAR(); if (state.failed) return ;
 
@@ -357,7 +357,7 @@ public class Css3Lexer extends Lexer {
 
             }
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:767:33: ( '\\r' | '\\n' | '\\t' | '\\f' | ' ' )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:772:33: ( '\\r' | '\\n' | '\\t' | '\\f' | ' ' )*
             loop6:
             do {
                 int alt6=2;
@@ -403,7 +403,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "ESCAPE"
     public final void mESCAPE() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:769:25: ( UNICODE | '\\\\' ~ ( '\\r' | '\\n' | '\\f' | HEXCHAR ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:774:25: ( UNICODE | '\\\\' ~ ( '\\r' | '\\n' | '\\f' | HEXCHAR ) )
             int alt7=2;
             int LA7_0 = input.LA(1);
 
@@ -433,14 +433,14 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt7) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:769:27: UNICODE
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:774:27: UNICODE
                     {
                     mUNICODE(); if (state.failed) return ;
 
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:769:37: '\\\\' ~ ( '\\r' | '\\n' | '\\f' | HEXCHAR )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:774:37: '\\\\' ~ ( '\\r' | '\\n' | '\\f' | HEXCHAR )
                     {
                     match('\\'); if (state.failed) return ;
                     if ( (input.LA(1)>='\u0000' && input.LA(1)<='\t')||input.LA(1)=='\u000B'||(input.LA(1)>='\u000E' && input.LA(1)<='/')||(input.LA(1)>=':' && input.LA(1)<='@')||(input.LA(1)>='G' && input.LA(1)<='`')||(input.LA(1)>='g' && input.LA(1)<='\uFFFF') ) {
@@ -467,7 +467,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "NMSTART"
     public final void mNMSTART() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:771:25: ( '_' | 'a' .. 'z' | 'A' .. 'Z' | NONASCII | ESCAPE )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:776:25: ( '_' | 'a' .. 'z' | 'A' .. 'Z' | NONASCII | ESCAPE )
             int alt8=5;
             int LA8_0 = input.LA(1);
 
@@ -495,35 +495,35 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt8) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:771:27: '_'
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:776:27: '_'
                     {
                     match('_'); if (state.failed) return ;
 
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:772:27: 'a' .. 'z'
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:777:27: 'a' .. 'z'
                     {
                     matchRange('a','z'); if (state.failed) return ;
 
                     }
                     break;
                 case 3 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:773:27: 'A' .. 'Z'
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:778:27: 'A' .. 'Z'
                     {
                     matchRange('A','Z'); if (state.failed) return ;
 
                     }
                     break;
                 case 4 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:774:27: NONASCII
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:779:27: NONASCII
                     {
                     mNONASCII(); if (state.failed) return ;
 
                     }
                     break;
                 case 5 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:775:27: ESCAPE
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:780:27: ESCAPE
                     {
                     mESCAPE(); if (state.failed) return ;
 
@@ -540,7 +540,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "NMCHAR"
     public final void mNMCHAR() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:778:25: ( '_' | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '-' | NONASCII | ESCAPE )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:783:25: ( '_' | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '-' | NONASCII | ESCAPE )
             int alt9=7;
             int LA9_0 = input.LA(1);
 
@@ -574,49 +574,49 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt9) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:778:27: '_'
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:783:27: '_'
                     {
                     match('_'); if (state.failed) return ;
 
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:779:27: 'a' .. 'z'
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:784:27: 'a' .. 'z'
                     {
                     matchRange('a','z'); if (state.failed) return ;
 
                     }
                     break;
                 case 3 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:780:27: 'A' .. 'Z'
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:785:27: 'A' .. 'Z'
                     {
                     matchRange('A','Z'); if (state.failed) return ;
 
                     }
                     break;
                 case 4 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:781:27: '0' .. '9'
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:786:27: '0' .. '9'
                     {
                     matchRange('0','9'); if (state.failed) return ;
 
                     }
                     break;
                 case 5 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:782:27: '-'
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:787:27: '-'
                     {
                     match('-'); if (state.failed) return ;
 
                     }
                     break;
                 case 6 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:783:27: NONASCII
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:788:27: NONASCII
                     {
                     mNONASCII(); if (state.failed) return ;
 
                     }
                     break;
                 case 7 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:784:27: ESCAPE
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:789:27: ESCAPE
                     {
                     mESCAPE(); if (state.failed) return ;
 
@@ -633,10 +633,10 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "NAME"
     public final void mNAME() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:787:25: ( ( NMCHAR )+ )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:787:27: ( NMCHAR )+
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:792:25: ( ( NMCHAR )+ )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:792:27: ( NMCHAR )+
             {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:787:27: ( NMCHAR )+
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:792:27: ( NMCHAR )+
             int cnt10=0;
             loop10:
             do {
@@ -650,7 +650,7 @@ public class Css3Lexer extends Lexer {
 
                 switch (alt10) {
             	case 1 :
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:787:27: NMCHAR
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:792:27: NMCHAR
             	    {
             	    mNMCHAR(); if (state.failed) return ;
 
@@ -679,94 +679,94 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "URL"
     public final void mURL() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:789:25: ( ( '[' | '!' | '#' | '$' | '%' | '&' | '*' | '~' | '.' | ':' | '/' | NMCHAR )* )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:789:27: ( '[' | '!' | '#' | '$' | '%' | '&' | '*' | '~' | '.' | ':' | '/' | NMCHAR )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:794:25: ( ( '[' | '!' | '#' | '$' | '%' | '&' | '*' | '~' | '.' | ':' | '/' | NMCHAR )* )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:794:27: ( '[' | '!' | '#' | '$' | '%' | '&' | '*' | '~' | '.' | ':' | '/' | NMCHAR )*
             {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:789:27: ( '[' | '!' | '#' | '$' | '%' | '&' | '*' | '~' | '.' | ':' | '/' | NMCHAR )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:794:27: ( '[' | '!' | '#' | '$' | '%' | '&' | '*' | '~' | '.' | ':' | '/' | NMCHAR )*
             loop11:
             do {
                 int alt11=13;
                 alt11 = dfa11.predict(input);
                 switch (alt11) {
             	case 1 :
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:790:31: '['
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:795:31: '['
             	    {
             	    match('['); if (state.failed) return ;
 
             	    }
             	    break;
             	case 2 :
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:790:35: '!'
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:795:35: '!'
             	    {
             	    match('!'); if (state.failed) return ;
 
             	    }
             	    break;
             	case 3 :
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:790:39: '#'
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:795:39: '#'
             	    {
             	    match('#'); if (state.failed) return ;
 
             	    }
             	    break;
             	case 4 :
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:790:43: '$'
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:795:43: '$'
             	    {
             	    match('$'); if (state.failed) return ;
 
             	    }
             	    break;
             	case 5 :
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:790:47: '%'
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:795:47: '%'
             	    {
             	    match('%'); if (state.failed) return ;
 
             	    }
             	    break;
             	case 6 :
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:790:51: '&'
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:795:51: '&'
             	    {
             	    match('&'); if (state.failed) return ;
 
             	    }
             	    break;
             	case 7 :
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:790:55: '*'
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:795:55: '*'
             	    {
             	    match('*'); if (state.failed) return ;
 
             	    }
             	    break;
             	case 8 :
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:790:59: '~'
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:795:59: '~'
             	    {
             	    match('~'); if (state.failed) return ;
 
             	    }
             	    break;
             	case 9 :
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:790:63: '.'
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:795:63: '.'
             	    {
             	    match('.'); if (state.failed) return ;
 
             	    }
             	    break;
             	case 10 :
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:790:67: ':'
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:795:67: ':'
             	    {
             	    match(':'); if (state.failed) return ;
 
             	    }
             	    break;
             	case 11 :
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:790:71: '/'
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:795:71: '/'
             	    {
             	    match('/'); if (state.failed) return ;
 
             	    }
             	    break;
             	case 12 :
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:791:31: NMCHAR
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:796:31: NMCHAR
             	    {
             	    mNMCHAR(); if (state.failed) return ;
 
@@ -790,7 +790,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "A"
     public final void mA() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:798:17: ( ( 'a' | 'A' ) | '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '1' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:803:17: ( ( 'a' | 'A' ) | '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '1' )
             int alt16=2;
             int LA16_0 = input.LA(1);
 
@@ -809,7 +809,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt16) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:798:21: ( 'a' | 'A' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:803:21: ( 'a' | 'A' )
                     {
                     if ( input.LA(1)=='A'||input.LA(1)=='a' ) {
                         input.consume();
@@ -825,10 +825,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:799:21: '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '1'
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:804:21: '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '1'
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:799:26: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:804:26: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                     int alt15=2;
                     int LA15_0 = input.LA(1);
 
@@ -837,10 +837,10 @@ public class Css3Lexer extends Lexer {
                     }
                     switch (alt15) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:799:27: '0' ( '0' ( '0' ( '0' )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:804:27: '0' ( '0' ( '0' ( '0' )? )? )?
                             {
                             match('0'); if (state.failed) return ;
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:799:31: ( '0' ( '0' ( '0' )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:804:31: ( '0' ( '0' ( '0' )? )? )?
                             int alt14=2;
                             int LA14_0 = input.LA(1);
 
@@ -849,10 +849,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt14) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:799:32: '0' ( '0' ( '0' )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:804:32: '0' ( '0' ( '0' )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:799:36: ( '0' ( '0' )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:804:36: ( '0' ( '0' )? )?
                                     int alt13=2;
                                     int LA13_0 = input.LA(1);
 
@@ -861,10 +861,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt13) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:799:37: '0' ( '0' )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:804:37: '0' ( '0' )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:799:41: ( '0' )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:804:41: ( '0' )?
                                             int alt12=2;
                                             int LA12_0 = input.LA(1);
 
@@ -873,7 +873,7 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt12) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:799:41: '0'
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:804:41: '0'
                                                     {
                                                     match('0'); if (state.failed) return ;
 
@@ -925,7 +925,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "B"
     public final void mB() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:801:17: ( ( 'b' | 'B' ) | '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '2' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:806:17: ( ( 'b' | 'B' ) | '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '2' )
             int alt21=2;
             int LA21_0 = input.LA(1);
 
@@ -944,7 +944,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt21) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:801:21: ( 'b' | 'B' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:806:21: ( 'b' | 'B' )
                     {
                     if ( input.LA(1)=='B'||input.LA(1)=='b' ) {
                         input.consume();
@@ -960,10 +960,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:802:21: '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '2'
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:807:21: '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '2'
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:802:26: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:807:26: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                     int alt20=2;
                     int LA20_0 = input.LA(1);
 
@@ -972,10 +972,10 @@ public class Css3Lexer extends Lexer {
                     }
                     switch (alt20) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:802:27: '0' ( '0' ( '0' ( '0' )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:807:27: '0' ( '0' ( '0' ( '0' )? )? )?
                             {
                             match('0'); if (state.failed) return ;
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:802:31: ( '0' ( '0' ( '0' )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:807:31: ( '0' ( '0' ( '0' )? )? )?
                             int alt19=2;
                             int LA19_0 = input.LA(1);
 
@@ -984,10 +984,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt19) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:802:32: '0' ( '0' ( '0' )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:807:32: '0' ( '0' ( '0' )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:802:36: ( '0' ( '0' )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:807:36: ( '0' ( '0' )? )?
                                     int alt18=2;
                                     int LA18_0 = input.LA(1);
 
@@ -996,10 +996,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt18) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:802:37: '0' ( '0' )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:807:37: '0' ( '0' )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:802:41: ( '0' )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:807:41: ( '0' )?
                                             int alt17=2;
                                             int LA17_0 = input.LA(1);
 
@@ -1008,7 +1008,7 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt17) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:802:41: '0'
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:807:41: '0'
                                                     {
                                                     match('0'); if (state.failed) return ;
 
@@ -1060,7 +1060,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "C"
     public final void mC() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:804:17: ( ( 'c' | 'C' ) | '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '3' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:809:17: ( ( 'c' | 'C' ) | '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '3' )
             int alt26=2;
             int LA26_0 = input.LA(1);
 
@@ -1079,7 +1079,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt26) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:804:21: ( 'c' | 'C' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:809:21: ( 'c' | 'C' )
                     {
                     if ( input.LA(1)=='C'||input.LA(1)=='c' ) {
                         input.consume();
@@ -1095,10 +1095,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:805:21: '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '3'
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:810:21: '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '3'
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:805:26: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:810:26: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                     int alt25=2;
                     int LA25_0 = input.LA(1);
 
@@ -1107,10 +1107,10 @@ public class Css3Lexer extends Lexer {
                     }
                     switch (alt25) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:805:27: '0' ( '0' ( '0' ( '0' )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:810:27: '0' ( '0' ( '0' ( '0' )? )? )?
                             {
                             match('0'); if (state.failed) return ;
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:805:31: ( '0' ( '0' ( '0' )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:810:31: ( '0' ( '0' ( '0' )? )? )?
                             int alt24=2;
                             int LA24_0 = input.LA(1);
 
@@ -1119,10 +1119,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt24) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:805:32: '0' ( '0' ( '0' )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:810:32: '0' ( '0' ( '0' )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:805:36: ( '0' ( '0' )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:810:36: ( '0' ( '0' )? )?
                                     int alt23=2;
                                     int LA23_0 = input.LA(1);
 
@@ -1131,10 +1131,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt23) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:805:37: '0' ( '0' )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:810:37: '0' ( '0' )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:805:41: ( '0' )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:810:41: ( '0' )?
                                             int alt22=2;
                                             int LA22_0 = input.LA(1);
 
@@ -1143,7 +1143,7 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt22) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:805:41: '0'
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:810:41: '0'
                                                     {
                                                     match('0'); if (state.failed) return ;
 
@@ -1195,7 +1195,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "D"
     public final void mD() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:807:17: ( ( 'd' | 'D' ) | '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '4' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:812:17: ( ( 'd' | 'D' ) | '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '4' )
             int alt31=2;
             int LA31_0 = input.LA(1);
 
@@ -1214,7 +1214,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt31) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:807:21: ( 'd' | 'D' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:812:21: ( 'd' | 'D' )
                     {
                     if ( input.LA(1)=='D'||input.LA(1)=='d' ) {
                         input.consume();
@@ -1230,10 +1230,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:808:21: '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '4'
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:813:21: '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '4'
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:808:26: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:813:26: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                     int alt30=2;
                     int LA30_0 = input.LA(1);
 
@@ -1242,10 +1242,10 @@ public class Css3Lexer extends Lexer {
                     }
                     switch (alt30) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:808:27: '0' ( '0' ( '0' ( '0' )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:813:27: '0' ( '0' ( '0' ( '0' )? )? )?
                             {
                             match('0'); if (state.failed) return ;
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:808:31: ( '0' ( '0' ( '0' )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:813:31: ( '0' ( '0' ( '0' )? )? )?
                             int alt29=2;
                             int LA29_0 = input.LA(1);
 
@@ -1254,10 +1254,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt29) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:808:32: '0' ( '0' ( '0' )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:813:32: '0' ( '0' ( '0' )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:808:36: ( '0' ( '0' )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:813:36: ( '0' ( '0' )? )?
                                     int alt28=2;
                                     int LA28_0 = input.LA(1);
 
@@ -1266,10 +1266,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt28) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:808:37: '0' ( '0' )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:813:37: '0' ( '0' )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:808:41: ( '0' )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:813:41: ( '0' )?
                                             int alt27=2;
                                             int LA27_0 = input.LA(1);
 
@@ -1278,7 +1278,7 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt27) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:808:41: '0'
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:813:41: '0'
                                                     {
                                                     match('0'); if (state.failed) return ;
 
@@ -1330,7 +1330,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "E"
     public final void mE() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:810:17: ( ( 'e' | 'E' ) | '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '5' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:815:17: ( ( 'e' | 'E' ) | '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '5' )
             int alt36=2;
             int LA36_0 = input.LA(1);
 
@@ -1349,7 +1349,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt36) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:810:21: ( 'e' | 'E' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:815:21: ( 'e' | 'E' )
                     {
                     if ( input.LA(1)=='E'||input.LA(1)=='e' ) {
                         input.consume();
@@ -1365,10 +1365,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:811:21: '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '5'
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:816:21: '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '5'
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:811:26: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:816:26: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                     int alt35=2;
                     int LA35_0 = input.LA(1);
 
@@ -1377,10 +1377,10 @@ public class Css3Lexer extends Lexer {
                     }
                     switch (alt35) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:811:27: '0' ( '0' ( '0' ( '0' )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:816:27: '0' ( '0' ( '0' ( '0' )? )? )?
                             {
                             match('0'); if (state.failed) return ;
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:811:31: ( '0' ( '0' ( '0' )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:816:31: ( '0' ( '0' ( '0' )? )? )?
                             int alt34=2;
                             int LA34_0 = input.LA(1);
 
@@ -1389,10 +1389,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt34) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:811:32: '0' ( '0' ( '0' )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:816:32: '0' ( '0' ( '0' )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:811:36: ( '0' ( '0' )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:816:36: ( '0' ( '0' )? )?
                                     int alt33=2;
                                     int LA33_0 = input.LA(1);
 
@@ -1401,10 +1401,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt33) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:811:37: '0' ( '0' )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:816:37: '0' ( '0' )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:811:41: ( '0' )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:816:41: ( '0' )?
                                             int alt32=2;
                                             int LA32_0 = input.LA(1);
 
@@ -1413,7 +1413,7 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt32) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:811:41: '0'
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:816:41: '0'
                                                     {
                                                     match('0'); if (state.failed) return ;
 
@@ -1465,7 +1465,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "F"
     public final void mF() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:813:17: ( ( 'f' | 'F' ) | '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '6' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:818:17: ( ( 'f' | 'F' ) | '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '6' )
             int alt41=2;
             int LA41_0 = input.LA(1);
 
@@ -1484,7 +1484,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt41) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:813:21: ( 'f' | 'F' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:818:21: ( 'f' | 'F' )
                     {
                     if ( input.LA(1)=='F'||input.LA(1)=='f' ) {
                         input.consume();
@@ -1500,10 +1500,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:814:21: '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '6'
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:819:21: '\\\\' ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '6'
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:814:26: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:819:26: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                     int alt40=2;
                     int LA40_0 = input.LA(1);
 
@@ -1512,10 +1512,10 @@ public class Css3Lexer extends Lexer {
                     }
                     switch (alt40) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:814:27: '0' ( '0' ( '0' ( '0' )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:819:27: '0' ( '0' ( '0' ( '0' )? )? )?
                             {
                             match('0'); if (state.failed) return ;
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:814:31: ( '0' ( '0' ( '0' )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:819:31: ( '0' ( '0' ( '0' )? )? )?
                             int alt39=2;
                             int LA39_0 = input.LA(1);
 
@@ -1524,10 +1524,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt39) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:814:32: '0' ( '0' ( '0' )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:819:32: '0' ( '0' ( '0' )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:814:36: ( '0' ( '0' )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:819:36: ( '0' ( '0' )? )?
                                     int alt38=2;
                                     int LA38_0 = input.LA(1);
 
@@ -1536,10 +1536,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt38) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:814:37: '0' ( '0' )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:819:37: '0' ( '0' )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:814:41: ( '0' )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:819:41: ( '0' )?
                                             int alt37=2;
                                             int LA37_0 = input.LA(1);
 
@@ -1548,7 +1548,7 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt37) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:814:41: '0'
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:819:41: '0'
                                                     {
                                                     match('0'); if (state.failed) return ;
 
@@ -1600,7 +1600,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "G"
     public final void mG() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:816:17: ( ( 'g' | 'G' ) | '\\\\' ( 'g' | 'G' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '7' ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:821:17: ( ( 'g' | 'G' ) | '\\\\' ( 'g' | 'G' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '7' ) )
             int alt47=2;
             int LA47_0 = input.LA(1);
 
@@ -1619,7 +1619,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt47) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:816:21: ( 'g' | 'G' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:821:21: ( 'g' | 'G' )
                     {
                     if ( input.LA(1)=='G'||input.LA(1)=='g' ) {
                         input.consume();
@@ -1635,10 +1635,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:817:21: '\\\\' ( 'g' | 'G' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '7' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:822:21: '\\\\' ( 'g' | 'G' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '7' )
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:818:25: ( 'g' | 'G' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '7' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:823:25: ( 'g' | 'G' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '7' )
                     int alt46=3;
                     switch ( input.LA(1) ) {
                     case 'g':
@@ -1668,23 +1668,23 @@ public class Css3Lexer extends Lexer {
 
                     switch (alt46) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:819:31: 'g'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:824:31: 'g'
                             {
                             match('g'); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:820:31: 'G'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:825:31: 'G'
                             {
                             match('G'); if (state.failed) return ;
 
                             }
                             break;
                         case 3 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:821:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '7'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:826:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '7'
                             {
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:821:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:826:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                             int alt45=2;
                             int LA45_0 = input.LA(1);
 
@@ -1693,10 +1693,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt45) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:821:32: '0' ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:826:32: '0' ( '0' ( '0' ( '0' )? )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:821:36: ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:826:36: ( '0' ( '0' ( '0' )? )? )?
                                     int alt44=2;
                                     int LA44_0 = input.LA(1);
 
@@ -1705,10 +1705,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt44) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:821:37: '0' ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:826:37: '0' ( '0' ( '0' )? )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:821:41: ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:826:41: ( '0' ( '0' )? )?
                                             int alt43=2;
                                             int LA43_0 = input.LA(1);
 
@@ -1717,10 +1717,10 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt43) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:821:42: '0' ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:826:42: '0' ( '0' )?
                                                     {
                                                     match('0'); if (state.failed) return ;
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:821:46: ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:826:46: ( '0' )?
                                                     int alt42=2;
                                                     int LA42_0 = input.LA(1);
 
@@ -1729,7 +1729,7 @@ public class Css3Lexer extends Lexer {
                                                     }
                                                     switch (alt42) {
                                                         case 1 :
-                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:821:46: '0'
+                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:826:46: '0'
                                                             {
                                                             match('0'); if (state.failed) return ;
 
@@ -1787,7 +1787,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "H"
     public final void mH() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:824:17: ( ( 'h' | 'H' ) | '\\\\' ( 'h' | 'H' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '8' ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:829:17: ( ( 'h' | 'H' ) | '\\\\' ( 'h' | 'H' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '8' ) )
             int alt53=2;
             int LA53_0 = input.LA(1);
 
@@ -1806,7 +1806,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt53) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:824:21: ( 'h' | 'H' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:829:21: ( 'h' | 'H' )
                     {
                     if ( input.LA(1)=='H'||input.LA(1)=='h' ) {
                         input.consume();
@@ -1822,10 +1822,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:825:19: '\\\\' ( 'h' | 'H' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '8' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:830:19: '\\\\' ( 'h' | 'H' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '8' )
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:826:25: ( 'h' | 'H' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '8' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:831:25: ( 'h' | 'H' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '8' )
                     int alt52=3;
                     switch ( input.LA(1) ) {
                     case 'h':
@@ -1855,23 +1855,23 @@ public class Css3Lexer extends Lexer {
 
                     switch (alt52) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:827:31: 'h'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:832:31: 'h'
                             {
                             match('h'); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:828:31: 'H'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:833:31: 'H'
                             {
                             match('H'); if (state.failed) return ;
 
                             }
                             break;
                         case 3 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:829:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '8'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:834:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '8'
                             {
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:829:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:834:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                             int alt51=2;
                             int LA51_0 = input.LA(1);
 
@@ -1880,10 +1880,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt51) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:829:32: '0' ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:834:32: '0' ( '0' ( '0' ( '0' )? )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:829:36: ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:834:36: ( '0' ( '0' ( '0' )? )? )?
                                     int alt50=2;
                                     int LA50_0 = input.LA(1);
 
@@ -1892,10 +1892,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt50) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:829:37: '0' ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:834:37: '0' ( '0' ( '0' )? )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:829:41: ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:834:41: ( '0' ( '0' )? )?
                                             int alt49=2;
                                             int LA49_0 = input.LA(1);
 
@@ -1904,10 +1904,10 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt49) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:829:42: '0' ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:834:42: '0' ( '0' )?
                                                     {
                                                     match('0'); if (state.failed) return ;
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:829:46: ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:834:46: ( '0' )?
                                                     int alt48=2;
                                                     int LA48_0 = input.LA(1);
 
@@ -1916,7 +1916,7 @@ public class Css3Lexer extends Lexer {
                                                     }
                                                     switch (alt48) {
                                                         case 1 :
-                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:829:46: '0'
+                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:834:46: '0'
                                                             {
                                                             match('0'); if (state.failed) return ;
 
@@ -1974,7 +1974,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "I"
     public final void mI() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:832:17: ( ( 'i' | 'I' ) | '\\\\' ( 'i' | 'I' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '9' ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:837:17: ( ( 'i' | 'I' ) | '\\\\' ( 'i' | 'I' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '9' ) )
             int alt59=2;
             int LA59_0 = input.LA(1);
 
@@ -1993,7 +1993,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt59) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:832:21: ( 'i' | 'I' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:837:21: ( 'i' | 'I' )
                     {
                     if ( input.LA(1)=='I'||input.LA(1)=='i' ) {
                         input.consume();
@@ -2009,10 +2009,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:833:19: '\\\\' ( 'i' | 'I' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '9' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:838:19: '\\\\' ( 'i' | 'I' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '9' )
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:834:25: ( 'i' | 'I' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '9' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:839:25: ( 'i' | 'I' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '9' )
                     int alt58=3;
                     switch ( input.LA(1) ) {
                     case 'i':
@@ -2042,23 +2042,23 @@ public class Css3Lexer extends Lexer {
 
                     switch (alt58) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:835:31: 'i'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:840:31: 'i'
                             {
                             match('i'); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:836:31: 'I'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:841:31: 'I'
                             {
                             match('I'); if (state.failed) return ;
 
                             }
                             break;
                         case 3 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:837:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '9'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:842:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) '9'
                             {
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:837:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:842:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                             int alt57=2;
                             int LA57_0 = input.LA(1);
 
@@ -2067,10 +2067,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt57) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:837:32: '0' ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:842:32: '0' ( '0' ( '0' ( '0' )? )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:837:36: ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:842:36: ( '0' ( '0' ( '0' )? )? )?
                                     int alt56=2;
                                     int LA56_0 = input.LA(1);
 
@@ -2079,10 +2079,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt56) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:837:37: '0' ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:842:37: '0' ( '0' ( '0' )? )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:837:41: ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:842:41: ( '0' ( '0' )? )?
                                             int alt55=2;
                                             int LA55_0 = input.LA(1);
 
@@ -2091,10 +2091,10 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt55) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:837:42: '0' ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:842:42: '0' ( '0' )?
                                                     {
                                                     match('0'); if (state.failed) return ;
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:837:46: ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:842:46: ( '0' )?
                                                     int alt54=2;
                                                     int LA54_0 = input.LA(1);
 
@@ -2103,7 +2103,7 @@ public class Css3Lexer extends Lexer {
                                                     }
                                                     switch (alt54) {
                                                         case 1 :
-                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:837:46: '0'
+                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:842:46: '0'
                                                             {
                                                             match('0'); if (state.failed) return ;
 
@@ -2161,7 +2161,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "J"
     public final void mJ() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:840:17: ( ( 'j' | 'J' ) | '\\\\' ( 'j' | 'J' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'A' | 'a' ) ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:845:17: ( ( 'j' | 'J' ) | '\\\\' ( 'j' | 'J' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'A' | 'a' ) ) )
             int alt65=2;
             int LA65_0 = input.LA(1);
 
@@ -2180,7 +2180,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt65) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:840:21: ( 'j' | 'J' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:845:21: ( 'j' | 'J' )
                     {
                     if ( input.LA(1)=='J'||input.LA(1)=='j' ) {
                         input.consume();
@@ -2196,10 +2196,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:841:19: '\\\\' ( 'j' | 'J' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'A' | 'a' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:846:19: '\\\\' ( 'j' | 'J' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'A' | 'a' ) )
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:842:25: ( 'j' | 'J' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'A' | 'a' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:847:25: ( 'j' | 'J' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'A' | 'a' ) )
                     int alt64=3;
                     switch ( input.LA(1) ) {
                     case 'j':
@@ -2229,23 +2229,23 @@ public class Css3Lexer extends Lexer {
 
                     switch (alt64) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:843:31: 'j'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:848:31: 'j'
                             {
                             match('j'); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:844:31: 'J'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:849:31: 'J'
                             {
                             match('J'); if (state.failed) return ;
 
                             }
                             break;
                         case 3 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:845:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'A' | 'a' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:850:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'A' | 'a' )
                             {
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:845:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:850:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                             int alt63=2;
                             int LA63_0 = input.LA(1);
 
@@ -2254,10 +2254,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt63) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:845:32: '0' ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:850:32: '0' ( '0' ( '0' ( '0' )? )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:845:36: ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:850:36: ( '0' ( '0' ( '0' )? )? )?
                                     int alt62=2;
                                     int LA62_0 = input.LA(1);
 
@@ -2266,10 +2266,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt62) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:845:37: '0' ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:850:37: '0' ( '0' ( '0' )? )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:845:41: ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:850:41: ( '0' ( '0' )? )?
                                             int alt61=2;
                                             int LA61_0 = input.LA(1);
 
@@ -2278,10 +2278,10 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt61) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:845:42: '0' ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:850:42: '0' ( '0' )?
                                                     {
                                                     match('0'); if (state.failed) return ;
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:845:46: ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:850:46: ( '0' )?
                                                     int alt60=2;
                                                     int LA60_0 = input.LA(1);
 
@@ -2290,7 +2290,7 @@ public class Css3Lexer extends Lexer {
                                                     }
                                                     switch (alt60) {
                                                         case 1 :
-                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:845:46: '0'
+                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:850:46: '0'
                                                             {
                                                             match('0'); if (state.failed) return ;
 
@@ -2357,7 +2357,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "K"
     public final void mK() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:848:17: ( ( 'k' | 'K' ) | '\\\\' ( 'k' | 'K' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'B' | 'b' ) ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:853:17: ( ( 'k' | 'K' ) | '\\\\' ( 'k' | 'K' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'B' | 'b' ) ) )
             int alt71=2;
             int LA71_0 = input.LA(1);
 
@@ -2376,7 +2376,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt71) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:848:21: ( 'k' | 'K' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:853:21: ( 'k' | 'K' )
                     {
                     if ( input.LA(1)=='K'||input.LA(1)=='k' ) {
                         input.consume();
@@ -2392,10 +2392,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:849:19: '\\\\' ( 'k' | 'K' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'B' | 'b' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:854:19: '\\\\' ( 'k' | 'K' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'B' | 'b' ) )
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:850:25: ( 'k' | 'K' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'B' | 'b' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:855:25: ( 'k' | 'K' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'B' | 'b' ) )
                     int alt70=3;
                     switch ( input.LA(1) ) {
                     case 'k':
@@ -2425,23 +2425,23 @@ public class Css3Lexer extends Lexer {
 
                     switch (alt70) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:851:31: 'k'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:856:31: 'k'
                             {
                             match('k'); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:852:31: 'K'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:857:31: 'K'
                             {
                             match('K'); if (state.failed) return ;
 
                             }
                             break;
                         case 3 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:853:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'B' | 'b' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:858:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'B' | 'b' )
                             {
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:853:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:858:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                             int alt69=2;
                             int LA69_0 = input.LA(1);
 
@@ -2450,10 +2450,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt69) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:853:32: '0' ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:858:32: '0' ( '0' ( '0' ( '0' )? )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:853:36: ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:858:36: ( '0' ( '0' ( '0' )? )? )?
                                     int alt68=2;
                                     int LA68_0 = input.LA(1);
 
@@ -2462,10 +2462,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt68) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:853:37: '0' ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:858:37: '0' ( '0' ( '0' )? )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:853:41: ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:858:41: ( '0' ( '0' )? )?
                                             int alt67=2;
                                             int LA67_0 = input.LA(1);
 
@@ -2474,10 +2474,10 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt67) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:853:42: '0' ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:858:42: '0' ( '0' )?
                                                     {
                                                     match('0'); if (state.failed) return ;
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:853:46: ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:858:46: ( '0' )?
                                                     int alt66=2;
                                                     int LA66_0 = input.LA(1);
 
@@ -2486,7 +2486,7 @@ public class Css3Lexer extends Lexer {
                                                     }
                                                     switch (alt66) {
                                                         case 1 :
-                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:853:46: '0'
+                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:858:46: '0'
                                                             {
                                                             match('0'); if (state.failed) return ;
 
@@ -2553,7 +2553,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "L"
     public final void mL() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:856:17: ( ( 'l' | 'L' ) | '\\\\' ( 'l' | 'L' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'C' | 'c' ) ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:861:17: ( ( 'l' | 'L' ) | '\\\\' ( 'l' | 'L' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'C' | 'c' ) ) )
             int alt77=2;
             int LA77_0 = input.LA(1);
 
@@ -2572,7 +2572,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt77) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:856:21: ( 'l' | 'L' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:861:21: ( 'l' | 'L' )
                     {
                     if ( input.LA(1)=='L'||input.LA(1)=='l' ) {
                         input.consume();
@@ -2588,10 +2588,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:857:19: '\\\\' ( 'l' | 'L' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'C' | 'c' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:862:19: '\\\\' ( 'l' | 'L' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'C' | 'c' ) )
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:858:25: ( 'l' | 'L' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'C' | 'c' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:863:25: ( 'l' | 'L' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'C' | 'c' ) )
                     int alt76=3;
                     switch ( input.LA(1) ) {
                     case 'l':
@@ -2621,23 +2621,23 @@ public class Css3Lexer extends Lexer {
 
                     switch (alt76) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:859:31: 'l'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:864:31: 'l'
                             {
                             match('l'); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:860:31: 'L'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:865:31: 'L'
                             {
                             match('L'); if (state.failed) return ;
 
                             }
                             break;
                         case 3 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:861:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'C' | 'c' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:866:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'C' | 'c' )
                             {
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:861:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:866:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                             int alt75=2;
                             int LA75_0 = input.LA(1);
 
@@ -2646,10 +2646,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt75) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:861:32: '0' ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:866:32: '0' ( '0' ( '0' ( '0' )? )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:861:36: ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:866:36: ( '0' ( '0' ( '0' )? )? )?
                                     int alt74=2;
                                     int LA74_0 = input.LA(1);
 
@@ -2658,10 +2658,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt74) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:861:37: '0' ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:866:37: '0' ( '0' ( '0' )? )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:861:41: ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:866:41: ( '0' ( '0' )? )?
                                             int alt73=2;
                                             int LA73_0 = input.LA(1);
 
@@ -2670,10 +2670,10 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt73) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:861:42: '0' ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:866:42: '0' ( '0' )?
                                                     {
                                                     match('0'); if (state.failed) return ;
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:861:46: ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:866:46: ( '0' )?
                                                     int alt72=2;
                                                     int LA72_0 = input.LA(1);
 
@@ -2682,7 +2682,7 @@ public class Css3Lexer extends Lexer {
                                                     }
                                                     switch (alt72) {
                                                         case 1 :
-                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:861:46: '0'
+                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:866:46: '0'
                                                             {
                                                             match('0'); if (state.failed) return ;
 
@@ -2749,7 +2749,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "M"
     public final void mM() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:864:17: ( ( 'm' | 'M' ) | '\\\\' ( 'm' | 'M' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'D' | 'd' ) ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:869:17: ( ( 'm' | 'M' ) | '\\\\' ( 'm' | 'M' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'D' | 'd' ) ) )
             int alt83=2;
             int LA83_0 = input.LA(1);
 
@@ -2768,7 +2768,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt83) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:864:21: ( 'm' | 'M' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:869:21: ( 'm' | 'M' )
                     {
                     if ( input.LA(1)=='M'||input.LA(1)=='m' ) {
                         input.consume();
@@ -2784,10 +2784,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:865:19: '\\\\' ( 'm' | 'M' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'D' | 'd' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:870:19: '\\\\' ( 'm' | 'M' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'D' | 'd' ) )
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:866:25: ( 'm' | 'M' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'D' | 'd' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:871:25: ( 'm' | 'M' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'D' | 'd' ) )
                     int alt82=3;
                     switch ( input.LA(1) ) {
                     case 'm':
@@ -2817,23 +2817,23 @@ public class Css3Lexer extends Lexer {
 
                     switch (alt82) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:867:31: 'm'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:872:31: 'm'
                             {
                             match('m'); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:868:31: 'M'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:873:31: 'M'
                             {
                             match('M'); if (state.failed) return ;
 
                             }
                             break;
                         case 3 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:869:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'D' | 'd' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:874:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'D' | 'd' )
                             {
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:869:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:874:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                             int alt81=2;
                             int LA81_0 = input.LA(1);
 
@@ -2842,10 +2842,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt81) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:869:32: '0' ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:874:32: '0' ( '0' ( '0' ( '0' )? )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:869:36: ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:874:36: ( '0' ( '0' ( '0' )? )? )?
                                     int alt80=2;
                                     int LA80_0 = input.LA(1);
 
@@ -2854,10 +2854,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt80) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:869:37: '0' ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:874:37: '0' ( '0' ( '0' )? )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:869:41: ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:874:41: ( '0' ( '0' )? )?
                                             int alt79=2;
                                             int LA79_0 = input.LA(1);
 
@@ -2866,10 +2866,10 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt79) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:869:42: '0' ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:874:42: '0' ( '0' )?
                                                     {
                                                     match('0'); if (state.failed) return ;
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:869:46: ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:874:46: ( '0' )?
                                                     int alt78=2;
                                                     int LA78_0 = input.LA(1);
 
@@ -2878,7 +2878,7 @@ public class Css3Lexer extends Lexer {
                                                     }
                                                     switch (alt78) {
                                                         case 1 :
-                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:869:46: '0'
+                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:874:46: '0'
                                                             {
                                                             match('0'); if (state.failed) return ;
 
@@ -2945,7 +2945,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "N"
     public final void mN() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:872:17: ( ( 'n' | 'N' ) | '\\\\' ( 'n' | 'N' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'E' | 'e' ) ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:877:17: ( ( 'n' | 'N' ) | '\\\\' ( 'n' | 'N' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'E' | 'e' ) ) )
             int alt89=2;
             int LA89_0 = input.LA(1);
 
@@ -2964,7 +2964,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt89) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:872:21: ( 'n' | 'N' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:877:21: ( 'n' | 'N' )
                     {
                     if ( input.LA(1)=='N'||input.LA(1)=='n' ) {
                         input.consume();
@@ -2980,10 +2980,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:873:19: '\\\\' ( 'n' | 'N' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'E' | 'e' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:878:19: '\\\\' ( 'n' | 'N' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'E' | 'e' ) )
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:874:25: ( 'n' | 'N' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'E' | 'e' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:879:25: ( 'n' | 'N' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'E' | 'e' ) )
                     int alt88=3;
                     switch ( input.LA(1) ) {
                     case 'n':
@@ -3013,23 +3013,23 @@ public class Css3Lexer extends Lexer {
 
                     switch (alt88) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:875:31: 'n'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:880:31: 'n'
                             {
                             match('n'); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:876:31: 'N'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:881:31: 'N'
                             {
                             match('N'); if (state.failed) return ;
 
                             }
                             break;
                         case 3 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:877:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'E' | 'e' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:882:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'E' | 'e' )
                             {
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:877:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:882:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                             int alt87=2;
                             int LA87_0 = input.LA(1);
 
@@ -3038,10 +3038,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt87) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:877:32: '0' ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:882:32: '0' ( '0' ( '0' ( '0' )? )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:877:36: ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:882:36: ( '0' ( '0' ( '0' )? )? )?
                                     int alt86=2;
                                     int LA86_0 = input.LA(1);
 
@@ -3050,10 +3050,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt86) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:877:37: '0' ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:882:37: '0' ( '0' ( '0' )? )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:877:41: ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:882:41: ( '0' ( '0' )? )?
                                             int alt85=2;
                                             int LA85_0 = input.LA(1);
 
@@ -3062,10 +3062,10 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt85) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:877:42: '0' ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:882:42: '0' ( '0' )?
                                                     {
                                                     match('0'); if (state.failed) return ;
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:877:46: ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:882:46: ( '0' )?
                                                     int alt84=2;
                                                     int LA84_0 = input.LA(1);
 
@@ -3074,7 +3074,7 @@ public class Css3Lexer extends Lexer {
                                                     }
                                                     switch (alt84) {
                                                         case 1 :
-                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:877:46: '0'
+                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:882:46: '0'
                                                             {
                                                             match('0'); if (state.failed) return ;
 
@@ -3141,7 +3141,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "O"
     public final void mO() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:880:17: ( ( 'o' | 'O' ) | '\\\\' ( 'o' | 'O' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'F' | 'f' ) ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:885:17: ( ( 'o' | 'O' ) | '\\\\' ( 'o' | 'O' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'F' | 'f' ) ) )
             int alt95=2;
             int LA95_0 = input.LA(1);
 
@@ -3160,7 +3160,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt95) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:880:21: ( 'o' | 'O' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:885:21: ( 'o' | 'O' )
                     {
                     if ( input.LA(1)=='O'||input.LA(1)=='o' ) {
                         input.consume();
@@ -3176,10 +3176,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:881:19: '\\\\' ( 'o' | 'O' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'F' | 'f' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:886:19: '\\\\' ( 'o' | 'O' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'F' | 'f' ) )
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:882:25: ( 'o' | 'O' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'F' | 'f' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:887:25: ( 'o' | 'O' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'F' | 'f' ) )
                     int alt94=3;
                     switch ( input.LA(1) ) {
                     case 'o':
@@ -3209,23 +3209,23 @@ public class Css3Lexer extends Lexer {
 
                     switch (alt94) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:883:31: 'o'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:888:31: 'o'
                             {
                             match('o'); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:884:31: 'O'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:889:31: 'O'
                             {
                             match('O'); if (state.failed) return ;
 
                             }
                             break;
                         case 3 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:885:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'F' | 'f' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:890:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '4' | '6' ) ( 'F' | 'f' )
                             {
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:885:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:890:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                             int alt93=2;
                             int LA93_0 = input.LA(1);
 
@@ -3234,10 +3234,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt93) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:885:32: '0' ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:890:32: '0' ( '0' ( '0' ( '0' )? )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:885:36: ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:890:36: ( '0' ( '0' ( '0' )? )? )?
                                     int alt92=2;
                                     int LA92_0 = input.LA(1);
 
@@ -3246,10 +3246,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt92) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:885:37: '0' ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:890:37: '0' ( '0' ( '0' )? )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:885:41: ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:890:41: ( '0' ( '0' )? )?
                                             int alt91=2;
                                             int LA91_0 = input.LA(1);
 
@@ -3258,10 +3258,10 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt91) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:885:42: '0' ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:890:42: '0' ( '0' )?
                                                     {
                                                     match('0'); if (state.failed) return ;
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:885:46: ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:890:46: ( '0' )?
                                                     int alt90=2;
                                                     int LA90_0 = input.LA(1);
 
@@ -3270,7 +3270,7 @@ public class Css3Lexer extends Lexer {
                                                     }
                                                     switch (alt90) {
                                                         case 1 :
-                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:885:46: '0'
+                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:890:46: '0'
                                                             {
                                                             match('0'); if (state.failed) return ;
 
@@ -3337,7 +3337,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "P"
     public final void mP() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:888:17: ( ( 'p' | 'P' ) | '\\\\' ( 'p' | 'P' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '0' ) ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:893:17: ( ( 'p' | 'P' ) | '\\\\' ( 'p' | 'P' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '0' ) ) )
             int alt101=2;
             int LA101_0 = input.LA(1);
 
@@ -3356,7 +3356,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt101) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:888:21: ( 'p' | 'P' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:893:21: ( 'p' | 'P' )
                     {
                     if ( input.LA(1)=='P'||input.LA(1)=='p' ) {
                         input.consume();
@@ -3372,10 +3372,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:889:19: '\\\\' ( 'p' | 'P' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '0' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:894:19: '\\\\' ( 'p' | 'P' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '0' ) )
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:890:25: ( 'p' | 'P' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '0' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:895:25: ( 'p' | 'P' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '0' ) )
                     int alt100=3;
                     switch ( input.LA(1) ) {
                     case 'p':
@@ -3405,23 +3405,23 @@ public class Css3Lexer extends Lexer {
 
                     switch (alt100) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:891:31: 'p'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:896:31: 'p'
                             {
                             match('p'); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:892:31: 'P'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:897:31: 'P'
                             {
                             match('P'); if (state.failed) return ;
 
                             }
                             break;
                         case 3 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:893:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '0' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:898:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '0' )
                             {
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:893:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:898:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                             int alt99=2;
                             int LA99_0 = input.LA(1);
 
@@ -3430,10 +3430,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt99) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:893:32: '0' ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:898:32: '0' ( '0' ( '0' ( '0' )? )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:893:36: ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:898:36: ( '0' ( '0' ( '0' )? )? )?
                                     int alt98=2;
                                     int LA98_0 = input.LA(1);
 
@@ -3442,10 +3442,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt98) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:893:37: '0' ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:898:37: '0' ( '0' ( '0' )? )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:893:41: ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:898:41: ( '0' ( '0' )? )?
                                             int alt97=2;
                                             int LA97_0 = input.LA(1);
 
@@ -3454,10 +3454,10 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt97) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:893:42: '0' ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:898:42: '0' ( '0' )?
                                                     {
                                                     match('0'); if (state.failed) return ;
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:893:46: ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:898:46: ( '0' )?
                                                     int alt96=2;
                                                     int LA96_0 = input.LA(1);
 
@@ -3466,7 +3466,7 @@ public class Css3Lexer extends Lexer {
                                                     }
                                                     switch (alt96) {
                                                         case 1 :
-                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:893:46: '0'
+                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:898:46: '0'
                                                             {
                                                             match('0'); if (state.failed) return ;
 
@@ -3503,8 +3503,8 @@ public class Css3Lexer extends Lexer {
                                 recover(mse);
                                 throw mse;}
 
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:893:66: ( '0' )
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:893:67: '0'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:898:66: ( '0' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:898:67: '0'
                             {
                             match('0'); if (state.failed) return ;
 
@@ -3530,7 +3530,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "Q"
     public final void mQ() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:896:17: ( ( 'q' | 'Q' ) | '\\\\' ( 'q' | 'Q' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '1' ) ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:901:17: ( ( 'q' | 'Q' ) | '\\\\' ( 'q' | 'Q' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '1' ) ) )
             int alt107=2;
             int LA107_0 = input.LA(1);
 
@@ -3549,7 +3549,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt107) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:896:21: ( 'q' | 'Q' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:901:21: ( 'q' | 'Q' )
                     {
                     if ( input.LA(1)=='Q'||input.LA(1)=='q' ) {
                         input.consume();
@@ -3565,10 +3565,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:897:19: '\\\\' ( 'q' | 'Q' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '1' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:902:19: '\\\\' ( 'q' | 'Q' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '1' ) )
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:898:25: ( 'q' | 'Q' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '1' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:903:25: ( 'q' | 'Q' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '1' ) )
                     int alt106=3;
                     switch ( input.LA(1) ) {
                     case 'q':
@@ -3598,23 +3598,23 @@ public class Css3Lexer extends Lexer {
 
                     switch (alt106) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:899:31: 'q'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:904:31: 'q'
                             {
                             match('q'); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:900:31: 'Q'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:905:31: 'Q'
                             {
                             match('Q'); if (state.failed) return ;
 
                             }
                             break;
                         case 3 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:901:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '1' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:906:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '1' )
                             {
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:901:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:906:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                             int alt105=2;
                             int LA105_0 = input.LA(1);
 
@@ -3623,10 +3623,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt105) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:901:32: '0' ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:906:32: '0' ( '0' ( '0' ( '0' )? )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:901:36: ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:906:36: ( '0' ( '0' ( '0' )? )? )?
                                     int alt104=2;
                                     int LA104_0 = input.LA(1);
 
@@ -3635,10 +3635,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt104) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:901:37: '0' ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:906:37: '0' ( '0' ( '0' )? )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:901:41: ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:906:41: ( '0' ( '0' )? )?
                                             int alt103=2;
                                             int LA103_0 = input.LA(1);
 
@@ -3647,10 +3647,10 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt103) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:901:42: '0' ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:906:42: '0' ( '0' )?
                                                     {
                                                     match('0'); if (state.failed) return ;
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:901:46: ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:906:46: ( '0' )?
                                                     int alt102=2;
                                                     int LA102_0 = input.LA(1);
 
@@ -3659,7 +3659,7 @@ public class Css3Lexer extends Lexer {
                                                     }
                                                     switch (alt102) {
                                                         case 1 :
-                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:901:46: '0'
+                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:906:46: '0'
                                                             {
                                                             match('0'); if (state.failed) return ;
 
@@ -3696,8 +3696,8 @@ public class Css3Lexer extends Lexer {
                                 recover(mse);
                                 throw mse;}
 
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:901:66: ( '1' )
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:901:67: '1'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:906:66: ( '1' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:906:67: '1'
                             {
                             match('1'); if (state.failed) return ;
 
@@ -3723,7 +3723,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "R"
     public final void mR() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:904:17: ( ( 'r' | 'R' ) | '\\\\' ( 'r' | 'R' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '2' ) ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:909:17: ( ( 'r' | 'R' ) | '\\\\' ( 'r' | 'R' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '2' ) ) )
             int alt113=2;
             int LA113_0 = input.LA(1);
 
@@ -3742,7 +3742,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt113) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:904:21: ( 'r' | 'R' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:909:21: ( 'r' | 'R' )
                     {
                     if ( input.LA(1)=='R'||input.LA(1)=='r' ) {
                         input.consume();
@@ -3758,10 +3758,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:905:19: '\\\\' ( 'r' | 'R' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '2' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:910:19: '\\\\' ( 'r' | 'R' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '2' ) )
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:906:25: ( 'r' | 'R' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '2' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:911:25: ( 'r' | 'R' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '2' ) )
                     int alt112=3;
                     switch ( input.LA(1) ) {
                     case 'r':
@@ -3791,23 +3791,23 @@ public class Css3Lexer extends Lexer {
 
                     switch (alt112) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:907:31: 'r'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:912:31: 'r'
                             {
                             match('r'); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:908:31: 'R'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:913:31: 'R'
                             {
                             match('R'); if (state.failed) return ;
 
                             }
                             break;
                         case 3 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:909:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '2' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:914:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '2' )
                             {
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:909:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:914:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                             int alt111=2;
                             int LA111_0 = input.LA(1);
 
@@ -3816,10 +3816,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt111) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:909:32: '0' ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:914:32: '0' ( '0' ( '0' ( '0' )? )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:909:36: ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:914:36: ( '0' ( '0' ( '0' )? )? )?
                                     int alt110=2;
                                     int LA110_0 = input.LA(1);
 
@@ -3828,10 +3828,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt110) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:909:37: '0' ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:914:37: '0' ( '0' ( '0' )? )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:909:41: ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:914:41: ( '0' ( '0' )? )?
                                             int alt109=2;
                                             int LA109_0 = input.LA(1);
 
@@ -3840,10 +3840,10 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt109) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:909:42: '0' ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:914:42: '0' ( '0' )?
                                                     {
                                                     match('0'); if (state.failed) return ;
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:909:46: ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:914:46: ( '0' )?
                                                     int alt108=2;
                                                     int LA108_0 = input.LA(1);
 
@@ -3852,7 +3852,7 @@ public class Css3Lexer extends Lexer {
                                                     }
                                                     switch (alt108) {
                                                         case 1 :
-                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:909:46: '0'
+                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:914:46: '0'
                                                             {
                                                             match('0'); if (state.failed) return ;
 
@@ -3889,8 +3889,8 @@ public class Css3Lexer extends Lexer {
                                 recover(mse);
                                 throw mse;}
 
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:909:66: ( '2' )
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:909:67: '2'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:914:66: ( '2' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:914:67: '2'
                             {
                             match('2'); if (state.failed) return ;
 
@@ -3916,7 +3916,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "S"
     public final void mS() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:912:17: ( ( 's' | 'S' ) | '\\\\' ( 's' | 'S' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '3' ) ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:917:17: ( ( 's' | 'S' ) | '\\\\' ( 's' | 'S' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '3' ) ) )
             int alt119=2;
             int LA119_0 = input.LA(1);
 
@@ -3935,7 +3935,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt119) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:912:21: ( 's' | 'S' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:917:21: ( 's' | 'S' )
                     {
                     if ( input.LA(1)=='S'||input.LA(1)=='s' ) {
                         input.consume();
@@ -3951,10 +3951,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:913:19: '\\\\' ( 's' | 'S' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '3' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:918:19: '\\\\' ( 's' | 'S' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '3' ) )
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:914:25: ( 's' | 'S' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '3' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:919:25: ( 's' | 'S' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '3' ) )
                     int alt118=3;
                     switch ( input.LA(1) ) {
                     case 's':
@@ -3984,23 +3984,23 @@ public class Css3Lexer extends Lexer {
 
                     switch (alt118) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:915:31: 's'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:920:31: 's'
                             {
                             match('s'); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:916:31: 'S'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:921:31: 'S'
                             {
                             match('S'); if (state.failed) return ;
 
                             }
                             break;
                         case 3 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:917:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '3' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:922:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '3' )
                             {
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:917:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:922:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                             int alt117=2;
                             int LA117_0 = input.LA(1);
 
@@ -4009,10 +4009,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt117) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:917:32: '0' ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:922:32: '0' ( '0' ( '0' ( '0' )? )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:917:36: ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:922:36: ( '0' ( '0' ( '0' )? )? )?
                                     int alt116=2;
                                     int LA116_0 = input.LA(1);
 
@@ -4021,10 +4021,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt116) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:917:37: '0' ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:922:37: '0' ( '0' ( '0' )? )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:917:41: ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:922:41: ( '0' ( '0' )? )?
                                             int alt115=2;
                                             int LA115_0 = input.LA(1);
 
@@ -4033,10 +4033,10 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt115) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:917:42: '0' ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:922:42: '0' ( '0' )?
                                                     {
                                                     match('0'); if (state.failed) return ;
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:917:46: ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:922:46: ( '0' )?
                                                     int alt114=2;
                                                     int LA114_0 = input.LA(1);
 
@@ -4045,7 +4045,7 @@ public class Css3Lexer extends Lexer {
                                                     }
                                                     switch (alt114) {
                                                         case 1 :
-                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:917:46: '0'
+                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:922:46: '0'
                                                             {
                                                             match('0'); if (state.failed) return ;
 
@@ -4082,8 +4082,8 @@ public class Css3Lexer extends Lexer {
                                 recover(mse);
                                 throw mse;}
 
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:917:66: ( '3' )
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:917:67: '3'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:922:66: ( '3' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:922:67: '3'
                             {
                             match('3'); if (state.failed) return ;
 
@@ -4109,7 +4109,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "T"
     public final void mT() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:920:17: ( ( 't' | 'T' ) | '\\\\' ( 't' | 'T' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '4' ) ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:925:17: ( ( 't' | 'T' ) | '\\\\' ( 't' | 'T' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '4' ) ) )
             int alt125=2;
             int LA125_0 = input.LA(1);
 
@@ -4128,7 +4128,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt125) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:920:21: ( 't' | 'T' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:925:21: ( 't' | 'T' )
                     {
                     if ( input.LA(1)=='T'||input.LA(1)=='t' ) {
                         input.consume();
@@ -4144,10 +4144,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:921:19: '\\\\' ( 't' | 'T' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '4' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:926:19: '\\\\' ( 't' | 'T' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '4' ) )
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:922:25: ( 't' | 'T' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '4' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:927:25: ( 't' | 'T' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '4' ) )
                     int alt124=3;
                     switch ( input.LA(1) ) {
                     case 't':
@@ -4177,23 +4177,23 @@ public class Css3Lexer extends Lexer {
 
                     switch (alt124) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:923:31: 't'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:928:31: 't'
                             {
                             match('t'); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:924:31: 'T'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:929:31: 'T'
                             {
                             match('T'); if (state.failed) return ;
 
                             }
                             break;
                         case 3 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:925:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '4' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:930:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '4' )
                             {
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:925:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:930:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                             int alt123=2;
                             int LA123_0 = input.LA(1);
 
@@ -4202,10 +4202,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt123) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:925:32: '0' ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:930:32: '0' ( '0' ( '0' ( '0' )? )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:925:36: ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:930:36: ( '0' ( '0' ( '0' )? )? )?
                                     int alt122=2;
                                     int LA122_0 = input.LA(1);
 
@@ -4214,10 +4214,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt122) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:925:37: '0' ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:930:37: '0' ( '0' ( '0' )? )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:925:41: ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:930:41: ( '0' ( '0' )? )?
                                             int alt121=2;
                                             int LA121_0 = input.LA(1);
 
@@ -4226,10 +4226,10 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt121) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:925:42: '0' ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:930:42: '0' ( '0' )?
                                                     {
                                                     match('0'); if (state.failed) return ;
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:925:46: ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:930:46: ( '0' )?
                                                     int alt120=2;
                                                     int LA120_0 = input.LA(1);
 
@@ -4238,7 +4238,7 @@ public class Css3Lexer extends Lexer {
                                                     }
                                                     switch (alt120) {
                                                         case 1 :
-                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:925:46: '0'
+                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:930:46: '0'
                                                             {
                                                             match('0'); if (state.failed) return ;
 
@@ -4275,8 +4275,8 @@ public class Css3Lexer extends Lexer {
                                 recover(mse);
                                 throw mse;}
 
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:925:66: ( '4' )
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:925:67: '4'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:930:66: ( '4' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:930:67: '4'
                             {
                             match('4'); if (state.failed) return ;
 
@@ -4302,7 +4302,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "U"
     public final void mU() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:928:17: ( ( 'u' | 'U' ) | '\\\\' ( 'u' | 'U' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '5' ) ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:17: ( ( 'u' | 'U' ) | '\\\\' ( 'u' | 'U' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '5' ) ) )
             int alt131=2;
             int LA131_0 = input.LA(1);
 
@@ -4321,7 +4321,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt131) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:928:21: ( 'u' | 'U' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:21: ( 'u' | 'U' )
                     {
                     if ( input.LA(1)=='U'||input.LA(1)=='u' ) {
                         input.consume();
@@ -4337,10 +4337,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:929:19: '\\\\' ( 'u' | 'U' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '5' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:934:19: '\\\\' ( 'u' | 'U' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '5' ) )
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:930:25: ( 'u' | 'U' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '5' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:935:25: ( 'u' | 'U' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '5' ) )
                     int alt130=3;
                     switch ( input.LA(1) ) {
                     case 'u':
@@ -4370,23 +4370,23 @@ public class Css3Lexer extends Lexer {
 
                     switch (alt130) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:931:31: 'u'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:936:31: 'u'
                             {
                             match('u'); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:932:31: 'U'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:937:31: 'U'
                             {
                             match('U'); if (state.failed) return ;
 
                             }
                             break;
                         case 3 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '5' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:938:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '5' )
                             {
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:938:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                             int alt129=2;
                             int LA129_0 = input.LA(1);
 
@@ -4395,10 +4395,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt129) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:32: '0' ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:938:32: '0' ( '0' ( '0' ( '0' )? )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:36: ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:938:36: ( '0' ( '0' ( '0' )? )? )?
                                     int alt128=2;
                                     int LA128_0 = input.LA(1);
 
@@ -4407,10 +4407,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt128) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:37: '0' ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:938:37: '0' ( '0' ( '0' )? )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:41: ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:938:41: ( '0' ( '0' )? )?
                                             int alt127=2;
                                             int LA127_0 = input.LA(1);
 
@@ -4419,10 +4419,10 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt127) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:42: '0' ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:938:42: '0' ( '0' )?
                                                     {
                                                     match('0'); if (state.failed) return ;
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:46: ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:938:46: ( '0' )?
                                                     int alt126=2;
                                                     int LA126_0 = input.LA(1);
 
@@ -4431,7 +4431,7 @@ public class Css3Lexer extends Lexer {
                                                     }
                                                     switch (alt126) {
                                                         case 1 :
-                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:46: '0'
+                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:938:46: '0'
                                                             {
                                                             match('0'); if (state.failed) return ;
 
@@ -4468,8 +4468,8 @@ public class Css3Lexer extends Lexer {
                                 recover(mse);
                                 throw mse;}
 
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:66: ( '5' )
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:933:67: '5'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:938:66: ( '5' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:938:67: '5'
                             {
                             match('5'); if (state.failed) return ;
 
@@ -4495,7 +4495,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "V"
     public final void mV() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:936:17: ( ( 'v' | 'V' ) | '\\\\' ( 'v' | 'V' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '6' ) ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:941:17: ( ( 'v' | 'V' ) | '\\\\' ( 'v' | 'V' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '6' ) ) )
             int alt137=2;
             int LA137_0 = input.LA(1);
 
@@ -4514,7 +4514,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt137) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:936:21: ( 'v' | 'V' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:941:21: ( 'v' | 'V' )
                     {
                     if ( input.LA(1)=='V'||input.LA(1)=='v' ) {
                         input.consume();
@@ -4530,10 +4530,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:937:19: '\\\\' ( 'v' | 'V' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '6' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:942:19: '\\\\' ( 'v' | 'V' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '6' ) )
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:938:25: ( 'v' | 'V' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '6' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:943:25: ( 'v' | 'V' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '6' ) )
                     int alt136=3;
                     switch ( input.LA(1) ) {
                     case 'v':
@@ -4563,23 +4563,23 @@ public class Css3Lexer extends Lexer {
 
                     switch (alt136) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:938:31: 'v'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:943:31: 'v'
                             {
                             match('v'); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:939:31: 'V'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:944:31: 'V'
                             {
                             match('V'); if (state.failed) return ;
 
                             }
                             break;
                         case 3 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:940:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '6' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:945:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '6' )
                             {
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:940:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:945:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                             int alt135=2;
                             int LA135_0 = input.LA(1);
 
@@ -4588,10 +4588,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt135) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:940:32: '0' ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:945:32: '0' ( '0' ( '0' ( '0' )? )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:940:36: ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:945:36: ( '0' ( '0' ( '0' )? )? )?
                                     int alt134=2;
                                     int LA134_0 = input.LA(1);
 
@@ -4600,10 +4600,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt134) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:940:37: '0' ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:945:37: '0' ( '0' ( '0' )? )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:940:41: ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:945:41: ( '0' ( '0' )? )?
                                             int alt133=2;
                                             int LA133_0 = input.LA(1);
 
@@ -4612,10 +4612,10 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt133) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:940:42: '0' ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:945:42: '0' ( '0' )?
                                                     {
                                                     match('0'); if (state.failed) return ;
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:940:46: ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:945:46: ( '0' )?
                                                     int alt132=2;
                                                     int LA132_0 = input.LA(1);
 
@@ -4624,7 +4624,7 @@ public class Css3Lexer extends Lexer {
                                                     }
                                                     switch (alt132) {
                                                         case 1 :
-                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:940:46: '0'
+                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:945:46: '0'
                                                             {
                                                             match('0'); if (state.failed) return ;
 
@@ -4661,8 +4661,8 @@ public class Css3Lexer extends Lexer {
                                 recover(mse);
                                 throw mse;}
 
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:940:66: ( '6' )
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:940:67: '6'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:945:66: ( '6' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:945:67: '6'
                             {
                             match('6'); if (state.failed) return ;
 
@@ -4688,7 +4688,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "W"
     public final void mW() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:943:17: ( ( 'w' | 'W' ) | '\\\\' ( 'w' | 'W' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '7' ) ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:948:17: ( ( 'w' | 'W' ) | '\\\\' ( 'w' | 'W' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '7' ) ) )
             int alt143=2;
             int LA143_0 = input.LA(1);
 
@@ -4707,7 +4707,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt143) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:943:21: ( 'w' | 'W' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:948:21: ( 'w' | 'W' )
                     {
                     if ( input.LA(1)=='W'||input.LA(1)=='w' ) {
                         input.consume();
@@ -4723,10 +4723,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:944:19: '\\\\' ( 'w' | 'W' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '7' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:949:19: '\\\\' ( 'w' | 'W' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '7' ) )
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:945:25: ( 'w' | 'W' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '7' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:950:25: ( 'w' | 'W' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '7' ) )
                     int alt142=3;
                     switch ( input.LA(1) ) {
                     case 'w':
@@ -4756,23 +4756,23 @@ public class Css3Lexer extends Lexer {
 
                     switch (alt142) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:946:31: 'w'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:951:31: 'w'
                             {
                             match('w'); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:947:31: 'W'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:952:31: 'W'
                             {
                             match('W'); if (state.failed) return ;
 
                             }
                             break;
                         case 3 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:948:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '7' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:953:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '7' )
                             {
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:948:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:953:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                             int alt141=2;
                             int LA141_0 = input.LA(1);
 
@@ -4781,10 +4781,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt141) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:948:32: '0' ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:953:32: '0' ( '0' ( '0' ( '0' )? )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:948:36: ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:953:36: ( '0' ( '0' ( '0' )? )? )?
                                     int alt140=2;
                                     int LA140_0 = input.LA(1);
 
@@ -4793,10 +4793,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt140) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:948:37: '0' ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:953:37: '0' ( '0' ( '0' )? )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:948:41: ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:953:41: ( '0' ( '0' )? )?
                                             int alt139=2;
                                             int LA139_0 = input.LA(1);
 
@@ -4805,10 +4805,10 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt139) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:948:42: '0' ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:953:42: '0' ( '0' )?
                                                     {
                                                     match('0'); if (state.failed) return ;
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:948:46: ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:953:46: ( '0' )?
                                                     int alt138=2;
                                                     int LA138_0 = input.LA(1);
 
@@ -4817,7 +4817,7 @@ public class Css3Lexer extends Lexer {
                                                     }
                                                     switch (alt138) {
                                                         case 1 :
-                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:948:46: '0'
+                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:953:46: '0'
                                                             {
                                                             match('0'); if (state.failed) return ;
 
@@ -4854,8 +4854,8 @@ public class Css3Lexer extends Lexer {
                                 recover(mse);
                                 throw mse;}
 
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:948:66: ( '7' )
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:948:67: '7'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:953:66: ( '7' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:953:67: '7'
                             {
                             match('7'); if (state.failed) return ;
 
@@ -4881,7 +4881,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "X"
     public final void mX() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:951:17: ( ( 'x' | 'X' ) | '\\\\' ( 'x' | 'X' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '8' ) ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:956:17: ( ( 'x' | 'X' ) | '\\\\' ( 'x' | 'X' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '8' ) ) )
             int alt149=2;
             int LA149_0 = input.LA(1);
 
@@ -4900,7 +4900,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt149) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:951:21: ( 'x' | 'X' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:956:21: ( 'x' | 'X' )
                     {
                     if ( input.LA(1)=='X'||input.LA(1)=='x' ) {
                         input.consume();
@@ -4916,10 +4916,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:952:19: '\\\\' ( 'x' | 'X' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '8' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:957:19: '\\\\' ( 'x' | 'X' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '8' ) )
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:953:25: ( 'x' | 'X' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '8' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:958:25: ( 'x' | 'X' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '8' ) )
                     int alt148=3;
                     switch ( input.LA(1) ) {
                     case 'x':
@@ -4949,23 +4949,23 @@ public class Css3Lexer extends Lexer {
 
                     switch (alt148) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:954:31: 'x'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:959:31: 'x'
                             {
                             match('x'); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:955:31: 'X'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:960:31: 'X'
                             {
                             match('X'); if (state.failed) return ;
 
                             }
                             break;
                         case 3 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:956:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '8' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:961:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '8' )
                             {
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:956:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:961:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                             int alt147=2;
                             int LA147_0 = input.LA(1);
 
@@ -4974,10 +4974,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt147) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:956:32: '0' ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:961:32: '0' ( '0' ( '0' ( '0' )? )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:956:36: ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:961:36: ( '0' ( '0' ( '0' )? )? )?
                                     int alt146=2;
                                     int LA146_0 = input.LA(1);
 
@@ -4986,10 +4986,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt146) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:956:37: '0' ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:961:37: '0' ( '0' ( '0' )? )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:956:41: ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:961:41: ( '0' ( '0' )? )?
                                             int alt145=2;
                                             int LA145_0 = input.LA(1);
 
@@ -4998,10 +4998,10 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt145) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:956:42: '0' ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:961:42: '0' ( '0' )?
                                                     {
                                                     match('0'); if (state.failed) return ;
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:956:46: ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:961:46: ( '0' )?
                                                     int alt144=2;
                                                     int LA144_0 = input.LA(1);
 
@@ -5010,7 +5010,7 @@ public class Css3Lexer extends Lexer {
                                                     }
                                                     switch (alt144) {
                                                         case 1 :
-                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:956:46: '0'
+                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:961:46: '0'
                                                             {
                                                             match('0'); if (state.failed) return ;
 
@@ -5047,8 +5047,8 @@ public class Css3Lexer extends Lexer {
                                 recover(mse);
                                 throw mse;}
 
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:956:66: ( '8' )
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:956:67: '8'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:961:66: ( '8' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:961:67: '8'
                             {
                             match('8'); if (state.failed) return ;
 
@@ -5074,7 +5074,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "Y"
     public final void mY() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:959:17: ( ( 'y' | 'Y' ) | '\\\\' ( 'y' | 'Y' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '9' ) ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:964:17: ( ( 'y' | 'Y' ) | '\\\\' ( 'y' | 'Y' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '9' ) ) )
             int alt155=2;
             int LA155_0 = input.LA(1);
 
@@ -5093,7 +5093,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt155) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:959:21: ( 'y' | 'Y' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:964:21: ( 'y' | 'Y' )
                     {
                     if ( input.LA(1)=='Y'||input.LA(1)=='y' ) {
                         input.consume();
@@ -5109,10 +5109,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:960:19: '\\\\' ( 'y' | 'Y' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '9' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:965:19: '\\\\' ( 'y' | 'Y' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '9' ) )
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:961:25: ( 'y' | 'Y' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '9' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:966:25: ( 'y' | 'Y' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '9' ) )
                     int alt154=3;
                     switch ( input.LA(1) ) {
                     case 'y':
@@ -5142,23 +5142,23 @@ public class Css3Lexer extends Lexer {
 
                     switch (alt154) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:962:31: 'y'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:967:31: 'y'
                             {
                             match('y'); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:963:31: 'Y'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:968:31: 'Y'
                             {
                             match('Y'); if (state.failed) return ;
 
                             }
                             break;
                         case 3 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:964:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '9' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:969:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( '9' )
                             {
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:964:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:969:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                             int alt153=2;
                             int LA153_0 = input.LA(1);
 
@@ -5167,10 +5167,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt153) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:964:32: '0' ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:969:32: '0' ( '0' ( '0' ( '0' )? )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:964:36: ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:969:36: ( '0' ( '0' ( '0' )? )? )?
                                     int alt152=2;
                                     int LA152_0 = input.LA(1);
 
@@ -5179,10 +5179,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt152) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:964:37: '0' ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:969:37: '0' ( '0' ( '0' )? )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:964:41: ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:969:41: ( '0' ( '0' )? )?
                                             int alt151=2;
                                             int LA151_0 = input.LA(1);
 
@@ -5191,10 +5191,10 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt151) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:964:42: '0' ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:969:42: '0' ( '0' )?
                                                     {
                                                     match('0'); if (state.failed) return ;
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:964:46: ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:969:46: ( '0' )?
                                                     int alt150=2;
                                                     int LA150_0 = input.LA(1);
 
@@ -5203,7 +5203,7 @@ public class Css3Lexer extends Lexer {
                                                     }
                                                     switch (alt150) {
                                                         case 1 :
-                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:964:46: '0'
+                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:969:46: '0'
                                                             {
                                                             match('0'); if (state.failed) return ;
 
@@ -5240,8 +5240,8 @@ public class Css3Lexer extends Lexer {
                                 recover(mse);
                                 throw mse;}
 
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:964:66: ( '9' )
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:964:67: '9'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:969:66: ( '9' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:969:67: '9'
                             {
                             match('9'); if (state.failed) return ;
 
@@ -5267,7 +5267,7 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "Z"
     public final void mZ() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:967:17: ( ( 'z' | 'Z' ) | '\\\\' ( 'z' | 'Z' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( 'A' | 'a' ) ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:972:17: ( ( 'z' | 'Z' ) | '\\\\' ( 'z' | 'Z' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( 'A' | 'a' ) ) )
             int alt161=2;
             int LA161_0 = input.LA(1);
 
@@ -5286,7 +5286,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt161) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:967:21: ( 'z' | 'Z' )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:972:21: ( 'z' | 'Z' )
                     {
                     if ( input.LA(1)=='Z'||input.LA(1)=='z' ) {
                         input.consume();
@@ -5302,10 +5302,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:968:19: '\\\\' ( 'z' | 'Z' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( 'A' | 'a' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:973:19: '\\\\' ( 'z' | 'Z' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( 'A' | 'a' ) )
                     {
                     match('\\'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:969:25: ( 'z' | 'Z' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( 'A' | 'a' ) )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:974:25: ( 'z' | 'Z' | ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( 'A' | 'a' ) )
                     int alt160=3;
                     switch ( input.LA(1) ) {
                     case 'z':
@@ -5335,23 +5335,23 @@ public class Css3Lexer extends Lexer {
 
                     switch (alt160) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:970:31: 'z'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:975:31: 'z'
                             {
                             match('z'); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:971:31: 'Z'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:976:31: 'Z'
                             {
                             match('Z'); if (state.failed) return ;
 
                             }
                             break;
                         case 3 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:972:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( 'A' | 'a' )
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:977:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )? ( '5' | '7' ) ( 'A' | 'a' )
                             {
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:972:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:977:31: ( '0' ( '0' ( '0' ( '0' )? )? )? )?
                             int alt159=2;
                             int LA159_0 = input.LA(1);
 
@@ -5360,10 +5360,10 @@ public class Css3Lexer extends Lexer {
                             }
                             switch (alt159) {
                                 case 1 :
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:972:32: '0' ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:977:32: '0' ( '0' ( '0' ( '0' )? )? )?
                                     {
                                     match('0'); if (state.failed) return ;
-                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:972:36: ( '0' ( '0' ( '0' )? )? )?
+                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:977:36: ( '0' ( '0' ( '0' )? )? )?
                                     int alt158=2;
                                     int LA158_0 = input.LA(1);
 
@@ -5372,10 +5372,10 @@ public class Css3Lexer extends Lexer {
                                     }
                                     switch (alt158) {
                                         case 1 :
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:972:37: '0' ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:977:37: '0' ( '0' ( '0' )? )?
                                             {
                                             match('0'); if (state.failed) return ;
-                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:972:41: ( '0' ( '0' )? )?
+                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:977:41: ( '0' ( '0' )? )?
                                             int alt157=2;
                                             int LA157_0 = input.LA(1);
 
@@ -5384,10 +5384,10 @@ public class Css3Lexer extends Lexer {
                                             }
                                             switch (alt157) {
                                                 case 1 :
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:972:42: '0' ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:977:42: '0' ( '0' )?
                                                     {
                                                     match('0'); if (state.failed) return ;
-                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:972:46: ( '0' )?
+                                                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:977:46: ( '0' )?
                                                     int alt156=2;
                                                     int LA156_0 = input.LA(1);
 
@@ -5396,7 +5396,7 @@ public class Css3Lexer extends Lexer {
                                                     }
                                                     switch (alt156) {
                                                         case 1 :
-                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:972:46: '0'
+                                                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:977:46: '0'
                                                             {
                                                             match('0'); if (state.failed) return ;
 
@@ -5465,15 +5465,15 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:983:17: ( '/*' ( options {greedy=false; } : ( . )* ) '*/' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:983:19: '/*' ( options {greedy=false; } : ( . )* ) '*/'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:988:17: ( '/*' ( options {greedy=false; } : ( . )* ) '*/' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:988:19: '/*' ( options {greedy=false; } : ( . )* ) '*/'
             {
             match("/*"); if (state.failed) return ;
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:983:24: ( options {greedy=false; } : ( . )* )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:983:54: ( . )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:988:24: ( options {greedy=false; } : ( . )* )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:988:54: ( . )*
             {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:983:54: ( . )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:988:54: ( . )*
             loop162:
             do {
                 int alt162=2;
@@ -5498,7 +5498,7 @@ public class Css3Lexer extends Lexer {
 
                 switch (alt162) {
             	case 1 :
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:983:54: .
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:988:54: .
             	    {
             	    matchAny(); if (state.failed) return ;
 
@@ -5536,8 +5536,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = CDO;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:996:17: ( '<!--' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:996:19: '<!--'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1001:17: ( '<!--' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1001:19: '<!--'
             {
             match("<!--"); if (state.failed) return ;
 
@@ -5562,8 +5562,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = CDC;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1009:17: ( '-->' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1009:19: '-->'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1014:17: ( '-->' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1014:19: '-->'
             {
             match("-->"); if (state.failed) return ;
 
@@ -5588,8 +5588,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = INCLUDES;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1016:17: ( '~=' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1016:19: '~='
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1021:17: ( '~=' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1021:19: '~='
             {
             match("~="); if (state.failed) return ;
 
@@ -5609,8 +5609,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = DASHMATCH;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1017:17: ( '|=' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1017:19: '|='
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1022:17: ( '|=' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1022:19: '|='
             {
             match("|="); if (state.failed) return ;
 
@@ -5630,8 +5630,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = BEGINS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1018:17: ( '^=' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1018:19: '^='
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1023:17: ( '^=' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1023:19: '^='
             {
             match("^="); if (state.failed) return ;
 
@@ -5651,8 +5651,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = ENDS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1019:17: ( '$=' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1019:19: '$='
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1024:17: ( '$=' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1024:19: '$='
             {
             match("$="); if (state.failed) return ;
 
@@ -5672,8 +5672,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = CONTAINS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1020:17: ( '*=' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1020:19: '*='
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1025:17: ( '*=' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1025:19: '*='
             {
             match("*="); if (state.failed) return ;
 
@@ -5693,8 +5693,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = GREATER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1022:17: ( '>' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1022:19: '>'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1027:17: ( '>' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1027:19: '>'
             {
             match('>'); if (state.failed) return ;
 
@@ -5713,8 +5713,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = LBRACE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1023:17: ( '{' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1023:19: '{'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1028:17: ( '{' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1028:19: '{'
             {
             match('{'); if (state.failed) return ;
 
@@ -5733,8 +5733,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = RBRACE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1024:17: ( '}' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1024:19: '}'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1029:17: ( '}' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1029:19: '}'
             {
             match('}'); if (state.failed) return ;
 
@@ -5753,8 +5753,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = LBRACKET;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1025:17: ( '[' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1025:19: '['
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1030:17: ( '[' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1030:19: '['
             {
             match('['); if (state.failed) return ;
 
@@ -5773,8 +5773,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = RBRACKET;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1026:17: ( ']' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1026:19: ']'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1031:17: ( ']' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1031:19: ']'
             {
             match(']'); if (state.failed) return ;
 
@@ -5793,8 +5793,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = OPEQ;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1027:17: ( '=' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1027:19: '='
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1032:17: ( '=' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1032:19: '='
             {
             match('='); if (state.failed) return ;
 
@@ -5813,8 +5813,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = SEMI;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1028:17: ( ';' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1028:19: ';'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1033:17: ( ';' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1033:19: ';'
             {
             match(';'); if (state.failed) return ;
 
@@ -5833,8 +5833,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = COLON;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1029:17: ( ':' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1029:19: ':'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1034:17: ( ':' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1034:19: ':'
             {
             match(':'); if (state.failed) return ;
 
@@ -5853,8 +5853,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = DCOLON;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1030:17: ( '::' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1030:19: '::'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1035:17: ( '::' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1035:19: '::'
             {
             match("::"); if (state.failed) return ;
 
@@ -5874,8 +5874,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = SOLIDUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1031:17: ( '/' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1031:19: '/'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1036:17: ( '/' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1036:19: '/'
             {
             match('/'); if (state.failed) return ;
 
@@ -5894,8 +5894,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = MINUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1032:17: ( '-' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1032:19: '-'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1037:17: ( '-' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1037:19: '-'
             {
             match('-'); if (state.failed) return ;
 
@@ -5914,8 +5914,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = PLUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1033:17: ( '+' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1033:19: '+'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1038:17: ( '+' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1038:19: '+'
             {
             match('+'); if (state.failed) return ;
 
@@ -5934,8 +5934,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = STAR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1034:17: ( '*' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1034:19: '*'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1039:17: ( '*' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1039:19: '*'
             {
             match('*'); if (state.failed) return ;
 
@@ -5954,8 +5954,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = LPAREN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1035:17: ( '(' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1035:19: '('
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1040:17: ( '(' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1040:19: '('
             {
             match('('); if (state.failed) return ;
 
@@ -5974,8 +5974,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = RPAREN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1036:17: ( ')' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1036:19: ')'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1041:17: ( ')' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1041:19: ')'
             {
             match(')'); if (state.failed) return ;
 
@@ -5994,8 +5994,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = COMMA;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1037:17: ( ',' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1037:19: ','
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1042:17: ( ',' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1042:19: ','
             {
             match(','); if (state.failed) return ;
 
@@ -6014,8 +6014,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = DOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1038:17: ( '.' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1038:19: '.'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1043:17: ( '.' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1043:19: '.'
             {
             match('.'); if (state.failed) return ;
 
@@ -6034,8 +6034,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = TILDE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1039:8: ( '~' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1039:10: '~'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1044:8: ( '~' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1044:10: '~'
             {
             match('~'); if (state.failed) return ;
 
@@ -6054,8 +6054,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = PIPE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1040:17: ( '|' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1040:19: '|'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1045:17: ( '|' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1045:19: '|'
             {
             match('|'); if (state.failed) return ;
 
@@ -6072,8 +6072,8 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "INVALID"
     public final void mINVALID() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1045:21: ()
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1045:22: 
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1050:21: ()
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1050:22: 
             {
             }
 
@@ -6088,7 +6088,7 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1046:17: ( '\\'' (~ ( '\\n' | '\\r' | '\\f' | '\\'' ) )* ( '\\'' | ) | '\"' (~ ( '\\n' | '\\r' | '\\f' | '\"' ) )* ( '\"' | ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1051:17: ( '\\'' (~ ( '\\n' | '\\r' | '\\f' | '\\'' ) )* ( '\\'' | ) | '\"' (~ ( '\\n' | '\\r' | '\\f' | '\"' ) )* ( '\"' | ) )
             int alt167=2;
             int LA167_0 = input.LA(1);
 
@@ -6107,10 +6107,10 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt167) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1046:19: '\\'' (~ ( '\\n' | '\\r' | '\\f' | '\\'' ) )* ( '\\'' | )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1051:19: '\\'' (~ ( '\\n' | '\\r' | '\\f' | '\\'' ) )* ( '\\'' | )
                     {
                     match('\''); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1046:24: (~ ( '\\n' | '\\r' | '\\f' | '\\'' ) )*
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1051:24: (~ ( '\\n' | '\\r' | '\\f' | '\\'' ) )*
                     loop163:
                     do {
                         int alt163=2;
@@ -6123,7 +6123,7 @@ public class Css3Lexer extends Lexer {
 
                         switch (alt163) {
                     	case 1 :
-                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1046:26: ~ ( '\\n' | '\\r' | '\\f' | '\\'' )
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1051:26: ~ ( '\\n' | '\\r' | '\\f' | '\\'' )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='\t')||input.LA(1)=='\u000B'||(input.LA(1)>='\u000E' && input.LA(1)<='&')||(input.LA(1)>='(' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -6144,7 +6144,7 @@ public class Css3Lexer extends Lexer {
                         }
                     } while (true);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1047:21: ( '\\'' | )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1052:21: ( '\\'' | )
                     int alt164=2;
                     int LA164_0 = input.LA(1);
 
@@ -6155,14 +6155,14 @@ public class Css3Lexer extends Lexer {
                         alt164=2;}
                     switch (alt164) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1048:27: '\\''
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1053:27: '\\''
                             {
                             match('\''); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1049:27: 
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1054:27: 
                             {
                             if ( state.backtracking==0 ) {
                                _type = INVALID; 
@@ -6177,10 +6177,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1052:19: '\"' (~ ( '\\n' | '\\r' | '\\f' | '\"' ) )* ( '\"' | )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1057:19: '\"' (~ ( '\\n' | '\\r' | '\\f' | '\"' ) )* ( '\"' | )
                     {
                     match('\"'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1052:23: (~ ( '\\n' | '\\r' | '\\f' | '\"' ) )*
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1057:23: (~ ( '\\n' | '\\r' | '\\f' | '\"' ) )*
                     loop165:
                     do {
                         int alt165=2;
@@ -6193,7 +6193,7 @@ public class Css3Lexer extends Lexer {
 
                         switch (alt165) {
                     	case 1 :
-                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1052:25: ~ ( '\\n' | '\\r' | '\\f' | '\"' )
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1057:25: ~ ( '\\n' | '\\r' | '\\f' | '\"' )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='\t')||input.LA(1)=='\u000B'||(input.LA(1)>='\u000E' && input.LA(1)<='!')||(input.LA(1)>='#' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -6214,7 +6214,7 @@ public class Css3Lexer extends Lexer {
                         }
                     } while (true);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1053:21: ( '\"' | )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1058:21: ( '\"' | )
                     int alt166=2;
                     int LA166_0 = input.LA(1);
 
@@ -6225,14 +6225,14 @@ public class Css3Lexer extends Lexer {
                         alt166=2;}
                     switch (alt166) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1054:27: '\"'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1059:27: '\"'
                             {
                             match('\"'); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1055:27: 
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1060:27: 
                             {
                             if ( state.backtracking==0 ) {
                                _type = INVALID; 
@@ -6261,8 +6261,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = ONLY;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1060:8: ( O N L Y )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1060:10: O N L Y
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1065:8: ( O N L Y )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1065:10: O N L Y
             {
             mO(); if (state.failed) return ;
             mN(); if (state.failed) return ;
@@ -6284,8 +6284,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = NOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1061:6: ( N O T )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1061:8: N O T
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1066:6: ( N O T )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1066:8: N O T
             {
             mN(); if (state.failed) return ;
             mO(); if (state.failed) return ;
@@ -6306,8 +6306,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = AND;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1062:6: ( A N D )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1062:8: A N D
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1067:6: ( A N D )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1067:8: A N D
             {
             mA(); if (state.failed) return ;
             mN(); if (state.failed) return ;
@@ -6328,10 +6328,10 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = IDENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1067:17: ( ( '-' )? NMSTART ( NMCHAR )* )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1067:19: ( '-' )? NMSTART ( NMCHAR )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1072:17: ( ( '-' )? NMSTART ( NMCHAR )* )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1072:19: ( '-' )? NMSTART ( NMCHAR )*
             {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1067:19: ( '-' )?
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1072:19: ( '-' )?
             int alt168=2;
             int LA168_0 = input.LA(1);
 
@@ -6340,7 +6340,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt168) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1067:19: '-'
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1072:19: '-'
                     {
                     match('-'); if (state.failed) return ;
 
@@ -6350,7 +6350,7 @@ public class Css3Lexer extends Lexer {
             }
 
             mNMSTART(); if (state.failed) return ;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1067:32: ( NMCHAR )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1072:32: ( NMCHAR )*
             loop169:
             do {
                 int alt169=2;
@@ -6363,7 +6363,7 @@ public class Css3Lexer extends Lexer {
 
                 switch (alt169) {
             	case 1 :
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1067:32: NMCHAR
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1072:32: NMCHAR
             	    {
             	    mNMCHAR(); if (state.failed) return ;
 
@@ -6391,8 +6391,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = HASH;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1072:17: ( '#' NAME )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1072:19: '#' NAME
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1077:17: ( '#' NAME )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1077:19: '#' NAME
             {
             match('#'); if (state.failed) return ;
             mNAME(); if (state.failed) return ;
@@ -6412,8 +6412,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = IMPORT_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1074:21: ( '@' I M P O R T )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1074:23: '@' I M P O R T
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1079:21: ( '@' I M P O R T )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1079:23: '@' I M P O R T
             {
             match('@'); if (state.failed) return ;
             mI(); if (state.failed) return ;
@@ -6438,8 +6438,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = PAGE_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1075:21: ( '@' P A G E )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1075:23: '@' P A G E
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1080:21: ( '@' P A G E )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1080:23: '@' P A G E
             {
             match('@'); if (state.failed) return ;
             mP(); if (state.failed) return ;
@@ -6462,8 +6462,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = MEDIA_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1076:21: ( '@' M E D I A )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1076:23: '@' M E D I A
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1081:21: ( '@' M E D I A )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1081:23: '@' M E D I A
             {
             match('@'); if (state.failed) return ;
             mM(); if (state.failed) return ;
@@ -6487,8 +6487,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = NAMESPACE_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1077:21: ( '@' N A M E S P A C E )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1077:23: '@' N A M E S P A C E
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1082:21: ( '@' N A M E S P A C E )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1082:23: '@' N A M E S P A C E
             {
             match('@'); if (state.failed) return ;
             mN(); if (state.failed) return ;
@@ -6516,8 +6516,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = CHARSET_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1078:21: ( '@charset' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1078:23: '@charset'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1083:21: ( '@charset' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1083:23: '@charset'
             {
             match("@charset"); if (state.failed) return ;
 
@@ -6537,8 +6537,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = COUNTER_STYLE_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1079:21: ( '@counter-style' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1079:23: '@counter-style'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1084:21: ( '@counter-style' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1084:23: '@counter-style'
             {
             match("@counter-style"); if (state.failed) return ;
 
@@ -6558,8 +6558,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = FONT_FACE_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1080:21: ( '@font-face' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1080:23: '@font-face'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1085:21: ( '@font-face' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1085:23: '@font-face'
             {
             match("@font-face"); if (state.failed) return ;
 
@@ -6579,11 +6579,11 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = IMPORTANT_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1083:17: ( '!' ( WS | COMMENT )* I M P O R T A N T )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1083:19: '!' ( WS | COMMENT )* I M P O R T A N T
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1088:17: ( '!' ( WS | COMMENT )* I M P O R T A N T )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1088:19: '!' ( WS | COMMENT )* I M P O R T A N T
             {
             match('!'); if (state.failed) return ;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1083:23: ( WS | COMMENT )*
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1088:23: ( WS | COMMENT )*
             loop170:
             do {
                 int alt170=3;
@@ -6599,14 +6599,14 @@ public class Css3Lexer extends Lexer {
 
                 switch (alt170) {
             	case 1 :
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1083:24: WS
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1088:24: WS
             	    {
             	    mWS(); if (state.failed) return ;
 
             	    }
             	    break;
             	case 2 :
-            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1083:27: COMMENT
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1088:27: COMMENT
             	    {
             	    mCOMMENT(); if (state.failed) return ;
 
@@ -6643,8 +6643,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = TOPLEFTCORNER_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1085:23: ( '@top-left-corner' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1085:24: '@top-left-corner'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1090:23: ( '@top-left-corner' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1090:24: '@top-left-corner'
             {
             match("@top-left-corner"); if (state.failed) return ;
 
@@ -6664,8 +6664,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = TOPLEFT_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1086:23: ( '@top-left' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1086:24: '@top-left'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1091:23: ( '@top-left' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1091:24: '@top-left'
             {
             match("@top-left"); if (state.failed) return ;
 
@@ -6685,8 +6685,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = TOPCENTER_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1087:23: ( '@top-center' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1087:24: '@top-center'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1092:23: ( '@top-center' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1092:24: '@top-center'
             {
             match("@top-center"); if (state.failed) return ;
 
@@ -6706,8 +6706,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = TOPRIGHT_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1088:23: ( '@top-right' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1088:24: '@top-right'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1093:23: ( '@top-right' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1093:24: '@top-right'
             {
             match("@top-right"); if (state.failed) return ;
 
@@ -6727,8 +6727,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = TOPRIGHTCORNER_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1089:23: ( '@top-right-corner' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1089:24: '@top-right-corner'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1094:23: ( '@top-right-corner' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1094:24: '@top-right-corner'
             {
             match("@top-right-corner"); if (state.failed) return ;
 
@@ -6748,8 +6748,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = BOTTOMLEFTCORNER_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1090:23: ( '@bottom-left-corner' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1090:24: '@bottom-left-corner'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1095:23: ( '@bottom-left-corner' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1095:24: '@bottom-left-corner'
             {
             match("@bottom-left-corner"); if (state.failed) return ;
 
@@ -6769,8 +6769,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = BOTTOMLEFT_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1091:23: ( '@bottom-left' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1091:24: '@bottom-left'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1096:23: ( '@bottom-left' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1096:24: '@bottom-left'
             {
             match("@bottom-left"); if (state.failed) return ;
 
@@ -6790,8 +6790,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = BOTTOMCENTER_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1092:23: ( '@bottom-center' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1092:24: '@bottom-center'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1097:23: ( '@bottom-center' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1097:24: '@bottom-center'
             {
             match("@bottom-center"); if (state.failed) return ;
 
@@ -6811,8 +6811,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = BOTTOMRIGHT_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1093:23: ( '@bottom-right' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1093:24: '@bottom-right'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1098:23: ( '@bottom-right' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1098:24: '@bottom-right'
             {
             match("@bottom-right"); if (state.failed) return ;
 
@@ -6832,8 +6832,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = BOTTOMRIGHTCORNER_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1094:23: ( '@bottom-right-corner' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1094:24: '@bottom-right-corner'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1099:23: ( '@bottom-right-corner' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1099:24: '@bottom-right-corner'
             {
             match("@bottom-right-corner"); if (state.failed) return ;
 
@@ -6853,8 +6853,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = LEFTTOP_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1095:23: ( '@left-top' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1095:24: '@left-top'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1100:23: ( '@left-top' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1100:24: '@left-top'
             {
             match("@left-top"); if (state.failed) return ;
 
@@ -6874,8 +6874,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = LEFTMIDDLE_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1096:23: ( '@left-middle' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1096:24: '@left-middle'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1101:23: ( '@left-middle' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1101:24: '@left-middle'
             {
             match("@left-middle"); if (state.failed) return ;
 
@@ -6895,8 +6895,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = LEFTBOTTOM_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1097:23: ( '@left-bottom' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1097:24: '@left-bottom'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1102:23: ( '@left-bottom' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1102:24: '@left-bottom'
             {
             match("@left-bottom"); if (state.failed) return ;
 
@@ -6916,8 +6916,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = RIGHTTOP_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1098:23: ( '@right-top' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1098:24: '@right-top'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1103:23: ( '@right-top' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1103:24: '@right-top'
             {
             match("@right-top"); if (state.failed) return ;
 
@@ -6937,8 +6937,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = RIGHTMIDDLE_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1099:23: ( '@right-middle' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1099:24: '@right-middle'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1104:23: ( '@right-middle' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1104:24: '@right-middle'
             {
             match("@right-middle"); if (state.failed) return ;
 
@@ -6958,8 +6958,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = RIGHTBOTTOM_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1100:23: ( '@right-bottom' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1100:24: '@right-bottom'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1105:23: ( '@right-bottom' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1105:24: '@right-bottom'
             {
             match("@right-bottom"); if (state.failed) return ;
 
@@ -6979,8 +6979,8 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = MOZ_DOCUMENT_SYM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1102:23: ( '@-moz-document' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1102:25: '@-moz-document'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1107:23: ( '@-moz-document' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1107:25: '@-moz-document'
             {
             match("@-moz-document"); if (state.failed) return ;
 
@@ -6998,8 +6998,8 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "EMS"
     public final void mEMS() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1145:25: ()
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1145:26: 
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1150:25: ()
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1150:26: 
             {
             }
 
@@ -7012,8 +7012,8 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "EXS"
     public final void mEXS() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1146:25: ()
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1146:26: 
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1151:25: ()
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1151:26: 
             {
             }
 
@@ -7026,8 +7026,8 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "LENGTH"
     public final void mLENGTH() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1147:25: ()
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1147:26: 
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1152:25: ()
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1152:26: 
             {
             }
 
@@ -7040,8 +7040,8 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "ANGLE"
     public final void mANGLE() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1148:25: ()
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1148:26: 
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1153:25: ()
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1153:26: 
             {
             }
 
@@ -7054,8 +7054,8 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "TIME"
     public final void mTIME() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1149:25: ()
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1149:26: 
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1154:25: ()
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1154:26: 
             {
             }
 
@@ -7068,8 +7068,8 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "FREQ"
     public final void mFREQ() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1150:25: ()
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1150:26: 
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1155:25: ()
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1155:26: 
             {
             }
 
@@ -7082,8 +7082,8 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "DIMENSION"
     public final void mDIMENSION() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1151:25: ()
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1151:26: 
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1156:25: ()
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1156:26: 
             {
             }
 
@@ -7096,8 +7096,8 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "PERCENTAGE"
     public final void mPERCENTAGE() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1152:25: ()
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1152:26: 
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1157:25: ()
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1157:26: 
             {
             }
 
@@ -7110,8 +7110,8 @@ public class Css3Lexer extends Lexer {
     // $ANTLR start "RESOLUTION"
     public final void mRESOLUTION() throws RecognitionException {
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1153:25: ()
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1153:26: 
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1158:25: ()
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1158:26: 
             {
             }
 
@@ -7126,10 +7126,10 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = NUMBER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1156:5: ( ( ( '0' .. '9' )+ ( '.' ( '0' .. '9' )+ )? | '.' ( '0' .. '9' )+ ) ( ( D P ( I | C ) )=> D P ( I | C M ) | ( E ( M | X ) )=> E ( M | X ) | ( P ( X | T | C ) )=> P ( X | T | C ) | ( C M )=> C M | ( M ( M | S ) )=> M ( M | S ) | ( I N )=> I N | ( D E G )=> D E G | ( R A D )=> R A D | ( S )=> S | ( ( K )? H Z )=> ( K )? H Z | IDENT | '%' | ) )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1156:9: ( ( '0' .. '9' )+ ( '.' ( '0' .. '9' )+ )? | '.' ( '0' .. '9' )+ ) ( ( D P ( I | C ) )=> D P ( I | C M ) | ( E ( M | X ) )=> E ( M | X ) | ( P ( X | T | C ) )=> P ( X | T | C ) | ( C M )=> C M | ( M ( M | S ) )=> M ( M | S ) | ( I N )=> I N | ( D E G )=> D E G | ( R A D )=> R A D | ( S )=> S | ( ( K )? H Z )=> ( K )? H Z | IDENT | '%' | )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1161:5: ( ( ( '0' .. '9' )+ ( '.' ( '0' .. '9' )+ )? | '.' ( '0' .. '9' )+ ) ( ( D P ( I | C ) )=> D P ( I | C M ) | ( E ( M | X ) )=> E ( M | X ) | ( P ( X | T | C ) )=> P ( X | T | C ) | ( C M )=> C M | ( M ( M | S ) )=> M ( M | S ) | ( I N )=> I N | ( D E G )=> D E G | ( R A D )=> R A D | ( S )=> S | ( ( K )? H Z )=> ( K )? H Z | IDENT | '%' | ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1161:9: ( ( '0' .. '9' )+ ( '.' ( '0' .. '9' )+ )? | '.' ( '0' .. '9' )+ ) ( ( D P ( I | C ) )=> D P ( I | C M ) | ( E ( M | X ) )=> E ( M | X ) | ( P ( X | T | C ) )=> P ( X | T | C ) | ( C M )=> C M | ( M ( M | S ) )=> M ( M | S ) | ( I N )=> I N | ( D E G )=> D E G | ( R A D )=> R A D | ( S )=> S | ( ( K )? H Z )=> ( K )? H Z | IDENT | '%' | )
             {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1156:9: ( ( '0' .. '9' )+ ( '.' ( '0' .. '9' )+ )? | '.' ( '0' .. '9' )+ )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1161:9: ( ( '0' .. '9' )+ ( '.' ( '0' .. '9' )+ )? | '.' ( '0' .. '9' )+ )
             int alt175=2;
             int LA175_0 = input.LA(1);
 
@@ -7148,9 +7148,9 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt175) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1157:15: ( '0' .. '9' )+ ( '.' ( '0' .. '9' )+ )?
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1162:15: ( '0' .. '9' )+ ( '.' ( '0' .. '9' )+ )?
                     {
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1157:15: ( '0' .. '9' )+
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1162:15: ( '0' .. '9' )+
                     int cnt171=0;
                     loop171:
                     do {
@@ -7164,7 +7164,7 @@ public class Css3Lexer extends Lexer {
 
                         switch (alt171) {
                     	case 1 :
-                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1157:15: '0' .. '9'
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1162:15: '0' .. '9'
                     	    {
                     	    matchRange('0','9'); if (state.failed) return ;
 
@@ -7181,7 +7181,7 @@ public class Css3Lexer extends Lexer {
                         cnt171++;
                     } while (true);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1157:25: ( '.' ( '0' .. '9' )+ )?
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1162:25: ( '.' ( '0' .. '9' )+ )?
                     int alt173=2;
                     int LA173_0 = input.LA(1);
 
@@ -7190,10 +7190,10 @@ public class Css3Lexer extends Lexer {
                     }
                     switch (alt173) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1157:26: '.' ( '0' .. '9' )+
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1162:26: '.' ( '0' .. '9' )+
                             {
                             match('.'); if (state.failed) return ;
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1157:30: ( '0' .. '9' )+
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1162:30: ( '0' .. '9' )+
                             int cnt172=0;
                             loop172:
                             do {
@@ -7207,7 +7207,7 @@ public class Css3Lexer extends Lexer {
 
                                 switch (alt172) {
                             	case 1 :
-                            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1157:30: '0' .. '9'
+                            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1162:30: '0' .. '9'
                             	    {
                             	    matchRange('0','9'); if (state.failed) return ;
 
@@ -7234,10 +7234,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1158:15: '.' ( '0' .. '9' )+
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1163:15: '.' ( '0' .. '9' )+
                     {
                     match('.'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1158:19: ( '0' .. '9' )+
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1163:19: ( '0' .. '9' )+
                     int cnt174=0;
                     loop174:
                     do {
@@ -7251,7 +7251,7 @@ public class Css3Lexer extends Lexer {
 
                         switch (alt174) {
                     	case 1 :
-                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1158:19: '0' .. '9'
+                    	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1163:19: '0' .. '9'
                     	    {
                     	    matchRange('0','9'); if (state.failed) return ;
 
@@ -7274,16 +7274,16 @@ public class Css3Lexer extends Lexer {
 
             }
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1160:9: ( ( D P ( I | C ) )=> D P ( I | C M ) | ( E ( M | X ) )=> E ( M | X ) | ( P ( X | T | C ) )=> P ( X | T | C ) | ( C M )=> C M | ( M ( M | S ) )=> M ( M | S ) | ( I N )=> I N | ( D E G )=> D E G | ( R A D )=> R A D | ( S )=> S | ( ( K )? H Z )=> ( K )? H Z | IDENT | '%' | )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1165:9: ( ( D P ( I | C ) )=> D P ( I | C M ) | ( E ( M | X ) )=> E ( M | X ) | ( P ( X | T | C ) )=> P ( X | T | C ) | ( C M )=> C M | ( M ( M | S ) )=> M ( M | S ) | ( I N )=> I N | ( D E G )=> D E G | ( R A D )=> R A D | ( S )=> S | ( ( K )? H Z )=> ( K )? H Z | IDENT | '%' | )
             int alt181=13;
             alt181 = dfa181.predict(input);
             switch (alt181) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1161:15: ( D P ( I | C ) )=> D P ( I | C M )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1166:15: ( D P ( I | C ) )=> D P ( I | C M )
                     {
                     mD(); if (state.failed) return ;
                     mP(); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1163:17: ( I | C M )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1168:17: ( I | C M )
                     int alt176=2;
                     switch ( input.LA(1) ) {
                     case 'I':
@@ -7461,14 +7461,14 @@ public class Css3Lexer extends Lexer {
 
                     switch (alt176) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1164:22: I
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1169:22: I
                             {
                             mI(); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1164:26: C M
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1169:26: C M
                             {
                             mC(); if (state.failed) return ;
                             mM(); if (state.failed) return ;
@@ -7485,10 +7485,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1168:15: ( E ( M | X ) )=> E ( M | X )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1173:15: ( E ( M | X ) )=> E ( M | X )
                     {
                     mE(); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1170:17: ( M | X )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1175:17: ( M | X )
                     int alt177=2;
                     switch ( input.LA(1) ) {
                     case 'M':
@@ -7636,7 +7636,7 @@ public class Css3Lexer extends Lexer {
 
                     switch (alt177) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1171:23: M
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1176:23: M
                             {
                             mM(); if (state.failed) return ;
                             if ( state.backtracking==0 ) {
@@ -7646,7 +7646,7 @@ public class Css3Lexer extends Lexer {
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1172:23: X
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1177:23: X
                             {
                             mX(); if (state.failed) return ;
                             if ( state.backtracking==0 ) {
@@ -7662,29 +7662,29 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 3 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1174:15: ( P ( X | T | C ) )=> P ( X | T | C )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1179:15: ( P ( X | T | C ) )=> P ( X | T | C )
                     {
                     mP(); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1176:17: ( X | T | C )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1181:17: ( X | T | C )
                     int alt178=3;
                     alt178 = dfa178.predict(input);
                     switch (alt178) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1177:23: X
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1182:23: X
                             {
                             mX(); if (state.failed) return ;
 
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1178:23: T
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1183:23: T
                             {
                             mT(); if (state.failed) return ;
 
                             }
                             break;
                         case 3 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1179:23: C
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1184:23: C
                             {
                             mC(); if (state.failed) return ;
 
@@ -7700,7 +7700,7 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 4 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1182:15: ( C M )=> C M
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1187:15: ( C M )=> C M
                     {
                     mC(); if (state.failed) return ;
                     mM(); if (state.failed) return ;
@@ -7711,10 +7711,10 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 5 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1184:15: ( M ( M | S ) )=> M ( M | S )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1189:15: ( M ( M | S ) )=> M ( M | S )
                     {
                     mM(); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1186:17: ( M | S )
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1191:17: ( M | S )
                     int alt179=2;
                     switch ( input.LA(1) ) {
                     case 'M':
@@ -7862,7 +7862,7 @@ public class Css3Lexer extends Lexer {
 
                     switch (alt179) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1187:23: M
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1192:23: M
                             {
                             mM(); if (state.failed) return ;
                             if ( state.backtracking==0 ) {
@@ -7872,7 +7872,7 @@ public class Css3Lexer extends Lexer {
                             }
                             break;
                         case 2 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1189:23: S
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1194:23: S
                             {
                             mS(); if (state.failed) return ;
                             if ( state.backtracking==0 ) {
@@ -7888,7 +7888,7 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 6 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1191:15: ( I N )=> I N
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1196:15: ( I N )=> I N
                     {
                     mI(); if (state.failed) return ;
                     mN(); if (state.failed) return ;
@@ -7899,7 +7899,7 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 7 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1194:15: ( D E G )=> D E G
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1199:15: ( D E G )=> D E G
                     {
                     mD(); if (state.failed) return ;
                     mE(); if (state.failed) return ;
@@ -7911,7 +7911,7 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 8 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1196:15: ( R A D )=> R A D
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1201:15: ( R A D )=> R A D
                     {
                     mR(); if (state.failed) return ;
                     mA(); if (state.failed) return ;
@@ -7923,7 +7923,7 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 9 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1199:15: ( S )=> S
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1204:15: ( S )=> S
                     {
                     mS(); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
@@ -7933,9 +7933,9 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 10 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1201:15: ( ( K )? H Z )=> ( K )? H Z
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1206:15: ( ( K )? H Z )=> ( K )? H Z
                     {
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1202:17: ( K )?
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1207:17: ( K )?
                     int alt180=2;
                     int LA180_0 = input.LA(1);
 
@@ -8011,7 +8011,7 @@ public class Css3Lexer extends Lexer {
                     }
                     switch (alt180) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1202:17: K
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1207:17: K
                             {
                             mK(); if (state.failed) return ;
 
@@ -8029,7 +8029,7 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 11 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1204:15: IDENT
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1209:15: IDENT
                     {
                     mIDENT(); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
@@ -8039,7 +8039,7 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 12 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1206:15: '%'
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1211:15: '%'
                     {
                     match('%'); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
@@ -8049,7 +8049,7 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 13 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1209:9: 
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1214:9: 
                     {
                     }
                     break;
@@ -8072,14 +8072,14 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = URI;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1215:5: ( U R L '(' ( ( WS )=> WS )? ( URL | STRING ) ( WS )? ')' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1215:9: U R L '(' ( ( WS )=> WS )? ( URL | STRING ) ( WS )? ')'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1220:5: ( U R L '(' ( ( WS )=> WS )? ( URL | STRING ) ( WS )? ')' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1220:9: U R L '(' ( ( WS )=> WS )? ( URL | STRING ) ( WS )? ')'
             {
             mU(); if (state.failed) return ;
             mR(); if (state.failed) return ;
             mL(); if (state.failed) return ;
             match('('); if (state.failed) return ;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1217:13: ( ( WS )=> WS )?
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1222:13: ( ( WS )=> WS )?
             int alt182=2;
             int LA182_0 = input.LA(1);
 
@@ -8092,7 +8092,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt182) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1217:14: ( WS )=> WS
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1222:14: ( WS )=> WS
                     {
                     mWS(); if (state.failed) return ;
 
@@ -8101,7 +8101,7 @@ public class Css3Lexer extends Lexer {
 
             }
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1217:25: ( URL | STRING )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1222:25: ( URL | STRING )
             int alt183=2;
             int LA183_0 = input.LA(1);
 
@@ -8120,14 +8120,14 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt183) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1217:26: URL
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1222:26: URL
                     {
                     mURL(); if (state.failed) return ;
 
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1217:30: STRING
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1222:30: STRING
                     {
                     mSTRING(); if (state.failed) return ;
 
@@ -8136,7 +8136,7 @@ public class Css3Lexer extends Lexer {
 
             }
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1217:38: ( WS )?
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1222:38: ( WS )?
             int alt184=2;
             int LA184_0 = input.LA(1);
 
@@ -8145,7 +8145,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt184) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1217:38: WS
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1222:38: WS
                     {
                     mWS(); if (state.failed) return ;
 
@@ -8171,12 +8171,12 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = MOZ_URL_PREFIX;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1222:2: ( 'url-prefix(' ( ( WS )=> WS )? ( URL | STRING ) ( WS )? ')' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1223:2: 'url-prefix(' ( ( WS )=> WS )? ( URL | STRING ) ( WS )? ')'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1227:2: ( 'url-prefix(' ( ( WS )=> WS )? ( URL | STRING ) ( WS )? ')' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1228:2: 'url-prefix(' ( ( WS )=> WS )? ( URL | STRING ) ( WS )? ')'
             {
             match("url-prefix("); if (state.failed) return ;
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1224:13: ( ( WS )=> WS )?
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1229:13: ( ( WS )=> WS )?
             int alt185=2;
             int LA185_0 = input.LA(1);
 
@@ -8189,7 +8189,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt185) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1224:14: ( WS )=> WS
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1229:14: ( WS )=> WS
                     {
                     mWS(); if (state.failed) return ;
 
@@ -8198,7 +8198,7 @@ public class Css3Lexer extends Lexer {
 
             }
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1224:25: ( URL | STRING )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1229:25: ( URL | STRING )
             int alt186=2;
             int LA186_0 = input.LA(1);
 
@@ -8217,14 +8217,14 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt186) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1224:26: URL
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1229:26: URL
                     {
                     mURL(); if (state.failed) return ;
 
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1224:30: STRING
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1229:30: STRING
                     {
                     mSTRING(); if (state.failed) return ;
 
@@ -8233,7 +8233,7 @@ public class Css3Lexer extends Lexer {
 
             }
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1224:38: ( WS )?
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1229:38: ( WS )?
             int alt187=2;
             int LA187_0 = input.LA(1);
 
@@ -8242,7 +8242,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt187) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1224:38: WS
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1229:38: WS
                     {
                     mWS(); if (state.failed) return ;
 
@@ -8268,12 +8268,12 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = MOZ_DOMAIN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1230:2: ( 'domain(' ( ( WS )=> WS )? ( URL | STRING ) ( WS )? ')' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1231:2: 'domain(' ( ( WS )=> WS )? ( URL | STRING ) ( WS )? ')'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1235:2: ( 'domain(' ( ( WS )=> WS )? ( URL | STRING ) ( WS )? ')' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1236:2: 'domain(' ( ( WS )=> WS )? ( URL | STRING ) ( WS )? ')'
             {
             match("domain("); if (state.failed) return ;
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1232:13: ( ( WS )=> WS )?
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1237:13: ( ( WS )=> WS )?
             int alt188=2;
             int LA188_0 = input.LA(1);
 
@@ -8286,7 +8286,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt188) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1232:14: ( WS )=> WS
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1237:14: ( WS )=> WS
                     {
                     mWS(); if (state.failed) return ;
 
@@ -8295,7 +8295,7 @@ public class Css3Lexer extends Lexer {
 
             }
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1232:25: ( URL | STRING )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1237:25: ( URL | STRING )
             int alt189=2;
             int LA189_0 = input.LA(1);
 
@@ -8314,14 +8314,14 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt189) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1232:26: URL
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1237:26: URL
                     {
                     mURL(); if (state.failed) return ;
 
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1232:30: STRING
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1237:30: STRING
                     {
                     mSTRING(); if (state.failed) return ;
 
@@ -8330,7 +8330,7 @@ public class Css3Lexer extends Lexer {
 
             }
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1232:38: ( WS )?
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1237:38: ( WS )?
             int alt190=2;
             int LA190_0 = input.LA(1);
 
@@ -8339,7 +8339,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt190) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1232:38: WS
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1237:38: WS
                     {
                     mWS(); if (state.failed) return ;
 
@@ -8365,12 +8365,12 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = MOZ_REGEXP;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1238:2: ( 'regexp(' ( ( WS )=> WS )? STRING ( WS )? ')' )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1239:2: 'regexp(' ( ( WS )=> WS )? STRING ( WS )? ')'
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1243:2: ( 'regexp(' ( ( WS )=> WS )? STRING ( WS )? ')' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1244:2: 'regexp(' ( ( WS )=> WS )? STRING ( WS )? ')'
             {
             match("regexp("); if (state.failed) return ;
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1240:13: ( ( WS )=> WS )?
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1245:13: ( ( WS )=> WS )?
             int alt191=2;
             int LA191_0 = input.LA(1);
 
@@ -8379,7 +8379,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt191) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1240:14: ( WS )=> WS
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1245:14: ( WS )=> WS
                     {
                     mWS(); if (state.failed) return ;
 
@@ -8389,7 +8389,7 @@ public class Css3Lexer extends Lexer {
             }
 
             mSTRING(); if (state.failed) return ;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1240:32: ( WS )?
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1245:32: ( WS )?
             int alt192=2;
             int LA192_0 = input.LA(1);
 
@@ -8398,7 +8398,7 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt192) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1240:32: WS
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1245:32: WS
                     {
                     mWS(); if (state.failed) return ;
 
@@ -8424,10 +8424,10 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1253:9: ( ( ' ' | '\\t' )+ )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1253:11: ( ' ' | '\\t' )+
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1258:9: ( ( ' ' | '\\t' )+ )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1258:11: ( ' ' | '\\t' )+
             {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1253:11: ( ' ' | '\\t' )+
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1258:11: ( ' ' | '\\t' )+
             int cnt193=0;
             loop193:
             do {
@@ -8483,10 +8483,10 @@ public class Css3Lexer extends Lexer {
         try {
             int _type = NL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1254:9: ( ( '\\r' ( '\\n' )? | '\\n' ) )
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1254:11: ( '\\r' ( '\\n' )? | '\\n' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1259:9: ( ( '\\r' ( '\\n' )? | '\\n' ) )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1259:11: ( '\\r' ( '\\n' )? | '\\n' )
             {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1254:11: ( '\\r' ( '\\n' )? | '\\n' )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1259:11: ( '\\r' ( '\\n' )? | '\\n' )
             int alt195=2;
             int LA195_0 = input.LA(1);
 
@@ -8505,10 +8505,10 @@ public class Css3Lexer extends Lexer {
             }
             switch (alt195) {
                 case 1 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1254:12: '\\r' ( '\\n' )?
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1259:12: '\\r' ( '\\n' )?
                     {
                     match('\r'); if (state.failed) return ;
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1254:17: ( '\\n' )?
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1259:17: ( '\\n' )?
                     int alt194=2;
                     int LA194_0 = input.LA(1);
 
@@ -8517,7 +8517,7 @@ public class Css3Lexer extends Lexer {
                     }
                     switch (alt194) {
                         case 1 :
-                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1254:17: '\\n'
+                            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1259:17: '\\n'
                             {
                             match('\n'); if (state.failed) return ;
 
@@ -8530,7 +8530,7 @@ public class Css3Lexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1254:25: '\\n'
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1259:25: '\\n'
                     {
                     match('\n'); if (state.failed) return ;
 
@@ -9034,12 +9034,12 @@ public class Css3Lexer extends Lexer {
 
     // $ANTLR start synpred1_Css3
     public final void synpred1_Css3_fragment() throws RecognitionException {   
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1161:15: ( D P ( I | C ) )
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1161:16: D P ( I | C )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1166:15: ( D P ( I | C ) )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1166:16: D P ( I | C )
         {
         mD(); if (state.failed) return ;
         mP(); if (state.failed) return ;
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1161:20: ( I | C )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1166:20: ( I | C )
         int alt197=2;
         switch ( input.LA(1) ) {
         case 'I':
@@ -9217,14 +9217,14 @@ public class Css3Lexer extends Lexer {
 
         switch (alt197) {
             case 1 :
-                // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1161:21: I
+                // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1166:21: I
                 {
                 mI(); if (state.failed) return ;
 
                 }
                 break;
             case 2 :
-                // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1161:23: C
+                // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1166:23: C
                 {
                 mC(); if (state.failed) return ;
 
@@ -9240,11 +9240,11 @@ public class Css3Lexer extends Lexer {
 
     // $ANTLR start synpred2_Css3
     public final void synpred2_Css3_fragment() throws RecognitionException {   
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1168:15: ( E ( M | X ) )
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1168:16: E ( M | X )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1173:15: ( E ( M | X ) )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1173:16: E ( M | X )
         {
         mE(); if (state.failed) return ;
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1168:18: ( M | X )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1173:18: ( M | X )
         int alt198=2;
         switch ( input.LA(1) ) {
         case 'M':
@@ -9392,14 +9392,14 @@ public class Css3Lexer extends Lexer {
 
         switch (alt198) {
             case 1 :
-                // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1168:19: M
+                // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1173:19: M
                 {
                 mM(); if (state.failed) return ;
 
                 }
                 break;
             case 2 :
-                // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1168:21: X
+                // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1173:21: X
                 {
                 mX(); if (state.failed) return ;
 
@@ -9415,30 +9415,30 @@ public class Css3Lexer extends Lexer {
 
     // $ANTLR start synpred3_Css3
     public final void synpred3_Css3_fragment() throws RecognitionException {   
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1174:15: ( P ( X | T | C ) )
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1174:16: P ( X | T | C )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1179:15: ( P ( X | T | C ) )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1179:16: P ( X | T | C )
         {
         mP(); if (state.failed) return ;
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1174:17: ( X | T | C )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1179:17: ( X | T | C )
         int alt199=3;
         alt199 = dfa199.predict(input);
         switch (alt199) {
             case 1 :
-                // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1174:18: X
+                // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1179:18: X
                 {
                 mX(); if (state.failed) return ;
 
                 }
                 break;
             case 2 :
-                // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1174:20: T
+                // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1179:20: T
                 {
                 mT(); if (state.failed) return ;
 
                 }
                 break;
             case 3 :
-                // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1174:22: C
+                // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1179:22: C
                 {
                 mC(); if (state.failed) return ;
 
@@ -9454,8 +9454,8 @@ public class Css3Lexer extends Lexer {
 
     // $ANTLR start synpred4_Css3
     public final void synpred4_Css3_fragment() throws RecognitionException {   
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1182:15: ( C M )
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1182:16: C M
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1187:15: ( C M )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1187:16: C M
         {
         mC(); if (state.failed) return ;
         mM(); if (state.failed) return ;
@@ -9466,11 +9466,11 @@ public class Css3Lexer extends Lexer {
 
     // $ANTLR start synpred5_Css3
     public final void synpred5_Css3_fragment() throws RecognitionException {   
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1184:15: ( M ( M | S ) )
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1184:16: M ( M | S )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1189:15: ( M ( M | S ) )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1189:16: M ( M | S )
         {
         mM(); if (state.failed) return ;
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1184:18: ( M | S )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1189:18: ( M | S )
         int alt200=2;
         switch ( input.LA(1) ) {
         case 'M':
@@ -9618,14 +9618,14 @@ public class Css3Lexer extends Lexer {
 
         switch (alt200) {
             case 1 :
-                // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1184:19: M
+                // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1189:19: M
                 {
                 mM(); if (state.failed) return ;
 
                 }
                 break;
             case 2 :
-                // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1184:21: S
+                // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1189:21: S
                 {
                 mS(); if (state.failed) return ;
 
@@ -9641,8 +9641,8 @@ public class Css3Lexer extends Lexer {
 
     // $ANTLR start synpred6_Css3
     public final void synpred6_Css3_fragment() throws RecognitionException {   
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1191:15: ( I N )
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1191:16: I N
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1196:15: ( I N )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1196:16: I N
         {
         mI(); if (state.failed) return ;
         mN(); if (state.failed) return ;
@@ -9653,8 +9653,8 @@ public class Css3Lexer extends Lexer {
 
     // $ANTLR start synpred7_Css3
     public final void synpred7_Css3_fragment() throws RecognitionException {   
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1194:15: ( D E G )
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1194:16: D E G
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1199:15: ( D E G )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1199:16: D E G
         {
         mD(); if (state.failed) return ;
         mE(); if (state.failed) return ;
@@ -9666,8 +9666,8 @@ public class Css3Lexer extends Lexer {
 
     // $ANTLR start synpred8_Css3
     public final void synpred8_Css3_fragment() throws RecognitionException {   
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1196:15: ( R A D )
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1196:16: R A D
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1201:15: ( R A D )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1201:16: R A D
         {
         mR(); if (state.failed) return ;
         mA(); if (state.failed) return ;
@@ -9679,8 +9679,8 @@ public class Css3Lexer extends Lexer {
 
     // $ANTLR start synpred9_Css3
     public final void synpred9_Css3_fragment() throws RecognitionException {   
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1199:15: ( S )
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1199:16: S
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1204:15: ( S )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1204:16: S
         {
         mS(); if (state.failed) return ;
 
@@ -9690,10 +9690,10 @@ public class Css3Lexer extends Lexer {
 
     // $ANTLR start synpred10_Css3
     public final void synpred10_Css3_fragment() throws RecognitionException {   
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1201:15: ( ( K )? H Z )
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1201:16: ( K )? H Z
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1206:15: ( ( K )? H Z )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1206:16: ( K )? H Z
         {
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1201:16: ( K )?
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1206:16: ( K )?
         int alt201=2;
         int LA201_0 = input.LA(1);
 
@@ -9769,7 +9769,7 @@ public class Css3Lexer extends Lexer {
         }
         switch (alt201) {
             case 1 :
-                // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1201:16: K
+                // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1206:16: K
                 {
                 mK(); if (state.failed) return ;
 
@@ -9787,8 +9787,8 @@ public class Css3Lexer extends Lexer {
 
     // $ANTLR start synpred11_Css3
     public final void synpred11_Css3_fragment() throws RecognitionException {   
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1217:14: ( WS )
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1217:15: WS
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1222:14: ( WS )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1222:15: WS
         {
         mWS(); if (state.failed) return ;
 
@@ -9798,8 +9798,8 @@ public class Css3Lexer extends Lexer {
 
     // $ANTLR start synpred12_Css3
     public final void synpred12_Css3_fragment() throws RecognitionException {   
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1224:14: ( WS )
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1224:15: WS
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1229:14: ( WS )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1229:15: WS
         {
         mWS(); if (state.failed) return ;
 
@@ -9809,8 +9809,8 @@ public class Css3Lexer extends Lexer {
 
     // $ANTLR start synpred13_Css3
     public final void synpred13_Css3_fragment() throws RecognitionException {   
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1232:14: ( WS )
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1232:15: WS
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1237:14: ( WS )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1237:15: WS
         {
         mWS(); if (state.failed) return ;
 
@@ -9820,8 +9820,8 @@ public class Css3Lexer extends Lexer {
 
     // $ANTLR start synpred14_Css3
     public final void synpred14_Css3_fragment() throws RecognitionException {   
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1240:14: ( WS )
-        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1240:15: WS
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1245:14: ( WS )
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1245:15: WS
         {
         mWS(); if (state.failed) return ;
 
@@ -10094,7 +10094,7 @@ public class Css3Lexer extends Lexer {
             this.transition = DFA11_transition;
         }
         public String getDescription() {
-            return "()* loopback of 789:27: ( '[' | '!' | '#' | '$' | '%' | '&' | '*' | '~' | '.' | ':' | '/' | NMCHAR )*";
+            return "()* loopback of 794:27: ( '[' | '!' | '#' | '$' | '%' | '&' | '*' | '~' | '.' | ':' | '/' | NMCHAR )*";
         }
     }
     static final String DFA181_eotS =
@@ -10827,7 +10827,7 @@ public class Css3Lexer extends Lexer {
             this.transition = DFA181_transition;
         }
         public String getDescription() {
-            return "1160:9: ( ( D P ( I | C ) )=> D P ( I | C M ) | ( E ( M | X ) )=> E ( M | X ) | ( P ( X | T | C ) )=> P ( X | T | C ) | ( C M )=> C M | ( M ( M | S ) )=> M ( M | S ) | ( I N )=> I N | ( D E G )=> D E G | ( R A D )=> R A D | ( S )=> S | ( ( K )? H Z )=> ( K )? H Z | IDENT | '%' | )";
+            return "1165:9: ( ( D P ( I | C ) )=> D P ( I | C M ) | ( E ( M | X ) )=> E ( M | X ) | ( P ( X | T | C ) )=> P ( X | T | C ) | ( C M )=> C M | ( M ( M | S ) )=> M ( M | S ) | ( I N )=> I N | ( D E G )=> D E G | ( R A D )=> R A D | ( S )=> S | ( ( K )? H Z )=> ( K )? H Z | IDENT | '%' | )";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             IntStream input = _input;
@@ -13905,7 +13905,7 @@ public class Css3Lexer extends Lexer {
             this.transition = DFA178_transition;
         }
         public String getDescription() {
-            return "1176:17: ( X | T | C )";
+            return "1181:17: ( X | T | C )";
         }
     }
     static final String DFA196_eotS =
@@ -14753,7 +14753,7 @@ public class Css3Lexer extends Lexer {
             this.transition = DFA199_transition;
         }
         public String getDescription() {
-            return "1174:17: ( X | T | C )";
+            return "1179:17: ( X | T | C )";
         }
     }
  

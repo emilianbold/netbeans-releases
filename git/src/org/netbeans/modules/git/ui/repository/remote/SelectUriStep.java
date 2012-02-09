@@ -124,6 +124,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
             panel.cmbRemoteNames.setVisible(false);
         }
         remoteNameEditTimer = new Timer(300, this);
+        remoteNameEditTimer.setRepeats(false);
         remoteNameEditTimer.stop();
         fillPanel();
         attachListeners();
