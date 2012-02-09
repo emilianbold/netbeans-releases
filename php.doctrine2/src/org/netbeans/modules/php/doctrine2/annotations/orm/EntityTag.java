@@ -49,7 +49,7 @@ public class EntityTag extends PhpAnnotationTag {
 
     public EntityTag() {
         super("Entity", // NOI18N
-                "@Entity(repositoryClass=\"${Fully\\Qualified\\Name}\")", // NOI18N
+                "@Entity(repositoryClass=\"${Qualified\\Name}\")", // NOI18N
                 NbBundle.getMessage(EntityTag.class, "EntityTag.documentation"));
     }
 
@@ -57,7 +57,7 @@ public class EntityTag extends PhpAnnotationTag {
     public void formatParameters(HtmlFormatter formatter) {
         formatter.appendText("("); //NOI18N
         formatter.parameters(true);
-        formatter.appendText("repositoryClass=\"\\Fully\\Qualified\\Name\""); //NOI18N
+        formatter.appendText("repositoryClass=\"Qualified\\Name\""); //NOI18N
         formatter.parameters(false);
         formatter.appendText(")"); //NOI18N
     }
