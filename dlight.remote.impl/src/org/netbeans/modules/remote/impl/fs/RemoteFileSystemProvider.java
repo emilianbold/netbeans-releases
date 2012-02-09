@@ -153,6 +153,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         return RemoteFileSystemUtils.getCanonicalFileObject(fileObject).getPath();
     }
 
+    @Override
     public String getCanonicalPath(FileSystem fs, String absPath) throws IOException {        
         FileObject fo = fs.findResource(absPath);
         if (fo != null) {
@@ -165,6 +166,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         return PathUtilities.normalizeUnixPath(absPath);
     }
     
+    @Override
     public String getCanonicalPath(ExecutionEnvironment env, String absPath) throws IOException {
         RemoteLogger.assertTrueInConsole(env.isRemote(), getClass().getSimpleName() + ".getCanonicalPath is called for LOCAL env: " + env); //NOI18N
         FileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
@@ -304,6 +306,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         }
     }
 
+    @Override
     public FileObject fileToFileObject(File file) {
         if (file instanceof FileObjectBasedFile) {
             return ((FileObjectBasedFile) file).getFileObject();
@@ -311,6 +314,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         return null;
     }
 
+    @Override
     public boolean isMine(File file) {
         return file instanceof FileObjectBasedFile;
     }
@@ -362,10 +366,12 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         RemoteFileSystemManager.getInstance().getFileSystem(env).getFactory().addFileChangeListener(path, listener);
     }
 
+    @Override
     public void addFileChangeListener(FileChangeListener listener) {
         RemoteFileSystemManager.getInstance().addFileChangeListener(listener);
     }
 
+    @Override
     public void removeFileChangeListener(FileChangeListener listener) {
         RemoteFileSystemManager.getInstance().removeFileChangeListener(listener);
     }
@@ -384,10 +390,12 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         return '/';
     }
 
+    @Override
     public void addFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem) {
         ((RemoteFileSystem) fileSystem).addFileSystemProblemListener(listener);
     }
 
+    @Override
     public void removeFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem) {
         ((RemoteFileSystem) fileSystem).removeFileSystemProblemListener(listener);
     }
