@@ -48,6 +48,7 @@ import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
 import org.openide.util.NbBundle;
 
+// http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/annotations-reference.html
 public final class Doctrine2OrmAnnotationsProvider extends PhpAnnotationsProvider {
 
     @NbBundle.Messages("Doctrine2OrmAnnotationsProvider.name=Doctrine2 ORM")
