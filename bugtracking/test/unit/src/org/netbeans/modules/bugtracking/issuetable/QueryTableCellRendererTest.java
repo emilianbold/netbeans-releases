@@ -443,11 +443,6 @@ public class QueryTableCellRendererTest {
                 }
             }) {});
         }
-
-        @Override
-        public Collection<RepositoryUser> getUsers() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
     };
 
 }

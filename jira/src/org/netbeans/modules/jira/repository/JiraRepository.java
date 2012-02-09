@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.jira.repository;
 
+import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
 import com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.model.User;
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ContentFilter;
@@ -665,7 +666,6 @@ public class JiraRepository extends RepositoryProvider {
         return refreshProcessor;
     }
 
-    @Override
     public Collection<RepositoryUser> getUsers() {
         Collection<User> users = getConfiguration().getUsers();
         List<RepositoryUser> members = new ArrayList<RepositoryUser>();

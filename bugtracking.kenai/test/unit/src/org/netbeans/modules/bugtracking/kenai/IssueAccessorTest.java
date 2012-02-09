@@ -229,12 +229,6 @@ public class IssueAccessorTest extends NbTestCase {
         public IssueProvider createIssue() {throw new UnsupportedOperationException("Not supported yet.");}
         public QueryProvider[] getQueries() {throw new UnsupportedOperationException("Not supported yet.");}
         public IssueProvider[] simpleSearch(String criteria) {throw new UnsupportedOperationException("Not supported yet.");}
-
-        @Override
-        public Collection<RepositoryUser> getUsers() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
     }
 
     private static class TestIssue extends IssueProvider {

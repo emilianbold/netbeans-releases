@@ -263,10 +263,6 @@ public class QTCTestHidden extends NbTestCase {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
-        public Collection<RepositoryUser> getUsers() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
     }
 
     private static class MyQuery extends QueryProvider {

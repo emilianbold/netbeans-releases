@@ -111,13 +111,7 @@ public class DummyRepository extends RepositoryProvider {
         assert false : "This was assumed to be never called.";
         return new QueryProvider[0];
     }
-
-    @Override
-    public Collection<RepositoryUser> getUsers() {
-        assert false : "This was assumed to be never called.";
-        return null;
-    }
-
+    
     @Override
     public IssueProvider[] simpleSearch(String criteria) {
         assert false : "This was assumed to be never called.";

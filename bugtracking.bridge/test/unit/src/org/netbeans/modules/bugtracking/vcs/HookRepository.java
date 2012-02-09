@@ -97,11 +97,6 @@ public class HookRepository extends RepositoryProvider {
     }
 
     @Override
-    public Collection<RepositoryUser> getUsers() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public IssueProvider[] simpleSearch(String criteria) {
         return new IssueProvider[] {HookIssue.instance};
     }

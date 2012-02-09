@@ -221,10 +221,6 @@ public class RepositorySelectorTest extends NbTestCase {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
-        public Collection<RepositoryUser> getUsers() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
     }
 
 }

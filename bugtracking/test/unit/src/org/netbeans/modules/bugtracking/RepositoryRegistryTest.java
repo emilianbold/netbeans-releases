@@ -268,12 +268,6 @@ public class RepositoryRegistryTest extends NbTestCase {
         public QueryProvider[] getQueries() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-
-        @Override
-        public Collection<RepositoryUser> getUsers() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
         @Override
         public IssueProvider[] simpleSearch(String criteria) {
             throw new UnsupportedOperationException("Not supported yet.");

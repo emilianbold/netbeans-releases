@@ -53,7 +53,6 @@ import javax.swing.JLabel;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;

@@ -140,13 +140,6 @@ public abstract class RepositoryProvider implements Lookup.Provider {
     public abstract QueryProvider[] getQueries();
 
     /**
-     * Returns all known repository users.
-     *
-     * @return all known repository users.
-     */
-    public abstract Collection<RepositoryUser> getUsers();
-
-    /**
      * Runs a query against the bugtracking repository to get all issues
      * which applies that their ID or summary contains the given criteria string
      *

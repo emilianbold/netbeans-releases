@@ -251,10 +251,6 @@ public class JiraUpdater {
             return new QueryProvider[0];
         }
         @Override
-        public Collection<RepositoryUser> getUsers() {
-            return Collections.EMPTY_LIST;
-        }
-        @Override
         public IssueProvider[] simpleSearch(String criteria) {
             return new IssueProvider[0];
         }

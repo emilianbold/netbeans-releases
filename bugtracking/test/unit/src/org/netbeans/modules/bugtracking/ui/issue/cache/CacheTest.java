@@ -437,11 +437,6 @@ public class CacheTest extends NbTestCase {
         public QueryProvider[] getQueries() {throw new UnsupportedOperationException("Not supported yet.");}
         public IssueProvider[] simpleSearch(String criteria) {throw new UnsupportedOperationException("Not supported yet.");}
 
-        @Override
-        public Collection<RepositoryUser> getUsers() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
         private class TestCache extends IssueCache<String> {
             public TestCache(String nameSpace) {
                 super(nameSpace, new IssueAccessor<String>() {
