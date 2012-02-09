@@ -441,6 +441,11 @@ ruleSet
             declarations
         RBRACE
     ;
+    	catch[ RecognitionException rce] {
+        reportError(rce);
+        consumeUntil(input, BitSet.of(RBRACE));
+        input.consume(); //consume the RBRACE as well
+        }
     
 declarations
     :

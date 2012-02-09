@@ -2912,7 +2912,7 @@ public class W3CSelectorsTest extends CssTestBase {
                 + " p { color: red; }"
                 + " .\31 \33 { color: green; }"
                 + "";
-        assertResult(TestUtil.parse(code), 5);
+        assertResult(TestUtil.parse(code), 4);
     }
 
     public void tests_css3_modsel_176_xml() throws BadLocationException, ParseException {
