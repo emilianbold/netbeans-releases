@@ -193,6 +193,7 @@ public class RefTestBase extends NbTestCase {
             "org/netbeans/modules/java/source/resources/layer.xml",
             "org/netbeans/modules/java/editor/resources/layer.xml",
             "org/netbeans/modules/java/hints/resources/layer.xml",
+            "org/netbeans/modules/project/ui/resources/layer.xml",
             "META-INF/generated-layer.xml"}, new Object[] {
             new ClassPathProvider() {
             @Override
@@ -317,6 +318,8 @@ public class RefTestBase extends NbTestCase {
         RepositoryUpdater.getDefault().start(true);
         super.setUp();
         FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Empty.java");
+        FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Class.java");
+        FileUtil.getConfigFile("Templates/Classes/Class.java").getOutputStream().close();
     }
 
     @Override
