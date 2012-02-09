@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -319,6 +319,7 @@ public class AutoupdateSettings {
     private static boolean existsSuperIdentity () {
         File superFile = getSuperFile ();
         if (superFile == null) {
+            // IDE is lauchned as JNLP
             return true;
         }
         err.log (Level.FINE, "Does " + superFile + " exist? " + superFile.exists ());
@@ -326,15 +327,98 @@ public class AutoupdateSettings {
     }
     
     private static File getSuperFile () {
+        // 1. check if IDE is lauchned as JNLP
         String home = System.getProperty ("user.home"); // NOI18N
-        // check if IDE is lauchned as JNLP
         if ("memory".equals (home)) { // NOI18N
             err.log (Level.INFO, "IDE launched as JNLP");
             return null;
         }
+        
+        // 2. get superId from OS specific place
+        File superFile = getSuperFileOsSpecific();
+        if (superFile != null) {
+            err.log (Level.FINE, "Does OS specific " + superFile + " exist? " + superFile.exists ());
+
+            if (superFile != null && superFile.exists()) {
+                return superFile;
+            }
+        }
+        
+        // 3. get superIf from .netbeans (a old place)
         File nbDir = new File (home, DEFAULT_NETBEANS_DIR);
+        err.log (Level.FINE, "Does " + nbDir + " exist? " + nbDir.exists());
+        if (nbDir.exists()) {
+            File oldPlaceSuperFile = new File (nbDir, SUPER_IDENTITY_FILE_NAME);
+            err.log (Level.FINE, "Does " + oldPlaceSuperFile + " exist on the old place? " + oldPlaceSuperFile.exists ());
+            if (oldPlaceSuperFile.exists()) {
+                // copy id to new place
+                String id = readSuperFile(oldPlaceSuperFile);
+                if (id != null) {
+                    writeSuperFile(superFile, id);
+                }
+            }
+        }
+        return superFile;
+    }
+
+    
+    private static File getSuperFileOsSpecific () {
+        String defaultUserdirRoot = System.getProperty ("netbeans.default_userdir_root", null); // NOI18N
+        err.log (Level.FINER, "netbeans.default_userdir_root: " + defaultUserdirRoot);
+        if (defaultUserdirRoot == null) {
+            err.warning("The property \"netbeans.default_userdir_root\" was not set!");
+            return null;
+        }
+        File nbDir = new File (defaultUserdirRoot);
         nbDir.mkdirs ();
         return new File (nbDir, SUPER_IDENTITY_FILE_NAME);
+    }
+    
+    private static void writeSuperFile(File superFile, String id) {
+        Writer os = null;
+        try {
+            os = new BufferedWriter (new FileWriter (superFile));
+            os.write (id);
+            superId = id;
+            err.log (Level.FINE, "Wrote Super Id: " + superId + " in " + superFile);
+        } catch (IOException ex) {
+            // let's ignore it
+            err.log (Level.FINER, null, ex);
+        } finally {
+            try {
+                if(os!=null) {
+                    os.close ();
+                }
+            } catch (IOException ex) {
+                // let's ignore it
+                err.log (Level.FINER, null, ex);
+            }
+        }
+    }
+    
+    private static String readSuperFile(File superFile) {
+        String res = null;
+        // read existing super Id
+        InputStream is = null;
+        try {
+            is = new FileInputStream (superFile);
+            BufferedReader r = new BufferedReader (new InputStreamReader (is));
+            res = r.readLine ().trim ();
+            err.log (Level.FINE, "Read Super Id: " + res + " from " + superFile);
+        } catch (IOException ex) {
+            // let's ignore it
+            err.log (Level.FINER, null, ex);
+        } finally {
+            try {
+                if(is!=null) {
+                    is.close ();
+                }
+            } catch (IOException ex) {
+                // let's ignore it
+                err.log (Level.FINER, null, ex);
+            }
+        }
+        return res;
     }
 
     
@@ -344,51 +428,14 @@ public class AutoupdateSettings {
         }
         File superFile = getSuperFile ();
         if (superFile == null) {
-            err.log (Level.FINE, "superFile is returns null.");
+            err.log (Level.FINE, "superFile was returns null.");
         }
         if (superFile.exists ()) {
-            // read existing super Id
-            InputStream is = null;
-            try {
-                is = new FileInputStream (superFile);
-                BufferedReader r = new BufferedReader (new InputStreamReader (is));
-                superId = r.readLine ().trim ();
-                err.log (Level.FINE, "Read Super Id: " + superId);
-            } catch (IOException ex) {
-                // let's ignore it
-                err.log (Level.FINER, null, ex);
-            } finally {
-                try {
-                    if(is!=null) {
-                        is.close ();
-                    }
-                } catch (IOException ex) {
-                    // let's ignore it
-                    err.log (Level.FINER, null, ex);
-                }
-            }
+            superId = readSuperFile(superFile);
         } else {
             // generate new one and store it
-            Writer os = null;
-            try {
-                os = new BufferedWriter (new FileWriter (superFile));
-                String id = generateNewId ();
-                os.write (id);
-                superId = id;
-                err.log (Level.FINE, "Wrote Super Id: " + superId);
-            } catch (IOException ex) {
-                // let's ignore it
-                err.log (Level.FINER, null, ex);
-            } finally {
-                try {
-                    if(os!=null) {
-                        os.close ();
-                    }
-                } catch (IOException ex) {
-                    // let's ignore it
-                    err.log (Level.FINER, null, ex);
-                }
-            }
+            superId = generateNewId ();
+            writeSuperFile(superFile, superId);
         }
         if (superId != null) {
             err.log (Level.FINE, "Returns Super Id: " + superId);

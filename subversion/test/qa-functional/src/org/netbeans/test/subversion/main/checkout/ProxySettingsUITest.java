@@ -12,6 +12,7 @@ package org.netbeans.test.subversion.main.checkout;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewProjectWizardOperator;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
@@ -74,16 +75,18 @@ public class ProxySettingsUITest extends JellyTestCase {
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
+        new EventTool().checkNoEvent(3000);
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         Operator.setDefaultStringComparator(oldOperator);
+        new EventTool().checkNoEvent(3000);
         RepositoryStepOperator co1so = new RepositoryStepOperator();
-        
+        new EventTool().checkNoEvent(3000);
         ProxyConfigurationOperator pco = null;
 
         co1so.setRepositoryURL(RepositoryStepOperator.ITEM_HTTPS + "localhost");
 
         pco = co1so.invokeProxy();
-
+        new EventTool().waitNoEvent(2000);   
         pco.verify();
         pco.useSystemProxySettings();
         pco.noProxyDirectConnection();
@@ -105,10 +108,12 @@ public class ProxySettingsUITest extends JellyTestCase {
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
+        new EventTool().checkNoEvent(3000);
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         Operator.setDefaultStringComparator(oldOperator);
+        new EventTool().checkNoEvent(3000);
         RepositoryStepOperator co1so = new RepositoryStepOperator();
-
+        new EventTool().checkNoEvent(3000);
          ProxyConfigurationOperator pco = null;
 
         co1so.setRepositoryURL(RepositoryStepOperator.ITEM_HTTPS + "localhost");

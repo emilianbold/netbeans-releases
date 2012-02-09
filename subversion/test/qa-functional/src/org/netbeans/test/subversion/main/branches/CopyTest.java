@@ -85,16 +85,12 @@ public class CopyTest extends JellyTestCase {
         if (TestKit.getOsName().indexOf("Mac") > -1) {
             NewProjectWizardOperator.invoke().close();
         }
-
-        TestKit.showStatusLabels();
+        
 
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
-        Operator.setDefaultStringComparator(comOperator);
-        CheckoutWizardOperator.invoke();
-        Operator.setDefaultStringComparator(oldOperator);
-        RepositoryStepOperator rso = new RepositoryStepOperator();
+        
 
         //create repository...
         File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
@@ -103,10 +99,18 @@ public class CopyTest extends JellyTestCase {
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
         RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
         RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
+        Operator.setDefaultStringComparator(comOperator);
+        CheckoutWizardOperator.invoke();
+        new EventTool().waitNoEvent(2000);
+        Operator.setDefaultStringComparator(oldOperator);
+        RepositoryStepOperator rso = new RepositoryStepOperator();
+        new EventTool().waitNoEvent(2000);
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
-
+        
+        new EventTool().waitNoEvent(2000);
         rso.next();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
+        new EventTool().checkNoEvent(3000);
         wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
         wdso.setLocalFolder(work.getCanonicalPath());
         wdso.checkCheckoutContentOnly(false);
@@ -118,7 +122,7 @@ public class CopyTest extends JellyTestCase {
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();
         TestKit.waitForScanFinishedSimple();
-
+       
         mh = new MessageHandler("Copying");
         TestKit.removeHandlers(log);
         log.addHandler(mh);
@@ -131,8 +135,11 @@ public class CopyTest extends JellyTestCase {
         cto.copy();
 
         TestKit.waitText(mh);
-        Thread.sleep(2000);
+        new EventTool().waitNoEvent(2000);
 
+         new EventTool().checkNoEvent(3000);
+        TestKit.showStatusLabels();
+        new EventTool().checkNoEvent(3000);
         Node nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|Main.java");
         org.openide.nodes.Node nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
         new EventTool().waitNoEvent(1000);
@@ -164,15 +171,14 @@ public class CopyTest extends JellyTestCase {
         MessageHandler mh = new MessageHandler("Checking out");
         log.addHandler(mh);
         TestKit.closeProject(PROJECT_NAME);
+        new EventTool().checkNoEvent(3000);
         TestKit.showStatusLabels();
 
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
-        Operator.setDefaultStringComparator(comOperator);
-        CheckoutWizardOperator.invoke();
-        Operator.setDefaultStringComparator(oldOperator);
-        RepositoryStepOperator rso = new RepositoryStepOperator();
+        
+        
 
         //create repository...
         File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
@@ -182,10 +188,17 @@ public class CopyTest extends JellyTestCase {
         //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
         RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
         RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
+        Operator.setDefaultStringComparator(comOperator);
+        CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
+        new EventTool().checkNoEvent(2000);
+        RepositoryStepOperator rso = new RepositoryStepOperator();
+        new EventTool().checkNoEvent(2000);
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
-
+        new EventTool().checkNoEvent(2000);
         rso.next();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
+        new EventTool().checkNoEvent(2000);
         wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
         wdso.setLocalFolder(work.getCanonicalPath());
         wdso.checkCheckoutContentOnly(false);

@@ -71,6 +71,7 @@ const char *PlatformLauncher::OPT_JDK_HOME = "-Djdk.home=";
 const char *PlatformLauncher::OPT_NB_PLATFORM_HOME = "-Dnetbeans.home=";
 const char *PlatformLauncher::OPT_NB_CLUSTERS = "-Dnetbeans.dirs=";
 const char *PlatformLauncher::OPT_NB_USERDIR = "-Dnetbeans.user=";
+const char *PlatformLauncher::OPT_DEFAULT_USERDIR_ROOT = "-Dnetbeans.default_userdir_root=";
 const char *PlatformLauncher::OPT_HTTP_PROXY = "-Dnetbeans.system_http_proxy=";
 const char *PlatformLauncher::OPT_HTTP_NONPROXY = "-Dnetbeans.system_http_non_proxy_hosts=";
 const char *PlatformLauncher::OPT_SOCKS_PROXY = "-Dnetbeans.system_socks_proxy=";
@@ -253,6 +254,16 @@ bool PlatformLauncher::parseArgs(int argc, char *argv[]) {
             }
             userDir = tmp;
             logMsg("User dir: %s", userDir.c_str());
+        } else if (strcmp(ARG_DEFAULT_USER_DIR_ROOT, argv[i]) == 0) {
+            CHECK_ARG;
+            char tmp[MAX_PATH + 1] = {0};
+            strncpy(tmp, argv[++i], MAX_PATH);
+            if (strcmp(tmp, "memory") != 0 && !normalizePath(tmp, MAX_PATH)) {
+                logErr(false, true, "Default User directory path \"%s\" is not valid.", argv[i]);
+                return false;
+            }
+            defaultUserDirRoot = tmp;
+            logMsg("Default Userdir root: %s", defaultUserDirRoot.c_str());
         } else if (strcmp(ARG_NAME_CLUSTERS, argv[i]) == 0) {
             CHECK_ARG;
             clusters = argv[++i];
@@ -541,6 +552,10 @@ void PlatformLauncher::prepareOptions() {
 
     option = OPT_NB_USERDIR;
     option += userDir;
+    javaOptions.push_back(option);
+    
+    option = OPT_DEFAULT_USERDIR_ROOT;
+    option += defaultUserDirRoot;
     javaOptions.push_back(option);
 
     option = OPT_HEAP_DUMP;
