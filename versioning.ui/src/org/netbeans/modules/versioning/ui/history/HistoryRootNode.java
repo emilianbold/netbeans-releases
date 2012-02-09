@@ -84,8 +84,6 @@ public class HistoryRootNode extends AbstractNode {
         this.vcsName = vcsName;
         this.loadNextAction = loadNextAction;
         this.actions = actions;
-        waitNode = new WaitNode();
-        getChildren().add(new Node[] {waitNode}); 
     }
     
     static boolean isLoadNext(Object n) {
@@ -136,27 +134,36 @@ public class HistoryRootNode extends AbstractNode {
         getChildren().add(nodes);
     }
 
-    synchronized void loadingStarted() {
-        Children children = getChildren();
-        if(loadNextNode != null) {
-            children.remove(new Node[] { loadNextNode });
-        }
+    public synchronized void addWaitNode() {
         if(waitNode != null) {
-            children.remove(new Node[] { waitNode });
+            getChildren().remove(new Node[] { waitNode });
         }
         waitNode = new WaitNode();
-        children.add(new Node[] { waitNode });
+        getChildren().add(new Node[] { waitNode });
     }
-
-    synchronized void loadingFinished(Date dateFrom) {
-        Children children = getChildren();
+    
+    public synchronized void removeWaitNode() {
         if(waitNode != null) {
-            children.remove(new Node[] { waitNode });
-    }                
+            getChildren().remove(new Node[] { waitNode });
+            waitNode = null;
+        }
+    }
+    
+    synchronized void loadingVCSStarted() {
+        Children children = getChildren();
         if(loadNextNode != null) {
             children.remove(new Node[] { loadNextNode });
         }
-        if(!HistorySettings.getInstance().getLoadAll()) {
+        addWaitNode();
+    }
+
+    synchronized void loadingVCSFinished(Date dateFrom) {
+        Children children = getChildren();
+        removeWaitNode();         
+        if(loadNextNode != null) {
+            children.remove(new Node[] { loadNextNode });
+        }
+        if(dateFrom != null && !HistorySettings.getInstance().getLoadAll()) {
             loadNextNode = new LoadNextNode(dateFrom);
             children.add(new Node[] {loadNextNode});
         }

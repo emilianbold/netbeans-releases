@@ -209,7 +209,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                     return;
                 }    
                 try {
-                    rootNode.loadingStarted();
+                    rootNode.loadingVCSStarted();
 
                     VCSHistoryProvider.HistoryEntry[] vcsHistory;
                     if(forceLoadAll || HistorySettings.getInstance().getLoadAll()) {
@@ -234,7 +234,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                     }
                     rootNode.addVCSEntries(entries.toArray(new HistoryEntry[entries.size()]));
                 } finally {
-                    rootNode.loadingFinished(currentDateFrom);
+                    rootNode.loadingVCSFinished(currentDateFrom);
                     // XXX yet select the first node on
                 }
             }
@@ -390,9 +390,14 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             }
             
             // refresh local history
-            VCSHistoryProvider lhProvider = getHistoryProvider(History.getInstance().getLocalHistory(files));
-            if(lhProvider != null && (providerToRefresh == null || lhProvider == providerToRefresh)) {
-                root.addLHEntries(loadLHEntries(files));
+            try {
+                root.addWaitNode();
+                VCSHistoryProvider lhProvider = getHistoryProvider(History.getInstance().getLocalHistory(files));
+                if(lhProvider != null && (providerToRefresh == null || lhProvider == providerToRefresh)) {
+                    root.addLHEntries(loadLHEntries(files));
+                }
+            } finally {
+                root.removeWaitNode();
             }
             // refresh vcs
             VCSHistoryProvider vcsProvider = getHistoryProvider(versioningSystem);
