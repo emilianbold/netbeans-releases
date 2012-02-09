@@ -68,6 +68,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
+import org.netbeans.modules.bugtracking.SPIAccessor;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
@@ -354,7 +355,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     }
                     ((DelegatingUndoRedoManager)getUndoRedo()).init();
                     
-                    IssueAccessor.getInstance().setSelection(issue, context);
+                    SPIAccessor.IMPL.setSelection(issue, context);
 
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override

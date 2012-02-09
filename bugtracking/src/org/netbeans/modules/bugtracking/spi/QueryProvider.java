@@ -80,11 +80,12 @@ public abstract class QueryProvider implements Comparable<QueryProvider> {
     protected boolean saved;
     private long lastRefresh = -1;
 
-    static {
-        QueryAccessorImpl.create();
-    }
     private Node[] selection;
 
+    static {
+        SPIAccessorImpl.createAccesor();
+    }
+    
     /**
      * Creates a query
      */

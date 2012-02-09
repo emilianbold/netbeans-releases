@@ -67,8 +67,9 @@ public abstract class IssueProvider {
     private RepositoryProvider repository;
 
     static {
-        IssueAccessorImpl.create();
+        SPIAccessorImpl.createAccesor();
     }
+    
     private Node[] selection;
 
     /**

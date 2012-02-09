@@ -43,6 +43,7 @@ package org.netbeans.modules.bugtracking.spi;
 
 import java.util.prefs.Preferences;
 import org.netbeans.modules.bugtracking.SPIAccessor;
+import org.openide.nodes.Node;
 
 /**
  *
@@ -68,5 +69,13 @@ class SPIAccessorImpl extends SPIAccessor {
         info.store(preferences, key);
     }
 
+    @Override
+    public void setSelection(IssueProvider issue, Node[] nodes) {
+        issue.setSelection(nodes);
+    }
     
+    @Override
+    public void setSelection(QueryProvider query, Node[] nodes) {
+        query.setSelection(nodes);
+    }    
 }
