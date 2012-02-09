@@ -40,7 +40,9 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.spi;
+package org.netbeans.modules.jira.query;
+
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 
 /**
  * Notifies changes on a query

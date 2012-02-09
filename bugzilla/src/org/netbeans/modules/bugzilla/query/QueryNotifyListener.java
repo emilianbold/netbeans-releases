@@ -40,48 +40,30 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla;
+package org.netbeans.modules.bugzilla.query;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugzilla.query.BugzillaQuery;
-import org.netbeans.modules.bugzilla.query.QueryNotifyListener;
 
 /**
- *
- * @author tomas
+ * Notifies changes on a query
+ * @author Tomas Stupka
  */
-public class TestQueryNotifyListener implements QueryNotifyListener {
-    public boolean started = false;
-    public boolean finished = false;
-    public List<IssueProvider> issues = new ArrayList<IssueProvider>();
-    private BugzillaQuery q;
-    public TestQueryNotifyListener(BugzillaQuery q) {
-        this.q = q;
-        q.addNotifyListener(this);
-    }
-    public void started() {
-        started = true;
-    }
-    public void notifyData(IssueProvider issue) {
-        issues.add(issue);
-    }
-    public void finished() {
-        finished = true;
-    }
-    public void reset() {
-        started = false;
-        finished = false;
-        issues = new ArrayList<IssueProvider>();
-    }
-    public List<IssueProvider> getIssues(int includeStatus) {
-        List<IssueProvider> ret = new ArrayList<IssueProvider>();
-        for (IssueProvider issue : issues) {
-            if (q == null || (q.getIssueStatus(issue) & includeStatus) != 0) {
-                ret.add(issue);
-            }
-        }
-        return ret;
-    }
+public interface QueryNotifyListener {
+
+    /**
+     * Query execution was started
+     */
+    public void started();
+
+    /**
+     *
+     * @param issue
+     */
+    public void notifyData(IssueProvider issue);
+
+    /**
+     * Query execution was finished
+     */
+    public void finished();
+
 }

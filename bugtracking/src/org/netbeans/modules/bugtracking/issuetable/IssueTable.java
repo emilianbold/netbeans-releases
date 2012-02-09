@@ -87,16 +87,13 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.TableColumnModelListener;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.bugtracking.BugtrackingConfig;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
 import org.netbeans.modules.bugtracking.ui.query.IssueTableSupport;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.view.TreeTableView;
@@ -165,7 +162,6 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         this.query = query;
 
         this.descriptors = descriptors;
-        query.addNotifyListener(new NotifyListener());
         query.addPropertyChangeListener(this);
 
         tableModel = new NodeTableModel();
@@ -745,28 +741,22 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     @Override
     public void keyReleased(KeyEvent e) { }
 
-    private class NotifyListener implements QueryNotifyListener {
-        @Override
-        public void notifyData(final IssueProvider issue) {
-            assert issue instanceof NodeProvider;
-            issues.add(issue);
-            if(filter == null || filter.accept(issue)) {
-                final IssueNode node = ((NodeProvider)issue).getNode();
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        tableModel.insertNode(node);
-                    }
-                });
-            }
+    public void notifyData(final IssueProvider issue) {
+        assert issue instanceof NodeProvider;
+        issues.add(issue);
+        if(filter == null || filter.accept(issue)) {
+            final IssueNode node = ((NodeProvider)issue).getNode();
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    tableModel.insertNode(node);
+                }
+            });
         }
-        @Override
-        public void started() {
-            issues.clear();
-            IssueTable.this.setTableModel(new IssueNode[0]);
-        }
-        @Override
-        public void finished() { }
+    }
+    public void started() {
+        issues.clear();
+        IssueTable.this.setTableModel(new IssueNode[0]);
     }
 
     private class SeenDescriptor extends ColumnDescriptor<Boolean> {

@@ -75,8 +75,6 @@ public abstract class QueryProvider implements Comparable<QueryProvider> {
      */
     public final static String EVENT_QUERY_REMOVED = "bugtracking.query.removed";     // NOI18N
 
-
-    private List<QueryNotifyListener> notifyListeners;
     protected boolean saved;
     private long lastRefresh = -1;
 
@@ -243,70 +241,8 @@ public abstract class QueryProvider implements Comparable<QueryProvider> {
         support.firePropertyChange(EVENT_QUERY_ISSUES_CHANGED, null, null);
     }
 
-    public void addNotifyListener(QueryNotifyListener l) {
-        List<QueryNotifyListener> list = getNotifyListeners();
-        synchronized(list) {
-            list.add(l);
-        }
-    }
-
-    public void removeNotifyListener(QueryNotifyListener l) {
-        List<QueryNotifyListener> list = getNotifyListeners();
-        synchronized(list) {
-            list.remove(l);
-        }
-    }
-
-    protected void fireNotifyData(IssueProvider issue) {
-        QueryNotifyListener[] listeners = getListeners();
-        for (QueryNotifyListener l : listeners) {
-            l.notifyData(issue);
-        }
-    }
-
-    protected void fireStarted() {
-        QueryNotifyListener[] listeners = getListeners();
-        for (QueryNotifyListener l : listeners) {
-            l.started();
-        }
-    }
-
-    protected void fireFinished() {
-        QueryNotifyListener[] listeners = getListeners();
-        for (QueryNotifyListener l : listeners) {
-            l.finished();
-        }
-    }
-
-    protected void executeQuery (Runnable r) {
-        fireStarted();
-        try {
-            r.run();
-        } finally {
-            fireFinished();
-            fireQueryIssuesChanged();
-            setLastRefresh(System.currentTimeMillis());
-        }
-    }
-
     protected void setLastRefresh(long lastRefresh) {
         this.lastRefresh = lastRefresh;
-    }
-
-    private QueryNotifyListener[] getListeners() {
-        List<QueryNotifyListener> list = getNotifyListeners();
-        QueryNotifyListener[] listeners;
-        synchronized (list) {
-            listeners = list.toArray(new QueryNotifyListener[list.size()]);
-        }
-        return listeners;
-    }
-
-    private List<QueryNotifyListener> getNotifyListeners() {
-        if(notifyListeners == null) {
-            notifyListeners = new ArrayList<QueryNotifyListener>();
-        }
-        return notifyListeners;
     }
 
     void setSelection(Node[] nodes) {

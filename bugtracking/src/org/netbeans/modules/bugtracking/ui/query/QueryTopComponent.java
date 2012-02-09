@@ -81,7 +81,6 @@ import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -107,7 +106,7 @@ import org.netbeans.modules.bugtracking.SPIAccessor;
  * Top component which displays something.
  */
 public final class QueryTopComponent extends TopComponent
-                                     implements PropertyChangeListener, FocusListener, QueryNotifyListener {
+                                     implements PropertyChangeListener, FocusListener {
 
     private static QueryTopComponent instance;
     /** path to the icon used by the component and its open action */
@@ -256,7 +255,6 @@ public final class QueryTopComponent extends TopComponent
             BugtrackingController c = query.getController();
             panel.setComponent(c.getComponent());
             this.query.addPropertyChangeListener(this);
-            this.query.addNotifyListener(this);
             findInQuerySupport.setQuery(query);
         } else {
             newButton.addActionListener(new ActionListener() {
@@ -366,7 +364,6 @@ public final class QueryTopComponent extends TopComponent
         openQueries.remove(this);
         if(query != null) {
             query.removePropertyChangeListener(this);
-            query.removeNotifyListener(this);
             query.getController().closed();
         }
         if(prepareTask != null) {
@@ -448,31 +445,6 @@ public final class QueryTopComponent extends TopComponent
     }
 
     @Override
-    public void started() {
-        /* the query was started */
-        assert query != null;
-        if (query == null) {
-            return;
-        }
-
-        assert query.getRepository() != null;
-
-        BugtrackingOwnerSupport.getInstance().setLooseAssociation(
-                BugtrackingOwnerSupport.ContextType.SELECTED_FILE_AND_ALL_PROJECTS,
-                query.getRepository());
-    }
-
-    @Override
-    public void notifyData(IssueProvider issue) {
-        /* some (partial) results for the query are available */
-    }
-
-    @Override
-    public void finished() {
-        /* the query was finished */
-    }
-
-    @Override
     public void focusGained(FocusEvent e) {
         Component c = e.getComponent();
         if(c instanceof JComponent) {
@@ -540,7 +512,6 @@ public final class QueryTopComponent extends TopComponent
 
                     if(query != null) {
                         query.removePropertyChangeListener(QueryTopComponent.this);
-                        query.removeNotifyListener(QueryTopComponent.this);
                     }
 
                     query = repo.createQuery();
@@ -552,7 +523,6 @@ public final class QueryTopComponent extends TopComponent
 
                     SPIAccessor.IMPL.setSelection(query, context);
                     query.addPropertyChangeListener(QueryTopComponent.this);
-                    query.addNotifyListener(QueryTopComponent.this);
 
                     updateSavedQueriesIntern(repo);
 

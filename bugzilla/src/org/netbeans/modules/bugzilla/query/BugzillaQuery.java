@@ -60,6 +60,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
+import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
 import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
@@ -341,4 +342,68 @@ public class BugzillaQuery extends QueryProvider {
             fireNotifyData(issue); // XXX - !!! triggers getIssues()
         }
     };
+    
+    public void addNotifyListener(QueryNotifyListener l) {
+        List<QueryNotifyListener> list = getNotifyListeners();
+        synchronized(list) {
+            list.add(l);
+        }
+    }
+
+    public void removeNotifyListener(QueryNotifyListener l) {
+        List<QueryNotifyListener> list = getNotifyListeners();
+        synchronized(list) {
+            list.remove(l);
+        }
+    }
+
+    protected void fireNotifyData(IssueProvider issue) {
+        QueryNotifyListener[] listeners = getListeners();
+        for (QueryNotifyListener l : listeners) {
+            l.notifyData(issue);
+        }
+    }
+
+    protected void fireStarted() {
+        QueryNotifyListener[] listeners = getListeners();
+        for (QueryNotifyListener l : listeners) {
+            l.started();
+        }
+    }
+
+    protected void fireFinished() {
+        QueryNotifyListener[] listeners = getListeners();
+        for (QueryNotifyListener l : listeners) {
+            l.finished();
+        }
+    }
+
+    // XXX move to API
+    protected void executeQuery (Runnable r) {
+        fireStarted();
+        try {
+            r.run();
+        } finally {
+            fireFinished();
+            fireQueryIssuesChanged();
+            setLastRefresh(System.currentTimeMillis());
+        }
+    }
+    
+    private QueryNotifyListener[] getListeners() {
+        List<QueryNotifyListener> list = getNotifyListeners();
+        QueryNotifyListener[] listeners;
+        synchronized (list) {
+            listeners = list.toArray(new QueryNotifyListener[list.size()]);
+        }
+        return listeners;
+    }
+
+    private List<QueryNotifyListener> notifyListeners;
+    private List<QueryNotifyListener> getNotifyListeners() {
+        if(notifyListeners == null) {
+            notifyListeners = new ArrayList<QueryNotifyListener>();
+        }
+        return notifyListeners;
+    }    
 }
