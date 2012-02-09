@@ -106,6 +106,8 @@ public class RefactoringTestBase extends NbTestCase {
         }
 
         RepositoryUpdater.getDefault().refreshAll(false, true, false, null);
+        //trying to fix randomly failing tests
+        Thread.sleep(2000);
     }
 
     protected void verifyContent(FileObject sourceRoot, File... files) throws Exception {
