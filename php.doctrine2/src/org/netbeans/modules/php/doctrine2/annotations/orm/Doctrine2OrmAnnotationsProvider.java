@@ -48,12 +48,12 @@ import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
 import org.openide.util.NbBundle;
 
-public final class Doctrine2AnnotationsProvider extends PhpAnnotationsProvider {
+public final class Doctrine2OrmAnnotationsProvider extends PhpAnnotationsProvider {
 
-    @NbBundle.Messages("Doctrine2AnnotationsProvider.name=Doctrine2 ORM")
-    public Doctrine2AnnotationsProvider() {
-        super("Doctrine2 Annotations", // NOI18N
-                Bundle.Doctrine2AnnotationsProvider_name(),
+    @NbBundle.Messages("Doctrine2OrmAnnotationsProvider.name=Doctrine2 ORM")
+    public Doctrine2OrmAnnotationsProvider() {
+        super("Doctrine2 ORM Annotations", // NOI18N
+                Bundle.Doctrine2OrmAnnotationsProvider_name(),
                 null);
     }
 
