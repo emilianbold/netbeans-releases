@@ -170,12 +170,11 @@ public class ShowHistoryAction extends NodeAction {
     }
 
     private void openLocalHistoryTC(final File[] files) {
-        final VersioningSystem vs = VersioningSupport.getOwner(files[0]);
         // fallback opening a LHTopComponent
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                final HistoryTopComponent tc = new HistoryTopComponent(vs, files);
+                final HistoryTopComponent tc = new HistoryTopComponent(files);
                 tc.setName(NbBundle.getMessage(this.getClass(), "CTL_LocalHistoryTopComponent", files[0].getName())); // NOI18N
                 tc.open();
                 tc.requestActive();                                

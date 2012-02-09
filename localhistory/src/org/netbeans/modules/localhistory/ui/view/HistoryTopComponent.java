@@ -50,7 +50,6 @@ import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 import javax.swing.*;
-import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.ui.history.HistoryComponent;
 
 /**
@@ -71,11 +70,11 @@ final public class HistoryTopComponent extends TopComponent {
         setToolTipText(NbBundle.getMessage(HistoryTopComponent.class, "HINT_LocalHistoryTopComponent"));
     }
 
-    HistoryTopComponent(VersioningSystem vs, File[] files) {
+    HistoryTopComponent(File[] files) {
         this();
         HistoryComponent hc = new HistoryComponent();
         add(hc);
-        hc.init(vs, true, files);
+        hc.setFiles(files);
     }
     
     /** This method is called from within the constructor to
