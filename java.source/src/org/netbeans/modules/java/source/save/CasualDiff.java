@@ -1362,7 +1362,11 @@ public class CasualDiff {
             Name newName = newT.meth.getKind() == Kind.MEMBER_SELECT ? ((JCFieldAccess)newT.meth).name : ((JCIdent)newT.meth).name;
             
             if (nameChanged(oldName, newName)) {
-                printer.print(newName);
+                if(newT.meth.getKind() == Kind.MEMBER_SELECT) {
+                    printer.print(((JCFieldAccess)newT.meth).name);
+                } else {
+                    printer.print(newT.meth);
+                }
                 localPointer += oldName.length();
             }
         }
