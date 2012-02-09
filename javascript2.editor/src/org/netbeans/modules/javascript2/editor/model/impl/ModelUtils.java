@@ -41,8 +41,13 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
@@ -163,5 +168,36 @@ public class ModelUtils {
             lEnd = lStart + length;
         }
         return new OffsetRange(lStart, lEnd);
+    }
+    
+    
+    private static final Collection<JsTokenId> CTX_DELIMITERS = Arrays.asList(
+            JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY,
+            JsTokenId.OPERATOR_SEMICOLON);
+    
+    private enum State {
+        INIT
+    }
+    
+    private static String getSemiType(TokenSequence<JsTokenId> ts, int offset) {
+        
+        String result = "UNKNOWN";
+        ts.move(offset);
+        if (!ts.moveNext()) {
+           return result;
+        }
+    
+        State state = State.INIT;
+        while (ts.movePrevious()) {
+            Token<JsTokenId> token = ts.token();
+            if (!CTX_DELIMITERS.contains(token.id())){
+                switch (state) {
+                    case INIT:
+                        if (token.id() == JsTokenId.IDENTIFIER)
+                        break;
+                }
+            }
+        }
+        return result;
     }
 }

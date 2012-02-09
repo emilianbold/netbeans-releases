@@ -130,5 +130,11 @@ public class JsLanguage extends DefaultLanguageConfig {
     public EmbeddingIndexerFactory getIndexerFactory() {
         return new JsIndexer.Factory();
     }
+
+    @Override
+    public String getLineCommentPrefix() {
+        return "//";    //NOI18N
+    }
+    
     
 }

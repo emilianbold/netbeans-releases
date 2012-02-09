@@ -75,9 +75,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
     private boolean caseSensitive;
     
-    public JsCodeCompletion() {
-    }
-
     @Override
     public CodeCompletionResult complete(CodeCompletionContext ccContext) {
          long start = System.currentTimeMillis();
@@ -118,6 +115,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     if (!(object instanceof JsFunction && ((JsFunction)object).isAnonymous()))
                         resultList.add(new JsCompletionItem(object, request));
                 }
+                completeKeywords(request, resultList);
                 break;
             case EXPRESSION:
                 completeExpression(request, resultList);
@@ -220,7 +218,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
     @Override
     public ParameterInfo parameters(ParserResult info, int caretOffset, CompletionProposal proposal) {
         // TODO needs to be implemented.
-        return null;
+        return ParameterInfo.NONE;
     }
 
     private void completeExpression(CompletionRequest request, List<CompletionProposal> resultList) {
@@ -412,7 +410,14 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
         }
     }
-    
+
+    private void completeKeywords(CompletionRequest request, List<CompletionProposal> resultList) {
+        for (String keyword : JsKeyWords.KEYWORDS.keySet()) {
+            if (startsWith(keyword, request.prefix)) {
+                resultList.add(new JsCompletionItem.KeywordItem(keyword, request));
+            }
+        }
+    }
     private boolean startsWith(String theString, String prefix) {
         if (prefix.length() == 0) {
             return true;

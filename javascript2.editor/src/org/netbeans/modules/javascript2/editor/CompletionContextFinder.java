@@ -49,6 +49,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 
 /**
  *
@@ -63,7 +64,11 @@ public class CompletionContextFinder {
         OBJECT_MEMBERS, // usually after this.
         GLOBAL
     } 
+   
+    private static final List<JsTokenId> WHITESPACES_TOKENS = Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL);
     
+    private static final List<JsTokenId> CHANGE_CONTEXT_TOKENS = Arrays.asList(
+            JsTokenId.OPERATOR_SEMICOLON, JsTokenId.BRACKET_LEFT_CURLY);
     private static final List<Object[]> OBJECT_PROPERTY_TOKENCHAINS = Arrays.asList(
         new Object[]{JsTokenId.OPERATOR_DOT},
         new Object[]{JsTokenId.OPERATOR_DOT, JsTokenId.IDENTIFIER}
@@ -90,7 +95,7 @@ public class CompletionContextFinder {
             return CompletionContext.NONE;
         }
         
-        Token<JsTokenId> token = ts.token();
+        Token<? extends JsTokenId> token = ts.token();
         JsTokenId tokenId =token.id();
         int tokenOffset = ts.offset();
         
@@ -99,6 +104,18 @@ public class CompletionContextFinder {
         }
         if (acceptTokenChains(ts, OBJECT_PROPERTY_TOKENCHAINS, true)) {
             return CompletionContext.OBJECT_PROPERTY;
+        }
+        
+        if (tokenId == JsTokenId.EOL && ts.movePrevious()) {
+            token = ts.token();
+            tokenId = token.id();
+        }
+        if (tokenId == JsTokenId.IDENTIFIER || WHITESPACES_TOKENS.contains(tokenId)) {
+            ts.movePrevious();
+            token = LexUtilities.findPrevious(ts, WHITESPACES_TOKENS);
+            if (CHANGE_CONTEXT_TOKENS.contains(token.id())) {
+                return CompletionContext.GLOBAL;
+            }
         }
         return CompletionContext.EXPRESSION;
     }

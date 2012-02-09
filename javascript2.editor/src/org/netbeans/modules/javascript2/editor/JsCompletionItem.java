@@ -41,12 +41,14 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import java.lang.CharSequence;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.ImageIcon;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.CompletionContextFinder.CompletionContext;
@@ -56,6 +58,7 @@ import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -63,7 +66,7 @@ import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
  */
 public class JsCompletionItem implements CompletionProposal {
     
-    private final CompletionRequest request;
+    protected final CompletionRequest request;
     private final ElementHandle element;
     
     JsCompletionItem(ElementHandle element, CompletionRequest request) {
@@ -192,6 +195,102 @@ public class JsCompletionItem implements CompletionProposal {
                     formatter.appendText(", ");  //NOI18N
                 }    
             }
+        }
+    }
+
+    static class KeywordItem extends JsCompletionItem {
+        private static  ImageIcon keywordIcon = null;
+        private String description = null;
+        private String keyword = null;
+
+        public KeywordItem(String keyword, CompletionRequest request) {
+            super(null, request);
+            this.keyword = keyword;
+        }
+
+        @Override
+        public String getName() {
+            return keyword;
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            formatter.name(getKind(), true);
+            formatter.appendText(getName());
+            formatter.name(getKind(), false);
+            return formatter.getText();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.KEYWORD;
+        }
+
+        @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            if (description != null) {
+                formatter.appendHtml(description);
+                return formatter.getText();
+
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            if (keywordIcon == null) {
+                keywordIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/javascript.png")); //NOI18N
+            }
+            return keywordIcon;
+        }
+        
+        @Override
+        public String getInsertPrefix() {
+            return getName();
+        }
+        
+        @Override
+        public String getCustomInsertTemplate() {
+            StringBuilder builder = new StringBuilder();
+            
+            JsKeyWords.CompletionType type = JsKeyWords.KEYWORDS.get(getName());
+            if (type == null) {
+                return getName();
+            }
+            //CodeStyle codeStyle = CodeStyle.get(EditorRegistry.lastFocusedComponent().getDocument());
+            boolean appendSpace = true;
+            String name = null;
+            switch(type) {
+                case ENDS_WITH_SPACE:
+                    builder.append(getName());
+                    builder.append(" ${cursor}"); //NOI18N
+                    break;
+                case CURSOR_INSIDE_BRACKETS:
+                    builder.append(getName());
+                    builder.append("(${cursor})"); //NOI18N
+                    break;
+                case ENDS_WITH_CURLY_BRACKETS:
+                    builder.append(getName());
+                    builder.append(" {${cursor}}"); //NOI18N
+                    break;
+                case ENDS_WITH_SEMICOLON:
+                    builder.append(getName());
+                    CharSequence text = request.info.getSnapshot().getText();
+                    int index = request.anchor + request.prefix.length();
+                    if (index == text.length() || ';' != text.charAt(index)) { //NOI18N
+                        builder.append(";"); //NOI18N
+                    }
+                    break;
+                case ENDS_WITH_COLON:
+                    builder.append(getName());
+                    builder.append(" ${cursor}:"); //NOI18N
+                    break;
+                default:
+                    assert false : type.toString();
+                    break;
+            }
+            return builder.toString();
         }
     }
 
