@@ -59,6 +59,7 @@ import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.BugtrackingConfig;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
 /**
@@ -313,6 +314,11 @@ public class StorageTest extends NbTestCase {
 
         @Override
         public boolean isNew() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void setContext(Node[] nodes) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

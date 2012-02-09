@@ -65,6 +65,7 @@ import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.IssueHandle;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
@@ -261,6 +262,11 @@ public class IssueAccessorTest extends NbTestCase {
         public void addComment(String comment, boolean closeAsFixed) {throw new UnsupportedOperationException("Not supported yet.");}
         public void attachPatch(File file, String description) {throw new UnsupportedOperationException("Not supported yet.");}
         public IssueNode getNode() {throw new UnsupportedOperationException("Not supported yet.");}
+
+        @Override
+        public void setContext(Node[] nodes) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
     private static class TestIssueController extends BugtrackingController {

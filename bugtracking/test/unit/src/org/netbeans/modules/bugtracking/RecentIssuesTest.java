@@ -56,6 +56,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
 import org.netbeans.modules.bugtracking.spi.*;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
@@ -266,6 +267,9 @@ public class RecentIssuesTest extends NbTestCase {
         public BugtrackingController getController() {throw new UnsupportedOperationException("Not supported yet.");}
         public IssueNode getNode() {throw new UnsupportedOperationException("Not supported yet.");}
         public Map<String, String> getAttributes() {throw new UnsupportedOperationException("Not supported yet.");}
+        public void setContext(Node[] nodes) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
 }

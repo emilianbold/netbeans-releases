@@ -48,6 +48,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 
 /**
@@ -141,6 +142,11 @@ public class HookIssue extends IssueProvider {
             };
         }
         return controller;
+    }
+
+    @Override
+    public void setContext(Node[] nodes) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

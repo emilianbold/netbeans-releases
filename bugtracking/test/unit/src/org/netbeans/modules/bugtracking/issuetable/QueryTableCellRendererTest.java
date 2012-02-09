@@ -21,6 +21,7 @@ import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -364,6 +365,11 @@ public class QueryTableCellRendererTest {
         public Map<String, String> getAttributes() {
             fail("implement me!!!");
             return null;
+        }
+
+        @Override
+        public void setContext(Node[] nodes) {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 

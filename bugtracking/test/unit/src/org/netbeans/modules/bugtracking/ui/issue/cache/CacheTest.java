@@ -58,6 +58,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -405,6 +406,11 @@ public class CacheTest extends NbTestCase {
         public void attachPatch(File file, String description) {throw new UnsupportedOperationException("Not supported yet.");}
         public BugtrackingController getController() {throw new UnsupportedOperationException("Not supported yet.");}
         public IssueNode getNode() {throw new UnsupportedOperationException("Not supported yet.");}
+
+        @Override
+        public void setContext(Node[] nodes) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
     private class TestRepository extends RepositoryProvider {
