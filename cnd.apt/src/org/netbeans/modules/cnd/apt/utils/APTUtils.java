@@ -107,6 +107,9 @@ public class APTUtils {
     }
 
     public static String getAPTTokenName(int type) {
+        if (type == APTTokenTypes.IDENT) {
+            return "ID"; // NOI18N
+        }
         return APTExprParser._tokenNames[type];
     }
 
