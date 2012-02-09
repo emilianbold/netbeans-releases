@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,23 +37,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.palette;
+package org.openide.explorer.view;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.netbeans.junit.NbTestCase;
 
-public final class PHPPaletteCustomizerAction implements ActionListener {
 
-    public void actionPerformed(ActionEvent e) {
-        try {
-            PHPPaletteFactory.getPalette().showCustomizer();
-        } catch (IOException ioe) {
-            Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).log(Level.INFO, null, ioe);
+/**
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
+ */
+public class ChoiceViewTest extends NbTestCase {
+
+    public ChoiceViewTest(String name) {
+        super(name);
+    }
+    
+    public void testCallShowExpContextFromConstructor() {
+        class MyChoice extends ChoiceView {
+            public MyChoice() {
+                setShowExploredContext(true);
+            }
         }
+        MyChoice my = new MyChoice();
+        assertTrue("Really changed", my.getShowExploredContext());
     }
 }
