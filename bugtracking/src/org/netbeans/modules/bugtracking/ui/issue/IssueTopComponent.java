@@ -503,7 +503,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(IssueProvider.EVENT_ISSUE_DATA_CHANGED)) {
+        if(evt.getPropertyName().equals(IssueProvider.EVENT_ISSUE_REFRESHED)) {
             repoPanel.setVisible(false);
             setNameAndTooltip();
         } else if(evt.getPropertyName().equals(RepositoryRegistry.EVENT_REPOSITORIES_CHANGED)) {

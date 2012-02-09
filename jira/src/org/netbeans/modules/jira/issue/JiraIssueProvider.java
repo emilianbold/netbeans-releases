@@ -664,7 +664,7 @@ public final class JiraIssueProvider extends TaskListIssueProvider implements Pr
                     @Override
                     public void propertyChange(PropertyChangeEvent evt) {
                         NbJiraIssue issue = issueRef.get();
-                        if (IssueProvider.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName()) && issue != null) {
+                        if (IssueProvider.EVENT_ISSUE_REFRESHED.equals(evt.getPropertyName()) && issue != null) {
                             // issue has somehow changed, checks for its changes and apply them in the tasklist
                             applyChangesFor(issue);
                         }

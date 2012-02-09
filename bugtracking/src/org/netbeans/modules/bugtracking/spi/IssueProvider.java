@@ -60,9 +60,9 @@ public abstract class IssueProvider {
     private final PropertyChangeSupport support;
 
     /**
-     * issue data were changed
+     * issue data were refreshed
      */
-    public static final String EVENT_ISSUE_DATA_CHANGED = "issue.data_changed"; // NOI18N
+    public static final String EVENT_ISSUE_REFRESHED = "issue.data_changed"; // NOI18N
 
     private RepositoryProvider repository;
 
@@ -228,7 +228,7 @@ public abstract class IssueProvider {
      * Notify listeners on this issue that its data were changed
      */
     protected void fireDataChanged() {
-        support.firePropertyChange(EVENT_ISSUE_DATA_CHANGED, null, null);
+        support.firePropertyChange(EVENT_ISSUE_REFRESHED, null, null);
     }
 
     void setSelection(Node[] nodes) {
