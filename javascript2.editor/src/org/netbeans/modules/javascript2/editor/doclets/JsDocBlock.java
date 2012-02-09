@@ -43,7 +43,6 @@ package org.netbeans.modules.javascript2.editor.doclets;
 
 import java.util.List;
 import org.netbeans.modules.javascript2.editor.model.JsComment;
-import org.openide.util.Parameters;
 
 /**
  * Represents block of JSDoc comment which contains particular {@link JsDocTag}s.
@@ -57,16 +56,14 @@ public class JsDocBlock extends JsComment {
 
     /**
      * Creates new {@code JsDocBlock} with given parameters.
-     * <p>
-     * <b>List of tags cannot be null.<b>
+     *
      * @param startOffset start offset of the comment
      * @param endOffset end offset of the comment
      * @param type comment {@code JsDocCommentType}
-     * @param tags list of tags contained in this block, never null
+     * @param tags list of tags contained in this block or {@code null} if block is of special type
      */
     public JsDocBlock(int startOffset, int endOffset, JsDocCommentType type, List<JsDocElement> tags) {
         super(startOffset, endOffset);
-        Parameters.notNull("tags", tags);
         this.type = type;
         this.tags = tags;
     }
@@ -77,5 +74,13 @@ public class JsDocBlock extends JsComment {
      */
     public List<JsDocElement> getTags() {
         return tags;
+    }
+
+    /**
+     * Gets type of the jsDoc block comment.
+     * @return type of the jsDoc block comment
+     */
+    public JsDocCommentType getType() {
+        return type;
     }
 }

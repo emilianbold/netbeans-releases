@@ -41,10 +41,13 @@
  */
 package org.netbeans.modules.javascript2.editor.doclets;
 
+import java.util.logging.Logger;
+import org.openide.util.Parameters;
+
 /**
  * Represents elements of jsDoc in the version 2.x. It can be i.e.:
  * @final, @private, @author Jackie Chan, @augments OtherClass etc.
- * 
+ *
  * @author Martin Fousek <marfous@netbeans.org>
  */
 public class JsDocElement {
@@ -54,54 +57,72 @@ public class JsDocElement {
 
     /**
      * Creates new {@code JsDocElement}.
-     * @param type {@code JsDocElement} type
+     *
+     * @param type {@code JsDocElement} type, never null
      * @param description rest of {@code JsDocElement}
      */
     public JsDocElement(Type type, String description) {
+        Parameters.notNull("type", type);
         this.type = type;
         this.description = description;
+    }
+
+    /**
+     * Gets jsDoc element type.
+     * @return jsDoc element type
+     */
+    public Type getType() {
+        return type;
     }
 
     /**
      * Represents jsDoc element type.
      */
     public enum Type {
-        AUGMENTS("augments"),
-        AUTHOR("author"),
-        ARGUMENT("argument"),
-        BORROWS("borrows"),
-        CLASS("class"),
-        CONSTANT("constant"),
-        CONSTRUCTOR("constructor"),
-        CONSTRUCTS("constructs"),
-        DEFAULT("default"),
-        DEPRECATED("deprecated"),
-        DESCRIPTION("description"),
-        EVENT("event"),
-        EXAMPLE("example"),
-        EXTENDS("extends"),
-        FIELD("field"),
-        FILE_OVERVIEW("fileOverview"),
-        FUNCTION("function"),
-        IGNORE("ignore"),
-        INNER("inner"),
-        LENDS("lends"),
-        LINK("link"),
-        MEMBER_OF("memberOf"),
-        NAME("name"),
-        NAMESPACE("namespace"),
-        PARAM("param"),
-        PRIVATE("private"),
-        PROPERTY("property"),
-        PUBLIC("public"),
-        REQUIRES("requires"),
-        RETURNS("returns"),
-        SEE("see"),
-        SINCE("since"),
-        STATIC("static"),
-        THROWS("throws"),
-        TYPE("type"),
-        VERSION("version");
+        // special context sensitive type
+        CONTEXT_SENSITIVE("contextSensitive"),
+
+        // unknow type
+        UNKNOWN("unknown"),
+
+        // common jsDoc tags
+        ARGUMENT("@argument"),
+        AUGMENTS("@augments"),
+        AUTHOR("@author"),
+        BORROWS("@borrows"),
+        CLASS("@class"),
+        CONSTANT("@constant"),
+        CONSTRUCTOR("@constructor"),
+        CONSTRUCTS("@constructs"),
+        DEFAULT("@default"),
+        DEPRECATED("@deprecated"),
+        DESCRIPTION("@description"),
+        EVENT("@event"),
+        EXAMPLE("@example"),
+        EXTENDS("@extends"),
+        FIELD("@field"),
+        FILE_OVERVIEW("@fileOverview"),
+        FUNCTION("@function"),
+        IGNORE("@ignore"),
+        INNER("@inner"),
+        LENDS("@lends"),
+        LINK("@link"),
+        MEMBER_OF("@memberOf"),
+        NAME("@name"),
+        NAMESPACE("@namespace"),
+        PARAM("@param"),
+        PRIVATE("@private"),
+        PROPERTY("@property"),
+        PUBLIC("@public"),
+        REQUIRES("@requires"),
+        RETURN("@return"),
+        RETURNS("@returns"),
+        SEE("@see"),
+        SINCE("@since"),
+        STATIC("@static"),
+        THROWS("@throws"),
+        TYPE("@type"),
+        VERSION("@version");
 
         private final String value;
 
@@ -113,6 +134,21 @@ public class JsDocElement {
         public String toString() {
             return value;
         }
+
+        /**
+         * Gets {@code Type} corresponding to given value.
+         * @param value {@code String} value of the {@code Type}
+         * @return {@code Type}
+         */
+        public static Type fromString(String value) {
+            if (value != null) {
+                for (Type type : Type.values()) {
+                    if (value.equalsIgnoreCase(type.toString())) {
+                        return type;
+                    }
+                }
+            }
+            return null;
+        }
     }
-    
 }
