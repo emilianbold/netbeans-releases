@@ -125,7 +125,6 @@ public class ShowHistoryAction extends NodeAction {
                 // activate the History tab if there is a opened TopComponent 
                 // with a History MultiView element
                 Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
-                boolean hasEditorPanes = false;
                 for (final TopComponent tc : tcs) {
                     Lookup l = tc.getLookup();
                     final DataObject tcDataObject = l.lookup(DataObject.class);
@@ -137,22 +136,7 @@ public class ShowHistoryAction extends NodeAction {
                                 return;
                             }
                         } 
-                        try {
-                            // this TopComponent has no history tab, yet doesn't necessarily has to be an editor.
-                            // lets try to guess if it has an opened editor so that we know if we have to 
-                            // open the Local History Top Component
-                            hasEditorPanes = Utils.hasOpenedEditorPanes(tcDataObject);
-                        } catch (InterruptedException ex) {
-                            History.LOG.log(Level.WARNING, null, ex);
-                        } catch (InvocationTargetException ex) {
-                            History.LOG.log(Level.WARNING, null, ex);
-                        }
                     }
-                }
-                if(hasEditorPanes) {
-                    // files editor was open, but had no history tab
-                    openLocalHistoryTC(files);
-                    return;
                 }
                 
                 // no editor found, lets open it...
