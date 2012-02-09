@@ -91,11 +91,6 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     }
 
     @Override
-    public void cancel() {
-        LOGGER.finest("ParserTask canceled without a reason");
-    }
-
-    @Override
     public void cancel(CancelReason reason, SourceModificationEvent event) {
         super.cancel(reason, event);
         LOGGER.fine("ParserTask cancel: " + reason.name());
