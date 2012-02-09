@@ -67,9 +67,13 @@ scope Declaration {
 package org.netbeans.modules.cnd.modelimpl.parser.generated;
 
 import java.util.HashMap;
+import org.netbeans.modules.cnd.modelimpl.parser.*;
 }
 
 @members {
+
+    public CppParserAction3 action;
+
     public void displayRecognitionError(String[] tokenNames,
                                         RecognitionException e) {
         // do nothing
@@ -143,9 +147,9 @@ import java.util.HashMap;
 
     void init_declaration(pCXX_grammar ctx, decl_kind kind)
     {
-        $Declaration::declarator.init();
-        $Declaration::decl_specifiers.init(kind);
-        $Declaration::type_specifiers_count = 0;
+//        $Declaration::declarator.init();
+//        $Declaration::decl_specifiers.init(kind);
+//        $Declaration::type_specifiers_count = 0;
     }
 
     boolean type_specifier_already_present(pCXX_grammar ctx)
@@ -703,7 +707,14 @@ unnamed_namespace_definition:
  * This is all unnecessarily complicated. We can easily handle it by one single rule:
  */
 namespace_definition:
-        LITERAL_namespace IDENT? LCURLY namespace_body RCURLY
+        LITERAL_namespace       {action.namespace_declaration($LITERAL_namespace);}
+        (   
+            IDENT               {action.namespace_name($IDENT);}
+        )? 
+        LCURLY                  {action.namespace_body($LCURLY);}
+        namespace_body 
+        RCURLY                  {action.end_namespace_body($RCURLY);} 
+                                {action.end_namespace_declaration($RCURLY);}
     ;
 
 namespace_body:

@@ -82,7 +82,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             if (file.getFileType() == CsmFile.FileType.SOURCE_FORTRAN_FILE) {
                 return new Antrl3FortranParser((FileImpl)file);
             }
-            if(true) {
+            if(!TraceFlags.CPP_PARSER_NEW_GRAMMAR) {
                 return new Antlr2CppParser((FileImpl)file);
             } else {
                 return new Antlr3NewCppParser((FileImpl)file);
@@ -291,11 +291,13 @@ public final class ParserProviderImpl extends CsmParserProvider {
         }
     }
 
-    private final static class Antlr3NewCppParser implements CsmParserProvider.CsmParser, CsmParserProvider.CsmParserResult {
+    final static class Antlr3NewCppParser implements CsmParserProvider.CsmParser, CsmParserProvider.CsmParserResult {
         private final FileImpl file;
         private NewCppParser parser;
 
         private ConstructionKind kind;
+        
+        private Map<Integer, CsmObject> objects = null;
         
         Antlr3NewCppParser(FileImpl file) {
             this.file = file;
@@ -308,6 +310,16 @@ public final class ParserProviderImpl extends CsmParserProvider {
             org.netbeans.modules.cnd.antlr.TokenBuffer tb = new org.netbeans.modules.cnd.antlr.TokenBuffer(ts);            
             org.antlr.runtime.TokenStream tokens = new MyTokenStream(tb);
             parser = new NewCppParser(tokens);
+            if(TraceFlags.CPP_PARSER_ACTION) {
+                objects = new HashMap<Integer, CsmObject>();
+            }
+            if (callback != null) {
+                parser.action = (CppParserAction3)callback;
+            } else if(objects == null || file == null) {
+                parser.action = new CppParserEmptyAction3Impl();
+            } else {
+                parser.action = new CppParserAction3Impl(file, objects);        
+            }
         }
 
         @Override
@@ -350,7 +362,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             return parser.getNumberOfSyntaxErrors();
         }
         
-        static private class MyToken implements org.antlr.runtime.Token {
+        static class MyToken implements org.antlr.runtime.Token {
 
             org.netbeans.modules.cnd.antlr.Token t;
 
