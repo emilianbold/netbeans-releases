@@ -45,7 +45,7 @@ import java.io.File;
 import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
-import org.netbeans.modules.php.doctrine2.annotations.Doctrine2AnnotationsProvider;
+import org.netbeans.modules.php.doctrine2.annotations.orm.Doctrine2AnnotationsProvider;
 import org.netbeans.modules.php.doctrine2.commands.Doctrine2CommandSupport;
 import org.netbeans.modules.php.doctrine2.preferences.Doctrine2Preferences;
 import org.netbeans.modules.php.doctrine2.ui.actions.Doctrine2PhpModuleActionsExtender;

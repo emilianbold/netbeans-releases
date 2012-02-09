@@ -39,17 +39,27 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.annotations;
+package org.netbeans.modules.php.doctrine2.annotations.orm;
 
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.openide.util.NbBundle;
 
-public class HasLifecycleCallbacksTag extends PhpAnnotationTag {
+public class JoinColumnsTag extends PhpAnnotationTag {
 
-    public HasLifecycleCallbacksTag() {
-        super("HasLifecycleCallbacks", // NOI18N
-                "@HasLifecycleCallbacks", // NOI18N
-                NbBundle.getMessage(HasLifecycleCallbacksTag.class, "HasLifecycleCallbacksTag.documentation"));
+    public JoinColumnsTag() {
+        super("JoinColumns", // NOI18N
+                "@JoinColumns({${cursor}})", // NOI18N
+                NbBundle.getMessage(JoinColumnsTag.class, "JoinColumnsTag.documentation"));
+    }
+
+    @Override
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText("("); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("{...}"); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText(")"); //NOI18N
     }
 
 }

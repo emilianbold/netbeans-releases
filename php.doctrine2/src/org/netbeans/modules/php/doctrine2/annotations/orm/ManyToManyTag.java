@@ -39,25 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.annotations;
+package org.netbeans.modules.php.doctrine2.annotations.orm;
 
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.openide.util.NbBundle;
 
-public class ChangeTrackingPolicyTag extends PhpAnnotationTag {
+public class ManyToManyTag extends PhpAnnotationTag {
 
-    public ChangeTrackingPolicyTag() {
-        super("ChangeTrackingPolicy", // NOI18N
-                "@ChangeTrackingPolicy(\"${DEFERRED_EXPLICIT}\")", // NOI18N
-                NbBundle.getMessage(ChangeTrackingPolicyTag.class, "ChangeTrackingPolicyTag.documentation"));
+    public ManyToManyTag() {
+        super("ManyToMany", // NOI18N
+                "@ManyToMany(targetEntity=\"${Entity}\", mappedBy=\"${field}\")", // NOI18N
+                NbBundle.getMessage(ManyToManyTag.class, "ManyToManyTag.documentation"));
     }
 
     @Override
     public void formatParameters(HtmlFormatter formatter) {
         formatter.appendText("("); //NOI18N
         formatter.parameters(true);
-        formatter.appendText("\"DEFERRED_EXPLICIT\""); //NOI18N
+        formatter.appendText("targetEntity=\"Entity\", mappedBy=\"field\""); //NOI18N
         formatter.parameters(false);
         formatter.appendText(")"); //NOI18N
     }

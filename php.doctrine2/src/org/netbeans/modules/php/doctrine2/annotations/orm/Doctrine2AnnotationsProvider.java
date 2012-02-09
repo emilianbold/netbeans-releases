@@ -39,27 +39,73 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.annotations;
+package org.netbeans.modules.php.doctrine2.annotations.orm;
 
-import org.netbeans.modules.csl.api.HtmlFormatter;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
 import org.openide.util.NbBundle;
 
-public class OneToOneTag extends PhpAnnotationTag {
+public final class Doctrine2AnnotationsProvider extends PhpAnnotationsProvider {
 
-    public OneToOneTag() {
-        super("OneToOne", // NOI18N
-                "@OneToOne(targetEntity=\"${Entity}\")", // NOI18N
-                NbBundle.getMessage(OneToOneTag.class, "OneToOneTag.documentation"));
+    @NbBundle.Messages("Doctrine2AnnotationsProvider.name=Doctrine2 ORM")
+    public Doctrine2AnnotationsProvider() {
+        super("Doctrine2 Annotations", // NOI18N
+                Bundle.Doctrine2AnnotationsProvider_name(),
+                null);
     }
 
     @Override
-    public void formatParameters(HtmlFormatter formatter) {
-        formatter.appendText("("); //NOI18N
-        formatter.parameters(true);
-        formatter.appendText("targetEntity=\"Entity\""); //NOI18N
-        formatter.parameters(false);
-        formatter.appendText(")"); //NOI18N
+    public List<PhpAnnotationTag> getFunctionAnnotations() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<PhpAnnotationTag> getTypeAnnotations() {
+        return Arrays.<PhpAnnotationTag>asList(
+                new ChangeTrackingPolicyTag(),
+                new DiscriminatorColumnTag(),
+                new DiscriminatorMapTag(),
+                new EntityTag(),
+                new HasLifecycleCallbacksTag(),
+                new IndexTag(),
+                new InheritanceTypeTag(),
+                new ManyToManyTag(),
+                new MappedSuperclassTag(),
+                new TableTag(),
+                new UniqueConstraintTag());
+    }
+
+    @Override
+    public List<PhpAnnotationTag> getFieldAnnotations() {
+        return Arrays.<PhpAnnotationTag>asList(
+                new ColumnTag(),
+                new GeneratedValueTag(),
+                new IdTag(),
+                new JoinColumnTag(),
+                new JoinColumnsTag(),
+                new JoinTableTag(),
+                new ManyToOneTag(),
+                new ManyToManyTag(),
+                new OneToOneTag(),
+                new OneToManyTag(),
+                new OrderByTag(),
+                new SequenceGeneratorTag(),
+                new VersionTag());
+    }
+
+    @Override
+    public List<PhpAnnotationTag> getMethodAnnotations() {
+        return Arrays.<PhpAnnotationTag>asList(
+                new PostLoadTag(),
+                new PostPersistTag(),
+                new PostRemoveTag(),
+                new PostUpdateTag(),
+                new PrePersistTag(),
+                new PreRemoveTag(),
+                new PreUpdateTag());
     }
 
 }

@@ -39,17 +39,27 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.annotations;
+package org.netbeans.modules.php.doctrine2.annotations.orm;
 
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.openide.util.NbBundle;
 
-public class MappedSuperclassTag extends PhpAnnotationTag {
+public class OneToOneTag extends PhpAnnotationTag {
 
-    public MappedSuperclassTag() {
-        super("MappedSuperclass", // NOI18N
-                "@MappedSuperclass", // NOI18N
-                NbBundle.getMessage(MappedSuperclassTag.class, "MappedSuperclassTag.documentation"));
+    public OneToOneTag() {
+        super("OneToOne", // NOI18N
+                "@OneToOne(targetEntity=\"${Entity}\")", // NOI18N
+                NbBundle.getMessage(OneToOneTag.class, "OneToOneTag.documentation"));
+    }
+
+    @Override
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText("("); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("targetEntity=\"Entity\""); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText(")"); //NOI18N
     }
 
 }

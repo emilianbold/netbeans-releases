@@ -39,25 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.annotations;
+package org.netbeans.modules.php.doctrine2.annotations.orm;
 
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.openide.util.NbBundle;
 
-public class OneToManyTag extends PhpAnnotationTag {
+public class ManyToOneTag extends PhpAnnotationTag {
 
-    public OneToManyTag() {
-        super("OneToMany", // NOI18N
-                "@OneToMany(targetEntity=\"${Entity}\", mappedBy=\"${field}\", cascade={\"${persist}\"}, orphanRemoval=${true})", // NOI18N
-                NbBundle.getMessage(OneToManyTag.class, "OneToManyTag.documentation"));
+    public ManyToOneTag() {
+        super("ManyToOne", // NOI18N
+                "@ManyToOne(targetEntity=\"${Entity}\", cascade={\"${all}\"}, fetch=\"${LAZY}\")", // NOI18N
+                NbBundle.getMessage(ManyToOneTag.class, "ManyToOneTag.documentation"));
     }
 
     @Override
     public void formatParameters(HtmlFormatter formatter) {
         formatter.appendText("("); //NOI18N
         formatter.parameters(true);
-        formatter.appendText("targetEntity=\"Entity\", mappedBy=\"field\", cascade={\"persist\"}, orphanRemoval=true"); //NOI18N
+        formatter.appendText("targetEntity=\"Entity\", cascade={\"all\"}, fetch=\"LAZY\""); //NOI18N
         formatter.parameters(false);
         formatter.appendText(")"); //NOI18N
     }

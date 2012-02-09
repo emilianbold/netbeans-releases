@@ -39,17 +39,17 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.annotations;
+package org.netbeans.modules.php.doctrine2.annotations.orm;
 
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.openide.util.NbBundle;
 
-public class PostRemoveTag extends PhpAnnotationTag {
+public class VersionTag extends PhpAnnotationTag {
 
-    public PostRemoveTag() {
-        super("PostRemove", // NOI18N
-                "@PostRemove", // NOI18N
-                NbBundle.getMessage(PostRemoveTag.class, "PostRemoveTag.documentation"));
+    public VersionTag() {
+        super("Version", // NOI18N
+                "@Version", // NOI18N
+                NbBundle.getMessage(VersionTag.class, "VersionTag.documentation"));
     }
 
 }

@@ -39,17 +39,17 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.annotations;
+package org.netbeans.modules.php.doctrine2.annotations.orm;
 
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.openide.util.NbBundle;
 
-public class IdTag extends PhpAnnotationTag {
+public class PreUpdateTag extends PhpAnnotationTag {
 
-    public IdTag() {
-        super("Id", // NOI18N
-                "@Id", // NOI18N
-                NbBundle.getMessage(IdTag.class, "IdTag.documentation"));
+    public PreUpdateTag() {
+        super("PreUpdate", // NOI18N
+                "@PreUpdate", // NOI18N
+                NbBundle.getMessage(PreUpdateTag.class, "PreUpdateTag.documentation"));
     }
 
 }

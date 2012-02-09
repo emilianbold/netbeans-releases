@@ -39,25 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.annotations;
+package org.netbeans.modules.php.doctrine2.annotations.orm;
 
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.openide.util.NbBundle;
 
-public class DiscriminatorMapTag extends PhpAnnotationTag {
+public class UniqueConstraintTag extends PhpAnnotationTag {
 
-    public DiscriminatorMapTag() {
-        super("DiscriminatorMap", // NOI18N
-                "@DiscriminatorMap({\"${table1}\" = \"${Entity1}\"}, {\"${table2}\" = \"${Entity2}\"})", // NOI18N
-                NbBundle.getMessage(DiscriminatorMapTag.class, "DiscriminatorMapTag.documentation"));
+    public UniqueConstraintTag() {
+        super("UniqueConstraint", // NOI18N
+                "@UniqueConstraint(name=\"${search_idx}\", columns={\"${column1}\"})", // NOI18N
+                NbBundle.getMessage(UniqueConstraintTag.class, "UniqueConstraintTag.documentation"));
     }
 
     @Override
     public void formatParameters(HtmlFormatter formatter) {
         formatter.appendText("("); //NOI18N
         formatter.parameters(true);
-        formatter.appendText("{\"table1\" = \"Entity1\"}, {\"table2\" = \"Entity2\"}"); //NOI18N
+        formatter.appendText("name=\"search_idx\", columns={\"column1\"}"); //NOI18N
         formatter.parameters(false);
         formatter.appendText(")"); //NOI18N
     }

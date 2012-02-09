@@ -39,25 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.annotations;
+package org.netbeans.modules.php.doctrine2.annotations.orm;
 
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.openide.util.NbBundle;
 
-public class GeneratedValueTag extends PhpAnnotationTag {
+public class OrderByTag extends PhpAnnotationTag {
 
-    public GeneratedValueTag() {
-        super("GeneratedValue", // NOI18N
-                "@GeneratedValue(strategy=\"${IDENTITY}\")", // NOI18N
-                NbBundle.getMessage(GeneratedValueTag.class, "GeneratedValueTag.documentation"));
+    public OrderByTag() {
+        super("OrderBy", // NOI18N
+                "@OrderBy({\"${field}\" = \"${ASC}\"})", // NOI18N
+                NbBundle.getMessage(OrderByTag.class, "OrderByTag.documentation"));
     }
 
     @Override
     public void formatParameters(HtmlFormatter formatter) {
         formatter.appendText("("); //NOI18N
         formatter.parameters(true);
-        formatter.appendText("strategy=\"IDENTITY\""); //NOI18N
+        formatter.appendText("{\"field\" = \"ASC\"}"); //NOI18N
         formatter.parameters(false);
         formatter.appendText(")"); //NOI18N
     }

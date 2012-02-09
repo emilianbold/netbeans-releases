@@ -39,27 +39,17 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.annotations;
+package org.netbeans.modules.php.doctrine2.annotations.orm;
 
-import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.openide.util.NbBundle;
 
-public class InheritanceTypeTag extends PhpAnnotationTag {
+public class PreRemoveTag extends PhpAnnotationTag {
 
-    public InheritanceTypeTag() {
-        super("InheritanceType", // NOI18N
-                "@InheritanceType(\"${JOINED}\")", // NOI18N
-                NbBundle.getMessage(InheritanceTypeTag.class, "InheritanceTypeTag.documentation"));
-    }
-
-    @Override
-    public void formatParameters(HtmlFormatter formatter) {
-        formatter.appendText("("); //NOI18N
-        formatter.parameters(true);
-        formatter.appendText("\"JOINED\""); //NOI18N
-        formatter.parameters(false);
-        formatter.appendText(")"); //NOI18N
+    public PreRemoveTag() {
+        super("PreRemove", // NOI18N
+                "@PreRemove", // NOI18N
+                NbBundle.getMessage(PreRemoveTag.class, "PreRemoveTag.documentation"));
     }
 
 }
