@@ -51,8 +51,11 @@ import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider.HistoryEntry;
+import org.netbeans.modules.versioning.core.util.Utils;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
-import org.netbeans.modules.versioning.spi.testvcs.TestVCSInterceptor;
+import org.netbeans.modules.versioning.spi.testvcs.TestVCSHistoryProvider;
 
 import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
@@ -173,6 +176,32 @@ public class VCSHistoryTest extends NbTestCase {
         fail("exception should be raised on readonly entry");
     }
 
+    public void testHistoryGetRevisionIsReallyInvoked() throws IOException {
+        File f = new File(dataRootDir, "workdir/root-test-versioned/" + TestVCSHistoryProvider.FILE_PROVIDES_REVISIONS_SUFFIX);
+        f.createNewFile();
+        VCSFileProxy proxy = VCSFileProxy.createFileProxy(f);
+        VersioningSystem vs = VersioningSupport.getOwner(proxy);
+        assertNotNull(vs);
+        VCSHistoryProvider hp = vs.getVCSHistoryProvider();
+        assertNotNull(hp);
+        historyGetRevisionIsReallyInvoked(hp, proxy);        
+        
+        VCSSystemProvider.VersioningSystem pvs = Utils.getOwner(proxy);
+        assertNotNull(pvs);
+        VCSHistoryProvider php = pvs.getVCSHistoryProvider();
+        assertNotNull(php);
+        historyGetRevisionIsReallyInvoked(php, proxy);        
+    }
+
+    private void historyGetRevisionIsReallyInvoked(VCSHistoryProvider hp, VCSFileProxy proxy) {
+        TestVCSHistoryProvider.reset();
+        HistoryEntry[] history = hp.getHistory(new VCSFileProxy[] {proxy}, null);
+        assertNotNull(history);
+        assertTrue(history.length > 0);
+        history[0].getRevisionFile(VCSFileProxy.createFileProxy(new File("")), VCSFileProxy.createFileProxy(new File("")));
+        assertTrue(TestVCSHistoryProvider.instance.revisionProvided);
+    }
+    
     private void deleteRecursively(File f) {
         if(f.isFile()) {
             f.delete();
