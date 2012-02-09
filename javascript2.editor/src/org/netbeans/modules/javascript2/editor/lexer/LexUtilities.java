@@ -331,4 +331,57 @@ public final class LexUtilities {
             return new OffsetRange(start, start + astRange.getLength());
         }
     }
+    
+    /**
+     * Finds the first next token that is not in the ignore list
+     * @param ts
+     * @param ignores list of ignored tokens
+     * @return 
+     */
+    public static Token<?extends JsTokenId> findNext(TokenSequence<?extends JsTokenId> ts, List<JsTokenId> ignores) {
+        if (ignores.contains(ts.token().id())) {
+            while (ts.moveNext() && ignores.contains(ts.token().id())) {}
+        }
+        return ts.token();
+    }
+
+    /**
+     * Finds the first previous token that is not in the ignore list
+     * @param ts
+     * @param ignores
+     * @return 
+     */
+    public static Token<?extends JsTokenId> findPrevious(TokenSequence<?extends JsTokenId> ts, List<JsTokenId> ignores) {
+        if (ignores.contains(ts.token().id())) {
+            while (ts.movePrevious() && ignores.contains(ts.token().id())) {}
+        }
+        return ts.token();
+    }
+
+    /**
+     * Finds the first next token from the input list.
+     * @param ts
+     * @param lookfor
+     * @return 
+     */
+    public static Token<?extends JsTokenId> findNextToken(TokenSequence<?extends JsTokenId> ts, List<JsTokenId> lookfor) {
+        if (!lookfor.contains(ts.token().id())) {
+            while (ts.moveNext() && !lookfor.contains(ts.token().id())) {}
+        }
+        return ts.token();
+    }
+
+    /**
+     * Finds the first previous toke from the input list.
+     * @param ts
+     * @param lookfor
+     * @return 
+     */
+    public static Token<?extends JsTokenId> findPreviousToken(TokenSequence<?extends JsTokenId> ts, List<JsTokenId> lookfor) {
+        if (!lookfor.contains(ts.token().id())) {
+            while (ts.movePrevious() && !lookfor.contains(ts.token().id())) {}
+        }
+        return ts.token();
+    }
+
 }
