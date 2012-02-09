@@ -46,7 +46,6 @@ import java.beans.PropertyChangeSupport;
 import java.util.Collection;
 import java.util.Map;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
  * Model of an inspected web-page.
@@ -98,7 +97,7 @@ public abstract class PageModel {
      * 
      * @param elements elements to select in the page.
      */
-    public abstract void setSelectedElements(Collection<Element> elements);
+    public abstract void setSelectedElements(Collection<ElementHandle> elements);
 
     /**
      * Returns attributes of the specified element.
@@ -107,7 +106,7 @@ public abstract class PageModel {
      * @return map with attribute information, it maps the name of
      * the attribute to its value.
      */
-    public abstract Map<String,String> getAtrributes(Element element);
+    public abstract Map<String,String> getAtrributes(ElementHandle element);
 
     /**
      * Returns computed style of the specified element.
@@ -116,7 +115,7 @@ public abstract class PageModel {
      * @return map with computed style information, it maps the name
      * of the style property to its value.
      */
-    public abstract Map<String,String> getComputedStyle(Element element);
+    public abstract Map<String,String> getComputedStyle(ElementHandle element);
 
     /**
      * Returns resources (like scripts, images and style sheets) used by the page.

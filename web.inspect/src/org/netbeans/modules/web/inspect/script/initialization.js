@@ -102,82 +102,111 @@ NetBeans.isArray = function(value) {
     return (typeof(value) === 'object') && (value instanceof Array);
 };
 
-// Returns the specified element. The element specification is an array
-// of numbers determining the path from the document element. For example,
-// [3,1] means the (1+1)-nd child of the (3+1)-th child of the document element
-// (the numbers are 0-based; that's the reason for +1 in the example above).
-NetBeans.getElement = function(elementSpec) {
-    var findElement = function(context, indices, idx) {
-        if (indices.length === idx) {
-            return context;
+// Returns an element that corresponds to the handle
+NetBeans.getElement = function(handle) {
+    //var nearest;
+    var locate = function(handle) {
+        var parentHandle = handle.parent;
+        if (parentHandle) {
+            var parentElement = locate(parentHandle);
+            if (parentElement) {
+                var index = 0;
+                var name = handle.siblingTagNames[index].toLowerCase();
+                var childNodes = parentElement.childNodes;
+                for (var i=0; i<childNodes.length; i++) {
+                    var child = childNodes[i];
+                    if (child.nodeType === 1) {
+                        var childName = child.tagName.toLowerCase();
+                        if (name === childName) {
+                            if (index === handle.indexInParent) {
+                                return child;
+                            } else {
+                                index++;
+                                if (index === handle.siblingTagNames.length) {
+                                    break; // Document doesn't match the handle
+                                } else {
+                                    name = handle.siblingTagNames[index].toLowerCase();
+                                }
+                            }
+                        }
+                    }
+                }
+                //nearest = parentElement;
+            }
         } else {
-            var newContext = context.childNodes[indices[idx]];
-            return findElement(newContext, indices, idx+1);
+            var elemName = handle.siblingTagNames[handle.indexInParent].toLowerCase();
+            var documentElement = document.documentElement;
+            var documentElementName = documentElement.tagName.toLowerCase();
+            if (elemName === documentElementName) {
+                return documentElement;
+            } else {
+                //nearest = documentElement;
+            }
         }
-    };
-    var element;
-    if (this.isArray(elementSpec)) {
-        element = findElement(document.documentElement, elementSpec, 0);
-    } else {
-        element = elementSpec;
+        return null;        
     }
-    return element;
+
+    return element = locate(handle);
 };
 
-// Adds the specified element into the selection. The element specification
-// is the same as in getElement() method.
-NetBeans.addElementToSelection = function(elementSpec) {
-    var element = this.getElement(elementSpec);
-    // Store the original style
-    this.selection.push({
-        element:element,
-        outline:element.style.outline,
-        backgroundColor:element.style.backgroundColor
-    });
-    // Change style to highlight the element
-    element.style.outline = 'red solid 2px';
-    element.style.backgroundColor = 'red';
+// Adds the specified element into the selection.
+NetBeans.addElementToSelection = function(handle) {
+    var element = this.getElement(handle);
+    if (element) {
+        // Store the original style
+        this.selection.push({
+            element:element,
+            outline:element.style.outline,
+            backgroundColor:element.style.backgroundColor
+        });
+        // Change style to highlight the element
+        element.style.outline = 'red solid 2px';
+        element.style.backgroundColor = 'red';
+    }
 };
 
-// Sets the element selection according to the specified argument that is
-// an array of element specifications (as described by getElement() method).
-NetBeans.selectElements = function(arrayOfIndices) {
+// Sets the element selection.
+NetBeans.selectElements = function(handles) {
     this.clearSelection();
-    for (var i=0; i<arrayOfIndices.length; i++) {
-        var indices = arrayOfIndices[i];
-        this.addElementToSelection(indices);
+    for (var i=0; i<handles.length; i++) {
+        var handle = handles[i];
+        this.addElementToSelection(handle);
     }
 };
 
 // Returns attributes of the specified element
-NetBeans.getAttributes = function(elementSpec) {
-    var element = this.getElement(elementSpec);
-    var attrs = element.attributes;
+NetBeans.getAttributes = function(handle) {
     var result = new Object();
-    for (var i=0; i<attrs.length; i++) {
-        var attr = attrs[i];
-        if (attr.specified) {
-            result[attr.name] = attr.value;
+    var element = this.getElement(handle);
+    if (element) {
+        var attrs = element.attributes;
+        for (var i=0; i<attrs.length; i++) {
+            var attr = attrs[i];
+            if (attr.specified) {
+                result[attr.name] = attr.value;
+            }
         }
     }
     return result;
 };
 
 // Returns computed style of the specified element
-NetBeans.getComputedStyle = function(elementSpec) {
-    var element = this.getElement(elementSpec);
-    var style;
-    if (document.defaultView && document.defaultView.getComputedStyle) {
-        style = document.defaultView.getComputedStyle(element);
-    } else {
-        // IE 9+ in quirks mode or IE 8-
-        style = element.currentStyle;
-    }
+NetBeans.getComputedStyle = function(handle) {
     var result = new Object();
-    for (var i=0; i<style.length; i++) {
-        var name = style.item(i);
-        var value = style.getPropertyValue(name);
-        result[name] = value;
+    var element = this.getElement(handle);
+    if (element) {
+        var style;
+        if (document.defaultView && document.defaultView.getComputedStyle) {
+            style = document.defaultView.getComputedStyle(element);
+        } else {
+            // IE 9+ in quirks mode or IE 8-
+            style = element.currentStyle;
+        }
+        for (var i=0; i<style.length; i++) {
+            var name = style.item(i);
+            var value = style.getPropertyValue(name);
+            result[name] = value;
+        }
     }
     return result;
 };

@@ -57,6 +57,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.inspect.ElementHandle;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
@@ -73,9 +74,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.UserQuestionException;
 import org.openide.util.actions.NodeAction;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 /**
  * Go to source action for DOM elements.
@@ -166,10 +165,11 @@ public class GoToElementSourceAction extends NodeAction  {
             fallback = null;
             HtmlParsingResult result = (HtmlParsingResult)resultIterator.getParserResult();
             AstNode root = result.root();
-            AstNode node = findAstNode(element, root);
+            AstNode[] searchResult = ElementHandle.create(element).locateInAst(root);
+            AstNode node = searchResult[0];
             if (node == null) {
-                // Exact match not found, the nearest node is stored in 'fallback' field
-                node = fallback;
+                // Exact match not found, use the nearest node
+                node = searchResult[1];
             }
             while (node.isVirtual()) {
                 node = node.parent();
@@ -181,87 +181,6 @@ public class GoToElementSourceAction extends NodeAction  {
                     open(fob, nodeToShow.startOffset());
                 }
             });
-        }
-
-        /**
-         * Finds {@code AstNode} that corresponds to the specified element.
-         * 
-         * @param elem element for which the corresponding {@code AstNode}
-         * should be found.
-         * @param root root of AST tree.
-         * @return {@code AstNode} that corresponds to the specified element.
-         */
-        private AstNode findAstNode(Element elem, AstNode root) {
-            org.w3c.dom.Node node = elem.getParentNode();
-            if (node != null && (node.getNodeType() == Document.ELEMENT_NODE)) {
-                Element elemParent = (Element)node;
-                AstNode astParent = findAstNode(elemParent, root);
-                if (astParent != null) {
-                    Element current = firstSubElement(elemParent);
-                    String currentName = current.getTagName().toLowerCase();
-                    for (AstNode child : astParent.children()) {
-                        if (child.type() == AstNode.NodeType.OPEN_TAG) {
-                            String astName = child.name().toLowerCase();
-                            if (currentName.equals(astName)) {
-                                if (current == elem) {
-                                    return child;
-                                } else {
-                                    current = nextSiblingElement(current);
-                                    currentName = current.getTagName().toLowerCase();
-                                }
-                            }
-                        }
-                    }
-                    fallback = astParent;
-                }
-            } else {
-                String elemName = elem.getTagName().toLowerCase();
-                for (AstNode child : root.children()) {
-                    if (child.type() == AstNode.NodeType.OPEN_TAG) {
-                        String astName = child.name().toLowerCase();
-                        if (elemName.equals(astName)) {
-                            return child;
-                        }
-                    }
-                }
-                fallback = root;
-            }
-            return null;
-        }
-
-        /**
-         * Returns the first sub-element of the specified element.
-         * 
-         * @param element element whose first sub-element should be returned.
-         * @return the first sub-element of the specified element.
-         */
-        private Element firstSubElement(Element element) {
-            NodeList list = element.getChildNodes();
-            for (int i=0; i<list.getLength(); i++) {
-                org.w3c.dom.Node node = list.item(i);
-                if (node.getNodeType() == Document.ELEMENT_NODE) {
-                    return (Element)node;
-                }
-            }
-            return null;
-        }
-
-        /**
-         * Returns the next sibling element of the specified element.
-         * 
-         * @param element element whose sibling should be returned.
-         * @return next sibling element of the specified element.
-         */
-        private Element nextSiblingElement(Element element) {
-            org.w3c.dom.Node current = element;
-            org.w3c.dom.Node next;
-            while ((next = current.getNextSibling()) != null) {
-                if (next.getNodeType() == Document.ELEMENT_NODE) {
-                    return (Element)next;
-                }
-                current = next;
-            }
-            return null;
         }
 
         /**
