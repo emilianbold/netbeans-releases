@@ -112,7 +112,7 @@ class GdbVariable extends Variable {
     
     void populateFields(MITList results) {
         setMIName(results.getConstValue("name")); // NOI18N
-        setType(results.getConstValue("type"));
+        setType(results.getConstValue("type")); // NOI18N
         
         String numchild_l = results.getConstValue("numchild"); // NOI18N
         MIValue dynamicVal = results.valueOf("dynamic"); //NOI18N
@@ -132,7 +132,7 @@ class GdbVariable extends Variable {
                     case ARRAY:
                     case MAP:
                     case NONE:
-                        numchild_l = "1";
+                        numchild_l = "1"; // NOI18N
                 }
             }
         }

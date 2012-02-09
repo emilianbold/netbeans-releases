@@ -3269,7 +3269,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (reason.equals("end-stepping-range")) {		// NOI18N
             stateMsg = Catalog.get("Dbx_program_stopped");	// NOI18N
         } else if (reason.equals("signal-received")) {		// NOI18N
-            signalName = results.getConstValue("signal-name", signalName);
+            signalName = results.getConstValue("signal-name", signalName); // NOI18N
             stateMsg = Catalog.get("Dbx_signal") + // NOI18N
 		       " " + signalName;			// NOI18N
 
