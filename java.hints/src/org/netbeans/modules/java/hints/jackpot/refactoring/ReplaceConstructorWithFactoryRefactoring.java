@@ -36,44 +36,31 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.java.hints.jackpot.refactoring;
 
-import javax.lang.model.element.ElementKind;
-import org.netbeans.api.java.source.ui.ScanDialog;
-import org.netbeans.modules.refactoring.java.ui.ContextAnalyzer;
-import org.netbeans.modules.refactoring.java.ui.JavaRefactoringGlobalAction;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.openide.util.lookup.Lookups;
 
-@ActionID(id = "org.netbeans.modules.java.hints.jackpot.refactoring.ReplaceConstructorAction", category = "Refactoring")
-@ActionRegistration(displayName = "#LBL_ReplaceConstructorAction")
-@ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "ReplaceConstructorAction", position = 1820)
-public final class ReplaceConstructorAction extends JavaRefactoringGlobalAction {
+/**
+ *
+ * @author lahvac
+ */
+public final class ReplaceConstructorWithFactoryRefactoring extends AbstractRefactoring {
+    
+    private String factoryName;
 
-    public ReplaceConstructorAction() {
-        super(NbBundle.getMessage(ReplaceConstructorAction.class, "LBL_ReplaceConstructorAction"), null); // NOI18N
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    public ReplaceConstructorWithFactoryRefactoring(TreePathHandle constructor) {
+        super(Lookups.singleton(constructor));
     }
 
-    public org.openide.util.HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+    public String getFactoryName() {
+        return factoryName;
     }
 
-    protected boolean asynchronous() {
-        return false;
+    public void setFactoryName(String factoryName) {
+        this.factoryName = factoryName;
     }
 
-    protected boolean enable(Lookup context) {
-        return ContextAnalyzer.canRefactorSingle(context, true);
-    }
-
-    @Override
-    public void performAction(Lookup context) {
-        Runnable task = ContextAnalyzer.createTask(context, ReplaceConstructorRefactoringUI.factory());
-        ScanDialog.runWhenScanFinished(task, getName());
-    }
 }

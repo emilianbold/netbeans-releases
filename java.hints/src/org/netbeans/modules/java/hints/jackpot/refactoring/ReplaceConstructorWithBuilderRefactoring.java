@@ -51,7 +51,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Jan Becicka
  */
-public class ReplaceConstructorWithBuilderRefactoring extends AbstractRefactoring {
+public final class ReplaceConstructorWithBuilderRefactoring extends AbstractRefactoring {
 
     
     private String builderName;
@@ -77,7 +77,7 @@ public class ReplaceConstructorWithBuilderRefactoring extends AbstractRefactorin
         this.setters = setters;
     }
 
-    public static class Setter {
+    public static final class Setter {
 
         private String name;
         private String type;

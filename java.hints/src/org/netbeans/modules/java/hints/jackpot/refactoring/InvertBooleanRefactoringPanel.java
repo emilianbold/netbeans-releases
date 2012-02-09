@@ -38,21 +38,26 @@
  */
 package org.netbeans.modules.java.hints.jackpot.refactoring;
 
-import javax.swing.SwingUtilities;
+import java.awt.Component;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 
 /**
  *
  * @author lahvac
  */
-public class InvertBooleanRefactoringPanel extends javax.swing.JPanel {
+public class InvertBooleanRefactoringPanel extends javax.swing.JPanel implements CustomRefactoringPanel {
 
-    public InvertBooleanRefactoringPanel(final @NonNull ChangeListener parent) {
+    public InvertBooleanRefactoringPanel(final @NonNull ChangeListener parent, String name) {
         initComponents();
+        nameField.setText(name);
+        nameField.setSelectionStart(0);
+        nameField.setSelectionStart(name.length());
+        nameField.requestFocus();
         nameField.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
@@ -115,20 +120,27 @@ public class InvertBooleanRefactoringPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     public void initialize(final String origName) {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                nameField.setText(origName);
-                nameField.setSelectionStart(0);
-                nameField.setSelectionStart(origName.length());
-                nameField.requestFocus();
-            }
-        });
+        nameField.setText(origName);
+        nameField.setSelectionStart(0);
+        nameField.setSelectionStart(origName.length());
+        nameField.requestFocus();
     }
 
     @Override
     public void requestFocus() {
         nameField.requestFocus();
+    }
+
+    @Override
+    public void initialize() {
+    }
+
+    @Override
+    public Component getComponent() {
+        return this;
+    }
+    
+    public String getNewName() {
+        return nameField.getText();
     }
 }

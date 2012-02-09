@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
 public final class ReplaceConstructorWithBuilderAction extends JavaRefactoringGlobalAction {
 
     public ReplaceConstructorWithBuilderAction() {
-        super(NbBundle.getMessage(ReplaceConstructorAction.class, "LBL_ReplaceConstructorWithBuilderAction"), null); // NOI18N
+        super(NbBundle.getMessage(ReplaceConstructorWithFactoryAction.class, "LBL_ReplaceConstructorWithBuilderAction"), null); // NOI18N
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
