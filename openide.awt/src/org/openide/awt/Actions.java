@@ -182,6 +182,9 @@ public class Actions {
      * of the action taken from Action.NAME. The popupText is checked only if the
      * popup parameter is true and takes the biggest precedence. The menuText is
      * tested everytime and takes precedence over standard <code>Action.NAME</code>
+     * <p>
+     * By default icons are not visible in popup menus. This can be configured
+     * via <a href="@TOP@architecture-summary.html#branding-USE_MNEMONICS">branding</a>.
      * 
      * @param item menu item
      * @param action action
