@@ -117,8 +117,8 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.RepositoryUserRenderer;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
@@ -386,7 +386,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 String productName = ((KenaiRepository)repository).getProductName();
                 selectInCombo(productCombo, productName, true);
             } else if (BugzillaUtil.isNbRepository(repository)) {
-                // Issue 181224
+                // IssueProvider 181224
                 String defaultProduct = "ide"; // NOI18N
                 String defaultComponent = "Code"; // NOI18N
                 productCombo.setSelectedItem(defaultProduct);
@@ -472,7 +472,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     BorderFactory.createEmptyBorder(0,0,0,gap),
                     sep2Border);
         }
-        separatorLabel2.setBorder(sep2Border); // Issue 180431
+        separatorLabel2.setBorder(sep2Border); // IssueProvider 180431
         assignedField.setEditable(issue.isNew() || issue.canReassign());
         assignedCombo.setEnabled(assignedField.isEditable());
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
@@ -1275,7 +1275,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             if (field instanceof CustomIssueField) {
                 CustomIssueField cField = (CustomIssueField)field;
                 if ((nbRepository && cField.getKey().equals(IssueField.ISSUE_TYPE.getKey()))
-                        || (newIssue && !cField.getShowOnBugCreation())) { // NB Issue type is already among non-custom fields
+                        || (newIssue && !cField.getShowOnBugCreation())) { // NB IssueProvider type is already among non-custom fields
                     continue;
                 }
                 JLabel label = new JLabel(cField.getDisplayName()+":"); // NOI18N
@@ -2290,7 +2290,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             BugzillaRepositoryConnector connector = Bugzilla.getInstance().getRepositoryConnector();
             try {
                 connector.getTaskDataHandler().initializeTaskData(issue.getBugzillaRepository().getTaskRepository(), data, connector.getTaskMapping(data), new NullProgressMonitor());
-                if (BugzillaUtil.isNbRepository(repository)) { // Issue 180467, 184412
+                if (BugzillaUtil.isNbRepository(repository)) { // IssueProvider 180467, 184412
                     // Default target milestone
                     List<String> milestones = repository.getConfiguration().getTargetMilestones(product);
                     String defaultMilestone = "TBD"; // NOI18N
@@ -2572,7 +2572,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_keywordsButtonActionPerformed
 
     private void blocksButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_blocksButtonActionPerformed
-        Issue newIssue = BugtrackingUtil.selectIssue(
+        IssueProvider newIssue = BugtrackingUtil.selectIssue(
                 NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksButton.message"), // NOI18N
                 issue.getBugzillaRepository(),
                 this,
@@ -2588,7 +2588,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_blocksButtonActionPerformed
 
     private void dependsOnButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dependsOnButtonActionPerformed
-        Issue newIssue = BugtrackingUtil.selectIssue(
+        IssueProvider newIssue = BugtrackingUtil.selectIssue(
                 NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsOnButton.message"), // NOI18N
                 issue.getBugzillaRepository(),
                 this,
@@ -2683,7 +2683,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_reloadButtonActionPerformed
 
     private void duplicateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
-        Issue newIssue = BugtrackingUtil.selectIssue(
+        IssueProvider newIssue = BugtrackingUtil.selectIssue(
                 NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.message"), //NOI18N
                 issue.getBugzillaRepository(),
                 this,
@@ -2713,7 +2713,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         Object value = assignedCombo.getSelectedItem();
         if (value instanceof RepositoryUser) {
             String assignee = ((RepositoryUser)value).getUserName();
-            Repository repository = issue.getRepository();
+            RepositoryProvider repository = issue.getRepository();
             if (repository instanceof KenaiRepository) {
                 assignee += '@' + ((KenaiRepository)repository).getHost();
             }
@@ -2727,7 +2727,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void showInBrowserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showInBrowserButtonActionPerformed
         try {
-            URL url = new URL(issue.getRepository().getUrl() + BugzillaConstants.URL_SHOW_BUG + issue.getID());
+            URL url = new URL(issue.getBugzillaRepository().getUrl() + BugzillaConstants.URL_SHOW_BUG + issue.getID());
             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
         } catch (MalformedURLException muex) {
             Bugzilla.LOG.log(Level.INFO, "Unable to show the issue in the browser.", muex); // NOI18N
@@ -2744,7 +2744,7 @@ private void urlButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         url = new URL(urlString);
     } catch (MalformedURLException muex) {
         if(issue != null) {
-            String repoUrlString = issue.getRepository().getUrl();
+            String repoUrlString = issue.getBugzillaRepository().getUrl();
             urlString = repoUrlString + (repoUrlString.endsWith("/") ? "" : "/") + urlString; // NOI18N
             try {
                 url = new URL(urlString);
@@ -2924,7 +2924,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
 
     @Override
     public Dimension getPreferredSize() {
-        return getMinimumSize(); // Issue 176085
+        return getMinimumSize(); // IssueProvider 176085
     }
 
     @Override
@@ -2946,7 +2946,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     public boolean getScrollableTracksViewportWidth() {
         JScrollPane scrollPane = (JScrollPane)SwingUtilities.getAncestorOfClass(JScrollPane.class, this);
         if (scrollPane!=null) {
-             // Issue 176085
+             // IssueProvider 176085
             int minWidth = getMinimumSize().width;
             int width = scrollPane.getSize().width;
             Insets insets = scrollPane.getInsets();

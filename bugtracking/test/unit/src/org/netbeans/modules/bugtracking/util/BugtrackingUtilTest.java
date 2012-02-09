@@ -44,13 +44,12 @@ package org.netbeans.modules.bugtracking.util;
 
 import java.awt.Image;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.spi.*;
 import org.openide.util.Lookup;
 
 /**
@@ -129,7 +128,7 @@ public class BugtrackingUtilTest {
 
     @Test(expected=NullPointerException.class)
     public void testIsNbRepositoryNullRepo() {
-        Repository repo = null;
+        RepositoryProvider repo = null;
         assertFalse(BugtrackingUtil.isNbRepository(repo));
     }
 
@@ -138,41 +137,35 @@ public class BugtrackingUtilTest {
         assertFalse(BugtrackingUtil.isNbRepository(new TestRepository(null)));
     }
 
-    private class TestRepository extends Repository {
+    private class TestRepository extends RepositoryProvider {
         private final String url;
-
+        private RepositoryInfo info;
         public TestRepository(String url) {
             this.url = url;
+            this.info = new RepositoryInfo(null, null, url, null,null,null,null,null,null);
         }
         @Override
-        public String getUrl() {
-            return url;
+        public RepositoryInfo getInfo() {
+            return info;
         }
-
         @Override
         public Image getIcon() { throw new UnsupportedOperationException("Not supported yet."); }
         @Override
-        public String getDisplayName() { throw new UnsupportedOperationException("Not supported yet."); }
-        @Override
-        public String getTooltip() { throw new UnsupportedOperationException("Not supported yet."); }
-        @Override
-        public String getID() { throw new UnsupportedOperationException("Not supported yet."); }
-        @Override
-        public Issue getIssue(String id) { throw new UnsupportedOperationException("Not supported yet."); }
+        public IssueProvider getIssue(String id) { throw new UnsupportedOperationException("Not supported yet."); }
         @Override
         public void remove() { throw new UnsupportedOperationException("Not supported yet."); }
         @Override
-        public BugtrackingController getController() { throw new UnsupportedOperationException("Not supported yet."); }
+        public RepositoryController getController() { throw new UnsupportedOperationException("Not supported yet."); }
         @Override
-        public Query createQuery() { throw new UnsupportedOperationException("Not supported yet."); }
+        public QueryProvider createQuery() { throw new UnsupportedOperationException("Not supported yet."); }
         @Override
-        public Issue createIssue() { throw new UnsupportedOperationException("Not supported yet."); }
+        public IssueProvider createIssue() { throw new UnsupportedOperationException("Not supported yet."); }
         @Override
-        public Query[] getQueries() { throw new UnsupportedOperationException("Not supported yet."); }
+        public QueryProvider[] getQueries() { throw new UnsupportedOperationException("Not supported yet."); }
         @Override
         public Collection<RepositoryUser> getUsers() { throw new UnsupportedOperationException("Not supported yet."); }
         @Override
-        public Issue[] simpleSearch(String criteria) { throw new UnsupportedOperationException("Not supported yet."); }
+        public IssueProvider[] simpleSearch(String criteria) { throw new UnsupportedOperationException("Not supported yet."); }
         @Override
         public Lookup getLookup() { throw new UnsupportedOperationException("Not supported yet."); }
 

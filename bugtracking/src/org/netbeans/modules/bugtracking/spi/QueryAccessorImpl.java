@@ -60,7 +60,7 @@ class QueryAccessorImpl extends QueryAccessor {
     }
 
     @Override
-    public void setSelection(Query query, Node[] nodes) {
+    public void setSelection(QueryProvider query, Node[] nodes) {
         query.setSelection(nodes);
     }
 

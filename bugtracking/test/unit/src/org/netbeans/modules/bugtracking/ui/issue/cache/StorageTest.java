@@ -99,8 +99,8 @@ public class StorageTest extends NbTestCase {
 
         String url = "http://test/bugzilla";
         String qName = "SomeQuery";
-        Issue i1 = new DummyIssue(id1, attr1);
-        Issue i2 = new DummyIssue(id2, attr2);
+        IssueProvider i1 = new DummyIssue(id1, attr1);
+        IssueProvider i2 = new DummyIssue(id2, attr2);
 
         storage.storeQuery(url, qName, new String[] {id1, id2});
 
@@ -186,8 +186,8 @@ public class StorageTest extends NbTestCase {
         String url = "http://test/bugzilla";
         String qName = "SomeQuery";
 
-        Issue i1 = new DummyIssue(id1, attr);
-        Issue i2 = new DummyIssue(id2, attr);
+        IssueProvider i1 = new DummyIssue(id1, attr);
+        IssueProvider i2 = new DummyIssue(id2, attr);
         long lm = System.currentTimeMillis();
         IssueCache.IssueEntry ie1 = new IssueCache.IssueEntry(i1, attr, -1, -1, false, lm);
         IssueCache.IssueEntry ie2 = new IssueCache.IssueEntry(i2, attr, -1, -1, false, lm);
@@ -250,7 +250,7 @@ public class StorageTest extends NbTestCase {
         if(!v.equals(value)) fail("value [" + v + "] for attribute [" + attr + "] instead of [" + value + "]");
     }
 
-    private static class DummyIssue extends Issue {
+    private static class DummyIssue extends IssueProvider {
         private Map<String, String> m;
         private String id;
 

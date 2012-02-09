@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,172 +37,204 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.bugtracking.spi;
 
-import java.net.URL;
-import java.util.List;
-import javax.swing.Action;
-import org.netbeans.modules.bugtracking.tasklist.TaskListProvider;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.io.File;
+import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
+import org.openide.nodes.Node;
+import static java.lang.Character.isSpaceChar;
 
 /**
- * Represents a provider of issues for the tasklist. Extend if you want to add your issues into the tasklist.
- * 
- * @author Ondra Vrabec
+ * Represents a bugtracking IssueProvider
+ *
+ * @author Tomas Stupka
  */
 public abstract class IssueProvider {
 
+    private static final int SHORT_DISP_NAME_LENGTH = 15;
+
+    private final PropertyChangeSupport support;
+
     /**
-     * Adds issues to the task list.
-     * @param openTaskList also opens the TaskList top component if set to <code>true</code>
-     * @param issuesToAdd issues to add
+     * issue data were changed
      */
-    protected void add (boolean openTaskList, LazyIssue... issuesToAdd) {
-        TaskListProvider.getInstance().add(this, openTaskList, issuesToAdd);
+    public static final String EVENT_ISSUE_DATA_CHANGED = "issue.data_changed"; // NOI18N
+
+    private RepositoryProvider repository;
+
+    static {
+        IssueAccessorImpl.create();
+    }
+    private Node[] selection;
+
+    /**
+     * Creates an issue
+     */
+    public IssueProvider(RepositoryProvider repository) {
+        support = new PropertyChangeSupport(this);
+        this.repository = repository;
     }
 
     /**
-     * Adds issues to the task list.
-     * @param issuesToAdd issues to add
+     * Returns this issues repository
+     *
+     * @return
      */
-    protected void add (LazyIssue... issuesToAdd) {
-        add(false, issuesToAdd);
+    public RepositoryProvider getRepository() {
+        return repository;
     }
 
     /**
-     * Removes issues from the task list.
-     * @param issuesToAdd issues to remove
+     * Returns this issues display name
+     * @return
      */
-    protected void remove (LazyIssue... issuesToAdd) {
-        TaskListProvider.getInstance().remove(this, issuesToAdd);
+    public abstract String getDisplayName();
+
+    /**
+     * Returns a short variant of the display name. The short variant is used
+     * in cases where the full display name might be too long, such as when used
+     * as a title of a tab. The default implementation uses the
+     * the {@linkplain #getDisplayName full display name} as a base and trims
+     * it to maximum of {@value #SHORT_DISP_NAME_LENGTH} characters if
+     * necessary. If it was necessary to trim the name (i.e. if the full name
+     * was longer then {@value #SHORT_DISP_NAME_LENGTH}), then an ellipsis
+     * is appended to the end of the trimmed display name.
+     *
+     * @return  short variant of the display name
+     * @see #getDisplayName
+     */
+    public String getShortenedDisplayName() {
+        String displayName = getDisplayName();
+
+        int length = displayName.length();
+        int limit = SHORT_DISP_NAME_LENGTH;
+
+        if (length <= limit) {
+            return displayName;
+        }
+
+        String trimmed = displayName.substring(0, limit).trim();
+
+        StringBuilder buf = new StringBuilder(limit + 4);
+        buf.append(trimmed);
+        if ((length > (limit + 1)) && isSpaceChar(displayName.charAt(limit))) {
+            buf.append(' ');
+        }
+        buf.append("...");                                              //NOI18N
+
+        return buf.toString();
     }
 
     /**
-     * Removes all issues previously added by this instance
+     * Returns this issues tooltip
+     * @return
      */
-    protected void removeAll () {
-        TaskListProvider.getInstance().removeAll(this);
+    public abstract String getTooltip();
+
+    /**
+     * Returns this issues unique ID
+     * @return
+     */
+    public abstract String getID();
+
+    /**
+     * Returns this issues summary
+     * @return
+     */
+    public abstract String getSummary();
+
+    /**
+     * Returns true if the issue isn't stored in a repository yet. Otherwise false.
+     * @return
+     */
+    public abstract boolean isNew();
+
+    /**
+     * Refreshes this Issues data from its bugtracking repository
+     *
+     * @return true if the issue was refreshed, otherwise false
+     */
+    public abstract boolean refresh();
+
+    /**
+     * Add a comment to this issue and close it as fixed eventually.
+     * 
+     * @param comment
+     * @param closeAsFixed 
+     */
+    // XXX throw exception
+    public abstract void addComment(String comment, boolean closeAsFixed);
+
+    /**
+     * Attach a file to this issue
+     * @param file
+     * @param description 
+     */
+    // XXX throw exception; attach Patch or attachFile?
+    public abstract void attachPatch(File file, String description);
+
+    /**
+     * Returns this issues controller
+     * XXX we don't need this. use get component instead and get rid of the BugtrackingController
+     * @return
+     */
+    public abstract BugtrackingController getController();
+
+    /**
+     * Opens the issue with the given issueId in the IDE. In case that issueId
+     * is null a new issue wil be created.
+     *
+     * @param repository
+     * @param issueId
+     */
+    public static void open(final RepositoryProvider repository, final String issueId) {
+        if(issueId == null) {
+            IssueAction.createIssue(repository);
+        } else {            
+            IssueAction.openIssue(repository, issueId);
+        }
     }
 
     /**
-     * Called when an issue is removed from the TaskList in other way than through {@link #remove(org.netbeans.modules.bugtracking.util.IssueTaskListProvider.LazyIssue[])}
-     * or {@link #removeAll() }
-     * @param lazyIssue
+     * Opens this issue in the IDE
      */
-    public abstract void removed(LazyIssue lazyIssue);
+    public final void open() {
+        open(false);
+    }
 
     /**
-     * Represents an issue displayed in the tasklist.
+     * Opens this issue in the IDE
+     * @param refresh also refreshes the issue after opening
+     *
      */
-    public static abstract class LazyIssue {
-        private final URL url;
-        private String name;
-        private boolean valid;
+    public final void open(final boolean refresh) {
+        IssueAction.openIssue(this, refresh);
+    }
 
-        /**
-         *
-         * @param url url of the issue, cannot be null
-         * @param name displayed name showed in the tasklist
-         * @throws NullPointerException if url or name is null
-         */
-        public LazyIssue (URL url, String name) {
-            if (url == null) {
-                throw new NullPointerException();
-            }
-            if (name == null) {
-                throw new NullPointerException();
-            }
-            this.url = url;
-            this.name = name;
-        }
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
+    }
 
-        /**
-         * Returns displayed name of the issue
-         * @return displayed name of the issue
-         */
-        public final String getName () {
-            return name;
-        }
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
 
-        /**
-         * Sets the issue's name and refreshes the tasklist
-         * @param name new issue's name. If set to <code>null</code>, no action is taken.
-         */
-        protected final void setName (String name) {
-            if (name != null) {
-                this.name = name;
-                setValid(false);
-            }
-        }
+    /**
+     * Notify listeners on this issue that its data were changed
+     */
+    protected void fireDataChanged() {
+        support.firePropertyChange(EVENT_ISSUE_DATA_CHANGED, null, null);
+    }
 
-        /**
-         * /**
-         * Returns url of the issue
-         * @return url of the issue
-         */
-        public final URL getUrl () {
-            return url;
-        }
+    void setSelection(Node[] nodes) {
+        this.selection = nodes;
+    }
 
-        @Override
-        public final boolean equals(Object obj) {
-            if (obj != null && obj instanceof LazyIssue) {
-                return this.url.toString().equals(((LazyIssue)obj).url.toString());
-            }
-            return false;
-        }
-
-        @Override
-        public final int hashCode() {
-            return url.toString().hashCode();
-        }
-
-        /**
-         * Implement this to load and return the real issue.
-         * @return the real issue or null
-         */
-        public abstract Issue getIssue ();
-
-        /**
-         * If the issue is not valid (previously invalidated by {@link #setValid(boolean)},
-         * this will result in repainting the issue in the tasklist after it's next refresh.
-         * @return true if the issue is valid, false otherwise
-         */
-        public final boolean isValid() {
-            return valid;
-        }
-
-        /**
-         * Sets issues validity status.
-         * @param valid false will result in refreshing the issue in the next tasklist's refresh.
-         */
-        public final void setValid (boolean valid) {
-            this.valid = valid;
-            if (!valid) {
-                TaskListProvider.getInstance().refresh();
-            }
-        }
-
-        /**
-         * Implement this and return the url of the repository the issue is in.
-         * The value is used in deciding if the issue shall be displayed or hidden in the current tasklist's scope.
-         * @return name of the issuetracking repository the issue is in.
-         */
-        public abstract String getRepositoryUrl();
-
-        /**
-         * Implement this and return a list of actions you wish to be displayed in the popup menu of the issue in the tasklist.
-         * <strong>Note </strong> that actions <em>Open</em> and <em>Remove</em> are automatically displayed and they should not be
-         * items of the list
-         * @return list of actions displayed in the issue's popup menu.
-         */
-        public abstract List<? extends Action> getActions();
-
-        @Override
-        public String toString () {
-            return super.toString() + ": " + getName();                 //NOI18N
-        }
+    protected Node[] getSelection() {
+        return selection;
     }
 }

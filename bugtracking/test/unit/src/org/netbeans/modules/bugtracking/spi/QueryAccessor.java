@@ -47,9 +47,9 @@ package org.netbeans.modules.bugtracking.spi;
  * @author tomas
  */
 public class QueryAccessor {
-    private final Query query;
+    private final QueryProvider query;
 
-    public QueryAccessor(Query query) {
+    public QueryAccessor(QueryProvider query) {
         this.query = query;
     }
 

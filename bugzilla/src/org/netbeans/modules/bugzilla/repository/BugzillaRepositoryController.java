@@ -45,11 +45,10 @@ package org.netbeans.modules.bugzilla.repository;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.URI;
-import java.net.URL;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
@@ -58,22 +57,21 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.RepositoryController;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
+import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.commands.ValidateCommand;
-import org.openide.util.Cancellable;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.util.*;
 import org.openide.util.RequestProcessor.Task;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class RepositoryController extends BugtrackingController implements DocumentListener, ActionListener {
+public class BugzillaRepositoryController implements RepositoryController, DocumentListener, ActionListener {
     private BugzillaRepository repository;
     private RepositoryPanel panel;
     private String errorMessage;
@@ -81,8 +79,9 @@ public class RepositoryController extends BugtrackingController implements Docum
     private boolean populated = false;
     private TaskRunner taskRunner;
     private RequestProcessor rp;
-
-    RepositoryController(BugzillaRepository repository) {
+    private final ChangeSupport support = new ChangeSupport(this);
+    
+    BugzillaRepositoryController(BugzillaRepository repository) {
         this.repository = repository;
         panel = new RepositoryPanel(this);
         panel.nameField.getDocument().addDocumentListener(this);
@@ -120,16 +119,16 @@ public class RepositoryController extends BugtrackingController implements Docum
         return panel.userField.getText();
     }
 
-    private String getPassword() {
-        return new String(panel.psswdField.getPassword());
+    private char[] getPassword() {
+        return panel.psswdField.getPassword();
     }
 
     private String getHttpUser() {
         return panel.httpCheckBox.isSelected() ? panel.httpUserField.getText() : null;
     }
 
-    private String getHttpPassword() {
-        return panel.httpCheckBox.isSelected() ? new String(panel.httpPsswdField.getPassword()) : null;
+    private char[] getHttpPassword() {
+        return panel.httpCheckBox.isSelected() ? panel.httpPsswdField.getPassword() : new char[0];
     }
 
     private boolean isLocalUserEnabled () {
@@ -151,17 +150,17 @@ public class RepositoryController extends BugtrackingController implements Docum
         // check name
         String name = panel.nameField.getText().trim();
         if(name.equals("")) { // NOI18N
-            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_MISSING_NAME");  // NOI18N
+            errorMessage = NbBundle.getMessage(BugzillaRepositoryController.class, "MSG_MISSING_NAME");  // NOI18N
             return false;
         }
 
         // is name unique?
-        String[] repositories = null;
+        RepositoryProvider[] repositories = null;
         if(repository.getTaskRepository() == null) {
-            repositories = BugzillaConfig.getInstance().getRepositories();
-            for (String repoID : repositories) {
-                if(name.equals(BugzillaConfig.getInstance().getRepositoryName(repoID))) {
-                    errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_NAME_ALREADY_EXISTS");  // NOI18N
+            repositories = BugtrackingUtil.getRepositories(BugzillaConnector.ID);
+            for (RepositoryProvider repo : repositories) {
+                if(name.equals(repo.getInfo().getDisplayName())) {
+                    errorMessage = NbBundle.getMessage(BugzillaRepositoryController.class, "MSG_NAME_ALREADY_EXISTS");  // NOI18N
                     return false;
                 }
             }
@@ -170,12 +169,12 @@ public class RepositoryController extends BugtrackingController implements Docum
         // check url
         String url = getUrl();
         if(url.equals("")) { // NOI18N
-            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_MISSING_URL");  // NOI18N
+            errorMessage = NbBundle.getMessage(BugzillaRepositoryController.class, "MSG_MISSING_URL");  // NOI18N
             return false;
         }
 
         if(!BugzillaClient.isValidUrl(url) || "http://".equals(url) || "https://".equals(url)) {
-            errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_WRONG_URL_FORMAT");  // NOI18N
+            errorMessage = NbBundle.getMessage(BugzillaRepositoryController.class, "MSG_WRONG_URL_FORMAT");  // NOI18N
             return false;
         }
 
@@ -184,10 +183,9 @@ public class RepositoryController extends BugtrackingController implements Docum
 
         // is url unique?
         if(repository.getTaskRepository() == null) {
-            for (String repositoryName : repositories) {
-                BugzillaRepository repo = BugzillaConfig.getInstance().getRepository(repositoryName);
-                if(url.trim().equals(repo.getUrl())) {
-                    errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_URL_ALREADY_EXISTS");  // NOI18N
+            for (RepositoryProvider repo : repositories) {
+                if(url.trim().equals(repo.getInfo().getUrl())) {
+                    errorMessage = NbBundle.getMessage(BugzillaRepositoryController.class, "MSG_URL_ALREADY_EXISTS");  // NOI18N
                     return false;
                 }
             }
@@ -218,11 +216,10 @@ public class RepositoryController extends BugtrackingController implements Docum
             getHttpUser(),
             getHttpPassword(),
             isLocalUserEnabled());
-        Bugzilla.getInstance().addRepository(repository);
         repository.getNode().setName(newName);
     }
 
-    void populate() {
+    public void populate() {
         taskRunner = new TaskRunner(NbBundle.getMessage(RepositoryPanel.class, "LBL_ReadingRepoData")) {  // NOI18N
             @Override
             protected void preRun() {
@@ -236,7 +233,6 @@ public class RepositoryController extends BugtrackingController implements Docum
             }
             @Override
             void execute() {
-                BugzillaConfig.getInstance().setupCredentials(repository);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -264,7 +260,7 @@ public class RepositoryController extends BugtrackingController implements Docum
                             panel.cbEnableLocalUsers.setSelected(repository.isShortUsernamesEnabled());
                         }
                         populated = true;
-                        fireDataChanged();
+                        fireChange();
                     }
                 });
             }
@@ -276,21 +272,21 @@ public class RepositoryController extends BugtrackingController implements Docum
     public void insertUpdate(DocumentEvent e) {
         if(!populated) return;
         validateErrorOff(e);
-        fireDataChanged();
+        fireChange();
     }
 
     @Override
     public void removeUpdate(DocumentEvent e) {
         if(!populated) return;
         validateErrorOff(e);
-        fireDataChanged();
+        fireChange();
     }
 
     @Override
     public void changedUpdate(DocumentEvent e) {
         if(!populated) return;
         validateErrorOff(e);
-        fireDataChanged();
+        fireChange();
     }
 
     @Override
@@ -321,12 +317,12 @@ public class RepositoryController extends BugtrackingController implements Docum
                         isLocalUserEnabled());
 
                 ValidateCommand cmd = new ValidateCommand(taskRepo);
-                repository.getExecutor().execute(cmd, false, false, false);
+                repository.getExecutor().execute(cmd, false, false);
                 if(cmd.hasFailed()) {
                     if(cmd.getErrorMessage() == null) {
                         logValidateMessage("validate for [{0},{1},{2},{3},{4},{5}] has failed, yet the returned error message is null.", // NOI18N
                                            Level.WARNING, name, url, user, getPassword(), httpUser, getHttpPassword());
-                        errorMessage = NbBundle.getMessage(RepositoryController.class, "MSG_VALIDATION_FAILED"); // NOI18N
+                        errorMessage = NbBundle.getMessage(BugzillaRepositoryController.class, "MSG_VALIDATION_FAILED"); // NOI18N
                     } else {
                         errorMessage = cmd.getErrorMessage();
                         logValidateMessage("validate for [{0},{1},{2},{3},{4},{5}] has failed: " + errorMessage, // NOI18N
@@ -338,10 +334,10 @@ public class RepositoryController extends BugtrackingController implements Docum
                     logValidateMessage("validate for [{0},{1},{2},{3},{4},{5}] ok.", // NOI18N
                                        Level.INFO, name, url, user, getPassword(), httpUser, getHttpPassword());
                 }
-                fireDataChanged();
+                fireChange();
             }
 
-            private void logValidateMessage(String msg, Level level, String name, String url, String user, String psswd, String httpUser, String httpPsswd) {
+            private void logValidateMessage(String msg, Level level, String name, String url, String user, char[] psswd, String httpUser, char[] httpPsswd) {
                 Bugzilla.LOG.log(level, msg, new Object[] {name, url, user, BugtrackingUtil.getPasswordLog(psswd), httpUser, BugtrackingUtil.getPasswordLog(httpPsswd)});
             }
         };
@@ -441,5 +437,19 @@ public class RepositoryController extends BugtrackingController implements Docum
         }
         return rp;
     }
+    
+    @Override
+    public void addChangeListener(ChangeListener l) {
+        support.addChangeListener(l);
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener l) {
+        support.removeChangeListener(l);
+    }
+    
+    protected void fireChange() {
+        support.fireChange();
+    }    
 
 }

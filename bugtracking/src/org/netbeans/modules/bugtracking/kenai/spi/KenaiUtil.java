@@ -52,9 +52,10 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JLabel;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -94,7 +95,7 @@ public class KenaiUtil {
      * @param repo
      * @return
      */
-    public static boolean isKenai(Repository repo) {
+    public static boolean isKenai(RepositoryProvider repo) {
         return repo.getLookup().lookup(KenaiProject.class) != null;
     }
 
@@ -117,13 +118,13 @@ public class KenaiUtil {
 
 
     /**
-     * Returns a Repository coresponding to the given kenai url and a name. The url
+     * Returns a RepositoryProvider coresponding to the given kenai url and a name. The url
      * might be either a kenai vcs repository, an issue or the kenai server url.
      * @param repositoryUrl
      * @return
      * @throws IOException
      */
-    public static Repository getRepository(String repositoryUrl) throws IOException {
+    public static RepositoryProvider getRepository(String repositoryUrl) throws IOException {
         KenaiProject project = getKenaiProjectForRepository(repositoryUrl);
         return (project != null)
                ? getRepository(project)
@@ -131,7 +132,7 @@ public class KenaiUtil {
     }
 
     /**
-     * Returns a Repository coresponding to the given kenai url and a name. The url
+     * Returns a RepositoryProvider coresponding to the given kenai url and a name. The url
      * might be either a kenai vcs repository, an issue or the kenai server url.
      *
      * @param url
@@ -139,7 +140,7 @@ public class KenaiUtil {
      * @return
      * @throws IOException
      */
-    public static Repository getRepository(String url, String projectName) throws IOException {
+    public static RepositoryProvider getRepository(String url, String projectName) throws IOException {
         KenaiProject p = getKenaiProject(url, projectName);
         return p != null ? getRepository(p) : null;
     }
@@ -147,21 +148,21 @@ public class KenaiUtil {
     /**
      * @see KenaiRepositories#getRepository(org.netbeans.modules.bugtracking.kenai.spi.KenaiProject)
      */
-    public static Repository getRepository(KenaiProject project) {
+    public static RepositoryProvider getRepository(KenaiProject project) {
         return KenaiRepositories.getInstance().getRepository(project);
     }
 
     /**
      * @see KenaiRepositories#getRepository(org.netbeans.modules.bugtracking.kenai.spi.KenaiProject, boolean)
      */
-    public static Repository getRepository(KenaiProject project, boolean forceCreate) {
+    public static RepositoryProvider getRepository(KenaiProject project, boolean forceCreate) {
         return KenaiRepositories.getInstance().getRepository(project, forceCreate);
     }
 
     /**
      * @see KenaiRepositories#getRepositories()
      */
-    public static Repository[] getRepositories(boolean pingOpenProjects) {
+    public static RepositoryProvider[] getRepositories(boolean pingOpenProjects) {
         return KenaiRepositories.getInstance().getRepositories(pingOpenProjects);
     }
 
@@ -178,7 +179,7 @@ public class KenaiUtil {
         }
     }
 
-    public static String getChatLink(Issue issue) {
+    public static String getChatLink(IssueProvider issue) {
         return "ISSUE:" + issue.getID(); // NOI18N
     }
     
@@ -259,7 +260,7 @@ public class KenaiUtil {
         return ka != null? ka.getDashboardProjects() : new KenaiProject[0];
     }
 
-    public static Repository findNBRepository() {
+    public static RepositoryProvider findNBRepository() {
         BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();
         for (BugtrackingConnector c : connectors) {
             KenaiSupport support = c.getLookup().lookup(KenaiSupport.class);
@@ -270,4 +271,8 @@ public class KenaiUtil {
         return null;
     }
 
+    public static void addRepository(RepositoryProvider repository) {
+        RepositoryRegistry.getInstance().addRepository(repository);
+    }
+    
 }

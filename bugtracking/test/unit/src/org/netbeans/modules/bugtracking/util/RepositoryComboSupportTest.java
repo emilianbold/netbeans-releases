@@ -59,32 +59,39 @@ import org.netbeans.modules.bugtracking.kenai.spi.DummyKenaiRepositories;
 import org.netbeans.modules.bugtracking.dummies.DummyNode;
 import org.netbeans.modules.bugtracking.dummies.DummyTopComponentRegistry;
 import org.netbeans.modules.bugtracking.dummies.DummyWindowManager;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport.Progress;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.junit.Assert.*;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.DelegatingConnector;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupport.LOADING_REPOSITORIES;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupport.SELECT_REPOSITORY;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupportTest.ThreadType.AWT;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupportTest.ThreadType.NON_AWT;
+import org.openide.util.test.MockLookup;
 
 /**
  *
  * @author Marian Petras
  */
 public class RepositoryComboSupportTest {
+    private static DummyWindowManager wm;
+    private static DummyBugtrackingOwnerSupport bos;
 
     private volatile JComboBox comboBox;
     private volatile RepositoryComboSupport comboSupport;
 
     @BeforeClass
     public static void setLookup() {
+        MockLookup.setLayersAndInstances();
         System.setProperty("org.openide.util.Lookup", TestLookup.class.getName());
+        wm = new DummyWindowManager();
+        bos = new DummyBugtrackingOwnerSupport();
     }
 
     @Before
@@ -96,26 +103,22 @@ public class RepositoryComboSupportTest {
     public void tidyUp() {
         comboBox = null;
         comboSupport = null;
-        getBugtrackingConnector().reset();
+        DummyBugtrackingConnector.instance.reset();
         getTopComponentRegistry().reset();
         getBugtrackingOwnerSupport().reset();
     }
 
-    private static DummyBugtrackingConnector getBugtrackingConnector() {
-        return Lookup.getDefault().lookup(DummyBugtrackingConnector.class);
-    }
-
     private static DummyTopComponentRegistry getTopComponentRegistry() {
-        return Lookup.getDefault().lookup(DummyWindowManager.class).registry;
+        return wm.registry;
     }
 
     private static DummyBugtrackingOwnerSupport getBugtrackingOwnerSupport() {
-        return Lookup.getDefault().lookup(DummyBugtrackingOwnerSupport.class);
+        return bos;
     }
 
     abstract class AbstractRepositoryComboTezt {
 
-        protected final DummyBugtrackingConnector connector = getBugtrackingConnector();
+        protected DummyBugtrackingConnector connector = DummyBugtrackingConnector.instance;
 
         protected Node node1 = new DummyNode("node1");
         protected Node node2 = new DummyNode("node2");
@@ -123,10 +126,20 @@ public class RepositoryComboSupportTest {
         protected Node repoNode1;
         protected Node repoNode2;
         protected Node repoNode3;
-        protected Repository repository1;
-        protected Repository repository2;
-        protected Repository repository3;
+        protected RepositoryProvider repository1;
+        protected RepositoryProvider repository2;
+        protected RepositoryProvider repository3;
 
+        public AbstractRepositoryComboTezt() {
+            DelegatingConnector[] conns = BugtrackingManager.getInstance().getConnectors();
+            for (DelegatingConnector dc : conns) {
+                if(dc.getDelegate() instanceof DummyBugtrackingConnector) {
+                    connector = (DummyBugtrackingConnector) dc.getDelegate();
+                    break;
+                }
+            }
+        }
+        
         protected void createRepository1() {
             repository1 = connector.createRepository("alpha");
             repoNode1 = new DummyNode("node1", repository1);
@@ -683,12 +696,12 @@ public class RepositoryComboSupportTest {
 
     /**
      * Tests that an {@code IllegalArgumentException} is thrown
-     * if <em>null</em> {@code Repository} is passed as the third argument
+     * if <em>null</em> {@code RepositoryProvider} is passed as the third argument
      * of method {@code setup()}.
      */
     @Test(timeout=10000,expected=IllegalArgumentException.class)
     public void testDefaultRepoExplicitlySetNull() throws InterruptedException {
-        RepositoryComboSupport.setup(null, new JComboBox(), (Repository) null);
+        RepositoryComboSupport.setup(null, new JComboBox(), (RepositoryProvider) null);
     }
 
     /**

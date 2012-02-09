@@ -81,7 +81,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
@@ -112,7 +112,7 @@ import org.openide.util.RequestProcessor;
  * @author Tomas Stupka
  * @author Jan Stola
  */
-public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
+public class BugzillaIssue extends IssueProvider implements IssueTable.NodeProvider {
 
     public static final String RESOLVE_FIXED = "FIXED";                                                         // NOI18N
     public static final String RESOLVE_DUPLICATE = "DUPLICATE";                                                 // NOI18N
@@ -148,7 +148,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
     static final String LABEL_NAME_WHITEBOARD   = "bugzilla.issue.whiteboard";  // NOI18N
 
     /**
-     * Issue wasn't seen yet
+     * IssueProvider wasn't seen yet
      */
     static final int FIELD_STATUS_IRELEVANT = -1;
 

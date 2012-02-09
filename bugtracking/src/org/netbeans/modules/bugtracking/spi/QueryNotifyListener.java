@@ -57,7 +57,7 @@ public interface QueryNotifyListener {
      *
      * @param issue
      */
-    public void notifyData(Issue issue);
+    public void notifyData(IssueProvider issue);
 
     /**
      * Query execution was finished

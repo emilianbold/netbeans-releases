@@ -76,8 +76,8 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
@@ -627,8 +627,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
         QueryNameValidator v = new QueryNameValidator() {
             @Override
             public String isValid(String name) {
-                Query[] queries = repository.getQueries ();
-                for (Query q : queries) {
+                QueryProvider[] queries = repository.getQueries ();
+                for (QueryProvider q : queries) {
                     if(q.getDisplayName().equals(name)) {
                         return NbBundle.getMessage(QueryController.class, "MSG_SAME_NAME");
                     }
@@ -652,10 +652,10 @@ public class QueryController extends BugtrackingController implements DocumentLi
     public void selectFilter(final Filter filter) {
         if(filter != null) {
             // XXX this part should be handled in the issues table - move the filtercombo and the label over
-            Issue[] issues = query.getIssues();
+            IssueProvider[] issues = query.getIssues();
             int c = 0;
             if(issues != null) {
-                for (Issue issue : issues) {
+                for (IssueProvider issue : issues) {
                     if(filter.accept(issue)) c++;
                 }
             }
@@ -805,8 +805,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                Issue[] issues = query.getIssues();
-                for (Issue issue : issues) {
+                IssueProvider[] issues = query.getIssues();
+                for (IssueProvider issue : issues) {
                     try {
                         ((BugzillaIssue) issue).setSeen(true);
                     } catch (IOException ex) {
@@ -834,7 +834,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onFindIssues() {
-        Query.openNew(repository);
+        QueryProvider.openNew(repository);
     }
 
     private void onCloneQuery() {
@@ -1134,7 +1134,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
 
         @Override
-        public void notifyData(final Issue issue) {
+        public void notifyData(final IssueProvider issue) {
             if(!query.contains(issue)) {
                 // XXX this is quite ugly - the query notifies an archoived issue
                 // but it doesn't "contain" it!

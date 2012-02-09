@@ -56,11 +56,7 @@ import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -93,13 +89,13 @@ public class CacheTest extends NbTestCase {
         long tsBeforeRepo = System.currentTimeMillis();
         Thread.sleep(10);
 
-        Repository repo = new TestRepository("test repo");
+        RepositoryProvider repo = new TestRepository("test repo");
         IssueCache cache = repo.getLookup().lookup(IssueCache.class);
 
         // creating issue with creation     < repo reference time;
         //                     modification < repo reference time
         // => initial status SEEN
-        Issue issue = cache.setIssueData("1", "1#issue1#" + tsBeforeRepo + "#" + tsBeforeRepo + "#v11#v21#v31");
+        IssueProvider issue = cache.setIssueData("1", "1#issue1#" + tsBeforeRepo + "#" + tsBeforeRepo + "#v11#v21#v31");
         assertNotNull(issue);
         int status = cache.getStatus(issue.getID());
         assertEquals(IssueCache.ISSUE_STATUS_SEEN, status);
@@ -126,7 +122,7 @@ public class CacheTest extends NbTestCase {
     }
 
     public void testInitialNew2RefreshChanged2Seen2Unseen() throws MalformedURLException, CoreException, IOException, InterruptedException {
-        Repository repo = new TestRepository("test repo");
+        RepositoryProvider repo = new TestRepository("test repo");
         IssueCache cache = repo.getLookup().lookup(IssueCache.class);
         Thread.sleep(10);
         long tsAfterRepo = System.currentTimeMillis();
@@ -134,7 +130,7 @@ public class CacheTest extends NbTestCase {
         // creating issue with creation     > repo reference time;
         //                     modification > repo reference time
         // => initial status NEW
-        Issue issue = cache.setIssueData("1", "1#issue1#" + tsAfterRepo + "#" + tsAfterRepo + "#v11#v21#v31");
+        IssueProvider issue = cache.setIssueData("1", "1#issue1#" + tsAfterRepo + "#" + tsAfterRepo + "#v11#v21#v31");
         assertNotNull(issue);
         int status = cache.getStatus(issue.getID());
         assertEquals(IssueCache.ISSUE_STATUS_NEW, status);
@@ -170,7 +166,7 @@ public class CacheTest extends NbTestCase {
         long tsBeforeRepo = System.currentTimeMillis();
         Thread.sleep(10);
 
-        Repository repo = new TestRepository("test repo");
+        RepositoryProvider repo = new TestRepository("test repo");
         IssueCache cache = repo.getLookup().lookup(IssueCache.class);
         Thread.sleep(10);
         long tsAfterRepo = System.currentTimeMillis();
@@ -178,7 +174,7 @@ public class CacheTest extends NbTestCase {
         // creating issue with creation     < repo reference time;
         //                     modification > repo reference time
         // => initial status MODIFIED
-        Issue issue = cache.setIssueData("1", "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v11#v21#v31");
+        IssueProvider issue = cache.setIssueData("1", "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v11#v21#v31");
         assertNotNull(issue);
         int status = cache.getStatus(issue.getID());
         assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
@@ -216,7 +212,7 @@ public class CacheTest extends NbTestCase {
         long tsBeforeRepo = System.currentTimeMillis();
         Thread.sleep(10);
 
-        Repository repo = new TestRepository("test repo");
+        RepositoryProvider repo = new TestRepository("test repo");
         IssueCache cache = repo.getLookup().lookup(IssueCache.class);
         Thread.sleep(10);
         long tsAfterRepo = System.currentTimeMillis();
@@ -225,7 +221,7 @@ public class CacheTest extends NbTestCase {
         //                     modification > repo reference time
         // => initial status MODIFIED
         String data = "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v11#v21#v31";
-        Issue issue = cache.setIssueData("1", data);
+        IssueProvider issue = cache.setIssueData("1", data);
         assertNotNull(issue);
         int status = cache.getStatus(issue.getID());
         assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
@@ -274,7 +270,7 @@ public class CacheTest extends NbTestCase {
         long tsBeforeRepo = System.currentTimeMillis();
         Thread.sleep(10);
 
-        Repository repo = new TestRepository("test repo");
+        RepositoryProvider repo = new TestRepository("test repo");
         IssueCache cache = repo.getLookup().lookup(IssueCache.class);
         Thread.sleep(10);
         long tsAfterRepo = System.currentTimeMillis();
@@ -283,7 +279,7 @@ public class CacheTest extends NbTestCase {
         //                     modification > repo reference time
         // => initial status MODIFIED
         String data = "1#issue1#" + tsBeforeRepo + "#" + tsAfterRepo + "#v11#v21#v31";
-        Issue issue = cache.setIssueData("1", data);
+        IssueProvider issue = cache.setIssueData("1", data);
         assertNotNull(issue);
         int status = cache.getStatus(issue.getID());
         assertEquals(IssueCache.ISSUE_STATUS_MODIFIED, status);
@@ -328,13 +324,13 @@ public class CacheTest extends NbTestCase {
         long tsBeforeRepo = System.currentTimeMillis();
         Thread.sleep(10);
 
-        Repository repo = new TestRepository("test repo");
+        RepositoryProvider repo = new TestRepository("test repo");
         IssueCache cache = repo.getLookup().lookup(IssueCache.class);
 
         // creating issue with creation     < repo reference time;
         //                     modification < repo reference time
         // => initial status SEEN
-        Issue issue = cache.setIssueData("1", "1#issue1#" + tsBeforeRepo + "#" + tsBeforeRepo + "#v11#v21#v31");
+        IssueProvider issue = cache.setIssueData("1", "1#issue1#" + tsBeforeRepo + "#" + tsBeforeRepo + "#v11#v21#v31");
         assertNotNull(issue);
         int status = cache.getStatus(issue.getID());
         assertEquals(IssueCache.ISSUE_STATUS_SEEN, status);
@@ -367,10 +363,10 @@ public class CacheTest extends NbTestCase {
         }
     }
 
-    private class TestIssue extends Issue {
+    private class TestIssue extends IssueProvider {
         private String[] dataArray;
         private Map<String, String> attrs = new HashMap<String, String>(3);
-        public TestIssue(Repository repository, String data) {
+        public TestIssue(RepositoryProvider repository, String data) {
             super(repository);
             setData(data);
         }
@@ -411,39 +407,35 @@ public class CacheTest extends NbTestCase {
         public IssueNode getNode() {throw new UnsupportedOperationException("Not supported yet.");}
     }
 
-    private class TestRepository extends Repository {
+    private class TestRepository extends RepositoryProvider {
         private final String name;
         private final TestCache cache;
+        private RepositoryInfo info;
         public TestRepository(String name) {
             this.name = name;
             cache = new TestCache(name);
+            info = new RepositoryInfo(name, name, "http://" + name + ".org", name, name, null, null, null, null);
         }
         public Image getIcon() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-        public String getDisplayName() {
-            return name;
+
+        @Override
+        public RepositoryInfo getInfo() {
+            return info;
         }
-        public String getTooltip() {
-            return getDisplayName();
-        }
-        public String getID() {
-            return getDisplayName();
-        }
-        public String getUrl() {
-            return "http://" + getDisplayName() + ".org";
-        }
+
         public Lookup getLookup() {
             return Lookups.singleton(cache);
         }
 
-        public Issue getIssue(String id) {throw new UnsupportedOperationException("Not supported yet.");}
+        public IssueProvider getIssue(String id) {throw new UnsupportedOperationException("Not supported yet.");}
         public void remove() {throw new UnsupportedOperationException("Not supported yet.");}
-        public BugtrackingController getController() {throw new UnsupportedOperationException("Not supported yet.");}
-        public Query createQuery() {throw new UnsupportedOperationException("Not supported yet.");}
-        public Issue createIssue() {throw new UnsupportedOperationException("Not supported yet.");}
-        public Query[] getQueries() {throw new UnsupportedOperationException("Not supported yet.");}
-        public Issue[] simpleSearch(String criteria) {throw new UnsupportedOperationException("Not supported yet.");}
+        public RepositoryController getController() {throw new UnsupportedOperationException("Not supported yet.");}
+        public QueryProvider createQuery() {throw new UnsupportedOperationException("Not supported yet.");}
+        public IssueProvider createIssue() {throw new UnsupportedOperationException("Not supported yet.");}
+        public QueryProvider[] getQueries() {throw new UnsupportedOperationException("Not supported yet.");}
+        public IssueProvider[] simpleSearch(String criteria) {throw new UnsupportedOperationException("Not supported yet.");}
 
         @Override
         public Collection<RepositoryUser> getUsers() {
@@ -453,19 +445,19 @@ public class CacheTest extends NbTestCase {
         private class TestCache extends IssueCache<String> {
             public TestCache(String nameSpace) {
                 super(nameSpace, new IssueAccessor<String>() {
-                    public Issue createIssue(String issueData) {
+                    public IssueProvider createIssue(String issueData) {
                         return new TestIssue(TestRepository.this, issueData);
                     }
-                    public void setIssueData(Issue issue, String issueData) {
+                    public void setIssueData(IssueProvider issue, String issueData) {
                         ((TestIssue)issue).setData(issueData);
                     }
-                    public String getRecentChanges(Issue issue) {
+                    public String getRecentChanges(IssueProvider issue) {
                         throw new UnsupportedOperationException("Not supported yet.");
                     }
-                    public long getLastModified(Issue issue) {
+                    public long getLastModified(IssueProvider issue) {
                         return Long.parseLong(((TestIssue)issue).dataArray[3]);
                     }
-                    public long getCreated(Issue issue) {
+                    public long getCreated(IssueProvider issue) {
                         return Long.parseLong(((TestIssue)issue).dataArray[2]);
                     }
 
@@ -474,7 +466,7 @@ public class CacheTest extends NbTestCase {
                         return a[0];
                     }
 
-                    public Map<String, String> getAttributes(Issue issue) {
+                    public Map<String, String> getAttributes(IssueProvider issue) {
                         return ((TestIssue)issue).getAttributes();
                     }
                 });

@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.bugtracking.ui.issue;
 
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.openide.nodes.Node;
 
 /**
@@ -51,7 +51,7 @@ import org.openide.nodes.Node;
  */
 public abstract class IssueAccessor {
     protected static IssueAccessor IMPL;
-    public abstract void setSelection(Issue issue, Node[] nodes);
+    public abstract void setSelection(IssueProvider issue, Node[] nodes);
     
     static IssueAccessor getInstance() {
         return IMPL;

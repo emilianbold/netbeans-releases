@@ -53,7 +53,7 @@ import org.netbeans.modules.bugzilla.*;
 import java.util.logging.Level;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
 
@@ -141,10 +141,10 @@ public class KenaiQueryTest extends NbTestCase implements TestConstants, QueryCo
         int saved = 0;
         int removed = 0;
         public void propertyChange(PropertyChangeEvent evt) {
-            if(evt.getPropertyName().equals(Query.EVENT_QUERY_REMOVED)) {
+            if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_REMOVED)) {
                 removed++;
             }
-            if(evt.getPropertyName().equals(Query.EVENT_QUERY_SAVED)) {
+            if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_SAVED)) {
                 saved++;
             }
         }

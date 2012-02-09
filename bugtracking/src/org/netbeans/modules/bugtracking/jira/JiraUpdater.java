@@ -57,13 +57,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.DelegatingConnector;
+import org.netbeans.modules.bugtracking.spi.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.HtmlBrowser;
@@ -79,7 +76,7 @@ import org.openide.util.NbBundle;
 public class JiraUpdater {
 
     private static JiraUpdater instance;
-    private JiraProxyConector connector;
+    private DelegatingConnector connector;
 
     private JiraUpdater() {
     }
@@ -98,9 +95,16 @@ public class JiraUpdater {
      *
      * @return
      */
-    public BugtrackingConnector getConnector() {
+    public DelegatingConnector getConnector() {
         if(connector == null) {
-            connector = new JiraProxyConector();
+            JiraProxyConector jpc = new JiraProxyConector();
+            return new DelegatingConnector(
+                    jpc, 
+                    "fake.jira.connector",                                              // NOI18N
+                    NbBundle.getMessage(JiraUpdater.class, "LBL_FakeJiraName"),         // NOI18N
+                    NbBundle.getMessage(JiraUpdater.class, "LBL_FakeJiraNameTooltip"),  // NOI18N
+                    null);
+            
         }
         return connector;
     }
@@ -201,94 +205,65 @@ public class JiraUpdater {
     
     private class JiraProxyConector extends BugtrackingConnector {
         @Override
-        public String getDisplayName() {
-            return NbBundle.getMessage(JiraUpdater.class, "LBL_FakeJiraName");              // NOI18N
-        }
-        @Override
-        public String getTooltip() {
-            return NbBundle.getMessage(JiraUpdater.class, "LBL_FakeJiraNameTooltip");       // NOI18N
-        }
-        @Override
-        public Repository createRepository() {
+        public RepositoryProvider createRepository() {
             return new JiraProxyRepository();
         }
         @Override
-        public Repository[] getRepositories() {
-            return new Repository[0];
-        }
         public Lookup getLookup() {
             return Lookup.EMPTY;
         }
-
         @Override
-        public String getID() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Image getIcon() {
+        public RepositoryProvider createRepository(RepositoryInfo info) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 
-    private class JiraProxyRepository extends Repository {
+    private class JiraProxyRepository extends RepositoryProvider {
         @Override
         public Image getIcon() {
             return null;
         }
         @Override
-        public String getDisplayName() {
-            throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
+        public RepositoryInfo getInfo() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
         @Override
-        public String getTooltip() {
-            throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
-        }
-        @Override
-        public String getID() {
-            throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
-        }
-        @Override
-        public String getUrl() {
-            throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
-        }
-        @Override
-        public Issue getIssue(String id) {
+        public IssueProvider getIssue(String id) {
             throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
         @Override
         public void remove() { }
         @Override
-        public BugtrackingController getController() {
+        public RepositoryController getController() {
             return new JiraProxyController();
         }
         @Override
-        public Query createQuery() {
+        public QueryProvider createQuery() {
             throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
         @Override
-        public Issue createIssue() {
+        public IssueProvider createIssue() {
             throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
 
         @Override
-        public Query[] getQueries() {
-            return new Query[0];
+        public QueryProvider[] getQueries() {
+            return new QueryProvider[0];
         }
         @Override
         public Collection<RepositoryUser> getUsers() {
             return Collections.EMPTY_LIST;
         }
         @Override
-        public Issue[] simpleSearch(String criteria) {
-            return new Issue[0];
+        public IssueProvider[] simpleSearch(String criteria) {
+            return new IssueProvider[0];
         }
         public Lookup getLookup() {
             return Lookup.EMPTY;
         }
     }
 
-    private class JiraProxyController extends BugtrackingController {
+    private class JiraProxyController implements RepositoryController {
         private JPanel panel;
         @Override
         public JComponent getComponent() {
@@ -347,6 +322,20 @@ public class JiraUpdater {
 
             return panel;
         }
+
+        @Override
+        public void populate() {}
+
+        @Override
+        public String getErrorMessage() {
+            return null;
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener l) {}
+
+        @Override
+        public void removeChangeListener(ChangeListener l) {}
 
     }
 }

@@ -64,13 +64,15 @@ import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
+import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
@@ -88,10 +90,10 @@ import org.openide.util.lookup.ServiceProviders;
  * @author Ondra Vrabec
  */
 @ServiceProviders({
-    @ServiceProvider(service=org.netbeans.modules.bugtracking.spi.IssueProvider.class),
+    @ServiceProvider(service=org.netbeans.modules.bugtracking.spi.TaskListIssueProvider.class),
     @ServiceProvider(service=BugzillaIssueProvider.class)
 })
-public final class BugzillaIssueProvider extends IssueProvider implements PropertyChangeListener {
+public final class BugzillaIssueProvider extends TaskListIssueProvider implements PropertyChangeListener {
 
     private static BugzillaIssueProvider instance;
     private final Object LOCK = new Object();
@@ -198,7 +200,7 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (Repository.EVENT_ATTRIBUTES_CHANGED.equals(evt.getPropertyName())) {
+        if (RepositoryProvider.EVENT_ATTRIBUTES_CHANGED.equals(evt.getPropertyName())) {
             if (evt.getOldValue() != null && evt.getOldValue() instanceof Map) {
                 Object oldValue = ((Map)evt.getOldValue()).get(BugzillaRepository.ATTRIBUTE_URL);
                 if (oldValue != null && oldValue instanceof String) {
@@ -286,7 +288,7 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
     }
 
     private static URL getUrl (BugzillaIssue issue) {
-        return getUrl(issue.getRepository().getUrl(), issue.getID());
+        return getUrl(issue.getRepository().getInfo().getUrl(), issue.getID());
     }
 
     private static URL getUrl(String repositoryUrl, String issueId) {
@@ -392,8 +394,9 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
     }
 
     private void addCommonIssues (Map<String, List<String>> repositoryIssues) {
-        BugzillaRepository[] repositories = Bugzilla.getInstance().getRepositories();
-        for (BugzillaRepository repository : repositories) {
+        RepositoryProvider[] repositories = BugtrackingUtil.getRepositories(BugzillaConnector.ID);
+        for (RepositoryProvider rp : repositories) {
+            BugzillaRepository repository = (BugzillaRepository)rp;
             // all issues for this repository
             List<String> issueAttributes = repositoryIssues.get(repository.getUrl());
             if (issueAttributes != null && issueAttributes.size() > 1) {
@@ -661,7 +664,7 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
                     @Override
                     public void propertyChange(PropertyChangeEvent evt) {
                         BugzillaIssue issue = issueRef.get();
-                        if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName()) && issue != null) {
+                        if (IssueProvider.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName()) && issue != null) {
                             // issue has somehow changed, checks for its changes and apply them in the tasklist
                             applyChangesFor(issue);
                         }
@@ -784,7 +787,7 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
 
         public KenaiBugzillaLazyIssue (BugzillaIssue issue, BugzillaIssueProvider provider) throws MalformedURLException {
             super(issue, provider);
-            Repository repo = issue.getRepository();
+            RepositoryProvider repo = issue.getRepository();
             if (!(repo instanceof KenaiRepository)) {
                 throw new IllegalStateException("Cannot instantiate with a non kenai issue: " + issue); //NOI18N
             }
@@ -798,7 +801,7 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
 
         protected KenaiRepository lookupRepository () {
             KenaiRepository kenaiRepo = null;
-            Repository repo = null;
+            RepositoryProvider repo = null;
             if (loginStatusChanged) {
                 try {
                     LOG.log(Level.FINE, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for: " + projectName);

@@ -56,7 +56,7 @@ import org.openide.nodes.Node;
  *
  * @author Tomas Stupka
  */
-public abstract class Query implements Comparable<Query> {
+public abstract class QueryProvider implements Comparable<QueryProvider> {
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
@@ -88,7 +88,7 @@ public abstract class Query implements Comparable<Query> {
     /**
      * Creates a query
      */
-    public Query() {
+    public QueryProvider() {
     }
 
     /**
@@ -112,17 +112,17 @@ public abstract class Query implements Comparable<Query> {
 
     /**
      *
-     * Returns this queries {@link Repository}
+     * Returns this queries {@link RepositoryProvider}
      *
-     * @return {@link Repository}
+     * @return {@link RepositoryProvider}
      */
-    public abstract Repository getRepository();
+    public abstract RepositoryProvider getRepository();
 
     /**
      * XXX should this realy be in the spi?
      * @param query
      */
-    public static void openNew(Repository repository) {
+    public static void openNew(RepositoryProvider repository) {
         QueryAction.openQuery(null, repository);
     }
 
@@ -157,9 +157,9 @@ public abstract class Query implements Comparable<Query> {
      * @return
      */
     // XXX used only by kenai - move out from spi
-    public abstract Issue[] getIssues(int includeStatus);
+    public abstract IssueProvider[] getIssues(int includeStatus);
 
-    public Issue[] getIssues() {
+    public IssueProvider[] getIssues() {
         return getIssues(~0);
     }
 
@@ -168,7 +168,7 @@ public abstract class Query implements Comparable<Query> {
      * @param issue
      * @return
      */
-    public abstract boolean contains(Issue issue);
+    public abstract boolean contains(IssueProvider issue);
 
     /**
      * Returns all issues given by the last refresh for
@@ -182,7 +182,7 @@ public abstract class Query implements Comparable<Query> {
     // XXX Shouldn't be called while running
     // XXX move to simple search
 
-    public Issue[] getIssues(String criteria) {
+    public IssueProvider[] getIssues(String criteria) {
         return BugtrackingUtil.getByIdOrSummary(getIssues(), criteria);
     }
 
@@ -192,7 +192,7 @@ public abstract class Query implements Comparable<Query> {
      * @return 
      * @deprecated
      */
-    public int compareTo(Query q) {
+    public int compareTo(QueryProvider q) {
         if(q == null) {
             return 1;
         }
@@ -215,7 +215,7 @@ public abstract class Query implements Comparable<Query> {
      * @deprecated
      */
     // XXX used only by issue table - move out from spi    
-    public abstract int getIssueStatus(Issue issue);
+    public abstract int getIssueStatus(IssueProvider issue);
 
     /*********
      * EVENTS
@@ -256,7 +256,7 @@ public abstract class Query implements Comparable<Query> {
         }
     }
 
-    protected void fireNotifyData(Issue issue) {
+    protected void fireNotifyData(IssueProvider issue) {
         QueryNotifyListener[] listeners = getListeners();
         for (QueryNotifyListener l : listeners) {
             l.notifyData(issue);
