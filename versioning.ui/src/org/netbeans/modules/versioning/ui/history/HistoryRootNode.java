@@ -43,9 +43,6 @@
  */
 package org.netbeans.modules.versioning.ui.history;
 
-import java.beans.PropertyEditor;
-import java.beans.PropertyEditorSupport;
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.util.*;
