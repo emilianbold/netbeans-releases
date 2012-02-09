@@ -55,6 +55,7 @@ import javax.swing.JPanel;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
@@ -325,6 +326,11 @@ public class QTCTestHidden extends NbTestCase {
         @Override
         public void setSaved(boolean saved) {
             super.setSaved(saved);
+        }
+
+        @Override
+        public void setContext(Node[] nodes) {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
     }

@@ -68,6 +68,7 @@ import org.netbeans.modules.jira.commands.PerformQueryCommand;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.openide.nodes.Node;
 
 /**
  *
@@ -83,6 +84,7 @@ public class JiraQuery extends QueryProvider {
 
     protected JiraFilter jiraFilter;
     private boolean firstRun = true;
+    private Node[] context;
 
     public JiraQuery(JiraRepository repository) {
         this(null, repository, null, false, true);
@@ -133,6 +135,15 @@ public class JiraQuery extends QueryProvider {
         return repository;
     }
 
+    @Override
+    public void setContext(Node[] nodes) {
+        context = nodes;
+    }
+
+    public Node[] getContext() {
+        return context;
+    }
+    
     protected QueryController createControler(JiraRepository r, JiraQuery q, JiraFilter jiraFilter) {
         if(jiraFilter == null || jiraFilter instanceof FilterDefinition) {
             return new QueryController(r, q, (FilterDefinition) jiraFilter);
@@ -251,6 +262,9 @@ public class JiraQuery extends QueryProvider {
 
     @Override
     public void setSaved(boolean saved) {
+        if(saved) {
+            context = null;
+        }
         super.setSaved(saved);
     }
 

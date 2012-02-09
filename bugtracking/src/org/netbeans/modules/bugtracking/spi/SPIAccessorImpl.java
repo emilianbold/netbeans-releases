@@ -76,6 +76,6 @@ class SPIAccessorImpl extends SPIAccessor {
     
     @Override
     public void setSelection(QueryProvider query, Node[] nodes) {
-        query.setSelection(nodes);
+        query.setContext(nodes);
     }    
 }

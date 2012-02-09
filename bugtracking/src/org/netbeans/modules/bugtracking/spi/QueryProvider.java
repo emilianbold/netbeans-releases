@@ -78,8 +78,6 @@ public abstract class QueryProvider implements Comparable<QueryProvider> {
     protected boolean saved;
     private long lastRefresh = -1;
 
-    private Node[] selection;
-
     static {
         SPIAccessorImpl.createAccesor();
     }
@@ -137,9 +135,6 @@ public abstract class QueryProvider implements Comparable<QueryProvider> {
      */
     protected void setSaved(boolean saved) {
         this.saved = saved;
-        if(saved) {
-            selection = null;
-        }
         fireQuerySaved(); 
     }
 
@@ -245,11 +240,6 @@ public abstract class QueryProvider implements Comparable<QueryProvider> {
         this.lastRefresh = lastRefresh;
     }
 
-    void setSelection(Node[] nodes) {
-        this.selection = nodes;
-    }
+    public abstract void setContext(Node[] nodes);
 
-    protected Node[] getSelection() {
-        return selection;
-    }
 }

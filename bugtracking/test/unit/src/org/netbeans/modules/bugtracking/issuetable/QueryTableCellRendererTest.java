@@ -269,6 +269,11 @@ public class QueryTableCellRendererTest {
         public int getIssueStatus(IssueProvider issue) {
             return status;
         }
+
+        @Override
+        public void setContext(Node[] nodes) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
     private class RendererNode extends IssueNode {

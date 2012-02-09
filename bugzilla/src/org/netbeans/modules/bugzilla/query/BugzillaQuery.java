@@ -85,7 +85,8 @@ public class BugzillaQuery extends QueryProvider {
 
     private boolean firstRun = true;
     private ColumnDescriptor[] columnDescriptors;
-
+    private Node[] context;
+    
     public BugzillaQuery(BugzillaRepository repository) {
         this(null, repository, null, false, false, true);
     }
@@ -253,8 +254,12 @@ public class BugzillaQuery extends QueryProvider {
     }
 
     @Override
-    public Node[] getSelection() {
-        return super.getSelection();
+    public void setContext(Node[] nodes) {
+        context = nodes;
+    }
+
+    public Node[] getContext() {
+        return context;
     }
 
     public int getIssueStatus(String id) {
@@ -279,6 +284,9 @@ public class BugzillaQuery extends QueryProvider {
 
     @Override
     public void setSaved(boolean saved) {
+        if(saved) {
+            context = null;
+        }
         super.setSaved(saved);
     }
 
