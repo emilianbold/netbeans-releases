@@ -47,23 +47,19 @@ import org.openide.util.lookup.Lookups;
  *
  * @author lahvac
  */
-public class InvertBooleanRefactoring extends AbstractRefactoring {
+public final class InvertBooleanRefactoring extends AbstractRefactoring {
     
-    private final TreePathHandle original;
-    private final String newName;
+    private String newName;
 
-    public InvertBooleanRefactoring(TreePathHandle original, String newName) {
+    public InvertBooleanRefactoring(TreePathHandle original) {
         super(Lookups.singleton(original));
-        this.original = original;
-        this.newName = newName;
-    }
-
-    public TreePathHandle getOriginal() {
-        return original;
     }
 
     public String getNewName() {
         return newName;
     }
 
+    public void setNewName(String newName) {
+        this.newName = newName;
+    }
 }

@@ -147,7 +147,8 @@ public class InvertBooleanRefactoringPluginImplTest extends RefTestBase {
                 VariableTree var = (VariableTree) ((ClassTree) cut.getTypeDecls().get(0)).getMembers().get(1);
 
                 TreePath tp = TreePath.getPath(cut, var);
-                r[0] = new InvertBooleanRefactoring(TreePathHandle.create(tp, parameter), "c");
+                r[0] = new InvertBooleanRefactoring(TreePathHandle.create(tp, parameter));
+                r[0].setNewName("c");
             }
         }, true);
 
@@ -173,7 +174,8 @@ public class InvertBooleanRefactoringPluginImplTest extends RefTestBase {
                 MethodTree var = (MethodTree) ((ClassTree) cut.getTypeDecls().get(0)).getMembers().get(1);
 
                 TreePath tp = TreePath.getPath(cut, var);
-                r[0] = new InvertBooleanRefactoring(TreePathHandle.create(tp, parameter), "c");
+                r[0] = new InvertBooleanRefactoring(TreePathHandle.create(tp, parameter));
+                r[0].setNewName("c");
             }
         }, true);
 

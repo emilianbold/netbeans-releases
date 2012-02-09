@@ -46,14 +46,13 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import java.awt.Component;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.element.*;
-import javax.lang.model.type.TypeKind;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -72,7 +71,6 @@ import org.openide.util.NbBundle;
  * @author Jan Becicka
  */
 public class ReplaceConstructorWithBuilderUI implements RefactoringUI, JavaRefactoringUIFactory {
-
 
     private ReplaceConstructorWithBuilderRefactoring refactoring;
     private String builderFQN;
@@ -114,19 +112,10 @@ public class ReplaceConstructorWithBuilderUI implements RefactoringUI, JavaRefac
 
     @Override
     public CustomRefactoringPanel getPanel(final ChangeListener parent) {
-        return new CustomRefactoringPanel() {
-            @Override
-            public void initialize() {
-                panel.initialize();
-            }
-            @Override
-            public Component getComponent() {
-                if (panel == null) {
-                    panel = new ReplaceConstructorWithBuilderPanel(parent, builderFQN + "Builder", paramaterNames, parameterTypes);
-                }
-                return panel;
-            }
-        };
+        if (panel == null) {
+            panel = new ReplaceConstructorWithBuilderPanel(parent, builderFQN + "Builder", paramaterNames, parameterTypes);
+        }
+        return panel;
     }
 
     @Override
@@ -138,17 +127,8 @@ public class ReplaceConstructorWithBuilderUI implements RefactoringUI, JavaRefac
 
     @Override
     public Problem checkParameters() {
-        String builderName = panel.getBuilderName();
-        
-        if (builderName == null || builderName.length() == 0) {
-            return new Problem(true, "No factory method name specified.");
-        }
-        if (!SourceVersion.isIdentifier(builderName)) {
-            return new Problem(true, builderName + " is not an identifier.");
-        }
-        
         refactoring.setSetters(panel.getSetters());
-        refactoring.setBuilderName(builderName);
+        refactoring.setBuilderName(panel.getBuilderName());
         return refactoring.fastCheckParameters();
     }
 
@@ -164,7 +144,7 @@ public class ReplaceConstructorWithBuilderUI implements RefactoringUI, JavaRefac
 
     @Override
     public HelpCtx getHelpCtx() {
-        return null;
+        return new HelpCtx(ReplaceConstructorWithBuilderUI.class);
     }
 
     @Override
