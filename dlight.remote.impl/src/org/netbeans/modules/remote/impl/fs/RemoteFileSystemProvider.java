@@ -95,8 +95,8 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     
     @Override
     public FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath) {
-        if (baseFileObject instanceof RemoteFileObjectBase) {
-            ExecutionEnvironment execEnv = ((RemoteFileObjectBase) baseFileObject).getExecutionEnvironment();
+        if (baseFileObject instanceof RemoteFileObject) {
+            ExecutionEnvironment execEnv = ((RemoteFileObject) baseFileObject).getExecutionEnvironment();
             if (isPathAbsolute(relativeOrAbsolutePath)) {
                 relativeOrAbsolutePath = RemoteFileSystemManager.getInstance().getFileSystem(execEnv).normalizeAbsolutePath(relativeOrAbsolutePath);
                 try {
@@ -135,7 +135,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
 
     @Override
     public boolean isMine(FileObject fileObject) {
-        return fileObject instanceof RemoteFileObjectBase;
+        return fileObject instanceof RemoteFileObject;
     }
 
     @Override
@@ -284,8 +284,8 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
 
     @Override
     public String toURL(FileObject fileObject) {
-        if (fileObject instanceof RemoteFileObjectBase) {
-            ExecutionEnvironment env =((RemoteFileObjectBase) fileObject).getExecutionEnvironment();
+        if (fileObject instanceof RemoteFileObject) {
+            ExecutionEnvironment env =((RemoteFileObject) fileObject).getExecutionEnvironment();
             return getUrlPrefix(env) + fileObject.getPath();
         }
         return null;
@@ -321,9 +321,9 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     
     @Override
     public void scheduleRefresh(FileObject fileObject) {
-        if (fileObject instanceof RemoteFileObjectBase) {
-            RemoteFileObjectBase fo = (RemoteFileObjectBase) fileObject;
-            fo.getFileSystem().getRefreshManager().scheduleRefresh(Arrays.asList(fo));
+        if (fileObject instanceof RemoteFileObject) {
+            RemoteFileObject fo = (RemoteFileObject) fileObject;
+            fo.getFileSystem().getRefreshManager().scheduleRefresh(Arrays.asList(fo.getDelegate()));
         } else {
             RemoteLogger.getInstance().log(Level.WARNING, "Unexpected fileObject class: {0}", fileObject.getClass());
         }
@@ -378,9 +378,9 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     
     @Override
     public boolean canExecute(FileObject fileObject) {
-        RemoteLogger.assertTrue(fileObject instanceof RemoteFileObjectBase, "Unexpected file object class: " + fileObject); // NOI18N
-        if (fileObject instanceof RemoteFileObjectBase) {
-            return ((RemoteFileObjectBase) fileObject).canExecute();
+        RemoteLogger.assertTrue(fileObject instanceof RemoteFileObject, "Unexpected file object class: " + fileObject); // NOI18N
+        if (fileObject instanceof RemoteFileObject) {
+            return ((RemoteFileObject) fileObject).getDelegate().canExecute();
         }
         return false;
     }    
