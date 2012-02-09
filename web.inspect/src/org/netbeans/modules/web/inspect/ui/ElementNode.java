@@ -44,6 +44,7 @@ package org.netbeans.modules.web.inspect.ui;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import javax.swing.Action;
+import org.netbeans.modules.web.inspect.ElementHandle;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.actions.GoToElementSourceAction;
 import org.openide.nodes.*;
@@ -114,8 +115,9 @@ public class ElementNode extends AbstractNode {
             @Override
             public void run() {
                 PageModel pageModel = PageModel.getDefault();
-                updateProperties(SET_ATTRIBUTES_INDEX, pageModel.getAtrributes(element));
-                updateProperties(SET_STYLE_INDEX, pageModel.getComputedStyle(element));
+                ElementHandle handle = ElementHandle.create(element);
+                updateProperties(SET_ATTRIBUTES_INDEX, pageModel.getAtrributes(handle));
+                updateProperties(SET_STYLE_INDEX, pageModel.getComputedStyle(handle));
             } 
         });
     }

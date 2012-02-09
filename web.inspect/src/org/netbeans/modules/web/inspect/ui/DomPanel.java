@@ -51,6 +51,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
+import org.netbeans.modules.web.inspect.ElementHandle;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -248,10 +249,11 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
                 String propName = evt.getPropertyName();
                 if (ExplorerManager.PROP_SELECTED_NODES.equals(propName)) {
                     Node[] nodes = manager.getSelectedNodes();
-                    final List<Element> elements = new ArrayList<Element>(nodes.length);
+                    final List<ElementHandle> elements = new ArrayList<ElementHandle>(nodes.length);
                     for (Node node : nodes) {
                         Element element = node.getLookup().lookup(Element.class);
-                        elements.add(element);
+                        ElementHandle handle = ElementHandle.create(element);
+                        elements.add(handle);
                     }
                     RP.post(new Runnable() {
                         @Override

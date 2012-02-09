@@ -54,7 +54,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.netbeans.modules.web.inspect.script.Script;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -176,50 +175,25 @@ public class PageModelImpl extends PageModel {
     }
 
     @Override
-    public void setSelectedElements(Collection<Element> elements) {
+    public void setSelectedElements(Collection<ElementHandle> elements) {
         if (isValid()) {
-            // Build the expression describing the selection
-            StringBuilder selection = new StringBuilder("["); // NOI18N
-            boolean firstElement = true;
-            for (Element element : elements) {
-                String elSelection = elementCode(element);
-                if (firstElement) {
-                    firstElement = false;
-                } else {
-                    selection.append(',');
-                }
-                selection.append(elSelection);
+            List<JSONObject> jsonHandles = new ArrayList<JSONObject>(elements.size());
+            for (ElementHandle handle : elements) {
+                JSONObject jsonHandle = handle.toJSONObject();
+                jsonHandles.add(jsonHandle);
             }
-            selection.append(']');
-
-            // Select the elements
-            executeScript("NetBeans.selectElements("+selection+")"); // NOI18N
+            JSONArray array = new JSONArray(jsonHandles);
+            String code = array.toString();
+            executeScript("NetBeans.selectElements("+code+")"); // NOI18N
         }
-    }
-
-    private String elementCode(Element element) {
-        StringBuilder code = new StringBuilder("["); // NOI18N
-        Element documentElement = element.getOwnerDocument().getDocumentElement();
-        boolean firstIndex = true;
-        while (element != documentElement) {
-            if (firstIndex) {
-                firstIndex = false;
-            } else {
-                code.insert(1,',');
-            }
-            String index = element.getAttribute(ELEMENT_INDEX_ATTR);
-            code.insert(1,index);
-            element = (Element)element.getParentNode();
-        }
-        code.append(']');
-        return code.toString();
     }
 
     @Override
-    public Map<String, String> getAtrributes(Element element) {
+    public Map<String, String> getAtrributes(ElementHandle element) {
         Map<String,String> map;
         if (isValid()) {
-            String code = elementCode(element);
+            JSONObject jsonHandle = element.toJSONObject();
+            String code = jsonHandle.toString();
             Object result = executeScript("NetBeans.getAttributes("+code+")"); // NOI18N
             if (result == ScriptExecutor.ERROR_RESULT) {
                 map = Collections.EMPTY_MAP;
@@ -237,10 +211,11 @@ public class PageModelImpl extends PageModel {
     }
 
     @Override
-    public Map<String, String> getComputedStyle(Element element) {
+    public Map<String, String> getComputedStyle(ElementHandle element) {
         Map<String,String> map;
         if (isValid()) {
-            String code = elementCode(element);
+            JSONObject jsonHandle = element.toJSONObject();
+            String code = jsonHandle.toString();
             Object result = executeScript("NetBeans.getComputedStyle("+code+")"); // NOI18N
             if (result == ScriptExecutor.ERROR_RESULT) {
                 map = Collections.EMPTY_MAP;
