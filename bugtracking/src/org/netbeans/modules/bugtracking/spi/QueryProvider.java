@@ -44,8 +44,6 @@ package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.nodes.Node;
@@ -75,7 +73,6 @@ public abstract class QueryProvider implements Comparable<QueryProvider> {
      */
     public final static String EVENT_QUERY_REMOVED = "bugtracking.query.removed";     // NOI18N
 
-    protected boolean saved;
     private long lastRefresh = -1;
 
     static {
@@ -123,28 +120,11 @@ public abstract class QueryProvider implements Comparable<QueryProvider> {
         QueryAction.openQuery(null, repository);
     }
 
-    /*********
-     * DATA
-     *********/
-    /**
-     * Sets the queries status as saved. The {@link IssueTable} associated with
-     * this query will change its column layout
-     *
-     * @param saved
-     * XXX saved always true, isn't it?
-     */
-    protected void setSaved(boolean saved) {
-        this.saved = saved;
-        fireQuerySaved(); 
-    }
-
     /**
      * Returns true if query is saved
      * @return
      */
-    public boolean isSaved() {
-        return saved;
-    }
+    public abstract boolean isSaved();
 
     /**
      * Returns issue given by the last refresh

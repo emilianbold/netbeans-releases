@@ -288,6 +288,7 @@ public class QTCTestHidden extends NbTestCase {
             @Override
             public void applyChanges() throws IOException {}
         };
+        private boolean saved;
 
         public MyQuery(RepositoryProvider repository) {
             this.repository = repository;
@@ -323,11 +324,15 @@ public class QTCTestHidden extends NbTestCase {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public void setSaved(boolean saved) {
-            super.setSaved(saved);
+            this.saved = saved;
         }
 
+        @Override
+        public boolean isSaved() {
+            return saved;
+        }
+        
         @Override
         public void setContext(Node[] nodes) {
             throw new UnsupportedOperationException("Not supported yet.");

@@ -85,6 +85,7 @@ public class JiraQuery extends QueryProvider {
     protected JiraFilter jiraFilter;
     private boolean firstRun = true;
     private Node[] context;
+    private boolean saved;
 
     public JiraQuery(JiraRepository repository) {
         this(null, repository, null, false, true);
@@ -260,14 +261,18 @@ public class JiraQuery extends QueryProvider {
         this.name = name;
     }
 
-    @Override
     public void setSaved(boolean saved) {
         if(saved) {
             context = null;
         }
-        super.setSaved(saved);
+        this.saved = saved;
     }
 
+    @Override
+    public boolean isSaved() {
+        return saved;
+    }
+    
     public void setFilter(Filter filter) {
         getController().selectFilter(filter);
     }

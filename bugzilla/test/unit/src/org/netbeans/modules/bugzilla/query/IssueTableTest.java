@@ -97,6 +97,11 @@ public class IssueTableTest extends IssuetableTestFactory implements QueryConsta
     }
 
     @Override
+    public void setSaved(QueryProvider q) {
+        ((BugzillaQuery)q).setSaved(true);
+    }
+    
+    @Override
     public IssueTable getTable(QueryProvider q) {
         try {
             BugtrackingController c = q.getController();

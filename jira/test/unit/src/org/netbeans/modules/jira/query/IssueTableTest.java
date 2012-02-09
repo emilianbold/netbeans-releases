@@ -87,6 +87,11 @@ public class IssueTableTest extends IssuetableTestFactory {
         return jq;
     }
 
+        @Override
+    public void setSaved(QueryProvider q) {
+        ((JiraQuery)q).setSaved(true);
+    }
+        
     @Override
     public IssueTable getTable(QueryProvider q) {
         try {

@@ -86,7 +86,8 @@ public class BugzillaQuery extends QueryProvider {
     private boolean firstRun = true;
     private ColumnDescriptor[] columnDescriptors;
     private Node[] context;
-    
+    private boolean saved;
+        
     public BugzillaQuery(BugzillaRepository repository) {
         this(null, repository, null, false, false, true);
     }
@@ -282,14 +283,19 @@ public class BugzillaQuery extends QueryProvider {
         this.name = name;
     }
 
-    @Override
     public void setSaved(boolean saved) {
         if(saved) {
             context = null;
         }
-        super.setSaved(saved);
+        this.saved = saved;
+        fireQuerySaved();
     }
 
+    @Override
+    public boolean isSaved() {
+        return saved;
+    }
+    
     @Override
     public void fireQuerySaved() {
         super.fireQuerySaved();

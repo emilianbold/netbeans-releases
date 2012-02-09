@@ -43,11 +43,9 @@
 package org.netbeans.modules.bugtracking.issuetable;
 
 import java.lang.reflect.Field;
-import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.spi.QueryAccessor;
 
 /**
  *
@@ -73,7 +71,7 @@ public class IssueTableTestCase extends NbTestCase {
         SwingUtilities.invokeAndWait(new Runnable() {
             @Override
             public void run() {
-                new QueryAccessor(q).setSaved(true);
+                IssuetableTestFactory.getInstance(IssueTableTestCase.this).setSaved(q);
                 IssuetableTestFactory.getInstance(IssueTableTestCase.this).getTable(q).initColumns();                
             }
         });
