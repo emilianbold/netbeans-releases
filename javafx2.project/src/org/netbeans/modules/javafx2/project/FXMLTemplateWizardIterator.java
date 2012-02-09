@@ -64,10 +64,13 @@ import org.openide.util.NbBundle;
  *
  * @author Anton Chechel <anton.chechel@oracle.com>
  */
+// TODO separate panels for fxml, controlles and css
+// TODO isValid() should check for correctness of controller and css as well
 // TODO register via annotations instead of layer.xml
 // TODO logging: process exceptions
 public class FXMLTemplateWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     
+    static final String JAVA_CONTROLLER_CREATE = "JavaControllerCreate"; // NOI18N
     static final String JAVA_CONTROLLER_NAME_PROPERTY = "JavaController"; // NOI18N
     static final String CSS_NAME_PROPERTY = "CSS"; // NOI18N
     
@@ -123,6 +126,7 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
         DataFolder df = DataFolder.findFolder(dir);
 
         String targetName = Templates.getTargetName(wizard);
+        boolean createController = (Boolean) wizard.getProperty(FXMLTemplateWizardIterator.JAVA_CONTROLLER_CREATE);
         String controller = (String) wizard.getProperty(FXMLTemplateWizardIterator.JAVA_CONTROLLER_NAME_PROPERTY);
         String css = (String) wizard.getProperty(FXMLTemplateWizardIterator.CSS_NAME_PROPERTY);
 
@@ -135,6 +139,9 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
 //        set.add(dobj1.getPrimaryFile());
 
         Map<String, String> params = new HashMap<String, String>();
+        if (createController) {
+            params.put("create", "true"); // NOI18N
+        }
         if (controller != null) {
             params.put("controller", controller); // NOI18N
         }
@@ -147,7 +154,7 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
         DataObject dobj = dXMLTemplate.createFromTemplate(df, targetName, params);
         set.add(dobj.getPrimaryFile());
 
-        if (controller != null) {
+        if (createController && controller != null) {
             FileObject javaTemplate = FileUtil.getConfigFile("Templates/javafx/FXMLController.java"); // NOI18N
             DataObject dJavaTemplate = DataObject.find(javaTemplate);
             DataObject dobj2 = dJavaTemplate.createFromTemplate(df, controller); // NOI18N

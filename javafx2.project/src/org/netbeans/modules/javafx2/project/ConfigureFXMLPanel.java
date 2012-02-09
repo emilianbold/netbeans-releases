@@ -124,9 +124,11 @@ public class ConfigureFXMLPanel implements WizardDescriptor.Panel<WizardDescript
         }
         if (isValid()) {
             Templates.setTargetFolder(wizard, getTargetFolderFromView());
-            Templates.setTargetName(wizard, view.getFXMLName().trim());
-            wizard.putProperty(FXMLTemplateWizardIterator.JAVA_CONTROLLER_NAME_PROPERTY, view.getControllerName().trim());
-            wizard.putProperty(FXMLTemplateWizardIterator.CSS_NAME_PROPERTY, view.getCSSName().trim());
+            Templates.setTargetName(wizard, view.getFXMLName());
+            wizard.putProperty(FXMLTemplateWizardIterator.JAVA_CONTROLLER_CREATE, view.shouldCreateController());
+            wizard.putProperty(FXMLTemplateWizardIterator.JAVA_CONTROLLER_NAME_PROPERTY, 
+                    view.shouldCreateController() ? view.getNewControllerName() : view.getExistingControllerName());
+            wizard.putProperty(FXMLTemplateWizardIterator.CSS_NAME_PROPERTY, view.getCSSName());
         }
         wizard.putProperty("NewFileWizard_Title", null); // NOI18N
     }
@@ -136,7 +138,7 @@ public class ConfigureFXMLPanel implements WizardDescriptor.Panel<WizardDescript
         if (view.getFXMLName() == null) {
             setInfoMessage("WARN_ConfigureFXMLPanel_Provide_FXML_Name"); // NOI18N
             return false;
-        } else if (view.isControllerEnabled() && !isValidTypeIdentifier(view.getControllerName())) {
+        } else if (view.isControllerEnabled() && !view.isControllerValid()) {
             setErrorMessage("WARN_ConfigureFXMLPanel_Provide_Java_Name"); // NOI18N
             return false;
         } else if (view.isCSSEnabled() && view.getCSSName() == null) {
@@ -162,7 +164,7 @@ public class ConfigureFXMLPanel implements WizardDescriptor.Panel<WizardDescript
             return false;
         }
 
-        errorMessage = canUseFileName(rootFolder, view.getPackageFileName(), view.getControllerName(), template.getExt());
+        errorMessage = canUseFileName(rootFolder, view.getPackageFileName(), view.getNewControllerName(), template.getExt());
         wizard.getNotificationLineSupport().setErrorMessage(errorMessage);
         if (errorMessage != null) {
             return false;
@@ -279,10 +281,6 @@ public class ConfigureFXMLPanel implements WizardDescriptor.Panel<WizardDescript
             }
         }
         return true;
-    }
-
-    static boolean isValidTypeIdentifier(String ident) {
-        return Utilities.isJavaIdentifier(ident);
     }
 
     // helper methods copied and refactored from JavaTargetChooserPanel

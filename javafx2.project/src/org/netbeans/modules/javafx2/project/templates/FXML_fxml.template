@@ -5,8 +5,9 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<#if create??>
 <#if package?? && package != "">
-<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml"<#if controller?? && controller != ""> fx:controller="${package}.${name}"</#if>>
+<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml"<#if controller?? && controller != ""> fx:controller="${package}.${controller}"</#if>>
 <#else>
 <AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml"<#if controller?? && controller != ""> fx:controller="${controller}"</#if>>
 </#if>
@@ -16,3 +17,12 @@
     </stylesheets>
 </#if>
 </AnchorPane>
+<#else>
+<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml"<#if controller?? && controller != ""> fx:controller="${controller}"</#if>>
+<#if css?? && css != "">
+    <stylesheets>
+        <URL value="@${css}.css" />
+    </stylesheets>
+</#if>
+</AnchorPane>
+</#if>

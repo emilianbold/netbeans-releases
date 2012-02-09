@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.8" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <NonVisualComponents>
+    <Component class="javax.swing.ButtonGroup" name="buttonGroup1">
+    </Component>
+  </NonVisualComponents>
   <Properties>
     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
       <Dimension value="[500, 340]"/>
@@ -32,35 +36,64 @@
                       <EmptySpace min="-2" pref="31" max="-2" attributes="0"/>
                       <Component id="cssNameLabel" max="32767" attributes="0"/>
                   </Group>
-                  <Group type="102" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="10" pref="10" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                          <Component id="controllerNameLabel" alignment="1" min="-2" pref="114" max="-2" attributes="0"/>
-                          <Component id="controllerCheckBox" alignment="0" max="32767" attributes="0"/>
-                          <Component id="cssCheckBox" alignment="0" max="32767" attributes="0"/>
-                      </Group>
+                      <Component id="cssCheckBox" min="-2" pref="114" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="cssNameTextField" max="32767" attributes="0"/>
-                  <Component id="controllerNameTextField" max="32767" attributes="0"/>
-              </Group>
+              <Component id="cssNameTextField" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="1" attributes="0">
               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                   <Component id="projectLabel" max="32767" attributes="0"/>
                   <Component id="locationLabel" alignment="0" max="32767" attributes="0"/>
                   <Component id="packageLabel" alignment="0" max="32767" attributes="0"/>
-                  <Component id="resultLabel" alignment="0" max="32767" attributes="0"/>
+                  <Component id="resultLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="projectTextField" max="32767" attributes="0"/>
                   <Component id="locationComboBox" max="32767" attributes="0"/>
                   <Component id="resultTextField" alignment="0" max="32767" attributes="0"/>
-                  <Component id="packageComboBox" alignment="0" pref="420" max="32767" attributes="0"/>
+                  <Component id="packageComboBox" alignment="0" pref="424" max="32767" attributes="0"/>
               </Group>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="10" pref="10" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <Component id="controllerCheckBox" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="102" attributes="0">
+                      <EmptySpace min="21" pref="21" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="useExistingRadioButton" min="-2" max="-2" attributes="0"/>
+                                  <Component id="createNewRadioButton" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace pref="390" max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <EmptySpace min="21" pref="21" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="createdControllerNameLabel" pref="114" max="32767" attributes="0"/>
+                                  <Component id="existingControllerNameLabel" max="32767" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
+                              <Component id="existingControllerNameTextField" pref="277" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="chooseControllerButton" min="-2" pref="37" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                  </Group>
+              </Group>
+          </Group>
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace min="-2" pref="180" max="-2" attributes="0"/>
+              <Component id="createdControllerNameTextField" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -74,9 +107,19 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="controllerCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
+              <Component id="createNewRadioButton" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="controllerNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="controllerNameTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="createdControllerNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="createdControllerNameTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="useExistingRadioButton" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="existingControllerNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="existingControllerNameTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="chooseControllerButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="cssCheckBox" min="-2" max="-2" attributes="0"/>
@@ -105,7 +148,7 @@
                   <Component id="resultLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="resultTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="110" max="32767" attributes="0"/>
+              <EmptySpace pref="37" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -133,18 +176,18 @@
         <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="controllerCheckBoxItemStateChanged"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JLabel" name="controllerNameLabel">
+    <Component class="javax.swing.JLabel" name="createdControllerNameLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="controllerNameTextField"/>
+          <ComponentRef name="createdControllerNameTextField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/javafx2/project/Bundle.properties" key="ConfigureFXMLPanelVisual.controllerNameLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/javafx2/project/Bundle.properties" key="ConfigureFXMLPanelVisual.createdControllerNameLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="controllerNameTextField">
+    <Component class="javax.swing.JTextField" name="createdControllerNameTextField">
       <Properties>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
@@ -233,6 +276,62 @@
       <Properties>
         <Property name="editable" type="boolean" value="true"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JRadioButton" name="createNewRadioButton">
+      <Properties>
+        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+          <ComponentRef name="buttonGroup1"/>
+        </Property>
+        <Property name="selected" type="boolean" value="true"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/javafx2/project/Bundle.properties" key="ConfigureFXMLPanelVisual.createNewRadioButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+      <Events>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="createNewRadioButtonItemStateChanged"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JRadioButton" name="useExistingRadioButton">
+      <Properties>
+        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+          <ComponentRef name="buttonGroup1"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/javafx2/project/Bundle.properties" key="ConfigureFXMLPanelVisual.useExistingRadioButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+      <Events>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="useExistingRadioButtonItemStateChanged"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="existingControllerNameLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="existingControllerNameTextField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/javafx2/project/Bundle.properties" key="ConfigureFXMLPanelVisual.existingControllerNameLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="existingControllerNameTextField">
+      <Properties>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="chooseControllerButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/javafx2/project/Bundle.properties" key="ConfigureFXMLPanelVisual.chooseControllerButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="chooseControllerButtonActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>
