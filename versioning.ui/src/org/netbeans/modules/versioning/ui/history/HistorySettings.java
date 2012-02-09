@@ -43,14 +43,13 @@
  */
 package org.netbeans.modules.versioning.ui.history;
 
-import java.io.File;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.openide.util.NbPreferences;
 
 /**
  *
- * Manages the Local History Settings
+ * Manages History Settings
  * 
  * @author Tomas Stupka
  */
@@ -58,14 +57,11 @@ public class HistorySettings {
     
     private static final HistorySettings INSTANCE = new HistorySettings();
     
-    private static final String LAST_SELECTED_ENTRY = "RevertFileChanges.lastSelected";         // NOI18N  
     private static final String PROP_TTL = "timeToLive";                                        // NOI18N  
     public static final String PROP_INCREMENTS = "history.increments";                          // NOI18N  
     private static final String PROP_CLEANUP_LABELED = "noLabelCleanUp";                        // NOI18N  
     private static final String PROP_KEEP_FOREVER = "keepForever";                              // NOI18N  
-    public static final String PROP_LOAD_ALL = "history.loadAll";                              // NOI18N  
-    private static final String PROP_KEEP_STORED = "filesToKeepStored";                         // NOI18N  
-    
+    public static final String PROP_LOAD_ALL = "history.loadAll";                               // NOI18N  
             
     /** Creates a new instance of HistorySettings */
     private HistorySettings() {
@@ -107,14 +103,6 @@ public class HistorySettings {
     public long getTTLMillis() {
         return ((long) getTTL()) * 24 * 60 * 60 * 1000;
     }   
-    
-    public void setLastSelectedEntry(File file, long ts) {
-        getPreferences().putLong(LAST_SELECTED_ENTRY + "#" + file.getAbsoluteFile(), ts);
-    }
-    
-    public long getLastSelectedEntry(File file) {
-        return getPreferences().getLong(LAST_SELECTED_ENTRY  + "#" + file.getAbsoluteFile(), -1);
-    }
 
     public boolean getKeepForever() {
         return getPreferences().getBoolean(PROP_KEEP_FOREVER, false);
