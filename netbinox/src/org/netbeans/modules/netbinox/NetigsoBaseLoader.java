@@ -44,7 +44,9 @@ package org.netbeans.modules.netbinox;
 import java.io.IOException;
 import java.net.URL;
 import java.security.ProtectionDomain;
+import java.util.Collection;
 import java.util.Enumeration;
+import java.util.List;
 import org.eclipse.osgi.baseadaptor.BaseData;
 import org.eclipse.osgi.baseadaptor.bundlefile.BundleEntry;
 import org.eclipse.osgi.baseadaptor.bundlefile.BundleFile;
@@ -178,6 +180,21 @@ class NetigsoBaseLoader extends ClassLoader implements BaseClassLoader {
 
     @Override
     public Bundle getBundle() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public List<URL> findEntries(String string, String string1, int i) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Collection<String> listResources(String string, String string1, int i) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Collection<String> listLocalResources(String string, String string1, int i) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
