@@ -54,7 +54,7 @@ import org.openide.nodes.Node;
  *
  * @author Tomas Stupka
  */
-public abstract class QueryProvider implements Comparable<QueryProvider> {
+public abstract class QueryProvider {
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
@@ -159,19 +159,6 @@ public abstract class QueryProvider implements Comparable<QueryProvider> {
     public IssueProvider[] getIssues(String criteria) {
         return BugtrackingUtil.getByIdOrSummary(getIssues(), criteria);
     }
-
-    /**
-     * 
-     * @param q
-     * @return 
-     * @deprecated
-     */
-    public int compareTo(QueryProvider q) {
-        if(q == null) {
-            return 1;
-        }
-        return getDisplayName().compareTo(q.getDisplayName());
-    }    
 
     /**
      * 
