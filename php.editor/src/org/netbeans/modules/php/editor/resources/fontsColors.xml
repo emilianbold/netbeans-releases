@@ -26,6 +26,7 @@
     <fontcolor name="heredocdelimiter" foreColor="6c3d03"/>
     <fontcolor name="PHP_STRING" default="identifier">
     </fontcolor>
+    <fontcolor name="number" default="number" foreColor="ff00ff" />
     <!--<fontcolor name="FLOAT_LITERAL" default="number"/>
     <fontcolor name="ANY_OPERATOR" default="operator"/>
     <fontcolor name="INSTANCE_VAR" default="field"/>
