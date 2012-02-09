@@ -41,12 +41,16 @@
  */
 package org.netbeans.modules.javascript2.editor.doclets;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.javascript2.editor.doclets.JsDocElement.Type;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -60,26 +64,82 @@ public class JsDocParser {
 
     private static final Logger LOGGER = Logger.getLogger(JsDocParser.class.getName());
 
+    protected static final Pattern JSDOC_TAG_PATTERN =
+            Pattern.compile("(@(([^@]|(@link)|[\r\n])*|@link))|(\\s*[/*][*]+\\S([^@]|(@link)|[\r\n])*)");
+
     /**
-     * Parses given script text and returns list of all jsDoc blocks.
+     * Parses given snapshot and returns list of all jsDoc blocks.
      * @param scriptText text to parse
      * @return list of blocks
      */
     public static List<JsDocBlock> parse(Snapshot snapshot) {
         List<JsDocBlock> blocks = new LinkedList<JsDocBlock>();
-        
+
         List<CommentBlock> commentBlocks = getCommentBlocks(snapshot);
+
         for (CommentBlock commentBlock : commentBlocks) {
             JsDocCommentType commentType = getCommentType(commentBlock.getContent());
-            LOGGER.log(Level.FINE, "JsDocParser:comment block offset=[{0}-{1}],type={2},text={3}", new Object[]{
+            LOGGER.log(Level.FINEST, "JsDocParser:comment block offset=[{0}-{1}],type={2},text={3}", new Object[]{
                 commentBlock.getBeginOffset(), commentBlock.getEndOffset(), commentType, commentBlock.getContent()});
-            
+
+            if (commentType == JsDocCommentType.DOC_NO_CODE_START
+                    || commentType == JsDocCommentType.DOC_NO_CODE_END
+                    || commentType == JsDocCommentType.DOC_SHARED_TAG_END) {
+                blocks.add(new JsDocBlock(
+                        commentBlock.getBeginOffset(),
+                        commentBlock.getEndOffset(),
+                        commentType,
+                        null));
+                continue;
+            } else {
+                blocks.add(parseCommentBlock(commentBlock, commentType == JsDocCommentType.DOC_SHARED_TAG_START));
+                continue;
+            }
         }
 
-        
-            
-
         return blocks;
+    }
+
+    private static JsDocBlock parseCommentBlock(CommentBlock block, boolean sharedTag) {
+        String commentText = block.getContent();
+        List<JsDocElement> jsDocElements = new ArrayList<JsDocElement>();
+
+        Matcher matcher = JSDOC_TAG_PATTERN.matcher(commentText);
+        boolean afterDescription = false;
+        while(matcher.find()) {
+            String jsDocElementText = cleanElementText(matcher.group());
+            if ("".equals(jsDocElementText.trim())) { //NOI18N
+                continue;
+            }
+            //TODO - clean shared tag comments
+            if (!jsDocElementText.startsWith("@")) { //NOI18N
+                if (!afterDescription) {
+                    jsDocElements.add(new JsDocElement(JsDocElement.Type.CONTEXT_SENSITIVE, ""));
+                }
+            } else {
+                Type type;
+                int firstSpace = jsDocElementText.indexOf(" "); //NOI18N
+                if (firstSpace == -1) {
+                    type = Type.fromString(jsDocElementText);
+                    jsDocElements.add(new JsDocElement(
+                            type == null ? Type.UNKNOWN : type,
+                            jsDocElementText));
+                } else {
+                    type = Type.fromString(jsDocElementText.substring(0, firstSpace));
+                    jsDocElements.add(new JsDocElement(
+                            type == null ? Type.UNKNOWN : type,
+                            jsDocElementText.substring(firstSpace)));
+                }
+            }
+            // after description is after first sentence or after any keyword
+            afterDescription = true;
+        }
+
+        return new JsDocBlock(
+                block.getBeginOffset(),
+                block.getEndOffset(),
+                sharedTag ? JsDocCommentType.DOC_SHARED_TAG_START : JsDocCommentType.DOC_COMMON,
+                jsDocElements);
     }
 
     private static List<CommentBlock> getCommentBlocks(Snapshot snapshot) {
@@ -103,7 +163,6 @@ public class JsDocParser {
     }
 
     private static JsDocCommentType getCommentType(String commentBlock) {
-        assert commentBlock.length() >= 4;
         if (commentBlock.startsWith("/**#")) {
             if ("/**#nocode+*/".equals(commentBlock)) {
                 return JsDocCommentType.DOC_NO_CODE_START;
@@ -118,10 +177,18 @@ public class JsDocParser {
         return JsDocCommentType.DOC_COMMON;
     }
 
-//    private static JsDocBlock blockForComment(String commentBlock) {
-//
-//    }
-    
+    protected static String cleanElementText(String comment) {
+        String cleaned = comment.trim();
+
+        // clean " /** ", " */", " * " on all rows
+        cleaned = cleaned.replaceAll("[\\s&&[^\r\n]]*(\\*)+(\\s)*|[/]$|(\\s)*[/*](\\*)+(\\s)*", ""); //NOI18N
+
+        // replace enters by spaces
+        cleaned = cleaned.replaceAll("\r?\n", " ").trim(); //NOI18N
+
+        return cleaned;
+    }
+
     private static class CommentBlock {
 
         private final int beginOffset;

@@ -62,13 +62,13 @@ import org.openide.util.Exceptions;
 public class JsParser extends Parser {
 
     private static final Logger LOGGER = Logger.getLogger(JsParser.class.getName());
-    
+
     private JsParserResult lastResult = null;
-    
+
     public JsParser() {
-        
+
     }
-    
+
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
         long startTime = System.currentTimeMillis();
@@ -81,39 +81,43 @@ public class JsParser extends Parser {
             // TODO create empty result
             lastResult = new JsParserResult(snapshot, null, Collections.<JsComment>emptyList());
         }
-        long endTime = System.currentTimeMillis();        
+        long endTime = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Parsing took: {0}ms source: {1}", new Object[]{endTime - startTime, snapshot.getSource().getFileObject()}); //NOI18N
     }
-    
+
     private JsParserResult parseSource(Snapshot snapshot, final Sanitize sanitizing, JsErrorManager errorManager) throws Exception {
         long startTime = System.currentTimeMillis();
         String scriptName = snapshot.getSource().getFileObject().getNameExt();
         String text = snapshot.getText().toString();
-        
+
         com.oracle.nashorn.runtime.Source source = new com.oracle.nashorn.runtime.Source(scriptName, text);
         com.oracle.nashorn.runtime.options.Options options = new com.oracle.nashorn.runtime.options.Options("nashorn");
         options.process(new String[]{
-            "--parse-only=true", 
-            //"--print-parse=true",    
+            "--parse-only=true",
+            //"--print-parse=true",
             "--debug-lines=false"});
-        
+
         errorManager.setLimit(0);
         com.oracle.nashorn.runtime.Context contextN = new com.oracle.nashorn.runtime.Context(options, errorManager);
         com.oracle.nashorn.runtime.Context.setContext(contextN);
         com.oracle.nashorn.codegen.Compiler compiler = new com.oracle.nashorn.codegen.Compiler(source, contextN);
         com.oracle.nashorn.parser.Parser parser = new com.oracle.nashorn.parser.Parser(compiler);
         com.oracle.nashorn.ir.FunctionNode node = parser.parse(com.oracle.nashorn.codegen.CompilerConstants.runScriptName);
-        
+
         // process comment elements
         List<? extends JsComment> comments;
         try {
+            long startTimeForDoc = System.currentTimeMillis();
             comments = JsDocParser.parse(snapshot);
+            long endTimeForDoc = System.currentTimeMillis();
+            LOGGER.log(Level.FINE, "Parsing of comments took: {0}ms source: {1}",
+                    new Object[]{endTimeForDoc - startTimeForDoc, scriptName});
         } catch (Exception ex) {
             // if anything wrong happen during parsing comments
             LOGGER.log(Level.WARNING, null, ex);
             comments = new LinkedList<JsComment>();
         }
-        
+
         JsParserResult result = new JsParserResult(snapshot, node, comments);
         long endTime = System.currentTimeMillis();
     //        LOGGER.log(Level.FINE, "Parsing took: {0}ms source: {1}", new Object[]{endTime - startTime, scriptname}); //NOI18N
@@ -136,8 +140,8 @@ public class JsParser extends Parser {
     }
 
 
-    
-    
+
+
     /** Attempts to sanitize the input buffer */
     public static enum Sanitize {
         /** Perform no sanitization */
@@ -151,16 +155,16 @@ public class JsParser extends Parser {
         /** try to delete the whole block, where is the error*/
         SYNTAX_ERROR_BLOCK,
         /** Try to remove the trailing . or :: at the caret line */
-        EDITED_DOT, 
+        EDITED_DOT,
         /** Try to remove the trailing . or :: at the error position, or the prior
          * line, or the caret line */
-        ERROR_DOT, 
+        ERROR_DOT,
         /** Try to remove the initial "if" or "unless" on the block
          * in case it's not terminated
          */
         BLOCK_START,
         /** Try to cut out the error line */
-        ERROR_LINE, 
+        ERROR_LINE,
         /** Try to cut out the current edited line, if known */
         EDITED_LINE,
         /** Attempt to fix missing } */
@@ -168,5 +172,5 @@ public class JsParser extends Parser {
         /** Try to fix incomplete 'require("' function for FS code complete */
         REQUIRE_FUNCTION_INCOMPLETE,
     }
-    
+
 }
