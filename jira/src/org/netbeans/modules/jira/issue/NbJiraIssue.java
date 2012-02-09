@@ -104,6 +104,7 @@ import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -226,6 +227,7 @@ public class NbJiraIssue extends IssueProvider implements IssueTable.NodeProvide
      */
     public static ColumnDescriptor[] DESCRIPTORS;
     private IssueNode node;
+    private Node[] context;
     
     public NbJiraIssue(TaskData data, JiraRepository repo) {
         super(repo);
@@ -294,6 +296,11 @@ public class NbJiraIssue extends IssueProvider implements IssueTable.NodeProvide
     @Override
     public String getSummary() {
         return getSummary(taskData);
+    }
+
+    @Override
+    public void setContext(Node[] nodes) {
+        this.context = nodes;
     }
 
     private static String getSummary(TaskData taskData) {

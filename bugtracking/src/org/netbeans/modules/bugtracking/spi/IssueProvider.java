@@ -69,8 +69,6 @@ public abstract class IssueProvider {
     static {
         SPIAccessorImpl.createAccesor();
     }
-    
-    private Node[] selection;
 
     /**
      * Creates an issue
@@ -231,11 +229,6 @@ public abstract class IssueProvider {
         support.firePropertyChange(EVENT_ISSUE_REFRESHED, null, null);
     }
 
-    void setSelection(Node[] nodes) {
-        this.selection = nodes;
-    }
+    public abstract void setContext(Node[] nodes);
 
-    protected Node[] getSelection() {
-        return selection;
-    }
 }

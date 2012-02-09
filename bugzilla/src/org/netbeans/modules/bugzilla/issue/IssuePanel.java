@@ -351,7 +351,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
         if (issue.isNew()) {
             if(BugtrackingUtil.isNbRepository(issue.getRepository())) {
-                Node[] selection = issue.getSelection();
+                Node[] selection = issue.getContext();
                 if(selection == null) {
                     // XXX not sure why we need this - i'm going to keep it for now,
                     // doesn't seem to harm

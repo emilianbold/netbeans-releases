@@ -71,7 +71,7 @@ class SPIAccessorImpl extends SPIAccessor {
 
     @Override
     public void setSelection(IssueProvider issue, Node[] nodes) {
-        issue.setSelection(nodes);
+        issue.setContext(nodes);
     }
     
     @Override

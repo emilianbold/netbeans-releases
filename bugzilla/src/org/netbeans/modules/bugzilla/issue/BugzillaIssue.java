@@ -127,6 +127,7 @@ public class BugzillaIssue extends IssueProvider implements IssueTable.NodeProvi
 
     private IssueController controller;
     private IssueNode node;
+    private Node[] context;
 
     static final String LABEL_NAME_ID           = "bugzilla.issue.id";          // NOI18N
     static final String LABEL_NAME_SEVERITY     = "bugzilla.issue.severity";    // NOI18N
@@ -352,8 +353,12 @@ public class BugzillaIssue extends IssueProvider implements IssueTable.NodeProvi
     }
 
     @Override
-    public Node[] getSelection() {
-        return super.getSelection();
+    public void setContext(Node[] nodes) {
+        this.context = nodes;
+    }
+    
+    public Node[] getContext() {
+        return context;
     }
 
     public Map<String, String> getAttributes() {
