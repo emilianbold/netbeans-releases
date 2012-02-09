@@ -291,22 +291,37 @@ public class LogReader {
     private static final String CURRENT_DIRECTORY = "Current working directory"; //NOI18N
     private static final String ENTERING_DIRECTORY = "Entering directory"; //NOI18N
     private static final String LEAVING_DIRECTORY = "Leaving directory"; //NOI18N
+    
+    private String convertWindowsRelativePath(String path) {
+        if (Utilities.isWindows()) {
+            if (path.startsWith("/") || path.startsWith("\\")) {
+                if (root.length()>1 && root.charAt(1)== ':') {
+                    path = root.substring(0,2)+path;
+                }
+                
+            }
+        }
+        return path;
+    }
 
     private boolean checkDirectoryChange(String line) {
         String workDir = null, message = null;
 
         if (line.startsWith(CURRENT_DIRECTORY)) {
             workDir = convertPath(line.substring(CURRENT_DIRECTORY.length() + 1).trim());
+            workDir = convertWindowsRelativePath(workDir);
             if (TRACE) {message = "**>> by [" + CURRENT_DIRECTORY + "] ";} //NOI18N
         } else if (line.indexOf(ENTERING_DIRECTORY) >= 0) {
             String dirMessage = line.substring(line.indexOf(ENTERING_DIRECTORY) + ENTERING_DIRECTORY.length() + 1).trim();
             workDir = convertPath(dirMessage.replaceAll("`|'|\"", "")); //NOI18N
             if (TRACE) {message = "**>> by [" + ENTERING_DIRECTORY + "] ";} //NOI18N
+            workDir = convertWindowsRelativePath(workDir);
             baseWorkingDir = workDir;
             enterMakeStack(workDir, getMakeLevel(line));
         } else if (line.indexOf(LEAVING_DIRECTORY) >= 0) {
             String dirMessage = line.substring(line.indexOf(LEAVING_DIRECTORY) + LEAVING_DIRECTORY.length() + 1).trim();
             workDir = convertPath(dirMessage.replaceAll("`|'|\"", "")); //NOI18N
+            workDir = convertWindowsRelativePath(workDir);
             if (TRACE) {message = "**>> by [" + LEAVING_DIRECTORY + "] ";} //NOI18N
             int level = getMakeLevel(line);
             if (leaveMakeStack(workDir, level)){
@@ -327,10 +342,12 @@ public class LogReader {
             workDir = convertPath((end == -1 ? line : line.substring(0, end)).substring(LABEL_CD.length()).trim());
             if (TRACE) {message = "**>> by [ " + LABEL_CD + "] ";} //NOI18N
             if (workDir.startsWith("/")){ // NOI18N
+                workDir = convertWindowsRelativePath(workDir);
                 baseWorkingDir = workDir;
             }
         } else if (line.startsWith("/") && line.indexOf(" ") < 0) {  //NOI18N
             workDir = convertPath(line.trim());
+            workDir = convertWindowsRelativePath(workDir);
             if (TRACE) {message = "**>> by [just path string] ";} //NOI18N
         }
 
@@ -437,6 +454,7 @@ public class LogReader {
     private static final String INVOKE_GNU_Cpp4 = "c++.exe "; //NOI18N
     private static final String INVOKE_SUN_Cpp  = "CC "; //NOI18N
     private static final String INVOKE_MSVC_Cpp = "cl "; //NOI18N
+    private static final String INVOKE_MSVC_Cpp2= "cl.exe "; //NOI18N
 
 // Gnu: gfortran,g95,g90,g77
     private static final String INVOKE_GNU_Fortran1 = "gfortran "; //NOI18N
@@ -463,7 +481,8 @@ public class LogReader {
                 if (start > 0) {
                     prev = line.charAt(start-1);
                 }
-                if (prev == ' ' || prev == '\t' || prev == '/' || prev == '\\' ) {
+                if (prev == ' ' || prev == '\t' || prev == '/' || prev == '\\' || prev == '-') {
+                    // '-' to support any king of arm-elf-gcc
                     int end = start + pattern.length();
                     return new int[]{start,end};
                 }
@@ -531,7 +550,7 @@ public class LogReader {
             }
         }
         if (li.compilerType == CompilerType.UNKNOWN) {
-            int[] res = foundCompiler(line, INVOKE_MSVC_Cpp);
+            int[] res = foundCompiler(line, INVOKE_MSVC_Cpp, INVOKE_MSVC_Cpp2);
             if (res != null) {
                 start = res[0];
                 end = res[1];
@@ -588,7 +607,6 @@ public class LogReader {
        if (!workingDir.startsWith(root)){
            return false;
        }
-
        LineInfo li = testCompilerInvocation(line);
        if (li.compilerType != CompilerType.UNKNOWN) {
            gatherLine(li, storage);
@@ -699,12 +717,14 @@ public class LogReader {
             }
             String file = null;
             if (what.startsWith("/")){  //NOI18N
+                what = convertWindowsRelativePath(what);
                 file = what;
             } else {
                 file = workingDir+"/"+what;  //NOI18N
             }
             List<String> userIncludesCached = new ArrayList<String>(userIncludes.size());
             for(String s : userIncludes){
+                s = convertWindowsRelativePath(s);
                 userIncludesCached.add(PathCache.getString(s));
             }
             Map<String, String> userMacrosCached = new HashMap<String, String>(userMacros.size());
@@ -787,7 +807,7 @@ public class LogReader {
             this.compiler = li.compiler;
             this.compilePath =compilePath;
             sourceName = sourcePath;
-            if (sourceName.startsWith("/")) { // NOI18N
+            if (CndPathUtilitities.isPathAbsolute(sourceName)){
                 fullName = sourceName;
                 sourceName = DiscoveryUtils.getRelativePath(compilePath, sourceName);
             } else {
