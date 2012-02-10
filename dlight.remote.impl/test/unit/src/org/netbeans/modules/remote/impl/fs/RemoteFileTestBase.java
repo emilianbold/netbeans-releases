@@ -82,6 +82,12 @@ import org.openide.filesystems.FileRenameEvent;
  */
 public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
 
+    static {
+        System.setProperty("jsch.connection.timeout", "30000");
+        System.setProperty("socket.connection.timeout", "30000");
+        System.setProperty("remote.throw.assertions", "true");
+    }
+
     protected static class FCL implements FileChangeListener {
 
         private final String listenerName;
@@ -335,7 +341,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
             RemoteFileObject parentFO = rootFO.getFileObject(dirName);
             System.err.printf("parentFO=%s\n", parentFO);
             if (parentFO != null) {                
-                File cache = parentFO.getDelegate().getCache();
+                File cache = parentFO.getImplementor().getCache();
                 if(cache == null) {
                     System.err.printf("Cache file is null\n");
                 } else {

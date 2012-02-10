@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,62 +34,28 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl.fs;
-
-import junit.framework.Test;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.netbeans.modules.remote.impl.RemoteLogger;
-import org.netbeans.modules.remote.test.RemoteApiTest;
-import org.openide.filesystems.FileObject;
+package org.netbeans.modules.j2ee.persistence.editor;
 
 /**
- *
- * @author Vladimir Kvashin
+ * Constants for persistence configuration file tags and attribute names
+ * 
+ * @author sergey petrov
  */
-public class RemotePathTestCase extends RemoteFileTestBase {
-
-
-    public RemotePathTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);
-    }
-
-    @ForAllEnvironments
-    public void testPath() throws Exception {
-        String absPath = "/usr/include/stdio.h";
-        String[] parts = absPath.split("/");
-        FileObject parent = rootFO;
-        for (String name : parts) {
-            FileObject child;
-            if (name.length() == 0) {
-                child = rootFO;
-            } else {
-                child = getFileObject(parent, name);
-            }
-            System.err.printf("Child: %s\n", child.getPath());
-            if (child == null) {
-                break;
-            }
-            parent = child;
-        }
-        AssertionError lastAssertion = RemoteLogger.getLastAssertion();
-        if (lastAssertion != null) {
-            throw lastAssertion;
-        }
-        String content = readRemoteFile(absPath);
-        String text2search = "printf";
-        assertTrue("Can not find \"" + text2search + "\" in " + getFileName(execEnv, absPath),
-                content.indexOf(text2search) >= 0);
-    }
-
-    public static Test suite() {
-        return RemoteApiTest.createSuite(RemotePathTestCase.class);
-    }
+public class PersistenceCfgXmlConstants {
+    
+    public static final String PROPERTY_TAG = "property";//NOI18N
+    public static final String JTA_DATA_SOURCE = "jta-data-source";//NOI18N
+    public static final String CLASS = "class";//NO18N
+    public static final String MAPPING_FILE = "mapping-file";//NO18N
+    public static final String PROVIDER = "provider";//NO18N
+    
+    public static final String NAME_ATTRIB = "name";//NO18N
+    public static final String VALUE_ATTRIB = "value";//NO18N
 
 }
