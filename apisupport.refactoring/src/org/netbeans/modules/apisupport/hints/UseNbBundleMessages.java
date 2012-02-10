@@ -47,9 +47,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
@@ -61,7 +59,6 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import static org.netbeans.modules.apisupport.hints.Bundle.*;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -92,31 +89,20 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import org.netbeans.api.actions.Savable;
 import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 
-public class UseNbBundleMessages extends AbstractHint {
+@Hint(category="apisupport", displayName="#UseNbBundleMessages.displayName", description="#UseNbBundleMessages.description", severity=Hint.Severity.CURRENT_LINE_WARNING)
+@Messages({
+    "UseNbBundleMessages.displayName=Use @NbBundle.Messages",
+    "UseNbBundleMessages.description=Use @NbBundle.Messages in preference to Bundle.properties plus NbBundle.getMessage(...)."
+})
+public class UseNbBundleMessages {
 
-    public UseNbBundleMessages() {
-        super(true, true, AbstractHint.HintSeverity.CURRENT_LINE_WARNING);
-    }
-
-    public @Override String getId() {
-        return UseNbBundleMessages.class.getName();
-    }
-
-    @Messages("UseNbBundleMessages.displayName=Use @NbBundle.Messages")
-    public @Override String getDisplayName() {
-        return UseNbBundleMessages_displayName();
-    }
-
-    @Messages("UseNbBundleMessages.description=Use @NbBundle.Messages in preference to Bundle.properties plus NbBundle.getMessage(...).")
-    public @Override String getDescription() {
-        return UseNbBundleMessages_description();
-    }
-
-    public @Override Set<Kind> getTreeKinds() {
-        return EnumSet.of(Kind.METHOD_INVOCATION, Kind.ASSIGNMENT);
-    }
-
+    // XXX rewrite METHOD_INVOCATION branch to use @TriggerPattern
+    @TriggerTreeKind({Kind.METHOD_INVOCATION, Kind.ASSIGNMENT})
     @Messages({
         "UseNbBundleMessages.error_text=Use of external bundle key",
         "UseNbBundleMessages.only_class_const=Use of NbBundle.getMessage without ThisClass.class syntax",
@@ -126,7 +112,9 @@ public class UseNbBundleMessages extends AbstractHint {
         "# {0} - bundle key", "UseNbBundleMessages.no_such_key=Bundle.properties does not contain any key ''{0}''",
         "UseNbBundleMessages.save_bundle=Save modifications to Bundle.properties before using this hint"
     })
-    public @Override List<ErrorDescription> run(final CompilationInfo compilationInfo, final TreePath treePath) {
+    public static List<ErrorDescription> run(HintContext context) {
+        final CompilationInfo compilationInfo = context.getInfo();
+        final TreePath treePath = context.getPath();
         Tree tree = treePath.getLeaf();
         int[] span;
         final String key;
@@ -228,7 +216,7 @@ public class UseNbBundleMessages extends AbstractHint {
                 return warning(UseNbBundleMessages_no_such_key(key), span, compilationInfo);
             }
         }
-        return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), UseNbBundleMessages_error_text(), Collections.<Fix>singletonList(new Fix() {
+        return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(Severity.WARNING, UseNbBundleMessages_error_text(), Collections.<Fix>singletonList(new Fix() {
             public @Override String getText() {
                 return UseNbBundleMessages_displayName();
             }
@@ -400,16 +388,12 @@ public class UseNbBundleMessages extends AbstractHint {
         }), compilationInfo.getFileObject(), span[0], span[1]));
     }
 
-    private List<ErrorDescription> warning(String text, int[] span, CompilationInfo compilationInfo) {
-        return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), text, Collections.<Fix>emptyList(), compilationInfo.getFileObject(), span[0], span[1]));
-    }
-
-    public @Override void cancel() {
-        // Probably nothing to do.
+    private static List<ErrorDescription> warning(String text, int[] span, CompilationInfo compilationInfo) {
+        return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(Severity.WARNING, text, Collections.<Fix>emptyList(), compilationInfo.getFileObject(), span[0], span[1]));
     }
 
     // Copied from NbBundleProcessor
-    private String toIdentifier(String key) {
+    private static String toIdentifier(String key) {
         if (Utilities.isJavaIdentifier(key)) {
             return key;
         } else {
@@ -480,5 +464,7 @@ public class UseNbBundleMessages extends AbstractHint {
     private static boolean isRegistered(String key, ExpressionTree expr) {
         return expr.getKind() == Kind.STRING_LITERAL && ((LiteralTree) expr).getValue().toString().startsWith(key + "=");
     }
+
+    private UseNbBundleMessages() {}
 
 }
