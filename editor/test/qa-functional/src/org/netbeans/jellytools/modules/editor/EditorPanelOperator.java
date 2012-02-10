@@ -55,6 +55,7 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.jellytools.MainWindowOperator;
 
 /**
  * Generic support for Search and Replace bar in editor.
@@ -72,28 +73,15 @@ public abstract class EditorPanelOperator {
     public EditorPanelOperator(Class<? extends JPanel> panelClass) {
         this.panelClass = panelClass;
     }
-
-    protected JPanel openPanel(final EditorOperator editor) {
-        invokeAction(editor);
-        for (int i = 0; i < 10; i++) {
-            this.panel =  findPanel((Container) editor.getSource());
-            if(panel!=null) break;
-            new EventTool().waitNoEvent(200);
-        }
         
-        for (Component c : panel.getComponents()) {
-            if (c instanceof JCheckBox) {
-                checkBoxesInPanel.add((JCheckBox)c);
-            } else if(c instanceof JButton) {
-                buttons.add((JButton)c);
-            }
-        }      
-        return panel;
+    protected JPanel openPanel(final EditorOperator editor) {
+        invokeAction(editor);           
+        return getOpenedPanel(editor);
     }
 
     protected abstract void invokeAction(final EditorOperator editorOperator);
 
-    protected JPanel findPanel(final Container comp) {
+    private JPanel findPanel(final Container comp) {
         if (comp.getClass().getName().equals(panelClass.getName())) {
             return (JPanel) comp;
         }
@@ -112,7 +100,8 @@ public abstract class EditorPanelOperator {
     private void expandPopup() {
         if (!isPopupVisible) {
             JButtonOperator jButtonOperator = new JButtonOperator(getExpandButton());
-            jButtonOperator.push();
+            jButtonOperator.doClick();
+            new EventTool().waitNoEvent(250);
             isPopupVisible = true;
         }
     }
@@ -157,6 +146,23 @@ public abstract class EditorPanelOperator {
     
     public boolean isVisible() {
         return panel.isVisible();
+    }
+
+    protected JPanel getOpenedPanel(EditorOperator editorOperator) {
+        for (int i = 0; i < 10; i++) {
+            this.panel =  findPanel((Container) editorOperator.getSource());
+            if(panel!=null) break;
+            new EventTool().waitNoEvent(200);
+        }
+        if(panel==null) return null;
+        for (Component c : panel.getComponents()) {
+            if (c instanceof JCheckBox) {
+                checkBoxesInPanel.add((JCheckBox)c);
+            } else if(c instanceof JButton) {
+                buttons.add((JButton)c);
+            }
+        }      
+        return panel;
     }
 
 }

@@ -43,118 +43,100 @@ package org.netbeans.jellytools.modules.editor;
 
 import java.awt.event.KeyEvent;
 import javax.swing.JButton;
-import javax.swing.JPanel;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.modules.editor.impl.SearchBar;
+import org.netbeans.jemmy.operators.JEditorPaneOperator;
+import org.netbeans.modules.editor.impl.ReplaceBar;
 
 /**
  *
  * @author jprox
  */
-public class SearchBarOperator extends EditorPanelOperator {
+public class ReplaceBarOperator extends EditorPanelOperator {
 
-    private JComboBoxOperator findOp;
-    private JButtonOperator nextButtonOp;
-    private JButtonOperator prevButtonOp;
-    private JButtonOperator closeButtonOp;
-    private JCheckBoxOperator match;
-    private JCheckBoxOperator whole;
-    private JCheckBoxOperator regular;
-    private JCheckBoxOperator highlight;
-    private JCheckBoxOperator wrap;
+    private JComboBoxOperator replaseWithOp;
+    private JButtonOperator replaceOp;
+    private JButtonOperator replaceAllOp;    
     
-    private SearchBarOperator() {
-        super(SearchBar.class);
-    }
+    private EditorOperator editor;
+    private SearchBarOperator sbo;
 
     @Override
     protected void invokeAction(EditorOperator editorOperator) {
-        editorOperator.pushKey(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK);
+        editorOperator.pushKey(KeyEvent.VK_H, KeyEvent.CTRL_DOWN_MASK);
+        editor = editorOperator;
+        
+
     }
 
     @Override
     protected JButton getExpandButton() {
-        if(buttons.size()<=3) return null;
-        if(buttons.size()==4) return buttons.get(2);
+        if (buttons.size() <= 3) {
+            return null;
+        }
+        if (buttons.size() == 4) {
+            return buttons.get(3);
+        }
         return null;
-        
+    }
+
+    public ReplaceBarOperator() {
+        super(ReplaceBar.class);
+    }
+
+    public JComboBoxOperator replaceCombo() {
+        if (replaseWithOp == null) {
+            replaseWithOp = new JComboBoxOperator(getContainerOperator());
+        }
+        return replaseWithOp;
+    }
+
+    public JButtonOperator replaceButton() {
+        if (replaceOp == null) {
+            replaceOp = new JButtonOperator(getButton(0));
+        }
+        return replaceOp;
+    }
+
+    public JButtonOperator replaceAll() {
+        if (replaceAllOp == null) {
+            replaceAllOp = new JButtonOperator(getButton(1));
+        }
+        return replaceAllOp;
     }
     
-    public static SearchBarOperator invoke(EditorOperator editorOperator) {
-        SearchBarOperator sbo = new SearchBarOperator();
-        sbo.openPanel(editorOperator);
-        return sbo;
-    }
-    
-    public static SearchBarOperator getPanel(EditorOperator editorOperator) {
-        SearchBarOperator sbo = new SearchBarOperator();
-        JPanel panel = sbo.getOpenedPanel(editorOperator);
-        if(panel==null) throw new IllegalArgumentException("Panel is not found");
-        return sbo;
-    }
-    
-    public JComboBoxOperator findCombo() {
-        if (findOp == null) {
-            findOp = new JComboBoxOperator(getContainerOperator());
-        }
-        return findOp;
-    }
-
-    public JButtonOperator prevButton() {
-        if (prevButtonOp == null) {
-            prevButtonOp = new JButtonOperator(getButton(0));
-        }
-        return prevButtonOp;
-    }
-
-    public JButtonOperator nextButton() {
-        if (nextButtonOp == null) {
-            nextButtonOp = new JButtonOperator(getButton(1));
-        }
-        return nextButtonOp;
-    }
-
-    public JButtonOperator closeButton() {
-        if (closeButtonOp == null) {
-            closeButtonOp = new JButtonOperator(getButton(buttons.size()-1));
-        }
-        return closeButtonOp;
-    }
-
-    public JCheckBoxOperator matchCaseCheckBox() {
+    public JCheckBoxOperator replaceBackwardsCheckBox() {
         return getCheckbox(0);
 
     }
 
-    public JCheckBoxOperator highlightResultsCheckBox() {
-        return getCheckbox(3);
-
-    }
-
-    public JCheckBoxOperator reqularExpressionCheckBox() {
-        return getCheckbox(2);
-
-    }
-
-    public JCheckBoxOperator wholeWordsCheckBox() {
+    public JCheckBoxOperator preserveCaseCheckBox() {
         return getCheckbox(1);
-
-    }
-    
-    public JCheckBoxOperator wrapAroundCheckBox() {
-        return getCheckbox(4);
     }
 
-    void uncheckAll() {
-        matchCaseCheckBox().setSelected(false);
-        highlightResultsCheckBox().setSelected(false);
-        reqularExpressionCheckBox().setSelected(false);
-        highlightResultsCheckBox().setSelected(false);
-        wrapAroundCheckBox().setSelected(false);
+    public static ReplaceBarOperator invoke(EditorOperator editorOperator) {
+        ReplaceBarOperator rbo = new ReplaceBarOperator();
+        rbo.openPanel(editorOperator);
+        return rbo;
     }
     
+    public SearchBarOperator getSearchBar() {
+        if(sbo==null) {
+            sbo = SearchBarOperator.getPanel(editor);
+        }
+        return sbo;
+    }
+    
+    public JButtonOperator closeButton() {
+        SearchBarOperator searchBar = getSearchBar();
+        return searchBar.closeButton();
+    }
+
+    public void uncheckAll() {
+        replaceBackwardsCheckBox().setSelected(false);
+        preserveCaseCheckBox().setSelected(false);
+        getSearchBar().uncheckAll();
+    }
 }
