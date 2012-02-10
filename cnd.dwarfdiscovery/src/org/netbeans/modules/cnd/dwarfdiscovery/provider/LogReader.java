@@ -294,7 +294,7 @@ public class LogReader {
     
     private String convertWindowsRelativePath(String path) {
         if (Utilities.isWindows()) {
-            if (path.startsWith("/") || path.startsWith("\\")) {
+            if (path.startsWith("/") || path.startsWith("\\")) { // NOI18N
                 if (root.length()>1 && root.charAt(1)== ':') {
                     path = root.substring(0,2)+path;
                 }

@@ -81,7 +81,7 @@ public final class RemoteFileObject extends FileObject implements Serializable {
 
     public RemoteFileObjectBase getDelegate() {
         if (delegate == null) {
-            String errMsg = "Null delegate: " + getPath();
+            String errMsg = "Null delegate: " + getPath(); // NOI18N
             RemoteLogger.getInstance().log(Level.WARNING, errMsg, new NullPointerException(errMsg));
         }
         return delegate;
