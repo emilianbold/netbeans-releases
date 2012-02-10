@@ -46,8 +46,8 @@ package org.netbeans.modules.search.project;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.search.provider.SearchInfo;
 import org.openide.util.NbBundle;
-import org.openidex.search.SearchInfo;
 
 /**
  * Defines search scope across the main project.

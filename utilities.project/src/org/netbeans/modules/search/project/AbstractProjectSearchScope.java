@@ -51,13 +51,14 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.search.SearchInfoDefinitionFactory;
+import org.netbeans.api.search.provider.SearchInfo;
+import org.netbeans.api.search.provider.SearchInfoUtils;
+import org.netbeans.modules.search.AbstractSearchScope;
+import org.netbeans.spi.search.SearchFilterDefinition;
+import org.netbeans.spi.search.SearchInfoDefinition;
 import org.openide.filesystems.FileObject;
 import org.openide.util.WeakListeners;
-import org.openidex.search.FileObjectFilter;
-import org.openidex.search.SearchInfo;
-import org.openidex.search.SearchInfoFactory;
-import org.netbeans.modules.search.AbstractSearchScope;
 
 /**
  * Base class for implementations of search scopes depending on the set
@@ -76,17 +77,22 @@ abstract class AbstractProjectSearchScope extends AbstractSearchScope
         this.interestingProperty = interestingProperty;
     }
     
+    @Override
     protected void startListening() {
         OpenProjects openProjects = OpenProjects.getDefault();
-        openProjectsWeakListener = WeakListeners.propertyChange(this, openProjects);
+        openProjectsWeakListener = WeakListeners.propertyChange(this,
+                openProjects);
         openProjects.addPropertyChangeListener(openProjectsWeakListener);
     }
     
+    @Override
     protected void stopListening() {
-        OpenProjects.getDefault().removePropertyChangeListener(openProjectsWeakListener);
+        OpenProjects.getDefault().removePropertyChangeListener(
+                openProjectsWeakListener);
         openProjectsWeakListener = null;
     }
     
+    @Override
     public final void propertyChange(PropertyChangeEvent e) {
         if (interestingProperty.equals(e.getPropertyName())) {
             updateIsApplicable();
@@ -94,36 +100,34 @@ abstract class AbstractProjectSearchScope extends AbstractSearchScope
     }
     
     protected SearchInfo createSingleProjectSearchInfo(Project project) {
-        SearchInfo prjSearchInfo = project.getLookup().lookup(SearchInfo.class);
+
+        SearchInfoDefinition prjSearchInfo =
+                project.getLookup().lookup(SearchInfoDefinition.class);
         if (prjSearchInfo != null) {
-            return prjSearchInfo;
+            SearchInfoUtils.createForDefinition(prjSearchInfo);
         }
-        
+
         Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+        SourceGroup[] sourceGroups = sources.getSourceGroups(
+                Sources.TYPE_GENERIC);
         
-        if (sourceGroups.length == 0) {
-            return createEmptySearchInfo();
+        if (sourceGroups.length == 0) {        
         }
-        
-        FileObjectFilter[] filters
-                = new FileObjectFilter[] {SearchInfoFactory.VISIBILITY_FILTER,
-                                          SearchInfoFactory.SHARABILITY_FILTER};
+
+        SearchFilterDefinition[] filters
+                = new SearchFilterDefinition[] {SearchInfoDefinitionFactory.VISIBILITY_FILTER,
+                                                SearchInfoDefinitionFactory.SHARABILITY_FILTER};
         if (sourceGroups.length == 1) {
-            return SearchInfoFactory.createSearchInfo(
-                                            sourceGroups[0].getRootFolder(),
-                                            true,
-                                            filters);
+            return SearchInfoUtils.createSearchInfoForRoot(
+                    sourceGroups[0].getRootFolder(), filters);
         } else {
             FileObject[] rootFolders = new FileObject[sourceGroups.length];
             for (int i = 0; i < sourceGroups.length; i++) {
                 rootFolders[i] = sourceGroups[i].getRootFolder();
             }
-            return SearchInfoFactory.createSearchInfo(
+            return SearchInfoUtils.createSearchInfoForRoots(
                                             rootFolders,
-                                            true,
                                             filters);
         }
     }
-
 }
