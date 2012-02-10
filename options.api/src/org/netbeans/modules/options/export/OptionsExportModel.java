@@ -152,7 +152,7 @@ public final class OptionsExportModel {
      * @param state new state
      */
     void setState(State state) {
-        String passwords = NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.export.passwords.displayName");
+        String passwords = NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.export.passwords.category.displayName");
         for (OptionsExportModel.Category category : getCategories()) {
             if (state.equals(State.ENABLED)) {
                 if (category.getDisplayName() != null && !category.getDisplayName().equals(passwords)) {
