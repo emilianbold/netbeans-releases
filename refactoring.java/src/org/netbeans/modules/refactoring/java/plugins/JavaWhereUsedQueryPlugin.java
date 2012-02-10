@@ -356,7 +356,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         fireProgressListenerStep(a.size());
         Problem problem = null;
         try {
-            myProcessFiles(a, new FindTask(elements));
+            queryFiles(a, new FindTask(elements));
         } catch (IOException e) {
             problem = createProblemAndLog(null, e);
         }
@@ -373,59 +373,6 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         }
     }
     
-    /**
-     * Should kept in sync with superclass' processFiles, but does not use ModificationTask
-     * 
-     * @param files files to process
-     * @param task task to execute on files
-     * @throws IOException thrown from java parsing api
-     */
-    private void myProcessFiles(Set<FileObject> files, CancellableTask<CompilationController> task) throws IOException {
-        queryTask = task;
-        try {
-            Iterable<? extends List<FileObject>> work = groupByRoot(files);
-            for (List<FileObject> fos : work) {
-                if (cancelRequest) {
-                    return;
-                }
-                final JavaSource javaSource = JavaSource.create(ClasspathInfo.create(fos.get(0)), fos);
-                javaSource.runUserActionTask(task, true);
-            }
-        } finally {
-            queryTask = null;
-        }
-    }
-    
-    /**
-     * Copy of the superclass' method, which is private and is needed from {@link #myProcessFiles}
-     * 
-     * @param data
-     * @return 
-     */
-    
-    // TODO consider publishing the method in Refactoring API
-    private Iterable<? extends List<FileObject>> groupByRoot (Iterable<? extends FileObject> data) {
-        Map<FileObject,List<FileObject>> result = new HashMap<FileObject,List<FileObject>> ();
-        for (FileObject file : data) {
-            if (cancelRequest) {
-                return Collections.emptyList();
-            }
-            ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
-            if (cp != null) {
-                FileObject root = cp.findOwnerRoot(file);
-                if (root != null) {
-                    List<FileObject> subr = result.get (root);
-                    if (subr == null) {
-                        subr = new LinkedList<FileObject>();
-                        result.put (root,subr);
-                    }
-                    subr.add (file);
-                }
-            }
-        }
-        return result.values();
-    }    
-
     @Override
     public Problem fastCheckParameters() {
         if (refactoring.getRefactoringSource().lookup(TreePathHandle.class).getKind() == Tree.Kind.METHOD) {

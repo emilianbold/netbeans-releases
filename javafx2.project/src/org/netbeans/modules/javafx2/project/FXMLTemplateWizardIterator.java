@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserve *
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserve *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
  *
@@ -41,54 +41,94 @@
 package org.netbeans.modules.javafx2.project;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
-import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 /**
+ * Wizard to create a new FXML file and optionally Java Controller and CSS file.
  *
- * @author Anton Chechel
+ * @author Anton Chechel <anton.chechel@oracle.com>
  */
+// TODO separate panels for fxml, controlles and css
+// TODO isValid() should check for correctness of controller and css as well
+// TODO register via annotations instead of layer.xml
+// TODO logging: process exceptions
 public class FXMLTemplateWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     
-    private transient WizardDescriptor wiz;
-    private transient WizardDescriptor.InstantiatingIterator<WizardDescriptor> delegateIterator;
+    static final String JAVA_CONTROLLER_CREATE = "JavaControllerCreate"; // NOI18N
+    static final String JAVA_CONTROLLER_NAME_PROPERTY = "JavaController"; // NOI18N
+    static final String CSS_NAME_PROPERTY = "CSS"; // NOI18N
+    
+    private WizardDescriptor wizard;
+    private ConfigureFXMLPanel panel;
 
     public static WizardDescriptor.InstantiatingIterator<WizardDescriptor> create() {
         return new FXMLTemplateWizardIterator();
     }
 
-
-    public FXMLTemplateWizardIterator() {
-        delegateIterator = JavaTemplates.createJavaTemplateIterator();
+    private FXMLTemplateWizardIterator() {
     }
 
     @Override
+    public String name() {
+        return panel.name();
+    }
+    
+    @Override
     public void initialize(WizardDescriptor wizard) {
-        wiz = wizard;
-        delegateIterator.initialize(wizard);
+        this.wizard = wizard;
+        Project project = Templates.getProject(wizard);
+        if (project == null) {
+                throw new IllegalStateException(
+                        NbBundle.getMessage(ConfigureFXMLPanelVisual.class,
+                            "MSG_ConfigureFXMLPanel_Project_Null_Error")); // NOI18N
+        }
+        
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (groups == null) {
+                throw new IllegalStateException(
+                        NbBundle.getMessage(ConfigureFXMLPanelVisual.class,
+                            "MSG_ConfigureFXMLPanel_SGs_Error")); // NOI18N
+        }
+        if (groups.length == 0) {
+            groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+        }
+        
+        panel = new ConfigureFXMLPanel(project, groups);
     }
 
     @Override
     public void uninitialize(WizardDescriptor wizard) {
-        delegateIterator.uninitialize(wizard);
     }
 
     @Override
     public Set instantiate() throws IOException, IllegalArgumentException {
         Set<FileObject> set = new HashSet<FileObject>(3);
         //set.addAll(delegateIterator.instantiate());
-        
-        FileObject dir = Templates.getTargetFolder(wiz);
-        String targetName = Templates.getTargetName(wiz);
+
+        FileObject dir = Templates.getTargetFolder(wizard);
         DataFolder df = DataFolder.findFolder(dir);
+
+        String targetName = Templates.getTargetName(wizard);
+        boolean createController = (Boolean) wizard.getProperty(FXMLTemplateWizardIterator.JAVA_CONTROLLER_CREATE);
+        String controller = (String) wizard.getProperty(FXMLTemplateWizardIterator.JAVA_CONTROLLER_NAME_PROPERTY);
+        String css = (String) wizard.getProperty(FXMLTemplateWizardIterator.CSS_NAME_PROPERTY);
 
 //        FileObject mainTemplate = FileUtil.getConfigFile("Templates/javafx/FXML.java"); // NOI18N
 //        DataObject dMainTemplate = DataObject.find(mainTemplate);
@@ -98,59 +138,69 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
 //        DataObject dobj1 = dMainTemplate.createFromTemplate(df, mainName, params); // NOI18N
 //        set.add(dobj1.getPrimaryFile());
 
+        Map<String, String> params = new HashMap<String, String>();
+        if (createController) {
+            params.put("create", "true"); // NOI18N
+        }
+        if (controller != null) {
+            params.put("controller", controller); // NOI18N
+        }
+        if (css != null) {
+            params.put("css", css); // NOI18N
+        }
+
         FileObject xmlTemplate = FileUtil.getConfigFile("Templates/javafx/FXML.fxml"); // NOI18N
         DataObject dXMLTemplate = DataObject.find(xmlTemplate);
-        DataObject dobj = dXMLTemplate.createFromTemplate(df, targetName);
+        DataObject dobj = dXMLTemplate.createFromTemplate(df, targetName, params);
         set.add(dobj.getPrimaryFile());
-        
-        FileObject javaTemplate = FileUtil.getConfigFile("Templates/javafx/FXML2.java"); // NOI18N
-        DataObject dJavaTemplate = DataObject.find(javaTemplate);
-        DataObject dobj2 = dJavaTemplate.createFromTemplate(df, targetName); // NOI18N
-        set.add(dobj2.getPrimaryFile());
-        
+
+        if (createController && controller != null) {
+            FileObject javaTemplate = FileUtil.getConfigFile("Templates/javafx/FXMLController.java"); // NOI18N
+            DataObject dJavaTemplate = DataObject.find(javaTemplate);
+            DataObject dobj2 = dJavaTemplate.createFromTemplate(df, controller); // NOI18N
+            set.add(dobj2.getPrimaryFile());
+        }
+
+        if (css != null) {
+            FileObject cssTemplate = FileUtil.getConfigFile("Templates/javafx/FXML.css"); // NOI18N
+            DataObject dCSSTemplate = DataObject.find(cssTemplate);
+            DataObject dobj3 = dCSSTemplate.createFromTemplate(df, css); // NOI18N
+            set.add(dobj3.getPrimaryFile());
+        }
+
         return set;
     }
 
     @Override
     public WizardDescriptor.Panel<WizardDescriptor> current() {
-        return delegateIterator.current();
+        return panel;
     }
 
     @Override
     public boolean hasNext() {
-        return delegateIterator.hasNext();
+        return false;
     }
     
     @Override
     public boolean hasPrevious() {
-        return delegateIterator.hasPrevious();
+        return false;
     }
     
     @Override
     public void nextPanel() {
-        if (delegateIterator.hasNext()) {
-            delegateIterator.nextPanel();
-        }
     }
     
     @Override
     public void previousPanel() {
-        delegateIterator.previousPanel();
     }
     
     @Override
     public void addChangeListener(ChangeListener l) {
-        delegateIterator.addChangeListener(l);
-    }
-    
-    @Override
-    public String name() {
-        return delegateIterator.name();
+        panel.addChangeListener(l);
     }
     
     @Override
     public void removeChangeListener(ChangeListener l) {
-        delegateIterator.removeChangeListener(l);
+        panel.removeChangeListener(l);
     }
-
 }

@@ -63,7 +63,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
@@ -73,6 +72,7 @@ import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.Util;
+import org.netbeans.modules.parsing.impl.indexing.lucene.LayeredDocumentIndex;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.Queries;
@@ -252,10 +252,10 @@ public final class QuerySupport {
 
                 @Override
                 public Collection<? extends IndexResult> call() throws Exception {
-                    Iterable<? extends Pair<URL, DocumentIndex>> indices = indexerQuery.getIndices(roots);
+                    Iterable<? extends Pair<URL, LayeredDocumentIndex>> indices = indexerQuery.getIndices(roots);
                     // check if there are stale indices
-                    for (Pair<URL, DocumentIndex> pair : indices) {
-                        final DocumentIndex index = pair.second;
+                    for (Pair<URL, LayeredDocumentIndex> pair : indices) {
+                        final LayeredDocumentIndex index = pair.second;
                         final Collection<? extends String> staleFiles = index.getDirtyKeys();
                         if (LOG.isLoggable(Level.FINE)) {
                             LOG.fine("Index: " + index + ", staleFiles: " + staleFiles); //NOI18N
@@ -270,11 +270,16 @@ public final class QuerySupport {
                                     LOG.log(Level.WARNING, null, ex);
                                 }
                             }
-//                            IndexingManager.getDefault().refreshIndexAndWait(root, list, true, true);
+                            LayeredDocumentIndex.setTransientUpdate(true);
+                            try {
+                                RepositoryUpdater.getDefault().enforcedFileListUpdate(root,list);
+                            } finally {
+                                LayeredDocumentIndex.setTransientUpdate(false);
+                            }
                         }
                     }
                     final List<IndexResult> result = new LinkedList<IndexResult>();
-                    for (Pair<URL, DocumentIndex> pair : indices) {
+                    for (Pair<URL, LayeredDocumentIndex> pair : indices) {
                         final DocumentIndex index = pair.second;
                         final URL root = pair.first;
                         final Collection<? extends org.netbeans.modules.parsing.lucene.support.IndexDocument> pr = index.query(
@@ -358,7 +363,7 @@ public final class QuerySupport {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine(getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) //NOI18N
                     + "[indexer=" + indexerQuery.getIndexerId() + "]:"); //NOI18N
-            for(Pair<URL, DocumentIndex> pair : indexerQuery.getIndices(this.roots)) {
+            for(Pair<URL, LayeredDocumentIndex> pair : indexerQuery.getIndices(this.roots)) {
                 LOG.fine(" " + pair.first + " -> index: " + pair.second); //NOI18N
             }
             LOG.fine("----"); //NOI18N
@@ -463,18 +468,18 @@ public final class QuerySupport {
         @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_COLLECTION_OF_URLS"
         /*,justification="URLs have never host part"*/)
-        public Iterable<? extends Pair<URL, DocumentIndex>> getIndices(List<? extends URL> roots) {
+        public Iterable<? extends Pair<URL, LayeredDocumentIndex>> getIndices(List<? extends URL> roots) {
             synchronized (root2index) {
-                List<Pair<URL, DocumentIndex>> indices = new LinkedList<Pair<URL, DocumentIndex>>();
+                List<Pair<URL, LayeredDocumentIndex>> indices = new LinkedList<Pair<URL, LayeredDocumentIndex>>();
 
                 for(URL r : roots) {
                     assert PathRegistry.noHostPart(r) : r;
-                    Reference<DocumentIndex> indexRef = root2index.get(r);
-                    DocumentIndex index = indexRef != null ? indexRef.get() : null;
+                    Reference<LayeredDocumentIndex> indexRef = root2index.get(r);
+                    LayeredDocumentIndex index = indexRef != null ? indexRef.get() : null;
                     if (index == null) {
                         index = findIndex(r);
                         if (index != null) {
-                            root2index.put(r, new SoftReference<DocumentIndex>(index));
+                            root2index.put(r, new SoftReference<LayeredDocumentIndex>(index));
                         } else {
                             root2index.remove(r);
                         }
@@ -497,19 +502,19 @@ public final class QuerySupport {
         // ------------------------------------------------------------------------
 
         private static final Map<String, IndexerQuery> queries = new HashMap<String, IndexerQuery>();
-        /* test */ static /* final, but tests need to change it */ IndexFactoryImpl indexFactory = new LuceneIndexFactory();
+        /* test */ static /* final, but tests need to change it */ IndexFactoryImpl indexFactory = LuceneIndexFactory.getDefault();
 
         private final String indexerId;
         @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_COLLECTION_OF_URLS"
         /*,justification="URLs have never host part"*/)
-        private final Map<URL, Reference<DocumentIndex>> root2index = new HashMap<URL, Reference<DocumentIndex>>();
+        private final Map<URL, Reference<LayeredDocumentIndex>> root2index = new HashMap<URL, Reference<LayeredDocumentIndex>>();
 
         private IndexerQuery(String indexerId) {
             this.indexerId = indexerId;
         }
 
-        private DocumentIndex findIndex(URL root) {
+        private LayeredDocumentIndex findIndex(URL root) {
             try {
                 FileObject cacheFolder = CacheFolder.getDataFolder(root);
                 assert cacheFolder != null;

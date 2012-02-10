@@ -38,31 +38,36 @@
  */
 package org.netbeans.modules.java.hints.jackpot.refactoring;
 
+import java.awt.Component;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 
 /**
  *
  * @author lahvac
  */
-public class ReplaceConstructorWithFactory extends javax.swing.JPanel {
+public class ReplaceConstructorWithFactoryPanel extends javax.swing.JPanel implements CustomRefactoringPanel {
 
-    public ReplaceConstructorWithFactory(final @NonNull ChangeListener parent) {
+    public ReplaceConstructorWithFactoryPanel(final @NonNull ChangeListener parent, String name) {
         initComponents();
+        nameField.setText(name);
+        nameField.setSelectionStart(0);
+        nameField.setSelectionEnd(nameField.getText().length());
         nameField.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
             public void insertUpdate(DocumentEvent e) {
-                parent.stateChanged(new ChangeEvent(ReplaceConstructorWithFactory.this));
+                parent.stateChanged(new ChangeEvent(ReplaceConstructorWithFactoryPanel.this));
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                parent.stateChanged(new ChangeEvent(ReplaceConstructorWithFactory.this));
+                parent.stateChanged(new ChangeEvent(ReplaceConstructorWithFactoryPanel.this));
             }
 
             @Override
@@ -83,10 +88,10 @@ public class ReplaceConstructorWithFactory extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         nameField = new javax.swing.JTextField();
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ReplaceConstructorWithFactory.class, "ReplaceConstructorWithFactory.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ReplaceConstructorWithFactoryPanel.class, "ReplaceConstructorWithFactoryPanel.jLabel1.text")); // NOI18N
 
         nameField.setColumns(15);
-        nameField.setText(org.openide.util.NbBundle.getMessage(ReplaceConstructorWithFactory.class, "ReplaceConstructorWithFactory.nameField.text")); // NOI18N
+        nameField.setText(org.openide.util.NbBundle.getMessage(ReplaceConstructorWithFactoryPanel.class, "ReplaceConstructorWithFactoryPanel.nameField.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -114,17 +119,8 @@ public class ReplaceConstructorWithFactory extends javax.swing.JPanel {
     private javax.swing.JTextField nameField;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public void initialize() {
-        //TODO: more meaningful name(s)?
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                nameField.setText("create");
-                nameField.setSelectionStart(0);
-                nameField.setSelectionEnd(nameField.getText().length());
-            }
-        });
     }
 
     public String getFactoryName() {
@@ -134,6 +130,11 @@ public class ReplaceConstructorWithFactory extends javax.swing.JPanel {
     @Override
     public void requestFocus() {
         nameField.requestFocus();
+    }
+
+    @Override
+    public Component getComponent() {
+        return this;
     }
     
 }

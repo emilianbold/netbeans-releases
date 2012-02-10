@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -84,6 +85,13 @@ public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
 
     @Override
     public Problem fastCheckParameters() {
+        String builderName = replaceConstructorWithBuilder.getBuilderName();
+        if (builderName == null || builderName.length() == 0) {
+            return new Problem(true, "No factory method name specified.");
+        }
+        if (!SourceVersion.isName(builderName)) {
+            return new Problem(true, builderName + " is not an identifier.");
+        }
         return null;
     }
 

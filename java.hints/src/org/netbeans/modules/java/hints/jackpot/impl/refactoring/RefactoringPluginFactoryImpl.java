@@ -60,8 +60,8 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
 //        } else if (refactoring instanceof GlobalFindUsagesRefactoring) {
 //            return new GlobalFindUsagesRefactoringPlugin((GlobalFindUsagesRefactoring) refactoring);
         }
-        if (refactoring instanceof ReplaceConstructorRefactoring) {
-            return new ReplaceConstructorRefactoringPluginImpl((ReplaceConstructorRefactoring) refactoring);
+        if (refactoring instanceof ReplaceConstructorWithFactoryRefactoring) {
+            return new ReplaceConstructorWithFactoryPlugin((ReplaceConstructorWithFactoryRefactoring) refactoring);
         }
 
         if (refactoring instanceof InvertBooleanRefactoring) {

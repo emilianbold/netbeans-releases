@@ -229,7 +229,15 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
         return processFiles(files, task, null);
     }
 
-    protected final Collection<ModificationResult> processFiles(Set<FileObject> files, CancellableTask<WorkingCopy> task, ClasspathInfo info) throws IOException {
+    protected final Collection<ModificationResult> processFiles(Set<FileObject> files, CancellableTask<WorkingCopy> task, ClasspathInfo info) throws java.io.IOException {
+        return processFiles(files, task, info, true);
+    }
+    
+    protected final void queryFiles(Set<FileObject> files, CancellableTask<? extends CompilationController> task)  throws java.io.IOException {
+        processFiles(files, task, null, false);
+    }
+
+    private Collection<ModificationResult> processFiles(Set<FileObject> files, CancellableTask<? extends CompilationController> task, ClasspathInfo info, boolean modification) throws IOException {
         currentTask = task;
         Collection<ModificationResult> results = new LinkedList<ModificationResult>();
         try {
@@ -239,7 +247,11 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
                     return Collections.<ModificationResult>emptyList();
                 }
                 final JavaSource javaSource = JavaSource.create(info==null?ClasspathInfo.create(fos.get(0)):info, fos);
-                results.add(javaSource.runModificationTask(task)); // can throw IOException
+                if (modification) {
+                    results.add(javaSource.runModificationTask((CancellableTask<WorkingCopy>)task)); // can throw IOException
+                } else {
+                    javaSource.runUserActionTask(currentTask, true);
+                }
             }
         } finally {
             currentTask = null;

@@ -39,14 +39,22 @@
 
 package org.netbeans.modules.java.hints.jackpot.refactoring;
 
-import java.awt.Component;
-import javax.lang.model.SourceVersion;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
+import java.util.EnumSet;
+import java.util.Set;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.ui.JavaRefactoringUIFactory;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -54,26 +62,29 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-public class ReplaceConstructorRefactoringUI implements RefactoringUI {
+public class ReplaceConstructorWithFactoryUI implements RefactoringUI, JavaRefactoringUIFactory {
 
-    private final TreePathHandle constructor;
-    private String factoryName;
-    private ReplaceConstructorWithFactory panel;
-    private String name;
+    private ReplaceConstructorWithFactoryPanel panel;
+    private ReplaceConstructorWithFactoryRefactoring refactoring;
+    private String initialName;
 
-    public ReplaceConstructorRefactoringUI(TreePathHandle constructor, String name) {
-        this.constructor = constructor;
-        this.name = name;
+    private ReplaceConstructorWithFactoryUI(TreePathHandle constructor, String name) {
+        refactoring = new ReplaceConstructorWithFactoryRefactoring(constructor);
+        initialName = name;
+        
+    }
+
+    private ReplaceConstructorWithFactoryUI() {
     }
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(ReplaceConstructorRefactoringUI.class, "ReplaceConstructorName");    
+        return NbBundle.getMessage(ReplaceConstructorWithFactoryUI.class, "ReplaceConstructorName");    
     }
 
     @Override
     public String getDescription() {
-        return NbBundle.getMessage(ReplaceConstructorRefactoringUI.class, "ReplaceConstructorDescription", name ,factoryName);    
+        return NbBundle.getMessage(ReplaceConstructorWithFactoryUI.class, "ReplaceConstructorDescription", initialName ,panel.getFactoryName());    
     }
 
     @Override
@@ -83,38 +94,22 @@ public class ReplaceConstructorRefactoringUI implements RefactoringUI {
 
     @Override
     public CustomRefactoringPanel getPanel(final ChangeListener parent) {
-        return new CustomRefactoringPanel() {
-            @Override
-            public void initialize() {
-                panel.initialize();
-            }
-            @Override
-            public Component getComponent() {
-                if (panel == null) {
-                    panel = new ReplaceConstructorWithFactory(parent);
-                }
-                return panel;
-            }
-        };
+        if (panel == null) {
+            panel = new ReplaceConstructorWithFactoryPanel(parent, "create");
+        }
+        return panel;
     }
 
     @Override
     public Problem setParameters() {
-        this.factoryName = panel.getFactoryName();
-        return null;
+        refactoring.setFactoryName(panel.getFactoryName());
+        return refactoring.checkParameters();
     }
 
     @Override
     public Problem checkParameters() {
-        String factoryName = this.factoryName != null ? this.factoryName : panel.getFactoryName();
-        
-        if (factoryName == null || factoryName.length() == 0) {
-            return new Problem(true, "No factory method name specified.");
-        }
-        if (!SourceVersion.isIdentifier(factoryName)) {
-            return new Problem(true, factoryName + " is not an identifier.");
-        }
-        return null;
+        refactoring.setFactoryName(panel.getFactoryName());
+        return refactoring.fastCheckParameters();
     }
 
     @Override
@@ -124,12 +119,37 @@ public class ReplaceConstructorRefactoringUI implements RefactoringUI {
 
     @Override
     public AbstractRefactoring getRefactoring() {
-        return new ReplaceConstructorRefactoring(constructor, factoryName);
+        return refactoring;
     }
 
     @Override
     public HelpCtx getHelpCtx() {
+        return new HelpCtx(ReplaceConstructorWithFactoryUI.class);
+    }
+
+    @Override
+    public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
+        assert handles.length == 1;
+        TreePath path = handles[0].resolve(info);
+
+        Set<Tree.Kind> treeKinds = EnumSet.of(
+                Tree.Kind.NEW_CLASS,
+                Tree.Kind.METHOD);
+
+        while (path != null && !treeKinds.contains(path.getLeaf().getKind())) {
+            path = path.getParentPath();
+        }
+        if (path != null && treeKinds.contains(path.getLeaf().getKind())) {
+            Element selected = info.getTrees().getElement(path);
+            if (selected.getKind() == ElementKind.CONSTRUCTOR) {
+                return new ReplaceConstructorWithFactoryUI(TreePathHandle.create(selected, info), selected.getEnclosingElement().getSimpleName().toString());
+            }
+        }
         return null;
+    }
+    
+    public static JavaRefactoringUIFactory factory() {
+        return new ReplaceConstructorWithFactoryUI();
     }
 
 }

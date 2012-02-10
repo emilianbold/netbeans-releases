@@ -751,11 +751,11 @@ final class ViewBuilder {
             sb.append(",").append(creationOffset).append("> cause: ").append(rebuildCause).append("\n"); // NOI18N
             sb.append("Document:").append(doc).append('\n'); // NOI18N
             if (firstReplace != null) {
-                sb.append("FirstReplace:\n").append(firstReplace); // NOI18N
+                sb.append("FirstReplace[").append(docReplace.index - 1).append("]: ").append(firstReplace); // NOI18N
             } else {
                 sb.append("No-FirstReplace\n"); // NOI18N
             }
-            sb.append("DocReplace:\n").append(docReplace); // NOI18N
+            sb.append("DocReplace: ").append(docReplace); // NOI18N
             sb.append("allReplaces:\n"); // NOI18N
             int digitCount = ArrayUtilities.digitCount(allReplaces.size());
             for (int i = 0; i < allReplaces.size(); i++) {
@@ -949,6 +949,21 @@ final class ViewBuilder {
                             if (createdViewEndOffset <= matchOffset) {
                                 break;
                             }
+                        }
+                    }
+
+                } else if (createdViewEndOffset == matchOffset) {
+                    // Check for condition in ViewUpdatesTest.testInsertAndRemoveNewline()
+                    // when backspace pressed on begining of an empty line then rebuilding
+                    // could end up with a line not ended by NewlineView.
+                    if (inFirstReplace && !eolView && localReplace.removeEndIndex() ==
+                            localReplace.view.getViewCount()) // Would end up without NewlineView
+                    {
+                        // Rebuild next paragraph
+                        int index = docReplace.removeEndIndex();
+                        if (index < docView.getViewCount()) {
+                            matchOffset += docView.getParagraphView(index).getLength();
+                            docReplace.setRemoveCount(docReplace.getRemoveCount() + 1);
                         }
                     }
                 }

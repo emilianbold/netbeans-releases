@@ -45,6 +45,10 @@ package org.netbeans.modules.parsing.impl.indexing.lucene;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
@@ -61,27 +65,56 @@ import org.openide.filesystems.FileUtil;
 public class LuceneIndexFactory implements IndexFactoryImpl {
     
     private static final int VERSION = 1;
+    //@GuardedBy("LuceneIndexFactory.class")
+    private static LuceneIndexFactory instance;
+    //@GuardedBy("indexes")
+    private final Map<URL,LayeredDocumentIndex> indexes = new HashMap<URL, LayeredDocumentIndex>();
 
+    
+    private LuceneIndexFactory(){}
 
     @Override
-    public IndexDocument createDocument(final Indexable indexable) {
+    @NonNull
+    public IndexDocument createDocument(@NonNull final Indexable indexable) {
         assert indexable !=null;
         return IndexManager.createDocument(indexable.getRelativePath());
     }
 
     @Override
-    public DocumentIndex createIndex (Context ctx) throws IOException {
-        final URL luceneIndexFolder = getIndexFolder(ctx.getIndexFolder());
-        return DocumentBasedIndexManager.getDefault().getIndex(luceneIndexFolder, DocumentBasedIndexManager.Mode.CREATE);
+    @NonNull
+    public LayeredDocumentIndex createIndex (@NonNull final Context ctx) throws IOException {
+        return getIndexImpl(ctx.getIndexFolder(), DocumentBasedIndexManager.Mode.CREATE);
     }
 
     @Override
-    public DocumentIndex getIndex(final FileObject indexFolder) throws IOException {
-        final URL luceneIndexFolder = getIndexFolder(indexFolder);
-        return DocumentBasedIndexManager.getDefault().getIndex(luceneIndexFolder, DocumentBasedIndexManager.Mode.IF_EXIST);
+    @CheckForNull
+    public LayeredDocumentIndex getIndex(@NonNull final FileObject indexFolder) throws IOException {
+        return getIndexImpl(indexFolder, DocumentBasedIndexManager.Mode.IF_EXIST);
+    }
+    
+    @CheckForNull
+    private LayeredDocumentIndex getIndexImpl(
+        @NonNull final FileObject indexBaseFolder,
+        @NonNull DocumentBasedIndexManager.Mode mode) throws IOException {        
+        final URL luceneIndexFolder = getIndexFolder(indexBaseFolder);
+        
+        synchronized (indexes) {
+            LayeredDocumentIndex res = indexes.get(luceneIndexFolder);
+            if (res == null) {
+                final DocumentIndex base = DocumentBasedIndexManager.getDefault().getIndex(
+                        luceneIndexFolder,
+                        mode);
+                if (base != null) {
+                    res = new LayeredDocumentIndex(base);
+                    indexes.put(luceneIndexFolder, res);
+                }
+            }
+            return res;
+        }
     }
 
-    private URL getIndexFolder (final FileObject indexFolder) throws IOException {
+    @NonNull
+    private URL getIndexFolder (@NonNull final FileObject indexFolder) throws IOException {
         assert indexFolder != null;
         final String indexVersion = Integer.toString(VERSION);
         final File luceneIndexFolder = new File (FileUtil.toFile(indexFolder),indexVersion);
@@ -91,6 +124,14 @@ public class LuceneIndexFactory implements IndexFactoryImpl {
             result = new URL(surl+'/');  //NOI18N
         }
         return result;
+    }
+    
+    @NonNull
+    public static synchronized LuceneIndexFactory getDefault() {
+        if (instance == null) {
+            instance = new LuceneIndexFactory();
+        }
+        return instance;
     }
 
 }

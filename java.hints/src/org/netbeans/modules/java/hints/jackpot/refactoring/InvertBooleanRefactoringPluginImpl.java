@@ -50,6 +50,7 @@ import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
@@ -89,6 +90,14 @@ public class InvertBooleanRefactoringPluginImpl extends JackpotBasedRefactoring 
 
     @Override
     public Problem fastCheckParameters() {
+        String name = invertBooleanRefactoring.getNewName();
+        
+        if (name == null || name.length() == 0) {
+            return new Problem(true, "No factory method name specified.");
+        }
+        if (!SourceVersion.isIdentifier(name)) {
+            return new Problem(true, name + " is not an identifier.");
+        }
         return null;
     }
 
@@ -136,7 +145,7 @@ public class InvertBooleanRefactoringPluginImpl extends JackpotBasedRefactoring 
 
     @Override
     protected void prepareAndConstructRule(final Context result) {
-        final TreePathHandle original = invertBooleanRefactoring.getOriginal();
+        final TreePathHandle original = invertBooleanRefactoring.getRefactoringSource().lookup(TreePathHandle.class);
 
         try {
             ModificationResult mod = JavaSource.forFileObject(original.getFileObject()).runModificationTask(new Task<WorkingCopy>() {

@@ -106,6 +106,8 @@ public class RefactoringTestBase extends NbTestCase {
         }
 
         RepositoryUpdater.getDefault().refreshAll(false, true, false, null);
+        //trying to fix randomly failing tests
+        Thread.sleep(2000);
     }
 
     protected void verifyContent(FileObject sourceRoot, File... files) throws Exception {
@@ -189,7 +191,6 @@ public class RefactoringTestBase extends NbTestCase {
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/openide/loaders/layer.xml",
             "org/netbeans/modules/java/source/resources/layer.xml",
             "org/netbeans/modules/java/editor/resources/layer.xml",
-            "org/netbeans/libs/freemarker/layer.xml",
             "org/netbeans/modules/refactoring/java/test/resources/layer.xml", "META-INF/generated-layer.xml"}, new Object[] {
             new ClassPathProvider() {
             @Override
@@ -230,8 +231,8 @@ public class RefactoringTestBase extends NbTestCase {
 
                             @Override
                             public SourceGroup[] getSourceGroups(String type) {
-                                return new SourceGroup[] {GenericSources.group(p, src.getParent(), "", "", null, null)};//,
-//                                                          GenericSources.group(p, test, "testsources", "Test Sources", null, null)};
+                                return new SourceGroup[] {GenericSources.group(p, src.getParent(), "source", "Java Sources", null, null),
+                                                          GenericSources.group(p, test, "testsources", "Test Sources", null, null)};
                             }
 
                             @Override

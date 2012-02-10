@@ -50,6 +50,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -81,7 +82,13 @@ import org.openide.util.RequestProcessor;
     @MimeRegistration(mimeType = "text/x-java", service = CompletionProvider.class, position = 10) //NOI18N
 })
 public final class WaitScanFinishedCompletionProvider implements CompletionProvider {
-
+    
+    private static final RequestProcessor RP = new RequestProcessor(
+                WaitScanFinishedCompletionProvider.class.getName(),
+                1,
+                false,
+                false);
+    
     @Override
     public CompletionTask createTask(int queryType, JTextComponent component) {
         return (queryType & COMPLETION_QUERY_TYPE) != 0 && IndexingManager.getDefault().isIndexing() ? new AsyncCompletionTask(new Query(), component) : null;
@@ -94,6 +101,8 @@ public final class WaitScanFinishedCompletionProvider implements CompletionProvi
 
     @NbBundle.Messages("LBL_ScanningInProgress=Scanning in progress...")
     private static final class Query extends AsyncCompletionQuery {
+        
+        private final AtomicReference<RequestProcessor.Task> task = new AtomicReference<RequestProcessor.Task>();
 
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
@@ -102,39 +111,45 @@ public final class WaitScanFinishedCompletionProvider implements CompletionProvi
                 if (source != null) {
                     resultSet.setWaitText(Bundle.LBL_ScanningInProgress());
                     resultSet.addItem(new Item());
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    if (task.get() == null) {
+                        final RequestProcessor.Task newTask = RP.create(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singletonList(source), new UserTask() {
 
-                        @Override
-                        public void run() {
-                            try {
-                                Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singletonList(source), new UserTask() {
-
-                                    @Override
-                                    public void run(ResultIterator resultIterator) throws Exception {
-                                    }
-                                });
-                                if (!f.isDone()) {
-                                    while (true) {
-                                        if (isTaskCancelled()) {
-                                            f.cancel(false);
-                                            break;
+                                        @Override
+                                        public void run(ResultIterator resultIterator) throws Exception {
                                         }
-                                        try {
-                                            f.get(250, TimeUnit.MILLISECONDS);
-                                            Completion.get().hideCompletion();
-                                            Completion.get().showCompletion();
-                                            break;
-                                        } catch (TimeoutException te) {
-                                            // retry
+                                    });
+                                    if (!f.isDone()) {
+                                        while (true) {
+                                            if (isTaskCancelled()) {
+                                                task.set(null);
+                                                f.cancel(false);
+                                                break;
+                                            }
+                                            try {
+                                                f.get(250, TimeUnit.MILLISECONDS);
+                                                task.set(null);
+                                                Completion.get().hideCompletion();
+                                                Completion.get().showCompletion();
+                                                break;
+                                            } catch (TimeoutException te) {
+                                                // retry
+                                            }
                                         }
                                     }
+                                } catch (InterruptedException ie) {
+                                } catch (ExecutionException ee) {
+                                } catch (ParseException pe) {
                                 }
-                            } catch (InterruptedException ie) {
-                            } catch (ExecutionException ee) {
-                            } catch (ParseException pe) {
                             }
+                        });
+                        if (task.compareAndSet(null, newTask)) {
+                            newTask.schedule(0);
                         }
-                    });
+                    }
                 }
             } finally {
                 resultSet.finish();

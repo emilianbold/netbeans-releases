@@ -46,6 +46,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -53,6 +54,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.api.InlineRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -60,11 +62,11 @@ import org.openide.util.NbBundle;
  * Refactoring UI object for the inline refactoring.
  * @author Ralph Ruijs
  */
-public class InlineRefactoringUI implements RefactoringUI {
+public class InlineRefactoringUI implements RefactoringUI, JavaRefactoringUIFactory {
 
-    private final InlineRefactoring refactoring;
-    private final String type;
-    private final String elementName;
+    private InlineRefactoring refactoring;
+    private String type;
+    private String elementName;
 
     /** Creates a new instance of InlineRefactoringUI
      * @param selectedElements Elements the refactoring action was invoked on.
@@ -114,6 +116,9 @@ public class InlineRefactoringUI implements RefactoringUI {
         elementName = element.getSimpleName().toString();
     }
 
+    private InlineRefactoringUI() {
+    }
+
     @Override
     public String getName() {
         return NbBundle.getMessage(InlineAction.class, "LBL_Inline", type); // NOI18N
@@ -157,5 +162,15 @@ public class InlineRefactoringUI implements RefactoringUI {
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(InlineRefactoringUI.class.getName());
+    }
+    
+    public static JavaRefactoringUIFactory factory() {
+        return new InlineRefactoringUI();
+    }
+
+    @Override
+    public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
+        assert handles.length == 1;
+        return new InlineRefactoringUI(handles[0], info);
     }
 }
