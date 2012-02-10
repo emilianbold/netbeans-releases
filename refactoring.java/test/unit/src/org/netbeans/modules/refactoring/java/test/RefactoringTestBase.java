@@ -111,6 +111,8 @@ public class RefactoringTestBase extends NbTestCase {
     }
 
     protected void verifyContent(FileObject sourceRoot, File... files) throws Exception {
+        //trying to fix randomly failing tests
+        Thread.sleep(2000);
         List<FileObject> todo = new LinkedList<FileObject>();
 
         todo.add(sourceRoot);
