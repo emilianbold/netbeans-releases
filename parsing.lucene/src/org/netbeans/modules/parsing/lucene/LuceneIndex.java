@@ -71,11 +71,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.index.*;
-import org.apache.lucene.search.Collector;
-import org.apache.lucene.search.DefaultSimilarity;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Searcher;
-import org.apache.lucene.search.Query;
+import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockFactory;
@@ -162,7 +158,7 @@ public class LuceneIndex implements Index.Transactional {
             }
             final BitSet bs = new BitSet(in.maxDoc());
             final Collector c = new BitSetCollector(bs);
-            final Searcher searcher = new IndexSearcher(in);
+            final IndexSearcher searcher = new IndexSearcher(in);
             try {
                 for (Query q : queries) {
                     if (cancel != null && cancel.get()) {
@@ -251,7 +247,7 @@ public class LuceneIndex implements Index.Transactional {
             }
             final BitSet bs = new BitSet(in.maxDoc());
             final Collector c = new BitSetCollector(bs);
-            final Searcher searcher = new IndexSearcher(in);
+            final IndexSearcher searcher = new IndexSearcher(in);
             final TermCollector termCollector = new TermCollector(c);
             try {
                 for (Query q : queries) {
@@ -364,14 +360,14 @@ public class LuceneIndex implements Index.Transactional {
                 return;
             }
             final LowMemoryWatcher lmListener = LowMemoryWatcher.getInstance();
+            final IndexWriterConfig iwc = new IndexWriterConfig(Version.LUCENE_35, dirCache.getAnalyzer());
             Directory memDir = null;
             IndexWriter activeOut = null;
             if (lmListener.isLowMemory()) {
                 activeOut = out;
-            }
-            else {
+            } else {
                 memDir = new RAMDirectory ();
-                activeOut = new IndexWriter (memDir, dirCache.getAnalyzer(), true, IndexWriter.MaxFieldLength.LIMITED);
+                activeOut = new IndexWriter (memDir, iwc);
             }
             for (Iterator<T> it = data.iterator(); it.hasNext();) {
                 T entry = it.next();
@@ -380,14 +376,14 @@ public class LuceneIndex implements Index.Transactional {
                 activeOut.addDocument(doc);
                 if (memDir != null && lmListener.isLowMemory()) {
                     activeOut.close();
-                    out.addIndexesNoOptimize(new Directory[] {memDir});
+                    out.addIndexes(memDir);
                     memDir = new RAMDirectory ();
-                    activeOut = new IndexWriter (memDir, dirCache.getAnalyzer(), true, IndexWriter.MaxFieldLength.LIMITED);
+                    activeOut = new IndexWriter (memDir, iwc);
                 }
             }
             if (memDir != null) {
                 activeOut.close();
-                out.addIndexesNoOptimize(new Directory[] {memDir});
+                out.addIndexes(memDir);
                 activeOut = null;
                 memDir = null;
             }
@@ -474,8 +470,7 @@ public class LuceneIndex implements Index.Transactional {
 
         @Override
         public byte[] norms(String field) throws IOException {
-            byte[] _norms = fakeNorms ();
-            return _norms;
+            return null;
         }
 
         @Override
@@ -502,6 +497,7 @@ public class LuceneIndex implements Index.Transactional {
             super.doClose();
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public IndexReader reopen() throws IOException {
             final IndexReader newIn = in.reopen();
@@ -517,7 +513,7 @@ public class LuceneIndex implements Index.Transactional {
         private synchronized byte[] fakeNorms() {
             if (this.norms == null) {
                 this.norms = new byte[maxDoc()];
-                Arrays.fill(this.norms, DefaultSimilarity.encodeNorm(1.0f));
+                Arrays.fill(this.norms, Similarity.getDefault().encodeNormValue(1.0f));
             }
             return this.norms;
         }
@@ -618,7 +614,7 @@ public class LuceneIndex implements Index.Transactional {
                 }
                 if (dirty) {
                     //Try to delete dirty files and log what's wrong
-                    final File cacheDir = fsDir.getFile();
+                    final File cacheDir = fsDir.getDirectory();
                     final File[] children = cacheDir.listFiles();
                     if (children != null) {
                         for (final File child : children) {                                                
@@ -914,8 +910,8 @@ public class LuceneIndex implements Index.Transactional {
                     try {
                         synchronized (this) {
                             if (reader != null) {
-                                final IndexReader newReader = reader.reopen();
-                                if (newReader != reader) {
+                                final IndexReader newReader = IndexReader.openIfChanged(reader);
+                                if (newReader != null) {
                                     reader.close();
                                     reader = newReader;
                                 }
