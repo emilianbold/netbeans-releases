@@ -87,6 +87,7 @@ public class BugzillaQuery extends QueryProvider {
     private ColumnDescriptor[] columnDescriptors;
     private Node[] context;
     private boolean saved;
+    protected long lastRefresh;
         
     public BugzillaQuery(BugzillaRepository repository) {
         this(null, repository, null, false, false, true);
@@ -98,7 +99,7 @@ public class BugzillaQuery extends QueryProvider {
         this.name = name;
         this.urlParameters = urlParameters;
         this.initialUrlDef = urlDef;
-        this.setLastRefresh(repository.getIssueCache().getQueryTimestamp(getStoredQueryName()));
+        this.lastRefresh = repository.getIssueCache().getQueryTimestamp(getStoredQueryName());
         if(initControler) {
             controller = createControler(repository, this, urlParameters);
         }
@@ -333,6 +334,10 @@ public class BugzillaQuery extends QueryProvider {
         return !firstRun;
     }
 
+    long getLastRefresh() {
+        return lastRefresh;
+    }
+
     private class IssuesIdCollector extends TaskDataCollector {
         public IssuesIdCollector() {}
         public void accept(TaskData taskData) {
@@ -400,7 +405,7 @@ public class BugzillaQuery extends QueryProvider {
         } finally {
             fireFinished();
             fireQueryIssuesChanged();
-            setLastRefresh(System.currentTimeMillis());
+            lastRefresh = System.currentTimeMillis();
         }
     }
     

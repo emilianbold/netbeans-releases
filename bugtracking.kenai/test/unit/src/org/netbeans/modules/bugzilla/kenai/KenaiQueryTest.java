@@ -51,7 +51,6 @@ import java.io.FileReader;
 import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.bugzilla.*;
 import java.util.logging.Level;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.kenai.api.Kenai;
@@ -102,34 +101,6 @@ public class KenaiQueryTest extends NbTestCase implements TestConstants, QueryCo
 //            throw new RuntimeException(e);
 //        }
         cleanupStoredIssues();
-    }
-
-    // XXX shoud be on the spi
-    public void testLastRefresh() {
-        String parameters = "query_format=advanced&" +
-                "short_desc_type=allwordssubstr&" +
-                "short_desc=whatever112233445566778899&" +
-                "product=TestProduct";
-        String qname = "kq" + System.currentTimeMillis();
-        KenaiQuery q = new KenaiQuery(qname, QueryTestUtil.getRepository(), parameters, "kp", true, false);
-        long lastRefresh = q.getLastRefresh();
-        assertEquals(0, lastRefresh);
-
-        long ts = System.currentTimeMillis();
-
-        ts = System.currentTimeMillis();
-        q.refresh();
-        assertTrue(q.getLastRefresh() >= ts);
-
-        ts = System.currentTimeMillis();
-        q.refresh();
-        lastRefresh = q.getLastRefresh();
-        assertTrue(lastRefresh >= ts);
-
-        // emulate restart
-        q = new KenaiQuery(qname, QueryTestUtil.getRepository(), parameters, "kp", true, false);;
-        assertEquals((int)(lastRefresh/1000), (int)(q.getLastRefresh()/1000));
-
     }
 
     private void cleanupStoredIssues() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, ClassNotFoundException, NoSuchMethodException, NoSuchMethodException, InstantiationException, InvocationTargetException {

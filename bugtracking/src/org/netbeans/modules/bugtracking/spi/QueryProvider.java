@@ -73,8 +73,6 @@ public abstract class QueryProvider {
      */
     public final static String EVENT_QUERY_REMOVED = "bugtracking.query.removed";     // NOI18N
 
-    private long lastRefresh = -1;
-
     static {
         SPIAccessorImpl.createAccesor();
     }
@@ -162,15 +160,6 @@ public abstract class QueryProvider {
 
     /**
      * 
-     * @return 
-     * @deprecated 
-     */
-    public long getLastRefresh() {
-        return lastRefresh;
-    }
-
-    /**
-     * 
      * @param issue
      * @return 
      * @deprecated
@@ -201,10 +190,6 @@ public abstract class QueryProvider {
 
     protected void fireQueryIssuesChanged() {
         support.firePropertyChange(EVENT_QUERY_ISSUES_CHANGED, null, null);
-    }
-
-    protected void setLastRefresh(long lastRefresh) {
-        this.lastRefresh = lastRefresh;
     }
 
     public abstract void setContext(Node[] nodes);

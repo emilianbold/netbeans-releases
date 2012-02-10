@@ -86,6 +86,7 @@ public class JiraQuery extends QueryProvider {
     private boolean firstRun = true;
     private Node[] context;
     private boolean saved;
+    protected long lastRefresh;
 
     public JiraQuery(JiraRepository repository) {
         this(null, repository, null, false, true);
@@ -100,7 +101,7 @@ public class JiraQuery extends QueryProvider {
         this.saved = saved;
         this.name = name;
         this.jiraFilter = jiraFilter;
-        this.setLastRefresh(repository.getIssueCache().getQueryTimestamp(getStoredQueryName()));
+        this.lastRefresh = repository.getIssueCache().getQueryTimestamp(getStoredQueryName());
         if(initControler) {
             // enforce controller creation
             getController();
@@ -322,6 +323,10 @@ public class JiraQuery extends QueryProvider {
         return !firstRun;
     }
 
+    public long getLastRefresh() {
+        return lastRefresh;
+    }
+
     private class IssuesCollector extends TaskDataCollector {
         public IssuesCollector() {}
         public void accept(TaskData taskData) {
@@ -383,7 +388,7 @@ public void addNotifyListener(QueryNotifyListener l) {
         } finally {
             fireFinished();
             fireQueryIssuesChanged();
-            setLastRefresh(System.currentTimeMillis());
+            lastRefresh = System.currentTimeMillis();
         }
     }
     
