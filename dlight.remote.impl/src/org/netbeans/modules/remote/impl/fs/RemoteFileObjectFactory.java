@@ -143,7 +143,7 @@ public class RemoteFileObjectFactory {
             fo.invalidate();
             fileObjectsCache.remove(remotePath, fo);
         }
-        fo = new RemoteDirectory(fileSystem, env, parent, remotePath, cacheFile);
+        fo = new RemoteDirectory(new RemoteFileObject(fileSystem), fileSystem, env, parent, remotePath, cacheFile);
         if (fo.isValid()) {
             RemoteFileObjectBase result = putIfAbsent(remotePath, fo);
             if (result instanceof RemoteDirectory && result.getParent() == parent) {
@@ -170,7 +170,7 @@ public class RemoteFileObjectFactory {
             fo.invalidate();
             fileObjectsCache.remove(remotePath, fo);
         }
-        fo = new RemotePlainFile(fileSystem, env, parent, remotePath, cacheFile, fileType);
+        fo = new RemotePlainFile(new RemoteFileObject(fileSystem), fileSystem, env, parent, remotePath, cacheFile, fileType);
         if (fo.isValid()) {
             RemoteFileObjectBase result = putIfAbsent(remotePath, fo);
             if (result instanceof RemotePlainFile && result.getParent() == parent) {
@@ -197,7 +197,7 @@ public class RemoteFileObjectFactory {
             fo.invalidate();
             fileObjectsCache.remove(remotePath, fo);
         }
-        fo = new SpecialRemoteFileObject(fileSystem, env, parent, remotePath, fileType);
+        fo = new SpecialRemoteFileObject(new RemoteFileObject(fileSystem), fileSystem, env, parent, remotePath, fileType);
         if (fo.isValid()) {
             RemoteFileObjectBase result = putIfAbsent(remotePath, fo);
             if (result instanceof SpecialRemoteFileObject && result.getParent() == parent) {
@@ -222,7 +222,7 @@ public class RemoteFileObjectFactory {
 //        if (fo != null) {
 //            fo.invalidate();
 //        }
-        RemoteLink fo = new RemoteLink(fileSystem, env, parent, remotePath, link);
+        RemoteLink fo = new RemoteLink(new RemoteFileObject(fileSystem), fileSystem, env, parent, remotePath, link);
         RemoteFileObjectBase result = putIfAbsent(remotePath, fo);
         if (result instanceof RemoteLink) {
             // (result == fo) means that result was placed into cache => we need to init listeners,
@@ -292,12 +292,13 @@ public class RemoteFileObjectFactory {
      * Removes file object from cache and invalidates it.
      * @return an invalidated object or null
      */
-    public RemoteFileObjectBase invalidate(String remotePath) {
+    public RemoteFileObject invalidate(String remotePath) {
         RemoteFileObjectBase fo = fileObjectsCache.remove(remotePath);
         if (fo != null) {
             fo.invalidate();
+            return fo.getWrapper();
         }
-        return fo;
+        return null;
     }
     
     public void rename(String path2Rename, String newPath, RemoteFileObjectBase fo2Rename) {

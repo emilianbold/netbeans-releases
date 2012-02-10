@@ -116,26 +116,32 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
             return path;
         }
         
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
             register("fileAttributeChanged", fe);
         }
 
+        @Override
         public void fileChanged(FileEvent fe) {
             register("fileChanged", fe);
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             register("fileDataCreated", fe);
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             register("fileDeleted", fe);
         }
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             register("fileFolderCreated", fe);
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             String src = stripPrefix(((FileObject) fe.getSource()).getPath());
             String obj = stripPrefix(fe.getFile().getPath());
@@ -145,7 +151,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
 
     
     protected RemoteFileSystem fs;
-    protected RemoteFileObjectBase rootFO;
+    protected RemoteFileObject rootFO;
     protected final ExecutionEnvironment execEnv;
 
     protected String sharedLibExt;
@@ -303,8 +309,8 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         return res.output;
     }
 
-    protected FileObject getFileObject(String path) throws Exception {
-        FileObject fo = rootFO.getFileObject(path);
+    protected RemoteFileObject getFileObject(String path) throws Exception {
+        RemoteFileObject fo = rootFO.getFileObject(path);
         assertNotNullFileObject(fo, null, path);
         return fo;
     }
@@ -326,10 +332,10 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
             System.err.printf("ls -ld %s\nrc=%d\n%s\n%s", absPath, res.exitCode, res.output, res.error);
             String dirName = PathUtilities.getDirName(absPath);
             String baseName = PathUtilities.getBaseName(absPath);
-            RemoteFileObjectBase parentFO = rootFO.getFileObject(dirName);
+            RemoteFileObject parentFO = rootFO.getFileObject(dirName);
             System.err.printf("parentFO=%s\n", parentFO);
             if (parentFO != null) {                
-                File cache = parentFO.getCache();
+                File cache = parentFO.getDelegate().getCache();
                 if(cache == null) {
                     System.err.printf("Cache file is null\n");
                 } else {

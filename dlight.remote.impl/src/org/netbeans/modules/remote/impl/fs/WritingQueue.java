@@ -249,7 +249,7 @@ public class WritingQueue {
                         LOGGER.log(Level.FINEST, "WritingQueue: uploading {0} succeeded", fo);
                         failed.remove(fo.getPath()); // paranoia                        
                         fo.getParent().updateStat(fo, uploadStatus.getStatInfo());
-                        fo.getParent().fireFileChangedEvent(fo.getListenersWithParent(), new FileEvent(fo, fo, true));
+                        fo.getParent().getWrapper().fireFileChangedEvent(fo.getListenersWithParent(), new FileEvent(fo.getWrapper(), fo.getWrapper(), true));
                         done = true;
                     } else {
                         LOGGER.log(Level.FINEST, "WritingQueue: uploading {0} failed", fo);
@@ -268,7 +268,7 @@ public class WritingQueue {
             if (RemoteFileObjectBase.USE_VCS && done) {
                 FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fo.getFileSystem());
                 if (interceptor != null) {
-                    interceptor.fileChanged(FilesystemInterceptorProvider.toFileProxy(fo));
+                    interceptor.fileChanged(FilesystemInterceptorProvider.toFileProxy(fo.getWrapper()));
                 }
             }
         }
