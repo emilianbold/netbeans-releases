@@ -190,7 +190,7 @@ final class CallHierarchyTasks {
         
         protected final Call elmDesc;
         private final Runnable resultHandler;
-        private AtomicBoolean isCanceled = new AtomicBoolean(false);
+        AtomicBoolean isCanceled = new AtomicBoolean(false);
         protected final List<Call> result = new ArrayList<Call>();
 
         protected abstract void runTask() throws Exception;
@@ -222,7 +222,6 @@ final class CallHierarchyTasks {
         @Override
         public void cancel() {
             isCanceled.set(true);
-            RefactoringUtils.cancel = true;
         }
         
         protected boolean isCanceled() {
@@ -282,7 +281,7 @@ final class CallHierarchyTasks {
                 Set<FileObject> relevantFiles = null;
                 if (!isCanceled()) {
                     relevantFiles = JavaWhereUsedQueryPlugin.getRelevantFiles(
-                            sourceToQuery, cpInfo, false, false, false, true, null);
+                            sourceToQuery, cpInfo, false, false, false, true, null, isCanceled);
                     if (SourceUtils.isScanInProgress()) {
                         elmDesc.setIncomplete(true);
                     }
