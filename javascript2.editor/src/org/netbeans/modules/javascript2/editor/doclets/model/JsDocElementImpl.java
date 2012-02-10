@@ -39,49 +39,29 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doclets;
+package org.netbeans.modules.javascript2.editor.doclets.model;
 
-import java.util.List;
 import org.netbeans.modules.javascript2.editor.doclets.model.JsDocElement;
-import org.netbeans.modules.javascript2.editor.model.JsComment;
 
 /**
- * Represents block of JSDoc comment which contains particular {@link JsDocTag}s.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JsDocBlock extends JsComment {
+public abstract class JsDocElementImpl implements JsDocElement {
 
-    private final List<JsDocElement> tags;
-    private final JsDocCommentType type;
+    private final Type type;
 
-    /**
-     * Creates new {@code JsDocBlock} with given parameters.
-     *
-     * @param startOffset start offset of the comment
-     * @param endOffset end offset of the comment
-     * @param type comment {@code JsDocCommentType}
-     * @param tags list of tags contained in this block or {@code null} if block is of special type
-     */
-    public JsDocBlock(int startOffset, int endOffset, JsDocCommentType type, List<JsDocElement> tags) {
-        super(startOffset, endOffset);
+    public JsDocElementImpl(Type type) {
         this.type = type;
-        this.tags = tags;
     }
 
     /**
-     * Gets list of {@code JsDocTag}s of this block.
-     * @return list of {@code JsDocTag}s
+     * Gets jsDoc element type.
+     * @return jsDoc element type
      */
-    public List<JsDocElement> getTags() {
-        return tags;
-    }
-
-    /**
-     * Gets type of the jsDoc block comment.
-     * @return type of the jsDoc block comment
-     */
-    public JsDocCommentType getType() {
+    @Override
+    public Type getType() {
         return type;
     }
+
 }

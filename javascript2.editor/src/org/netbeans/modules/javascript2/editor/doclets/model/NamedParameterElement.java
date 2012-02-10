@@ -39,49 +39,39 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doclets;
+package org.netbeans.modules.javascript2.editor.doclets.model;
 
-import java.util.List;
-import org.netbeans.modules.javascript2.editor.doclets.model.JsDocElement;
-import org.netbeans.modules.javascript2.editor.model.JsComment;
+import org.netbeans.modules.javascript2.editor.doclets.model.el.Description;
+import org.netbeans.modules.javascript2.editor.doclets.model.el.Name;
 
 /**
- * Represents block of JSDoc comment which contains particular {@link JsDocTag}s.
+ * Represents named parameter element.
+ * <p>
+ * <i>Examples:</i> @param {MyType} myName myDescription,...
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JsDocBlock extends JsComment {
+public class NamedParameterElement extends ParameterElement {
 
-    private final List<JsDocElement> tags;
-    private final JsDocCommentType type;
+    private final Name paramName;
 
-    /**
-     * Creates new {@code JsDocBlock} with given parameters.
-     *
-     * @param startOffset start offset of the comment
-     * @param endOffset end offset of the comment
-     * @param type comment {@code JsDocCommentType}
-     * @param tags list of tags contained in this block or {@code null} if block is of special type
+    /** Creates named parameter element.
+     * @param type type of the element
+     * @param paramName name of the parameter
+     * @param paramType type of the parameter
+     * @param paramDescription description of the parameter
      */
-    public JsDocBlock(int startOffset, int endOffset, JsDocCommentType type, List<JsDocElement> tags) {
-        super(startOffset, endOffset);
-        this.type = type;
-        this.tags = tags;
+    public NamedParameterElement(Type type, Name paramName, org.netbeans.modules.javascript2.editor.doclets.model.el.Type paramType, Description paramDescription) {
+        super(type, paramType, paramDescription);
+        this.paramName = paramName;
     }
 
     /**
-     * Gets list of {@code JsDocTag}s of this block.
-     * @return list of {@code JsDocTag}s
+     * Gets name of the parameter.
+     * @return parameter name.
      */
-    public List<JsDocElement> getTags() {
-        return tags;
+    public Name getParamName() {
+        return paramName;
     }
 
-    /**
-     * Gets type of the jsDoc block comment.
-     * @return type of the jsDoc block comment
-     */
-    public JsDocCommentType getType() {
-        return type;
-    }
 }

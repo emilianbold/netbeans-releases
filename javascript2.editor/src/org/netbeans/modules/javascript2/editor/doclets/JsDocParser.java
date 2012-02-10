@@ -50,7 +50,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.javascript2.editor.doclets.JsDocElement.Type;
+import org.netbeans.modules.javascript2.editor.doclets.model.JsDocElement;
+import org.netbeans.modules.javascript2.editor.doclets.model.JsDocElement.Type;
+import org.netbeans.modules.javascript2.editor.doclets.model.DescriptionElement;
+import org.netbeans.modules.javascript2.editor.doclets.model.JsDocElementUtils;
+import org.netbeans.modules.javascript2.editor.doclets.model.el.Description;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -114,19 +118,20 @@ public class JsDocParser {
             //TODO - clean shared tag comments
             if (!jsDocElementText.startsWith("@")) { //NOI18N
                 if (!afterDescription) {
-                    jsDocElements.add(new JsDocElement(JsDocElement.Type.CONTEXT_SENSITIVE, jsDocElementText));
+                    //TODO - distinguish description and inline comments
+                    jsDocElements.add(new DescriptionElement(Type.CONTEXT_SENSITIVE, new Description(jsDocElementText)));
                 }
             } else {
                 Type type;
                 int firstSpace = jsDocElementText.indexOf(" "); //NOI18N
                 if (firstSpace == -1) {
                     type = Type.fromString(jsDocElementText);
-                    jsDocElements.add(new JsDocElement(
+                    jsDocElements.add(JsDocElementUtils.createElementForType(
                             type == null ? Type.UNKNOWN : type,
                             ""));
                 } else {
                     type = Type.fromString(jsDocElementText.substring(0, firstSpace));
-                    jsDocElements.add(new JsDocElement(
+                    jsDocElements.add(JsDocElementUtils.createElementForType(
                             type == null ? Type.UNKNOWN : type,
                             jsDocElementText.substring(firstSpace)));
                 }
@@ -158,7 +163,6 @@ public class JsDocParser {
                 blocks.add(new CommentBlock(startOffset, endOffset, token.toString()));
             }
         }
-        tokenSequence.moveStart();
         return blocks;
     }
 
@@ -183,6 +187,8 @@ public class JsDocParser {
 
         // clean " /** ", " */", " * " on all rows
         cleaned = cleaned.replaceAll("[\\s&&[^\r\n]]*(\\*)+(\\s)*|[/]$|(\\s)*[/*](\\*)+(\\s)*", ""); //NOI18N
+        // less accurate but probably a little bit faster
+//        cleaned = cleaned.replaceAll("^[/]|[/]$|[\\s&&[^\r\n]]*(\\*)+(\\s)*", ""); //NOI18N
 
         // replace enters by spaces
         cleaned = cleaned.replaceAll("\r?\n", " ").trim(); //NOI18N

@@ -44,6 +44,8 @@ package org.netbeans.modules.javascript2.editor.doclets;
 import java.util.List;
 import java.util.regex.Matcher;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
+import org.netbeans.modules.javascript2.editor.doclets.model.DescriptionElement;
+import org.netbeans.modules.javascript2.editor.doclets.model.JsDocElement;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 
@@ -212,7 +214,7 @@ public class JsDocParserTest extends JsTestBase {
         List<JsDocBlock> jsDocBlocks = JsDocParser.parse(snapshot);
         List<JsDocElement> tags = jsDocBlocks.get(0).getTags();
         assertEquals(JsDocElement.Type.CONTEXT_SENSITIVE, tags.get(0).getType());
-        assertEquals("This could be description", tags.get(0).getDescription());
+        assertEquals("This could be description", ((DescriptionElement)tags.get(0)).getDescription().toString());
     }
 
     public void testParsedContextSensitiveContentAsterisks() throws Exception {
@@ -221,7 +223,7 @@ public class JsDocParserTest extends JsTestBase {
         List<JsDocBlock> jsDocBlocks = JsDocParser.parse(snapshot);
         List<JsDocElement> tags = jsDocBlocks.get(0).getTags();
         assertEquals(JsDocElement.Type.CONTEXT_SENSITIVE, tags.get(0).getType());
-        assertEquals("This could be description", tags.get(0).getDescription());
+        assertEquals("This could be description", ((DescriptionElement)tags.get(0)).getDescription().toString());
     }
 
     private void checkElementTypes(String filePath) {
