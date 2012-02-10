@@ -120,7 +120,7 @@ public abstract class RemoteFileObjectBase implements Serializable {
         setFlag(MASK_VALID, true);
         this.fileSystem = wrapper.getFileSystem();
         this.fileObject = wrapper;
-        wrapper.setDelegate(this);
+        wrapper.setImplementor(this);
     }
 
     public abstract boolean isFolder();
@@ -131,38 +131,38 @@ public abstract class RemoteFileObjectBase implements Serializable {
     public abstract RemoteFileObject[] getChildren();
     public abstract FileType getType();
 
-    protected RemoteFileObject getWrapper() {
+    protected RemoteFileObject getOwnerFileObject() {
         return fileObject;
     }
 
     /** conveniency shortcut */
     protected final void fireFileChangedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
-        getWrapper().fireFileChangedEvent(en, fe);
+        getOwnerFileObject().fireFileChangedEvent(en, fe);
     }
 
     /** conveniency shortcut */
     protected final void fireFileDeletedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
-        getWrapper().fireFileDeletedEvent(en, fe);
+        getOwnerFileObject().fireFileDeletedEvent(en, fe);
     }
 
     /** conveniency shortcut */
     protected final void fireFileAttributeChangedEvent(Enumeration<FileChangeListener> en, FileAttributeEvent fe) {
-        getWrapper().fireFileAttributeChangedEvent(en, fe);
+        getOwnerFileObject().fireFileAttributeChangedEvent(en, fe);
     }
     
     /** conveniency shortcut */
     protected final void fireFileDataCreatedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
-        getWrapper().fireFileDataCreatedEvent(en, fe);
+        getOwnerFileObject().fireFileDataCreatedEvent(en, fe);
     }
     
     /** conveniency shortcut */
     protected final void fireFileFolderCreatedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
-        getWrapper().fireFileFolderCreatedEvent(en, fe);
+        getOwnerFileObject().fireFileFolderCreatedEvent(en, fe);
     }
     
     /** conveniency shortcut */
     protected final void fireFileRenamedEvent(Enumeration<FileChangeListener> en, FileRenameEvent fe) {
-        getWrapper().fireFileRenamedEvent(en, fe);
+        getOwnerFileObject().fireFileRenamedEvent(en, fe);
     }
 
     protected boolean getFlag(byte mask) {
@@ -231,7 +231,7 @@ public abstract class RemoteFileObjectBase implements Serializable {
 
     public void addRecursiveListener(FileChangeListener fcl) {
         if (isFolder()) {
-            getFileSystem().addFileChangeListener(new RecursiveListener(getWrapper(), fcl, false));
+            getFileSystem().addFileChangeListener(new RecursiveListener(getOwnerFileObject(), fcl, false));
         } else {
             addFileChangeListener(fcl);
         }
@@ -239,7 +239,7 @@ public abstract class RemoteFileObjectBase implements Serializable {
 
     public void removeRecursiveListener(FileChangeListener fcl) {
         if (isFolder()) {
-            getFileSystem().removeFileChangeListener(new RecursiveListener(getWrapper(), fcl, false));
+            getFileSystem().removeFileChangeListener(new RecursiveListener(getOwnerFileObject(), fcl, false));
         } else {
             removeFileChangeListener(fcl);
         }
@@ -280,7 +280,7 @@ public abstract class RemoteFileObjectBase implements Serializable {
         }
         boolean result;
         if (interceptor != null) {
-            FileProxyI fileProxy = FilesystemInterceptorProvider.toFileProxy(orig.getWrapper());
+            FileProxyI fileProxy = FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject());
             IOHandler deleteHandler = interceptor.getDeleteHandler(fileProxy);
             if (deleteHandler != null) {
                 deleteHandler.handle();
@@ -302,13 +302,13 @@ public abstract class RemoteFileObjectBase implements Serializable {
             }
         }
         for(Map.Entry<String, Object> entry : getAttributesMap().entrySet()) {
-            RemoteFileObject fo = getWrapper();
+            RemoteFileObject fo = getOwnerFileObject();
             fo.fireFileAttributeChangedEvent(getListenersWithParent(), new FileAttributeEvent(fo, fo, entry.getKey(), entry.getValue(), null));
         }
         invalidate();
         RemoteFileObjectBase p = getParent();
         if (p != null) {
-            p.postDeleteChild(getWrapper());
+            p.postDeleteChild(getOwnerFileObject());
         }
     }
     
@@ -410,7 +410,7 @@ public abstract class RemoteFileObjectBase implements Serializable {
         if (getFlag(CHECK_CAN_WRITE)) {
             setFlag(CHECK_CAN_WRITE, false);
             // react the same way org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObj does
-            RemoteFileObject fo = getWrapper();
+            RemoteFileObject fo = getOwnerFileObject();
             fo.fireFileAttributeChangedEvent(getListeners(), 
                     new FileAttributeEvent(fo, fo, "DataEditorSupport.read-only.refresh", null, null)); //NOI18N
         }
@@ -435,7 +435,7 @@ public abstract class RemoteFileObjectBase implements Serializable {
                 if (!result && USE_VCS) {
                     FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
                     if (interceptor != null) {
-                        result = interceptor.canWriteReadonlyFile(FilesystemInterceptorProvider.toFileProxy(orig.getWrapper()));
+                        result = interceptor.canWriteReadonlyFile(FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject()));
                     }
                 }
                 if (!result) {
@@ -568,7 +568,7 @@ public abstract class RemoteFileObjectBase implements Serializable {
                 throw new IOException("Can not rename in read only " + p.getPath());//NOI18N
             }
             // check there are no other child with such name
-            if (p.getWrapper().getFileObject(newNameExt) != null) {
+            if (p.getOwnerFileObject().getFileObject(newNameExt) != null) {
                 throw new IOException("Can not rename to " + newNameExt);//NOI18N
             }
             
@@ -578,7 +578,7 @@ public abstract class RemoteFileObjectBase implements Serializable {
             try {
                 Map<String, Object> map = getAttributesMap();
                 p.renameChild(lock, this, newNameExt, orig);
-                setAttributeMap(map, this.getWrapper());
+                setAttributeMap(map, this.getOwnerFileObject());
             } catch (ConnectException ex) {
                 throw new IOException("No connection: Can not rename in " + p.getPath(), ex); //NOI18N
             } catch (InterruptedException ex) {
@@ -598,7 +598,7 @@ public abstract class RemoteFileObjectBase implements Serializable {
             FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
             if (interceptor != null) {
                 FileProxyI to = FilesystemInterceptorProvider.toFileProxy(target, name, ext);
-                FileProxyI from = FilesystemInterceptorProvider.toFileProxy(orig.getWrapper());
+                FileProxyI from = FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject());
                 interceptor.beforeCopy(from, to);
                 FileObject result = null;
                 try {
@@ -611,9 +611,9 @@ public abstract class RemoteFileObjectBase implements Serializable {
                         target.refresh(true); // XXX ?
                         result = target.getFileObject(name, ext); // XXX ?
                         assert result != null : "Cannot find " + target + " with " + name + "." + ext;
-                        FileUtil.copyAttributes(getWrapper(), result);
+                        FileUtil.copyAttributes(getOwnerFileObject(), result);
                     } else {
-                        result = RemoteFileSystemUtils.copy(getWrapper(), target, name, ext);
+                        result = RemoteFileSystemUtils.copy(getOwnerFileObject(), target, name, ext);
                     }
                 } catch (IOException ioe) {
                     throw ioe;
@@ -622,7 +622,7 @@ public abstract class RemoteFileObjectBase implements Serializable {
                 return result;
             }
         }
-        return RemoteFileSystemUtils.copy(getWrapper(), target, name, ext);
+        return RemoteFileSystemUtils.copy(getOwnerFileObject(), target, name, ext);
     }
     
     public final FileObject move(FileLock lock, FileObject target, String name, String ext) throws IOException {
@@ -637,7 +637,7 @@ public abstract class RemoteFileObjectBase implements Serializable {
             FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
             if (interceptor != null) {
                 FileProxyI to = FilesystemInterceptorProvider.toFileProxy(target, name, ext);
-                FileProxyI from = FilesystemInterceptorProvider.toFileProxy(orig.getWrapper());
+                FileProxyI from = FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject());
                 FileObject result = null;
                 try {
                     final IOHandler moveHandler = interceptor.getMoveHandler(from, to);
@@ -669,13 +669,13 @@ public abstract class RemoteFileObjectBase implements Serializable {
     
     /** Copy-paste from FileObject.copy */
     private FileObject superMove(FileLock lock, FileObject target, String name, String ext) throws IOException {
-        if (getWrapper().getParent().equals(target)) {
+        if (getOwnerFileObject().getParent().equals(target)) {
             // it is possible to do only rename
             rename(lock, name, ext);
-            return this.getWrapper();
+            return this.getOwnerFileObject();
         } else {
             // have to do copy
-            FileObject dest = getWrapper().copy(target, name, ext);
+            FileObject dest = getOwnerFileObject().copy(target, name, ext);
             delete(lock);
             return dest;
         }        
@@ -706,14 +706,14 @@ public abstract class RemoteFileObjectBase implements Serializable {
             return Boolean.TRUE;
         }
         if (RETURN_JAVA_IO_FILE && attrName.equals("java.io.File")) { // NOI18N
-            return new FileObjectBasedFile(getExecutionEnvironment(), this.getWrapper());
+            return new FileObjectBasedFile(getExecutionEnvironment(), this.getOwnerFileObject());
         }
         if (attrName.startsWith("ProvidedExtensions")) {  //NOI18N
             // #158600 - delegate to ProvidedExtensions if attrName starts with ProvidedExtensions prefix
             if (USE_VCS) {
                 FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
                 if (interceptor != null) {
-                    return interceptor.getAttribute(FilesystemInterceptorProvider.toFileProxy(this.getWrapper()), attrName);
+                    return interceptor.getAttribute(FilesystemInterceptorProvider.toFileProxy(this.getOwnerFileObject()), attrName);
                 }
             }
         }

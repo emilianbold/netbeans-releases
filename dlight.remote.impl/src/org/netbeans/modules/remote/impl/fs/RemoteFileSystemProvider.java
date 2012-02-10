@@ -323,7 +323,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     public void scheduleRefresh(FileObject fileObject) {
         if (fileObject instanceof RemoteFileObject) {
             RemoteFileObject fo = (RemoteFileObject) fileObject;
-            fo.getFileSystem().getRefreshManager().scheduleRefresh(Arrays.asList(fo.getDelegate()));
+            fo.getFileSystem().getRefreshManager().scheduleRefresh(Arrays.asList(fo.getImplementor()));
         } else {
             RemoteLogger.getInstance().log(Level.WARNING, "Unexpected fileObject class: {0}", fileObject.getClass());
         }
@@ -380,7 +380,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     public boolean canExecute(FileObject fileObject) {
         RemoteLogger.assertTrue(fileObject instanceof RemoteFileObject, "Unexpected file object class: " + fileObject); // NOI18N
         if (fileObject instanceof RemoteFileObject) {
-            return ((RemoteFileObject) fileObject).getDelegate().canExecute();
+            return ((RemoteFileObject) fileObject).getImplementor().canExecute();
         }
         return false;
     }    

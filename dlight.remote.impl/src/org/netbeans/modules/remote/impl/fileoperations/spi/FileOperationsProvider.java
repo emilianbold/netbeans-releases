@@ -323,7 +323,7 @@ abstract public class FileOperationsProvider {
             while(true) {
                 RemoteFileObject fo = RemoteFileSystemManager.getInstance().getFileSystem(env).findResource(path);
                 if (fo != null) {
-                    return fo.getDelegate();
+                    return fo.getImplementor();
                 }
                 path = PathUtilities.getDirName(path);
                 if (path == null) {

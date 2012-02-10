@@ -296,7 +296,7 @@ public class RemoteFileObjectFactory {
         RemoteFileObjectBase fo = fileObjectsCache.remove(remotePath);
         if (fo != null) {
             fo.invalidate();
-            return fo.getWrapper();
+            return fo.getOwnerFileObject();
         }
         return null;
     }
