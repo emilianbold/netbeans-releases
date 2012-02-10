@@ -39,27 +39,42 @@
 
 package org.netbeans.modules.java.hints.jackpot.refactoring;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.util.lookup.Lookups;
 
 /**
- *
+ * Replaces public constructor with factory method.
  * @author lahvac
+ * @author Jan Becicka
+ * @since 1.34
  */
 public final class ReplaceConstructorWithFactoryRefactoring extends AbstractRefactoring {
     
     private String factoryName;
 
-    public ReplaceConstructorWithFactoryRefactoring(TreePathHandle constructor) {
+    /**
+     * Constructor accepts only TreePathHandles representing constructor.
+     * @param constructor
+     */
+    public ReplaceConstructorWithFactoryRefactoring(@NonNull TreePathHandle constructor) {
         super(Lookups.singleton(constructor));
     }
 
-    public String getFactoryName() {
+    /**
+     * Name of created factory method.
+     * @return 
+     */
+    public @NonNull String getFactoryName() {
         return factoryName;
     }
 
-    public void setFactoryName(String factoryName) {
+    /**
+     * Setter for factory method
+     * @param factoryName 
+     */
+    public void setFactoryName(@NonNull String factoryName) {
         this.factoryName = factoryName;
     }
 

@@ -39,27 +39,45 @@
 
 package org.netbeans.modules.java.hints.jackpot.refactoring;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.util.lookup.Lookups;
 
 /**
- *
+ * Invert Boolean Refactoring.
+ * Invert logic of boolean field or method.
  * @author lahvac
+ * @author Jan Becicka
+ * @since 1.34
  */
 public final class InvertBooleanRefactoring extends AbstractRefactoring {
     
     private String newName;
 
-    public InvertBooleanRefactoring(TreePathHandle original) {
-        super(Lookups.singleton(original));
+    /**
+     * Constructor for refactoring accepts TreePathHandles representing field or
+     * method.
+     * @param handle 
+     */
+    public InvertBooleanRefactoring(@NonNull TreePathHandle handle) {
+        super(Lookups.singleton(handle));
     }
 
+    /**
+     * Getter for new name of inverted method of field
+     * @return name of field or method
+     */
+    @NonNull
     public String getNewName() {
         return newName;
     }
 
-    public void setNewName(String newName) {
+    /**
+     * Setter for new name of method or field
+     * @param newName name of method or field
+     */
+    public void setNewName(@NonNull String newName) {
         this.newName = newName;
     }
 }

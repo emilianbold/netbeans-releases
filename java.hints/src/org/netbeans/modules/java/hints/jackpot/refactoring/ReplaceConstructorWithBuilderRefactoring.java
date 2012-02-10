@@ -43,13 +43,29 @@
 package org.netbeans.modules.java.hints.jackpot.refactoring;
 
 import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.util.lookup.Lookups;
 
 /**
- *
+ * Replace Constructor with Builder Refactoring.
+ * This refactoring creates a new Builder class and replaces all new class 
+ * expressions with builder calls.
+ * <br>
+ * <br>
+ * For instance it replaces:
+ * <pre>
+ * Test t = new Test("foo", 1);
+ * </pre>
+ * with builder pattern
+ * <pre>
+ * Test t = new TestBuilder().setA("foo").setB(1).createTest();
+ * </pre>
+ * 
  * @author Jan Becicka
+ * @since 1.34
  */
 public final class ReplaceConstructorWithBuilderRefactoring extends AbstractRefactoring {
 
@@ -57,35 +73,71 @@ public final class ReplaceConstructorWithBuilderRefactoring extends AbstractRefa
     private String builderName;
     private List<Setter> setters;
 
-    public ReplaceConstructorWithBuilderRefactoring(TreePathHandle constructor) {
+    /**
+     * Constructor accepts TreePathHandles representing constructor
+     * @param constructor
+     */
+    public ReplaceConstructorWithBuilderRefactoring(@NonNull TreePathHandle constructor) {
         super(Lookups.singleton(constructor));
     }
 
-    public String getBuilderName() {
+    /**
+     * Getter for builder name
+     * @return fully qualified name of builder
+     */
+    public @NonNull String getBuilderName() {
         return builderName;
     }
 
-    public void setBuilderName(String builderName) {
+    /**
+     * 
+     * @param builderName 
+     */
+    public void setBuilderName(@NonNull String builderName) {
         this.builderName = builderName;
     }
 
-    public List<Setter> getSetters() {
+    /**
+     * Getter for list of setters
+     * @return
+     */
+    public @NonNull List<Setter> getSetters() {
         return setters;
     }
 
-    public void setSetters(List<Setter> setters) {
+    /**
+     * setter for list of setters
+     * @param setters
+     */
+    public void setSetters(@NonNull List<Setter> setters) {
         this.setters = setters;
     }
 
+    /**
+     * Setter represent one setter of Builder pattern
+     */
     public static final class Setter {
 
-        private String name;
-        private String type;
-        private boolean optional;
-        private String defaultValue;
-        private String varName;
+        private final String name;
+        private final String type;
+        private final boolean optional;
+        private final String defaultValue;
+        private final String varName;
 
-        public Setter(String name, String type, String defaultValue, String varName, boolean optional) {
+        /**
+         * The only way how to create setter.
+         * @param name the name of the setter. For instance "setA"
+         * @param type the type of the setter. For instance "int"
+         * @param defaultValue the default value. Might be null. For instance "1".
+         * @param varName the name of the variable. For instance "a".
+         * @param optional true if the setter is optional in case, that argument is the same as default value.
+         */
+        public Setter(
+                @NonNull String name,
+                @NonNull String type,
+                @NullAllowed String defaultValue,
+                @NonNull String varName,
+                boolean optional) {
             this.name = name;
             this.type = type;
             this.optional = optional;
@@ -93,23 +145,44 @@ public final class ReplaceConstructorWithBuilderRefactoring extends AbstractRefa
             this.varName = varName;
         }
 
-        public String getName() {
+        /**
+         * Getter for setter name.
+         * @return 
+         */
+        public @NonNull String getName() {
             return name;
         }
 
+        /**
+         * Getter for optional.
+         * @return
+         */
         public boolean isOptional() {
             return optional;
         }
 
-        public String getType() {
+        
+        /**
+         * Getter for type.
+         * @return 
+         */
+        public @NonNull String getType() {
             return type;
         }
 
+        /**
+         * Getter for default value.
+         * @return can return null
+         */
         public String getDefaultValue() {
             return defaultValue;
         }
 
-        public String getVarName() {
+        /**
+         * Getter for variable name.
+         * @return 
+         */
+        public @NonNull String getVarName() {
             return varName;
         }
 
