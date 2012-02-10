@@ -59,12 +59,14 @@ public class JspCompletionItemTest extends TestBase {
     }
 
     public void testGetStreamForUrl() throws Exception {
+        /* What is this for?
         URL url = new URL("http://java.sun.com/jsp/jstl/core");
         InputStream inputStreamForUrl = JspCompletionItem.getInputStreamForUrl(url);
         assertNotNull(inputStreamForUrl);
+        */
 
-        url = new URL("jar:file:" + getTestFile("testJarLibrary/file.zip").getPath() + "!/file.txt");
-        inputStreamForUrl = JspCompletionItem.getInputStreamForUrl(url);
+        URL url = new URL("jar:file:" + getTestFile("testJarLibrary/file.zip").getPath() + "!/file.txt");
+        InputStream inputStreamForUrl = JspCompletionItem.getInputStreamForUrl(url);
         assertNotNull(inputStreamForUrl);
         assertEquals("testFile", readContentFromIS(inputStreamForUrl));
 
