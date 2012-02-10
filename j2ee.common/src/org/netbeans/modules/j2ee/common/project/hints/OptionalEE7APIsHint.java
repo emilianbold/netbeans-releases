@@ -42,9 +42,6 @@
 
 package org.netbeans.modules.j2ee.common.project.hints;
 
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
-import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -54,12 +51,15 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
+import static org.netbeans.modules.j2ee.common.project.hints.Bundle.*;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
-import org.openide.util.NbBundle;
-
+import org.openide.util.NbBundle.Messages;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.TreePath;
 
 /**
  * Warn user when implementation of EJBContainer is missing.
@@ -94,9 +94,10 @@ public class OptionalEE7APIsHint extends AbstractHint {
         super(true, true, AbstractHint.HintSeverity.WARNING);
     }
     
+    @Messages("OptionalEE7APIsHint_Description=Warn user about usage of APIs from technologies which will be made optional in Java EE 7 specification. These APIs are not deprecated and can be used but because they will be optional they may or may not be available in future Java EE 7 compliant platforms.")
     @Override
     public String getDescription() {
-        return NbBundle.getMessage(OptionalEE7APIsHint.class, "OptionalEE7APIsHint_Description"); // NOI18N
+        return OptionalEE7APIsHint_Description(); // NOI18N
     }
 
     @Override
@@ -146,9 +147,10 @@ public class OptionalEE7APIsHint extends AbstractHint {
         return "OptionalEE7APIsHint"; // NOI18N
     }
 
+    @Messages("OptionalEE7APIsHint_DisplayName=Be aware that this API will be optional in Java EE 7 platform.")
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(OptionalEE7APIsHint.class, "OptionalEE7APIsHint_DisplayName"); // NOI18N
+        return OptionalEE7APIsHint_DisplayName();
     }
 
     @Override
