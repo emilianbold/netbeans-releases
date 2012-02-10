@@ -48,6 +48,7 @@ import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
 import org.openide.util.NbBundle;
 
+// http://symfony.com/doc/2.0/bundles/JMSSecurityExtraBundle/index.html#annotations
 public final class Symfony2SecurityAnnotationsProvider extends PhpAnnotationsProvider {
 
     @NbBundle.Messages("Symfony2SecurityAnnotationsProvider.name=Symfony2 Security")
