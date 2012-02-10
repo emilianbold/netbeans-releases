@@ -364,8 +364,10 @@ public class JGitClient implements GitClient, StatusListener, FileListener, Revi
             case BISECTING:
                 return GitRepositoryState.BISECTING;
             case MERGING:
+            case CHERRY_PICKING:
                 return GitRepositoryState.MERGING;
             case MERGING_RESOLVED:
+            case CHERRY_PICKING_RESOLVED:
                 return GitRepositoryState.MERGING_RESOLVED;
             case REBASING:
             case REBASING_INTERACTIVE:
