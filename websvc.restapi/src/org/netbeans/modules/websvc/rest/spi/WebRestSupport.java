@@ -53,6 +53,8 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -472,13 +474,25 @@ public abstract class WebRestSupport extends RestSupport {
         RestApplicationModel applicationModel = getRestApplicationsModel();
         if (applicationModel != null) {
             try {
-                return applicationModel.runReadAction(new MetadataModelAction<RestApplications, List<RestApplication>>() {
-
-                    public List<RestApplication> run(RestApplications metadata) throws IOException {
-                        return metadata.getRestApplications();
-                    }
+                Future<List<RestApplication>> future = applicationModel.
+                    runReadActionWhenReady(
+                        new MetadataModelAction<RestApplications, List<RestApplication>>() 
+                    {
+                            public List<RestApplication> run(RestApplications metadata) 
+                                throws IOException 
+                            {
+                                return metadata.getRestApplications();
+                            }
                     });
-            } catch (IOException ex) {
+                return future.get();
+            } 
+            catch (IOException ex) {
+                return Collections.emptyList();
+            }
+            catch (InterruptedException ex) {
+                return Collections.emptyList();
+            }
+            catch (ExecutionException ex) {
                 return Collections.emptyList();
             }
         }
