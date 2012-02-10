@@ -84,49 +84,49 @@ public class JsDocElement {
      */
     public enum Type {
         // special context sensitive type
-        CONTEXT_SENSITIVE("contextSensitive"),
+        CONTEXT_SENSITIVE("contextSensitive"), //NOI18N
 
         // unknow type
-        UNKNOWN("unknown"),
+        UNKNOWN("unknown"), //NOI18N
 
         // common jsDoc tags
-        ARGUMENT("@argument"),
-        AUGMENTS("@augments"),
-        AUTHOR("@author"),
-        BORROWS("@borrows"),
-        CLASS("@class"),
-        CONSTANT("@constant"),
-        CONSTRUCTOR("@constructor"),
-        CONSTRUCTS("@constructs"),
-        DEFAULT("@default"),
-        DEPRECATED("@deprecated"),
-        DESCRIPTION("@description"),
-        EVENT("@event"),
-        EXAMPLE("@example"),
-        EXTENDS("@extends"),
-        FIELD("@field"),
-        FILE_OVERVIEW("@fileOverview"),
-        FUNCTION("@function"),
-        IGNORE("@ignore"),
-        INNER("@inner"),
-        LENDS("@lends"),
-        LINK("@link"),
-        MEMBER_OF("@memberOf"),
-        NAME("@name"),
-        NAMESPACE("@namespace"),
-        PARAM("@param"),
-        PRIVATE("@private"),
-        PROPERTY("@property"),
-        PUBLIC("@public"),
-        REQUIRES("@requires"),
-        RETURN("@return"),
-        RETURNS("@returns"),
-        SEE("@see"),
-        SINCE("@since"),
-        STATIC("@static"),
-        THROWS("@throws"),
-        TYPE("@type"),
-        VERSION("@version");
+        ARGUMENT("@argument"), //NOI18N
+        AUGMENTS("@augments"), //NOI18N
+        AUTHOR("@author"), //NOI18N
+        BORROWS("@borrows"), //NOI18N
+        CLASS("@class"), //NOI18N
+        CONSTANT("@constant"), //NOI18N
+        CONSTRUCTOR("@constructor"), //NOI18N
+        CONSTRUCTS("@constructs"), //NOI18N
+        DEFAULT("@default"), //NOI18N
+        DEPRECATED("@deprecated"), //NOI18N
+        DESCRIPTION("@description"), //NOI18N
+        EVENT("@event"), //NOI18N
+        EXAMPLE("@example"), //NOI18N
+        EXTENDS("@extends"), //NOI18N
+        FIELD("@field"), //NOI18N
+        FILE_OVERVIEW("@fileOverview"), //NOI18N
+        FUNCTION("@function"), //NOI18N
+        IGNORE("@ignore"), //NOI18N
+        INNER("@inner"), //NOI18N
+        LENDS("@lends"), //NOI18N
+        LINK("@link"), //NOI18N
+        MEMBER_OF("@memberOf"), //NOI18N
+        NAME("@name"), //NOI18N
+        NAMESPACE("@namespace"), //NOI18N
+        PARAM("@param"), //NOI18N
+        PRIVATE("@private"), //NOI18N
+        PROPERTY("@property"), //NOI18N
+        PUBLIC("@public"), //NOI18N
+        REQUIRES("@requires"), //NOI18N
+        RETURN("@return"), //NOI18N
+        RETURNS("@returns"), //NOI18N
+        SEE("@see"), //NOI18N
+        SINCE("@since"), //NOI18N
+        STATIC("@static"), //NOI18N
+        THROWS("@throws"), //NOI18N
+        TYPE("@type"), //NOI18N
+        VERSION("@version"); //NOI18N
 
         private final String value;
 

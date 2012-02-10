@@ -65,7 +65,7 @@ public class JsDocParser {
     private static final Logger LOGGER = Logger.getLogger(JsDocParser.class.getName());
 
     protected static final Pattern JSDOC_TAG_PATTERN =
-            Pattern.compile("(@(([^@]|(@link)|[\r\n])*|@link))|(\\s*[/*][*]+\\S([^@]|(@link)|[\r\n])*)");
+            Pattern.compile("(@(([^@]|(@link)|[\r\n])*|@link))|(\\s*[/*][*]+\\S([^@]|(@link)|[\r\n])*)"); //NOI18N
 
     /**
      * Parses given snapshot and returns list of all jsDoc blocks.
@@ -163,14 +163,15 @@ public class JsDocParser {
     }
 
     private static JsDocCommentType getCommentType(String commentBlock) {
-        if (commentBlock.startsWith("/**#")) {
-            if ("/**#nocode+*/".equals(commentBlock)) {
+        //TODO - move that into some constatns holder
+        if (commentBlock.startsWith("/**#")) { //NOI18N
+            if ("/**#nocode+*/".equals(commentBlock)) { //NOI18N
                 return JsDocCommentType.DOC_NO_CODE_START;
             } else if ("/**#nocode-*/".equals(commentBlock)) {
                 return JsDocCommentType.DOC_NO_CODE_END;
-            } else if (commentBlock.startsWith("/**#@+")) {
+            } else if (commentBlock.startsWith("/**#@+")) { //NOI18N
                 return JsDocCommentType.DOC_SHARED_TAG_START;
-            } else if ("/**#@-*/".equals(commentBlock)) {
+            } else if ("/**#@-*/".equals(commentBlock)) { //NOI18N
                 return JsDocCommentType.DOC_SHARED_TAG_END;
             }
         }
