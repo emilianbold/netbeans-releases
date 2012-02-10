@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,62 +34,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.search.matcher;
 
-package org.netbeans.modules.search;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import org.openidex.search.SearchType;
+import org.netbeans.api.search.provider.SearchListener;
+import org.netbeans.modules.search.MatchingObject.Def;
+import org.openide.filesystems.FileObject;
 
 /**
- * <!-- PENDING -->
+ * Matcher that matches the whole file.
  *
- * @author  Marian Petras
+ * It is used when no text pattern is specified.
+ *
+ * @author jhavlin
  */
-final class SearchCriterion implements java.io.Serializable {
+public class TrivialFileMatcher extends AbstractMatcher {
 
-    private static final long serialVersionUID = 1190693501592921043L;
-
-    /** */
-    String searchTypeClassName;
-    /** */
-    String name;
-    /** <!-- PENDING --> */
-    byte[] criterionData;
-
-    /**
-     * Creates a new <code>SearchCriterion</code> from an instance
-     * of <code>SearchType</code>.
-     * The created <code>SearchCriterion</code> is initially not
-     * {@linkplain #isDefault default}.
-     *
-     * @param  searchType  instance of <code>SearchType</code> to create
-     *                     a <code>SearchCriterion</code> for
-     * @exception  java.io.IOException  if some error occured during creation
-     */
-    SearchCriterion(SearchType searchType) throws IOException {
-        this.name = searchType.getName();
-        searchTypeClassName = searchType.getClass().getName();
-        
-        /* serialize the search type: */
-        ObjectOutputStream oos = null;
-        try {
-            ByteArrayOutputStream bos;
-            oos = new ObjectOutputStream(bos = new ByteArrayOutputStream(8192));
-            oos.writeObject(searchType);
-            criterionData = bos.toByteArray();
-        } finally {
-            if (oos != null) {
-                oos.close();
-            }
-        }
+    @Override
+    public Def checkMeasuredInternal(FileObject file,
+            SearchListener listener) {
+        return new Def(file, null, null);
     }
-    
-    /** */
-    public String toString() {
-        return name;
+
+    @Override
+    public void terminate() {
+        // No expensive computation is started by this matcher.
     }
-    
 }

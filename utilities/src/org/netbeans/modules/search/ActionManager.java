@@ -47,8 +47,9 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import org.openide.ErrorManager;
+import org.openide.actions.FindAction;
+import org.openide.actions.ReplaceAction;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.SharedClassObject;
 import org.openide.util.WeakSet;
@@ -57,7 +58,8 @@ import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
 
 /**
- * Generic template for FindActionManager and ReplaceActionManger.
+ * Generic template for FindActionManager and ReplaceActionManger. It provides
+ * fallback shortcuts for some windows.
  *
  * @author jhavlin
  *
@@ -65,7 +67,7 @@ import org.openide.windows.TopComponent;
  * @param <S> Original action type, e.g. FindAction
  * @param <L> Lookup sensitive type, e.g.g FindInFilesAction.LookupSensitive
  */
-public abstract class ActionManager<A extends SystemAction, S extends CallbackSystemAction, L extends Action>
+public abstract class ActionManager<A extends SystemAction, S extends CallbackSystemAction>
         implements PropertyChangeListener, Runnable {
 
     protected static final Logger LOG =
@@ -92,7 +94,6 @@ public abstract class ActionManager<A extends SystemAction, S extends CallbackSy
      * Holds e.g. class {@code FindInFilesAction.LookupSensitive}. See Bug
      * #183434.
      */
-    protected Class<L> lookUpSensitiveClass;
     private Class<S> origSysActionCls;
 
     /**
@@ -113,7 +114,6 @@ public abstract class ActionManager<A extends SystemAction, S extends CallbackSy
         // Fix of the Bug #183434 - caching of the classes to avoid their 
         // loading during execution of the action
         ssnslsClass = SearchScopeNodeSelection.LookupSensitive.class;
-        initLookupSensitiveActionClass();
     }
 
     /**
@@ -143,7 +143,6 @@ public abstract class ActionManager<A extends SystemAction, S extends CallbackSy
 
         // cleaning up classes that have been cached
         ssnslsClass = null;
-        lookUpSensitiveClass = null;
     }
 
     @Override
@@ -222,7 +221,7 @@ public abstract class ActionManager<A extends SystemAction, S extends CallbackSy
         ActionMap actionMap = win.getActionMap();
 
         if ((actionMap.get(key) == null) && activatedOnWindows.add(win)) {
-            Action ls = createContextAwareInstance(win.getLookup());
+            Action ls = getAction();
             actionMap.put(key, ls);
             win.putClientProperty(getMappedActionKey(),
                     new WeakReference<Action>(ls));
@@ -259,14 +258,83 @@ public abstract class ActionManager<A extends SystemAction, S extends CallbackSy
      */
     public abstract String getMappedActionKey();
 
-    /**
-     * Create context-aware instance of the underlying action.
-     */
-    protected abstract Action createContextAwareInstance(Lookup lookup);
+    protected abstract Action getAction();
 
     /**
-     * Initialize lookup sensitive action class. It will be cached for better
-     * performance.
+     * Manages <em>FindAction</em> - provides fallback shortcut Ctrl-Shift-F.
+     *
+     * @author Petr Kuzel
+     * @author Marian Petras
+     * @see org.openide.actions.FindAction
+     * @see org.openide.windows.TopComponent.Registry
      */
-    protected abstract void initLookupSensitiveActionClass();
+    static final class FindActionManager
+            extends ActionManager<FindInFilesAction, FindAction> {
+
+        private static final String MAPPED_FIND_ACTION =
+                FindActionManager.class.getName()
+                + " - FindActionImpl";                                  //NOI18N
+        private static FindActionManager instance = null;
+
+        private FindActionManager() {
+            super(FindInFilesAction.class, FindAction.class);
+        }
+
+        @Override
+        public String getMappedActionKey() {
+            return FindActionManager.MAPPED_FIND_ACTION;
+        }
+
+        @Override
+        protected Action getAction() {
+            return action;
+        }
+
+        static FindActionManager getInstance() {
+            LOG.finer("getInstance()");                                 //NOI18N
+            if (instance == null) {
+                instance = new FindActionManager();
+            }
+            return instance;
+        }
+    }
+
+    /**
+     * Manages <em>ReplaceAction</em> - provides fallback shortcut Ctrl-Shift-H.
+     *
+     * @author Petr Kuzel
+     * @author Marian Petras
+     * @see org.openide.actions.ReplaceAction
+     * @see org.openide.windows.TopComponent.Registry
+     */
+    static final class ReplaceActionManager
+            extends ActionManager<ReplaceInFilesAction, ReplaceAction> {
+
+        private static final String MAPPED_FIND_ACTION =
+                ReplaceActionManager.class.getName()
+                + " - ReplActionImpl";                                  //NOI18N
+        private static ReplaceActionManager instance = null;
+
+        private ReplaceActionManager() {
+            super(ReplaceInFilesAction.class, ReplaceAction.class);
+        }
+
+        @Override
+        public String getMappedActionKey() {
+            return ReplaceActionManager.MAPPED_FIND_ACTION;
+        }
+
+        @Override
+        protected Action getAction() {
+            return action;
+        }
+
+        static ReplaceActionManager getInstance() {
+            LOG.finer("getInstance()");                                 //NOI18N
+            if (instance == null) {
+                instance = new ReplaceActionManager();
+            }
+            return instance;
+        }
+    }
 }

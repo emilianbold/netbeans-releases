@@ -11,17 +11,20 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 import javax.swing.*;
+import org.netbeans.api.search.RegexpUtil;
+import org.netbeans.api.search.SearchScopeOptions;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
+
 /**
  *
  * @author jhavlin
  */
-final class IgnoreListPanel extends javax.swing.JPanel {
+public final class IgnoreListPanel extends javax.swing.JPanel {
 
     static final String SIMPLE_PREFIX = "s: ";                          //NOI18N
     static final String REGEXP_PREFIX = "x: ";                          //NOI18N
@@ -307,7 +310,7 @@ final class IgnoreListPanel extends javax.swing.JPanel {
         }
     }
 
-    static void openDialog(JComponent baseComponent) {
+    public static void openDialog(JComponent baseComponent) {
 
         JDialog jd = new JDialog(
                 (JDialog) SwingUtilities.getAncestorOfClass(
@@ -366,8 +369,8 @@ final class IgnoreListPanel extends javax.swing.JPanel {
             private Pattern p;
 
             public IgnoredPatternDefinition(String pattern) {
-                String pat = RegexpMaker.makeMultiRegexp(pattern);
-                p = Pattern.compile(pat, Pattern.CASE_INSENSITIVE);
+                p = RegexpUtil.makeFileNamePattern(
+                        SearchScopeOptions.create(pattern, false));
             }
 
             @Override

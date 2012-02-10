@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.search;
 
-import org.openide.filesystems.FileObject;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -54,20 +53,25 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
+import org.netbeans.api.search.SearchRoot;
+import org.netbeans.api.search.SearchScopeOptions;
+import org.netbeans.api.search.provider.SearchInfo;
+import org.netbeans.api.search.provider.SearchInfoUtils;
+import org.netbeans.api.search.provider.SearchListener;
+import org.netbeans.spi.search.SearchInfoDefinition;
+import org.netbeans.spi.search.provider.TerminationFlag;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
-import org.openidex.search.FileObjectFilter;
-import org.openidex.search.SearchInfo;
-import org.openidex.search.SearchInfoFactory;
 import static org.openide.windows.TopComponent.Registry.PROP_ACTIVATED_NODES;
+
 
 /**
  * Defines search scope across selected nodes.
@@ -88,6 +92,7 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
         return "node selection";                                        //NOI18N
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(getClass(),
                                    "SearchScopeNameSelectedNodes");     //NOI18N
@@ -114,7 +119,15 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
     }
 
     private Node[] getNodes() {
-        return TopComponent.getRegistry().getActivatedNodes();
+        Collection<? extends Node> lookupAll =
+                Utilities.actionsGlobalContext().lookupAll(Node.class);
+        Node[] nodes = new Node[lookupAll.size()];
+        int i = 0;
+        for (Node n : lookupAll) {
+            nodes[i] = n;
+            i++;
+        }
+        return nodes;
     }
 
     /**
@@ -147,18 +160,24 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
     /**
      */
     private static boolean canSearch(Node node) {
+
         Lookup nodeLookup = node.getLookup();
-        
+
         /* 1st try - is the SearchInfo object in the node's lookup? */
-        SearchInfo searchInfo = nodeLookup.lookup(SearchInfo.class);
+        SearchInfoDefinition searchInfo
+                = nodeLookup.lookup(SearchInfoDefinition.class);
         if (searchInfo != null) {
             return searchInfo.canSearch();
         }
-
         final DataObject dataObj = nodeLookup.lookup(DataObject.class);
-        return (dataObj != null) && dataObj.isValid();
+        if ((dataObj != null) && dataObj.isValid()) {
+            return true;
+        }
+        SearchInfo si = SearchInfoUtils.getSearchInfoForNode(node);
+        return  si != null && si.canSearch();
     }
     
+    @Override
     protected void startListening() {
 
         /* thread: <any> */
@@ -168,6 +187,7 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
         tcRegistry.addPropertyChangeListener(currentNodesWeakListener);
     }
 
+    @Override
     protected void stopListening() {
 
         /* thread: <any> */
@@ -176,12 +196,14 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
         currentNodesWeakListener = null;
     }
 
+    @Override
     public synchronized void propertyChange(PropertyChangeEvent e) {
         if (PROP_ACTIVATED_NODES.equals(e.getPropertyName())) {
             updateIsApplicable();
         }
     }
 
+    @Override
     public SearchInfo getSearchInfo() {
         return getSearchInfo(TopComponent.getRegistry().getActivatedNodes());
     }
@@ -212,7 +234,7 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
         if (searchInfoCount == 1) {
             return searchInfos.get(0);
         } else {
-            return SearchInfoFactory.createCompoundSearchInfo(
+            return SearchInfoUtils.createCompoundSearchInfo(
                         searchInfos.toArray(new SearchInfo[searchInfoCount]));
         }
     }
@@ -220,40 +242,47 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
     /**
      */
     private static SearchInfo getSearchInfo(Node node) {
+
+        return SearchInfoUtils.getSearchInfoForNode(node);
+
+        // TODO make backwards compatible with old Seach API.
+
         /* 1st try - is the SearchInfo object in the node's lookup? */
-        SearchInfo info = node.getLookup().lookup(SearchInfo.class);
-        if (info != null) {
-            return info;
-        }
-
-        /* 2nd try - does the node represent a DataObject.Container? */
-        final Lookup nodeLookup = node.getLookup();
-        DataFolder dataFolder = nodeLookup.lookup(DataFolder.class);
-        if (dataFolder != null) {
-            return createSearchInfoForFolder(dataFolder.getPrimaryFile());
-        } else {
-            FileObject fo = nodeLookup.lookup(FileObject.class);
-            if (fo != null && FileUtil.isArchiveFile(fo)) {
-                return createSearchInfoForFolder(FileUtil.getArchiveRoot(fo));
-            } else {
-                DataObject dataObj = nodeLookup.lookup(DataObject.class);
-                if (dataObj != null) {
-                    return new DataObjectSearchInfo(dataObj);
-                }
-            }
-        }
-
-        return null;
+//        SearchInfo info = node.getLookup().lookup(SearchInfo.class);
+//        if (info != null) {
+//            return info;
+//        }
+//
+//        /* 2nd try - does the node represent a DataObject.Container? */
+//        final Lookup nodeLookup = node.getLookup();
+//        DataFolder dataFolder = nodeLookup.lookup(DataFolder.class);
+//        if (dataFolder != null) {
+//            return createSearchInfoForFolder(dataFolder.getPrimaryFile());
+//        } else {
+//            FileObject fo = nodeLookup.lookup(FileObject.class);
+//            if (fo != null && FileUtil.isArchiveFile(fo)) {
+//                return createSearchInfoForFolder(FileUtil.getArchiveRoot(fo));
+//            } else {
+//                DataObject dataObj = nodeLookup.lookup(DataObject.class);
+//                if (dataObj != null) {
+//                    return new DataObjectSearchInfo(dataObj);
+//                }
+//            }
+//        }
+//
+//        return null;
     }
     
     private static SearchInfo createSearchInfoForFolder(FileObject folder) {
-        return SearchInfoFactory.createSearchInfo(
-                folder,
-                true, new FileObjectFilter[]{
-                    SearchInfoFactory.VISIBILITY_FILTER});
+        // TODO implement
+//        return SearchInfoFactory.createSearchInfo(
+//                folder,
+//                true, new FileObjectFilter[]{
+//                    SearchInfoFactory.VISIBILITY_FILTER});
+        return null;
     }
 
-    private static final class DataObjectSearchInfo implements SearchInfo {
+    private static final class DataObjectSearchInfo extends SearchInfo {
 
         private final DataObject dataObj;
 
@@ -261,16 +290,30 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
             this.dataObj = dataObj;
         }
 
+        @Override
         public boolean canSearch() {
             return dataObj.isValid();
         }
 
-        public Iterator<DataObject> objectsToSearch() {
-            return Collections.<DataObject>singleton(dataObj).iterator();
+        public Iterator<FileObject> getFilesToSearch() {
+            return Collections.<FileObject>singleton(
+                    dataObj.getPrimaryFile()).iterator();
         }
-        
+
+        @Override
+        public List<SearchRoot> getSearchRoots() {
+            return Collections.singletonList(
+                    new SearchRoot(
+                    dataObj.getPrimaryFile(), Collections.EMPTY_LIST));
+        }
+
+        @Override
+        public Iterator<FileObject> getFilesToSearch(SearchScopeOptions options,
+            SearchListener listener, TerminationFlag terminationFlag) {
+            return Collections.singleton(dataObj.getPrimaryFile()).iterator();
+        }
     }
-    
+
     /**
      * Computes a subset of nodes (search origins) covering all specified nodes.
      * <p>
@@ -406,6 +449,7 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
                                        : nodesColl.toArray(emptyNodesArray);
         }
 
+        @Override
         protected void startListening() {
 
             /* thread: <any> */
@@ -416,6 +460,7 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
             lookupResult.addLookupListener(lookupListener);
         }
 
+        @Override
         protected void stopListening() {
 
             /* thread: <any> */
@@ -425,14 +470,17 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
             }
         }
 
+        @Override
         public void resultChanged(LookupEvent ev) {
             updateIsApplicable();
         }
 
+        @Override
         protected boolean checkIsApplicable() {
             return SearchScopeNodeSelection.checkIsApplicable(nodes());
         }
 
+        @Override
         protected SearchInfo getSearchInfo() {
             return delegate.getSearchInfo(nodes());
         }
@@ -442,6 +490,7 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
             return delegate.getTypeId();
         }
 
+        @Override
         protected String getDisplayName() {
             return delegate.getDisplayName();
         }
@@ -450,7 +499,5 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
         protected String getAdditionalInfo() {
             return delegate.getAdditionalInfo();
         }
-
     }
-
 }

@@ -45,8 +45,8 @@
 package org.netbeans.modules.search;
 
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.search.provider.SearchInfo;
 import org.openide.util.Lookup;
-import org.openidex.search.SearchInfo;
 
 /**
  * Interface for obtaining information about scope of a search task.

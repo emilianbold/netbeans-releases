@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
-import org.openidex.search.SearchType;
 
 /**
  * Registry for everything related to the Find dialog.
@@ -69,11 +68,7 @@ public final class FindDialogMemory {
 
     /** singleton instance of this class */
     private static FindDialogMemory singleton;
-    
-    /**
-     * stores the last used <code>SearchType</code>
-     */
-    private SearchType lastSearchType = null;
+
     /**
      * storage of last used file name patterns
      * (initially {@code null})
@@ -109,6 +104,11 @@ public final class FindDialogMemory {
      * whether a full text pattern was used last time
      */
     private boolean textPatternSpecified;
+
+    /**
+     * ID of seach scope type.
+     */
+    private String scopeTypeId;
 
     /**
      * whether file name pattern was used last time
@@ -158,6 +158,7 @@ public final class FindDialogMemory {
     private static final String PROP_CASE_SENSITIVE = "case_sensitive";  //NOI18N
     private static final String PROP_PRESERVE_CASE = "preserve_case";  //NOI18N
     private static final String PROP_REGULAR_EXPRESSION = "regular_expression";  //NOI18N
+    private static final String PROP_SCOPE_TYPE_ID = "scope_type_id"; //NOI18N
     private static final String PROP_FILENAME_PATTERN_SPECIFIED = "filename_specified";  //NOI18N
     private static final String PROP_FILENAME_PATTERN_PREFIX = "filename_pattern_";  //NOI18N
     private static final String PROP_REPLACE_PATTERN_PREFIX = "replace_pattern_";  //NOI18N
@@ -191,6 +192,7 @@ public final class FindDialogMemory {
         caseSensitive = prefs.getBoolean(PROP_CASE_SENSITIVE, false);
         regularExpression = prefs.getBoolean(PROP_REGULAR_EXPRESSION, false);
         preserveCase = prefs.getBoolean(PROP_PRESERVE_CASE, false);
+        scopeTypeId = prefs.get(PROP_SCOPE_TYPE_ID, "open projects");   //NOI18N
         fileNamePatternSpecified = prefs.getBoolean(PROP_FILENAME_PATTERN_SPECIFIED, false);
         searchInArchives = prefs.getBoolean(PROP_SEARCH_IN_ARCHIVES, false);
         searchInGenerated = prefs.getBoolean(PROP_SEARCH_IN_GENERATED, false);
@@ -222,18 +224,6 @@ public final class FindDialogMemory {
             }
             i++;
         }
-    }
-
-    /**
-     */
-    public void setLastUsedSearchType(SearchType searchType){
-        lastSearchType = searchType;
-    }
-    
-    /**
-     */    
-    public SearchType getLastSearchType(){
-        return lastSearchType;
     }
 
     /**
@@ -346,6 +336,15 @@ public final class FindDialogMemory {
     public void setRegularExpression(boolean regularExpression) {
         this.regularExpression = regularExpression;
         prefs.putBoolean(PROP_REGULAR_EXPRESSION, regularExpression);
+    }
+
+    public String getScopeTypeId() {
+        return scopeTypeId;
+    }
+
+    public void setScopeTypeId(String scopeTypeId) {
+        this.scopeTypeId = scopeTypeId;
+        prefs.put(PROP_SCOPE_TYPE_ID, scopeTypeId);
     }
 
     boolean isTextPatternSpecified() {

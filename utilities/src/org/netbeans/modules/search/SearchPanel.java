@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,561 +34,311 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
-
 package org.netbeans.modules.search;
 
-
-import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.MissingResourceException;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.spi.search.provider.SearchComposition;
+import org.netbeans.spi.search.provider.SearchProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openidex.search.SearchType;
 
 
 /**
- * Panel which shows all enabled search types for user allowing them to
- * select appropriate criteria for a new search.
  *
- * @author  Peter Zavadsky
- * @author  Marian Petras
- * @see SearchTypePanel
+ * @author jhavlin
  */
-public final class SearchPanel extends JPanel
-                               implements PropertyChangeListener,
-                                          FocusListener,
-                                          ChangeListener,
-                                          ActionListener {
-    
-    /** Return status code - returned if Cancel button has been pressed. */
-    public static final int RET_CANCEL = 0;
-    
-    /** Return status code - returned if OK button has been pressed. */
-    public static final int RET_OK = 1;
-    
-    /** */
-    private final BasicSearchForm basicCriteriaPanel;
+public class SearchPanel extends JPanel implements FocusListener,
+        ActionListener {
 
-    /** */
-    private final boolean projectWide;
-    /** */
-    private final boolean searchAndReplace;
-
-    /** OK button. */
-    private final JButton okButton;
-    
-    /** Cancel button. */
-    private final JButton cancelButton;
-
-    /** Java equivalent. */
+    private static SearchPanel currentlyShown = null;
+    private boolean replacing;
+    private boolean activateWithPreviousValues = false; // TODO
+    private boolean projectWide = false; // TODO
+    private List<SearchProvider.Presenter> presenters;
+    /**
+     * OK button.
+     */
+    private JButton okButton;
+    /**
+     * Cancel button.
+     */
+    private JButton cancelButton;
+    /**
+     * Tabbed pane if there are extra providers.
+     */
+    JTabbedPane tabbedPane = null;
+    /**
+     * Dialog in which this search panel is displayed.
+     */
     private Dialog dialog;
-
-    /** Return status. */
-    private int returnStatus = RET_CANCEL;
-
-    /** Ordered list of <code>SearchTypePanel</code>'s. */
-    private List<SearchTypePanel> orderedSearchTypePanels;
-    
-    
     /**
-     * Creates a new {@code SearchPanel}.
-     *
-     * @param  basicSearchCriteria  basic search criteria,
-     *                              or {@code null} if basic search criteria
-     *                              should not be used
-     * @param  preferredSearchScope  preferred search scope (may be {@code null})
+     * Selected Search presenter
      */
-    SearchPanel(Map<SearchScope, Boolean> searchScopes,
-                String preferredSearchScopeType,
-                boolean searchAndReplace) {
-        this(searchScopes,
-             preferredSearchScopeType,
-             null,
-             Utils.cloneSearchTypes(Utils.getSearchTypes()),
-             false,
-             searchAndReplace);
-    }
+    private SearchProvider.Presenter selectedPresenter;
 
     /**
-     * Creates a new {@code SearchPanel}.
-     *
-     * @param  basicSearchCriteria  basic search criteria,
-     *                              or {@code null} if basic search criteria
-     *                              should not be used
-     * @param  extraSearchTypes  list of extra {@code SearchType}s to use
+     * Panel that can show form with settings for several search providers.
      */
-    SearchPanel(Map<SearchScope, Boolean> searchScopes,
-                String preferredSearchScopeType,
-                BasicSearchCriteria basicSearchCriteria,
-                Collection<? extends SearchType> extraSearchTypes) {
-        this(searchScopes,
-	     preferredSearchScopeType,
-	     basicSearchCriteria,
-	     extraSearchTypes,
-	     true,
-             basicSearchCriteria.isSearchAndReplace());
+    public SearchPanel(boolean replacing) {
+        this.replacing = replacing;
+        init();
     }
-    
-    private SearchPanel(Map<SearchScope, Boolean> searchScopes,
-                String preferredSearchScopeType,           //may be null
-                BasicSearchCriteria basicSearchCriteria,    //may be null
-		Collection<? extends SearchType> extraSearchTypes,
-                boolean activateWithPreviousValues,
-                boolean searchAndReplace) {
-        assert (extraSearchTypes != null);
-        if (extraSearchTypes == null) {
-            extraSearchTypes = Collections.<SearchType>emptyList();
-        }
 
-        projectWide = SearchScopeRegistry.hasProjectSearchScopes(
-                                                        searchScopes.keySet());
-        this.searchAndReplace = searchAndReplace;
-        
-        /* Create panel for entering basic search criteria: */
-        basicCriteriaPanel = new BasicSearchForm(searchScopes,
-                                                 preferredSearchScopeType,
-                                                 basicSearchCriteria,
-                                                 searchAndReplace,
-                                                 activateWithPreviousValues);
-        basicCriteriaPanel.setUsabilityChangeListener(this);
-        
-        /* Create search type panels: */
+    private void init() {
+
+        List<SearchProvider.Presenter> extraPresenters = makeExtraPresenters();
+        SearchProvider basicProvider = BasicSearchProvider.getInstance();
+        final SearchProvider.Presenter basicPresenter =
+                basicProvider.createPresenter(replacing);
+
+        presenters = new LinkedList<SearchProvider.Presenter>();
+        presenters.add(basicPresenter);
         setLayout(new GridLayout(1, 1));
-        if (!extraSearchTypes.isEmpty()) {
-            
-            orderedSearchTypePanels
-                    = new ArrayList<SearchTypePanel>(extraSearchTypes.size());
-            tabbedPane = new JTabbedPane();
-            tabbedPane.add(basicCriteriaPanel);
-            
-            Set<String> processedClassNames = new HashSet<String>();
-            for (SearchType searchType : extraSearchTypes) {
-                String className = searchType.getClass().getName();
-                if (!processedClassNames.add(className)) {
-                    continue;
-                }
 
-                SearchTypePanel newPanel = new SearchTypePanel(searchType);
-                int index = orderedSearchTypePanels.indexOf(newPanel);
-                if (index != -1) {
-                    continue;
-                }
-                
-                orderedSearchTypePanels.add(newPanel);
-                newPanel.addPropertyChangeListener(this);
-                
-                tabbedPane.add(newPanel);
-            }
-            
-            add(tabbedPane);
-            
-            // initial selection
-            int tabIndex = 0;              //prevents bug #43843 ("AIOOBE after push button Modify Search")       
-            /*
-             * we will use activateWithPreviousValues for the decision 
-             * whether to pre-select the last selected tab 
-             * (with the last used SearchType) or not.
-             */        
-            if (activateWithPreviousValues) {
-                int searchTypeIndex = getIndexOfSearchType(
-                            FindDialogMemory.getDefault().getLastSearchType());
-                tabIndex = searchTypeIndex + 1;
-                /* if searchTypeIndex is -1, then tabIndex is 0 */
-            }
-            tabbedPane.setSelectedIndex(tabIndex);
-            updateFirstTabText();
-            updateExtraTabsTexts();
+        if (extraPresenters.isEmpty()) {
+            add(basicPresenter.createForm());
         } else {
-            orderedSearchTypePanels = null;
-            tabbedPane = null;
-            
-            add(basicCriteriaPanel);
+
+            tabbedPane = new JTabbedPane();
+            tabbedPane.add(basicPresenter.createForm());
+
+            for (SearchProvider.Presenter presenter : extraPresenters) {
+                tabbedPane.add(presenter.createForm());
+                presenters.add(presenter);
+            }
+            tabbedPane.addChangeListener(new ChangeListener() {
+
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    tabChanged();
+                }
+            });
+            add(tabbedPane);
+            // TODO select last opened tab.
         }
-        
-        setName(NbBundle.getMessage(SearchPanel.class,
-                                    "TEXT_TITLE_CUSTOMIZE"));           //NOI18N
 
-        Mnemonics.setLocalizedText(okButton = new JButton(),
-                                   NbBundle.getMessage(
-                                            SearchPanel.class,
-                                            "TEXT_BUTTON_SEARCH"));     //NOI18N
-        updateIsCustomized();
+        selectedPresenter = basicPresenter;
 
-        Mnemonics.setLocalizedText(cancelButton = new JButton(),
-                                   NbBundle.getMessage(
-                                            SearchPanel.class,
-                                            "TEXT_BUTTON_CANCEL"));     //NOI18N
+        for (final SearchProvider.Presenter p : presenters) {
+            p.addUsabilityChangeListener(new ChangeListener() {
 
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    okButton.setEnabled(p.isUsable());
+                }
+            });
+        }
+        initLocalStrings();
         initAccessibility();
     }
-        
-    /**
-     * This method is called when the Search or Close button is pressed.
-     * It closes the Find dialog, cleans up the individual panels
-     * and sets the return status.
-     *
-     * @see  #getReturnStatus
-     */
-    public void actionPerformed(final ActionEvent evt) {
-        doClose(evt.getSource() == okButton ? RET_OK : RET_CANCEL);
-    }
-    
-    SearchScope getSearchScope() {
-        return basicCriteriaPanel.getSelectedSearchScope();
-    }
-    
-    /**
-     * Returns basic criteria entered in the Find dialog.
-     * 
-     * @return  basic criteria specified in the Find dialog, or {@code null}
-     *          if no basic criteria are specified or if the criteria
-     *          are not valid (e.g. if an invalid search pattern is specified)
-     */
-    BasicSearchCriteria getBasicSearchCriteria() {
-        BasicSearchCriteria basicCriteria
-                = basicCriteriaPanel.getBasicSearchCriteria();
-        return basicCriteria.isUsable() ? basicCriteria : null;
-    }
-    
-    /**
-     */
-    List<SearchType> getSearchTypes() {
-        List<SearchType> result;
-        if (orderedSearchTypePanels == null) {
-            result = Collections.<SearchType>emptyList();
-        } else {
-            result = new ArrayList<SearchType>(orderedSearchTypePanels.size());
-            for (SearchTypePanel searchTypePanel : orderedSearchTypePanels) {
-                result.add(searchTypePanel.getSearchType());
-            }
-        }
-        return result;
+
+    private void initLocalStrings() throws MissingResourceException {
+        setName(NbBundle.getMessage(SearchPanel.class,
+                "TEXT_TITLE_CUSTOMIZE"));           //NOI18N
+
+        Mnemonics.setLocalizedText(okButton = new JButton(),
+                NbBundle.getMessage(
+                org.netbeans.modules.search.SearchPanel.class,
+                "TEXT_BUTTON_SEARCH"));     //NOI18N
+
+        Mnemonics.setLocalizedText(cancelButton = new JButton(),
+                NbBundle.getMessage(
+                org.netbeans.modules.search.SearchPanel.class,
+                "TEXT_BUTTON_CANCEL"));     //NOI18N
     }
 
     private void initAccessibility() {
-        this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchPanel.class).getString("ACS_SearchPanel")); // NOI18N         
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "ACS_SearchPanel")); // NOI18N
         if (tabbedPane != null) {
-            tabbedPane.getAccessibleContext().setAccessibleName(NbBundle.getBundle(SearchPanel.class).getString("ACSN_Tabs")); // NOI18N         
-            tabbedPane.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchPanel.class).getString("ACSD_Tabs")); // NOI18N         
+            tabbedPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchPanel.class, "ACSN_Tabs")); // NOI18N
+            tabbedPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "ACSD_Tabs")); // NOI18N
         }
-        okButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchPanel.class).getString("ACS_TEXT_BUTTON_SEARCH")); // NOI18N         
-        cancelButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchPanel.class).getString("ACS_TEXT_BUTTON_CANCEL")); // NOI18N         
-    }
-    
-    private JTabbedPane tabbedPane;
-
-    /** @return name of criterion at index is modified. */
-    private String getTabText(int index) {
-        String text;
-        if (index == 0) {
-            text = NbBundle.getMessage(getClass(),
-                                       "BasicSearchForm.tabText");      //NOI18N
-            if (basicCriteriaPanel.getBasicSearchCriteria().isUsable()) {
-                text = text + " *";                                     //NOI18N
-            }
-        } else {
-            text = orderedSearchTypePanels.get(index - 1).getName(); 
-        }
-        return text;
+        okButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "ACS_TEXT_BUTTON_SEARCH")); // NOI18N
+        cancelButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "ACS_TEXT_BUTTON_CANCEL")); // NOI18N
     }
 
     /**
-     * Gets array of customized search types.
-     *
-     * @return current state of customized search types.
+     * Make list of presenters created for all available search providers.
      */
-    List<SearchType> getCustomizedSearchTypes() {
-        if (orderedSearchTypePanels == null) {
-            return Collections.<SearchType>emptyList();
-        }
-        
-        List<SearchType> searchTypeList
-                = new ArrayList<SearchType>(orderedSearchTypePanels.size());
-        for (SearchTypePanel searchTypePanel : orderedSearchTypePanels) {
-            if (searchTypePanel.isCustomized()) {
-                searchTypeList.add(searchTypePanel.getSearchType());
+    private List<SearchProvider.Presenter> makeExtraPresenters() {
+
+        List<SearchProvider.Presenter> extraPresenters =
+                new LinkedList<SearchProvider.Presenter>();
+        for (SearchProvider p :
+                Lookup.getDefault().lookupAll(SearchProvider.class)) {
+            if ((!replacing || p.isReplaceSupported()) && p.isEnabled()) {
+                extraPresenters.add(p.createPresenter(replacing));
             }
         }
-        return searchTypeList;
-    }
-    
-    /**
-     * Getter for return status property.
-     *
-     * @return the return status of this dialog - one of RET_OK or RET_CANCEL
-     */
-    public int getReturnStatus () {
-        return returnStatus;
+        return extraPresenters;
     }
 
-    /** Closes dialog. */
-    private void doClose(int returnStatus) {
+    public void showDialog() {
 
-        if (orderedSearchTypePanels != null) {
-            for (SearchTypePanel panel : orderedSearchTypePanels) {
-                panel.removePropertyChangeListener(this);
-            }
-        }
-        
-        int selectedIndex = (tabbedPane == null) ? 0
-                                                 : tabbedPane.getSelectedIndex();
-        if (selectedIndex == 0) {
-            if (returnStatus == RET_OK) {
-                FindDialogMemory.getDefault().setLastUsedSearchType(null);
-                basicCriteriaPanel.onOk();
-            }
-        } else if (selectedIndex > 0) {
-            SearchTypePanel panel = getSearchTypePanel(selectedIndex);
-            if (returnStatus == RET_OK){
-                FindDialogMemory.getDefault().setLastUsedSearchType(panel.getSearchType());
-                panel.onOk();                
-            } else {
-                panel.onCancel();
-            }
-        }
-                          
-        this.returnStatus = returnStatus;
-
-        dialog.setVisible(false);
-        dialog.dispose();
-    }
-
-    /**
-     * Shows dialog created from {@code DialogDescriptor} which wraps this instance.
-     */
-    void showDialog()  {
-	String titleMsgKey = projectWide
-                             ? (searchAndReplace
-                                          ? "LBL_ReplaceInProjects"     //NOI18N
-                                          : "LBL_FindInProjects")       //NOI18N
-                             : (searchAndReplace
-                                          ? "LBL_ReplaceInFiles"        //NOI18N
-                                          : "LBL_FindInFiles");         //NOI18N
+        String titleMsgKey = projectWide
+                ? (replacing
+                ? "LBL_ReplaceInProjects" //NOI18N
+                : "LBL_FindInProjects") //NOI18N
+                : (replacing
+                ? "LBL_ReplaceInFiles" //NOI18N
+                : "LBL_FindInFiles");         //NOI18N
 
         DialogDescriptor dialogDescriptor = new DialogDescriptor(
-            this, 
-            NbBundle.getMessage(getClass(), titleMsgKey),
-            true, 
-            new Object[] {okButton, cancelButton}, 
-            okButton,
-            DialogDescriptor.BOTTOM_ALIGN, 
-            new HelpCtx(getClass().getCanonicalName() + "." + new Boolean(searchAndReplace).toString()),
-            this);
+                this,
+                NbBundle.getMessage(getClass(), titleMsgKey),
+                false,
+                new Object[]{okButton, cancelButton},
+                okButton,
+                DialogDescriptor.BOTTOM_ALIGN,
+                new HelpCtx(getClass().getCanonicalName() + "." + replacing),
+                this);
+
         dialogDescriptor.setTitle(NbBundle.getMessage(getClass(), titleMsgKey));
 
         dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-        dialog.setModal(true);
-        if (tabbedPane != null) {
-            tabbedPane.addFocusListener(this);
-        }
-        
+        dialog.addWindowListener(new DialogCloseListener());
+
         dialog.pack();
-        dialog.setVisible(true);
+        dialog.setVisible(
+                true);
+        dialog.requestFocus();
+        setCurrentlyShown(this);
     }
 
-    /**
-     * This method is called when the tabbed pane gets focus after the Find
-     * dialog is displayed.
-     * It lets the first tab to initialize focus.
-     */
+    @Override
     public void focusGained(FocusEvent e) {
-        assert tabbedPane != null;
-        
-        tabbedPane.removeFocusListener(this);
-
-        Component defaultComp = null;
-        int selectedIndex = tabbedPane.getSelectedIndex();
-        if (selectedIndex == 0) {
-            defaultComp = basicCriteriaPanel;
-        } else if (selectedIndex > 0) {
-            SearchTypePanel panel = getSearchTypePanel(selectedIndex);
-            if (panel != null) {
-                defaultComp = panel.customizerComponent;       //may be null
-            }
-        }
-        if (defaultComp != null) {
-            defaultComp.requestFocusInWindow();
-        }
-
-        tabbedPane.addChangeListener(this);
+        // Tab changed
+        tabChanged();
     }
-    
-    /**
-     * This method is called when the tabbed pane looses focus.
-     * It does nothing and it is here just because this class declares that
-     * it implements the <code>FocusListener</code> interface.
-     *
-     * @see  #focusGained(FocusEvent)
-     */
+
+    @Override
     public void focusLost(FocusEvent e) {
-        //does nothing
-    }
-            
-    /**
-     * This method is called when tab selection changes and when values entered
-     * in the form for basic criteria become valid or invalid.
-     * Depending on the trigger, it either updates state of the <em>Find</em>
-     * button (enabled/disabled)
-     * or initializes the customizer below the selected tab.
-     * 
-     * @see  #updateIsCustomized()
-     * @see  #tabSelectionChanged()
-     */
-    public void stateChanged(ChangeEvent e) {
-        if (e.getSource() == basicCriteriaPanel) {
-            updateIsCustomized();
-            if (tabbedPane != null) {
-                updateFirstTabText();
-            }
-        } else {
-            tabSelectionChanged();
-        }
+        // Tab changed
+        tabChanged();
     }
 
     /**
-     * Called when a different tab is selected or when a tab becomes customized
-     * or uncustomized.
+     * Called when tab panel was changed.
      */
-    public void propertyChange(PropertyChangeEvent event) {
-        if(SearchTypePanel.PROP_CUSTOMIZED.equals(event.getPropertyName())) {
-            updateIsCustomized();
-            if (tabbedPane != null) {
-                updateExtraTabsTexts();
+    private void tabChanged() {
+        if (tabbedPane != null) {
+            int i = tabbedPane.getSelectedIndex();
+            SearchProvider.Presenter p = presenters.get(i);
+            selectedPresenter = p;
+            okButton.setEnabled(p.isUsable());
+        }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == okButton) {
+            search();
+        } else if (e.getSource() == cancelButton) {
+            cancel();
+        }
+    }
+
+    private void search() {
+
+        if (selectedPresenter != null) {
+            SearchComposition<?> sc = selectedPresenter.composeSearch();
+            if (sc != null) {
+                SearchTask st = new SearchTask(sc, replacing);
+                Manager.getInstance().scheduleSearchTask(st);
+                close();
             }
         }
     }
 
-    /**
-     * Updates label of the first tab.
-     * 
-     * @see  #updateExtraTabsTexts
-     */
-    private void updateFirstTabText() {
-        assert tabbedPane != null;
-        tabbedPane.setTitleAt(0, getTabText(0));
+    private void cancel() {
+        close();
     }
 
     /**
-     * Updates labels of all tabs except the first one.
-     * 
-     * @see  #updateFirstTabText
+     * Is this panel in search-and-replace mode?
      */
-    private void updateExtraTabsTexts() {
-        assert tabbedPane != null;
-        int tabCount = tabbedPane.getTabCount();
-        for (int i = 1; i < tabCount; i++) {
-            tabbedPane.setTitleAt(i, getTabText(i));
-        }
+    boolean isSearchAndReplace() {
+        return replacing;
     }
-    
-    /**
-     * Updates state of the <em>Find</em> dialog (enabled/disabled),
-     * depending on values entered in the form.
-     */
-    private void updateIsCustomized() {
-        okButton.setEnabled(checkIsCustomized());
-    }
-    
-    /**
-     * Checks whether valid criteria are entered in at least one criteria panel.
-     * 
-     * @return  {@code true} if some applicable criteria are entered,
-     *          {@code false} otherwise
-     */
-    private boolean checkIsCustomized() {
-        if (basicCriteriaPanel.isUsable()) {
-            return true;
-        }
-        
-        if ((orderedSearchTypePanels != null)
-                && !orderedSearchTypePanels.isEmpty()) {
-            for (SearchTypePanel searchTypePanel : orderedSearchTypePanels) {
-                if (searchTypePanel.isCustomized()) {
-                    return true;
-                }
-            }
-        }
-        
-        return false;
-    }
-    
-    private void tabSelectionChanged() {
-        assert tabbedPane != null;
 
-        int selectedIndex = tabbedPane.getSelectedIndex();
-        if (selectedIndex == 0) {
-            //basicCriteriaPanel.setCriteria(/*PENDING*/);
-        } else if (selectedIndex > 0) {
-            SearchTypePanel panel = getSearchTypePanel(selectedIndex);
-            if (panel != null) {
-                panel.initializeWithObject();
-            }
-        }
-    }
-   
     /**
-     * Gets a <code>SearchTypePanel</code> for the given tab index.
+     * Close this search panel - dispose its containig dialog.
      *
-     * @param  index  index of the tab to get the panel from
-     * @return  <code>SearchTypePanel</code> at the given tab;
-     *          or <code>null</code> if there is none at the given tab index
+     * {@link DialogCloseListener#windowClosed(java.awt.event.WindowEvent)} will
+     * be called afterwards.
      */
-    private SearchTypePanel getSearchTypePanel(int index) {
-        assert orderedSearchTypePanels != null;
-        assert index >= 1;
+    public void close() {
+        if (dialog != null) {
+            dialog.dispose();
+            dialog = null;
+        }
+    }
 
-        return (--index < orderedSearchTypePanels.size())
-               ? orderedSearchTypePanels.get(index)
-               : null;
-    }
-    
     /**
-     * Gets the index for the the given {@code SearchType}
-     *
-     * @param searchTypeToFind {@code SearchType} to get the index for.        
-     * @return  index of the given {@code SearchType}, or {@code -1}
-     *          if the given search type is {@code null} or if it is not present
-     *          in the list of used search types
+     * Focus containig dialog.
      */
-    private int getIndexOfSearchType(SearchType searchTypeToFind) {                        
-        
-        if(searchTypeToFind==null){
-            return -1;
+    void focusDialog() {
+        if (dialog != null) {
+            dialog.requestFocus();
         }
-        
-        int index = -1;
-        for (SearchTypePanel searchTypePanel : orderedSearchTypePanels) {
-            index++;
-            
-            if(searchTypePanel.getSearchType().getClass() == searchTypeToFind.getClass()){
-                return index;
-            }            
-        }
-        
-        return -1;
     }
-    
+
+    /**
+     * Get currently displayed search panel, or null if no panel is shown.
+     */
+    static SearchPanel getCurrentlyShown() {
+        synchronized (SearchPanel.class) {
+            return currentlyShown;
+        }
+    }
+
+    /**
+     * Set currently shoen panel, can be null (no panel shown currently.)
+     */
+    static void setCurrentlyShown(SearchPanel searchPanel) {
+        synchronized (SearchPanel.class) {
+            SearchPanel.currentlyShown = searchPanel;
+        }
+    }
+
+    /**
+     * Dialog-Close listener that clears reference to currently displayed panel
+     * when its dialog is closed.
+     */
+    private class DialogCloseListener extends WindowAdapter {
+
+        @Override
+        public void windowClosed(WindowEvent e) {
+            for (SearchProvider.Presenter presenter : presenters) {
+                presenter.clean();
+            }
+            if (getCurrentlyShown() == SearchPanel.this) {
+                setCurrentlyShown(null);
+            }
+        }
+    }
 }

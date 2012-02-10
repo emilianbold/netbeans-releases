@@ -57,18 +57,19 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
+import org.netbeans.api.search.SearchHistory;
+import org.netbeans.api.search.SearchPattern;
+import org.netbeans.modules.search.ui.FormLayoutHelper;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openidex.search.SearchHistory;
-import org.openidex.search.SearchPattern;
 
 /**
  * Base class for pattern sandboxes.
  *
  * @author jhavlin
  */
-abstract class PatternSandbox extends JPanel
+public abstract class PatternSandbox extends JPanel
         implements HierarchyListener {
 
     protected JComboBox cboxPattern;
@@ -786,7 +787,7 @@ abstract class PatternSandbox extends JPanel
         }
     }
 
-    static void openDialog(PatternSandbox sandbox, JComponent baseComponent) {
+    public static void openDialog(PatternSandbox sandbox, JComponent baseComponent) {
 
         JDialog jd = new JDialog(
                 (JDialog) SwingUtilities.getAncestorOfClass(

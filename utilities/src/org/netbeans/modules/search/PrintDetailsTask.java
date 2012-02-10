@@ -51,7 +51,6 @@ import java.util.List;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.windows.OutputWriter;
-import org.openidex.search.SearchType;
 
 /**
  *
@@ -66,8 +65,6 @@ final class PrintDetailsTask implements Runnable {
     /** */
     private final BasicSearchCriteria basicSearchCriteria;
     /** */
-    private final List<SearchType> searchTypes;
-    /** */
     private final Node[] buffer = new Node[BUFFER_SIZE];
     /** position of the first free item in the buffer */
     private int bufPos = 0;
@@ -75,17 +72,14 @@ final class PrintDetailsTask implements Runnable {
     private SearchDisplayer displayer;
     /** */
     private volatile boolean interrupted = false;
-    
-    
+
     /** Creates a new instance of PrintDetailsTask */
     PrintDetailsTask(final List<MatchingObject> matchingObjects,
-                     final BasicSearchCriteria basicCriteria,
-                     final List<SearchType> searchTypes) {
+                     final BasicSearchCriteria basicCriteria) {
         this.objects = matchingObjects;
         this.basicSearchCriteria = basicCriteria;
-        this.searchTypes = searchTypes;
     }
-    
+
     /** */
     @Override
     public void run() {
@@ -98,23 +92,9 @@ final class PrintDetailsTask implements Runnable {
             /* Collect details about the found node: */
             Node[] allDetails = null;
             if (basicSearchCriteria != null) {
-                Node[] details =
-                        basicSearchCriteria.getDetails(obj.getFileObject());
+                Node[] details = obj.getDetails();
                 if (details != null && details.length != 0) {
                     allDetails = details;
-                }
-            }
-            if (!searchTypes.isEmpty()) {
-                for (SearchType searchType : searchTypes) {
-                    Node[] details = searchType.getDetails(obj);
-                    if (details == null || details.length == 0) {
-                        continue;
-                    }
-                    if (allDetails == null) {
-                        allDetails = details;
-                    } else {
-                        allDetails = concatNodeArrays(allDetails, details);
-                    }
                 }
             }
             if (allDetails == null) {

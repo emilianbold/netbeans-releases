@@ -76,7 +76,7 @@ final class Item {
         }
         FileObject fo = matchingObj.getFileObject();
         List<TextDetail> textDetails
-            = resultModel.basicCriteria.getTextDetails(fo);
+            = matchingObj.getTextDetails();
         return detailIndex < textDetails.size()
                ? textDetails.get(detailIndex)
                : null;

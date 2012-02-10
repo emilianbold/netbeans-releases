@@ -46,45 +46,34 @@ package org.netbeans.modules.search;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.ItemSelectable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.HierarchyEvent;
-import static java.awt.event.HierarchyEvent.DISPLAYABILITY_CHANGED;
-import java.awt.event.HierarchyListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.openide.ErrorManager;
-import org.openide.awt.Mnemonics;
+import org.netbeans.api.search.SearchHistory;
+import org.netbeans.api.search.SearchPattern;
+import org.netbeans.api.search.ui.ComponentFactory;
+import org.netbeans.api.search.ui.FileNameComboBox;
+import org.netbeans.api.search.ui.ScopeSettingsPanel;
+import org.netbeans.modules.search.ui.CheckBoxWithButtonPanel;
+import org.netbeans.modules.search.ui.FormLayoutHelper;
+import org.netbeans.modules.search.ui.PatternChangeListener;
+import org.netbeans.modules.search.ui.TextFieldFocusListener;
+import org.netbeans.modules.search.ui.UiUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
-import org.openidex.search.SearchHistory;
-import org.openidex.search.SearchPattern;
 
 /**
  *
@@ -92,26 +81,16 @@ import org.openidex.search.SearchPattern;
  */
 final class BasicSearchForm extends JPanel implements ChangeListener,
                                                       ItemListener {
-    public static final String HTML_LINK_PREFIX =
-            "<html><u><a href=\"#\">";                                  //NOI18N
-    public static final String HTML_LINK_SUFFIX = "</a></u></html>";    //NOI18N
-    
-    private final BasicSearchCriteria searchCriteria;
-    private final Map<SearchScope, Boolean> searchScopes;
+
     private final String preferredSearchScopeType;
-    private SearchScope selectedSearchScope;
     private ChangeListener usabilityChangeListener;
+    private BasicSearchCriteria searchCriteria = new BasicSearchCriteria();
 
     /** Creates new form BasicSearchForm */
     BasicSearchForm(Map<SearchScope, Boolean> searchScopes,
                     String preferredSearchScopeType,
-		    BasicSearchCriteria criteria,
-		    boolean searchAndReplace,
-                    boolean usePreviousValues) {
-        this.searchCriteria = (criteria != null)
-                              ? criteria
-                              : new BasicSearchCriteria();
-        this.searchScopes = searchScopes;
+		    boolean searchAndReplace) {
+
         this.preferredSearchScopeType = preferredSearchScopeType;
         initComponents(searchAndReplace);
         initAccessibility(searchAndReplace);
@@ -124,7 +103,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
              * BasicSearchCriteria.isSearchAndReplace() would return 'false'. */
             searchCriteria.setReplaceExpr("");                        //NOI18N
         }
-        setValuesOfComponents(usePreviousValues, searchAndReplace);
+        setValuesOfComponents(false, searchAndReplace); // TODO allow previous values, maybe
     }
 
     /**
@@ -143,7 +122,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             initValuesFromHistory(searchAndReplace);
         }
         updateTextPatternColor();
-        updateFileNamePatternColor();
         if (searchAndReplace) {
             updateReplacePatternColor();
         }
@@ -201,17 +179,15 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         }
 
         lblScope = new JLabel();
-        cboxScope = new JComboBox();
-        cboxScope.setEditable(false);
+        cboxScope = new ScopeComboBox(preferredSearchScopeType);
         lblScope.setLabelFor(cboxScope);
 
         lblFileNamePattern = new JLabel();
-        cboxFileNamePattern = new JComboBox();
+        cboxFileNamePattern =
+                ComponentFactory.getDefault().createFileNameComboBox();
         cboxFileNamePattern.setEditable(true);
         lblFileNamePattern.setLabelFor(cboxFileNamePattern);        
-        btnTestFileNamePattern = new JButton();
-
-        chkFileNameRegex = new JCheckBox();
+        
         chkWholeWords = new JCheckBox();
         chkCaseSensitive = new JCheckBox();
         chkRegexp = new JCheckBox();
@@ -219,17 +195,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         TextPatternCheckBoxGroup.bind(
                 chkCaseSensitive, chkWholeWords, chkRegexp, chkPreserveCase);
 
-        if (!searchAndReplace) {
-            chkArchives = new JCheckBox();
-            chkArchives.setEnabled(false); // not implemented yet
-            chkGenerated = new JCheckBox();
-            chkGenerated.setEnabled(false); // not implemented yet
-        }
-        chkUseIgnoreList = new JCheckBox();
-        btnEditIgnoreList = new JButton();
-
         setMnemonics(searchAndReplace);
-        initIgnoreListControlComponents();
+        
         initFormPanel(searchAndReplace);
         this.add(formPanel);
 
@@ -237,8 +204,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         Component cboxEditorComp;
         cboxEditorComp = cboxTextToFind.getEditor().getEditorComponent();
         textToFindEditor = (JTextComponent) cboxEditorComp;
-        cboxEditorComp = cboxFileNamePattern.getEditor().getEditorComponent();
-        fileNamePatternEditor = (JTextComponent) cboxEditorComp;
         if (cboxReplacement != null) {
             cboxEditorComp = cboxReplacement.getEditor().getEditorComponent();
             replacementPatternEditor = (JTextComponent) cboxEditorComp;
@@ -257,52 +222,9 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         if (searchAndReplace) {
             formPanel.addRow(lblReplacement, cboxReplacement);
         }
-        initScopeRow();
         formPanel.addRow(lblScope, cboxScope);
         formPanel.addRow(lblFileNamePattern, cboxFileNamePattern);
         initScopeOptionsRow(searchAndReplace);
-    }
-
-    /**
-     * Initialize ignoreListOptionPanel and related control components.
-     */
-    private void initIgnoreListControlComponents() {
-        ignoreListOptionPanel = new CheckBoxWithButtonPanel(chkUseIgnoreList,
-                btnEditIgnoreList);
-    }
-
-    /**
-     * Add row with selection of scope to the form panel.
-     */
-    protected final void initScopeRow() {
-
-        for (Map.Entry<SearchScope, Boolean> e : orderSearchScopes()) {
-            if (e.getValue()) { // add only enabled search scopes
-                SearchScope ss = e.getKey();
-                ScopeItem si = new ScopeItem(ss);
-                cboxScope.addItem(si);
-                if (selectedSearchScope == null) {
-                    if (ss.getTypeId().equals(preferredSearchScopeType)) {
-                        selectedSearchScope = ss;
-                        cboxScope.setSelectedItem(si);
-                    }
-                }
-            }
-        }
-        if (selectedSearchScope == null) {
-            ScopeItem si = (ScopeItem) cboxScope.getItemAt(0);
-            selectedSearchScope = si.getSearchScope();
-            cboxScope.setSelectedIndex(0);
-        }
-        cboxScope.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ScopeItem item = (ScopeItem) cboxScope.getSelectedItem();
-                selectedSearchScope = item.getSearchScope();
-                stateChanged(null);
-            }
-        });
     }
 
     /**
@@ -332,53 +254,35 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         }
     }
 
-    /**
-     * Initialize panel for controls for scope options and add it to the form
-     * panel.
-     */
     private void initScopeOptionsRow(boolean searchAndReplace) {
-
-        JPanel jp = new JPanel();
-        if (searchAndReplace) {
-            jp.setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
-            jp.add(ignoreListOptionPanel);
-            jp.add(chkFileNameRegex);
-            jp.setMaximumSize(jp.getMinimumSize());
-        } else {
-            FormLayoutHelper flh = new FormLayoutHelper(jp,
-                    FormLayoutHelper.DEFAULT_COLUMN,
-                    FormLayoutHelper.DEFAULT_COLUMN);
-            flh.addRow(chkArchives, chkGenerated);
-            flh.addRow(ignoreListOptionPanel,
-                    new CheckBoxWithButtonPanel(
-                    chkFileNameRegex, btnTestFileNamePattern));
-            jp.setMaximumSize(jp.getMinimumSize());
-        }
-        formPanel.addRow(new JLabel(), jp);
+        this.scopeSettingsPanel =
+                ComponentFactory.getDefault().createScopeSettingsPanel(
+                searchAndReplace, cboxFileNamePattern);
+        formPanel.addRow(new JLabel(), scopeSettingsPanel);
     }
 
     /**
      */
     private void initAccessibility(boolean searchAndReplace) {
         chkCaseSensitive.getAccessibleContext().setAccessibleDescription(
-                getText(
+                UiUtils.getText(
                 "BasicSearchForm.chkCaseSensitive."                     //NOI18N
                 + "AccessibleDescription"));                            //NOI18N
         chkRegexp.getAccessibleContext().setAccessibleDescription(
-                getText(
+                UiUtils.getText(
                 "BasicSearchForm.chkRegexp."                            //NOI18N
                 + "AccessibleDescription"));                            //NOI18N
         chkWholeWords.getAccessibleContext().setAccessibleDescription(
-                getText(
+                UiUtils.getText(
                 "BasicSearchForm.chkWholeWords."                        //NOI18N
                 + "AccessibleDescription"));                            //NOI18N
         if (searchAndReplace) {
             cboxReplacement.getAccessibleContext().setAccessibleDescription(
-                    getText(
+                    UiUtils.getText(
                     "BasicSearchForm.cbox.Replacement."                 //NOI18N
                     + "AccessibleDescription"));                        //NOI18N
             chkPreserveCase.getAccessibleContext().setAccessibleDescription(
-                    getText(
+                    UiUtils.getText(
                     "BasicSearchForm.chkPreserveCase."                  //NOI18N
                     + "AccessibleDescription"));                        //NOI18N
         }
@@ -398,12 +302,13 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         chkWholeWords.setSelected(searchCriteria.isWholeWords());
         chkCaseSensitive.setSelected(searchCriteria.isCaseSensitive());
         chkRegexp.setSelected(searchCriteria.isRegexp());
-        chkFileNameRegex.setSelected(searchCriteria.isFileNameRegexp());
-        chkUseIgnoreList.setSelected(searchCriteria.isUseIgnoreList());
-
         selectChk(chkPreserveCase, searchCriteria.isPreserveCase());
-        selectChk(chkArchives, searchCriteria.isSearchInArchives());
-        selectChk(chkGenerated, searchCriteria.isSearchInGenerated());
+        scopeSettingsPanel.setFileNameRegexp(searchCriteria.isFileNameRegexp());
+        scopeSettingsPanel.setUseIgnoreList(searchCriteria.isUseIgnoreList());
+        scopeSettingsPanel.setSearchInArchives(
+                searchCriteria.isSearchInArchives());
+        scopeSettingsPanel.setSearchInGenerated(
+                searchCriteria.isSearchInGenerated());
     }
 
     private static void selectChk(JCheckBox checkbox, boolean value) {
@@ -424,25 +329,16 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             replacementPatternEditor.addFocusListener(focusListener);
         }
 
-        fileNamePatternWatcher = 
-                new FileNamePatternWatcher(fileNamePatternEditor);        
-        fileNamePatternEditor.addFocusListener(fileNamePatternWatcher);
-        fileNamePatternEditor.addHierarchyListener(fileNamePatternWatcher);
-        
         textToFindEditor.getDocument().addDocumentListener(
-                new PatternChangeListener(cboxTextToFind));
-        fileNamePatternEditor.getDocument().addDocumentListener(
-                new PatternChangeListener(cboxFileNamePattern));
+                new TextToFindChangeListener());
         if (replacementPatternEditor != null) {
             replacementPatternEditor.getDocument().addDocumentListener(
-                    new PatternChangeListener(cboxReplacement));
+                    new ReplacementPatternListener());
         }
         
         chkRegexp.addItemListener(this);
         chkCaseSensitive.addItemListener(this);
         chkWholeWords.addItemListener(this);
-        chkFileNameRegex.addItemListener(this);
-        chkUseIgnoreList.addItemListener(this);
 
         boolean regexp = chkRegexp.isSelected();
         boolean caseSensitive = chkCaseSensitive.isSelected();
@@ -450,23 +346,37 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         if (searchAndReplace) {
             chkPreserveCase.addItemListener(this);
             chkPreserveCase.setEnabled(!regexp && !caseSensitive);
-        } else {
-            chkArchives.addItemListener(this);
-            chkGenerated.addItemListener(this);
         }
         searchCriteria.setUsabilityChangeListener(this);
 
+        scopeSettingsPanel.addSettingsChangeListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                searchCriteria.setSearchInArchives(
+                        scopeSettingsPanel.isSearchInArchives());
+                searchCriteria.setSearchInGenerated(
+                        scopeSettingsPanel.isSearchInGenerated());
+                searchCriteria.setUseIgnoreList(
+                        scopeSettingsPanel.isUseIgnoreList());
+            }
+        });
+
+        cboxFileNamePattern.addPatternChangeListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                searchCriteria.setFileNamePattern(
+                        cboxFileNamePattern.getFileNamePattern());
+                searchCriteria.setFileNameRegexp(
+                        cboxFileNamePattern.isRegularExpression());
+            }
+        });
         initButtonInteraction();
     }
 
     private void initButtonInteraction() {
-        btnTestFileNamePattern.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                openPathPatternSandbox();
-            }
-        });
+       
         btnTestTextToFind.addActionListener(new ActionListener() {
 
             @Override
@@ -474,36 +384,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                 openTextPatternSandbox();
             }
         });
-        btnEditIgnoreList.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                IgnoreListPanel.openDialog(btnEditIgnoreList);
-            }
-        });
-    }
-
-    private void openPathPatternSandbox() {
-
-        PatternSandbox.openDialog(new PatternSandbox.PathPatternSandbox(
-                cboxFileNamePattern.getSelectedItem() == null
-                ? "" : (String) cboxFileNamePattern.getSelectedItem()){ //NOI18N
-
-            @Override
-            protected void onApply(String pattern) {
-                if (pattern.isEmpty()) {
-                    if (!fileNamePatternWatcher.infoDisplayed) {
-                        cboxFileNamePattern.setSelectedItem(pattern);
-                        fileNamePatternWatcher.displayInfo();
-                    }
-                } else {
-                    if (fileNamePatternWatcher.infoDisplayed) {
-                        fileNamePatternWatcher.hideInfo();
-                    }
-                    cboxFileNamePattern.setSelectedItem(pattern);
-                }
-            }
-        }, btnTestFileNamePattern);
     }
 
     private void openTextPatternSandbox() {
@@ -577,13 +457,15 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         chkWholeWords.setSelected(memory.isWholeWords());
         chkCaseSensitive.setSelected(memory.isCaseSensitive());
         chkRegexp.setSelected(memory.isRegularExpression());
-        chkFileNameRegex.setSelected(memory.isFilePathRegex());
-        chkUseIgnoreList.setSelected(memory.IsUseIgnoreList());
+
+        scopeSettingsPanel.setFileNameRegexp(memory.isFilePathRegex());
+        scopeSettingsPanel.setUseIgnoreList(memory.IsUseIgnoreList());
         if (searchAndReplace) {
             chkPreserveCase.setSelected(memory.isPreserveCase());
         } else {
-            chkArchives.setSelected(memory.isSearchInArchives());
-            chkGenerated.setSelected(memory.isSearchInGenerated());
+            scopeSettingsPanel.setSearchInArchives(memory.isSearchInArchives());
+            scopeSettingsPanel.setSearchInGenerated(
+                    memory.isSearchInGenerated());
         }
     }
     
@@ -614,20 +496,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             Color dfltColor = getDefaultTextColor(); // need to be here to init
             textToFindEditor.setForeground(
                     invalidTextPattern ? getErrorTextColor()
-                    : dfltColor);
-        }
-    }
-
-    /**
-     * Sets proper color of file pattern.
-     */
-    private void updateFileNamePatternColor() {
-        boolean wasInvalid = invalidFileNamePattern;
-        invalidFileNamePattern = searchCriteria.isFileNamePatternInvalid();
-        if (invalidFileNamePattern != wasInvalid) {
-            Color dfltColor = getDefaultTextColor(); // need to be here to init
-            fileNamePatternEditor.setForeground(
-                    invalidFileNamePattern ? getErrorTextColor()
                     : dfltColor);
         }
     }
@@ -721,16 +589,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             searchCriteria.setWholeWords(selected);
         } else if (toggle == chkPreserveCase) {
             searchCriteria.setPreserveCase(selected);
-        } else if (toggle == chkArchives) {
-            searchCriteria.setSearchInArchives(selected);
-        } else if (toggle == chkGenerated) {
-            searchCriteria.setSearchInGenerated(selected);
-        } else if (toggle == chkFileNameRegex) {
-            searchCriteria.setFileNameRegexp(selected);
-            updateFileNamePatternColor();
-            setFileNamePatternToolTip();
-        } else if (toggle == chkUseIgnoreList) {
-            searchCriteria.setUseIgnoreList(selected);
         } else {
             assert false;
         }
@@ -741,48 +599,11 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         if (searchCriteria.isRegexp()) {
             t = null;
         } else {
-            t = getText("BasicSearchForm.cboxTextToFind.tooltip");      //NOI18N
+            t = UiUtils.getText(
+                    "BasicSearchForm.cboxTextToFind.tooltip");          //NOI18N
         }
         cboxTextToFind.setToolTipText(t);
     }
-
-    private void setFileNamePatternToolTip() {
-        String t;
-        if (searchCriteria.isFileNameRegexp()) {
-            t = null;
-        } else {
-            t = getText("BasicSearchForm.cboxFileNamePattern.tooltip"); //NOI18N
-        }
-        cboxFileNamePattern.setToolTipText(t);
-    }
-
-    /**
-     * Moves the node selection search scope to the last position.
-     * The implementation assumes that the node selection search scope
-     * is the first search scope among all registered search scopes.
-     */
-    private Collection<Map.Entry<SearchScope, Boolean>> orderSearchScopes() {
-        Collection<Map.Entry<SearchScope, Boolean>> currentCollection
-                = searchScopes.entrySet();
-        
-        if (currentCollection.isEmpty() || (currentCollection.size() == 1)) {
-            return currentCollection;
-        }
-        
-        Collection<Map.Entry<SearchScope, Boolean>> newCollection
-                = new ArrayList<Map.Entry<SearchScope, Boolean>>(currentCollection.size());
-        Map.Entry<SearchScope, Boolean> firstEntry = null;
-        for (Map.Entry<SearchScope, Boolean> entry : currentCollection) {
-            if (firstEntry == null) {
-                firstEntry = entry;
-            } else {
-                newCollection.add(entry);
-            }
-        }
-        newCollection.add(firstEntry);
-        return newCollection;
-    }
-    
 
     /**
      * Called when the criteria in the Find dialog are confirmed by the user
@@ -801,7 +622,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             memory.setTextPatternSpecified(false);
         }
         if (searchCriteria.isFileNamePatternUsable()) {
-            memory.storeFileNamePattern(fileNamePatternEditor.getText());
+            memory.storeFileNamePattern(
+                    searchCriteria.getFileNamePatternExpr());
             memory.setFileNamePatternSpecified(true);
         } else {
             memory.setFileNamePatternSpecified(false);
@@ -816,11 +638,15 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         if (searchCriteria.isSearchAndReplace()) {
             memory.setPreserveCase(chkPreserveCase.isSelected());
         } else {
-            memory.setSearchInArchives(chkArchives.isSelected());
-            memory.setSearchInGenerated(chkGenerated.isSelected());
+            memory.setSearchInArchives(scopeSettingsPanel.isSearchInArchives());
+            memory.setSearchInGenerated(
+                    scopeSettingsPanel.isSearchInGenerated());
         }
-        memory.setFilePathRegex(chkFileNameRegex.isSelected());
-        memory.setUseIgnoreList(chkUseIgnoreList.isSelected());
+        memory.setFilePathRegex(scopeSettingsPanel.isFileNameRegExp());
+        memory.setUseIgnoreList(scopeSettingsPanel.isUseIgnoreList());
+        if (getSelectedSearchScope() != null) {
+            memory.setScopeTypeId(getSelectedSearchScope().getTypeId());
+        }
     }
 
     /**
@@ -839,18 +665,22 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     /**
      */
     SearchScope getSelectedSearchScope() {
-        assert selectedSearchScope != null;
-        return selectedSearchScope;
+        assert cboxScope.getSelectedSearchScope() != null;
+        return cboxScope.getSelectedSearchScope();
     }
-    
+
     /** */
     BasicSearchCriteria getBasicSearchCriteria() {
         return searchCriteria;
     }
     
     boolean isUsable() {
-        return (selectedSearchScope != null)
+        return (cboxScope.getSearchScopeInfo() != null)
                && searchCriteria.isUsable();
+    }
+
+    void clean() {
+        cboxScope.clean();
     }
 
     private void setMnemonics(boolean searchAndReplace) {
@@ -862,236 +692,52 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         lclz(chkWholeWords, "BasicSearchForm.chkWholeWords.text");      //NOI18N
         lclz(chkCaseSensitive, "BasicSearchForm.chkCaseSensitive.text");//NOI18N
         lclz(chkRegexp, "BasicSearchForm.chkRegexp.text");              //NOI18N
-        lclz(chkFileNameRegex, "BasicSearchForm.chkFileNameRegex.text");//NOI18N
-        btnTestTextToFind.setText(getHtmlLink(
+        
+        btnTestTextToFind.setText(UiUtils.getHtmlLink(
                 "BasicSearchForm.btnTestTextToFind.text"));             //NOI18N
-        btnTestFileNamePattern.setText(getHtmlLink(
-                "BasicSearchForm.btnTestFileNamePattern.text"));        //NOI18N
-        btnEditIgnoreList.setText(
-                getHtmlLink("BasicSearchForm.btnEditIgnoreList.text")); //NOI18N
-        lclz(chkUseIgnoreList, "BasicSearchForm.chkUseIgnoreList.text");//NOI18N
+       
 
         if (searchAndReplace) {
             lclz(lblReplacement, "BasicSearchForm.lblReplacement.text");//NOI18N
             lclz(chkPreserveCase,
                     "BasicSearchForm.chkPreserveCase.text");            //NOI18N
         } else {
-            lclz(chkArchives, "BasicSearchForm.chkArchives.text");      //NOI18N
-            lclz(chkGenerated, "BasicSearchForm.chkGenerated.text");    //NOI18N
+          
         }
         setTextToFindToolTip();
-        setFileNamePatternToolTip();
     }
 
-    /**
-     * Convenience method for setting localized text and mnemonics of buttons.
-     */
-    private void lclz(AbstractButton obj, String key) {
-        Mnemonics.setLocalizedText(obj, getText(key));
+    private void lclz(AbstractButton ab, String msg) {
+        UiUtils.lclz(ab, msg);
     }
 
-    /**
-     * Convenience method for setting localized text and mnemonics of labels
-     */
-    private void lclz(JLabel obj, String key) {
-        Mnemonics.setLocalizedText(obj, getText(key));
-    }
-    
-    /**
-     * Listener that selects all text in a text field when the text field
-     * gains permanent focus.
-     */
-    private static class TextFieldFocusListener implements FocusListener {
-
-        @Override
-        public void focusGained(FocusEvent e) {
-            if (!e.isTemporary()) {
-                JTextComponent textComp = (JTextComponent) e.getSource();
-                if (textComp.getText().length() != 0) {
-                    textComp.selectAll();
-                }
-            }
-        }
-
-        @Override
-        public void focusLost(FocusEvent e) {
-            /* do nothing */
-        }
-
+    private void lclz(JLabel l, String msg) {
+        UiUtils.lclz(l, msg);
     }
 
     private static final Logger watcherLogger = Logger.getLogger(
             "org.netbeans.modules.search.BasicSearchForm.FileNamePatternWatcher");//NOI18N
-        
-    /**
-     * Extension of the {@code TextFieldFocusListener}
-     * - besides selecting of all text upon focus gain,
-     * it displays &quot;(no files)&quot; if no file name pattern is specified.
-     * 
-     * @author  Marian Petras
-     */
-    private final class FileNamePatternWatcher extends TextFieldFocusListener
-                                               implements HierarchyListener {
-        
-        private final JTextComponent txtComp;
-        private final Document doc;
-        
-        private Color foregroundColor;
-        private String infoText;
-        private boolean infoDisplayed;
-        
-        private FileNamePatternWatcher(JTextComponent txtComp) {
-            this.txtComp = txtComp;
-            doc = txtComp.getDocument();
-        }
-        
-        @Override
-        public void hierarchyChanged(HierarchyEvent e) {
-            if ((e.getComponent() != txtComp)
-                    || ((e.getChangeFlags() & DISPLAYABILITY_CHANGED) == 0)
-                    || !txtComp.isDisplayable()) {
-                return;
-            }
-            
-            watcherLogger.finer("componentShown()");                    //NOI18N
-            if (foregroundColor == null) {
-                foregroundColor = txtComp.getForeground();
-            }
-            if ((doc.getLength() == 0) && !txtComp.isFocusOwner()) {
-                displayInfo();
-            }
-        }
-        
-        @Override
-        public void focusGained(FocusEvent e) {
-
-            /*
-             * Order of method calls hideInfo() and super.focusGained(e)
-             * is important! See bug #113202.
-             */
-
-            if (infoDisplayed) {
-                hideInfo();
-            }
-            super.focusGained(e);   //selects all text
-        }
-
-        @Override
-        public void focusLost(FocusEvent e) {
-            super.focusLost(e);     //does nothing
-            if (isEmptyText()) {
-                displayInfo();
-            }
-        }
-        
-        private boolean isEmptyText() {
-            int length = doc.getLength();
-            if (length == 0) {
-                return true;
-            }
-            
-            String text;
-            try {
-                text = doc.getText(0, length);
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-                text = null;
-            }
-            return (text != null) && (text.trim().length() == 0);
-        }
-        
-        private void displayInfo() {
-            assert ((doc.getLength() == 0) && !txtComp.isFocusOwner());
-            watcherLogger.finer("displayInfo()");                       //NOI18N
-            
-            try {
-                txtComp.setForeground(txtComp.getDisabledTextColor());
-                
-                ignoreFileNamePatternChanges = true;
-                doc.insertString(0, getInfoText(), null);
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
-                ignoreFileNamePatternChanges = false;
-                infoDisplayed = true;
-            }
-        }
-        
-        private void hideInfo() {
-            watcherLogger.finer("hideInfo()");                          //NOI18N
-            
-            txtComp.setEnabled(true);
-            try {
-                ignoreFileNamePatternChanges = true;
-                if (doc.getText(0, doc.getLength()).equals(getInfoText())) {
-                    doc.remove(0, doc.getLength());
-                }
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
-                ignoreFileNamePatternChanges = false;
-                txtComp.setForeground(foregroundColor);
-                infoDisplayed = false;
-            }
-        }
-        
-        private String getInfoText() {
-            if (infoText == null) {
-                infoText = NbBundle.getMessage(
-                        getClass(),
-                        "BasicSearchForm.cboxFileNamePattern.allFiles");//NOI18N
-            }
-            return infoText;
-        }
-        
-    }
-    
-    private String getText(String bundleKey) {
-        return NbBundle.getMessage(getClass(), bundleKey);
-    }
-
-    private String getHtmlLink(String key) {
-        return HTML_LINK_PREFIX + getText(key) + HTML_LINK_SUFFIX;
-    }
 
     private JComboBox cboxTextToFind;
     private JComboBox cboxReplacement;
-    private JComboBox cboxFileNamePattern;
+    private FileNameComboBox cboxFileNamePattern;
     private JCheckBox chkWholeWords;
     private JCheckBox chkCaseSensitive;
     private JCheckBox chkRegexp;
     private JCheckBox chkPreserveCase;
     private JTextComponent textToFindEditor;
-    private JTextComponent fileNamePatternEditor;
     private JTextComponent replacementPatternEditor;
     protected SearchFormPanel formPanel;
-    private JButton btnEditIgnoreList;
-    protected JPanel ignoreListOptionPanel;
-    protected JCheckBox chkUseIgnoreList;
-    private JCheckBox chkFileNameRegex;
     private JButton btnTestTextToFind;
-    private JButton btnTestFileNamePattern;
     private JLabel lblTextToFind;
-    private JComboBox cboxScope;
-    private JLabel lblFileNamePattern;
-    private JCheckBox chkArchives;
-    private JCheckBox chkGenerated;
+    private ScopeComboBox cboxScope;
+    private JLabel lblFileNamePattern;    
     private JLabel lblScope;
     private JLabel lblReplacement;
-    private FileNamePatternWatcher fileNamePatternWatcher;
-
     private Color errorTextColor, defaultTextColor;
     private boolean invalidTextPattern = false;
     private boolean invalidReplacePattern = false;
-    private boolean invalidFileNamePattern = false;
-    
-    /**
-     * When set to {@link true}, changes of file name pattern are ignored.
-     * This is needed when the text in the file name pattern is programatically
-     * (i.e. not by the user) set to "(all files)" and when this text is
-     * cleared (when the text field gets focus).
-     */
-    private boolean ignoreFileNamePatternChanges = false;
+    private ScopeSettingsPanel scopeSettingsPanel;
 
     /**
      * Form panel to which rows can be added.
@@ -1111,204 +757,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         public void addRow(JComponent label, JComponent component) {
 
             flh.addRow(label, component);
-        }
-    }
-
-    /**
-     * Panel for a checkbox and a button that is enbled if and only if the
-     * checkbox is selected.
-     */
-    private class CheckBoxWithButtonPanel extends JPanel
-            implements ItemListener {
-
-        private JCheckBox checkbox;
-        private JButton button;
-        private JLabel leftParenthesis;
-        private JLabel rightParenthesis;
-        private String enabledText;
-        private String disabledText;
-
-        /**
-         * Constructor.
-         *
-         *  * The text of the button must be already set.
-         *
-         * @param checkbox
-         * @param button
-         */
-        public CheckBoxWithButtonPanel(JCheckBox checkbox, JButton button) {
-            this.checkbox = checkbox;
-            this.button = button;
-            initTexts();
-            init();
-        }
-
-        /**
-         * Init panel and helper elements.
-         */
-        private void init() {
-            this.setLayout(new FlowLayout(
-                    FlowLayout.LEADING, 0, 0));
-            this.add(checkbox);
-            setLinkLikeButton(button);
-            leftParenthesis = new JLabel("(");                         // NOI18N
-            rightParenthesis = new JLabel(")");                         //NOI18N
-            add(leftParenthesis);
-            add(button);
-            add(rightParenthesis);
-            MouseListener ml = createLabelMouseListener();
-            leftParenthesis.addMouseListener(ml);
-            rightParenthesis.addMouseListener(ml);
-            button.setEnabled(false);
-
-            this.setMaximumSize(
-                    this.getMinimumSize());
-            checkbox.addItemListener(this);
-            if (checkbox.isSelected()) {
-                enableButton();
-            } else {
-                disableButton();
-            }
-        }
-
-        /**
-         * Init values of enabled and disabled button texts.
-         */
-        private void initTexts() {
-            enabledText = button.getText();
-            if (enabledText.startsWith(HTML_LINK_PREFIX)
-                    && enabledText.endsWith(HTML_LINK_SUFFIX)) {
-                disabledText = enabledText.substring(HTML_LINK_PREFIX.length(),
-                        enabledText.length() - HTML_LINK_SUFFIX.length());
-            } else {
-                disabledText = enabledText;
-            }
-        }
-
-        /**
-         * Create listener that delegates mouse clicks on parenthesis to the
-         * button.
-         */
-        private MouseListener createLabelMouseListener() {
-            return new MouseAdapter() {
-
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    if (button.isEnabled()) {
-                        for (ActionListener al : button.getActionListeners()) {
-                            al.actionPerformed(null);
-                        }
-                    }
-                }
-            };
-        }
-
-        /**
-         * Set button border and background to look like a label with link.
-         */
-        private void setLinkLikeButton(JButton button) {
-            button.setBorderPainted(false);
-            button.setContentAreaFilled(false);
-            button.setBorder(new EmptyBorder(0, 0, 0, 0));
-            button.setCursor(Cursor.getPredefinedCursor(
-                    Cursor.HAND_CURSOR));
-        }
-
-        @Override
-        public void itemStateChanged(ItemEvent e) {
-            if (checkbox.isSelected()) {
-                enableButton();
-            } else {
-                disableButton();
-            }
-        }
-
-        /**
-         * Enable button and parentheses around it.
-         */
-        private void enableButton() {
-            button.setText(enabledText);
-            button.setEnabled(true);
-            leftParenthesis.setCursor(
-                    Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            rightParenthesis.setCursor(
-                    Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            leftParenthesis.setEnabled(true);
-            rightParenthesis.setEnabled(true);
-        }
-
-        /**
-         * Disable button and parentheses around it.
-         */
-        private void disableButton() {
-            button.setText(disabledText);
-            button.setEnabled(false);
-            leftParenthesis.setCursor(Cursor.getDefaultCursor());
-            rightParenthesis.setCursor(Cursor.getDefaultCursor());
-            leftParenthesis.setEnabled(false);
-            rightParenthesis.setEnabled(false);
-        }
-    }
-
-    /**
-     * Wrapper of scope to be used as JComboBox item.
-     */
-    private final class ScopeItem {
-
-        private static final String START = "(";                       // NOI18N
-        private static final String END = ")";                         // NOI18N
-        private static final String SP = " ";                          // NOI18N
-        private static final String ELLIPSIS = "...";                  // NOI18N
-        private static final int MAX_EXTRA_INFO_LEN = 20;
-        private SearchScope searchScope;
-
-        public ScopeItem(SearchScope searchScope) {
-            this.searchScope = searchScope;
-        }
-
-        public SearchScope getSearchScope() {
-            return this.searchScope;
-        }
-
-        private boolean isAdditionaInfoAvailable() {
-            return searchScope.getAdditionalInfo() != null
-                    && searchScope.getAdditionalInfo().length() > 0;
-        }
-
-        private String getTextForLabel(String text) {
-            String extraInfo = searchScope.getAdditionalInfo();
-            String extraText = extraInfo;
-            if (extraInfo.length() > MAX_EXTRA_INFO_LEN) {
-                extraText = extraInfo.substring(0, MAX_EXTRA_INFO_LEN)
-                        + ELLIPSIS;
-                if (extraText.length() >= extraInfo.length()) {
-                    extraText = extraInfo;
-                }
-            }
-            return getFullText(text, extraText);
-        }
-
-        private String getFullText(String text, String extraText) {
-            return text + SP + START + SP + extraText + SP + END;
-        }
-
-        @Override
-        public String toString() {
-            if (isAdditionaInfoAvailable()) {
-                return getTextForLabel(clr(searchScope.getDisplayName()));
-            } else {
-                return clr(searchScope.getDisplayName());
-            }
-        }
-
-        /**
-         * Clear some legacy special characters from scope names.
-         *
-         * Some providers can still include ampresands that were used for
-         * mnemonics in previous versions, but now are ignored.
-         */
-        private String clr(String s) {
-            return s.replaceAll("\\&", "");                             //NOI18N
         }
     }
 
@@ -1406,67 +854,31 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         }
     }
 
-    /**
-     * Listener to changes of pattern combo boxes.
-     */
-    private class PatternChangeListener implements DocumentListener {
+    private class TextToFindChangeListener extends PatternChangeListener {
 
-        private final JComboBox sourceComboBox;
-
-        PatternChangeListener(JComboBox srcCBox) {
-            this.sourceComboBox = srcCBox;
+        public TextToFindChangeListener() {
         }
 
         @Override
-        public void insertUpdate(DocumentEvent e) {
-            update(e);
-        }
-
-        @Override
-        public void removeUpdate(DocumentEvent e) {
-            update(e);
-        }
-
-        @Override
-        public void changedUpdate(DocumentEvent e) {
-            update(e);
-        }
-
-        private void update(DocumentEvent e) {
-            if ((sourceComboBox == cboxFileNamePattern)
-                    && ignoreFileNamePatternChanges) {
-                return;
+        public void handleComboBoxChange(String text) {
+            searchCriteria.setTextPattern(text);
+            updateTextPatternColor();
+            if (cboxReplacement != null) {
+                updateReplacePatternColor();
             }
+        }
+    }
 
-            final Document doc = e.getDocument();
+    private class ReplacementPatternListener extends PatternChangeListener {
 
-            String text;
-            try {
-                text = doc.getText(0, doc.getLength());
-            } catch (BadLocationException ex) {
-                assert false;
-                ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
-                text = "";                                          //NOI18N
-            }
-            handleComboBoxChange(text);
+        public ReplacementPatternListener() {
         }
 
-        private void handleComboBoxChange(String text) {
-            if (sourceComboBox == cboxTextToFind) {
-                searchCriteria.setTextPattern(text);
-                updateTextPatternColor();
-                if (cboxReplacement != null) {
-                    updateReplacePatternColor();
-                }
-            } else if (sourceComboBox == cboxFileNamePattern) {
-                searchCriteria.setFileNamePattern(text);
-                updateFileNamePatternColor();
-            } else {
-                assert sourceComboBox == cboxReplacement;
-                searchCriteria.setReplaceExpr(text);
-                if (cboxReplacement != null) {
-                    updateReplacePatternColor();
-                }
+        @Override
+        public void handleComboBoxChange(String text) {
+            searchCriteria.setReplaceExpr(text);
+            if (cboxReplacement != null) {
+                updateReplacePatternColor();
             }
         }
     }

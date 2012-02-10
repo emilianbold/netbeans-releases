@@ -56,10 +56,6 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
 import javax.accessibility.AccessibleContext;
@@ -80,11 +76,10 @@ import javax.swing.UIManager;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.search.TextDetail.DetailNode;
+import org.netbeans.spi.search.provider.SearchComposition;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openidex.search.SearchType;
-
 /**
  *
  * @author kaktus
@@ -139,14 +134,9 @@ class ResultViewPanel extends JPanel{
 
     /** */
     private BasicSearchCriteria basicSearchCriteria;
-    /** */
-    private List<SearchType> searchTypes;
 
     /** */
     private double dividerLocation = -1.0d;
-
-    /** */
-    private String searchScopeType;
 
     /** template for displaying number of matching files found so far */
     private MessageFormat nodeCountFormat;
@@ -191,13 +181,10 @@ class ResultViewPanel extends JPanel{
     /** */
     private int objectsCount = 0;           //accessed only from the EventQueue
 
-    private SearchTask task;
-
-    public ResultViewPanel(SearchTask task) {
+    public ResultViewPanel(final SearchComposition composition) {
         setLayout(new GridBagLayout());
         arrowUpdater = new ArrowStatusUpdater(this);
 
-        this.task = task;
         treeModel = createTreeModel();
         tree = createTree(treeModel, nodeListener =
                 new NodeListener(), arrowUpdater);
@@ -282,7 +269,7 @@ class ResultViewPanel extends JPanel{
         btnStop.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
-                Manager.getInstance().stopSearching(getTask());
+                composition.terminate(null);
             }
         });
         btnReplace.addActionListener(new ActionListener(){
@@ -371,10 +358,6 @@ class ResultViewPanel extends JPanel{
 
         this.resultModel = resultModel;
         this.basicSearchCriteria = resultModel.basicCriteria;
-        this.searchTypes =
-                Arrays.asList(resultModel.getSearchGroup().getSearchTypes());
-        this.searchScopeType =
-                resultModel.getSearchGroup().getSearchScope().getTypeId();
 
         tree.setModel(treeModel = new ResultTreeModel(resultModel));
         if (hasCheckBoxes != hadCheckBoxes) {
@@ -426,8 +409,7 @@ class ResultViewPanel extends JPanel{
         btnShowDetails.setEnabled(false);
         Manager.getInstance().schedulePrintTask(
                 new PrintDetailsTask(resultModel.getMatchingObjects(),
-                                     basicSearchCriteria,
-                                     searchTypes));
+                                     basicSearchCriteria));
     }
 
     /**
@@ -470,21 +452,15 @@ class ResultViewPanel extends JPanel{
     /**
      */
     void rememberInput(String searchScopeType,
-                       BasicSearchCriteria basicSearchCriteria,
-                       List<SearchType> searchTypes) {
-        this.searchScopeType = searchScopeType;
+                       BasicSearchCriteria basicSearchCriteria) {
         this.basicSearchCriteria = basicSearchCriteria;
-        this.searchTypes = searchTypes;
     }
 
     void componentOpened() {
-        if (searchScopeType == null) {
-            setBtnModifyEnabled(false);
-        }
     }
 
     void componentClosed() {
-        rememberInput(null, null, null);
+        rememberInput(null, null);
 
         if (contextView != null) {
             contextView.unbindFromTreeSelection(tree);
@@ -498,7 +474,7 @@ class ResultViewPanel extends JPanel{
         contextViewVisible = false;
     }
 
-    void resultModelChanged() {
+    final void resultModelChanged() {
         updateDisplayContextButton();
         updateContextViewVisibility();
         if (contextView != null) {
@@ -511,10 +487,6 @@ class ResultViewPanel extends JPanel{
         resetMatchingObjIndexCache();
 
         objectsCount = 0;
-    }
-
-    private SearchTask getTask(){
-        return task;
     }
 
     private MatchingObject matchingObjIndexCacheObj = null;
@@ -1121,75 +1093,40 @@ class ResultViewPanel extends JPanel{
         return foundIndex;
     }
 
-    /**
-     * Makes a list of clones of given {@code SearchType}s.
-     * The given {@code SearchType}s are checked such that those that are
-     * no longer supported by the current set of IDE modules are skipped.
-     *
-     * @param  searchTypes  list of {@code SearchType}s to be cloned
-     * @return  list of cloned {@code SearchType}s, with unsupported
-     *		{@code SearchType}s omitted
-     */
-    private static List<SearchType> cloneAvailableSearchTypes(
-                                                 List<SearchType> searchTypes) {
-        /* build a collection of class names of supported SearchTypes: */
-        Collection<? extends SearchType> availableSearchTypes =
-                                                         Utils.getSearchTypes();
-            Collection<String> availableSearchTypeNames
-                    = new ArrayList<String>(availableSearchTypes.size());
-            for (SearchType searchType : availableSearchTypes) {
-                availableSearchTypeNames.add(searchType.getClass().getName());
-            }
-
-        if (availableSearchTypeNames.isEmpty()) {
-                return Collections.<SearchType>emptyList();     //trivial case
-        }
-
-        /* clone all supported SearchTypes: */
-        List<SearchType> clones = new ArrayList<SearchType>(searchTypes.size());
-        for (SearchType searchType : searchTypes) {
-                if (availableSearchTypeNames.contains(
-                                             searchType.getClass().getName())) {
-                    clones.add((SearchType) searchType.clone());
-                }
-        }
-        return clones;
-    }
-
     /** (Re)open the dialog window for entering (new) search criteria. */
     private void customizeCriteria() {
         assert EventQueue.isDispatchThread();
 
-        BasicSearchCriteria basicSearchCriteriaClone
-            = (basicSearchCriteria != null)
-                  ? new BasicSearchCriteria(basicSearchCriteria)
-                  : new BasicSearchCriteria();
-        List<SearchType> extraSearchTypesClones
-            = cloneAvailableSearchTypes(searchTypes);
-
-        SearchPanel searchPanel = new SearchPanel(
-                SearchScopeRegistry.getDefault().getSearchScopes(),
-                searchScopeType,
-                basicSearchCriteriaClone,
-                extraSearchTypesClones);
-        searchPanel.showDialog();
-
-        if (searchPanel.getReturnStatus() != SearchPanel.RET_OK) {
-            return;
-        }
-
-        SearchScope searchScope = searchPanel.getSearchScope();
-        searchScopeType = searchScope.getTypeId();
-        basicSearchCriteria = searchPanel.getBasicSearchCriteria();
-        searchTypes = searchPanel.getSearchTypes();
-
-        Manager.getInstance().stopSearching(task);
-        task = new SearchTask(searchScope, 
-                              basicSearchCriteria,
-                              searchPanel.getCustomizedSearchTypes());
-        ResultView.getInstance().addSearchPair(this, task);
-        Manager.getInstance().scheduleSearchTask(task);
-        this.tree.requestFocusInWindow();
+//        BasicSearchCriteria basicSearchCriteriaClone
+//            = (basicSearchCriteria != null)
+//                  ? new BasicSearchCriteria(basicSearchCriteria)
+//                  : new BasicSearchCriteria();
+//        List<SearchType> extraSearchTypesClones
+//            = cloneAvailableSearchTypes(searchTypes);
+//
+//        SearchPanel searchPanel = new SearchPanel(
+//                SearchScopeRegistry.getDefault().getSearchScopes(),
+//                searchScopeType,
+//                basicSearchCriteriaClone,
+//                extraSearchTypesClones);
+//        searchPanel.showDialog();
+//
+//        if (searchPanel.getReturnStatus() != SearchPanel.RET_OK) {
+//            return;
+//        }
+//
+//        SearchScope searchScope = searchPanel.getSearchScope();
+//        searchScopeType = searchScope.getTypeId();
+//        basicSearchCriteria = searchPanel.getBasicSearchCriteria();
+//        searchTypes = searchPanel.getSearchTypes();
+//
+//        Manager.getInstance().stopSearching(task);
+//        task = new SearchTask(searchScope,
+//                              basicSearchCriteria,
+//                              searchPanel.getCustomizedSearchTypes());
+//        ResultView.getInstance().addSearchPair(this, task);
+//        Manager.getInstance().scheduleSearchTask(task);
+//        this.tree.requestFocusInWindow();
     }
 
     /**

@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
 public class ReplaceInFilesAction extends FindInFilesAction {
 
     static final long serialVersionUID = 4554342565076372612L;
-    
+
     @Override
     protected void initialize() {
         super.initialize();

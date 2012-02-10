@@ -44,14 +44,11 @@
 
 package org.netbeans.modules.search;
 
-import java.nio.charset.Charset;
-import java.util.List;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.search.provider.SearchListener;
+import org.netbeans.spi.search.provider.SearchComposition;
+import org.netbeans.spi.search.provider.SearchResultsDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.util.Cancellable;
-import org.openide.util.NbBundle;
-import org.openidex.search.SearchType;
 
 /**
  * Task performing search.
@@ -62,26 +59,18 @@ import org.openidex.search.SearchType;
  */
 final class SearchTask implements Runnable, Cancellable {
 
-    /** nodes to search */
-    private final SearchScope searchScope;
-    /** */
-    private final List<SearchType> customizedSearchTypes;
-    /** */
-    private final BasicSearchCriteria basicSearchCriteria;
-    /** ResultModel result model. */
-    private ResultModel resultModel;
-    /** <code>SearchGroup</code> to search on. */
-    private SpecialSearchGroup searchGroup;
     /** attribute used by class <code>Manager</code> */
     private boolean notifyWhenFinished = true;
     /** */
     private volatile boolean interrupted = false;
     /** */
     private volatile boolean finished = false;
-    /** */
-    private final String replaceString;
-
-    private ProgressHandle progressHandle;
+    /** Search composition */
+    private SearchComposition<?> searchComposition;
+    /** Replace mode */
+    private boolean replacing;
+    /** Search Listener */
+    SearchListener searchListener;
     
     /**
      * Creates a new <code>SearchTask</code>.
@@ -90,110 +79,39 @@ final class SearchTask implements Runnable, Cancellable {
      * @param  basicSearchCriteria  basic search criteria
      * @param  customizedSearchTypes  search types
      */
-    public SearchTask(final SearchScope searchScope,
-                      final BasicSearchCriteria basicSearchCriteria,
-                      final List<SearchType> customizedSearchTypes) {
-        this.searchScope = searchScope;
-        this.basicSearchCriteria = basicSearchCriteria;
-        this.customizedSearchTypes = customizedSearchTypes;
-        
-        this.replaceString = (basicSearchCriteria != null)
-                             ? basicSearchCriteria.getReplaceExpr()
-                             : null;
+    public SearchTask(SearchComposition<?> searchComposition,
+            boolean replacing) {
+
+        this.searchComposition = searchComposition;
+        this.replacing = replacing;
     }
-    
+
     /**
      */
     private boolean isSearchAndReplace() {
-        return (replaceString != null);
+        return replacing;
     }
     
     /** Runs the search task. */
+    @Override
     public void run() {
         if (isSearchAndReplace()) {
             LifecycleManager.getDefault().saveAll();
         }
-        
-        /* Start the actual search: */
-        ensureResultModelExists();
-        if (searchGroup == null) {
-            return;
-        }
-
-        progressHandle = ProgressHandleFactory.createHandle(
-                NbBundle.getMessage(ResultView.class,"TEXT_PREPARE_SEARCH___"), this); // NOI18N
-        progressHandle.start();
-
-        searchGroup.setListeningSearchTask(this);
+        this.searchListener = new GraphicalSearchListener(searchComposition);
         try {
-            searchGroup.search();
-        } catch (RuntimeException ex) {
-            resultModel.searchException(ex);
-            ex.printStackTrace();
+            searchComposition.start(searchListener);
+        } catch (RuntimeException e) {
+            searchListener.generalError(e);
         } finally {
-            searchGroup.setListeningSearchTask(null);
             finished = true;
-            progressHandle.finish();
-            progressHandle = null;
         }
     }
-    
+
+    // TODO remove?
     SearchTask createNewGeneration() {
-        return new SearchTask(searchScope,
-                              basicSearchCriteria,
-                              customizedSearchTypes);
-    }
-
-    /**
-     */
-    BasicSearchCriteria getSearchCriteria() {
-        return basicSearchCriteria;
-    }
-
-    /**
-     */
-    ResultModel getResultModel() {
-        ensureResultModelExists();
-        return resultModel;
-    }
-    
-    /**
-     */
-    private void ensureResultModelExists() {
-        if (resultModel == null) {
-            searchGroup = new SpecialSearchGroup(basicSearchCriteria,
-                                                 customizedSearchTypes,
-                                                 searchScope);
-            resultModel = new ResultModel(searchGroup,
-                                          replaceString);
-        }
-    }
-
-    /**
-     * Called when a matching object is found by the <code>SearchGroup</code>.
-     * Notifies the result model of the found object and stops searching
-     * if number of the found objects reached the limit.
-     *
-     * @param  object  found matching object
-     * @param  charset  charset used for full-text search of the object,
-     *                  or {@code null} if the object was not full-text searched
-     */
-    void matchingObjectFound(Object object, Charset charset) {
-        boolean canContinue = resultModel.objectFound(object, charset);
-        if (!canContinue) {
-            searchGroup.stopSearch();
-        }
-    }
-
-    void searchStarted(int searchUnitsCount) {
-        progressHandle.finish();
-        progressHandle = ProgressHandleFactory.createHandle(
-                NbBundle.getMessage(ResultView.class,"TEXT_SEARCHING___"), this); // NOI18N
-        progressHandle.start(searchUnitsCount);
-    }
-
-    void progress(int progress) {
-        progressHandle.progress(progress);
+        return new SearchTask(searchComposition,
+                              replacing);
     }
 
     /**
@@ -222,11 +140,11 @@ final class SearchTask implements Runnable, Cancellable {
         if (!finished) {
             interrupted = true;
         }
-        if (searchGroup != null) {
-            searchGroup.stopSearch();
+        if (searchComposition != null) {
+            searchComposition.terminate(searchListener);
         }
     }
-    
+   
     /** 
      * Cancel processing of the task. 
      *
@@ -234,6 +152,7 @@ final class SearchTask implements Runnable, Cancellable {
      *         can't be cancelled for some reason
      * @see org.openide.util.Cancellable#cancel
      */
+    @Override
     public boolean cancel() {
         stop();
         return true;
@@ -259,4 +178,11 @@ final class SearchTask implements Runnable, Cancellable {
         return interrupted;
     }
 
+    SearchResultsDisplayer<?> getDisplayer() {
+        return searchComposition.getSearchResultsDisplayer();
+    }
+
+    SearchComposition<?> getComposition() {
+        return this.searchComposition;
+    }
 }

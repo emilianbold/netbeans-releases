@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.search;
+package org.netbeans.modules.search.matcher;
 
 import java.io.IOException;
 import java.io.OutputStream;

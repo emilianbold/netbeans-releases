@@ -44,32 +44,36 @@
 
 package org.netbeans.modules.search;
 
-import java.nio.CharBuffer;
-import java.nio.ByteBuffer;
-import java.nio.charset.CharsetDecoder;
-import java.io.InputStream;
-import org.openide.filesystems.FileUtil;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.util.NbBundle;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.SEVERE;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import org.netbeans.modules.search.TextDetail.DetailNode;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  * Data structure holding a reference to the found object and information
@@ -78,7 +82,7 @@ import org.openide.nodes.Node;
  * @author  Marian Petras
  * @author  Tim Boudreau
  */
-final class MatchingObject
+public final class MatchingObject
         implements Comparable<MatchingObject>, PropertyChangeListener {
 
     /** */
@@ -104,6 +108,8 @@ final class MatchingObject
     private Node nodeDelegate = null;
     /** */
     private String relativeSearchPath = null;
+    /** */
+    List<TextDetail> textDetails;
     
     /**
      * matching object as returned by the {@code SearchGroup}
@@ -167,7 +173,8 @@ final class MatchingObject
      * @exception  java.lang.IllegalArgumentException
      *             if the passed {@code object} is {@code null}
      */
-    MatchingObject(ResultModel resultModel, Object object, Charset charset) {
+    MatchingObject(ResultModel resultModel, Object object, Charset charset,
+            List<TextDetail> textDetails) {
 
         assert object instanceof FileObject || object instanceof DataObject;
 
@@ -177,7 +184,8 @@ final class MatchingObject
         if (object == null) {
             throw new IllegalArgumentException("object = null");        //NOI18N
         }
-        
+
+        this.textDetails = textDetails;
         this.resultModel = resultModel;
         this.object = object;
         this.charset = charset;
@@ -445,6 +453,38 @@ final class MatchingObject
          return (txt != null)?  txt.toString() : null;
     }
 
+    List<TextDetail> getTextDetails() {
+        return textDetails;
+    }
+
+    int getDetailsCount() {
+        if (textDetails == null) {
+            return 0;
+        } else {
+            return textDetails.size();
+        }
+    }
+
+    /**
+     * @return {@codeDetailNode}s representing the matches, or
+     * <code>null</code> if no matching string is known for this matching
+     * object.
+     * @see DetailNode
+     */
+    public Node[] getDetails() {
+
+        if (textDetails == null) {
+            return null;
+        }
+
+        List<Node> detailNodes = new ArrayList<Node>(textDetails.size());
+        for (TextDetail txtDetail : textDetails) {
+            detailNodes.add(new TextDetail.DetailNode(txtDetail));
+        }
+
+        return detailNodes.toArray(new Node[detailNodes.size()]);
+    }
+
     /**
      */
     FileLock lock() throws IOException {
@@ -581,7 +621,7 @@ final class MatchingObject
         boolean isFatal() {
             return fatal;
         }
-        
+
         /**
          * Provides human-readable description of this invalidity status.
          * 
@@ -683,8 +723,7 @@ final class MatchingObject
         }
        
         StringBuilder content = text(true);   //refresh the cache, reads the file      
-        List<TextDetail> textMatches = 
-                resultModel.basicCriteria.getTextDetails(getFileObject());
+        List<TextDetail> textMatches = getTextDetails();
 
         int offsetShift = 0;
         for (int i=0; i < textMatches.size(); i++) {
@@ -845,7 +884,8 @@ final class MatchingObject
         if (searchRoot == null) {
             return FileUtil.getFileDisplayName(fileFolder);
         } else {
-            return FileUtil.getRelativePath(searchRoot, fileFolder);
+            String p = FileUtil.getRelativePath(searchRoot, fileFolder);
+            return p == null ? FileUtil.getFileDisplayName(fileFolder) : p;
         }
     }
 
@@ -867,5 +907,45 @@ final class MatchingObject
     /** Return node delegate. */
     Node getNodeDelegate() {
         return nodeDelegate;
+    }
+
+    /**
+     * Bridge between new API and legacy implementation, will be deleted.
+     */
+    public static class Def {
+
+        private FileObject fileObject;
+        private Charset charset;
+        private List<TextDetail> textDetails;
+
+        public Def(FileObject fileObject, Charset charset, List<TextDetail> textDetails) {
+            this.fileObject = fileObject;
+            this.charset = charset;
+            this.textDetails = textDetails;
+        }
+
+        public Charset getCharset() {
+            return charset;
+        }
+
+        public void setCharset(Charset charset) {
+            this.charset = charset;
+        }
+
+        public FileObject getFileObject() {
+            return fileObject;
+        }
+
+        public void setFileObject(FileObject fileObject) {
+            this.fileObject = fileObject;
+        }
+
+        public List<TextDetail> getTextDetails() {
+            return textDetails;
+        }
+
+        public void setTextDetails(List<TextDetail> textDetails) {
+            this.textDetails = textDetails;
+        }
     }
 }

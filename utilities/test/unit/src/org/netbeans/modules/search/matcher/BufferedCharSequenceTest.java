@@ -40,15 +40,13 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.search;
+package org.netbeans.modules.search.matcher;
 
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.net.URI;
-import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import org.junit.After;
@@ -382,17 +380,9 @@ public class BufferedCharSequenceTest {
     }
 
     public File getFile(String fileName) {
-        File dataSubPackage = getDataSubPackage();
-        File file = new File (dataSubPackage, fileName);
+        File file = MatcherTestUtils.getFile(fileName);
         assertTrue (file.exists());
         return file;
-    }
-
-    public File getDataSubPackage() {
-        URL url = BufferedCharSequenceTest.class.getResource("data");
-        File dataSubPackage = new File(URI.create(url.toExternalForm()));
-        assertTrue(dataSubPackage.isDirectory());
-        return dataSubPackage;
     }
 
     public ByteArrayInputStream getByteArrayInputStream(byte[] buf) {

@@ -48,9 +48,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.filesystems.FileObject;
-import org.openidex.search.SearchInfo;
-import org.openidex.search.SearchInfoFactory;
+import org.netbeans.api.search.provider.SearchInfo;
+import org.netbeans.api.search.provider.SearchInfoUtils;
 
 /**
  * Base class for implementations of search scopes.
@@ -165,11 +164,7 @@ public abstract class AbstractSearchScope extends SearchScope {
             }
         }
     }
-        
-    
-    protected SearchInfo createEmptySearchInfo() {
-        return SearchInfoFactory.createSearchInfo(
-                new FileObject[0], false, null);
-    }
 
-}
+    protected SearchInfo createEmptySearchInfo() {
+       return SearchInfoUtils.createEmptySearchInfo();
+    }}

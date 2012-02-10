@@ -47,11 +47,10 @@ package org.netbeans.modules.search;
 
 import java.nio.charset.Charset;
 import java.util.List;
+import org.netbeans.modules.search.Constants.Limit;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
-import org.openidex.search.SearchType;
 
 
 /**
@@ -62,34 +61,8 @@ import org.openidex.search.SearchType;
  */
 public final class ResultModel {
 
-    /** maximum number of found objects */
-    private static final int COUNT_LIMIT = 500;
-    /** maximum total number of detail entries for found objects */
-    private static final int DETAILS_COUNT_LIMIT = 5000;
-    
-    enum Limit {
-
-        FILES_COUNT_LIMIT("TEXT_MSG_LIMIT_REACHED_FILES_COUNT",         //NOI18N
-                          COUNT_LIMIT),
-        MATCHES_COUNT_LIMIT("TEXT_MSG_LIMIT_REACHED_MATCHES_COUNT",     //NOI18N
-                            DETAILS_COUNT_LIMIT);
-
-        private final String bundleKey;
-        private final Integer value;
-
-        private Limit(String bundleKey, Integer limit) {
-            this.bundleKey = bundleKey;
-            this.value = limit;
-        }
-
-        String getDisplayName() {
-            return NbBundle.getMessage(Limit.class, bundleKey, value);
-        }
-
-        public Integer getValue() {
-            return this.value;
-        }
-    }
+    /** Common search root */
+    private FileObject commonSearchRoot;
 
     /** */
     private final long creationTime;   
@@ -105,15 +78,12 @@ public final class ResultModel {
      * limit (number of found files or matches) reached during search
      */
     private Limit limitReached = null;
-
-    /** Search group this result shows search results for. */
-    private SpecialSearchGroup searchGroup;
     
     /**
      * are all search types defined in the {@code SearchGroup} those
      * defined in the Utilities module?
      */
-    final boolean isBasicCriteriaOnly;
+    final boolean isBasicCriteriaOnly = true;
     /** */
     final BasicSearchCriteria basicCriteria;
     /** */
@@ -123,24 +93,22 @@ public final class ResultModel {
     /** */
     final boolean searchAndReplace;
     /** list of matching objects (usually {@code DataObject}s) */
-    private final List<MatchingObject> 
-            matchingObjects = new ArraySet<MatchingObject>(COUNT_LIMIT).
-                                  ordering(true).
-                                  nullIsAllowed(false);
+    private final List<MatchingObject> matchingObjects =
+            new ArraySet<MatchingObject>(Constants.COUNT_LIMIT).ordering(true).
+            nullIsAllowed(false);
 
     /** Contains optional finnish message often reason why finished. */
     private String finishMessage;
 
     /** Creates new <code>ResultModel</code>. */
-    ResultModel(SpecialSearchGroup searchGroup,
+    ResultModel(BasicSearchCriteria basicSearchCriteria,
                        String replaceString) {
-        this.searchGroup = searchGroup;
+
         this.replaceString = replaceString;
         this.searchAndReplace = (replaceString != null);
-        
-	basicCriteria = searchGroup.basicCriteria;
-	isFullText = (basicCriteria != null) && basicCriteria.isFullText();
-        isBasicCriteriaOnly = (searchGroup.getSearchTypes().length == 0);
+
+	basicCriteria = basicSearchCriteria;
+	isFullText = (basicCriteria != null) && basicCriteria.isFullText();        
         creationTime = System.currentTimeMillis();
     }
     
@@ -183,8 +151,6 @@ public final class ResultModel {
         // no other way then leaving it on GC, it should work because
         // search group is always recreated by a it's factory and
         // nobody keeps reference to it. 7th May 2004
-
-        searchGroup = null;
     }
 
     /**
@@ -197,11 +163,13 @@ public final class ResultModel {
      * @param  charset  charset used for full-text search of the object,
      *                  or {@code null} if the object was not full-text searched
      */
-    synchronized boolean objectFound(Object object, Charset charset) {
+    synchronized boolean objectFound(Object object, Charset charset,
+            List<TextDetail> textDetails) {
         assert limitReached == null;
         assert treeModel != null;
         assert resultView != null;
-        MatchingObject mo = new MatchingObject(this, object, charset);
+        MatchingObject mo = new MatchingObject(this, object, charset,
+                textDetails);
         if(add(mo)) {
             totalDetailsCount += getDetailsCount(mo);
             treeModel.objectFound(mo, matchingObjects.indexOf(mo));
@@ -231,7 +199,7 @@ public final class ResultModel {
 //            return true;
 //        }
 //        else
-        if (totalDetailsCount >= DETAILS_COUNT_LIMIT) {
+        if (totalDetailsCount >= Constants.DETAILS_COUNT_LIMIT) {
             limitReached = Limit.MATCHES_COUNT_LIMIT;
             return true;
         }
@@ -340,16 +308,8 @@ public final class ResultModel {
      */
     private int getDetailsCountReal(MatchingObject matchingObject) {
         int count = isFullText ? 
-            basicCriteria.getDetailsCount(matchingObject.getFileObject()) : 0;
-        if (isBasicCriteriaOnly) {
-            return count;
-        }
+                matchingObject.getDetailsCount() : 0;
         
-        final Object foundObject = matchingObject.getDataObject();
-        for (SearchType searchType : searchGroup.getSearchTypes()) {
-            Node[] detailNodes = searchType.getDetails(foundObject);
-            count += (detailNodes != null) ? detailNodes.length : 0;
-        }
         return count;
     }
     
@@ -394,58 +354,17 @@ public final class ResultModel {
         Node[] nodesTotal = null;
         if (basicCriteria != null) {
             nodesTotal = basicCriteria.isFullText()
-                         ? basicCriteria.getDetails(matchingObject.getFileObject())
+                         ? matchingObject.getDetails()
                          : null;
 	}
-        if (isBasicCriteriaOnly) {
-            return nodesTotal;
-        }
         
-        final Object foundObject = matchingObject.getDataObject();
-        for (SearchType searchType : searchGroup.getSearchTypes()) {
-            Node[] detailNodes = searchType.getDetails(foundObject);
-            if ((detailNodes == null) || (detailNodes.length == 0)) {
-                continue;
-            }
-            if (nodesTotal == null) {
-                nodesTotal = detailNodes;
-            } else {
-                Node[] oldNodesTotal = nodesTotal;
-                nodesTotal = new Node[nodesTotal.length + detailNodes.length];
-                System.arraycopy(oldNodesTotal, 0,
-                                 nodesTotal, 0,
-                                 oldNodesTotal.length);
-                System.arraycopy(detailNodes, 0,
-                                 nodesTotal, oldNodesTotal.length,
-                                 detailNodes.length);
-            }
-        }
-        return nodesTotal;
+        return nodesTotal;                
     }
     
     /**
      */
     synchronized int size() {
         return matchingObjects.size();
-    }
-    
-    /** Getter for search group property. */
-    synchronized SpecialSearchGroup getSearchGroup() {
-        return searchGroup;
-    }
-    
-    /**
-     * Returns search types that were used during the search.
-     *
-     * @return  array of <code>SearchType</code>s that each tested object was
-     *          tested for compliance
-     */
-    synchronized SearchType[] getQueriedSearchTypes() {
-        if (searchGroup != null) {
-            return searchGroup.getSearchTypes();
-        } else {
-            return new SearchType[0];
-        }
     }
 
     /**
@@ -484,12 +403,17 @@ public final class ResultModel {
         return resultView;
     }
 
-    /** Get common search folder. Can be null. */
+    /**
+     * Get common search folder. Can be null.
+     */
     synchronized FileObject getCommonSearchFolder() {
-        if (searchGroup != null) {
-            return searchGroup.getCommonSearchFolder();
-        } else {
-            return null; // Result model has been already closed.
-        }
+        return commonSearchRoot;
+    }
+
+    /**
+     * Set common search null. Can be null.
+     */
+    synchronized void setCommonSearchFolder(FileObject fo) {
+        this.commonSearchRoot = fo;
     }
 }

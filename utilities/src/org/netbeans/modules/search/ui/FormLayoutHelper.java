@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.netbeans.modules.search;
+package org.netbeans.modules.search.ui;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Group;
@@ -14,7 +14,7 @@ import javax.swing.JPanel;
  *
  * @author jhavlin
  */
-class FormLayoutHelper {
+public class FormLayoutHelper {
 
     public static final Column DEFAULT_COLUMN = new DefaultColumn();
     public static final Column EAGER_COLUMN = new EagerColumn();

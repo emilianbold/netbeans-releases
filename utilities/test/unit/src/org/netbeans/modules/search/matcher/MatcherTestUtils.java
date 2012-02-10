@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,52 +34,33 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.search;
+package org.netbeans.modules.search.matcher;
 
-import javax.swing.Action;
-import org.openide.actions.FindAction;
-import org.openide.util.Lookup;
+import java.io.File;
+import java.net.URI;
+import java.net.URL;
 
 /**
- * Manages <em>FindAction</em> - enables and disables it by current set of
- * selected nodes.
+ * Utility methods for testing matchers.
  *
- * @author  Petr Kuzel
- * @author  Marian Petras
- * @see org.openide.actions.FindAction
- * @see org.openide.windows.TopComponent.Registry
+ * @author jhavlin
  */
-final class FindActionManager extends ActionManager<FindInFilesAction, FindAction, FindInFilesAction.LookupSensitive> {
+public class MatcherTestUtils {
 
-    private static final String MAPPED_FIND_ACTION =
-            FindActionManager.class.getName() + " - FindActionImpl";    //NOI18N
-    private static FindActionManager instance = null;
-
-    private FindActionManager() {
-        super(FindInFilesAction.class, FindAction.class);
+    static File getFile(String fileName) {
+        File dataSubPackage = getDataSubPackage();
+        File file = new File(dataSubPackage, fileName);
+        return file;
     }
 
-    @Override
-    public String getMappedActionKey() {
-        return FindActionManager.MAPPED_FIND_ACTION;
-    }
-
-    @Override
-    protected Action createContextAwareInstance(Lookup lookup) {
-        return action.createContextAwareInstance(lookup, true);
-    }
-
-    @Override
-    protected void initLookupSensitiveActionClass() {
-        lookUpSensitiveClass = FindInFilesAction.LookupSensitive.class;
-    }
-
-    static FindActionManager getInstance() {
-        LOG.finer("getInstance()");
-        if (instance == null) {
-            instance = new FindActionManager();
-        }
-        return instance;
+    static File getDataSubPackage() {
+        URL url = MatcherTestUtils.class.getResource("../data");
+        File dataSubPackage = new File(URI.create(url.toExternalForm()));
+        return dataSubPackage;
     }
 }

@@ -37,6 +37,7 @@
  */
 package org.netbeans.modules.search;
 
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -45,33 +46,36 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.search.SearchRoot;
+import org.netbeans.api.search.SearchScopeOptions;
+import org.netbeans.api.search.provider.SearchInfo;
+import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.search.MatchingObject.Def;
+import org.netbeans.modules.search.matcher.AbstractMatcher;
+import org.netbeans.modules.search.matcher.DefaultMatcher;
+import org.netbeans.spi.search.provider.SearchComposition;
+import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
-import org.openidex.search.SearchInfo;
-import org.openidex.search.SearchType;
 
-/** 
+/**
  * @author jhavlin
  */
 public class MatchingObjectTest extends NbTestCase {
 
     private static final String TEST_FILE_NAME = "test.txt";
     private static final String TEST_FILE_ENC = "UTF-8";
-       
-    public MatchingObjectTest (String name) {
+
+    public MatchingObjectTest(String name) {
         super(name);
     }
 
     /**
      * Adapt string to case of a pattern.
-     * 
+     *
      * @param found Found string - case pattern.
      * @param replacement Replacement string - value to adopt.
      */
@@ -79,7 +83,8 @@ public class MatchingObjectTest extends NbTestCase {
         return MatchingObject.adaptCase(replacement, found);
     }
 
-    /** Test adaption of case of replacement strings - simple. 
+    /**
+     * Test adaption of case of replacement strings - simple.
      */
     public void testAdaptCase() throws Exception {
 
@@ -89,7 +94,8 @@ public class MatchingObjectTest extends NbTestCase {
         assertEquals("nEXT1", adapt("tEST1", "next1"));
     }
 
-    /** Test adaption of case of replacement strings - camel case.
+    /**
+     * Test adaption of case of replacement strings - camel case.
      */
     public void testAdaptCaseCamelCase() throws Exception {
 
@@ -111,7 +117,8 @@ public class MatchingObjectTest extends NbTestCase {
         assertEquals("FooBar", adapt("Foo", "fooBar"));
     }
 
-    /** Test replacing in filesystem files.
+    /**
+     * Test replacing in filesystem files.
      */
     public void testReplaceInFilePreserveCase() throws IOException,
             InterruptedException,
@@ -134,7 +141,8 @@ public class MatchingObjectTest extends NbTestCase {
                 replaceInFilePreserveCase("writing\r\ndTA", "dta", "data"));
     }
 
-    /** Helper method - create file, write its content, find it, replace in it
+    /**
+     * Helper method - create file, write its content, find it, replace in it
      * and return its new content.
      */
     public String replaceInFilePreserveCase(String fileContent, String find,
@@ -148,31 +156,33 @@ public class MatchingObjectTest extends NbTestCase {
         bsc.setPreserveCase(true);
         bsc.onOk();
 
-        FileObject fo = createTestFile(fileContent);                       
+        FileObject fo = createTestFile(fileContent);
         SearchScope ss = new TempFileSearchScope(fo);
-        List<SearchType> customizedTypes = Collections.emptyList();        
-        final SearchTask st = new SearchTask(ss, bsc, customizedTypes);
-        
-        final ResultModel rm = st.getResultModel();        
-        rm.setObserver(new ResultTreeModel(rm));
-        Runnable setPanel = new Runnable() {
+        SearchInfo si = ss.getSearchInfo();
+
+        final SearchComposition<Def> sc =
+                new BasicComposition(si,
+                new DefaultMatcher(bsc.getSearchPattern()),
+                bsc);
+        EventQueue.invokeAndWait(new Runnable() {
+
             @Override
             public void run() {
-                rm.setObserver(new ResultViewPanel(st));
+                sc.getSearchResultsDisplayer().createVisualComponent(); // initialize model
             }
-        };
-        SwingUtilities.invokeAndWait(setPanel);                       
-        
-        st.run();               
-        
+        });
+        final SearchTask st = new SearchTask(sc, true);
+
+        st.run();
         ReplaceTask rt = new ReplaceTask(
-                st.getResultModel().getMatchingObjects());
+                ((ResultDisplayer) sc.getSearchResultsDisplayer()).getResultModel().getMatchingObjects());
         rt.run();
         String result = fo.asText(TEST_FILE_ENC);
         return result;
     }
 
-    /** Search scope containing one temporary file only.
+    /**
+     * Search scope containing one temporary file only.
      */
     public static class TempFileSearchScope extends SearchScope {
 
@@ -217,15 +227,17 @@ public class MatchingObjectTest extends NbTestCase {
                 }
 
                 @Override
-                public Iterator<DataObject> objectsToSearch() {
-                    DataObject dataObject = null;
-                    try {
-                        dataObject = DataObject.find(fo);
-                    } catch (DataObjectNotFoundException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    List<DataObject> l =
-                            Collections.singletonList(dataObject);
+                public List<SearchRoot> getSearchRoots() {
+                    return Collections.emptyList();
+                }
+
+                @Override
+                public Iterator<FileObject> getFilesToSearch(
+                        SearchScopeOptions options, SearchListener listener,
+                        TerminationFlag terminationFlag) {
+
+                    List<FileObject> l =
+                            Collections.singletonList(fo);
                     return l.iterator();
                 }
             };
@@ -261,8 +273,12 @@ public class MatchingObjectTest extends NbTestCase {
         bsc.onOk();
 
         FileObject fo = fs.getRoot().getFileObject("find.txt");
-        bsc.matches(fo);
-        List<TextDetail> matches = bsc.getTextDetails(fo);
+        //bsc.matches(fo, new SearchListener() {});
+        AbstractMatcher fileMatcher =
+                new DefaultMatcher(bsc.getSearchPattern());
+        Def resultDef = fileMatcher.check(fo, new SearchListener() {
+        });
+        List<TextDetail> matches = resultDef.getTextDetails();
         assertEquals(4, matches.size());
 
         assertEquals(1, matches.get(0).getLine());
@@ -278,15 +294,16 @@ public class MatchingObjectTest extends NbTestCase {
         assertEquals(5, matches.get(3).getLine());
     }
 
-    /** Create an in-memory file with simple string content.
-     * 
+    /**
+     * Create an in-memory file with simple string content.
+     *
      * @param content Content of the file.
      */
     public FileObject createTestFile(String content) throws IOException {
 
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
         FileObject fo = root.createData(TEST_FILE_NAME);
-        
+
         OutputStream os = fo.getOutputStream();
         try {
             OutputStreamWriter osw = new OutputStreamWriter(os, TEST_FILE_ENC);
@@ -298,7 +315,7 @@ public class MatchingObjectTest extends NbTestCase {
             }
         } finally {
             os.close();
-        }                               
+        }
         return fo;
     }
 }

@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.search;
+package org.netbeans.modules.search.matcher;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -53,6 +53,7 @@ import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.search.provider.SearchListener;
 import org.openide.filesystems.FileObject;
 import sun.nio.cs.ThreadLocalCoders;
 
@@ -133,6 +134,8 @@ public class BufferedCharSequence implements CharSequence {
     private Source source;
     private Sink sink;
     private final CharsetDecoder decoder;
+    private SearchListener listener;
+    private long maxReadOffset = 0;
     private CoderResult coderResult;
     private boolean isClosed = false;
     private volatile boolean isTerminated = false;
@@ -234,6 +237,10 @@ public class BufferedCharSequence implements CharSequence {
         source.maxBufferSize = maxBufferSize;
     }
 
+    public void setSearchListener(SearchListener listener) {
+        this.listener = listener;
+    }
+
     /**
      * Resets all resources that support {@link CharSequence} interface.
      * Current position is not changed.
@@ -262,6 +269,7 @@ public class BufferedCharSequence implements CharSequence {
             source = null;
             sink = null;
             coderResult = null;
+            listener = null;
             isClosed = true;
         }
         return this;
@@ -446,6 +454,11 @@ public class BufferedCharSequence implements CharSequence {
         }
         while(!sink.buffer.scope.isInside(index)) {
             boolean hasNext = sink.next();
+            if (listener != null && sink.buffer.scope.start > maxReadOffset) {
+                maxReadOffset = sink.buffer.scope.start;
+                listener.fileContentMatchingProgress(source.fo.getPath(),
+                        maxReadOffset);
+            }
             if(!hasNext) {
                 throw new IndexOutOfBoundsException("index is " +
                         index + " > lenght"); // NOI18N

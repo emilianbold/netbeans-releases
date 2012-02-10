@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.search;
 
 import org.openide.modules.ModuleInstall;
@@ -49,22 +48,24 @@ import org.openide.modules.ModuleInstall;
 /**
  * Module installation class for search 'sub module'.
  *
- * @author  Marian Petras
+ * @author Marian Petras
  */
 public class Installer extends ModuleInstall {
 
     @Override
-    public void restored () {
+    public void restored() {
         SearchScopeRegistry.getDefault().registerSearchScope(
                 new SearchScopeNodeSelection());
-        FindActionManager.getInstance().init();
-        ReplaceActionManager.getInstance().init();
+        SearchScopeRegistry.getDefault().registerSearchScope(
+                new SearchScopeBrowse());
+        ActionManager.FindActionManager.getInstance().init();
+        ActionManager.ReplaceActionManager.getInstance().init();
     }
 
     @Override
-    public void uninstalled () {
-        FindActionManager.getInstance().cleanup();
-        ReplaceActionManager.getInstance().cleanup();
+    public void uninstalled() {
+        ActionManager.FindActionManager.getInstance().cleanup();
+        ActionManager.ReplaceActionManager.getInstance().cleanup();
         Manager.getInstance().doCleanup();
     }
 }

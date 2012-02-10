@@ -51,6 +51,8 @@ import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Caret;
+import org.netbeans.api.search.SearchHistory;
+import org.netbeans.api.search.SearchPattern;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.loaders.DataObject;
@@ -67,9 +69,6 @@ import org.openide.util.actions.SystemAction;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 import org.openide.xml.XMLUtil;
-import org.openidex.search.SearchHistory;
-import org.openidex.search.SearchPattern;
-
 
 /**
  * Holds details about one search hit in the text document.
@@ -77,7 +76,7 @@ import org.openidex.search.SearchPattern;
  * @author Tomas Pavek
  * @author Marian Petras
  */
-final class TextDetail {
+public final class TextDetail {
 
     /** Property name which indicates this detail to show. */
     static final int DH_SHOW = 1;
@@ -110,7 +109,7 @@ final class TextDetail {
     /** Constructor using data object. 
      * @param pattern  SearchPattern used to create the hit of this DetailNode 
      */
-    TextDetail(DataObject dobj, SearchPattern pattern) {
+    public TextDetail(DataObject dobj, SearchPattern pattern) {
         this.dobj = dobj;
         this.searchPattern = pattern;
     }
@@ -133,7 +132,7 @@ final class TextDetail {
         if (how == DH_HIDE) {
             return;
         }
-        EditorCookie edCookie = dobj.getCookie(EditorCookie.class);
+        EditorCookie edCookie = dobj.getLookup().lookup(EditorCookie.class);
         if (edCookie != null) {
             edCookie.open();
 	}
@@ -160,7 +159,11 @@ final class TextDetail {
                 });
             }
         }
-        SearchHistory.getDefault().setLastSelected(searchPattern);
+        SearchHistory.getDefault().setLastSelected(
+                SearchPattern.create(
+                searchPattern.getSearchExpression(),
+                searchPattern.isWholeWords(), searchPattern.isMatchCase(),
+                searchPattern.isRegExp()));
     }
 
     /** Getter for <code>lineText</code> property. */
@@ -169,7 +172,7 @@ final class TextDetail {
     }
     
     /** Setter for <code>lineText</code> property. */
-    void setLineText(String text) {
+    public void setLineText(String text) {
         lineText = text;
     }
 
@@ -181,7 +184,7 @@ final class TextDetail {
         return lineText.substring(beginIndex);
     }
 
-    int getLineTextLength() {
+    public int getLineTextLength() {
         return lineText == null ? 0 : lineText.length();
     }
 
@@ -190,27 +193,27 @@ final class TextDetail {
      *
      * @return data object or <code>null</code> if no data object is available
      */
-    DataObject getDataObject() {
+    public DataObject getDataObject() {
         return dobj;
     }
 
     /** Gets the line position of the text. */
-    int getLine() {
+    public int getLine() {
         return line;
     }
 
     /** Sets the line position of the text. */
-    void setLine(int line) {
+    public void setLine(int line) {
         this.line = line;
     }
 
     /** Gets the column position of the text or 0 (1 based). */
-    int getColumn() {
+    public int getColumn() {
         return column;
     }
 
     /** Sets the column position of the text. */
-    void setColumn(int col) {
+    public void setColumn(int col) {
         column = col;
     }
 
@@ -224,7 +227,7 @@ final class TextDetail {
      * shown.
      * @param len the length of the marked text
      */
-    void setMarkLength(int len) {
+    public void setMarkLength(int len) {
         markLength = len;
     }
 
@@ -233,37 +236,37 @@ final class TextDetail {
      * shown.
      * @return length of the marked text or 0
      */
-    int getMarkLength() {
+    public int getMarkLength() {
         return markLength;
     }
 
     /** Gets the end position of the matched text in the file. */
-    int getEndOffset() {
+    public int getEndOffset() {
         return endOffset;
     }
 
     /** Sets the end position of the matched text in the file. */
-    void setEndOffset(int endOffset) {
+    public void setEndOffset(int endOffset) {
         this.endOffset = endOffset;
     }
 
     /** Gets the start position of the matched text in the file. */
-    int getStartOffset() {
+    public int getStartOffset() {
         return startOffset;
     }
 
     /** Sets the start position of the matched text in the file. */
-    void setStartOffset(int startOffset) {
+    public void setStartOffset(int startOffset) {
         this.startOffset = startOffset;
     }
 
     /** Gets the matched text. */
-    String getMatchedText() {
+    public String getMatchedText() {
         return matchedText;
     }
 
     /** Sets the matched text. */
-    void setMatchedText(String matchedText) {
+    public void setMatchedText(String matchedText) {
         this.matchedText = matchedText;
     }
 
@@ -273,7 +276,7 @@ final class TextDetail {
      * @param column the column position of the text or 0 (1 based).
      * @param lineText text of the line.
      */
-    void associate(int lineNumber, int column, String lineText) {
+    public void associate(int lineNumber, int column, String lineText) {
          setLine(lineNumber);
          setColumn(column);
          setLineText(lineText);
@@ -283,7 +286,7 @@ final class TextDetail {
         if (dobj == null || !dobj.isValid()) {
             lineObj = null;
         } else if (lineObj == null) { // try to get Line from DataObject
-            LineCookie lineCookie = dobj.getCookie(LineCookie.class);
+            LineCookie lineCookie = dobj.getLookup().lookup(LineCookie.class);
             if (lineCookie != null) {
                 Line.Set lineSet = lineCookie.getLineSet();
                 try {
@@ -603,8 +606,8 @@ final class TextDetail {
         /**  {@inheritDoc} */
         @Override
         public String getName() {
-            return NbBundle.getBundle(GotoDetailAction.class).
-                                              getString("LBL_GotoDetailAction");
+            return NbBundle.getMessage(
+                    GotoDetailAction.class, "LBL_GotoDetailAction");
         }
         
         /**  {@inheritDoc} */

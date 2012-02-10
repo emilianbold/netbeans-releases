@@ -43,9 +43,10 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Exceptions;
-import org.openidex.search.SearchInfo;
+
 
 /**
  *

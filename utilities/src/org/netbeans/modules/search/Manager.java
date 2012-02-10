@@ -139,11 +139,8 @@ final class Manager {
      */
     synchronized void scheduleSearchTask(SearchTask task) {
         assert EventQueue.isDispatchThread();
-        
-        ResultViewPanel viewPanel = ResultView.getInstance().initiateResultView(task);
-        ResultModel resultModel = task.getResultModel();
-        viewPanel.setResultModel(resultModel);
 
+        ResultView.getInstance().addTab(task.getDisplayer());
         pendingTasks.add(task);
         processNextPendingTask();
     }
@@ -486,7 +483,11 @@ final class Manager {
             if (tasks[i] instanceof SearchTask){
                 SearchTask sTask = (SearchTask)tasks[i];
                 sTask.stop(true);
-                scheduleCleanTask(new CleanTask(sTask.getResultModel()));
+                if (sTask.getDisplayer() instanceof ResultDisplayer) {
+                    ResultDisplayer disp =
+                            (ResultDisplayer) sTask.getDisplayer();
+                    scheduleCleanTask(new CleanTask(disp.getResultModel()));
+                }
             }
         }
     }

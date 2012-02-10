@@ -54,16 +54,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.lang.ref.WeakReference;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
+import org.netbeans.spi.search.provider.SearchResultsDisplayer;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.ImageUtilities;
@@ -71,6 +73,7 @@ import org.openide.util.NbBundle;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+
 
 /**
  * Panel which displays search results in explorer like manner.
@@ -366,7 +369,7 @@ final class ResultView extends TopComponent {
         } else {
             close();
         }
-        Manager.getInstance().scheduleCleanTask(new CleanTask(viewToSearchMap.get(panel).getResultModel()));
+        // Manager.getInstance().scheduleCleanTask(new CleanTask(viewToSearchMap.get(panel).getResultModel())); TODO
         
         SearchTask sTask = viewToSearchMap.remove(panel);
         searchToViewMap.remove(sTask);
@@ -396,38 +399,45 @@ final class ResultView extends TopComponent {
      */
     void notifySearchPending(final SearchTask task,final int blockingTask) {
         assert EventQueue.isDispatchThread();
-        
-        ResultViewPanel panel = task.getResultModel().getResultView();
-        panel.removeIssuesPanel();
-        String msgKey = null;
-        switch (blockingTask) {
-            case Manager.REPLACING:
-                msgKey = "TEXT_FINISHING_REPLACE";                  //NOI18N
-                break;
-            case Manager.SEARCHING:
-                msgKey = "TEXT_FINISHING_PREV_SEARCH";                  //NOI18N
-                break;
-/*
-            case Manager.CLEANING_RESULT:
-                msgKey = "TEXT_CLEANING_RESULT";                        //NOI18N
-                break;
-            case Manager.PRINTING_DETAILS:
-                msgKey = "TEXT_PRINTING_DETAILS";                       //NOI18N
-                break;
- */
-            default:
-                assert false;
+
+        if (task.getDisplayer() instanceof ResultDisplayer) {
+
+            ResultDisplayer rd = (ResultDisplayer) task.getDisplayer();
+
+            ResultViewPanel panel = rd.getResultModel().getResultView();
+            panel.removeIssuesPanel();
+            String msgKey = null;
+            switch (blockingTask) {
+                case Manager.REPLACING:
+                    msgKey = "TEXT_FINISHING_REPLACE";                  //NOI18N
+                    break;
+                case Manager.SEARCHING:
+                    msgKey = "TEXT_FINISHING_PREV_SEARCH";                  //NOI18N
+                    break;
+                /*
+                 * case Manager.CLEANING_RESULT: msgKey =
+                 * "TEXT_CLEANING_RESULT"; //NOI18N break; case
+                 * Manager.PRINTING_DETAILS: msgKey = "TEXT_PRINTING_DETAILS";
+                 * //NOI18N break;
+                 */
+                default:
+                    assert false;
+            }
+            panel.setRootDisplayName(NbBundle.getMessage(ResultView.class, msgKey));
+            panel.setBtnStopEnabled(true);
+            panel.setBtnReplaceEnabled(false);
         }
-        panel.setRootDisplayName(NbBundle.getMessage(ResultView.class, msgKey));
-        panel.setBtnStopEnabled(true);
-        panel.setBtnReplaceEnabled(false);
     }
     
     /**
      */
     void searchTaskStateChanged(final SearchTask task, final int changeType) {
         assert EventQueue.isDispatchThread();
-        ResultViewPanel panel = task.getResultModel().getResultView();
+        if (!(task.getDisplayer() instanceof ResultDisplayer)) {
+            return;
+        }
+        ResultDisplayer rd = (ResultDisplayer) task.getDisplayer();
+        ResultViewPanel panel = rd.getResultModel().getResultView();
         switch (changeType) {
             case Manager.EVENT_SEARCH_STARTED:
                 panel.removeIssuesPanel();
@@ -486,7 +496,7 @@ final class ResultView extends TopComponent {
 
         ResultViewPanel panel = searchToViewMap.get(task);
         if (panel == null){
-            panel = new ResultViewPanel(task);
+            panel = new ResultViewPanel(task.getComposition());
             if( isMacLaf ) {
                 panel.setBackground(macBackground);
             }
@@ -501,25 +511,17 @@ final class ResultView extends TopComponent {
         }
         return panel;
     }
-    
+
+
+
     /** Get string that will be used as name of the panel.
      * 
      * @param task
      * @return 
      */
     private String getPanelName(SearchTask task) {
-                
-        BasicSearchCriteria criteria = task.getSearchCriteria();
-        if (criteria.getTextPattern() == null) {
-           if (criteria.getFileNamePattern() == null) {
-               return NbBundle.getMessage(ResultView.class, 
-                       "TEXT_MSG_RESULTS_FOR_FILE_PATTERN"); //NOI18N
-           } else {
-               return criteria.getFileNamePatternExpr();
-           }
-        } else {
-            return criteria.getTextPatternExpr();
-         }
+
+        return task.getDisplayer().getTitle();
     }
     
     /**
@@ -546,14 +548,20 @@ final class ResultView extends TopComponent {
 
         SearchTask lastSearchTask = replaceToSearchMap.get(task);
         SearchTask newSearchTask = lastSearchTask.createNewGeneration();
-        if(lastSearchTask.getResultModel() != null){
-            ResultViewPanel panel = lastSearchTask.getResultModel().getResultView();
+
+        if (lastSearchTask.getDisplayer() instanceof ResultDisplayer) {
+
+            ResultDisplayer sd = (ResultDisplayer) lastSearchTask.getDisplayer();
+
+            if(sd.getResultModel() != null){
+            ResultViewPanel panel = sd.getResultModel().getResultView();
             if (panel != null){
-                ResultView.getInstance().addSearchPair(lastSearchTask.getResultModel().getResultView(), newSearchTask);
+                ResultView.getInstance().addSearchPair(sd.getResultModel().getResultView(), newSearchTask);
                 panel.removeIssuesPanel();
             }
         }
         Manager.getInstance().scheduleSearchTask(newSearchTask);
+        }
     }
 
     @Override
@@ -632,5 +640,40 @@ final class ResultView extends TopComponent {
                 panel.goToNext(!prev);
             }
         }
+    }
+
+    /**
+     * Add a tab for a new displayer.
+     */
+    public void addTab(SearchResultsDisplayer<?> resultDisplayer) {
+
+        JComponent panel = resultDisplayer.createVisualComponent();
+        String title = resultDisplayer.getTitle();
+
+        Component comp = getComponent(0);
+        if (comp instanceof JTabbedPane) {
+            ((JTabbedPane) comp).addTab(title, null, panel, panel.getToolTipText());
+            ((JTabbedPane) comp).setSelectedComponent(panel);
+            comp.validate();
+        } else {
+            remove(comp);
+            JTabbedPane pane = TabbedPaneFactory.createCloseButtonTabbedPane();
+            pane.setMinimumSize(new Dimension(0, 0));
+            pane.addMouseListener(popL);
+            pane.addPropertyChangeListener(closeL);
+            if( isMacLaf ) {
+                pane.setBackground(macBackground);
+                pane.setOpaque(true);
+            }
+            add(pane, BorderLayout.CENTER);
+            if (comp instanceof ResultViewPanel){
+                pane.addTab(getTabTitle(comp), null, comp, ((JPanel) comp).getToolTipText());
+            }
+            pane.addTab(title, null, panel, panel.getToolTipText());
+            pane.setSelectedComponent(panel);
+            pane.validate();
+        }
+        validate();
+        requestActive();
     }
 }
