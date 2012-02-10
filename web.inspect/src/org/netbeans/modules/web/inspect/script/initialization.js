@@ -373,3 +373,38 @@ NetBeans.reloadScript = function(url) {
         console.log('Cannot find the script to reload: '+url);
     }
 }
+
+// PENDING Chrome specific; the means of invocation
+// of this method must change because it requires
+// privilege access when rewritten to work in Firefox;
+// even Chrome impl. needs privilege access to work
+// around cross-origin and local file issues
+NetBeans.getMatchedRules = function(handle) {
+    var matchedStyle = [];
+    var element = this.getElement(handle);
+    if (document.defaultView.getMatchedCSSRules) {
+        var rules = document.defaultView.getMatchedCSSRules(element);
+        if (rules === null) {
+            // PENDING cross-origin or local file issue
+        } else {
+            for (var i=0; i<rules.length; i++) {
+                var ruleInfo = new Object();
+                var rule = rules[i];
+                ruleInfo.sourceURL = rule.parentStyleSheet.href;
+                ruleInfo.selector = rule.selectorText;
+                var styleInfo = new Object();
+                ruleInfo.style = styleInfo;
+                var style = rule.style;
+                for (var j=0; j<style.length; j++) {
+                    var stylename = style[j];
+                    var stylevalue = style[stylename];
+                    styleInfo[stylename] = stylevalue;
+                }
+                matchedStyle.push(ruleInfo);
+            }
+        }
+    } else {
+        // PENDING getMatchedCSSRules() not available
+    }
+    return matchedStyle;
+}

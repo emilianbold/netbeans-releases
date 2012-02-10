@@ -66,14 +66,20 @@ import org.xml.sax.SAXException;
 public class PageModelImpl extends PageModel {
     /** Logger used by this class. */
     private static final Logger LOG = Logger.getLogger(PageModelImpl.class.getName());
-    /** Element attribute holding the position index of this node in the original DOM. */
-    private static final String ELEMENT_INDEX_ATTR = "idx"; // NOI18N
-    /** Message attribute holding information about a resource type. */
+    /** JSON attribute holding information about a resource type. */
     private static final String RESOURCE_TYPE = "type"; // NOI18N
-    /** Message attribute holding information about a resource URL. */
+    /** JSON attribute holding information about a resource URL. */
     private static final String RESOURCE_URL = "url"; // NOI18N
-    /** Lock guarding access to {@code executor} field. */
+    /** JSON attribute holding URL of a style sheet of a rule. */
+    private static final String RULE_SOURCE_URL = "sourceURL"; // NOI18N
+    /** JSON attribute holding selector of a rule. */
+    private static final String RULE_SELECTOR = "selector"; // NOI18N
+    /** JSON attribute holding styling information of a rule. */
+    private static final String RULE_STYLE = "style"; // NOI18N
+    /** Lock guarding access to modifiable field. */
     private final Object LOCK = new Object();
+    /** Selected elements. */
+    private Collection<ElementHandle> selectedElements = Collections.EMPTY_LIST;
     /** Executor for the target page. */
     private ScriptExecutor executor;
 
@@ -88,6 +94,7 @@ public class PageModelImpl extends PageModel {
         }
         synchronized (LOCK) {
             this.executor = executor;
+            setSelectedElements(Collections.EMPTY_LIST);
         }
         firePropertyChange(PROP_MODEL, null, null);
     }
@@ -176,6 +183,9 @@ public class PageModelImpl extends PageModel {
 
     @Override
     public void setSelectedElements(Collection<ElementHandle> elements) {
+        synchronized (LOCK) {
+            selectedElements = elements;
+        }
         if (isValid()) {
             List<JSONObject> jsonHandles = new ArrayList<JSONObject>(elements.size());
             for (ElementHandle handle : elements) {
@@ -185,6 +195,14 @@ public class PageModelImpl extends PageModel {
             JSONArray array = new JSONArray(jsonHandles);
             String code = array.toString();
             executeScript("NetBeans.selectElements("+code+")"); // NOI18N
+        }
+        firePropertyChange(PROP_SELECTED_ELEMENTS, null, null);
+    }
+
+    @Override
+    public Collection<ElementHandle> getSelectedElements() {
+        synchronized (LOCK) {
+            return Collections.unmodifiableCollection(selectedElements);
         }
     }
 
@@ -297,6 +315,37 @@ public class PageModelImpl extends PageModel {
                 executeScript("NetBeans.reloadScript("+url+")");
             }
         }
+    }
+
+    @Override
+    public List<RuleInfo> getMatchedRules(ElementHandle element) {
+        List<RuleInfo> rules = Collections.EMPTY_LIST;
+        if (isValid()) {
+            JSONObject jsonHandle = element.toJSONObject();
+            String code = jsonHandle.toString();
+            Object result = executeScript("NetBeans.getMatchedRules("+code+")"); // NOI18N
+            if (result instanceof JSONArray) {
+                JSONArray array = (JSONArray)result;
+                rules = new LinkedList<RuleInfo>();
+                for (int i=0; i<array.length(); i++) {
+                    try {
+                        JSONObject resource = array.getJSONObject(i);
+                        String selector = resource.getUnsafeString(RULE_SELECTOR);
+                        String sourceURL = null;
+                        if (!resource.isNull(RULE_SOURCE_URL)) {
+                            sourceURL = resource.getUnsafeString(RULE_SOURCE_URL);
+                        }
+                        JSONObject style = resource.getJSONObject(RULE_STYLE);
+                        rules.add(new RuleInfo(sourceURL, selector, toMap(style)));
+                    } catch (JSONException ex) {
+                        LOG.log(Level.INFO, "Unexpected matched rule on index {0} in {1}", new Object[]{i, array}); // NOI18N
+                    }
+                }
+            } else if (result != ScriptExecutor.ERROR_RESULT) {
+                LOG.log(Level.INFO, "Unexpected matched rules: {0}", result); // NOI18N
+            }
+        }
+        return rules;
     }
 
 }

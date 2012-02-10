@@ -93,7 +93,8 @@ public class GoToElementSourceAction extends NodeAction  {
             file = FileUtil.normalizeFile(file);
             FileObject fob = FileUtil.toFileObject(file);
             Source source = Source.create(fob);
-            ParserManager.parse(Collections.singleton(source), new GoToElementTask(element, fob));
+            ElementHandle handle = ElementHandle.forElement(element);
+            ParserManager.parse(Collections.singleton(source), new GoToElementTask(handle, fob));
         } catch (URISyntaxException ex) {
             Logger.getLogger(GoToElementSourceAction.class.getName()).log(Level.INFO, null, ex);
         } catch (ParseException ex) {
@@ -137,17 +138,9 @@ public class GoToElementSourceAction extends NodeAction  {
      */
     static class GoToElementTask extends UserTask {
         /** Element to jump to. */
-        private Element element;
+        private ElementHandle element;
         /** File to jump into. */
         private FileObject fob;
-        /**
-         * Helper field storing the node that is nearest to the requested element.
-         * It is used when the exact match cannot be found. This can happen
-         * when the source file doesn't correspond to the owner document
-         * of the element (either because the source file has been modified
-         * or because the document was tweaked by JavaScript).
-         */
-        private AstNode fallback;
 
         /**
          * Creates a new {@code GoToElementTask} for the specified file and element.
@@ -155,17 +148,16 @@ public class GoToElementSourceAction extends NodeAction  {
          * @param element element to jump to.
          * @param fob file to jump into.
          */
-        GoToElementTask(Element element, FileObject fob) {
+        GoToElementTask(ElementHandle element, FileObject fob) {
             this.element = element;
             this.fob = fob;
         }
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            fallback = null;
             HtmlParsingResult result = (HtmlParsingResult)resultIterator.getParserResult();
             AstNode root = result.root();
-            AstNode[] searchResult = ElementHandle.create(element).locateInAst(root);
+            AstNode[] searchResult = element.locateInAst(root);
             AstNode node = searchResult[0];
             if (node == null) {
                 // Exact match not found, use the nearest node

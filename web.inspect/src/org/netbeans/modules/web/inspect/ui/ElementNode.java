@@ -115,7 +115,7 @@ public class ElementNode extends AbstractNode {
             @Override
             public void run() {
                 PageModel pageModel = PageModel.getDefault();
-                ElementHandle handle = ElementHandle.create(element);
+                ElementHandle handle = ElementHandle.forElement(element);
                 updateProperties(SET_ATTRIBUTES_INDEX, pageModel.getAtrributes(handle));
                 updateProperties(SET_STYLE_INDEX, pageModel.getComputedStyle(handle));
             } 
@@ -327,7 +327,8 @@ public class ElementNode extends AbstractNode {
          * @param element 
          */
         void setElement(Element element) {
-            setLookups(Lookups.singleton(element));
+            ElementHandle handle = ElementHandle.forElement(element);
+            setLookups(Lookups.fixed(element, handle));
         }
     }
 

@@ -251,9 +251,10 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
                     Node[] nodes = manager.getSelectedNodes();
                     final List<ElementHandle> elements = new ArrayList<ElementHandle>(nodes.length);
                     for (Node node : nodes) {
-                        Element element = node.getLookup().lookup(Element.class);
-                        ElementHandle handle = ElementHandle.create(element);
-                        elements.add(handle);
+                        ElementHandle handle = node.getLookup().lookup(ElementHandle.class);
+                        if (handle != null) {
+                            elements.add(handle);
+                        }
                     }
                     RP.post(new Runnable() {
                         @Override

@@ -91,18 +91,18 @@ public class ElementHandle {
     }
 
     /**
-     * Creates an element handle from its JSON representation
+     * Returns an element handle for its JSON representation
      * (obtained from the browser plugin).
      * 
      * @param json JSON representation of the handle.
      * @return handle that corresponds to the one given in JSON format.
      */
-    public static ElementHandle create(JSONObject json) {
+    public static ElementHandle forJSONObject(JSONObject json) {
         try {
             ElementHandle handle = new ElementHandle();
             if (!json.isNull(JSON_PARENT)) {
                 JSONObject parent = json.getJSONObject(JSON_PARENT);
-                handle.parent = create(parent);
+                handle.parent = forJSONObject(parent);
             }
             handle.indexInParent = json.getInt(JSON_INDEX_IN_PARENT);
             JSONArray siblings = json.getJSONArray(JSON_SIBLING_TAG_NAMES);
@@ -118,7 +118,7 @@ public class ElementHandle {
     }
 
     /**
-     * Creates an element handle for the specified DOM element.
+     * Returns an element handle for the specified DOM element.
      * The handles are cached, i.e., the same handle is returned
      * for the same DOM element instance when the method is called
      * more than once.
@@ -126,7 +126,7 @@ public class ElementHandle {
      * @param element DOM element for which the handle should be created.
      * @return handle that corresponds to the given DOM element.
      */
-    public static ElementHandle create(Element element) {
+    public static ElementHandle forElement(Element element) {
         Object storedHandle = element.getUserData(ELEMENT_USER_DATA_HANDLE);
         if (storedHandle instanceof ElementHandle) {
             return (ElementHandle)storedHandle;
@@ -136,7 +136,7 @@ public class ElementHandle {
         Node parentNode = element.getParentNode();
         if (parentNode.getNodeType() == Node.ELEMENT_NODE) {
             Element parentElement = (Element)parentNode;
-            ElementHandle parentHandle = create(parentElement);
+            ElementHandle parentHandle = forElement(parentElement);
             handle.parent = parentHandle;
             NodeList siblings = parentElement.getChildNodes();
             List<String> siblingTags = new ArrayList<String>(siblings.getLength());

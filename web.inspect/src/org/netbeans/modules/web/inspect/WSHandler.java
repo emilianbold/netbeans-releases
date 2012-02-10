@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.web.common.websocket.WebSocketReadHandler;
 import org.netbeans.modules.web.common.websocket.WebSocketServer;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
 /**
@@ -90,9 +91,15 @@ public class WSHandler implements WebSocketReadHandler {
      * Updates {@code PageModel} by making the current executor its executor.
      */
     void updateModel() {
-        PageModel pageModel = PageModel.getDefault();
+        final PageModel pageModel = PageModel.getDefault();
         if (pageModel instanceof PageModelImpl) {
-            ((PageModelImpl)pageModel).setExecutor(currentExecutor);
+            final ScriptExecutor executor = currentExecutor;
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    ((PageModelImpl)pageModel).setExecutor(executor);
+                }
+            });
         }        
     }
 

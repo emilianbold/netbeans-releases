@@ -44,6 +44,7 @@ package org.netbeans.modules.web.inspect;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import org.w3c.dom.Document;
 
@@ -58,6 +59,8 @@ public abstract class PageModel {
      * the model has changed significantly.
      */
     public static final String PROP_MODEL = "model"; // NOI18N
+    /** Name of the property that is fired when the set of selected elements is changed. */
+    public static final String PROP_SELECTED_ELEMENTS = "selectedElements"; // NOI18N
     /** Default instance of the model. */
     private static final PageModel INSTANCE = new PageModelImpl();
     /** Property change support. */
@@ -93,11 +96,18 @@ public abstract class PageModel {
     public abstract Document getDocument();
 
     /**
-     * Sets the selected element in the page.
+     * Sets the selected elements in the page.
      * 
      * @param elements elements to select in the page.
      */
     public abstract void setSelectedElements(Collection<ElementHandle> elements);
+
+    /**
+     * Returns selected elements.
+     * 
+     * @return selected elements.
+     */
+    public abstract Collection<ElementHandle> getSelectedElements();
 
     /**
      * Returns attributes of the specified element.
@@ -123,6 +133,14 @@ public abstract class PageModel {
      * @return resources used by the page.
      */
     public abstract Collection<ResourceInfo> getResources();
+
+    /**
+     * Returns style rules that match the specified element.
+     * 
+     * @param element element whose matching style rules should be returned.
+     * @return style rules that match the specified element.
+     */
+    public abstract List<RuleInfo> getMatchedRules(ElementHandle element);
 
     /**
      * Reloads the specified resource in the page.
@@ -249,6 +267,62 @@ public abstract class PageModel {
                 return result;
             }
         };
+    }
+
+    /**
+     * Information about a CSS/style rule.
+     */
+    public static class RuleInfo {
+        /** URL of the style sheet this rule comes from. */
+        private String sourceURL;
+        /** Selector of this rule. */
+        private String selector;
+        /**
+         * Style information of the rule - maps the name of style attribute
+         * (specified by this rule) to its value.
+         */
+        private Map<String,String> style;
+
+        /**
+         * Creates a new {@code RuleInfo}.
+         * 
+         * @param sourceURL URL of the style sheet the rule comes from.
+         * @param selector selector of the rule.
+         * @param style style information of the rule.
+         */
+        public RuleInfo(String sourceURL, String selector, Map<String,String> style) {
+            this.sourceURL = sourceURL;
+            this.selector = selector;
+            this.style = style;
+        }
+
+        /**
+         * Returns URL of the style sheet this rule comes from.
+         * 
+         * @return URL of the style sheet this rule comes from.
+         */
+        public String getSourceURL() {
+            return sourceURL;
+        }
+
+        /**
+         * Returns the selector of this rule.
+         * 
+         * @return selector of this rule.
+         */
+        public String getSelector() {
+            return selector;
+        }
+
+        /**
+         * Returns style information of the rule.
+         * 
+         * @return style information of the rule.
+         */
+        public Map<String,String> getStyle() {
+            return style;
+        }
+        
     }
     
 }

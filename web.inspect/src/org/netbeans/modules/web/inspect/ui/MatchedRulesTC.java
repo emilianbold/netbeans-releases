@@ -44,53 +44,47 @@ package org.netbeans.modules.web.inspect.ui;
 import java.awt.BorderLayout;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
-import org.openide.explorer.ExplorerUtils;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
+import org.openide.util.NbBundle.Messages;
 
 /**
- * Top component which displays DOM Tree.
+ * Top component which displays matched style rules of an element.
  * 
  * @author Jan Stola
  */
 @TopComponent.Description(
-        preferredID = DomTC.ID,
-        persistenceType = TopComponent.PERSISTENCE_ALWAYS,
-        iconBase = ElementNode.ICON_BASE)
+        preferredID = MatchedRulesTC.ID,
+        persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.Registration(
-        mode = "navigator", // NOI18N
-        position = 600,
+        mode = "properties", // NOI18N
         openAtStartup = false)
 @ActionID(
         category = "Window", // NOI18N
-        id = "org.netbeans.modules.web.inspect.ui.DomTC") // NOI18N
+        id = "org.netbeans.modules.web.inspect.ui.MatchedRulesTC") // NOI18N
 @ActionReference(
         path = "Menu/Window/Navigator", // NOI18N
-        position = 600)
+        position = 800)
 @TopComponent.OpenActionRegistration(
-        displayName = "#CTL_DomAction", // NOI18N
-        preferredID = DomTC.ID)
-@NbBundle.Messages({
-    "CTL_DomAction=DOM Tree", // NOI18N
-    "CTL_DomTC=DOM Tree", // NOI18N
-    "HINT_DomTC=This window shows a DOM Tree" // NOI18N
+        displayName = "#CTL_MatchedRulesAction", // NOI18N
+        preferredID = MatchedRulesTC.ID)
+@Messages({
+    "CTL_MatchedRulesAction=Matched Rules", // NOI18N
+    "CTL_MatchedRulesTC=Matched Rules", // NOI18N
+    "HINT_MatchedRulesTC=This window shows matched style rules of an element." // NOI18N
 })
-public final class DomTC extends TopComponent {
+public final class MatchedRulesTC extends TopComponent {
     /** TopComponent ID. */
-    public static final String ID = "DomTC"; // NOI18N
+    public static final String ID = "MatchedRulesTC"; // NOI18N
     /** Panel shown in this {@code TopComponent}. */
-    private DomPanel domPanel;
+    private MatchedRulesPanel matchedRulesPanel;
 
     /**
-     * Creates a new {@code DomTC}.
+     * Creates a new {@code MatchedRulesTC}.
      */
-    public DomTC() {
+    public MatchedRulesTC() {
         initComponents();
-        setName(Bundle.CTL_DomTC());
-        setToolTipText(Bundle.HINT_DomTC());
-        Lookup lookup = ExplorerUtils.createLookup(domPanel.getExplorerManager(), getActionMap());
-        associateLookup(lookup);
+        setName(Bundle.CTL_MatchedRulesTC());
+        setToolTipText(Bundle.HINT_MatchedRulesTC());
     }
 
     /**
@@ -98,8 +92,8 @@ public final class DomTC extends TopComponent {
      */
     private void initComponents() {
         setLayout(new BorderLayout());
-        domPanel = new DomPanel();
-        add(domPanel);
+        matchedRulesPanel = new MatchedRulesPanel();
+        add(matchedRulesPanel);
     }
 
 }

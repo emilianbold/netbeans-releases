@@ -70,7 +70,7 @@ import org.openide.windows.TopComponent;
         position = 700)
 @TopComponent.OpenActionRegistration(
         displayName = "#CTL_ResourcesAction", // NOI18N
-        preferredID = "ResourcesTC") // NOI18N
+        preferredID = ResourcesTC.ID)
 @NbBundle.Messages({
     "CTL_ResourcesAction=Page Resources", // NOI18N
     "CTL_ResourcesTC=Page Resources", // NOI18N
