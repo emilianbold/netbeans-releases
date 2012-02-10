@@ -41,47 +41,25 @@
  */
 package org.netbeans.modules.php.symfony2.annotations.extra;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
 import org.openide.util.NbBundle;
 
-public final class Symfony2ExtraAnnotationsProvider extends PhpAnnotationsProvider {
+public class TemplateTag extends PhpAnnotationTag {
 
-    @NbBundle.Messages("Symfony2ExtraAnnotationsProvider.name=Symfony2 Extra")
-    public Symfony2ExtraAnnotationsProvider() {
-        super("Symfony2 Extra Annotations", // NOI18N
-                Bundle.Symfony2ExtraAnnotationsProvider_name(),
-                null);
+    public TemplateTag() {
+        super("Template", // NOI18N
+                "@Template(\"${name}\")", // NOI18N
+                NbBundle.getMessage(TemplateTag.class, "TemplateTag.documentation"));
     }
 
     @Override
-    public List<PhpAnnotationTag> getFunctionAnnotations() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List<PhpAnnotationTag> getTypeAnnotations() {
-        return Arrays.<PhpAnnotationTag>asList(
-                new RouteTag(),
-                new CacheTag());
-    }
-
-    @Override
-    public List<PhpAnnotationTag> getFieldAnnotations() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List<PhpAnnotationTag> getMethodAnnotations() {
-        return Arrays.<PhpAnnotationTag>asList(
-                new RouteTag(),
-                new MethodTag(),
-                new ParamConverterTag(),
-                new TemplateTag(),
-                new CacheTag());
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText("("); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("\"name\""); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText(")"); //NOI18N
     }
 
 }
