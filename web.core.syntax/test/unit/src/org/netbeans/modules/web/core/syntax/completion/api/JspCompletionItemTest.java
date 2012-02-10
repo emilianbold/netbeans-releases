@@ -58,8 +58,7 @@ public class JspCompletionItemTest extends TestBase {
         super(name);
     }
 
-    // commenting out temporarily; failing because of infrastructure issues??
-    public void XXXXtestGetStreamForUrl() throws Exception {
+    public void testGetStreamForUrl() throws Exception {
         URL url = new URL("http://java.sun.com/jsp/jstl/core");
         InputStream inputStreamForUrl = JspCompletionItem.getInputStreamForUrl(url);
         assertNotNull(inputStreamForUrl);
