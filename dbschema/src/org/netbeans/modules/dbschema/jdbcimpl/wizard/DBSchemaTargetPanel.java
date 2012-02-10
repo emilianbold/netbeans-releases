@@ -45,10 +45,7 @@
 package org.netbeans.modules.dbschema.jdbcimpl.wizard;
 
 import java.awt.Component;
-import java.beans.*;
-
 import javax.swing.event.ChangeListener;
-
 import org.openide.util.HelpCtx;
 
 public class DBSchemaTargetPanel extends DBSchemaPanel {
@@ -66,10 +63,12 @@ public class DBSchemaTargetPanel extends DBSchemaPanel {
         return this;
     }
 
+    @Override
     public Component getComponent() {
         return panel.getComponent();
     }
 
+    @Override
     public boolean isValid() {
         boolean ret = panel.isValid();
         
@@ -85,22 +84,27 @@ public class DBSchemaTargetPanel extends DBSchemaPanel {
         return ret;
     }
 
+    @Override
     public void readSettings(Object settings) {
         panel.readSettings(settings);
     }
 
+    @Override
     public void storeSettings(Object settings) {
         panel.storeSettings(settings);
     }
 
+    @Override
     public HelpCtx getHelp() {
         return null;
     }
 
+    @Override
     public synchronized void addChangeListener(ChangeListener listener) {
         panel.addChangeListener(listener);
     }
 
+    @Override
     public synchronized void removeChangeListener(ChangeListener listener) {
         panel.removeChangeListener(listener);
     }

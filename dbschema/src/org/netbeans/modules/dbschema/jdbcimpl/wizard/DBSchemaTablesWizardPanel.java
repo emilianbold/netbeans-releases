@@ -57,6 +57,7 @@ public final class DBSchemaTablesWizardPanel extends DBSchemaPanel {
     }
 
     /** @return AWT component which represents UI of this wizard panel */
+    @Override
     public Component getComponent() {
         return getPanelUI();
     }
@@ -71,6 +72,7 @@ public final class DBSchemaTablesWizardPanel extends DBSchemaPanel {
         return panelUI;
     }
     
+    @Override
     public boolean isValid () {
         return getPanelUI().isInputValid();
     }
