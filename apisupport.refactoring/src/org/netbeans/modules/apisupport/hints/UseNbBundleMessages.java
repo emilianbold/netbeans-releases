@@ -54,12 +54,9 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.GeneratorUtilities;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import static org.netbeans.modules.apisupport.hints.Bundle.*;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
@@ -87,11 +84,11 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
-import org.netbeans.api.actions.Savable;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
 
 @Hint(category="apisupport", displayName="#UseNbBundleMessages.displayName", description="#UseNbBundleMessages.description", severity=Hint.Severity.CURRENT_LINE_WARNING)
@@ -216,18 +213,12 @@ public class UseNbBundleMessages {
                 return warning(UseNbBundleMessages_no_such_key(key), span, compilationInfo);
             }
         }
-        return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(Severity.WARNING, UseNbBundleMessages_error_text(), Collections.<Fix>singletonList(new Fix() {
-            public @Override String getText() {
+        return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(Severity.WARNING, UseNbBundleMessages_error_text(), Collections.<Fix>singletonList(new JavaFix(compilationInfo, treePath) {
+            @Override protected String getText() {
                 return UseNbBundleMessages_displayName();
             }
-            public @Override ChangeInfo implement() throws Exception {
-                JavaSource js = JavaSource.forFileObject(src);
-                if (js == null) {
-                    throw new Exception("No source info for " + src);
-                }
-                js.runModificationTask(new Task<WorkingCopy>() {
-                    public @Override void run(WorkingCopy wc) throws Exception {
-                        wc.toPhase(JavaSource.Phase.RESOLVED);
+            @Override protected void performRewrite(JavaFix.TransformationContext ctx) {
+                WorkingCopy wc = ctx.getWorkingCopy();
                         TreeMaker make = wc.getTreeMaker();
                         if (mit != null) {
                             CompilationUnitTree cut = wc.getCompilationUnit();
@@ -275,9 +266,23 @@ public class UseNbBundleMessages {
                             wc.rewrite(modifiers, addMessage(wc, modifiers, lines));
                         }
                         // XXX remove NbBundle import if now unused
+                try {
+                    if (!isAlreadyRegistered) {
+                        OutputStream os = bundleProperties.getOutputStream();
+                        try {
+                            ep.store(os);
+                        } finally {
+                            os.close();
+                        }
                     }
+                } catch (IOException x) {
+                    // XXX how to handle? cannot roll back (#207577 JG13)
+                    Exceptions.printStackTrace(x);
+                }
+                // XXX after JavaFix rewrite, Savable.save (on DataObject.find(src)) no longer works (JG13 again)
+            }
                     // borrowed from FindBugsHint:
-                    private Tree addMessage(WorkingCopy wc, /*Modifiers|CompilationUnit*/Tree original, List<ExpressionTree> lines) throws Exception {
+                    private Tree addMessage(WorkingCopy wc, /*Modifiers|CompilationUnit*/Tree original, List<ExpressionTree> lines) throws IllegalArgumentException {
                         TreeMaker make = wc.getTreeMaker();
                         // First try to insert into a value list for an existing annotation:
                         List<? extends AnnotationTree> anns;
@@ -293,11 +298,11 @@ public class UseNbBundleMessages {
                             if (annotationType.toString().matches("((org[.]openide[.]util[.])?NbBundle[.])?Messages")) {
                                 List<? extends ExpressionTree> args = ann.getArguments();
                                 if (args.size() != 1) {
-                                    throw new Exception("expecting just one arg for @Messages");
+                                    throw new IllegalArgumentException("expecting just one arg for @Messages");
                                 }
                                 AssignmentTree assign = (AssignmentTree) args.get(0);
                                 if (!assign.getVariable().toString().equals("value")) {
-                                    throw new Exception("expected value=... for @Messages");
+                                    throw new IllegalArgumentException("expected value=... for @Messages");
                                 }
                                 ExpressionTree arg = assign.getExpression();
                                 NewArrayTree arr;
@@ -306,7 +311,7 @@ public class UseNbBundleMessages {
                                 } else if (arg.getKind() == Tree.Kind.NEW_ARRAY) {
                                     arr = (NewArrayTree) arg;
                                 } else {
-                                    throw new Exception("unknown arg kind " + arg.getKind() + ": " + arg);
+                                    throw new IllegalArgumentException("unknown arg kind " + arg.getKind() + ": " + arg);
                                 }
                                 for (ExpressionTree line : lines) {
                                     arr = make.addNewArrayInitializer(arr, line);
@@ -368,24 +373,7 @@ public class UseNbBundleMessages {
                         }
                         return findEnclosingElement(wc, parentPath);
                     }
-                }).commit();
-                if (!isAlreadyRegistered) {
-                    OutputStream os = bundleProperties.getOutputStream();
-                    try {
-                        ep.store(os);
-                    } finally {
-                        os.close();
-                    }
-                }
-                Savable save = DataObject.find(src).getLookup().lookup(Savable.class);
-                if (save != null) {
-                    save.save();
-                } else {
-                    // XXX sometimes does not appear here reliably, why?
-                }
-                return null;
-            }
-        }), compilationInfo.getFileObject(), span[0], span[1]));
+        }.toEditorFix()), compilationInfo.getFileObject(), span[0], span[1]));
     }
 
     private static List<ErrorDescription> warning(String text, int[] span, CompilationInfo compilationInfo) {
