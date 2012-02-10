@@ -140,10 +140,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
         final List<TreePathHandle> result = new ArrayList<TreePathHandle>();
         Document doc = info.getDocument();
         
-        if (doc == null) {
-            Logger.getLogger(SemanticHighlighter.class.getName()).log(Level.FINE, "SemanticHighlighter: Cannot get document!");
-            return result;
-        }
+        if (!verifyDocument(doc)) return result;
         
         sh.process(info,doc, new ErrorDescriptionSetter() {
             public void setErrors(Document doc, List<ErrorDescription> errors, List<TreePathHandle> allUnusedImports) {
@@ -182,10 +179,18 @@ public class SemanticHighlighter extends JavaParserResultTask {
         cancel.set(false);
         
         final Document doc = result.getSnapshot().getSource().getDocument(false);
+        
+        if (!verifyDocument(doc)) return;
 
+        if (process(info, doc)/* && fact != null*/) {
+//            fact.rescheduleImpl(file);
+        }
+    }
+
+    private static boolean verifyDocument(final Document doc) {
         if (doc == null) {
             Logger.getLogger(SemanticHighlighter.class.getName()).log(Level.FINE, "SemanticHighlighter: Cannot get document!");
-            return ;
+            return false;
         }
 
         final boolean[] tokenSequenceNull =  new boolean[1];
@@ -195,12 +200,10 @@ public class SemanticHighlighter extends JavaParserResultTask {
             }
         });
         if (tokenSequenceNull[0]) {
-            return;
+            return false;
         }
-
-        if (process(info, doc)/* && fact != null*/) {
-//            fact.rescheduleImpl(file);
-        }
+        
+        return true;
     }
     
     public void cancel() {
