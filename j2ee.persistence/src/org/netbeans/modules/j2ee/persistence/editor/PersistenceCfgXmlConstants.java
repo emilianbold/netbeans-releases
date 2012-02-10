@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -40,23 +40,22 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.sql.history;
-
-import java.util.List;
+package org.netbeans.modules.j2ee.persistence.editor;
 
 /**
- *
- * @author John Baker
+ * Constants for persistence configuration file tags and attribute names
+ * 
+ * @author sergey petrov
  */
-public interface SQLHistoryModel {
-    void initialize();
+public class PersistenceCfgXmlConstants {
     
-    void setFilter(String filter);
-        
-    String getFilter();
+    public static final String PROPERTY_TAG = "property";//NOI18N
+    public static final String JTA_DATA_SOURCE = "jta-data-source";//NOI18N
+    public static final String CLASS = "class";//NO18N
+    public static final String MAPPING_FILE = "mapping-file";//NO18N
+    public static final String PROVIDER = "provider";//NO18N
     
-    List<SQLHistory> getSQLHistoryList() throws SQLHistoryException;
-    
-    void setSQLHistoryList(List<SQLHistory> sqlHistoryList);
-    
+    public static final String NAME_ATTRIB = "name";//NO18N
+    public static final String VALUE_ATTRIB = "value";//NO18N
+
 }

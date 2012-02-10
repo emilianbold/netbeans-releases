@@ -195,7 +195,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (USE_VCS) {
             FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
             if (interceptor != null) {
-                interceptor.beforeCreate(FilesystemInterceptorProvider.toFileProxy(orig.getWrapper()), name, directory);
+                interceptor.beforeCreate(FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject()), name, directory);
             }
         }
         ProcessUtils.ExitStatus res;
@@ -261,7 +261,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (USE_VCS) {
             FilesystemInterceptorProvider.FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
             if (interceptor != null) {
-                interceptor.createFailure(FilesystemInterceptorProvider.toFileProxy(getWrapper()), name, directory);
+                interceptor.createFailure(FilesystemInterceptorProvider.toFileProxy(getOwnerFileObject()), name, directory);
             }
         }
     }
@@ -272,13 +272,14 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     @Override
     public RemoteFileObject getFileObject(String relativePath) {
-        return getFileObject(relativePath, (Set<String>) null);
+        RemoteFileObject result = getFileObject(relativePath, (Set<String>) null);
+        return result;
     }
     
     /*package*/ RemoteFileObject getFileObject(String relativePath, Set<String> antiLoop) {
         relativePath = PathUtilities.normalizeUnixPath(relativePath);
         if ("".equals(relativePath)) { // NOI18N
-            return getWrapper();
+            return getOwnerFileObject();
         }
         if (relativePath.startsWith("..")) { //NOI18N
             String absPath = getPath() + '/' + relativePath;
@@ -305,7 +306,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             String childNameExt = relativePath.substring(slashPos + 1);
             RemoteFileObject parentFileObject = getFileSystem().findResource(parentRemotePath);
             if (parentFileObject != null &&  parentFileObject.isFolder()) {
-                return parentFileObject.getFileObject(childNameExt);
+                RemoteFileObject result = parentFileObject.getFileObject(childNameExt);
+                return result;
             } else {
                 return null;
             }
@@ -317,7 +319,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (entry == null) {
                 return null;
             }
-            return createFileObject(entry).getWrapper();
+            return createFileObject(entry).getOwnerFileObject();
         } catch (InterruptedException ex) {
             RemoteLogger.finest(ex, this);
             return null;
@@ -346,8 +348,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
     
     private void fireRemoteFileObjectCreated(RemoteFileObject fo) {
-        FileEvent e = new FileEvent(this.getWrapper(), fo);
-        RemoteFileObjectBase delegate = fo.getDelegate();
+        FileEvent e = new FileEvent(this.getOwnerFileObject(), fo);
+        RemoteFileObjectBase delegate = fo.getImplementor();
         if (delegate instanceof RemoteDirectory) { // fo.isFolder() very slow if it is a link
             fireFileFolderCreatedEvent(getListeners(), e);
         } else if (delegate instanceof RemotePlainFile) {
@@ -440,7 +442,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             RemoteFileObject[] childrenFO = new RemoteFileObject[entries.size()];
             for (int i = 0; i < entries.size(); i++) {
                 DirEntry entry = entries.get(i);
-                childrenFO[i] = createFileObject(entry).getWrapper();
+                childrenFO[i] = createFileObject(entry).getOwnerFileObject();
             }
             return childrenFO;
         } catch (InterruptedException ex) {
@@ -606,7 +608,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (USE_VCS) {
                 FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
                 if (interceptor != null) {
-                    FilesystemInterceptorProvider.IOHandler renameHandler = interceptor.getRenameHandler(FilesystemInterceptorProvider.toFileProxy(orig.getWrapper()), newNameExt);
+                    FilesystemInterceptorProvider.IOHandler renameHandler = interceptor.getRenameHandler(FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject()), newNameExt);
                     if (renameHandler != null) {
                         renameHandler.handle();
                         isRenamed = true;
@@ -793,16 +795,16 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (changed) {
                 dropMagic();
                 for (FileObject deleted : filesToFireDeleted) {
-                    fireFileDeletedEvent(getListeners(), new FileEvent(this.getWrapper(), deleted));
+                    fireFileDeletedEvent(getListeners(), new FileEvent(this.getOwnerFileObject(), deleted));
                 }
                 for (DirEntry entry : entriesToFireCreated) {
                     RemoteFileObjectBase fo = createFileObject(entry);
-                    fireRemoteFileObjectCreated(fo.getWrapper());
+                    fireRemoteFileObjectCreated(fo.getOwnerFileObject());
                 }
                 for (DirEntry entry : entriesToFireChanged) {
                     RemoteFileObjectBase fo = getFileSystem().getFactory().getCachedFileObject(getPath() + '/' + entry.getName());
                     if (fo != null) {
-                        fireFileChangedEvent(getListeners(), new FileEvent(fo.getWrapper()));
+                        fireFileChangedEvent(getListeners(), new FileEvent(fo.getOwnerFileObject()));
                     }
                 }
                 // rename itself
@@ -810,9 +812,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 getFileSystem().getFactory().rename(path2Rename, newPath, directChild2Rename);
                 // fire rename
                 fireFileRenamedEvent(directChild2Rename.getListeners(), 
-                        new FileRenameEvent(directChild2Rename.getWrapper(), directChild2Rename.getWrapper(), name2Rename, ext2Rename));
+                        new FileRenameEvent(directChild2Rename.getOwnerFileObject(), directChild2Rename.getOwnerFileObject(), name2Rename, ext2Rename));
                 fireFileRenamedEvent(this.getListeners(), 
-                        new FileRenameEvent(this.getWrapper(), directChild2Rename.getWrapper(), name2Rename, ext2Rename));
+                        new FileRenameEvent(this.getOwnerFileObject(), directChild2Rename.getOwnerFileObject(), name2Rename, ext2Rename));
             }
         } finally {
             writeLock.unlock();
@@ -1117,10 +1119,10 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
                 }
                 for (RemoteFileObject deleted : filesToFireDeleted) {
-                    fireDeletedEvent(this.getWrapper(), deleted, interceptor, expected);
+                    fireDeletedEvent(this.getOwnerFileObject(), deleted, interceptor, expected);
                 }
                 for (DirEntry entry : entriesToFireCreated) {
-                    RemoteFileObject fo = createFileObject(entry).getWrapper();
+                    RemoteFileObject fo = createFileObject(entry).getOwnerFileObject();
                     if (interceptor != null && expectedCreated != null && !expectedCreated.equals(entry)) {
                         interceptor.createdExternally(FilesystemInterceptorProvider.toFileProxy(fo));
                     }
@@ -1132,7 +1134,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         if (fo.isPendingRemoteDelivery()) {
                             RemoteLogger.getInstance().log(Level.FINE, "Skipping change event for pending file {0}", fo);
                         } else {
-                            fireFileChangedEvent(getListeners(), new FileEvent(fo.getWrapper(), fo.getWrapper(), expected));
+                            fireFileChangedEvent(getListeners(), new FileEvent(fo.getOwnerFileObject(), fo.getOwnerFileObject(), expected));
                         }
                     }
                 }
@@ -1148,8 +1150,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (interceptor != null) {
             interceptor.deletedExternally(FilesystemInterceptorProvider.toFileProxy(fo));
         }
-        fo.fireFileDeletedEvent(fo.getDelegate().getListeners(), new FileEvent(fo, fo, expected));
-        parent.fireFileDeletedEvent(parent.getDelegate().getListeners(), new FileEvent(parent, fo, expected));
+        fo.fireFileDeletedEvent(fo.getImplementor().getListeners(), new FileEvent(fo, fo, expected));
+        parent.fireFileDeletedEvent(parent.getImplementor().getListeners(), new FileEvent(parent, fo, expected));
     }
     
     InputStream _getInputStream(RemotePlainFile child) throws

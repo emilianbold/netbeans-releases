@@ -265,10 +265,10 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     
     /*package*/ RemoteFileObjectBase findResource(String name, Set<String> antiloop) {
         if (name.isEmpty() || name.equals("/")) {  // NOI18N
-            return getRoot().getDelegate();
+            return getRoot().getImplementor();
         } else {
             RemoteFileObject fo = rootDelegate.getFileObject(name, antiloop);
-            return (fo == null) ? null : fo.getDelegate();
+            return (fo == null) ? null : fo.getImplementor();
         }
     }
     
@@ -322,10 +322,10 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             }
         }
         if (hasParent) {
-            file.fireFileAttributeChangedEvent(file.getListeners(), new FileAttributeEvent(file.getWrapper(), file.getWrapper(), attrName, oldValue, value));
-            parent.fireFileAttributeChangedEvent(parent.getListeners(), new FileAttributeEvent(parent.getWrapper(), file.getWrapper(), attrName, oldValue, value));
+            file.fireFileAttributeChangedEvent(file.getListeners(), new FileAttributeEvent(file.getOwnerFileObject(), file.getOwnerFileObject(), attrName, oldValue, value));
+            parent.fireFileAttributeChangedEvent(parent.getListeners(), new FileAttributeEvent(parent.getOwnerFileObject(), file.getOwnerFileObject(), attrName, oldValue, value));
         } else {
-            file.fireFileAttributeChangedEvent(file.getListeners(), new FileAttributeEvent(file.getWrapper(), file.getWrapper(), attrName, oldValue, value));
+            file.fireFileAttributeChangedEvent(file.getListeners(), new FileAttributeEvent(file.getOwnerFileObject(), file.getOwnerFileObject(), attrName, oldValue, value));
         }
     }
 

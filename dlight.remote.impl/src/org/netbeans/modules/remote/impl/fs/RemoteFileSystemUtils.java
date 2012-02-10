@@ -263,7 +263,7 @@ public class RemoteFileSystemUtils {
     
     public static FileObject getCanonicalFileObject(FileObject fo) throws IOException {
         if (fo instanceof RemoteFileObject) {
-            return getCanonicalFileObject(((RemoteFileObject) fo).getDelegate()).getWrapper();
+            return getCanonicalFileObject(((RemoteFileObject) fo).getImplementor()).getOwnerFileObject();
         }
         return fo;
     }

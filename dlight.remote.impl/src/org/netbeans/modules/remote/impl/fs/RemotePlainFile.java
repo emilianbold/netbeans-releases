@@ -109,7 +109,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         if (relativePath.startsWith("/")) { //NOI18N
             relativePath = relativePath.substring(1);
         }
-        RemoteFileObject res = this.getWrapper();
+        RemoteFileObject res = this.getOwnerFileObject();
         StringTokenizer st = new StringTokenizer(relativePath, "/"); //NOI18N
         while ((res != null) && st.hasMoreTokens()) {
             String nameExt = st.nextToken();
@@ -199,7 +199,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         }
         FileLock lock = super.lockImpl(orig);
         if (interceptor != null) {
-            interceptor.fileLocked(FilesystemInterceptorProvider.toFileProxy(orig.getWrapper()));
+            interceptor.fileLocked(FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject()));
         }
         return lock;
     }
@@ -238,7 +238,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     public void refresh(boolean expected) {        
         try {
             if (RemoteFileObjectBase.DEFER_WRITES) {
-                WritingQueue.getInstance(getExecutionEnvironment()).waitFinished(Collections.<FileObject>singleton(this.getWrapper()), null);
+                WritingQueue.getInstance(getExecutionEnvironment()).waitFinished(Collections.<FileObject>singleton(this.getOwnerFileObject()), null);
             }
         } catch (InterruptedException ex) {
             RemoteLogger.finest(ex, this);
@@ -256,7 +256,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
 
         public DelegateOutputStream(FilesystemInterceptorProvider.FilesystemInterceptor interceptor, RemoteFileObjectBase orig) throws IOException {
             if (interceptor != null) {
-                interceptor.beforeChange(FilesystemInterceptorProvider.toFileProxy(orig.getWrapper()));
+                interceptor.beforeChange(FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject()));
             }
             delegate = new FileOutputStream(getCache());
         }
@@ -274,10 +274,10 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         @Override
         public void close() throws IOException {
             delegate.close();
-            FileEvent ev = new FileEvent(getWrapper(), getWrapper(), true);
+            FileEvent ev = new FileEvent(getOwnerFileObject(), getOwnerFileObject(), true);
             RemotePlainFile.this.setPendingRemoteDelivery(true);
             if (RemoteFileObjectBase.DEFER_WRITES) {
-                getWrapper().fireFileChangedEvent(getListenersWithParent(), ev);
+                getOwnerFileObject().fireFileChangedEvent(getListenersWithParent(), ev);
                 WritingQueue.getInstance(getExecutionEnvironment()).add(RemotePlainFile.this);
             } else {
                 CommonTasksSupport.UploadParameters params = new CommonTasksSupport.UploadParameters(
@@ -288,7 +288,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                     if (uploadStatus.isOK()) {
                         RemoteLogger.getInstance().log(Level.FINEST, "WritingQueue: uploading {0} succeeded", this);
                         getParent().updateStat(RemotePlainFile.this, uploadStatus.getStatInfo());
-                        getWrapper().fireFileChangedEvent(getListenersWithParent(), ev);
+                        getOwnerFileObject().fireFileChangedEvent(getListenersWithParent(), ev);
                     } else {
                         RemoteLogger.getInstance().log(Level.FINEST, "WritingQueue: uploading {0} failed", this);
                         setPendingRemoteDelivery(false);

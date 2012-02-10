@@ -103,9 +103,9 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         } else {
             childAbsPath = RemoteFileSystemUtils.normalize(getPath() + '/' + relativePath);
         }
-        RemoteLinkChild result = new RemoteLinkChild(getWrapper(), getFileSystem(), getExecutionEnvironment(), this, childAbsPath, fo.getDelegate());
+        RemoteLinkChild result = getFileSystem().getFactory().createRemoteLinkChild(this, childAbsPath, fo.getImplementor());
         result.initListeners();
-        return result.getWrapper();
+        return result.getOwnerFileObject();
     }
 
     // ------------ delegating methods -------------------
@@ -295,17 +295,14 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
 
     private FileObject transform(FileObject fo, RemoteFileObjectBase delegate) {
         if (fo instanceof RemoteFileObject) {
-            RemoteFileObjectBase originalFO = ((RemoteFileObject) fo).getDelegate();
+            RemoteFileObjectBase originalFO = ((RemoteFileObject) fo).getImplementor();
             if (originalFO == delegate) {
-                return this.getWrapper();
+                return this.getOwnerFileObject();
             }
             if (originalFO.getParent() == delegate) {
-                String path = RemoteLinkBase.this.getPath() + '/' + fo.getNameExt();
-                RemoteFileObject result;
-                RemoteLinkChild linkChild =  new RemoteLinkChild(result = new RemoteFileObject(getFileSystem()), 
-                        getFileSystem(), getExecutionEnvironment(), this, path, originalFO);                
-                // do we need to call linkChild.initListeners(); ?
-                return result;
+                String path = RemoteLinkBase.this.getPath() + '/' + fo.getNameExt();                
+                RemoteLinkChild linkChild = getFileSystem().getFactory().createRemoteLinkChild(this, path, originalFO);
+                return linkChild.getOwnerFileObject();
             }
         }
         return fo;
