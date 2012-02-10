@@ -94,6 +94,7 @@ import org.netbeans.spi.java.hints.Hint.Severity;
  *
  * @author Petr Hrebejk
  */
+@SuppressWarnings("deprecation")
 public class RulesManager implements FileChangeListener {
 
     // The logger

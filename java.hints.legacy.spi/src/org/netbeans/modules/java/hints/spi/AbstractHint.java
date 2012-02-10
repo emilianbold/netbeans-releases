@@ -54,7 +54,9 @@ import org.netbeans.spi.java.hints.Hint;
 /** Class to be extended by all the Java hints.
  *
  * @author Petr Hrebejk
+ * @deprecated Use {@link Hint} instead.
  */
+@Deprecated
 public abstract class AbstractHint implements TreeRule {
     
     private boolean enableDefault;
