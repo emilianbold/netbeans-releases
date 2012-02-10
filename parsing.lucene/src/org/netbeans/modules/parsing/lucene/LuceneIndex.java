@@ -815,18 +815,18 @@ public class LuceneIndex implements Index.Transactional {
                     return writer;
                 }
                 try {
-                    //TieredMergePolicy has better performance:
-                    //http://blog.mikemccandless.com/2011/02/visualizing-lucenes-segment-merges.html
-                    final TieredMergePolicy mergePolicy = new TieredMergePolicy();
+                    final IndexWriterConfig iwc = new IndexWriterConfig(Version.LUCENE_35, analyzer);
                     //The posix::fsync(int) is very slow on Linux ext3,
                     //minimize number of files sync is done on.
                     //http://netbeans.org/bugzilla/show_bug.cgi?id=208224
-                    if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
+                    final boolean alwaysCFS = Utilities.getOperatingSystem() == Utilities.OS_LINUX;
+                    if (alwaysCFS) {
+                        //TieredMergePolicy has better performance:
+                        //http://blog.mikemccandless.com/2011/02/visualizing-lucenes-segment-merges.html
+                        final TieredMergePolicy mergePolicy = new TieredMergePolicy();
                         mergePolicy.setNoCFSRatio(1.0);
+                        iwc.setMergePolicy(mergePolicy);
                     }
-                    final IndexWriterConfig iwc = new IndexWriterConfig(
-                        Version.LUCENE_35, analyzer).
-                        setMergePolicy(mergePolicy);
                     final IndexWriter iw = new FlushIndexWriter (this.fsDir, iwc);
                     lastUsedWriter = System.currentTimeMillis();
                     txWriter.set(iw);
