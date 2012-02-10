@@ -296,7 +296,12 @@ final class JarBundleFile extends BundleFile implements BundleContent {
             @Override
             public URL getLocalURL() {
                 try {
-                    return new URL("jar:" + getBaseFile().toURI() + "!/" + name); // NOI18N
+                    URL superLocal = findEntry("getLocalURL", name).getLocalURL();
+                    if (superLocal.getProtocol().equals("jar")) {
+                        return new URL("jar:" + getBaseFile().toURI() + "!/" + name); // NOI18N
+                    } else {
+                        return superLocal;
+                    }
                 } catch (MalformedURLException ex) {
                     NetbinoxFactory.LOG.log(Level.SEVERE, null, ex);
                     return null;
