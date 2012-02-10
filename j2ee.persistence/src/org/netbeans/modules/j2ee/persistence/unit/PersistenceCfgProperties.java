@@ -214,6 +214,7 @@ public class PersistenceCfgProperties {
     
     
     public static Object  getPossiblePropertyValue( Provider provider, String propName ) {
+        if(provider == null) provider = ProviderUtil.ECLIPSELINK_PROVIDER;//TODO, some logic to add, either search for all providers or some other
         Map<String, Object> firstMap = possiblePropertyValues.get(provider);
         return firstMap != null ? firstMap.get(propName) : null;
     }

@@ -2346,6 +2346,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         // iterate through children list
 	List<GdbVariable> children = new ArrayList<GdbVariable>();
+        int childIdx = 0;
         for (MITListItem childresult : children_list) {
             final MITList childResList = ((MIResult)childresult).value().asTuple();
 
@@ -2360,12 +2361,18 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 					exp.equals("protected")) { // NOI18N
                 getMIChildren(parent, qname, level+1);
             } else {
-                // Show array name and index instead of only index, IZ 192123
-                try {
-                    Integer.parseInt(exp);
-                    exp = parent.getVariableName() + '[' + exp + ']';
-                } catch (Exception e) {
-                    // do nothing
+                if (parent.isDynamic() && parent.getDisplayHint() == GdbVariable.DisplayHint.MAP) {
+                    // in pretty maps even element is a key, odd is a value
+                    exp = (childIdx % 2 == 0) ? Catalog.format("Map_Key", childIdx / 2) : Catalog.format("Map_Value", childIdx / 2);
+                    childIdx++;
+                } else {
+                    // Show array name and index instead of only index, IZ 192123
+                    try {
+                        Integer.parseInt(exp);
+                        exp = parent.getVariableName() + '[' + exp + ']';
+                    } catch (Exception e) {
+                        // do nothing
+                    }
                 }
                 GdbVariable childvar = new GdbVariable(this, parent.getUpdater(),
                         parent, exp, null, null, parent.isWatch());

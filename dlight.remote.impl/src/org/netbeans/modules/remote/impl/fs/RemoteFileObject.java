@@ -43,6 +43,7 @@ package org.netbeans.modules.remote.impl.fs;
 
 import com.sun.org.apache.xerces.internal.impl.dv.dtd.NMTOKENDatatypeValidator;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -75,11 +76,25 @@ public final class RemoteFileObject extends FileObject implements Serializable {
         this.fileSystem = fileSystem;
     }
     
-    /*package*/ void setDelegate(RemoteFileObjectBase delegate) {
+    /*package*/ void setImplementor(RemoteFileObjectBase delegate) {    
+        boolean assertions = false;
+        assert (assertions = true);
+        if (assertions) {
+            // important consistency checks
+            RemoteFileObject newWrapper = delegate.getOwnerFileObject();
+            // new impl should have its wrapper set to this
+            if (newWrapper != null && newWrapper != this) {
+                RemoteLogger.assertTrue(false, "RFS inconsistency in {0}: delegate wrapper differs", this); // can't print neither this nor delegate since both are in ctors
+            }
+            // if replacing delegates, check that old one is invalid
+            if (this.delegate != null && this.delegate.isValid()) {
+                RemoteLogger.assertTrue(false, "RFS inconsistency in {0}: replacing valid delegate", this); // can't print neither this nor delegate since both are in ctors
+            }
+        }
         this.delegate = delegate;
     }
 
-    public RemoteFileObjectBase getDelegate() {
+    public RemoteFileObjectBase getImplementor() {
         if (delegate == null) {
             String errMsg = "Null delegate: " + getPath(); // NOI18N
             RemoteLogger.getInstance().log(Level.WARNING, errMsg, new NullPointerException(errMsg));
@@ -141,9 +156,9 @@ public final class RemoteFileObject extends FileObject implements Serializable {
     
     protected byte[] getMagic() {
         try {
-            RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this.getDelegate());
+            RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this.getImplementor());
             if (parent != null) {
-                return parent.getMagic(this.getDelegate());
+                return parent.getMagic(this.getImplementor());
             }
         } catch (IOException ex) {
             ex.printStackTrace(System.err);
@@ -198,7 +213,7 @@ public final class RemoteFileObject extends FileObject implements Serializable {
     
     @Override
     public int hashCode() {
-        return getDelegate().hashCode();
+        return getImplementor().hashCode();
     }
 
     @Override
@@ -224,213 +239,215 @@ public final class RemoteFileObject extends FileObject implements Serializable {
         if (thisPath != otherPath && (thisPath == null || !thisPath.equals(otherPath))) {
             return false;
         }
-        RemoteLogger.log(Level.WARNING, "Multiple instances for file objects: {0} and {1}", this, other);
+        //RemoteLogger.log(Level.WARNING, "Multiple instances for file objects: {0} and {1}", this, other);
         return true;
     }
 
     @Override
     public String toString() {
-        return getDelegate().toString();
+        return getImplementor().toString();
     }
 
     @Override
     public void setImportant(boolean b) {
-        getDelegate().setImportant(b);
+        getImplementor().setImportant(b);
     }
 
     @Override
     public void setAttribute(String attrName, Object value) throws IOException {
-        getDelegate().setAttribute(attrName, value);
+        getImplementor().setAttribute(attrName, value);
     }
 
     @Override
     public void rename(FileLock lock, String name, String ext) throws IOException {
-        getDelegate().rename(lock, name, ext);
+        getImplementor().rename(lock, name, ext);
     }
 
     @Override
     public void removeRecursiveListener(FileChangeListener fcl) {
-        getDelegate().removeRecursiveListener(fcl);
+        getImplementor().removeRecursiveListener(fcl);
     }
 
     @Override
     public void removeFileChangeListener(FileChangeListener fcl) {
-        getDelegate().removeFileChangeListener(fcl);
+        getImplementor().removeFileChangeListener(fcl);
     }
 
     @Override
     public void refresh() {
-        getDelegate().refresh();
+        getImplementor().refresh();
     }
 
     @Override
     public void refresh(boolean expected) {
-        getDelegate().refresh(expected);
+        getImplementor().refresh(expected);
     }
 
     @Override
     public FileObject move(FileLock lock, FileObject target, String name, String ext) throws IOException {
-        return getDelegate().move(lock, target, name, ext);
+        return getImplementor().move(lock, target, name, ext);
     }
 
     @Override
     public FileLock lock() throws IOException {
-        return getDelegate().lock();
+        return getImplementor().lock();
     }
 
     @Override
     public Date lastModified() {
-        return getDelegate().lastModified();
+        return getImplementor().lastModified();
     }
 
     @Override
     public boolean isVirtual() {
-        return getDelegate().isVirtual();
+        return getImplementor().isVirtual();
     }
 
     @Override
     public boolean isValid() {
-        return getDelegate().isValid();
+        return getImplementor().isValid();
     }
 
     @Override
     public boolean isRoot() {
-        return getDelegate().isRoot();
+        return getImplementor().isRoot();
     }
 
     @Override
     public boolean isReadOnly() {
-        return getDelegate().isReadOnly();
+        return getImplementor().isReadOnly();
     }
 
     @Override
     public boolean isLocked() {
-        return getDelegate().isLocked();
+        return getImplementor().isLocked();
     }
 
     @Override
     public boolean isFolder() {
-        return getDelegate().isFolder();
+        return getImplementor().isFolder();
     }
 
     @Override
     public boolean isData() {
-        return getDelegate().isData();
+        return getImplementor().isData();
     }
 
     @Override
     public long getSize() {
-        return getDelegate().getSize();
+        return getImplementor().getSize();
     }
 
     @Override
     public String getPath() {
-        return getDelegate().getPath();
+        return getImplementor().getPath();
     }
 
     @Override
     public RemoteFileObject getParent() {
-        RemoteFileObjectBase parent = getDelegate().getParent();
-        return (parent == null) ? null : parent.getWrapper();
+        RemoteFileObjectBase parent = getImplementor().getParent();
+        return (parent == null) ? null : parent.getOwnerFileObject();
     }
 
     @Override
     public OutputStream getOutputStream(FileLock lock) throws IOException {
-        return getDelegate().getOutputStream(lock);
+        return getImplementor().getOutputStream(lock);
     }
 
     @Override
     public String getNameExt() {
-        return getDelegate().getNameExt();
+        return getImplementor().getNameExt();
     }
 
     @Override
     public String getName() {
-        return getDelegate().getName();
+        return getImplementor().getName();
     }
 
     @Override
     public InputStream getInputStream() throws FileNotFoundException {
-        if (!getDelegate().getCache().exists()) {
-            if (isMimeResolving()) {
-                byte[] b = getMagic();
-                if (b != null) {
-                    return new ByteArrayInputStream(b);
+        File cacheFile = getImplementor().getCache();
+        if (cacheFile != null) {
+            if (!cacheFile.exists()) {
+                if (isMimeResolving()) {
+                    byte[] b = getMagic();
+                    if (b != null) {
+                        return new ByteArrayInputStream(b);
+                    }
                 }
             }
         }
-        
-        return getDelegate().getInputStream();
+        return getImplementor().getInputStream();
     }
 
     @Override
     public RemoteFileObject getFileObject(String relativePath) {
-        return getDelegate().getFileObject(relativePath);
+        return getImplementor().getFileObject(relativePath);
     }
 
     @Override
     public RemoteFileObject getFileObject(String name, String ext) {
-        return getDelegate().getFileObject(name, ext);
+        return getImplementor().getFileObject(name, ext);
     }
 
     @Override
     public String getExt() {
-        return getDelegate().getExt();
+        return getImplementor().getExt();
     }
 
     @Override
     public RemoteFileObject[] getChildren() {
-        return getDelegate().getChildren();
+        return getImplementor().getChildren();
     }
 
     @Override
     public Enumeration<String> getAttributes() {
-        return getDelegate().getAttributes();
+        return getImplementor().getAttributes();
     }
 
     @Override
     public Object getAttribute(String attrName) {
-        return getDelegate().getAttribute(attrName);
+        return getImplementor().getAttribute(attrName);
     }
 
     @Override
     public void delete(FileLock lock) throws IOException {
-        getDelegate().delete(lock);
+        getImplementor().delete(lock);
     }
 
     @Override
     public FileObject createFolder(String name) throws IOException {
-        return getDelegate().createFolder(name);
+        return getImplementor().createFolder(name);
     }
 
     @Override
     public FileObject createData(String name) throws IOException {
-        return getDelegate().createData(name);
+        return getImplementor().createData(name);
     }
 
     @Override
     public FileObject createData(String name, String ext) throws IOException {
-        return getDelegate().createData(name, ext);
+        return getImplementor().createData(name, ext);
     }
 
     @Override
     public boolean canWrite() {
-        return getDelegate().canWrite();
+        return getImplementor().canWrite();
     }
 
     @Override
     public boolean canRead() {
-        return getDelegate().canRead();
+        return getImplementor().canRead();
     }
 
     @Override
     public void addRecursiveListener(FileChangeListener fcl) {
-        getDelegate().addRecursiveListener(fcl);
+        getImplementor().addRecursiveListener(fcl);
     }
 
     @Override
     public void addFileChangeListener(FileChangeListener fcl) {
-        getDelegate().addFileChangeListener(fcl);
+        getImplementor().addFileChangeListener(fcl);
     }
     // </editor-fold>
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,70 +42,87 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.dbschema.jdbcimpl.wizard;
+package org.netbeans.modules.j2ee.persistence.editor.completion;
 
-import java.awt.Component;
-import javax.swing.event.ChangeListener;
-import org.openide.util.HelpCtx;
+import java.net.URL;
+import javax.lang.model.element.Element;
+import javax.swing.Action;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ui.ElementJavadoc;
+import org.netbeans.spi.editor.completion.CompletionDocumentation;
 
-public class DBSchemaTargetPanel extends DBSchemaPanel {
+/**
+ *
+ * 
+ */
+public abstract class PersistenceCompletionDocumentation implements CompletionDocumentation {
 
-    private org.openide.WizardDescriptor.Panel panel;
-
-    public DBSchemaTargetPanel() {
+    public static PersistenceCompletionDocumentation getAttribValueDoc(String text) {
+        return new AttribValueDoc(text);
     }
-
-    public void setPanel(org.openide.WizardDescriptor.Panel panel) {
-        this.panel = panel;
+    
+     public static PersistenceCompletionDocumentation createJavaDoc(CompilationController cc, Element element) {
+        return new JavaElementDoc(ElementJavadoc.create(cc, element));
     }
-
-    public DBSchemaTargetPanel getPanel() {
-        return this;
-    }
-
+    
     @Override
-    public Component getComponent() {
-        return panel.getComponent();
-    }
-
-    @Override
-    public boolean isValid() {
-        boolean ret = panel.isValid();
-        
-        if (ret) {
-            org.openide.loaders.TemplateWizard settings = new org.openide.loaders.TemplateWizard();
-            String name = settings.getTargetName();
-            
-            if (name != null)
-                if ((name.indexOf("\\") != -1) || (name.indexOf("/") != -1))
-                    return false;
-        }
-        
-        return ret;
-    }
-
-    @Override
-    public void readSettings(Object settings) {
-        panel.readSettings(settings);
-    }
-
-    @Override
-    public void storeSettings(Object settings) {
-        panel.storeSettings(settings);
-    }
-
-    @Override
-    public HelpCtx getHelp() {
+    public URL getURL() {
         return null;
     }
 
     @Override
-    public synchronized void addChangeListener(ChangeListener listener) {
-        panel.addChangeListener(listener);
+    public CompletionDocumentation resolveLink(String link) {
+        return null;
     }
 
     @Override
-    public synchronized void removeChangeListener(ChangeListener listener) {
-        panel.removeChangeListener(listener);
+    public Action getGotoSourceAction() {
+        return null;
+    }
+    
+    
+    
+    private static class AttribValueDoc extends PersistenceCompletionDocumentation {
+
+        private String text;
+
+        public AttribValueDoc(String text) {
+            this.text = text;
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
+    }
+    
+    private static class JavaElementDoc extends PersistenceCompletionDocumentation {
+
+        private ElementJavadoc elementJavadoc;
+
+        public JavaElementDoc(ElementJavadoc elementJavadoc) {
+            this.elementJavadoc = elementJavadoc;
+        }
+
+        @Override
+        public JavaElementDoc resolveLink(String link) {
+            ElementJavadoc doc = elementJavadoc.resolveLink(link);
+            return doc != null ? new JavaElementDoc(doc) : null;
+        }
+
+        @Override
+        public URL getURL() {
+            return elementJavadoc.getURL();
+        }
+
+        @Override
+        public String getText() {
+            return elementJavadoc.getText();
+        }
+
+        @Override
+        public Action getGotoSourceAction() {
+            return elementJavadoc.getGotoSourceAction();
+        }
     }
 }

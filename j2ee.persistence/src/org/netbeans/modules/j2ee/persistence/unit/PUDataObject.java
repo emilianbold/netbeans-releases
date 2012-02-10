@@ -123,6 +123,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
      */
     public PUDataObject(FileObject pf, PUDataLoader loader) throws DataObjectExistsException {
         super(pf, loader);
+        getEditorSupport().setMIMEType(PUDataLoader.REQUIRED_MIME);
         modelSynchronizer = new ModelSynchronizer(this);
         org.xml.sax.InputSource in = DataObjectAdapters.inputSource(this);
         CheckXMLCookie checkCookie = new CheckXMLSupport(in);
