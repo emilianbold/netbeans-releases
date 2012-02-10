@@ -52,13 +52,11 @@ package org.netbeans.modules.javascript2.editor.doclets;
  */
 public enum JsDocCommentType {
 
-    //SINGLE_LINE("singleLine"), - not seeked for now
     DOC_COMMON("common"), //NOI18N
     DOC_NO_CODE_START("noCodeStart"), //NOI18N
     DOC_NO_CODE_END("noCodeEnd"), //NOI18N
     DOC_SHARED_TAG_START("sharedTagStart"), //NOI18N
-    DOC_SHARED_TAG_END("sharedTagEnd"), //NOI18N
-    TRADITIONAL("traditional"); //NOI18N
+    DOC_SHARED_TAG_END("sharedTagEnd"); //NOI18N
 
     private final String value;
 
