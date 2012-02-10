@@ -1009,5 +1009,36 @@ public class Css3ParserTest extends CssTestBase {
                 
     }
     
+    public void testGenericAtRule() {
+        String code = "@-webkit-keyframes spin { h2 { color: red; } }";
+        CssParserResult result = TestUtil.parse(code);
+        
+        assertResultOK(result);
+        
+        TestUtil.dumpResult(result);
+        
+        Node node = NodeUtil.query(result.getParseTree(),
+                "styleSheet/bodylist/bodyset/generic_at_rule");
+                
+        assertNotNull(node);
+        
+    }
+    
+//    public void testRecoveryInBodySet() {
+//        String code = "div { } ;@ a { } h1 { }";
+//        CssParserResult result = TestUtil.parse(code);
+//        
+//        assertResultOK(result);
+//        
+//        TestUtil.dumpResult(result);
+//        
+//        Node node = NodeUtil.query(result.getParseTree(),
+//                "styleSheet/bodylist/bodyset/generic_at_rule");
+//                
+//        assertNotNull(node);
+//        
+//        
+//    }
+    
     
 }
