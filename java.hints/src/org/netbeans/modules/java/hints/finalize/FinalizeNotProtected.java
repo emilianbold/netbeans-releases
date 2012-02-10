@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Zezula
  */
-@Hint(category="finalization",suppressWarnings={"FinalizeNotProtected"},enabled=false)    //NOI18N
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.finalize.FinalizeNotProtected", description = "#DESC_org.netbeans.modules.java.hints.finalize.FinalizeNotProtected", category="finalization",suppressWarnings={"FinalizeNotProtected"},enabled=false)    //NOI18N
 public class FinalizeNotProtected {
 
     @TriggerTreeKind(Kind.METHOD)

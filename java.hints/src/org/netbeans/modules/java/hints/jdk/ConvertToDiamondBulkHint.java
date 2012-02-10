@@ -80,7 +80,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(id=ConvertToDiamondBulkHint.ID, category="rules15",enabled=true, hintKind=Kind.HINT, customizerProvider=ConvertToDiamondBulkHintPanel.class)
+@Hint(displayName = "#DN_Javac_canUseDiamond", description = "#DESC_Javac_canUseDiamond", id=ConvertToDiamondBulkHint.ID, category="rules15",enabled=true, hintKind=Kind.HINT, customizerProvider=ConvertToDiamondBulkHintPanel.class)
 public class ConvertToDiamondBulkHint {
 
     public static final String ID = "Javac_canUseDiamond";

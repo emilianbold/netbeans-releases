@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-@Hint(category="code_maturity", suppressWarnings="CallToPrintStackTrace")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.ThreadDumpStack", description = "#DESC_org.netbeans.modules.java.hints.ThreadDumpStack", category="code_maturity", suppressWarnings="CallToPrintStackTrace")
 public class ThreadDumpStack {
 
     @TriggerPattern (value="Thread.dumpStack ()")

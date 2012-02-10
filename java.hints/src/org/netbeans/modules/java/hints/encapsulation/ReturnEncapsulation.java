@@ -113,7 +113,7 @@ public class ReturnEncapsulation {
             "java.util.Arrays.<$T$>asList($any$)"
     );
 
-    @Hint(category="encapsulation",suppressWarnings="ReturnOfCollectionOrArrayField", enabled=false) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.ReturnEncapsulation.collection", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.ReturnEncapsulation.collection", category="encapsulation",suppressWarnings="ReturnOfCollectionOrArrayField", enabled=false) //NOI18N
     @TriggerPatterns({
         @TriggerPattern(value="return $expr",    //NOI18N
             constraints={
@@ -134,7 +134,7 @@ public class ReturnEncapsulation {
                new FixProvider());   //NOI18N
     }
 
-    @Hint(category="encapsulation",suppressWarnings="ReturnOfCollectionOrArrayField", enabled=false, options=Options.QUERY) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.ReturnEncapsulation.array", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.ReturnEncapsulation.array", category="encapsulation",suppressWarnings="ReturnOfCollectionOrArrayField", enabled=false, options=Options.QUERY) //NOI18N
     @TriggerPatterns ({
         @TriggerPattern(value="return $expr",    //NOI18N
             constraints={
@@ -189,7 +189,7 @@ public class ReturnEncapsulation {
             "ReturnOfCollectionOrArrayField");  //NOI18N
     }
 
-    @Hint(category="encapsulation", suppressWarnings={"ReturnOfDateField"}, enabled=false, options=Options.QUERY) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.ReturnEncapsulation.date", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.ReturnEncapsulation.date", category="encapsulation", suppressWarnings={"ReturnOfDateField"}, enabled=false, options=Options.QUERY) //NOI18N
     @TriggerPatterns({
         @TriggerPattern(value="return $expr",   //NOI18N
             constraints={

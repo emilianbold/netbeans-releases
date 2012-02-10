@@ -53,9 +53,6 @@ import javax.swing.JComponent;
  * will be considered to be part of this hint. When applied to a method, only this specific
  * method will be considered to the part of the hint.
  *
- * Two keys in bundle are required: {@code DN_ <hint-id>}, which will be used the hint's display
- * name, and {@code DESC_<hint-id>}, which will be used as the hint's long description
- * 
  * @author lahvac, Petr Hrebejk
  */
 @Target({ElementType.TYPE, ElementType.METHOD})
@@ -65,6 +62,12 @@ public @interface Hint {
      * from previous version. Id will be generated automatically is not specified.
      */
     public String id() default "";
+    /** The hint's display name.
+     */
+    public String displayName();
+    /** The hint's long description.
+     */
+    public String description();
     /**Category where the hint belongs.
      */
     public String category();

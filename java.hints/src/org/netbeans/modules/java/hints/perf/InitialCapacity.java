@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
  */
 public class InitialCapacity {
 
-    @Hint(category="performance", enabled=false, suppressWarnings="CollectionWithoutInitialCapacity", options=Options.QUERY)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.InitialCapacity.collections", description = "#DESC_org.netbeans.modules.java.hints.perf.InitialCapacity.collections", category="performance", enabled=false, suppressWarnings="CollectionWithoutInitialCapacity", options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern(value="new java.util.ArrayDeque()"),
         @TriggerPattern(value="new java.util.ArrayDeque<$T$>()"),
@@ -88,7 +88,7 @@ public class InitialCapacity {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
     }
 
-    @Hint(category="performance", enabled=false, suppressWarnings="StringBufferWithoutInitialCapacity", options=Options.QUERY)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.InitialCapacity.stringBuilder", description = "#DESC_org.netbeans.modules.java.hints.perf.InitialCapacity.stringBuilder", category="performance", enabled=false, suppressWarnings="StringBufferWithoutInitialCapacity", options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern(value="new java.lang.StringBuffer()"),
         @TriggerPattern(value="new java.lang.StringBuilder()")

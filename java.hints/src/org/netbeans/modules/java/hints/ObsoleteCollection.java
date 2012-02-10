@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-@Hint(category="code_maturity", suppressWarnings="UseOfObsoleteCollectionType", options=Options.QUERY)
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.ObsoleteCollection", description = "#DESC_org.netbeans.modules.java.hints.ObsoleteCollection", category="code_maturity", suppressWarnings="UseOfObsoleteCollectionType", options=Options.QUERY)
 public class ObsoleteCollection {
 
     @TriggerPattern (value="java.util.Vector")

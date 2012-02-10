@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(category="performance", suppressWarnings={"ManualArrayToCollectionCopy", "", "ManualArrayToCollectionCopy"})
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.ManualArrayCopy", description = "#DESC_org.netbeans.modules.java.hints.perf.ManualArrayCopy", category="performance", suppressWarnings={"ManualArrayToCollectionCopy", "", "ManualArrayToCollectionCopy"})
 public class ManualArrayCopy {
 
 

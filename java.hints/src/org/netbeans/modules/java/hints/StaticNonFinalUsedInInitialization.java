@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  *
  * @author David Strupl
  */
-@Hint(category="initialization", suppressWarnings="StaticNonFinalUsedInInitialization", options=Options.QUERY)
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.StaticNonFinalUsedInInitialization", description = "#DESC_org.netbeans.modules.java.hints.StaticNonFinalUsedInInitialization", category="initialization", suppressWarnings="StaticNonFinalUsedInInitialization", options=Options.QUERY)
 public class StaticNonFinalUsedInInitialization {
     public StaticNonFinalUsedInInitialization() {
     }

@@ -80,7 +80,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Lahoda
  */
-@Hint(id="org.netbeans.modules.java.hints.bugs.CollectionRemove",
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.CollectionRemove", description = "#DESC_org.netbeans.modules.java.hints.bugs.CollectionRemove", id="org.netbeans.modules.java.hints.bugs.CollectionRemove",
       category="bugs",
       suppressWarnings={CollectionRemove.SUPPRESS_WARNING_KEY, "", "collection-remove"},
       options=Options.QUERY)
@@ -88,7 +88,7 @@ public class CollectionRemove {
 
             static final String  SUPPRESS_WARNING_KEY = "element-type-mismatch";
     static final boolean WARN_FOR_CASTABLE_DEFAULT = true;
-    @BooleanOption(defaultValue=WARN_FOR_CASTABLE_DEFAULT)
+    @BooleanOption(displayName = "#LBL_org.netbeans.modules.java.hints.bugs.CollectionRemove.WARN_FOR_CASTABLE_KEY", tooltip = "#TP_org.netbeans.modules.java.hints.bugs.CollectionRemove.WARN_FOR_CASTABLE_KEY", defaultValue=WARN_FOR_CASTABLE_DEFAULT)
     static final String  WARN_FOR_CASTABLE_KEY = "warn-for-castable";
   
     @TriggerPattern(value="$col.remove($obj)",

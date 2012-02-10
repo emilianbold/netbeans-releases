@@ -50,7 +50,7 @@ import org.openide.util.NbBundle;
  *
  * @author phrebejk
  */
-@Hint(category="rules15", id="AnnotationAsSuperInterface", suppressWarnings="AnnotationAsSuperInterface", options=Options.QUERY)
+@Hint(displayName = "#DN_AnnotationAsSuperInterface", description = "#DESC_AnnotationAsSuperInterface", category="rules15", id="AnnotationAsSuperInterface", suppressWarnings="AnnotationAsSuperInterface", options=Options.QUERY)
 public class AnnotationAsSuperInterface {
 
     @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})

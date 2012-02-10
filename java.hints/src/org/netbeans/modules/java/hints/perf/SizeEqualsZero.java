@@ -64,12 +64,12 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(category="performance", suppressWarnings="SizeReplaceableByIsEmpty")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.SizeEqualsZero", description = "#DESC_org.netbeans.modules.java.hints.perf.SizeEqualsZero", category="performance", suppressWarnings="SizeReplaceableByIsEmpty")
 public class SizeEqualsZero {
 
     static final boolean CHECK_NOT_EQUALS_DEFAULT = true;
     
-    @BooleanOption(defaultValue=CHECK_NOT_EQUALS_DEFAULT)
+    @BooleanOption(displayName = "#LBL_org.netbeans.modules.java.hints.perf.SizeEqualsZero.CHECK_NOT_EQUALS", tooltip = "#TP_org.netbeans.modules.java.hints.perf.SizeEqualsZero.CHECK_NOT_EQUALS", defaultValue=CHECK_NOT_EQUALS_DEFAULT)
     public static final String CHECK_NOT_EQUALS = "check.not.equals";
 
     @TriggerPattern(value="$subj.size() == 0")

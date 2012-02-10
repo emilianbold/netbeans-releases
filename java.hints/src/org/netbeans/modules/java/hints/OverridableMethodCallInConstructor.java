@@ -73,7 +73,7 @@ import org.openide.util.NbBundle;
  *
  * @author David Strupl
  */
-@Hint(category="initialization", suppressWarnings="OverridableMethodCallInConstructor")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.OverridableMethodCallInConstructor", description = "#DESC_org.netbeans.modules.java.hints.OverridableMethodCallInConstructor", category="initialization", suppressWarnings="OverridableMethodCallInConstructor")
 public class OverridableMethodCallInConstructor {
 
     public OverridableMethodCallInConstructor() {

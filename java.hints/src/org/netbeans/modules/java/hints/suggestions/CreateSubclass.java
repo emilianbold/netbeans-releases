@@ -103,7 +103,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Dusan Balek
  */
-@Hint(category = "suggestions", hintKind = Kind.SUGGESTION, severity = Severity.CURRENT_LINE_WARNING)
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.suggestions.CreateSubclass", description = "#DESC_org.netbeans.modules.java.hints.suggestions.CreateSubclass", category = "suggestions", hintKind = Kind.SUGGESTION, severity = Severity.CURRENT_LINE_WARNING)
 public class CreateSubclass {
 
     @TriggerTreeKind({Tree.Kind.CLASS, Tree.Kind.INTERFACE})

@@ -80,7 +80,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(id="org.netbeans.modules.java.hints.jackpot.hintsimpl.LoggerStringConcat", category="logging", suppressWarnings="LoggerStringConcat")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jackpot.hintsimpl.LoggerStringConcat", description = "#DESC_org.netbeans.modules.java.hints.jackpot.hintsimpl.LoggerStringConcat", id="org.netbeans.modules.java.hints.jackpot.hintsimpl.LoggerStringConcat", category="logging", suppressWarnings="LoggerStringConcat")
 public class LoggerStringConcat {
 
     private static final Logger LOG = Logger.getLogger(LoggerStringConcat.class.getName());

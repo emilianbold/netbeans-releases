@@ -69,7 +69,7 @@ public class Imports {
     private String IMPORTS_ID = "Imports_"; // NOI18N
     
 
-    @Hint(category="imports", id="Imports_STAR", enabled=false, options=Options.QUERY)
+    @Hint(displayName = "#DN_Imports_STAR", description = "#DESC_Imports_STAR", category="imports", id="Imports_STAR", enabled=false, options=Options.QUERY)
     @TriggerTreeKind(Kind.IMPORT)
     public static ErrorDescription starImport(HintContext ctx) {
         ImportTree it = (ImportTree) ctx.getPath().getLeaf();
@@ -85,19 +85,19 @@ public class Imports {
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), NbBundle.getMessage(Imports.class, "DN_Imports_STAR"));
     }
 
-    @Hint(category="imports", id="Imports_DEFAULT_PACKAGE")
+    @Hint(displayName = "#DN_Imports_DEFAULT_PACKAGE", description = "#DESC_Imports_DEFAULT_PACKAGE", category="imports", id="Imports_DEFAULT_PACKAGE")
     @TriggerTreeKind(Kind.COMPILATION_UNIT)
     public static List<ErrorDescription> defaultImport(HintContext ctx) {
         return importMultiHint(ctx, ImportHintKind.DEFAULT_PACKAGE, getAllImportsOfKind(ctx.getInfo(), ImportHintKind.DEFAULT_PACKAGE));
     }
     
-    @Hint(category="imports", id="Imports_UNUSED")
+    @Hint(displayName = "#DN_Imports_UNUSED", description = "#DESC_Imports_UNUSED", category="imports", id="Imports_UNUSED")
     @TriggerTreeKind(Kind.COMPILATION_UNIT)
     public static List<ErrorDescription> unusedImport(HintContext ctx) throws IOException {
         return importMultiHint(ctx, ImportHintKind.UNUSED, SemanticHighlighter.computeUnusedImports(ctx.getInfo()));
     }
 
-    @Hint(category="imports", id="Imports_SAME_PACKAGE")
+    @Hint(displayName = "#DN_Imports_SAME_PACKAGE", description = "#DESC_Imports_SAME_PACKAGE", category="imports", id="Imports_SAME_PACKAGE")
     @TriggerTreeKind(Kind.COMPILATION_UNIT)
     public static List<ErrorDescription> samePackage(HintContext ctx) throws IOException {
         return importMultiHint(ctx, ImportHintKind.SAME_PACKAGE, getAllImportsOfKind(ctx.getInfo(), ImportHintKind.SAME_PACKAGE));
@@ -128,7 +128,7 @@ public class Imports {
         return result;
     }
 
-    @Hint(category="imports", id="Imports_EXCLUDED", options=Options.QUERY)
+    @Hint(displayName = "#DN_Imports_EXCLUDED", description = "#DESC_Imports_EXCLUDED", category="imports", id="Imports_EXCLUDED", options=Options.QUERY)
     @TriggerTreeKind(Kind.IMPORT)
     public static ErrorDescription exlucded(HintContext ctx) throws IOException {
         ImportTree it = (ImportTree) ctx.getPath().getLeaf();

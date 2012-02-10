@@ -71,11 +71,11 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(category="general", suppressWarnings="ThrowableInitCause")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.ThrowableInitCause", description = "#DESC_org.netbeans.modules.java.hints.jdk.ThrowableInitCause", category="general", suppressWarnings="ThrowableInitCause")
 public class ThrowableInitCause {
 
     public static final boolean STRICT_DEFAULT = false;
-    @BooleanOption(defaultValue=STRICT_DEFAULT)
+    @BooleanOption(displayName = "#LBL_org.netbeans.modules.java.hints.jdk.ThrowableInitCause.STRICT_KEY", tooltip = "#TP_org.netbeans.modules.java.hints.jdk.ThrowableInitCause.STRICT_KEY", defaultValue=STRICT_DEFAULT)
     public static final String STRICT_KEY = "strict";
 
     @TriggerPatterns({

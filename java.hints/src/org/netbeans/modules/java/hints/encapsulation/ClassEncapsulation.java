@@ -83,10 +83,10 @@ public class ClassEncapsulation {
     private static final Logger LOG = Logger.getLogger(ClassEncapsulation.class.getName());
 
     static final boolean ALLOW_ENUMS_DEFAULT = false;
-    @BooleanOption(defaultValue=ALLOW_ENUMS_DEFAULT)
+    @BooleanOption(displayName = "#LBL_org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.ALLOW_ENUMS_KEY", tooltip = "#TP_org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.ALLOW_ENUMS_KEY", defaultValue=ALLOW_ENUMS_DEFAULT)
     static final String ALLOW_ENUMS_KEY = "allow.enums";
 
-    @Hint(category="encapsulation",suppressWarnings={"PublicInnerClass"}, enabled=false, options=Options.QUERY)   //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.publicCls", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.publicCls", category="encapsulation",suppressWarnings={"PublicInnerClass"}, enabled=false, options=Options.QUERY)   //NOI18N
     @UseOptions(ALLOW_ENUMS_KEY)
     @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription publicCls(final HintContext ctx) {
@@ -95,7 +95,7 @@ public class ClassEncapsulation {
             NbBundle.getMessage(ClassEncapsulation.class, "TXT_PublicInnerClass"), "PublicInnerClass");  //NOI18N
     }
 
-    @Hint(category="encapsulation",suppressWarnings={"ProtectedInnerClass"}, enabled=false, options=Options.QUERY)    //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.protectedCls", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.protectedCls", category="encapsulation",suppressWarnings={"ProtectedInnerClass"}, enabled=false, options=Options.QUERY)    //NOI18N
     @UseOptions(ALLOW_ENUMS_KEY)
     @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription protectedCls(final HintContext ctx) {
@@ -104,7 +104,7 @@ public class ClassEncapsulation {
             NbBundle.getMessage(ClassEncapsulation.class, "TXT_ProtectedInnerClass"), "ProtectedInnerClass"); //NOI18N
     }
 
-    @Hint(category="encapsulation", suppressWarnings={"PackageVisibleInnerClass"}, enabled=false, options=Options.QUERY)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.packageCls", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.packageCls", category="encapsulation", suppressWarnings={"PackageVisibleInnerClass"}, enabled=false, options=Options.QUERY)
     @UseOptions(ALLOW_ENUMS_KEY)
     @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription packageCls(final HintContext ctx) {

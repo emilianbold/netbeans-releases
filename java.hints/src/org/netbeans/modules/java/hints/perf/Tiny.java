@@ -84,10 +84,10 @@ import org.openide.util.NbBundle;
 public class Tiny {
 
     static final boolean SC_IGNORE_SUBSTRING_DEFAULT = true;
-    @BooleanOption(defaultValue=SC_IGNORE_SUBSTRING_DEFAULT)
+    @BooleanOption(displayName = "#LBL_org.netbeans.modules.java.hints.perf.Tiny.SC_IGNORE_SUBSTRING", tooltip = "#TP_org.netbeans.modules.java.hints.perf.Tiny.SC_IGNORE_SUBSTRING", defaultValue=SC_IGNORE_SUBSTRING_DEFAULT)
     static final String SC_IGNORE_SUBSTRING = "ignore.substring";
     
-    @Hint(category="performance", suppressWarnings="RedundantStringConstructorCall")
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.Tiny.stringConstructor", description = "#DESC_org.netbeans.modules.java.hints.perf.Tiny.stringConstructor", category="performance", suppressWarnings="RedundantStringConstructorCall")
     @UseOptions(SC_IGNORE_SUBSTRING)
     @TriggerPattern(value="new java.lang.String($original)",
                     constraints=@ConstraintVariableType(variable="$original", type="java.lang.String"))
@@ -120,7 +120,7 @@ public class Tiny {
     }
 
 
-    @Hint(category="performance", enabled=false, suppressWarnings="StringEqualsEmpty")
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.Tiny.stringEqualsEmpty", description = "#DESC_org.netbeans.modules.java.hints.perf.Tiny.stringEqualsEmpty", category="performance", enabled=false, suppressWarnings="StringEqualsEmpty")
     @TriggerPattern(value="$string.equals(\"\")",
                     constraints=@ConstraintVariableType(variable="$string", type="java.lang.String"))
     public static ErrorDescription stringEqualsEmpty(HintContext ctx) {
@@ -138,7 +138,7 @@ public class Tiny {
     }
 
 
-    @Hint(category="performance", enabled=false, suppressWarnings="SingleCharacterStringConcatenation")
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.Tiny.lengthOneStringIndexOf", description = "#DESC_org.netbeans.modules.java.hints.perf.Tiny.lengthOneStringIndexOf", category="performance", enabled=false, suppressWarnings="SingleCharacterStringConcatenation")
     @TriggerPatterns({
         @TriggerPattern(value="$string.indexOf($toSearch)",
                         constraints={@ConstraintVariableType(variable="$string", type="java.lang.String"),
@@ -199,7 +199,7 @@ wc.rewrite(tp.getLeaf(), wc.getTreeMaker().Identifier("'" + content + "'"));
         return ErrorDescriptionFactory.forTree(ctx, toSearch, displayName, f);
     }
 
-    @Hint(category="performance", enabled=false, suppressWarnings="InstantiatingObjectToGetClassObject")
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.Tiny.getClassInsteadOfDotClass", description = "#DESC_org.netbeans.modules.java.hints.perf.Tiny.getClassInsteadOfDotClass", category="performance", enabled=false, suppressWarnings="InstantiatingObjectToGetClassObject")
     @TriggerPattern(value="new $O($params$).getClass()")
     public static ErrorDescription getClassInsteadOfDotClass(HintContext ctx) {
         TreePath O = ctx.getVariables().get("$O");
@@ -216,7 +216,7 @@ wc.rewrite(tp.getLeaf(), wc.getTreeMaker().Identifier("'" + content + "'"));
 
     private static final Set<Kind> KEEP_PARENTHESIS = EnumSet.of(Kind.MEMBER_SELECT);
     
-    @Hint(category="performance", enabled=false, suppressWarnings="ConstantStringIntern")
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.Tiny.constantIntern", description = "#DESC_org.netbeans.modules.java.hints.perf.Tiny.constantIntern", category="performance", enabled=false, suppressWarnings="ConstantStringIntern")
     @TriggerPattern(value="$str.intern()",
                     constraints=@ConstraintVariableType(variable="$str", type="java.lang.String"))
     public static ErrorDescription constantIntern(HintContext ctx) {
@@ -243,7 +243,7 @@ wc.rewrite(tp.getLeaf(), wc.getTreeMaker().Identifier("'" + content + "'"));
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName, f);
     }
 
-    @Hint(category="performance", suppressWarnings="SetReplaceableByEnumSet", options=Options.QUERY)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.Tiny.enumSet", description = "#DESC_org.netbeans.modules.java.hints.perf.Tiny.enumSet", category="performance", suppressWarnings="SetReplaceableByEnumSet", options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern("new $coll<$param>($params$)")
     })
@@ -251,7 +251,7 @@ wc.rewrite(tp.getLeaf(), wc.getTreeMaker().Identifier("'" + content + "'"));
         return enumHint(ctx, "java.util.Set", null, "ERR_Tiny_enumSet");
     }
 
-    @Hint(category="performance", suppressWarnings="MapReplaceableByEnumMap")
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.Tiny.enumMap", description = "#DESC_org.netbeans.modules.java.hints.perf.Tiny.enumMap", category="performance", suppressWarnings="MapReplaceableByEnumMap")
     @TriggerPatterns({
         @TriggerPattern("new $coll<$param, $to>($params$)")
     })

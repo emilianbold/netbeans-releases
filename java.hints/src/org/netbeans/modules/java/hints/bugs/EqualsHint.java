@@ -69,10 +69,10 @@ import org.openide.util.NbBundle;
 public class EqualsHint {
 
     private static final boolean ERASURE_PREFS_DEFAULT = true; // NOI18N
-    @BooleanOption(defaultValue=ERASURE_PREFS_DEFAULT)
+    @BooleanOption(displayName = "#LBL_org.netbeans.modules.java.hints.bugs.EqualsHint.ERASURE_PREFS_KEY", tooltip = "#TP_org.netbeans.modules.java.hints.bugs.EqualsHint.ERASURE_PREFS_KEY", defaultValue=ERASURE_PREFS_DEFAULT)
     private static final String ERASURE_PREFS_KEY = "eguals-hint-erasure"; // NOI18N
     
-    @Hint(category="bugs", suppressWarnings="ArrayEquals")
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.EqualsHint.arrayEquals", description = "#DESC_org.netbeans.modules.java.hints.bugs.EqualsHint.arrayEquals", category="bugs", suppressWarnings="ArrayEquals")
     @TriggerPatterns({
         @TriggerPattern(value="$obj.equals($arr)",
                         constraints={
@@ -139,7 +139,7 @@ public class EqualsHint {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, arrays, instance);
     }
     
-    @Hint(id="org.netbeans.modules.java.hints.EqualsHint", category="bugs", suppressWarnings="IncompatibleEquals", options=Options.QUERY)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.EqualsHint", description = "#DESC_org.netbeans.modules.java.hints.EqualsHint", id="org.netbeans.modules.java.hints.EqualsHint", category="bugs", suppressWarnings="IncompatibleEquals", options=Options.QUERY)
     @UseOptions(ERASURE_PREFS_KEY)
     @TriggerPattern(value="$this.equals($par)",
                     constraints={

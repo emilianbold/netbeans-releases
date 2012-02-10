@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Zezula
  */
-@Hint(category="finalization",suppressWarnings={"FinalizeDeclaration"}, options=Options.QUERY) //NOI18N
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.finalize.FinalizeDeclared", description = "#DESC_org.netbeans.modules.java.hints.finalize.FinalizeDeclared", category="finalization",suppressWarnings={"FinalizeDeclaration"}, options=Options.QUERY) //NOI18N
 public class FinalizeDeclared {
 
     @TriggerTreeKind(Tree.Kind.METHOD)

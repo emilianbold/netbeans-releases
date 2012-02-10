@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-@Hint(category="bitwise_operations", suppressWarnings="IncompatibleBitwiseMaskOperation", options=Options.QUERY)
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.IncompatibleMask", description = "#DESC_org.netbeans.modules.java.hints.IncompatibleMask", category="bitwise_operations", suppressWarnings="IncompatibleBitwiseMaskOperation", options=Options.QUERY)
 public class IncompatibleMask {
 
     @TriggerPatterns ({

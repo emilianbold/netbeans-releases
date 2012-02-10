@@ -100,10 +100,10 @@ public class FieldEncapsulation {
     private static final String KW_THIS = "this";
 
     static final boolean ALLOW_ENUMS_DEFAULT = false;
-    @BooleanOption(defaultValue=ALLOW_ENUMS_DEFAULT)
+    @BooleanOption(displayName = "#LBL_org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.ALLOW_ENUMS_KEY", tooltip = "#TP_org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.ALLOW_ENUMS_KEY", defaultValue=ALLOW_ENUMS_DEFAULT)
     static final String ALLOW_ENUMS_KEY = "allow.enums";
 
-    @Hint(category="encapsulation", suppressWarnings={"ProtectedField"}, enabled=false, options=Options.QUERY) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.protectedField", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.protectedField", category="encapsulation", suppressWarnings={"ProtectedField"}, enabled=false, options=Options.QUERY) //NOI18N
     @UseOptions(ALLOW_ENUMS_KEY)
     @TriggerTreeKind(Kind.VARIABLE)
     public static ErrorDescription protectedField(final HintContext ctx) {
@@ -112,7 +112,7 @@ public class FieldEncapsulation {
             NbBundle.getMessage(FieldEncapsulation.class, "TXT_ProtectedField"));
     }
 
-    @Hint(category="encapsulation", suppressWarnings={"PublicField"}, enabled=false, options=Options.QUERY) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.publicField", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.publicField", category="encapsulation", suppressWarnings={"PublicField"}, enabled=false, options=Options.QUERY) //NOI18N
     @UseOptions(ALLOW_ENUMS_KEY)
     @TriggerTreeKind(Kind.VARIABLE)
     public static ErrorDescription publicField(final HintContext ctx) {
@@ -121,7 +121,7 @@ public class FieldEncapsulation {
             NbBundle.getMessage(FieldEncapsulation.class, "TXT_PublicField"));
     }
 
-    @Hint(category="encapsulation", suppressWarnings={"PackageVisibleField"}, enabled=false, options=Options.QUERY) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.packageField", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.packageField", category="encapsulation", suppressWarnings={"PackageVisibleField"}, enabled=false, options=Options.QUERY) //NOI18N
     @UseOptions(ALLOW_ENUMS_KEY)
     @TriggerTreeKind(Kind.VARIABLE)
     public static ErrorDescription packageField(final HintContext ctx) {
@@ -130,7 +130,7 @@ public class FieldEncapsulation {
             NbBundle.getMessage(FieldEncapsulation.class, "TXT_PackageField"));
     }
 
-    @Hint(category="encapsulation", suppressWarnings={"AccessingNonPublicFieldOfAnotherObject"}, enabled=false, options=Options.QUERY) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.privateField", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.privateField", category="encapsulation", suppressWarnings={"AccessingNonPublicFieldOfAnotherObject"}, enabled=false, options=Options.QUERY) //NOI18N
     @TriggerTreeKind(Kind.MEMBER_SELECT)
     public static ErrorDescription privateField(final HintContext ctx) {
         assert ctx != null;

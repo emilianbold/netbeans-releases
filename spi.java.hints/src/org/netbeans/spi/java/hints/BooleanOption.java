@@ -72,6 +72,14 @@ import java.util.prefs.Preferences;
 @Target(ElementType.FIELD)
 public @interface BooleanOption {
 
+    /**The options' display name. Will be used as the display name of the
+     * checkbox in the customizer.
+     */
+    public String displayName();
+    /**The tooltip of the checkbox in the customizer.
+     */
+    public String tooltip();
+    
     /**The default value of the option.
      */
     public boolean defaultValue();

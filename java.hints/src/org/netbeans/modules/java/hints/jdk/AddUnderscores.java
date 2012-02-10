@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(id=AddUnderscores.ID, category="rules15", enabled=false, severity=Severity.CURRENT_LINE_WARNING, customizerProvider=AddUnderscoresPanel.class)
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.AddUnderscores", description = "#DESC_org.netbeans.modules.java.hints.jdk.AddUnderscores", id=AddUnderscores.ID, category="rules15", enabled=false, severity=Severity.CURRENT_LINE_WARNING, customizerProvider=AddUnderscoresPanel.class)
 public class AddUnderscores {
     public static final String ID = "org.netbeans.modules.java.hints.jdk.AddUnderscores";
 

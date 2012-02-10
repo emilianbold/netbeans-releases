@@ -84,7 +84,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Lahoda
  */
-@Hint(category="suggestions", hintKind=Kind.SUGGESTION)
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.suggestions.ExpandEnhancedForLoop", description = "#DESC_org.netbeans.modules.java.hints.suggestions.ExpandEnhancedForLoop", category="suggestions", hintKind=Kind.SUGGESTION)
 public class ExpandEnhancedForLoop {
 
     @TriggerPattern("for ($type $varName : $expression) { $stmts$; }")

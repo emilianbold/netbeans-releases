@@ -76,7 +76,7 @@ import org.openide.util.NbBundle;
  */
 public class AssignmentIssues {
 
-    @Hint(category = "assignment_issues", enabled = false, suppressWarnings = "AssignmentToForLoopParameter", options=Options.QUERY) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.AssignmentIssues.assignmentToForLoopParam", description = "#DESC_org.netbeans.modules.java.hints.AssignmentIssues.assignmentToForLoopParam", category = "assignment_issues", enabled = false, suppressWarnings = "AssignmentToForLoopParameter", options=Options.QUERY) //NOI18N
     @TriggerPatterns({
         @TriggerPattern(value = "for ($paramType $param = $init; $expr; $update) $statement;"), //NOI18N
         @TriggerPattern(value = "for ($paramType $param : $expr) $statement;") //NOI18N
@@ -98,7 +98,7 @@ public class AssignmentIssues {
         return ret;
     }
 
-    @Hint(category = "assignment_issues", enabled = false, suppressWarnings = "AssignmentToCatchBlockParameter", options=Options.QUERY) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.AssignmentIssues.assignmentToCatchBlockParameter", description = "#DESC_org.netbeans.modules.java.hints.AssignmentIssues.assignmentToCatchBlockParameter", category = "assignment_issues", enabled = false, suppressWarnings = "AssignmentToCatchBlockParameter", options=Options.QUERY) //NOI18N
     @TriggerTreeKind(Kind.CATCH)
     public static List<ErrorDescription> assignmentToCatchBlockParameter(HintContext context) {
         final Trees trees = context.getInfo().getTrees();
@@ -117,7 +117,7 @@ public class AssignmentIssues {
         return ret;
     }
 
-    @Hint(category = "assignment_issues", enabled = false, suppressWarnings = "AssignmentToMethodParameter", options=Options.QUERY) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.AssignmentIssues.assignmentToMethodParam", description = "#DESC_org.netbeans.modules.java.hints.AssignmentIssues.assignmentToMethodParam", category = "assignment_issues", enabled = false, suppressWarnings = "AssignmentToMethodParameter", options=Options.QUERY) //NOI18N
     @TriggerTreeKind({Kind.ASSIGNMENT, Kind.AND_ASSIGNMENT, Kind.DIVIDE_ASSIGNMENT,
         Kind.LEFT_SHIFT_ASSIGNMENT, Kind.MINUS_ASSIGNMENT, Kind.MULTIPLY_ASSIGNMENT,
         Kind.OR_ASSIGNMENT, Kind.PLUS_ASSIGNMENT, Kind.REMAINDER_ASSIGNMENT, Kind.RIGHT_SHIFT_ASSIGNMENT,
@@ -145,7 +145,7 @@ public class AssignmentIssues {
         return null;
     }
 
-    @Hint(category = "assignment_issues", enabled = false, suppressWarnings = "NestedAssignment", options=Options.QUERY) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.AssignmentIssues.nestedAssignment", description = "#DESC_org.netbeans.modules.java.hints.AssignmentIssues.nestedAssignment", category = "assignment_issues", enabled = false, suppressWarnings = "NestedAssignment", options=Options.QUERY) //NOI18N
     @TriggerTreeKind({Kind.ASSIGNMENT, Kind.AND_ASSIGNMENT, Kind.DIVIDE_ASSIGNMENT,
         Kind.LEFT_SHIFT_ASSIGNMENT, Kind.MINUS_ASSIGNMENT, Kind.MULTIPLY_ASSIGNMENT,
         Kind.OR_ASSIGNMENT, Kind.PLUS_ASSIGNMENT, Kind.REMAINDER_ASSIGNMENT, Kind.RIGHT_SHIFT_ASSIGNMENT,
@@ -159,7 +159,7 @@ public class AssignmentIssues {
         return null;
     }
 
-    @Hint(category = "assignment_issues", enabled = false, suppressWarnings = "ValueOfIncrementOrDecrementUsed", options=Options.QUERY) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.AssignmentIssues.incrementDecrementUsed", description = "#DESC_org.netbeans.modules.java.hints.AssignmentIssues.incrementDecrementUsed", category = "assignment_issues", enabled = false, suppressWarnings = "ValueOfIncrementOrDecrementUsed", options=Options.QUERY) //NOI18N
     @TriggerTreeKind({Kind.PREFIX_INCREMENT, Kind.PREFIX_DECREMENT, Kind.POSTFIX_INCREMENT, Kind.POSTFIX_DECREMENT})
     public static ErrorDescription incrementDecrementUsed(HintContext context) {
         final TreePath path = context.getPath();
@@ -172,7 +172,7 @@ public class AssignmentIssues {
         return null;
     }
 
-    @Hint(category = "assignment_issues", enabled = false, suppressWarnings = "AssignmentReplaceableWithOperatorAssignment") //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.AssignmentIssues.replaceAssignWithOpAssign", description = "#DESC_org.netbeans.modules.java.hints.AssignmentIssues.replaceAssignWithOpAssign", category = "assignment_issues", enabled = false, suppressWarnings = "AssignmentReplaceableWithOperatorAssignment") //NOI18N
     @TriggerPatterns({
         @TriggerPattern("$t = $t + $val"),
         @TriggerPattern("$t = $t - $val"),

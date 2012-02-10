@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(category="bugs", suppressWarnings="ReflectionForUnavailableAnnotation", options=Options.QUERY)
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.AnnotationsNotRuntime", description = "#DESC_org.netbeans.modules.java.hints.bugs.AnnotationsNotRuntime", category="bugs", suppressWarnings="ReflectionForUnavailableAnnotation", options=Options.QUERY)
 public class AnnotationsNotRuntime {
 
     @TriggerPattern(value="$el.isAnnotationPresent($annotation.class)",

@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
  *
  * @author phrebejk, jlahoda
  */
-@Hint(category="general", id="AssignmentToItself", suppressWarnings="SillyAssignment", options=Options.QUERY)
+@Hint(displayName = "#DN_AssignmentToItself", description = "#DESC_AssignmentToItself", category="general", id="AssignmentToItself", suppressWarnings="SillyAssignment", options=Options.QUERY)
 public class AssignmentToItself {
 
     @TriggerPattern(value="$var = $var")

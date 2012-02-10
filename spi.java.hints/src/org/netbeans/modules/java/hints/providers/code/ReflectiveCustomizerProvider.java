@@ -81,15 +81,13 @@ public class ReflectiveCustomizerProvider implements CustomizerProvider {
             try {
                 setLayout(new GridBagLayout());
 
-                Class<?> hintClass = CodeHintProviderImpl.findLoader().loadClass(hintClassName);
-                ResourceBundle bundle = NbBundle.getBundle(hintClass);
                 int c = 0;
 
                 for (OptionDescriptor option : options) {
                     JCheckBox checkBox = new JCheckBox();
 
-                    org.openide.awt.Mnemonics.setLocalizedText(checkBox, bundle.getString("LBL_" + option.locationKey));
-                    checkBox.setToolTipText(bundle.getString("TP_" + option.locationKey));
+                    org.openide.awt.Mnemonics.setLocalizedText(checkBox, option.displayName);
+                    checkBox.setToolTipText(option.tooltip);
                     checkBox.addActionListener(new ActionListenerImpl(checkBox, option.preferencesKey, prefs));
 
                     checkBox.setSelected(prefs.getBoolean(option.preferencesKey, option.defaultValue));
@@ -124,8 +122,6 @@ public class ReflectiveCustomizerProvider implements CustomizerProvider {
                 Exceptions.printStackTrace(ex);
             } catch (SecurityException ex) {
                 Exceptions.printStackTrace(ex);
-            } catch (ClassNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
             }
 
         }
@@ -154,12 +150,14 @@ public class ReflectiveCustomizerProvider implements CustomizerProvider {
     public static final class OptionDescriptor {
         public final String preferencesKey;
         public final boolean defaultValue;
-        public final String locationKey;
+        public final String displayName;
+        public final String tooltip;
 
-        public OptionDescriptor(String preferencesKey, boolean defaultValue, String locationKey) {
+        public OptionDescriptor(String preferencesKey, boolean defaultValue, String displayName, String tooltip) {
             this.preferencesKey = preferencesKey;
             this.defaultValue = defaultValue;
-            this.locationKey = locationKey;
+            this.displayName = displayName;
+            this.tooltip = tooltip;
         }
 
     }

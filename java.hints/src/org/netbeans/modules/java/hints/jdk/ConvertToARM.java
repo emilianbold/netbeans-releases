@@ -95,7 +95,7 @@ import org.openide.util.Parameters;
  *
  * @author Tomas Zezula
  */
-@Hint(category="rules15", suppressWarnings="ConvertToTryWithResources")  //NOI18N
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.ConvertToARM", description = "#DESC_org.netbeans.modules.java.hints.jdk.ConvertToARM", category="rules15", suppressWarnings="ConvertToTryWithResources")  //NOI18N
 public class ConvertToARM {
 
     private static final SpecificationVersion JDK_17 = new SpecificationVersion("1.7"); //NOI18N

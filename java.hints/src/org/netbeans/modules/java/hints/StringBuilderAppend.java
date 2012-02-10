@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(id="StringBuilderAppend", category="performance")
+@Hint(displayName = "#DN_StringBuilderAppend", description = "#DESC_StringBuilderAppend", id="StringBuilderAppend", category="performance")
 public class StringBuilderAppend {
 
     @TriggerPattern(value="$build.append($app)",

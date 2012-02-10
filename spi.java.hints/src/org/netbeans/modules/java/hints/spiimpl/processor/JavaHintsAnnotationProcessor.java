@@ -42,20 +42,10 @@
 
 package org.netbeans.modules.java.hints.spiimpl.processor;
 
-import com.sun.source.util.JavacTask;
-import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map.Entry;
-import java.util.MissingResourceException;
-import java.util.PropertyResourceBundle;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -65,15 +55,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.AbstractAnnotationValueVisitor6;
@@ -152,7 +134,7 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
             File clazzFolder = builder.folder("org-netbeans-modules-java-hints/code-hints/" + getFQN(clazz).replace('.', '-') + ".class");
 
             for (AnnotationMirror am : clazz.getAnnotationMirrors()) {
-                dumpAnnotation(builder, clazzFolder, am);
+                dumpAnnotation(builder, clazzFolder, clazz, am);
             }
 
             for (ExecutableElement ee : ElementFilter.methodsIn(clazz.getEnclosedElements())) {
@@ -160,7 +142,7 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
                     File methodFolder = builder.folder(clazzFolder.getPath() + "/" + ee.getSimpleName() + ".method");
 
                     for (AnnotationMirror am : ee.getAnnotationMirrors()) {
-                        dumpAnnotation(builder, methodFolder, am);
+                        dumpAnnotation(builder, methodFolder, ee, am);
                     }
 
                     methodFolder.write();
@@ -172,7 +154,7 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
                     File fieldFolder = builder.folder(clazzFolder.getPath() + "/" + var.getSimpleName() + ".field");
 
                     for (AnnotationMirror am : var.getAnnotationMirrors()) {
-                        dumpAnnotation(builder, fieldFolder, am);
+                        dumpAnnotation(builder, fieldFolder, var, am);
                     }
 
                     if (var.getConstantValue() instanceof String) {
@@ -209,13 +191,13 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
 
     }
 
-    private void dumpAnnotation(LayerBuilder builder, File folder, AnnotationMirror annotation) {
+    private void dumpAnnotation(LayerBuilder builder, File folder, Element errElement, AnnotationMirror annotation) {
         String fqn = getFQN(((TypeElement) annotation.getAnnotationType().asElement())).replace('.', '-');
         final File   annotationFolder = builder.folder(folder.getPath() + "/" + fqn + ".annotation");
 
         for (Entry<? extends ExecutableElement, ? extends AnnotationValue> e : annotation.getElementValues().entrySet()) {
             final String attrName = e.getKey().getSimpleName().toString();
-            e.getValue().accept(new DumpAnnotationValue(builder, annotationFolder, attrName), null);
+            e.getValue().accept(new DumpAnnotationValue(builder, annotationFolder, attrName, errElement, annotation, e.getValue()), null);
         }
 
         annotationFolder.write();
@@ -311,35 +293,9 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
             return false;
         }
 
-        Element hintPackage = hint;
-
-        while (hintPackage.getKind() != ElementKind.PACKAGE) {
-            hintPackage = hintPackage.getEnclosingElement();
-        }
-        try {
-            FileObject bundle = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, ((PackageElement) hintPackage).getQualifiedName(), "Bundle.properties");
-            ResourceBundle rb = new PropertyResourceBundle(bundle.openInputStream());
-
-            checkBundle(rb, "DN_" + id, hint);
-            checkBundle(rb, "DESC_" + id, hint);
-        } catch (IOException ex) {
-            LOG.log(Level.FINE, null, ex);
-        } catch (IllegalArgumentException ex) {
-            //#179942: the SOURCE_PATH location may be unsupported, skip the check for bundle.
-            LOG.log(Level.FINE, null, ex);
-        }
-
         return true;
     }
 
-    private void checkBundle(ResourceBundle bundle, String key, Element ref) {
-        try {
-            bundle.getString(key);
-        } catch (MissingResourceException ex) {
-            processingEnv.getMessager().printMessage(Kind.ERROR, String.format(WARN_BUNDLE_KEY_NOT_FOUND, key), ref);
-        }
-    }
-    
     private boolean verifyHintMethod(ExecutableElement method) {
         StringBuilder error = new StringBuilder();
         Elements elements = processingEnv.getElementUtils();
@@ -455,28 +411,6 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
             error.append("\n");
         }
 
-        Element hintPackage = field;
-
-        while (hintPackage.getKind() != ElementKind.PACKAGE) {
-            hintPackage = hintPackage.getEnclosingElement();
-        }
-
-        String classname = ((TypeElement) field.getEnclosingElement()).getQualifiedName().toString();
-        String locationKey = classname + "." + field.getSimpleName();
-
-        try {
-            FileObject bundle = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, ((PackageElement) hintPackage).getQualifiedName(), "Bundle.properties");
-            ResourceBundle rb = new PropertyResourceBundle(bundle.openInputStream());
-
-            checkBundle(rb, "LBL_" + locationKey, field);
-            checkBundle(rb, "TP_" + locationKey, field);
-        } catch (IOException ex) {
-            LOG.log(Level.FINE, null, ex);
-        } catch (IllegalArgumentException ex) {
-            //#179942: the SOURCE_PATH location may be unsupported, skip the check for bundle.
-            LOG.log(Level.FINE, null, ex);
-        }
-
         if (error.length() == 0) {
             return true;
         }
@@ -495,11 +429,17 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
         private final LayerBuilder builder;
         private final File annotationFolder;
         private final String attrName;
+        private final Element errElement;
+        private final AnnotationMirror errAnnotationMirror;
+        private final AnnotationValue errAnnotationValue;
 
-        public DumpAnnotationValue(LayerBuilder builder, File annotationFolder, String attrName) {
+        public DumpAnnotationValue(LayerBuilder builder, File annotationFolder, String attrName, Element errElement, AnnotationMirror errAnnotationMirror, AnnotationValue errAnnotationValue) {
             this.builder = builder;
             this.annotationFolder = annotationFolder;
             this.attrName = attrName;
+            this.errElement = errElement;
+            this.errAnnotationMirror = errAnnotationMirror;
+            this.errAnnotationValue = errAnnotationValue;
         }
 
         public Void visitBoolean(boolean b, Void p) {
@@ -543,7 +483,15 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
         }
 
         public Void visitString(String s, Void p) {
-            annotationFolder.stringvalue(attrName, s);
+            if ("displayName".equals(attrName) || "description".equals(attrName) || "tooltip".equals(attrName)) {
+                try {
+                    annotationFolder.bundlevalue(attrName, s);
+                } catch (LayerGenerationException ex) {
+                   processingEnv.getMessager().printMessage(Kind.ERROR, ex.getLocalizedMessage(), errElement, errAnnotationMirror, errAnnotationValue);
+                }
+            } else {
+                annotationFolder.stringvalue(attrName, s);
+            }
             return null;
         }
 
@@ -561,7 +509,7 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
         public Void visitAnnotation(AnnotationMirror a, Void p) {
             File f = builder.folder(annotationFolder.getPath() + "/" + attrName);
             
-            dumpAnnotation(builder, f, a);
+            dumpAnnotation(builder, f, errElement, a);
 
             f.write();
             return null;
@@ -572,7 +520,7 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
             int c = 0;
 
             for (AnnotationValue av : vals) {
-                av.accept(new DumpAnnotationValue(builder, arr, "item" + c), null);
+                av.accept(new DumpAnnotationValue(builder, arr, "item" + c, errElement, errAnnotationMirror, av), null);
                 c++;
             }
 

@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(category="performance", suppressWarnings="BooleanConstructorCall")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.NoBooleanConstructor", description = "#DESC_org.netbeans.modules.java.hints.perf.NoBooleanConstructor", category="performance", suppressWarnings="BooleanConstructorCall")
 public class NoBooleanConstructor {
 
     @TriggerPattern(value="new java.lang.Boolean($b)", constraints=@ConstraintVariableType(variable="$b", type="boolean"))

@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Zezula
  */
-@Hint(category="finalization",suppressWarnings={"FinalizeCalledExplicitly"}, options=Options.QUERY)    //NOI18N
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.finalize.CallFinalize", description = "#DESC_org.netbeans.modules.java.hints.finalize.CallFinalize", category="finalization",suppressWarnings={"FinalizeCalledExplicitly"}, options=Options.QUERY)    //NOI18N
 public class CallFinalize {
 
     @TriggerPatterns({

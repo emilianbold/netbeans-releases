@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
  * Detects usage of this in anonymous class
  * @author Max Sauer
  */
-@Hint(category="bugs")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.ThisInAnonymous", description = "#DESC_org.netbeans.modules.java.hints.ThisInAnonymous", category="bugs")
 public class ThisInAnonymous {
     private static final String THIS_KEYWORD = "this"; // NOI18N
 

@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-@Hint(category="bitwise_operations", suppressWarnings="PointlessBitwiseExpression")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.PointlessBitwiseExpression", description = "#DESC_org.netbeans.modules.java.hints.PointlessBitwiseExpression", category="bitwise_operations", suppressWarnings="PointlessBitwiseExpression")
 public class PointlessBitwiseExpression {
 
     @TriggerPatterns ({

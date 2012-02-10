@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(category="bugs", suppressWarnings="MalformedRegexp", options=Options.QUERY)
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.Regexp", description = "#DESC_org.netbeans.modules.java.hints.bugs.Regexp", category="bugs", suppressWarnings="MalformedRegexp", options=Options.QUERY)
 public class Regexp {
 
     @TriggerPatterns({

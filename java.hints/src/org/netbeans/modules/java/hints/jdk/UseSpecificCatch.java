@@ -77,7 +77,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(category="rules15", suppressWarnings="UseSpecificCatch")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.UseSpecificCatch", description = "#DESC_org.netbeans.modules.java.hints.jdk.UseSpecificCatch", category="rules15", suppressWarnings="UseSpecificCatch")
 public class UseSpecificCatch {
 
     @TriggerPatterns({

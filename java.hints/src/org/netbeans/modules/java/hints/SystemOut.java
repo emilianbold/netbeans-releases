@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-@Hint(category="code_maturity", enabled = false, suppressWarnings="UseOfSystemOutOrSystemErr")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.SystemOut", description = "#DESC_org.netbeans.modules.java.hints.SystemOut", category="code_maturity", enabled = false, suppressWarnings="UseOfSystemOutOrSystemErr")
 public class SystemOut {
 
     @TriggerPatterns ({

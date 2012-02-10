@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author vita
  */
-@Hint(category="logging", suppressWarnings={"ClassWithMultipleLoggers"}, options=Options.QUERY) //NOI18N
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.MultipleLoggers", description = "#DESC_org.netbeans.modules.java.hints.MultipleLoggers", category="logging", suppressWarnings={"ClassWithMultipleLoggers"}, options=Options.QUERY) //NOI18N
 public final class MultipleLoggers {
 
     public MultipleLoggers() {

@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Lahoda
  */
-@Hint(category="general", id="org.netbeans.modules.java.hints.EqualsMethodHint", suppressWarnings="EqualsWhichDoesntCheckParameterClass", options=Options.QUERY)
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.EqualsMethodHint", description = "#DESC_org.netbeans.modules.java.hints.EqualsMethodHint", category="general", id="org.netbeans.modules.java.hints.EqualsMethodHint", suppressWarnings="EqualsWhichDoesntCheckParameterClass", options=Options.QUERY)
 public class EqualsMethodHint {
 
     @TriggerPattern(value="$mods$ boolean equals(java.lang.Object $param) { $statements$; }")

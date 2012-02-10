@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-@Hint(category="bitwise_operations", suppressWarnings="ShiftOutOfRange", options=Options.QUERY)
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.ShiftOutOfRange", description = "#DESC_org.netbeans.modules.java.hints.ShiftOutOfRange", category="bitwise_operations", suppressWarnings="ShiftOutOfRange", options=Options.QUERY)
 public class ShiftOutOfRange {
 
     @TriggerPatterns ({

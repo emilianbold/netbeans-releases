@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  *
  * @author David Strupl
  */
-@Hint(category="initialization", suppressWarnings="LeakingThisInConstructor", options=Options.QUERY)
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.LeakingThisInConstructor", description = "#DESC_org.netbeans.modules.java.hints.LeakingThisInConstructor", category="initialization", suppressWarnings="LeakingThisInConstructor", options=Options.QUERY)
 public class LeakingThisInConstructor {
     private static final String THIS_KEYWORD = "this"; // NOI18N
     public LeakingThisInConstructor() {

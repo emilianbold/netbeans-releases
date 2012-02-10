@@ -81,7 +81,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(category="rules15")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.JoinCatches", description = "#DESC_org.netbeans.modules.java.hints.jdk.JoinCatches", category="rules15")
 public class JoinCatches {
 
     @TriggerPatterns({

@@ -78,7 +78,7 @@ import org.openide.util.NbBundle;
  *
  * @author vita
  */
-@Hint(category="logging", suppressWarnings={"ClassWithoutLogger"}, enabled=false) //NOI18N
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.NoLoggers", description = "#DESC_org.netbeans.modules.java.hints.NoLoggers", category="logging", suppressWarnings={"ClassWithoutLogger"}, enabled=false) //NOI18N
 public final class NoLoggers {
 
     public NoLoggers() {

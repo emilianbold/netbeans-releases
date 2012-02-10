@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav tulach
  */
-@Hint(id="org.netbeans.modules.java.hints.MissingHashCode", category="general", enabled=true, options=Options.QUERY)
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.MissingHashCode", description = "#DESC_org.netbeans.modules.java.hints.MissingHashCode", id="org.netbeans.modules.java.hints.MissingHashCode", category="general", enabled=true, options=Options.QUERY)
 public class MissingHashCode {
 
     @TriggerTreeKind(Kind.CLASS)

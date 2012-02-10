@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(category="bugs", suppressWarnings="CastConflictsWithInstanceof", options=Options.QUERY)
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.CastVSInstanceOf", description = "#DESC_org.netbeans.modules.java.hints.bugs.CastVSInstanceOf", category="bugs", suppressWarnings="CastConflictsWithInstanceof", options=Options.QUERY)
 public class CastVSInstanceOf {
 
     @TriggerPatterns({

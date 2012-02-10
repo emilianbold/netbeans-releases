@@ -93,7 +93,7 @@ import org.openide.util.NbBundle;
  *
  * @author Dusan Balek
  */
-@Hint(category = "imports")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.OrganizeImports", description = "#DESC_org.netbeans.modules.java.hints.OrganizeImports", category = "imports")
 public class OrganizeImports {
 
     @TriggerTreeKind(Kind.COMPILATION_UNIT)

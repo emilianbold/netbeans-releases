@@ -77,7 +77,7 @@ public class ParamEncapsulation {
     private static final String A_FLOAT = "float[]";                    //NOI18N
     private static final String A_DOUBLE = "double[]";                  //NOI18N
 
-    @Hint(category="encapsulation",                                     //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.ParamEncapsulation.collection", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.ParamEncapsulation.collection", category="encapsulation",                                     //NOI18N
         suppressWarnings={"AssignmentToCollectionOrArrayFieldFromParameter"},   //NOI18N
         enabled=false,
         options=Options.QUERY)
@@ -99,7 +99,7 @@ public class ParamEncapsulation {
             "AssignmentToCollectionOrArrayFieldFromParameter"); //NOI18N
     }
 
-    @Hint(category="encapsulation",                                             //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.ParamEncapsulation.array", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.ParamEncapsulation.array", category="encapsulation",                                             //NOI18N
         suppressWarnings={"AssignmentToCollectionOrArrayFieldFromParameter"},   //NOI18N
         enabled=false,
         options=Options.QUERY)
@@ -157,7 +157,7 @@ public class ParamEncapsulation {
             "AssignmentToCollectionOrArrayFieldFromParameter"); //NOI18N
     }
 
-    @Hint(category="encapsulation",
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.ParamEncapsulation.date", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.ParamEncapsulation.date", category="encapsulation",
         suppressWarnings={"AssignmentToDateFieldFromParameter"},
         enabled=false,
         options=Options.QUERY)

@@ -99,12 +99,12 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Lahoda
  */
-@Hint(category="rules15", suppressWarnings="ConvertToStringSwitch")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch", description = "#DESC_org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch", category="rules15", suppressWarnings="ConvertToStringSwitch")
 public class ConvertToStringSwitch {
 
     static final boolean DEF_ALSO_EQ = true;
     
-    @BooleanOption(defaultValue=DEF_ALSO_EQ)
+    @BooleanOption(displayName = "#LBL_org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch.KEY_ALSO_EQ", tooltip = "#TP_org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch.KEY_ALSO_EQ", defaultValue=DEF_ALSO_EQ)
     static final String KEY_ALSO_EQ = "also-equals";
     
     private static final String[] INIT_PATTERNS = {

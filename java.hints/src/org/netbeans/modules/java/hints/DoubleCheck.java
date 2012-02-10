@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav tulach
  */
-@Hint(id="org.netbeans.modules.java.hints.DoubleCheck", category="thread")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.DoubleCheck", description = "#DESC_org.netbeans.modules.java.hints.DoubleCheck", id="org.netbeans.modules.java.hints.DoubleCheck", category="thread")
 public class DoubleCheck {
 
     @TriggerTreeKind(Kind.SYNCHRONIZED)

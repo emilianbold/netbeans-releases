@@ -65,7 +65,7 @@ import org.openide.util.NbBundle;
  *
  * @author vita
  */
-@Hint(category="logging", suppressWarnings={"NonConstantLogger"}) //NOI18N
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.LoggerNotStaticFinal", description = "#DESC_org.netbeans.modules.java.hints.LoggerNotStaticFinal", category="logging", suppressWarnings={"NonConstantLogger"}) //NOI18N
 public class LoggerNotStaticFinal {
 
     @TriggerPatterns({

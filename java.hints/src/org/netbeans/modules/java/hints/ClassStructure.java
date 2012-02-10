@@ -87,7 +87,7 @@ import org.openide.util.NbBundle;
  */
 public class ClassStructure {
 
-    @Hint(category = "class_structure", enabled = false, suppressWarnings = "FinalClass") //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.ClassStructure.finalClass", description = "#DESC_org.netbeans.modules.java.hints.ClassStructure.finalClass", category = "class_structure", enabled = false, suppressWarnings = "FinalClass") //NOI18N
     @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription finalClass(HintContext context) {
         final ClassTree cls = (ClassTree) context.getPath().getLeaf();
@@ -98,7 +98,7 @@ public class ClassStructure {
         return null;
     }
 
-    @Hint(category = "class_structure", enabled = false, suppressWarnings = {"FinalMethod"}) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.ClassStructure.finalMethod", description = "#DESC_org.netbeans.modules.java.hints.ClassStructure.finalMethod", category = "class_structure", enabled = false, suppressWarnings = {"FinalMethod"}) //NOI18N
     @TriggerTreeKind(Kind.METHOD)
     public static ErrorDescription finalMethod(HintContext context) {
         final MethodTree mth = (MethodTree) context.getPath().getLeaf();
@@ -109,7 +109,7 @@ public class ClassStructure {
         return null;
     }
 
-    @Hint(category = "class_structure", suppressWarnings = {"FinalPrivateMethod"}) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.ClassStructure.finalPrivateMethod", description = "#DESC_org.netbeans.modules.java.hints.ClassStructure.finalPrivateMethod", category = "class_structure", suppressWarnings = {"FinalPrivateMethod"}) //NOI18N
     @TriggerTreeKind(Kind.METHOD)
     public static ErrorDescription finalPrivateMethod(HintContext context) {
         final MethodTree mth = (MethodTree) context.getPath().getLeaf();
@@ -120,7 +120,7 @@ public class ClassStructure {
         return null;
     }
 
-    @Hint(category = "class_structure", suppressWarnings = {"FinalStaticMethod"}) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.ClassStructure.finalStaticMethod", description = "#DESC_org.netbeans.modules.java.hints.ClassStructure.finalStaticMethod", category = "class_structure", suppressWarnings = {"FinalStaticMethod"}) //NOI18N
     @TriggerTreeKind(Kind.METHOD)
     public static ErrorDescription finalStaticMethod(HintContext context) {
         final MethodTree mth = (MethodTree) context.getPath().getLeaf();
@@ -131,7 +131,7 @@ public class ClassStructure {
         return null;
     }
 
-    @Hint(category = "class_structure", enabled = false, suppressWarnings = {"FinalMethodInFinalClass"}) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.ClassStructure.finalMethodInFinalClass", description = "#DESC_org.netbeans.modules.java.hints.ClassStructure.finalMethodInFinalClass", category = "class_structure", enabled = false, suppressWarnings = {"FinalMethodInFinalClass"}) //NOI18N
     @TriggerTreeKind(Kind.METHOD)
     public static ErrorDescription finalMethodInFinalClass(HintContext context) {
         final MethodTree mth = (MethodTree) context.getPath().getLeaf();
@@ -143,7 +143,7 @@ public class ClassStructure {
         return null;
     }
 
-    @Hint(category = "class_structure", enabled = false, suppressWarnings = {"NoopMethodInAbstractClass"}, options=Options.QUERY) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.ClassStructure.noopMethodInAbstractClass", description = "#DESC_org.netbeans.modules.java.hints.ClassStructure.noopMethodInAbstractClass", category = "class_structure", enabled = false, suppressWarnings = {"NoopMethodInAbstractClass"}, options=Options.QUERY) //NOI18N
     @TriggerTreeKind(Kind.METHOD)
     public static ErrorDescription noopMethodInAbstractClass(HintContext context) {
         final MethodTree mth = (MethodTree) context.getPath().getLeaf();
@@ -157,7 +157,7 @@ public class ClassStructure {
         return null;
     }
 
-    @Hint(category = "class_structure", enabled = false, suppressWarnings = {"PublicConstructorInNonPublicClass"}) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.ClassStructure.publicConstructorInNonPublicClass", description = "#DESC_org.netbeans.modules.java.hints.ClassStructure.publicConstructorInNonPublicClass", category = "class_structure", enabled = false, suppressWarnings = {"PublicConstructorInNonPublicClass"}) //NOI18N
     @TriggerTreeKind(Kind.METHOD)
     public static ErrorDescription publicConstructorInNonPublicClass(HintContext context) {
         final MethodTree mth = (MethodTree) context.getPath().getLeaf();
@@ -170,7 +170,7 @@ public class ClassStructure {
         return null;
     }
 
-    @Hint(category = "class_structure", enabled = false, suppressWarnings = {"ProtectedMemberInFinalClass"}) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.ClassStructure.protectedMemberInFinalClass", description = "#DESC_org.netbeans.modules.java.hints.ClassStructure.protectedMemberInFinalClass", category = "class_structure", enabled = false, suppressWarnings = {"ProtectedMemberInFinalClass"}) //NOI18N
     @TriggerTreeKind({Kind.METHOD, Kind.VARIABLE})
     public static ErrorDescription protectedMemberInFinalClass(HintContext context) {
         final Tree tree = context.getPath().getLeaf();
@@ -209,7 +209,7 @@ public class ClassStructure {
         return null;
     }
 
-    @Hint(category = "class_structure", enabled = false, suppressWarnings = {"MarkerInterface"}, options=Options.QUERY) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.ClassStructure.markerInterface", description = "#DESC_org.netbeans.modules.java.hints.ClassStructure.markerInterface", category = "class_structure", enabled = false, suppressWarnings = {"MarkerInterface"}, options=Options.QUERY) //NOI18N
     @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription markerInterface(HintContext context) {
         final ClassTree cls = (ClassTree) context.getPath().getLeaf();
@@ -219,7 +219,7 @@ public class ClassStructure {
         return null;
     }
 
-    @Hint(category = "class_structure", enabled = false, suppressWarnings = {"ClassMayBeInterface"}) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.ClassStructure.classMayBeInterface", description = "#DESC_org.netbeans.modules.java.hints.ClassStructure.classMayBeInterface", category = "class_structure", enabled = false, suppressWarnings = {"ClassMayBeInterface"}) //NOI18N
     @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription classMayBeInterface(HintContext context) {
         final ClassTree cls = (ClassTree) context.getPath().getLeaf();
@@ -231,7 +231,7 @@ public class ClassStructure {
         return null;
     }
 
-    @Hint(category = "class_structure", enabled = false, suppressWarnings = {"MultipleTopLevelClassesInFile"}, options=Options.QUERY) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.ClassStructure.multipleTopLevelClassesInFile", description = "#DESC_org.netbeans.modules.java.hints.ClassStructure.multipleTopLevelClassesInFile", category = "class_structure", enabled = false, suppressWarnings = {"MultipleTopLevelClassesInFile"}, options=Options.QUERY) //NOI18N
     @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription multipleTopLevelClassesInFile(HintContext context) {
         final ClassTree cls = (ClassTree) context.getPath().getLeaf();

@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(category="bugs", suppressWarnings="ResultOfMethodCallIgnored")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.CheckReturnValueHint", description = "#DESC_org.netbeans.modules.java.hints.bugs.CheckReturnValueHint", category="bugs", suppressWarnings="ResultOfMethodCallIgnored")
 public class CheckReturnValueHint {
 
     @TriggerPattern("$method($params$);")

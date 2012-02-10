@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Zezula
  */
-@Hint(category="finalization",suppressWarnings={"FinalizeDoesntCallSuperFinalize"})  //NOI18N
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.finalize.FinalizeDoesNotCallSuper", description = "#DESC_org.netbeans.modules.java.hints.finalize.FinalizeDoesNotCallSuper", category="finalization",suppressWarnings={"FinalizeDoesntCallSuperFinalize"})  //NOI18N
 public class FinalizeDoesNotCallSuper {
 
     private static final String SUPER = "super";    //NOI18N

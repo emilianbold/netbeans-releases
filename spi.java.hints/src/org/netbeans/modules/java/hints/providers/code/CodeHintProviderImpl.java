@@ -157,7 +157,7 @@ public class CodeHintProviderImpl implements HintProvider {
 
     private static HintMetadata fromAnnotation(String id, ClassWrapper clazz, MethodWrapper method, Hint metadata) {
         HintMetadata hm = HintMetadata.Builder.create(id)
-                                              .setBundle(clazz.getName())
+                                              .setDescription(metadata.displayName(), metadata.description())
                                               .setCategory(metadata.category())
                                               .setEnabled(metadata.enabled())
                                               .setSeverity(metadata.severity())
@@ -199,7 +199,7 @@ public class CodeHintProviderImpl implements HintProvider {
 
             if (allowedOptions != null && !allowedOptions.contains(key)) continue;
             
-            declarativeOptions.add(new OptionDescriptor(key, true, clazz.getName() + "." + fw.getName()));
+            declarativeOptions.add(new OptionDescriptor(key, true, option.displayName(), option.tooltip()));
         }
 
         return !declarativeOptions.isEmpty() ? new ReflectiveCustomizerProvider(clazz.getName(), id, declarativeOptions) : null;
@@ -380,6 +380,14 @@ public class CodeHintProviderImpl implements HintProvider {
 
         public Options[] options() {
             return EMPTY_OPTIONS;
+        }
+
+        @Override public String displayName() {
+            return "";
+        }
+
+        @Override public String description() {
+            return "";
         }
 
     }

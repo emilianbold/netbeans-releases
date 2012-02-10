@@ -79,7 +79,7 @@ import org.openide.util.NbBundle;
  */
 public class Tiny {
 
-    @Hint(category="bugs", suppressWarnings="ReplaceAllDot")
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.Tiny.stringReplaceAllDot", description = "#DESC_org.netbeans.modules.java.hints.bugs.Tiny.stringReplaceAllDot", category="bugs", suppressWarnings="ReplaceAllDot")
     @TriggerPattern(value="$str.replaceAll(\".\", $to)",
                     constraints=@ConstraintVariableType(variable="$str", type="java.lang.String"))
     public static ErrorDescription stringReplaceAllDot(HintContext ctx) {
@@ -93,7 +93,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forTree(ctx, constant, displayName, fix);
     }
 
-    @Hint(category="bugs", suppressWarnings="ResultOfObjectAllocationIgnored", options=Options.QUERY)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.Tiny.newObject", description = "#DESC_org.netbeans.modules.java.hints.bugs.Tiny.newObject", category="bugs", suppressWarnings="ResultOfObjectAllocationIgnored", options=Options.QUERY)
     //TODO: anonymous innerclasses?
     @TriggerPatterns({
         @TriggerPattern(value="new $type($params$);"),
@@ -105,7 +105,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName);
     }
 
-    @Hint(category="bugs", suppressWarnings="SuspiciousSystemArraycopy", options=Options.QUERY)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.Tiny.systemArrayCopy", description = "#DESC_org.netbeans.modules.java.hints.bugs.Tiny.systemArrayCopy", category="bugs", suppressWarnings="SuspiciousSystemArraycopy", options=Options.QUERY)
     @TriggerPattern(value="java.lang.System.arraycopy($src, $srcPos, $dest, $destPos, $length)")
     public static List<ErrorDescription> systemArrayCopy(HintContext ctx) {
         List<ErrorDescription> result = new LinkedList<ErrorDescription>();
@@ -138,7 +138,7 @@ public class Tiny {
     }
 
 
-    @Hint(category="bugs", suppressWarnings="ObjectEqualsNull")
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.Tiny.equalsNull", description = "#DESC_org.netbeans.modules.java.hints.bugs.Tiny.equalsNull", category="bugs", suppressWarnings="ObjectEqualsNull")
     @TriggerPattern(value="$obj.equals(null)")
     public static ErrorDescription equalsNull(HintContext ctx) {
         String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_equalsNull");
@@ -148,7 +148,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName, fix);
     }
 
-    @Hint(category="bugs", suppressWarnings="UseOfIndexZeroInJDBCResultSet", options=Options.QUERY)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.Tiny.resultSet", description = "#DESC_org.netbeans.modules.java.hints.bugs.Tiny.resultSet", category="bugs", suppressWarnings="UseOfIndexZeroInJDBCResultSet", options=Options.QUERY)
     @TriggerPattern(value="$set.$method($columnIndex, $other$)",
                     constraints={
                         @ConstraintVariableType(variable="$set", type="java.sql.ResultSet"),
