@@ -175,6 +175,7 @@ public class CopyClassTest extends RefactoringTestBase {
         List<Problem> problems = new LinkedList<Problem>();
 
         addAllProblems(problems, r[0].preCheck());
+        Thread.sleep(1000);
         addAllProblems(problems, r[0].prepare(rs));
         addAllProblems(problems, rs.doRefactoring(true));
 
@@ -191,6 +192,7 @@ public class CopyClassTest extends RefactoringTestBase {
         List<Problem> problems = new LinkedList<Problem>();
 
         addAllProblems(problems, r[0].preCheck());
+        Thread.sleep(1000);
         addAllProblems(problems, r[0].prepare(rs));
         addAllProblems(problems, rs.doRefactoring(true));
 

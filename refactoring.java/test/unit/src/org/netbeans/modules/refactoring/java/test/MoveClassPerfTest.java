@@ -110,6 +110,7 @@ public class MoveClassPerfTest extends RefPerfTestCase {
 
         File f = FileUtil.toFile(getProjectDir().getFileObject("/src/org/gjt/sp"));
         moveRef[0].setTarget(Lookups.singleton(f.toURI().toURL()));
+        Thread.sleep(1000);
         moveRef[0].prepare(rs);
         rs.doRefactoring(true);
         Collection<RefactoringElement> elems = rs.getRefactoringElements();

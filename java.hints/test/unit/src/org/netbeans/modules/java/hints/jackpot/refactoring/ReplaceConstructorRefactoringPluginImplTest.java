@@ -95,6 +95,7 @@ public class ReplaceConstructorRefactoringPluginImplTest extends RefTestBase {
         }, true);
 
         RefactoringSession rs = RefactoringSession.create("Session");
+        Thread.sleep(1000);
         r[0].prepare(rs);
         rs.doRefactoring(true);
 

@@ -320,6 +320,7 @@ public class RefTestBase extends NbTestCase {
         FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Empty.java");
         FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Class.java");
         FileUtil.getConfigFile("Templates/Classes/Class.java").getOutputStream().close();
+        System.setProperty("org.netbeans.modules.parsing.impl.Source.excludedTasks", ".*");
     }
 
     @Override

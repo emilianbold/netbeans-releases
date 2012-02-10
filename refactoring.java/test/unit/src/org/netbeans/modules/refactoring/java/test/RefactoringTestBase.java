@@ -106,13 +106,9 @@ public class RefactoringTestBase extends NbTestCase {
         }
 
         RepositoryUpdater.getDefault().refreshAll(false, true, false, null);
-        //trying to fix randomly failing tests
-        Thread.sleep(2000);
     }
 
     protected void verifyContent(FileObject sourceRoot, File... files) throws Exception {
-        //trying to fix randomly failing tests
-        Thread.sleep(2000);
         List<FileObject> todo = new LinkedList<FileObject>();
 
         todo.add(sourceRoot);
@@ -317,6 +313,7 @@ public class RefactoringTestBase extends NbTestCase {
         RepositoryUpdater.getDefault().start(true);
         super.setUp();
         FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Empty.java");
+        System.setProperty("org.netbeans.modules.parsing.impl.Source.excludedTasks", ".*");
     }
 
     @Override
