@@ -86,8 +86,8 @@ public class RemoteFileUrlMapper extends URLMapper {
 
     @Override
     public URL getURL(FileObject fo, int type) {
-        if (fo instanceof RemoteFileObjectBase) {
-            RemoteFileObjectBase rfo = (RemoteFileObjectBase) fo;
+        if (fo instanceof RemoteFileObject) {
+            RemoteFileObject rfo = (RemoteFileObject) fo;
             try {
                 ExecutionEnvironment env = rfo.getExecutionEnvironment();
                 return getURL(env, rfo.getPath(), rfo.isFolder());

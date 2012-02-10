@@ -90,13 +90,13 @@ public class ReadOnlyDirTestCase extends RemoteFileTestBase {
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
             assertEquals("Error executing sc    ript \"" + script + "\": " + res.error, 0, res.exitCode);
             refreshParent(roDirPath);
-            RemoteDirectory roDirFO = (RemoteDirectory) getFileObject(roDirPath);
+            RemoteFileObject roDirFO = getFileObject(roDirPath);
             assertFalse("Should not be readable: " + roDirFO, roDirFO.canRead());
             FileObject rwDirFO = getFileObject(rwDirPath);
             FileObject fileFO1 = getFileObject(filePath1);
             DirectoryStorage storage;
             FileObject[] children;
-            RemoteFileObjectBase invalid;
+            FileObject invalid;
             
             children = roDirFO.getChildren();
             assertEquals("children size for " + roDirFO.getPath(), 1, children.length);
@@ -105,26 +105,26 @@ public class ReadOnlyDirTestCase extends RemoteFileTestBase {
             assertNull("file objject should be null for inexistent1", invalid);
             children = roDirFO.getChildren();
             assertEquals("children size for " + roDirFO.getPath(), 1, children.length);
-            storage = roDirFO.testGetExistingDirectoryStorage();            
+            storage = ((RemoteDirectory) roDirFO.getDelegate()).testGetExistingDirectoryStorage();            
             assertEquals("storage.size", 2, storage.listAll().size());
             
             FileObject fileFO2 = getFileObject(filePath2);
             children = roDirFO.getChildren();
             assertEquals("children size for " + roDirFO.getPath(), 2, children.length);
-            storage = roDirFO.testGetExistingDirectoryStorage();
+            storage = ((RemoteDirectory) roDirFO.getDelegate()).testGetExistingDirectoryStorage();
             assertEquals("storage.size", 3, storage.listAll().size());
             
             invalid = roDirFO.getFileObject("inexistent2");
             assertNull("file objject should be null for inexistent2", invalid);
             children = roDirFO.getChildren();
             assertEquals("children size for " + roDirFO.getPath(), 2, children.length);
-            storage = roDirFO.testGetExistingDirectoryStorage();
+            storage = ((RemoteDirectory) roDirFO.getDelegate()).testGetExistingDirectoryStorage();
             assertEquals("storage.size", 4, storage.listAll().size());
             
             roDirFO.refresh();
             children = roDirFO.getChildren();
             assertEquals("children size for " + roDirFO.getPath(), 2, children.length);
-            storage = roDirFO.testGetExistingDirectoryStorage();
+            storage = ((RemoteDirectory) roDirFO.getDelegate()).testGetExistingDirectoryStorage();
             assertEquals("storage.size", 2, storage.listAll().size());            
         } finally {
             if (baseDir != null) {

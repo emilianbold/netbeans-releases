@@ -58,12 +58,12 @@ public final class RemoteLink extends RemoteLinkBase {
 
     private String normalizedTargetPath;
 
-    /*package*/ RemoteLink(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteFileObjectBase parent, String remotePath, String link) {
-        super(fileSystem, execEnv, parent, remotePath);        
+    /*package*/ RemoteLink(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteFileObjectBase parent, String remotePath, String link) {
+        super(wrapper, fileSystem, execEnv, parent, remotePath);        
         setLink(link, parent);
     }
 
-    private static String normalize(String link, FileObject parent) {
+    private static String normalize(String link, RemoteFileObjectBase parent) {
         if (link.startsWith("/")) { // NOI18N
             return link;
         }
@@ -92,7 +92,7 @@ public final class RemoteLink extends RemoteLinkBase {
         return normalizedTargetPath;
     }
 
-    /*package*/ final void setLink(String link, FileObject parent) {
+    /*package*/ final void setLink(String link, RemoteFileObjectBase parent) {
         this.normalizedTargetPath = normalize(link, parent);
     }
 
