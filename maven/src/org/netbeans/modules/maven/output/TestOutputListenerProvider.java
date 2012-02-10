@@ -209,7 +209,13 @@ public class TestOutputListenerProvider implements OutputProcessor {
             Project prj = FileOwnerQuery.getOwner(outDir);
             if (prj != null) {
                 NbMavenProjectImpl nbprj = prj.getLookup().lookup(NbMavenProjectImpl.class);
-                File testDir = new File(nbprj.getOriginalMavenProject().getBuild().getTestSourceDirectory());
+                String tsd = nbprj.getOriginalMavenProject().getBuild().getTestSourceDirectory();
+                if (tsd == null) {
+                    //#205722 while we were executing tests, someone broke the pom and we don't get the proper test source directory.
+                    //try getting away with the default location
+                    tsd = new File(FileUtil.toFile(prj.getProjectDirectory()), "src" + File.separator + "test" + File.separator + "java").getAbsolutePath();
+                }
+                File testDir = new File(tsd);
 
                 if (report != null) {
                     String nm = testname.lastIndexOf('.') > -1  //NOI18N
