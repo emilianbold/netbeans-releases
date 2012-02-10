@@ -49,10 +49,11 @@ import java.lang.annotation.Target;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 
-/**Description of a hint. When applied to a class, any enclosed method marked with a trigger
+/** Description of a hint.
+ * When applied to a class, any enclosed method marked with a trigger
  * will be considered to be part of this hint. When applied to a method, only this specific
  * method will be considered to the part of the hint.
- *
+ * Currently recognized triggers include {@link TriggerPattern} and {@link TriggerTreeKind}.
  * @author lahvac, Petr Hrebejk
  */
 @Target({ElementType.TYPE, ElementType.METHOD})
