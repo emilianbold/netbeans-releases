@@ -46,6 +46,7 @@ package org.netbeans.modules.refactoring.java.spi;
 import com.sun.source.tree.CompilationUnitTree;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.annotations.common.NonNull;
@@ -75,7 +76,19 @@ import org.openide.util.NbBundle;
 public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter implements RefactoringPlugin {
 
     protected enum Phase {PRECHECK, FASTCHECKPARAMETERS, CHECKPARAMETERS, PREPARE};
+    /**
+     * Use cancelRequested
+     * @deprecated
+     */
+    @Deprecated
     protected volatile boolean cancelRequest = false;
+    
+    /**
+     * true if cancel was requested
+     * false otherwise
+     */
+    protected final AtomicBoolean cancelRequested = new AtomicBoolean();
+    
     private volatile CancellableTask currentTask;
     private WorkingTask workingTask = new WorkingTask();
     
@@ -111,6 +124,7 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
     @Override
     public Problem preCheck() {
         cancelRequest = false;
+        cancelRequested.set(false);
         return workingTask.run(Phase.PRECHECK);
     }
 
@@ -147,10 +161,10 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
     @Override
     public void cancelRequest() {
         cancelRequest = true;
+        cancelRequested.set(true);
         if (currentTask!=null) {
             currentTask.cancel();
         }
-        RefactoringUtils.cancel = true;
     }
 
     protected ClasspathInfo getClasspathInfo(AbstractRefactoring refactoring) {
@@ -206,7 +220,7 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
     private Iterable<? extends List<FileObject>> groupByRoot (Iterable<? extends FileObject> data) {
         Map<FileObject,List<FileObject>> result = new HashMap<FileObject,List<FileObject>> ();
         for (FileObject file : data) {
-            if (cancelRequest) {
+            if (cancelRequested.get()) {
                 return Collections.emptyList();
             }
             ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
@@ -243,7 +257,7 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
         try {
             Iterable<? extends List<FileObject>> work = groupByRoot(files);
             for (List<FileObject> fos : work) {
-                if (cancelRequest) {
+                if (cancelRequested.get()) {
                     return Collections.<ModificationResult>emptyList();
                 }
                 final JavaSource javaSource = JavaSource.create(info==null?ClasspathInfo.create(fos.get(0)):info, fos);

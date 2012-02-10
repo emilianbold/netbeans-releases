@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -87,7 +88,6 @@ import org.openide.util.Utilities;
 public class RefactoringUtils {
 
     private static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
-    public static volatile boolean cancel = false;
     private static final Logger LOG = Logger.getLogger(RefactoringUtils.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(RefactoringUtils.class.getName(), 1, false, false);
 
@@ -136,14 +136,12 @@ public class RefactoringUtils {
         return null;
     }
 
-    public static Set<ElementHandle<TypeElement>> getImplementorsAsHandles(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el) {
-        cancel = false;
+    public static Set<ElementHandle<TypeElement>> getImplementorsAsHandles(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el, AtomicBoolean cancel) {
         LinkedList<ElementHandle<TypeElement>> elements = new LinkedList<ElementHandle<TypeElement>>(
                 implementorsQuery(idx, ElementHandle.create(el)));
         Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();
         while (!elements.isEmpty()) {
-            if (cancel) {
-                cancel = false;
+            if (cancel.get()) {
                 return Collections.emptySet();
             }
             ElementHandle<TypeElement> next = elements.removeFirst();
@@ -167,14 +165,15 @@ public class RefactoringUtils {
      * 
      * @param e
      * @param info
+     * @param cancel 
      * @return
      * @deprecated
      */
     @Deprecated
-    public static Collection<ExecutableElement> getOverridingMethods(ExecutableElement e, CompilationInfo info) {
+    public static Collection<ExecutableElement> getOverridingMethods(ExecutableElement e, CompilationInfo info, AtomicBoolean cancel) {
         Collection<ExecutableElement> result = new ArrayList();
         TypeElement parentType = (TypeElement) e.getEnclosingElement();
-        Set<ElementHandle<TypeElement>> subTypes = getImplementorsAsHandles(info.getClasspathInfo().getClassIndex(), info.getClasspathInfo(), parentType);
+        Set<ElementHandle<TypeElement>> subTypes = getImplementorsAsHandles(info.getClasspathInfo().getClassIndex(), info.getClasspathInfo(), parentType, cancel);
         for (ElementHandle<TypeElement> subTypeHandle : subTypes) {
             TypeElement type = subTypeHandle.resolve(info);
             if (type == null) {

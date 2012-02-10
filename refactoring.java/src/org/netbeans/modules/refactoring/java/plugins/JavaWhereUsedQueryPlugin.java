@@ -49,6 +49,7 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -106,6 +107,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     @Override
     public Problem preCheck() {
         cancelRequest = false;
+        cancelRequested.set(false);
         TreePathHandle handle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
         if (!handle.getFileObject().isValid()) {
             return new Problem(true, NbBundle.getMessage(FindVisitor.class, "DSC_ElNotAvail")); // NOI18N
@@ -183,7 +185,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                         isFindDirectSubclassesOnly(),
                         isFindOverridingMethods(),
                         isFindUsages(),
-                        null));
+                        null, cancelRequested));
             }
             Map<FileObject, Set<NonRecursiveFolder>> folders = new HashMap<FileObject, Set<NonRecursiveFolder>>();
             
@@ -212,7 +214,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                             isFindSubclasses(),
                             isFindDirectSubclassesOnly(),
                             isFindOverridingMethods(),
-                            isFindUsages(), packages));
+                            isFindUsages(), packages, cancelRequested));
                 }
             }
             return fileSet;
@@ -224,7 +226,8 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                     isFindDirectSubclassesOnly(),
                     isFindOverridingMethods(),
                     isFindUsages(),
-                    null);
+                    null,
+                    cancelRequested);
         }
         return fileSet;
     }
@@ -233,7 +236,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
             final TreePathHandle tph, final ClasspathInfo cpInfo,
             final boolean isFindSubclasses, final boolean isFindDirectSubclassesOnly,
             final boolean isFindOverridingMethods, final boolean isFindUsages,
-            final Set<NonRecursiveFolder> folders) {
+            final Set<NonRecursiveFolder> folders, final AtomicBoolean cancel) {
         final ClassIndex idx = cpInfo.getClassIndex();
         final Set<FileObject> set = new HashSet<FileObject>();
         final Set<NonRecursiveFolder> packages = (folders == null)? Collections.EMPTY_SET : folders;
@@ -289,7 +292,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                             set.addAll(idx.getResources(ElementHandle.create((TypeElement)el), searchKind, searchScopeType));
                         } else {
                             //itererate implementors recursively
-                            set.addAll(getImplementorsRecursive(idx, cpInfo, (TypeElement)el));
+                            set.addAll(getImplementorsRecursive(idx, cpInfo, (TypeElement)el, cancel));
                         }
                     } else {
                         //get type references from index
@@ -298,11 +301,11 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                 } else if (el.getKind() == ElementKind.METHOD && isFindOverridingMethods) {
                     //Find overriding methods
                     TypeElement type = (TypeElement) el.getEnclosingElement();
-                    set.addAll(getImplementorsRecursive(idx, cpInfo, type));
+                    set.addAll(getImplementorsRecursive(idx, cpInfo, type, cancel));
                 } 
                 if (el.getKind() == ElementKind.METHOD && isFindUsages) {
                     //get method references for method and for all it's overriders
-                    Set<ElementHandle<TypeElement>> s = RefactoringUtils.getImplementorsAsHandles(idx, cpInfo, (TypeElement)el.getEnclosingElement());
+                    Set<ElementHandle<TypeElement>> s = RefactoringUtils.getImplementorsAsHandles(idx, cpInfo, (TypeElement)el.getEnclosingElement(), cancel);
                     for (ElementHandle<TypeElement> eh:s) {
                         TypeElement te = eh.resolve(info);
                         if (te==null) {
@@ -331,8 +334,8 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         return set;
     }
     
-    private static Collection<FileObject> getImplementorsRecursive(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el) {
-        Set<?> implementorsAsHandles = RefactoringUtils.getImplementorsAsHandles(idx, cpInfo, el);
+    private static Collection<FileObject> getImplementorsRecursive(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el, AtomicBoolean cancel) {
+        Set<?> implementorsAsHandles = RefactoringUtils.getImplementorsAsHandles(idx, cpInfo, el, cancel);
 
         @SuppressWarnings("unchecked")
         Collection<FileObject> set = SourceUtilsEx.getFiles((Collection<ElementHandle<? extends Element>>) implementorsAsHandles, cpInfo);
