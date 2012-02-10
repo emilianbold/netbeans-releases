@@ -67,13 +67,14 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.DialogDisplayer;
@@ -90,10 +91,10 @@ import org.openide.util.lookup.ServiceProviders;
  * @author Ondra Vrabec
  */
 @ServiceProviders({
-    @ServiceProvider(service=org.netbeans.modules.bugtracking.spi.IssueProvider.class),
+    @ServiceProvider(service=org.netbeans.modules.bugtracking.spi.TaskListIssueProvider.class),
     @ServiceProvider(service=JiraIssueProvider.class)
 })
-public final class JiraIssueProvider extends IssueProvider implements PropertyChangeListener {
+public final class JiraIssueProvider extends TaskListIssueProvider implements PropertyChangeListener {
 
     private static JiraIssueProvider instance;
     private final Object LOCK = new Object();
@@ -200,7 +201,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (Repository.EVENT_ATTRIBUTES_CHANGED.equals(evt.getPropertyName())) {
+        if (RepositoryProvider.EVENT_ATTRIBUTES_CHANGED.equals(evt.getPropertyName())) {
             if (evt.getOldValue() != null && evt.getOldValue() instanceof Map) {
                 Object oldValue = ((Map)evt.getOldValue()).get(JiraRepository.ATTRIBUTE_URL);
                 if (oldValue != null && oldValue instanceof String) {
@@ -394,8 +395,9 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
     }
 
     private void addCommonIssues (Map<String, List<String>> repositoryIssues) {
-        JiraRepository[] repositories = Jira.getInstance().getRepositories();
-            for (JiraRepository repository : repositories) {
+        RepositoryProvider[] repositories = BugtrackingUtil.getRepositories(JiraConnector.ID);
+            for (RepositoryProvider rp : repositories) {
+                JiraRepository repository = (JiraRepository) rp;
                 // all issues for this repository
                 List<String> issueAttributes = repositoryIssues.get(repository.getUrl());
                 if (issueAttributes != null && issueAttributes.size() > 1) {
@@ -662,7 +664,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
                     @Override
                     public void propertyChange(PropertyChangeEvent evt) {
                         NbJiraIssue issue = issueRef.get();
-                        if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName()) && issue != null) {
+                        if (IssueProvider.EVENT_ISSUE_REFRESHED.equals(evt.getPropertyName()) && issue != null) {
                             // issue has somehow changed, checks for its changes and apply them in the tasklist
                             applyChangesFor(issue);
                         }
@@ -812,7 +814,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
 
         public KenaiJiraLazyIssue (NbJiraIssue issue, JiraIssueProvider provider) throws MalformedURLException {
             super(issue, provider);
-            Repository repo = issue.getRepository();
+            RepositoryProvider repo = issue.getRepository();
             if (!(repo instanceof KenaiRepository)) {
                 throw new IllegalStateException("Cannot instantiate with a non kenai issue: " + issue); //NOI18N
             }
@@ -826,7 +828,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
 
         protected KenaiRepository lookupRepository () {
             KenaiRepository kenaiRepo = null;
-            Repository repo = null;
+            RepositoryProvider repo = null;
             if (loginStatusChanged) {
                 try {
                     LOG.log(Level.FINE, "KenaiJiraLazyIssue.lookupRepository: getting repository for: " + projectName);

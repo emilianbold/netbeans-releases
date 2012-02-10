@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.bugtracking;
 
-package org.netbeans.modules.bugtracking.spi;
-
-import org.netbeans.modules.bugtracking.ui.query.QueryAccessor;
+import java.util.prefs.Preferences;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.openide.nodes.Node;
 
 /**
  *
  * @author Tomas Stupka
  */
-class QueryAccessorImpl extends QueryAccessor {
-    private static QueryAccessorImpl qa;
-
-    static void create() {
-        QueryAccessor.IMPL = new QueryAccessorImpl();
-    }
-
-    private QueryAccessorImpl() {
-    }
-
-    @Override
-    public void setSelection(Query query, Node[] nodes) {
-        query.setSelection(nodes);
-    }
-
+public abstract class SPIAccessor {
+    
+    public static SPIAccessor IMPL;
+    
+    static {
+        // invokes static initializer of RepositoryInfo.class
+        // that will assign value to the IMPL field above
+        Class c = RepositoryInfo.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }  
+    
+    public abstract RepositoryInfo read(Preferences preferences, String key);
+    public abstract void store(Preferences preferences, RepositoryInfo info, String key);
+    public abstract void setSelection(IssueProvider issue, Node[] nodes);
+    public abstract void setSelection(QueryProvider query, Node[] nodes); 
 }
