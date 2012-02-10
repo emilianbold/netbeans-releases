@@ -73,7 +73,7 @@ import org.openide.filesystems.FileObject;
  * @author Alexander Simon
  */
 public final class DeepReparsingUtils {
-    private static final boolean TRACE = true;
+    private static final boolean TRACE = false;
     private static final Logger LOG = Logger.getLogger("DeepReparsingUtils"); // NOI18N
 
     private DeepReparsingUtils() {
