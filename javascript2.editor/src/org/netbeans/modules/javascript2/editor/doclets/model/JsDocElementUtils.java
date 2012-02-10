@@ -86,7 +86,7 @@ public class JsDocElementUtils {
         }
     }
 
-    private static NamedParameterElement createParameterElement(JsDocElement.Type elementType,
+    private static ParameterElement createParameterElement(JsDocElement.Type elementType,
             String elementText, boolean named) {
         String type = "", name = "", desc = ""; //NOI18N
         int process = 0;
@@ -118,7 +118,12 @@ public class JsDocElementUtils {
             }
             desc = sb.toString().trim();
         }
-        return new NamedParameterElement(elementType, new Name(name), new Type(type), new Description(desc));
+
+        if (named) {
+            return new NamedParameterElement(elementType, new Name(name), new Type(type), new Description(desc));
+        } else {
+            return new UnnamedParameterElement(elementType, new Type(type), new Description(desc));
+        }
     }
 
 }
