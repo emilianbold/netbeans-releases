@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -76,9 +76,7 @@ public abstract class DBSchemaPanel implements WizardDescriptor.Panel {
         return new java.awt.Dimension (DEFAULT_WIDTH, DEFAULT_HEIGHT);
     }
 
-    public HelpCtx getHelp() {
-        return new HelpCtx("dbschema_ctxhelp_wizard"); //NOI18N
-    }
+    public abstract HelpCtx getHelp();
 
     public void readSettings (Object settings) {
     }
