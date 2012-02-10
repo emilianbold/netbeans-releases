@@ -112,7 +112,6 @@ public class LuceneIndex implements Index.Transactional {
 
     private static final String PROP_INDEX_POLICY = "java.index.useMemCache";   //NOI18N
     private static final String PROP_CACHE_SIZE = "java.index.size";    //NOI18N
-    private static final boolean debugIndexMerging = Boolean.getBoolean("java.index.debugMerge");     // NOI18N
     private static final CachePolicy DEFAULT_CACHE_POLICY = CachePolicy.DYNAMIC;
     private static final float DEFAULT_CACHE_SIZE = 0.05f;
     private static final CachePolicy cachePolicy = getCachePolicy();
@@ -364,9 +363,6 @@ public class LuceneIndex implements Index.Transactional {
             if (data.isEmpty()) {
                 return;
             }
-            if (debugIndexMerging) {
-                out.setInfoStream (System.err);
-            }                
             final LowMemoryWatcher lmListener = LowMemoryWatcher.getInstance();
             Directory memDir = null;
             IndexWriter activeOut = null;
