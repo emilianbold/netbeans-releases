@@ -82,6 +82,12 @@ import org.openide.filesystems.FileRenameEvent;
  */
 public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
 
+    static {
+        System.setProperty("jsch.connection.timeout", "30000");
+        System.setProperty("socket.connection.timeout", "30000");
+        System.setProperty("remote.throw.assertions", "true");
+    }
+
     protected static class FCL implements FileChangeListener {
 
         private final String listenerName;

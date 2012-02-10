@@ -272,7 +272,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     @Override
     public RemoteFileObject getFileObject(String relativePath) {
-        return getFileObject(relativePath, (Set<String>) null);
+        RemoteFileObject result = getFileObject(relativePath, (Set<String>) null);
+        return result;
     }
     
     /*package*/ RemoteFileObject getFileObject(String relativePath, Set<String> antiLoop) {
@@ -305,7 +306,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             String childNameExt = relativePath.substring(slashPos + 1);
             RemoteFileObject parentFileObject = getFileSystem().findResource(parentRemotePath);
             if (parentFileObject != null &&  parentFileObject.isFolder()) {
-                return parentFileObject.getFileObject(childNameExt);
+                RemoteFileObject result = parentFileObject.getFileObject(childNameExt);
+                return result;
             } else {
                 return null;
             }

@@ -113,14 +113,14 @@ public abstract class RemoteFileObjectBase implements Serializable {
     protected RemoteFileObjectBase(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             RemoteFileObjectBase parent, String remotePath, File cache) {
         RemoteLogger.assertTrue(execEnv.isRemote());        
-        this.fileObject = wrapper;
-        wrapper.setDelegate(this);
         //RemoteLogger.assertTrue(cache.exists(), "Cache should exist for " + execEnv + "@" + remotePath); //NOI18N
-        this.fileSystem = wrapper.getFileSystem();
         this.parent = parent;
         this.remotePath = remotePath; // RemoteFileSupport.fromFixedCaseSensitivePathIfNeeded(remotePath);
         this.cache = cache;
         setFlag(MASK_VALID, true);
+        this.fileSystem = wrapper.getFileSystem();
+        this.fileObject = wrapper;
+        wrapper.setDelegate(this);
     }
 
     public abstract boolean isFolder();

@@ -43,6 +43,7 @@ package org.netbeans.modules.remote.impl.fs;
 
 import com.sun.org.apache.xerces.internal.impl.dv.dtd.NMTOKENDatatypeValidator;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -75,7 +76,21 @@ public final class RemoteFileObject extends FileObject implements Serializable {
         this.fileSystem = fileSystem;
     }
     
-    /*package*/ void setDelegate(RemoteFileObjectBase delegate) {
+    /*package*/ void setDelegate(RemoteFileObjectBase delegate) {    
+        boolean assertions = false;
+        assert (assertions = true);
+        if (assertions) {
+            // important consistency checks
+            RemoteFileObject newWrapper = delegate.getWrapper();
+            // new impl should have its wrapper set to this
+            if (newWrapper != null && newWrapper != this) {
+                RemoteLogger.assertTrue(false, "RFS inconsistency in {0}: delegate wrapper differs", this); // can't print neither this nor delegate since both are in ctors
+            }
+            // if replacing delegates, check that old one is invalid
+            if (this.delegate != null && this.delegate.isValid()) {
+                RemoteLogger.assertTrue(false, "RFS inconsistency in {0}: replacing valid delegate", this); // can't print neither this nor delegate since both are in ctors
+            }
+        }
         this.delegate = delegate;
     }
 
@@ -224,7 +239,7 @@ public final class RemoteFileObject extends FileObject implements Serializable {
         if (thisPath != otherPath && (thisPath == null || !thisPath.equals(otherPath))) {
             return false;
         }
-        RemoteLogger.log(Level.WARNING, "Multiple instances for file objects: {0} and {1}", this, other);
+        //RemoteLogger.log(Level.WARNING, "Multiple instances for file objects: {0} and {1}", this, other);
         return true;
     }
 
@@ -351,15 +366,17 @@ public final class RemoteFileObject extends FileObject implements Serializable {
 
     @Override
     public InputStream getInputStream() throws FileNotFoundException {
-        if (!getDelegate().getCache().exists()) {
-            if (isMimeResolving()) {
-                byte[] b = getMagic();
-                if (b != null) {
-                    return new ByteArrayInputStream(b);
+        File cacheFile = getDelegate().getCache();
+        if (cacheFile != null) {
+            if (!cacheFile.exists()) {
+                if (isMimeResolving()) {
+                    byte[] b = getMagic();
+                    if (b != null) {
+                        return new ByteArrayInputStream(b);
+                    }
                 }
             }
         }
-        
         return getDelegate().getInputStream();
     }
 
