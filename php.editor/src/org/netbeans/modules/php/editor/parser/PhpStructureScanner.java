@@ -81,6 +81,7 @@ import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.UseElement;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -241,6 +242,7 @@ public class PhpStructureScanner implements StructureScanner {
                     }
                 }
             }
+            program.accept(new FoldingVisitor(folds));
             Source source = info.getSnapshot().getSource();
             assert source != null : "source was null";
             Document doc = source.getDocument(false);
@@ -282,6 +284,83 @@ public class PhpStructureScanner implements StructureScanner {
             }
         }
         return collectedScopes;
+    }
+
+    private class FoldingVisitor extends DefaultVisitor {
+        private final Map<String, List<OffsetRange>> folds;
+
+        public FoldingVisitor(final Map<String, List<OffsetRange>> folds) {
+            this.folds = folds;
+        }
+
+        @Override
+        public void visit(IfStatement node) {
+            super.visit(node);
+            int endOffset = node.getEndOffset();
+            Statement falseStatement = node.getFalseStatement();
+            if (falseStatement != null) {
+                endOffset = falseStatement.getEndOffset();
+                addFold(falseStatement);
+            }
+            addFold(new OffsetRange(node.getStartOffset(), endOffset));
+        }
+
+        @Override
+        public void visit(ForEachStatement node) {
+            super.visit(node);
+            addFold(node);
+        }
+
+        @Override
+        public void visit(ForStatement node) {
+            super.visit(node);
+            addFold(node);
+        }
+
+        @Override
+        public void visit(WhileStatement node) {
+            super.visit(node);
+            addFold(node);
+        }
+
+        @Override
+        public void visit(DoStatement node) {
+            super.visit(node);
+            addFold(node);
+        }
+
+        @Override
+        public void visit(SwitchStatement node) {
+            super.visit(node);
+            addFold(node);
+        }
+
+        @Override
+        public void visit(SwitchCase node) {
+            super.visit(node);
+            addFold(node);
+        }
+
+        @Override
+        public void visit(TryStatement node) {
+            super.visit(node);
+            addFold(node);
+        }
+
+        @Override
+        public void visit(CatchClause node) {
+            super.visit(node);
+            addFold(node);
+        }
+
+        private void addFold(final ASTNode node) {
+            addFold(createOffsetRange(node));
+        }
+
+        private void addFold(final OffsetRange offsetRange) {
+            getRanges(folds, FOLD_CODE_BLOCKS).add(offsetRange);
+        }
+
     }
 
     private abstract class PHPStructureItem implements StructureItem {
