@@ -48,6 +48,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.MockEvents;
 import org.netbeans.MockModuleInstaller;
 import org.netbeans.Module;
@@ -60,6 +62,7 @@ import org.osgi.framework.Bundle;
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
 public class BundleResourceTest extends NetigsoHid {
+    private static final Logger LOG = Logger.getLogger(BundleResourceTest.class.getName());
 
     public BundleResourceTest(String name) {
         super(name);
@@ -81,23 +84,33 @@ public class BundleResourceTest extends NetigsoHid {
 
             File j1 = new File(jars, "simple-module.jar");
             File j2 = changeManifest(new File(jars, "depends-on-simple-module.jar"), mfBar);
+            LOG.log(Level.INFO, "Create {0}", j2);
             Module m1 = mgr.create(j1, null, false, false, false);
+            LOG.log(Level.INFO, "Create {0}", j2);
             Module m2 = mgr.create(j2, null, false, false, false);
             HashSet<Module> b = new HashSet<Module>(Arrays.asList(m1, m2));
+            LOG.log(Level.INFO, "enable {0}", b);
             mgr.enable(b);
+            LOG.info("enabled Ok");
             both = b;
 
             Bundle bundle = NetigsoServicesTest.findBundle("org.foo");
+            LOG.log(Level.INFO, "bundle org.foo: {0}", bundle);
             URL root = bundle.getEntry("/");
+            LOG.log(Level.INFO, "Root entry {0}", root);
             assertNotNull("Root URL found", root);
             URL resRoot = new URL("bundleresource", root.getHost(), root.getPath());
+            LOG.log(Level.INFO, "res root: {0}", resRoot);
             URL helloRes = new URL(resRoot, "org/foo/hello.txt");
+            LOG.log(Level.INFO, "Assert content {0}", helloRes);
             assertURLContent(helloRes, "Hello resources!");
         } finally {
+            LOG.info("Finally block started");
             if (both != null) {
                 mgr.disable(both);
             }
             mgr.mutexPrivileged().exitWriteAccess();
+            LOG.info("Finally block finished");
         }
     }
 
