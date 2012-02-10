@@ -60,6 +60,7 @@ import org.openide.windows.TopComponent;
         iconBase = ElementNode.ICON_BASE)
 @TopComponent.Registration(
         mode = "navigator", // NOI18N
+        position = 600,
         openAtStartup = false)
 @ActionID(
         category = "Window", // NOI18N
