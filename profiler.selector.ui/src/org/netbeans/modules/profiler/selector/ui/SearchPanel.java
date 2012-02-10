@@ -62,7 +62,7 @@ import org.openide.util.Utilities;
     "DSC_FindPrevious=Find Previous ({0})",
     "DSC_Close=Close ({0})"
 })
-abstract class SearchPanel extends JPanel {
+abstract public class SearchPanel extends JPanel {
     final private static String SEARCHPANEL_PERMANENT = "searchPanel.shownDefault"; // NOI18N
     final private static String SEARCH_NEXT_NAME = "search.next"; // NOI18N
     final private static String SEARCH_PREV_NAME = "search.prev"; // NOI18N
@@ -134,6 +134,8 @@ abstract class SearchPanel extends JPanel {
         buddy.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
+                if (e.isAltDown() || e.isAltGraphDown() || e.isControlDown() || e.isMetaDown() || e.isActionKey()) return;
+                
                 if (!Character.isUnicodeIdentifierStart(e.getKeyChar())) return; // NOI18N
 
                 if (e.getKeyCode() != KeyEvent.VK_ENTER && e.getKeyCode() != KeyEvent.VK_SPACE && e.getKeyCode() != closeKeyEvent) {

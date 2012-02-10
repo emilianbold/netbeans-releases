@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,38 +37,63 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.selector.api.builders;
+package org.netbeans.modules.profiler.selector.api.nodes;
 
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
-import org.netbeans.modules.profiler.api.java.SourceClassInfo;
-import org.netbeans.modules.profiler.selector.api.SelectionTreeBuilderType;
-import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
-import org.netbeans.modules.profiler.selector.api.nodes.ClassNode;
-import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
+import java.io.File;
+import java.net.URL;
+import org.junit.*;
+import static org.junit.Assert.*;
+import org.netbeans.lib.profiler.client.ClientUtils;
+import org.netbeans.modules.profiler.selector.api.TestUtilities;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * A {@linkplain SelectionTreeBuilder} implementation for "select root methods from class" view
- * @author Jaroslav Bachorik
+ *
+ * @author jbachorik
  */
-public class SingleFileSelectionTreeBuilder extends SelectionTreeBuilder {
-    public SingleFileSelectionTreeBuilder() {
-        super(new SelectionTreeBuilderType("single-file", Bundle.PackageSelectionTreeViewBuilder_PackageView()), false); // NOI18N
+public class JarNodeTest {
+    public JarNodeTest() {
+    }
+    
+    private JarNode instance;
+    
+    @BeforeClass
+    public static void setupClass() throws Exception {
+        TestUtilities.setLookup(new Object[0]);
+    }
+    
+    @Before
+    public void setUp() throws Exception {
+        URL jar = getClass().getResource("/org/netbeans/modules/profiler/selector/api/resources/anagrams.jar");
+        FileObject jarFo = FileUtil.toFileObject(new File(jar.toURI()));
+        System.err.println("*** " + jarFo.getMIMEType());
+        instance = new JarNode(jarFo);
+    }
+    
+    @After
+    public void tearDown() {
     }
 
-    @Override
-    final public List<SelectorNode> buildSelectionTree() {
-        SourceClassInfo sci = JavaProfilerSource.createFrom(getContext().lookup(FileObject.class)).getTopLevelClass();
-
-        return sci != null ? Collections.singletonList(new ClassNode(sci, null)) : Collections.EMPTY_LIST;
-    }
-
-    @Override
-    final public int estimatedNodeCount() {
-        return 1;
+    /**
+     * Test of getChildren method, of class JarNode.
+     */
+    @Test
+    public void testGetChildren() {
+        System.out.println("getChildren");
+        SelectorChildren expResult = null;
+        SelectorChildren result = instance.getChildren();
+        for(Object n : result.getNodes()) {
+            SelectorChildren subs = ((PackageNode)n).getChildren();
+            for(Object n1 : subs.getNodes()) {
+                ClientUtils.SourceCodeSelection scs = ((SelectorNode)n1).getSignature();
+                System.err.println(scs);
+            }
+        }
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
     }
 }

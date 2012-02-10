@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,38 +37,48 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.selector.api.builders;
+package org.netbeans.modules.profiler.selector.api.nodes;
 
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
-import org.netbeans.modules.profiler.api.java.SourceClassInfo;
-import org.netbeans.modules.profiler.selector.api.SelectionTreeBuilderType;
-import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
-import org.netbeans.modules.profiler.selector.api.nodes.ClassNode;
-import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
+import java.util.*;
+import org.netbeans.modules.profiler.api.icons.Icons;
+import org.netbeans.modules.profiler.api.icons.LanguageIcons;
+import org.netbeans.modules.profiler.api.java.ExternalPackages;
+import org.netbeans.modules.profiler.api.java.SourcePackageInfo;
 import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.Lookups;
 
 /**
- * A {@linkplain SelectionTreeBuilder} implementation for "select root methods from class" view
+ *
  * @author Jaroslav Bachorik
  */
-public class SingleFileSelectionTreeBuilder extends SelectionTreeBuilder {
-    public SingleFileSelectionTreeBuilder() {
-        super(new SelectionTreeBuilderType("single-file", Bundle.PackageSelectionTreeViewBuilder_PackageView()), false); // NOI18N
+public class JarNode extends ContainerNode {
+    private static class Children extends SelectorChildren<JarNode> {
+        public Children(JarNode parent) {
+            super(parent);
+        }
+        
+        @Override
+        protected List<? extends SelectorNode> prepareChildren(JarNode parent) {
+            List<PackageNode> rslt = new ArrayList<PackageNode>();
+            
+            for(SourcePackageInfo spi : ExternalPackages.forPath(parent.jar)) {
+                rslt.add(new PackageNode(spi, parent));
+            }
+
+            return rslt;
+        }
+    }
+    
+    private FileObject jar;
+    public JarNode(FileObject jar) {
+        super(jar.getName(), Icons.getIcon(LanguageIcons.JAR), Lookups.singleton(jar));
+        this.jar = jar;
     }
 
     @Override
-    final public List<SelectorNode> buildSelectionTree() {
-        SourceClassInfo sci = JavaProfilerSource.createFrom(getContext().lookup(FileObject.class)).getTopLevelClass();
-
-        return sci != null ? Collections.singletonList(new ClassNode(sci, null)) : Collections.EMPTY_LIST;
-    }
-
-    @Override
-    final public int estimatedNodeCount() {
-        return 1;
+    protected SelectorChildren getChildren() {
+        return new Children(this);
     }
 }

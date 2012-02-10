@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,38 +37,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.selector.api.builders;
-
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
-import org.netbeans.modules.profiler.api.java.SourceClassInfo;
-import org.netbeans.modules.profiler.selector.api.SelectionTreeBuilderType;
-import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
-import org.netbeans.modules.profiler.selector.api.nodes.ClassNode;
-import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
-import org.openide.filesystems.FileObject;
+package org.netbeans.modules.profiler.selector.api;
 
 /**
- * A {@linkplain SelectionTreeBuilder} implementation for "select root methods from class" view
+ *
  * @author Jaroslav Bachorik
  */
-public class SingleFileSelectionTreeBuilder extends SelectionTreeBuilder {
-    public SingleFileSelectionTreeBuilder() {
-        super(new SelectionTreeBuilderType("single-file", Bundle.PackageSelectionTreeViewBuilder_PackageView()), false); // NOI18N
-    }
-
-    @Override
-    final public List<SelectorNode> buildSelectionTree() {
-        SourceClassInfo sci = JavaProfilerSource.createFrom(getContext().lookup(FileObject.class)).getTopLevelClass();
-
-        return sci != null ? Collections.singletonList(new ClassNode(sci, null)) : Collections.EMPTY_LIST;
-    }
-
-    @Override
-    final public int estimatedNodeCount() {
-        return 1;
-    }
+final public class ClassSearchSupport {
+    
 }
