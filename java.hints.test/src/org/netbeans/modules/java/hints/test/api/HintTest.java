@@ -43,7 +43,9 @@ package org.netbeans.modules.java.hints.test.api;
 
 import com.sun.source.util.TreePath;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -248,10 +250,8 @@ public class HintTest {
             }
         });
 
-        workDir = File.createTempFile("HinTest", "test");
-        workDir.delete();
-        workDir.mkdirs();
-
+        workDir = getWorkDir();
+        deleteSubFiles(workDir);
         FileUtil.refreshFor(workDir);
 
         FileObject wd = FileUtil.toFileObject(workDir);
@@ -988,5 +988,194 @@ public class HintTest {
     static {
         System.setProperty("org.openide.util.Lookup", TestLookup.class.getName());
         Assert.assertEquals(TestLookup.class, Lookup.getDefault().getClass());
+    }
+
+    //workdir computation (copied from NbTestCase):
+    private static File getWorkDir() throws IOException {
+        // now we have path, so if not available, create workdir
+        File workdir = FileUtil.normalizeFile(new File(getWorkDirPath()));
+        if (workdir.exists()) {
+            if (!workdir.isDirectory()) {
+                // work dir exists, but is not directory - this should not happen
+                // trow exception
+                throw new IOException("workdir exists, but is not a directory, workdir = " + workdir);
+            } else {
+                // everything looks correctly, return the path
+                return workdir;
+            }
+        } else {
+            // we need to create it
+            boolean result = workdir.mkdirs();
+            if (result == false) {
+                // mkdirs() failed - throw an exception
+                throw new IOException("workdir creation failed: " + workdir);
+            } else {
+                // everything looks ok - return path
+                return workdir;
+            }
+        }
+    }
+
+    private static String getWorkDirPath() {
+        StackTraceElement caller = null;
+        boolean seenItself = false;
+        
+        for (StackTraceElement e : new Exception().getStackTrace()) {
+            if (HintTest.class.getName().equals(e.getClassName())) seenItself = true;
+            if (seenItself && !HintTest.class.getName().equals(e.getClassName())) {
+                caller = e;
+                break;
+            }
+        }
+        
+        String name = caller != null ? caller.getMethodName() : "unknownTest";
+        // start - PerformanceTestCase overrides getName() method and then
+        // name can contain illegal characters
+        String osName = System.getProperty("os.name");
+        if (osName != null && osName.startsWith("Windows")) {
+            char ntfsIllegal[] ={'"','/','\\','?','<','>','|',':'};
+            for (int i=0; i<ntfsIllegal.length; i++) {
+                name = name.replace(ntfsIllegal[i], '~');
+            }
+        }
+        // end
+        
+        final String workDirPath = getWorkDirPathFromManager();
+        
+        // #94319 - shorten workdir path if the following is too long
+        // "Manager.getWorkDirPath()+File.separator+getClass().getName()+File.separator+name"
+        int len1 = workDirPath.length();
+        String clazz = caller != null ? caller.getClassName() : "unknown.Class";
+        int len2 = clazz.length();
+        int len3 = name.length();
+        
+        int tooLong = Integer.getInteger("nbjunit.too.long", 100);
+        if (len1 + len2 + len3 > tooLong) {
+            clazz = abbrevDots(clazz);
+            len2 = clazz.length();
+        }
+
+        if (len1 + len2 + len3 > tooLong) {
+            name = abbrevCapitals(name);
+        }
+        
+        String p = workDirPath + File.separator + clazz + File.separator + name;
+        String realP;
+        
+        for (int i = 0; ; i++) {
+            realP = i == 0 ? p : p + "-" + i;
+            if (usedPaths.add(realP)) {
+                break;
+            }
+        }
+        
+        return realP;
+    }
+
+    private static Set<String> usedPaths = new HashSet<String>();
+    
+    private static String abbrevDots(String dotted) {
+        StringBuilder sb = new StringBuilder();
+        String sep = "";
+        for (String item : dotted.split("\\.")) {
+            sb.append(sep);
+            sb.append(item.charAt(0));
+            sep = ".";
+        }
+        return sb.toString();
+    }
+
+    private static String abbrevCapitals(String name) {
+        if (name.startsWith("test")) {
+            name = name.substring(4);
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < name.length(); i++) {
+            if (Character.isUpperCase(name.charAt(i))) {
+                sb.append(Character.toLowerCase(name.charAt(i)));
+            }
+        }
+        return sb.toString();
+    }
+
+    private static final String JUNIT_PROPERTIES_FILENAME = "junit.properties";
+    private static final String JUNIT_PROPERTIES_LOCATION_PROPERTY = "junit.properties.file";
+    private static final String NBJUNIT_WORKDIR = "nbjunit.workdir";
+    
+    private static String getWorkDirPathFromManager() {
+        String path = System.getProperty(NBJUNIT_WORKDIR);
+                
+        if (path == null) {            
+            // try to get property from user's settings
+            path = readProperties().getProperty(NBJUNIT_WORKDIR);
+        }
+        if (path != null) {
+            path = path.replace('/', File.separatorChar);
+        } else {
+            // Fallback value, guaranteed to be defined.
+            path = System.getProperty("java.io.tmpdir") + File.separatorChar + "tests-" + System.getProperty("user.name");
+        }
+        return path;
+    }
+
+    private static Properties readProperties() {
+        Properties result = new Properties();
+        InputStream is= null;
+        try {
+            File propFile = getPreferencesFile();
+            is= new FileInputStream(propFile);
+            result.load(is);
+        }  catch (IOException e) {
+            try {
+                if (is != null)
+                    is.close();
+            }  catch (IOException e1) {
+            }
+        }
+        
+        return result;
+    }
+
+    private static File getPreferencesFile() {
+        String junitPropertiesLocation = System.getProperty(JUNIT_PROPERTIES_LOCATION_PROPERTY);
+        if (junitPropertiesLocation != null) {
+            File propertyFile = new File(junitPropertiesLocation);
+            if (propertyFile.exists()) {
+                return propertyFile;
+            }
+        }
+        // property file was not found - lets fall back to defaults
+        String home= System.getProperty("user.home");
+        return new File(home, JUNIT_PROPERTIES_FILENAME);
+    }
+
+    // private method for deleting a file/directory (and all its subdirectories/files)
+    private static void deleteFile(File file) throws IOException {
+        if (file.isDirectory() && file.equals(file.getCanonicalFile())) {
+            // file is a directory - delete sub files first
+            File files[] = file.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                deleteFile(files[i]);
+            }
+            
+        }
+        // file is a File :-)
+        boolean result = file.delete();
+        if (result == false ) {
+            // a problem has appeared
+            throw new IOException("Cannot delete file, file = "+file.getPath());
+        }
+    }
+    
+    // private method for deleting every subfiles/subdirectories of a file object
+    private static void deleteSubFiles(File file) throws IOException {
+        File files[] = file.getCanonicalFile().listFiles();
+        if (files != null) {
+            for (File f : files) {
+                deleteFile(f);
+            }
+        } else {
+            // probably do nothing - file is not a directory
+        }
     }
 }
