@@ -52,7 +52,7 @@ import java.util.Set;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
-import org.netbeans.modules.java.hints.spi.support.FixFactory;
+import org.netbeans.modules.java.hints.FixFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
