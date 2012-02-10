@@ -37,247 +37,302 @@
  */
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.modules.java.hints.test.api.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class RemoveUnnecessaryReturnTest extends TestBase {
+public class RemoveUnnecessaryReturnTest extends NbTestCase {
 
     public RemoveUnnecessaryReturnTest(String name) {
-        super(name, RemoveUnnecessaryReturn.class);
+        super(name);
     }
 
     public void testSimple() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    public void test() {\n" +
                        "        return ;\n" +
                        "    }\n" +
-                       "}\n",
-                       "3:8-3:16:verifier:ERR_UnnecessaryReturnStatement",
-                       "FIX_UnnecessaryReturnStatement",
-                       ("package test;\n" +
-                        "public class Test {\n" +
-                        "    public void test() {\n" +
-                        "    }\n" +
-                        "}\n").replaceAll("[ \t\n]+", " "));
+                       "}\n")
+                .run(RemoveUnnecessaryReturn.class)
+                .findWarning("3:8-3:16:verifier:ERR_UnnecessaryReturnStatement")
+                .applyFix("FIX_UnnecessaryReturnStatement")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public void test() {\n" +
+                              "    }\n" +
+                              "}\n");
     }
 
     public void testIfNoBlock() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    public void test(boolean b) {\n" +
                        "        if (b) return ;\n" +
                        "    }\n" +
-                       "}\n",
-                       "3:15-3:23:verifier:ERR_UnnecessaryReturnStatement",
-                       "FIX_UnnecessaryReturnStatement",
-                       ("package test;\n" +
-                        "public class Test {\n" +
-                        "    public void test(boolean b) {\n" +
-                        "        if (b) { }\n" +
-                        "    }\n" +
-                        "}\n").replaceAll("[ \t\n]+", " "));
+                       "}\n")
+                .run(RemoveUnnecessaryReturn.class)
+                .findWarning("3:15-3:23:verifier:ERR_UnnecessaryReturnStatement")
+                .applyFix("FIX_UnnecessaryReturnStatement")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public void test(boolean b) {\n" +
+                              "        if (b) { }\n" +
+                              "    }\n" +
+                              "}\n");
     }
 
     public void testNeg1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public void test(boolean b) {\n" +
-                            "        if (b) { return ; }\n" +
-                            "        System.err.println();\n" +
-                            "    }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(boolean b) {\n" +
+                       "        if (b) { return ; }\n" +
+                       "        System.err.println();\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(RemoveUnnecessaryReturn.class)
+                .assertWarnings();
     }
 
     public void testNeg2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public void test(boolean b) {\n" +
-                            "        switch (b) {\n" +
-                            "            case true: if (b) { return ; }\n" +
-                            "                       System.err.println();\n" +
-                            "                       break;\n" +
-                            "    }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(int b) {\n" +
+                       "        switch (b) {\n" +
+                       "            case 0: if (b == 0) { return ; }\n" +
+                       "                    System.err.println();\n" +
+                       "                    break;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(RemoveUnnecessaryReturn.class)
+                .assertWarnings();
     }
 
     public void testNeg3() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public void test(boolean b) {\n" +
-                            "        switch (b) {\n" +
-                            "            case true: if (b) { return ; }\n" +
-                            "            case false: System.err.println(); break;\n" +
-                            "    }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(int b) {\n" +
+                       "        switch (b) {\n" +
+                       "            case 0: if (b == 0) { return ; }\n" +
+                       "            case 1: System.err.println(); break;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(RemoveUnnecessaryReturn.class)
+                .assertWarnings();
     }
 
     public void testNeg4() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public int test(boolean b) {\n" +
-                            "        switch (b) {\n" +
-                            "            case true: if (b) { return 1; }\n" +
-                            "            case false: System.err.println(); break;\n" +
-                            "    }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public int test(int b) {\n" +
+                       "        switch (b) {\n" +
+                       "            case 0: if (b == 0) { return 1; }\n" +
+                       "            case 1: System.err.println(); break;\n" +
+                       "        }\n" +
+                       "        return 0;\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(RemoveUnnecessaryReturn.class)
+                .assertWarnings();
     }
 
     public void testNegCase() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public void test(boolean b) {\n" +
-                            "        switch (b) {\n" +
-                            "            case true: { return ; }\n" +
-                            "            case false: { System.err.println(1); break; }\n" +
-                            "    }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(int b) {\n" +
+                       "        switch (b) {\n" +
+                       "            case 0: { return ; }\n" +
+                       "            case 1: { System.err.println(1); break; }\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(RemoveUnnecessaryReturn.class)
+                .assertWarnings();
     }
 
     public void testSwitchRemove1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public void test(boolean b) {\n" +
-                            "        switch (b) {\n" +
-                            "            case true: if (b) { return ; } break;\n" +
-                            "            case false: System.err.println(); break;\n" +
-                            "    }\n" +
-                            "}\n",
-                            "4:32-4:40:verifier:ERR_UnnecessaryReturnStatement");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(int b) {\n" +
+                       "        switch (b) {\n" +
+                       "            case 0: if (b == 0) { return ; } break;\n" +
+                       "            case 1: System.err.println(); break;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(RemoveUnnecessaryReturn.class)
+                .assertWarnings("4:34-4:42:verifier:ERR_UnnecessaryReturnStatement");
     }
 
     public void testSwitchRemove2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public void test(boolean b) {\n" +
-                            "        switch (b) {\n" +
-                            "            case true: { if (b) { return ; } break };\n" +
-                            "            case false: System.err.println(); break;\n" +
-                            "    }\n" +
-                            "}\n",
-                            "4:34-4:42:verifier:ERR_UnnecessaryReturnStatement");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(int b) {\n" +
+                       "        switch (b) {\n" +
+                       "            case 0: { if (b == 0) { return ; } break; };\n" +
+                       "            case 1: System.err.println(); break;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n", false)
+                .run(RemoveUnnecessaryReturn.class)
+                .assertWarnings("4:36-4:44:verifier:ERR_UnnecessaryReturnStatement");
     }
 
     public void testSwitchRemove3() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public void test(boolean b) {\n" +
-                            "        switch (b) {\n" +
-                            "            case true: { if (b) { return ; } };\n" +
-                            "            case false: break;\n" +
-                            "    }\n" +
-                            "}\n",
-                            "4:34-4:42:verifier:ERR_UnnecessaryReturnStatement");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(int b) {\n" +
+                       "        switch (b) {\n" +
+                       "            case 0: { if (b == 0) { return ; } };\n" +
+                       "            case 1: break;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(RemoveUnnecessaryReturn.class)
+                .assertWarnings("4:36-4:44:verifier:ERR_UnnecessaryReturnStatement");
     }
 
     public void testSwitchRemove4() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public void test(boolean b) {\n" +
-                            "        switch (b) {\n" +
-                            "            case true: { if (b) { return ; } };\n" +
-                            "            case false: { ; break; }\n" +
-                            "    }\n" +
-                            "}\n",
-                            "4:34-4:42:verifier:ERR_UnnecessaryReturnStatement");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(int b) {\n" +
+                       "        switch (b) {\n" +
+                       "            case 0: { if (b == 0) { return ; } };\n" +
+                       "            case 1: { ; break; }\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(RemoveUnnecessaryReturn.class)
+                .assertWarnings("4:36-4:44:verifier:ERR_UnnecessaryReturnStatement");
     }
 
     public void testLastCase() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public void test(boolean b) {\n" +
-                            "        switch (b) {\n" +
-                            "            case false: if (b) { return ; }\n" +
-                            "    }\n" +
-                            "}\n",
-                            "4:33-4:41:verifier:ERR_UnnecessaryReturnStatement");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(int b) {\n" +
+                       "        switch (b) {\n" +
+                       "            case 1: if (b == 0) { return ; }\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(RemoveUnnecessaryReturn.class)
+                .assertWarnings("4:34-4:42:verifier:ERR_UnnecessaryReturnStatement");
     }
 
     public void testNPE200462a() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public Test(boolean b) {\n" +
-                            "        switch (b) {\n" +
-                            "            case false: if (b) { return ; }\n" +
-                            "    }\n" +
-                            "}\n",
-                            "4:33-4:41:verifier:ERR_UnnecessaryReturnStatement");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public Test(int b) {\n" +
+                       "        switch (b) {\n" +
+                       "            case 1: if (b == 0) { return ; }\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(RemoveUnnecessaryReturn.class)
+                .assertWarnings("4:34-4:42:verifier:ERR_UnnecessaryReturnStatement");
     }
 
     public void testNPE200462b() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public Test(boolean b) {\n" +
-                            "        switch (b) {\n" +
-                            "            case false: if (b) { return ; }\n" +
-                            "    }\n" +
-                            "}\n",
-                            "4:33-4:41:verifier:ERR_UnnecessaryReturnStatement");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public Test(int b) {\n" +
+                       "        switch (b) {\n" +
+                       "            case 1: if (b == 0) { return ; }\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(RemoveUnnecessaryReturn.class)
+                .assertWarnings("4:34-4:42:verifier:ERR_UnnecessaryReturnStatement");
     }
 
     public void testInLoop201393() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public Test(int i) {\n" +
-                            "        while (i-- > 0) {\n" +
-                            "            System.err.println(1);\n" +
-                            "            if (i == 3) return ;\n" +
-                            "        }\n" +
-                            "    }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public Test(int i) {\n" +
+                       "        while (i-- > 0) {\n" +
+                       "            System.err.println(1);\n" +
+                       "            if (i == 3) return ;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(RemoveUnnecessaryReturn.class)
+                .assertWarnings();
     }
-    
+
     public void testNegFinally203576() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public static void main(String[] args) {\n" +
-                            "        try {\n" +
-                            "            throw new NullPointerException(\"NullPointerException 1\");\n" +
-                            "        } catch (NullPointerException e) {\n" +
-                            "            throw new NullPointerException(\"NullPointerException 2\");\n" +
-                            "        } finally {\n" +
-                            "            System.out.println(\"Do I ever get printed?\");\n" +
-                            "            return;\n" +
-                            "        }\n" +
-                            "    }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        try {\n" +
+                       "            throw new NullPointerException(\"NullPointerException 1\");\n" +
+                       "        } catch (NullPointerException e) {\n" +
+                       "            throw new NullPointerException(\"NullPointerException 2\");\n" +
+                       "        } finally {\n" +
+                       "            System.out.println(\"Do I ever get printed?\");\n" +
+                       "            return;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(RemoveUnnecessaryReturn.class)
+                .assertWarnings();
     }
 
     public void TODOtestPosFinally203576() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public static void main(String[] args) {\n" +
-                            "        try {\n" +
-                            "            throw new NullPointerException(\"NullPointerException 1\");\n" +
-                            "        } catch (NullPointerException e) {\n" +
-                            "            throw new NullPointerException(\"NullPointerException 2\");\n" +
-                            "        } finally {\n" +
-                            "            if (args.length == 0) { return ; }\n" +
-                            "            return;\n" +
-                            "        }\n" +
-                            "    }\n" +
-                            "}\n",
-                            "<missing>");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        try {\n" +
+                       "            throw new NullPointerException(\"NullPointerException 1\");\n" +
+                       "        } catch (NullPointerException e) {\n" +
+                       "            throw new NullPointerException(\"NullPointerException 2\");\n" +
+                       "        } finally {\n" +
+                       "            if (args.length == 0) { return ; }\n" +
+                       "            return;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(RemoveUnnecessaryReturn.class)
+                .assertWarnings("<missing>");
     }
-
 }

@@ -39,27 +39,25 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints.jdk;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.test.api.TestBase;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class JoinCatchesTest extends TestBase {
+public class JoinCatchesTest extends NbTestCase {
 
     public JoinCatchesTest(String name) {
-        super(name, JoinCatches.class);
+        super(name);
     }
 
     public void testHint() throws Exception {
-        setSourceLevel("1.7");
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    {\n" +
                        "        try {\n" +
@@ -69,24 +67,26 @@ public class JoinCatchesTest extends TestBase {
                        "            i.printStackTrace();\n" +
                        "        }\n" +
                        "    }\n" +
-                       "}\n",
-                       "4:26-4:44:verifier:ERR_JoinCatches",
-                       "FIX_JoinCatches",
-                       ("package test;\n" +
-                        "public class Test {\n" +
-                        "    {\n" +
-                        "        try {\n" +
-                        "        } catch (java.net.URISyntaxException | java.io.IOException m) {\n" +
-                        "            m.printStackTrace();\n" +
-                        "        }\n" +
-                        "    }\n" +
-                        "}\n").replaceAll("[ \n\t]+", " "));
+                       "}\n", false)
+                .sourceLevel("1.7")
+                .run(JoinCatches.class)
+                .findWarning("4:26-4:44:verifier:ERR_JoinCatches")
+                .applyFix("FIX_JoinCatches")
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    {\n" +
+                              "        try {\n" +
+                              "        } catch (java.net.URISyntaxException | java.io.IOException m) {\n" +
+                              "            m.printStackTrace();\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
     }
 
     public void test192793() throws Exception {
-        setSourceLevel("1.7");
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    {\n" +
                        "        try (java.io.InputStream in = new java.io.FileInputStream(\"a\")){\n" +
@@ -96,77 +96,88 @@ public class JoinCatchesTest extends TestBase {
                        "            i.printStackTrace();\n" +
                        "        }\n" +
                        "    }\n" +
-                       "}\n",
-                       "4:32-4:50:verifier:ERR_JoinCatches",
-                       "FIX_JoinCatches",
-                       ("package test;\n" +
-                        "public class Test {\n" +
-                        "    {\n" +
-                        "        try (java.io.InputStream in = new java.io.FileInputStream(\"a\")){\n" +
-                        "        } catch (final java.net.URISyntaxException | java.io.IOException m) {\n" +
-                        "            m.printStackTrace();\n" +
-                        "        }\n" +
-                        "    }\n" +
-                        "}\n").replaceAll("[ \n\t]+", " "));
+                       "}\n", false)
+                .sourceLevel("1.7")
+                .run(JoinCatches.class)
+                .findWarning("4:32-4:50:verifier:ERR_JoinCatches")
+                .applyFix("FIX_JoinCatches")
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    {\n" +
+                              "        try (java.io.InputStream in = new java.io.FileInputStream(\"a\")){\n" +
+                              "        } catch (final java.net.URISyntaxException | java.io.IOException m) {\n" +
+                              "            m.printStackTrace();\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
     }
 
     public void testNeg() throws Exception {
-        setSourceLevel("1.7");
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    {\n" +
-                            "        try {\n" +
-                            "        } catch (java.net.URISyntaxException m) {\n" +
-                            "            m.printStackTrace();\n" +
-                            "            m = new java.io.IOException();\n" +
-                            "        } catch (java.io.IOException i) {\n" +
-                            "            i.printStackTrace();" +
-                            "            i = new java.io.IOException();\n" +
-                            "        }\n" +
-                            "    }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    {\n" +
+                       "        try {\n" +
+                       "        } catch (java.net.URISyntaxException m) {\n" +
+                       "            m.printStackTrace();\n" +
+                       "            m = new java.io.IOException();\n" +
+                       "        } catch (java.io.IOException i) {\n" +
+                       "            i.printStackTrace();" +
+                       "            i = new java.io.IOException();\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n", false)
+                .sourceLevel("1.7")
+                .run(JoinCatches.class)
+                .assertWarnings();
     }
 
     public void test200707() throws Exception {
-        setSourceLevel("1.7");
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "import java.io.*;\n" +
-                            "public class Test {\n" +
-                            "    {\n" +
-                            "        try (java.io.InputStream in = new java.io.FileInputStream(\"a\")){\n" +
-                            "        } catch (UnknownHostException m) {\n" +
-                            "            m.printStackTrace();\n" +
-                            "        } catch (IOException i) {\n" +
-                            "            i.printStackTrace();\n" +
-                            "        }\n" +
-                            "    }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "import java.io.*;\n" +
+                       "public class Test {\n" +
+                       "    {\n" +
+                       "        try (java.io.InputStream in = new java.io.FileInputStream(\"a\")){\n" +
+                       "        } catch (UnknownHostException m) {\n" +
+                       "            m.printStackTrace();\n" +
+                       "        } catch (IOException i) {\n" +
+                       "            i.printStackTrace();\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n", false)
+                .sourceLevel("1.7")
+                .run(JoinCatches.class)
+                .assertWarnings();
     }
 
     public void test203139() throws Exception {
-        setSourceLevel("1.7");
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "import java.io.*;\n" +
-                            "public class Test {\n" +
-                            "    void t() throws Exception {\n" +
-                            "        try {\n" +
-                            "            throw new Exception();\n" +
-                            "        } catch (InterruptedException e) {\n" +
-                            "            System.err.println(e);\n" +
-                            "        } catch (java.util.concurrent.ExecutionException e) {\n" +
-                            "            System.err.println(e.getCause());\n" +
-                            "        }\n" +
-                            "    }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "import java.io.*;\n" +
+                       "public class Test {\n" +
+                       "    void t() throws Exception {\n" +
+                       "        try {\n" +
+                       "            throw new Exception();\n" +
+                       "        } catch (InterruptedException e) {\n" +
+                       "            System.err.println(e);\n" +
+                       "        } catch (java.util.concurrent.ExecutionException e) {\n" +
+                       "            System.err.println(e.getCause());\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(JoinCatches.class)
+                .assertWarnings();
     }
 
     public void test205167() throws Exception {
-        setSourceLevel("1.7");
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "import java.util.concurrent.*;\n" +
                        "public class Test {\n" +
                        "    public void taragui() {\n" +
@@ -178,20 +189,21 @@ public class JoinCatchesTest extends TestBase {
                        "            return -1;\n" +
                        "        }\n" +
                        "    }\n" +
-                       "}\n",
-                       "6:17-6:56:verifier:ERR_JoinCatches",
-                       "FIX_JoinCatches",
-                       ("package test;\n" +
-                        "import java.util.concurrent.*;\n" +
-                        "public class Test {\n" +
-                        "    public void taragui() {\n" +
-                        "        try {\n" +
-                        "            return -1;\n" +
-                        "        } catch (InterruptedException | TimeoutException | ExecutionException e) {\n" +
-                        "            return -1;\n" +
-                        "        }\n" +
-                        "    }\n" +
-                        "}\n").replaceAll("[\n\t ]+", " "));
+                       "}\n", false)
+                .sourceLevel("1.7")
+                .run(JoinCatches.class)
+                .findWarning("6:17-6:56:verifier:ERR_JoinCatches")
+                .applyFix("FIX_JoinCatches")
+                .assertOutput("package test;\n" +
+                              "import java.util.concurrent.*;\n" +
+                              "public class Test {\n" +
+                              "    public void taragui() {\n" +
+                              "        try {\n" +
+                              "            return -1;\n" +
+                              "        } catch (InterruptedException | TimeoutException | ExecutionException e) {\n" +
+                              "            return -1;\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
     }
-
 }

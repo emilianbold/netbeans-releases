@@ -42,252 +42,293 @@
 package org.netbeans.modules.java.hints;
 
 import org.junit.Test;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.test.api.TestBase;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author Dusan Balek
  */
-public class AssignmentIssuesTest extends TestBase {
+public class AssignmentIssuesTest extends NbTestCase {
 
     public AssignmentIssuesTest(String name) {
-        super(name, AssignmentIssues.class);
+        super(name);
     }
 
     @Test
     public void testAssignmentToForLoopParam() throws Exception {
-        performAnalysisTest("test/Test.java",
-                "package test;\n"
-                + "public class Test {\n"
-                + "    public static void main(String... args) {\n"
-                + "        for (int i = 0; i < args.length; i++) {\n"
-                + "            i = 10;"
-                + "        }\n"
-                + "    }\n"
-                + "}",
-                "4:12-4:18:verifier:Assignment to for-loop parameter i");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                 "public class Test {\n" +
+                 "    public static void main(String... args) {\n" +
+                 "        for (int i = 0; i < args.length; i++) {\n" +
+                 "            i = 10;" +
+                 "        }\n" +
+                 "    }\n" +
+                 "}")
+                .run(AssignmentIssues.class)
+                .assertWarnings("4:12-4:18:verifier:Assignment to for-loop parameter i");
     }
 
     @Test
     public void testAssignmentToForLoopParamSuppressed() throws Exception {
-        performAnalysisTest("test/Test.java",
-                "package test;\n"
-                + "public class Test {\n"
-                + "    @SuppressWarnings(\"AssignmentToForLoopParameter\")"
-                + "    public static void main(String... args) {\n"
-                + "        for (int i = 0; i < args.length; i++) {\n"
-                + "            i = 10;"
-                + "        }\n"
-                + "    }\n"
-                + "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                 "public class Test {\n" +
+                 "    @SuppressWarnings(\"AssignmentToForLoopParameter\")" +
+                 "    public static void main(String... args) {\n" +
+                 "        for (int i = 0; i < args.length; i++) {\n" +
+                 "            i = 10;" +
+                 "        }\n" +
+                 "    }\n" +
+                 "}")
+                .run(AssignmentIssues.class)
+                .assertWarnings();
     }
 
     @Test
     public void testAssignmentToCatchBlockParameter() throws Exception {
-        performAnalysisTest("test/Test.java",
-                "package test;\n"
-                + "public class Test {\n"
-                + "    public static void main(String... args) {\n"
-                + "        try {\n"
-                + "        } catch (Exception e) {\n"
-                + "            e = null;"
-                + "        }"
-                + "    }\n"
-                + "}",
-                "5:12-5:20:verifier:Assignment to catch-block parameter e");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                 "public class Test {\n" +
+                 "    public static void main(String... args) {\n" +
+                 "        try {\n" +
+                 "        } catch (Exception e) {\n" +
+                 "            e = null;" +
+                 "        }" +
+                 "    }\n" +
+                 "}")
+                .run(AssignmentIssues.class)
+                .assertWarnings("5:12-5:20:verifier:Assignment to catch-block parameter e");
     }
 
     @Test
     public void testAssignmentToCatchBlockParameterSuppressed() throws Exception {
-        performAnalysisTest("test/Test.java",
-                "package test;\n"
-                + "public class Test {\n"
-                + "    @SuppressWarnings(\"AssignmentToCatchBlockParameter\")\n"
-                + "    public static void main(String... args) {\n"
-                + "        try {\n"
-                + "        } catch (Exception e) {\n"
-                + "            e = null;"
-                + "        }"
-                + "    }\n"
-                + "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                 "public class Test {\n" +
+                 "    @SuppressWarnings(\"AssignmentToCatchBlockParameter\")\n" +
+                 "    public static void main(String... args) {\n" +
+                 "        try {\n" +
+                 "        } catch (Exception e) {\n" +
+                 "            e = null;" +
+                 "        }" +
+                 "    }\n" +
+                 "}")
+                .run(AssignmentIssues.class)
+                .assertWarnings();
     }
 
     @Test
     public void testAssignmentToMethodParam() throws Exception {
-        performAnalysisTest("test/Test.java",
-                "package test;\n"
-                + "public class Test {\n"
-                + "    public static void main(String... args) {\n"
-                + "        args = null;"
-                + "    }\n"
-                + "}",
-                "3:8-3:19:verifier:Assignment to method parameter args");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                 "public class Test {\n" +
+                 "    public static void main(String... args) {\n" +
+                 "        args = null;" +
+                 "    }\n" +
+                 "}")
+                .run(AssignmentIssues.class)
+                .assertWarnings("3:8-3:19:verifier:Assignment to method parameter args");
     }
 
     @Test
     public void testAssignmentToMethodParamSuppressed() throws Exception {
-        performAnalysisTest("test/Test.java",
-                "package test;\n"
-                + "public class Test {\n"
-                + "    @SuppressWarnings(\"AssignmentToMethodParameter\")\n"
-                + "    public static void main(String... args) {\n"
-                + "        args = null;"
-                + "    }\n"
-                + "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                 "public class Test {\n" +
+                 "    @SuppressWarnings(\"AssignmentToMethodParameter\")\n" +
+                 "    public static void main(String... args) {\n" +
+                 "        args = null;" +
+                 "    }\n" +
+                 "}")
+                .run(AssignmentIssues.class)
+                .assertWarnings();
     }
 
     @Test
     public void testNestedAssignment() throws Exception {
-        performAnalysisTest("test/Test.java",
-                "package test;\n"
-                + "public class Test {\n"
-                + "    public static void main(String... args) {\n"
-                + "        int i = 10;\n"
-                + "        while ((i = 2 + i) > 10) {\n"
-                + "        }\n"
-                + "    }\n"
-                + "}",
-                "4:16-4:25:verifier:Nested assignment 'i = 2 + i'");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                 "public class Test {\n" +
+                 "    public static void main(String... args) {\n" +
+                 "        int i = 10;\n" +
+                 "        while ((i = 2 + i) > 10) {\n" +
+                 "        }\n" +
+                 "    }\n" +
+                 "}")
+                .run(AssignmentIssues.class)
+                .assertWarnings("4:16-4:25:verifier:Nested assignment 'i = 2 + i'");
     }
 
     @Test
     public void testNestedAssignmentSuppressed() throws Exception {
-        performAnalysisTest("test/Test.java",
-                "package test;\n"
-                + "public class Test {\n"
-                + "    @SuppressWarnings(\"NestedAssignment\")\n"
-                + "    public static void main(String... args) {\n"
-                + "        int i = 10;\n"
-                + "        while ((i = 2 + i) > 10) {\n"
-                + "        }\n"
-                + "    }\n"
-                + "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                 "public class Test {\n" +
+                 "    @SuppressWarnings(\"NestedAssignment\")\n" +
+                 "    public static void main(String... args) {\n" +
+                 "        int i = 10;\n" +
+                 "        while ((i = 2 + i) > 10) {\n" +
+                 "        }\n" +
+                 "    }\n" +
+                 "}")
+                .run(AssignmentIssues.class)
+                .assertWarnings();
     }
 
     @Test
     public void testIncrementDecrementUsed() throws Exception {
-        performAnalysisTest("test/Test.java",
-                "package test;\n"
-                + "public class Test {\n"
-                + "    public static void main(String... args) {\n"
-                + "        int i = 10;\n"
-                + "        while (i++ > 10) {\n"
-                + "        }\n"
-                + "    }\n"
-                + "}",
-                "4:15-4:18:verifier:Value of increment expression 'i++' is used");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                 "public class Test {\n" +
+                 "    public static void main(String... args) {\n" +
+                 "        int i = 10;\n" +
+                 "        while (i++ > 10) {\n" +
+                 "        }\n" +
+                 "    }\n" +
+                 "}")
+                .run(AssignmentIssues.class)
+                .assertWarnings("4:15-4:18:verifier:Value of increment expression 'i++' is used");
     }
 
     @Test
     public void testIncrementDecrementUsedSuppressed() throws Exception {
-        performAnalysisTest("test/Test.java",
-                "package test;\n"
-                + "public class Test {\n"
-                + "    @SuppressWarnings(\"ValueOfIncrementOrDecrementUsed\")\n"
-                + "    public static void main(String... args) {\n"
-                + "        int i = 10;\n"
-                + "        while (i++ > 10) {\n"
-                + "        }\n"
-                + "    }\n"
-                + "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                 "public class Test {\n" +
+                 "    @SuppressWarnings(\"ValueOfIncrementOrDecrementUsed\")\n" +
+                 "    public static void main(String... args) {\n" +
+                 "        int i = 10;\n" +
+                 "        while (i++ > 10) {\n" +
+                 "        }\n" +
+                 "    }\n" +
+                 "}")
+                .run(AssignmentIssues.class)
+                .assertWarnings();
     }
 
     @Test
     public void testReplaceAssignWithOpAssign() throws Exception {
-        performFixTest("test/Test.java",
-                "package test;\n"
-                + "public class Test {\n"
-                + "    public static void main(String... args) {\n"
-                + "        int i = 0;\n"
-                + "        i = i - 10;\n"
-                + "    }\n"
-                + "}",
-                "4:8-4:18:verifier:Assignment 'i = i - 10' is replacable with operator-assignment",
-                "Replace assignment 'i = i - 10' with operator-assignment",
-                ("package test;\n"
-                + "public class Test {\n"
-                + "    public static void main(String... args) {\n"
-                + "        int i = 0;\n"
-                + "        i -= 10;\n"
-                + "    }\n"
-                + "}").replaceAll("[ \t\n]+", " "));
+        HintTest
+                .create()
+                .input("package test;\n" +
+                 "public class Test {\n" +
+                 "    public static void main(String... args) {\n" +
+                 "        int i = 0;\n" +
+                 "        i = i - 10;\n" +
+                 "    }\n" +
+                 "}")
+                .run(AssignmentIssues.class)
+                .findWarning("4:8-4:18:verifier:Assignment 'i = i - 10' is replacable with operator-assignment")
+                .applyFix("Replace assignment 'i = i - 10' with operator-assignment")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                 "public class Test {\n" +
+                 "    public static void main(String... args) {\n" +
+                 "        int i = 0;\n" +
+                 "        i -= 10;\n" +
+                 "    }\n" +
+                 "}");
     }
 
     public void testReplaceAssignWithOpAssign185372a() throws Exception {
-        performFixTest("test/Test.java",
-                "package test;\n"
-                + "public class Test {"
-                + "    private int i;\n"
-                + "    public static void main(String... args) {\n"
-                + "        i = this.i - 10;\n"
-                + "    }\n"
-                + "}",
-                "3:8-3:23:verifier:Assignment 'i = this.i - 10' is replacable with operator-assignment",
-                "Replace assignment 'i = this.i - 10' with operator-assignment",
-                ("package test;\n"
-                + "public class Test {\n"
-                + "    private int i;\n"
-                + "    public static void main(String... args) {\n"
-                + "        i -= 10;\n"
-                + "    }\n"
-                + "}").replaceAll("[ \t\n]+", " "));
+        HintTest
+                .create()
+                .input("package test;\n" +
+                 "public class Test {" +
+                 "    private int i;\n" +
+                 "    public void main(String... args) {\n" +
+                 "        i = this.i - 10;\n" +
+                 "    }\n" +
+                 "}")
+                .run(AssignmentIssues.class)
+                .findWarning("3:8-3:23:verifier:Assignment 'i = this.i - 10' is replacable with operator-assignment")
+                .applyFix("Replace assignment 'i = this.i - 10' with operator-assignment")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                 "public class Test {\n" +
+                 "    private int i;\n" +
+                 "    public void main(String... args) {\n" +
+                 "        i -= 10;\n" +
+                 "    }\n" +
+                 "}");
     }
 
     public void testReplaceAssignWithOpAssign185372b() throws Exception {
-        performFixTest("test/Test.java",
-                "package test;\n"
-                + "public class Test {"
-                + "    private int i;\n"
-                + "    public static void main(String... args) {\n"
-                + "        this.i = i - 10;\n"
-                + "    }\n"
-                + "}",
-                "3:8-3:23:verifier:Assignment 'this.i = i - 10' is replacable with operator-assignment",
-                "Replace assignment 'this.i = i - 10' with operator-assignment",
-                ("package test;\n"
-                + "public class Test {\n"
-                + "    private int i;\n"
-                + "    public static void main(String... args) {\n"
-                + "        this.i -= 10;\n"
-                + "    }\n"
-                + "}").replaceAll("[ \t\n]+", " "));
+        HintTest
+                .create()
+                .input("package test;\n" +
+                 "public class Test {" +
+                 "    private int i;\n" +
+                 "    public void main(String... args) {\n" +
+                 "        this.i = i - 10;\n" +
+                 "    }\n" +
+                 "}")
+                .run(AssignmentIssues.class)
+                .findWarning("3:8-3:23:verifier:Assignment 'this.i = i - 10' is replacable with operator-assignment")
+                .applyFix("Replace assignment 'this.i = i - 10' with operator-assignment")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                 "public class Test {\n" +
+                 "    private int i;\n" +
+                 "    public void main(String... args) {\n" +
+                 "        this.i -= 10;\n" +
+                 "    }\n" +
+                 "}");
     }
 
     @Test
     public void testReplaceAssignWithOpAssignSuppressed() throws Exception {
-        performAnalysisTest("test/Test.java",
-                "package test;\n"
-                + "public class Test {\n"
-                + "    @SuppressWarnings(\"AssignmentReplaceableWithOperatorAssignment\")\n"
-                + "    public static void main(String... args) {\n"
-                + "        int i = 0;\n"
-                + "        i = i - 10;\n"
-                + "    }\n"
-                + "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                 "public class Test {\n" +
+                 "    @SuppressWarnings(\"AssignmentReplaceableWithOperatorAssignment\")\n" +
+                 "    public static void main(String... args) {\n" +
+                 "        int i = 0;\n" +
+                 "        i = i - 10;\n" +
+                 "    }\n" +
+                 "}")
+                .run(AssignmentIssues.class)
+                .assertWarnings();
     }
-    
+
     public void testReplaceAssignWithOpAssign185372c() throws Exception {
-        performAnalysisTest("test/Test.java",
-                "package test;\n"
-                + "public class Test {\n"
-                + "    private int i;\n"
-                + "    public void main(Test t) {\n"
-                + "        i = t.i - 10;\n"
-                + "    }\n"
-                + "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                 "public class Test {\n" +
+                 "    private int i;\n" +
+                 "    public void main(Test t) {\n" +
+                 "        i = t.i - 10;\n" +
+                 "    }\n" +
+                 "}")
+                .run(AssignmentIssues.class)
+                .assertWarnings();
     }
 
     public void testReplaceAssignWithOpAssign185372d() throws Exception {
-        performAnalysisTest("test/Test.java",
-                "package test;\n"
-                + "public class Test {\n"
-                + "    private int i;\n"
-                + "    public static void main(Test t) {\n"
-                + "        t.i = i - 10;\n"
-                + "    }\n"
-                + "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                 "public class Test {\n" +
+                 "    private int i;\n" +
+                 "    public void main(Test t) {\n" +
+                 "        t.i = i - 10;\n" +
+                 "    }\n" +
+                 "}")
+                .run(AssignmentIssues.class)
+                .assertWarnings();
     }
-
 }

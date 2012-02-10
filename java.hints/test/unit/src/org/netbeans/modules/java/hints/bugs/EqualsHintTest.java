@@ -39,81 +39,104 @@
  * 
  * Portions Copyrighted 2007-2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints.bugs;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.test.api.TestBase;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class EqualsHintTest extends TestBase {
-    
+public class EqualsHintTest extends NbTestCase {
+
     public EqualsHintTest(String testName) {
-        super(testName, EqualsHint.class);
+        super(testName);
     }
 
     public void testSimpleAnalysis1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test; public class Test{ public void test() {int[] a = null; boolean b = a.equals(a);}}",
-                            "0:83-0:89:verifier:AE");
+        HintTest
+                .create()
+                .input("package test; public class Test{ public void test() {int[] a = null; boolean b = a.equals(a);}}")
+                .run(EqualsHint.class)
+                .assertWarnings("0:83-0:89:verifier:AE");
     }
-    
+
     public void testSimpleAnalysis2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test; public class Test{ public void test() {Class c = null; String s = null; boolean b = c.equals(s);}}",
-                            "0:100-0:106:verifier:IE");
+        HintTest
+                .create()
+                .input("package test; public class Test{ public void test() {Class c = null; String s = null; boolean b = c.equals(s);}}")
+                .run(EqualsHint.class)
+                .assertWarnings("0:100-0:106:verifier:IE");
     }
-    
+
     public void testSimpleAnalysis3() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test; public class Test{ public void test() {Class c = null; String s = null; boolean b = s.equals(c);}}",
-                            "0:100-0:106:verifier:IE");
+        HintTest
+                .create()
+                .input("package test; public class Test{ public void test() {Class c = null; String s = null; boolean b = s.equals(c);}}")
+                .run(EqualsHint.class)
+                .assertWarnings("0:100-0:106:verifier:IE");
     }
-    
+
     public void testSimpleAnalysis4() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test; public class Test{ public void test() {Class c = null; Object o = null; boolean b = o.equals(c);}}");
+        HintTest
+                .create()
+                .input("package test; public class Test{ public void test() {Class c = null; Object o = null; boolean b = o.equals(c);}}")
+                .run(EqualsHint.class)
+                .assertWarnings();
     }
-    
+
     public void testSimpleAnalysis5() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test; public class Test{ public void test() {Class c = null; Object o = null; boolean b = c.equals(o);}}");
+        HintTest
+                .create()
+                .input("package test; public class Test{ public void test() {Class c = null; Object o = null; boolean b = c.equals(o);}}")
+                .run(EqualsHint.class)
+                .assertWarnings();
     }
-    
+
     public void testFix1() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test; public class Test{ public void test() {int[] a = null; boolean b = a.equals(a);}}",
-                       "0:83-0:89:verifier:AE",
-                       "FIX_ReplaceWithArraysEquals",
-                       "package test; import java.util.Arrays; public class Test{ public void test() {int[] a = null; boolean b = Arrays.equals(a, a);}}");
+        HintTest
+                .create()
+                .input("package test; public class Test{ public void test() {int[] a = null; boolean b = a.equals(a);}}")
+                .run(EqualsHint.class)
+                .findWarning("0:83-0:89:verifier:AE")
+                .applyFix("FIX_ReplaceWithArraysEquals")
+                .assertCompilable()
+                .assertOutput("package test; import java.util.Arrays; public class Test{ public void test() {int[] a = null; boolean b = Arrays.equals(a, a);}}");
     }
-    
+
     public void testFix2() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test; public class Test{ public void test() {int[] a = null; boolean b = a.equals(a);}}",
-                       "0:83-0:89:verifier:AE",
-                       "FIX_ReplaceWithInstanceEquals",
-                       "package test; public class Test{ public void test() {int[] a = null; boolean b = a == a;}}");
+        HintTest
+                .create()
+                .input("package test; public class Test{ public void test() {int[] a = null; boolean b = a.equals(a);}}")
+                .run(EqualsHint.class)
+                .findWarning("0:83-0:89:verifier:AE")
+                .applyFix("FIX_ReplaceWithInstanceEquals")
+                .assertCompilable()
+                .assertOutput("package test; public class Test{ public void test() {int[] a = null; boolean b = a == a;}}");
     }
-    
+
     public void testAnalysis132853() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test; public class Test{ public void test() {Class c = null; Object o = null; boolean b = this.equals(c, o);} private boolean equals(Object o1, Object o2) { return false; } }");
+        HintTest
+                .create()
+                .input("package test; public class Test{ public void test() {Class c = null; Object o = null; boolean b = this.equals(c, o);} private boolean equals(Object o1, Object o2) { return false; } }")
+                .run(EqualsHint.class)
+                .assertWarnings();
     }
-    
+
     public void testUnresolved1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test; public class Test{ public void test() {int[] a = null; boolean b = a.equals(aa);}}");
+        HintTest
+                .create()
+                .input("package test; public class Test{ public void test() {int[] a = null; boolean b = a.equals(aa);}}", false)
+                .run(EqualsHint.class)
+                .assertWarnings();
     }
 
     public void testNoThis() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test; public class Test { public boolean test(Integer o) {return equals(o);}}",
-                            "0:73-0:79:verifier:IE");
+        HintTest
+                .create()
+                .input("package test; public class Test { public boolean test(Integer o) {return equals(o);}}")
+                .run(EqualsHint.class)
+                .assertWarnings("0:73-0:79:verifier:IE");
     }
-
 }

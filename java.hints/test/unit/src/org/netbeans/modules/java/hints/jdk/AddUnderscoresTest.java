@@ -41,106 +41,122 @@
  */
 package org.netbeans.modules.java.hints.jdk;
 
-import java.util.Collections;
-import java.util.prefs.Preferences;
-import org.netbeans.modules.java.hints.analyzer.OverridePreferences;
-import org.netbeans.modules.java.hints.test.api.TestBase;
-import org.netbeans.modules.java.hints.spiimpl.RulesManager;
-import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class AddUnderscoresTest extends TestBase {
+public class AddUnderscoresTest extends NbTestCase {
+
     public AddUnderscoresTest(String name) {
-        super(name, AddUnderscores.class);
+        super(name);
     }
 
     public void testSimpleAdd() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    private static final int CONST = 12345678;\n" +
-                       "}\n",
-                       "2:37-2:45:hint:ERR_org.netbeans.modules.javahints.jdk.AddUnderscores",
-                       "FIX_org.netbeans.modules.javahints.jdk.AddUnderscores12_345_678",
-                       ("package test;\n" +
-                       "public class Test {\n" +
-                       "    private static final int CONST = 12_345_678;\n" +
-                       "}\n").replaceAll("[ \t\n]+", " "));
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(AddUnderscores.class)
+                .findWarning("2:37-2:45:hint:ERR_org.netbeans.modules.javahints.jdk.AddUnderscores")
+                .applyFix("FIX_org.netbeans.modules.javahints.jdk.AddUnderscores12_345_678")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    private static final int CONST = 12_345_678;\n" +
+                              "}\n");
     }
 
     public void testSettings() throws Exception {
-        AddUnderscores.setSizeForRadix(getTestPreferences(), 2, 5);
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    private static final int CONST = 0B1010101010101010;\n" +
-                       "}\n",
-                       "2:37-2:55:hint:ERR_org.netbeans.modules.javahints.jdk.AddUnderscores",
-                       "FIX_org.netbeans.modules.javahints.jdk.AddUnderscores0B1_01010_10101_01010",
-                       ("package test;\n" +
-                       "public class Test {\n" +
-                       "    private static final int CONST = 0B1_01010_10101_01010;\n" +
-                       "}\n").replaceAll("[ \t\n]+", " "));
+                       "}\n")
+                .sourceLevel("1.7")
+                .preference(AddUnderscores.KEY_SIZE_BINARY, 5)
+                .run(AddUnderscores.class)
+                .findWarning("2:37-2:55:hint:ERR_org.netbeans.modules.javahints.jdk.AddUnderscores")
+                .applyFix("FIX_org.netbeans.modules.javahints.jdk.AddUnderscores0B1_01010_10101_01010")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    private static final int CONST = 0B1_01010_10101_01010;\n" +
+                              "}\n");
     }
 
     public void testHexLong() throws Exception {
-        AddUnderscores.setSizeForRadix(getTestPreferences(), 16, 3);
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
-                       "    private static final int CONST = 0xA5A5A5A5A5A5A5A5L;\n" +
-                       "}\n",
-                       "2:37-2:56:hint:ERR_org.netbeans.modules.javahints.jdk.AddUnderscores",
-                       "FIX_org.netbeans.modules.javahints.jdk.AddUnderscores0xA_5A5_A5A_5A5_A5A_5A5L",
-                       ("package test;\n" +
-                       "public class Test {\n" +
-                       "    private static final int CONST = 0xA_5A5_A5A_5A5_A5A_5A5L;\n" +
-                       "}\n").replaceAll("[ \t\n]+", " "));
+                       "    private static final long CONST = 0xA5A5A5A5A5A5A5A5L;\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .preference(AddUnderscores.KEY_SIZE_HEXADECIMAL, 3)
+                .run(AddUnderscores.class)
+                .findWarning("2:38-2:57:hint:ERR_org.netbeans.modules.javahints.jdk.AddUnderscores")
+                .applyFix("FIX_org.netbeans.modules.javahints.jdk.AddUnderscores0xA_5A5_A5A_5A5_A5A_5A5L")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    private static final long CONST = 0xA_5A5_A5A_5A5_A5A_5A5L;\n" +
+                              "}\n");
     }
 
     public void testAlreadyHasUnderscores1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private static final int CONST = 0xA5A5A5A5_A5A5A5A5L;\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private static final long CONST = 0xA5A5A5A5_A5A5A5A5L;\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(AddUnderscores.class)
+                .assertWarnings();
     }
 
     public void testAlreadyHasUnderscores2() throws Exception {
-        AddUnderscores.setReplaceLiteralsWithUnderscores(getTestPreferences(), true);
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
-                       "    private static final int CONST = 0xA5A5A5A5A5A5A5A_5L;\n" +
-                       "}\n",
-                       "2:37-2:57:hint:ERR_org.netbeans.modules.javahints.jdk.AddUnderscores",
-                       "FIX_org.netbeans.modules.javahints.jdk.AddUnderscores0xA5A5_A5A5_A5A5_A5A5L",
-                       ("package test;\n" +
-                       "public class Test {\n" +
-                       "    private static final int CONST = 0xA5A5_A5A5_A5A5_A5A5L;\n" +
-                       "}\n").replaceAll("[ \t\n]+", " "));
+                       "    private static final long CONST = 0xA5A5A5A5A5A5A5A_5L;\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .preference(AddUnderscores.KEY_ALSO_WITH_UNDERSCORES, true)
+                .run(AddUnderscores.class)
+                .findWarning("2:38-2:58:hint:ERR_org.netbeans.modules.javahints.jdk.AddUnderscores")
+                .applyFix("FIX_org.netbeans.modules.javahints.jdk.AddUnderscores0xA5A5_A5A5_A5A5_A5A5L")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    private static final long CONST = 0xA5A5_A5A5_A5A5_A5A5L;\n" +
+                              "}\n");
     }
 
     public void testZeroIsNotOctal() throws Exception {
-        assertEquals(10, AddUnderscores.radixInfo("0").radix);
-        assertEquals(10, AddUnderscores.radixInfo("0L").radix);
+        assertEquals(10, AddUnderscores
+                .radixInfo("0").radix);
+        assertEquals(10, AddUnderscores
+                .radixInfo("0L").radix);
     }
 
     public void testIgnoreOctalConstantsForNow() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private static final int CONST = 0123;\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private static final int CONST = 0123;\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(AddUnderscores.class)
+                .assertWarnings();
     }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        setSourceLevel("1.7");
-    }
-
 }

@@ -36,136 +36,143 @@
  *
  * Portions Copyrighted 2009-2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints.suggestions;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.test.api.TestBase;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class ExpandEnhancedForLoopTest extends TestBase {
+public class ExpandEnhancedForLoopTest extends NbTestCase {
 
     public ExpandEnhancedForLoopTest(String name) {
-        super(name, ExpandEnhancedForLoop.class);
+        super(name);
     }
 
     public void testSimple1() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    private void test() {\n" +
                        "        fo|r (String s : java.util.Arrays.asList(\"a\")) {\n" +
                        "        }\n" +
                        "    }\n" +
-                       "}\n",
-                       "3:10-3:10:verifier:Convert to long for loop",
-                       "Convert to long for loop",
-                       ("package test;\n" +
-                       "import java.util.Iterator;\n" +
-                       "public class Test {\n" +
-                       "    private void test() {\n" +
-                       "        for (Iterator<String> it = java.util.Arrays.asList(\"a\").iterator(); it.hasNext();) {" +
-                       "            String s = it.next();\n" +
-                       "        }\n" +
-                       "    }\n" +
-                       "}\n").replaceAll("[ \t\n]+", " "));
+                       "}\n")
+                .run(ExpandEnhancedForLoop.class)
+                .findWarning("3:10-3:10:verifier:Convert to long for loop")
+                .applyFix("Convert to long for loop")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import java.util.Iterator;\n" +
+                              "public class Test {\n" +
+                              "    private void test() {\n" +
+                              "        for (Iterator<String> it = java.util.Arrays.asList(\"a\").iterator(); it.hasNext();) {" +
+                              "            String s = it.next();\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
     }
 
     public void testSimple2() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    private void test() {" +
                        "        java.util.List<? extends CharSequence> l = null;\n" +
                        "        fo|r (CharSequence c : l) {\n" +
                        "        }\n" +
                        "    }\n" +
-                       "}\n",
-                       "3:10-3:10:verifier:Convert to long for loop",
-                       "Convert to long for loop",
-                       ("package test;\n" +
-                       "import java.util.Iterator;\n" +
-                       "public class Test {\n" +
-                       "    private void test() {\n" +
-                       "        java.util.List<? extends CharSequence> l = null;\n" +
-                       "        for (Iterator<? extends CharSequence> it = l.iterator(); it.hasNext();) {" +
-                       "            CharSequence c = it.next();\n" +
-                       "        }\n" +
-                       "    }\n" +
-                       "}\n").replaceAll("[ \t\n]+", " "));
+                       "}\n")
+                .run(ExpandEnhancedForLoop.class)
+                .findWarning("3:10-3:10:verifier:Convert to long for loop")
+                .applyFix("Convert to long for loop")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import java.util.Iterator;\n" +
+                              "public class Test {\n" +
+                              "    private void test() {\n" +
+                              "        java.util.List<? extends CharSequence> l = null;\n" +
+                              "        for (Iterator<? extends CharSequence> it = l.iterator(); it.hasNext();) {" +
+                              "            CharSequence c = it.next();\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
     }
 
     public void testNoBlock() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    private void test() {" +
                        "        java.util.List<? extends CharSequence> l = null;\n" +
                        "        fo|r (CharSequence c : l)\n" +
                        "            System.err.println(c);\n" +
                        "    }\n" +
-                       "}\n",
-                       "3:10-3:10:verifier:Convert to long for loop",
-                       "Convert to long for loop",
-                       ("package test;\n" +
-                       "import java.util.Iterator;\n" +
-                       "public class Test {\n" +
-                       "    private void test() {\n" +
-                       "        java.util.List<? extends CharSequence> l = null;\n" +
-                       "        for (Iterator<? extends CharSequence> it = l.iterator(); it.hasNext();) {" +
-                       "            CharSequence c = it.next();\n" +
-                       "            System.err.println(c);\n" +
-                       "        }\n" +
-                       "    }\n" +
-                       "}\n").replaceAll("[ \t\n]+", " "));
+                       "}\n")
+                .run(ExpandEnhancedForLoop.class)
+                .findWarning("3:10-3:10:verifier:Convert to long for loop")
+                .applyFix("Convert to long for loop")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import java.util.Iterator;\n" +
+                              "public class Test {\n" +
+                              "    private void test() {\n" +
+                              "        java.util.List<? extends CharSequence> l = null;\n" +
+                              "        for (Iterator<? extends CharSequence> it = l.iterator(); it.hasNext();) {" +
+                              "            CharSequence c = it.next();\n" +
+                              "            System.err.println(c);\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
     }
 
     public void testEmptyStatement() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    private void test() {" +
                        "        java.util.List<? extends CharSequence> l = null;\n" +
                        "        fo|r (CharSequence c : l);\n" +
                        "    }\n" +
-                       "}\n",
-                       "3:10-3:10:verifier:Convert to long for loop",
-                       "Convert to long for loop",
-                       ("package test;\n" +
-                       "import java.util.Iterator;\n" +
-                       "public class Test {\n" +
-                       "    private void test() {\n" +
-                       "        java.util.List<? extends CharSequence> l = null;\n" +
-                       "        for (Iterator<? extends CharSequence> it = l.iterator(); it.hasNext();) {" +
-                       "            CharSequence c = it.next();\n" +
-                       "        }\n" +
-                       "    }\n" +
-                       "}\n").replaceAll("[ \t\n]+", " "));
+                       "}\n")
+                .run(ExpandEnhancedForLoop.class)
+                .findWarning("3:10-3:10:verifier:Convert to long for loop")
+                .applyFix("Convert to long for loop")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import java.util.Iterator;\n" +
+                              "public class Test {\n" +
+                              "    private void test() {\n" +
+                              "        java.util.List<? extends CharSequence> l = null;\n" +
+                              "        for (Iterator<? extends CharSequence> it = l.iterator(); it.hasNext();) {" +
+                              "            CharSequence c = it.next();\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
     }
 
     public void testNegative() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private void test() {\n" +
-                            "        fo|r (String s : new Object()) {\n" +
-                            "        }\n" +
-                            "    }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private void test() {\n" +
+                       "        fo|r (String s : new Object()) {\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n", false)
+                .run(ExpandEnhancedForLoop.class)
+                .assertWarnings();
     }
-
-    //TODO: can be generalized?
-    @Override
-    protected void prepareTest(String fileName, String code) throws Exception {
-        int caret = code.indexOf('|');
-
-        assertTrue(String.valueOf(caret), caret >= 0);
-        super.prepareTest(fileName, code.substring(0, caret) + code.substring(caret + 1));
-        setTestFileCaretLocation(caret);
-    }
-
 }

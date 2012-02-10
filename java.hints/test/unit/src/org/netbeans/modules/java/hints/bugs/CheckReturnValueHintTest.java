@@ -41,39 +41,44 @@
  */
 package org.netbeans.modules.java.hints.bugs;
 
-import org.netbeans.modules.java.hints.test.api.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class CheckReturnValueHintTest extends TestBase {
+public class CheckReturnValueHintTest extends NbTestCase {
 
     public CheckReturnValueHintTest(String name) {
-        super(name, CheckReturnValueHint.class);
+        super(name);
     }
 
     public void testSimpleReport() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public @CheckReturnValue String foo() { return null; }\n" +
-                            "    public void test() {\n" +
-                            "        foo();\n" +
-                            "    }\n" +
-                            "}\n" +
-                            "public @interface CheckReturnValue {}\n",
-                            "4:8-4:14:verifier:ERR_org.netbeans.modules.javahints.CheckReturnValueHint");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public @CheckReturnValue String foo() { return null; }\n" +
+                       "    public void test() {\n" +
+                       "        foo();\n" +
+                       "    }\n" +
+                       "}\n" +
+                       "@interface CheckReturnValue {}\n")
+                .run(CheckReturnValueHint.class)
+                .assertWarnings("4:8-4:14:verifier:ERR_org.netbeans.modules.javahints.CheckReturnValueHint");
     }
 
     public void testStringSubString() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public void test(String arg) {\n" +
-                            "        arg.substring(0);\n" +
-                            "    }\n" +
-                            "}\n",
-                            "3:8-3:25:verifier:ERR_org.netbeans.modules.javahints.CheckReturnValueHint");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(String arg) {\n" +
+                       "        arg.substring(0);\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(CheckReturnValueHint.class)
+                .assertWarnings("3:8-3:25:verifier:ERR_org.netbeans.modules.javahints.CheckReturnValueHint");
     }
 }

@@ -359,7 +359,7 @@ public class HintTest {
 
         for (Diagnostic d : info.getDiagnostics()) {
             if (d.getKind() == Diagnostic.Kind.ERROR)
-                throw new AssertionError(d.getMessage(null));
+                throw new AssertionError(d.getLineNumber() + ":" + d.getColumnNumber() + " " + d.getMessage(null));
         }
     }
 
@@ -390,6 +390,17 @@ public class HintTest {
      * @param value the value to set
      * @return itself
      */
+    public HintTest preference(String preferencesKey, int value) {
+        this.testPreferences.putInt(preferencesKey, value);
+        return this;
+    }
+
+    /**Sets a preference that will be visible to the hint.
+     *
+     * @param preferencesKey a key for the preferences
+     * @param value the value to set
+     * @return itself
+     */
     public HintTest preference(String preferencesKey, boolean value) {
         this.testPreferences.putBoolean(preferencesKey, value);
         return this;
@@ -409,7 +420,7 @@ public class HintTest {
         List<ClassWrapper> found = new ArrayList<ClassWrapper>();
 
         for (ClassWrapper w : FSWrapper.listClasses()) {
-            if (hint.getCanonicalName().equals(w.getName())) {
+            if (hint.getCanonicalName().equals(w.getName().replace('$', '.'))) {
                 found.add(w);
             }
         }
@@ -692,6 +703,62 @@ public class HintTest {
             return this;
         }
 
+        /**Assert that the hint(s) produced warnings include the given warnings. The provided strings
+         * should match {@code toString()} results of {@link ErrorDescription}s produced
+         * by the hint(s).
+         *
+         * @param warnings expected {@code toString()} results of {@link ErrorDescription}s produced
+         *                 by the hint
+         * @return itself
+         * @throws AssertionError if the given warnings do not match the actual warnings
+         */
+        public HintOutput assertContainsWarnings(String... warnings) {
+            Set<String> goldenSet = new HashSet<String>(Arrays.asList(warnings));
+            List<ErrorDescription> errors = new ArrayList<ErrorDescription>(result);
+            Collections.sort (errors, ERRORS_COMPARATOR);
+            List<String> errorsNames = new LinkedList<String>();
+
+            errors = errors != null ? errors : Collections.<ErrorDescription>emptyList();
+
+            for (ErrorDescription d : errors) {
+                goldenSet.remove(d.toString());
+                errorsNames.add(d.toString());
+            }
+            
+            assertTrue("The warnings provided by the hint do not contain expected warnings. Provided warnings: " + errorsNames.toString(), goldenSet.isEmpty());
+
+            return this;
+        }
+
+        /**Assert that the hint(s) produced warnings do not include the given warnings. The provided strings
+         * should match {@code toString()} results of {@link ErrorDescription}s produced
+         * by the hint(s).
+         *
+         * @param warnings expected {@code toString()} results of {@link ErrorDescription}s produced
+         *                 by the hint
+         * @return itself
+         * @throws AssertionError if the given warnings do not match the actual warnings
+         */
+        public HintOutput assertNotContainsWarnings(String... warnings) {
+            Set<String> goldenSet = new HashSet<String>(Arrays.asList(warnings));
+            List<ErrorDescription> errors = new ArrayList<ErrorDescription>(result);
+            Collections.sort (errors, ERRORS_COMPARATOR);
+            List<String> errorsNames = new LinkedList<String>();
+
+            errors = errors != null ? errors : Collections.<ErrorDescription>emptyList();
+
+            boolean fail = false;
+            for (ErrorDescription d : errors) {
+                if (goldenSet.remove(d.getDescription()))
+                    fail = true;
+                errorsNames.add(d.toString());
+            }
+            
+            assertFalse("The warnings provided by the hint do not exclude expected warnings. Provided warnings: " + errorsNames.toString(), fail);
+
+            return this;
+        }
+
         /**Find a specific warning.
          *
          * @param warning the warning to find - must be equivalent to {@code toString()}
@@ -883,6 +950,31 @@ public class HintTest {
             assertEquals("The output code does not match the expected code.", code, realCode);
 
             return this;
+        }
+
+        /**Return code after the fix has been applied.
+         *
+         * @return the code after the fix has been applied
+         */
+        public String getOutput() throws Exception {
+            return getOutput("test/Test.java");
+        }
+
+        /**Return code after the fix has been applied.
+         *
+         * @param fileName file for which the code should be returned
+         * @return the code after the fix has been applied
+         */
+        public String getOutput(String fileName) throws Exception {
+            FileObject toCheck = sourceRoot.getFileObject(fileName);
+
+            assertNotNull(toCheck);
+
+            DataObject toCheckDO = DataObject.find(toCheck);
+            EditorCookie ec = toCheckDO.getLookup().lookup(EditorCookie.class);
+            Document toCheckDocument = ec.openDocument();
+
+            return toCheckDocument.getText(0, toCheckDocument.getLength());
         }
     }
 

@@ -39,158 +39,181 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.modules.java.hints.test.api.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class StringBuilderAppendTest extends TestBase {
+public class StringBuilderAppendTest extends NbTestCase {
 
     public StringBuilderAppendTest(String name) {
-        super(name, StringBuilderAppend.class);
+        super(name);
     }
 
     public void testStringBuilder() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    private void test(int a, int b) {\n" +
                        "        StringBuilder sb = new StringBuilder();\n" +
                        "        sb.append(\"a\" + \"b\" + a + \"c\" + b);\n" +
                        "    }\n" +
-                       "}\n",
-                       "4:18-4:41:verifier:String concatenation in StringBuilder.append",
-                       "FIX_StringBuilderAppend",
-                       ("package test;\n" +
-                        "public class Test {\n" +
-                        "    private void test(int a, int b) {\n" +
-                        "        StringBuilder sb = new StringBuilder();\n" +
-                        "        sb.append(\"a\" + \"b\").append(a).append(\"c\").append(b);\n" +
-                        "    }\n" +
-                        "}\n").replaceAll("[ \n\t]+", " "));
+                       "}\n")
+                .run(StringBuilderAppend.class)
+                .findWarning("4:18-4:41:verifier:String concatenation in StringBuilder.append")
+                .applyFix("FIX_StringBuilderAppend")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    private void test(int a, int b) {\n" +
+                              "        StringBuilder sb = new StringBuilder();\n" +
+                              "        sb.append(\"a\" + \"b\").append(a).append(\"c\").append(b);\n" +
+                              "    }\n" +
+                              "}\n");
     }
 
     public void testStringBuffer() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    private void test(int a, int b) {\n" +
                        "        StringBuffer sb = new StringBuffer();\n" +
                        "        sb.append(\"a\" + \"b\" + a + \"c\" + b);\n" +
                        "    }\n" +
-                       "}\n",
-                       "4:18-4:41:verifier:String concatenation in StringBuffer.append",
-                       "FIX_StringBuilderAppend",
-                       ("package test;\n" +
-                        "public class Test {\n" +
-                        "    private void test(int a, int b) {\n" +
-                        "        StringBuffer sb = new StringBuffer();\n" +
-                        "        sb.append(\"a\" + \"b\").append(a).append(\"c\").append(b);\n" +
-                        "    }\n" +
-                        "}\n").replaceAll("[ \n\t]+", " "));
+                       "}\n")
+                .run(StringBuilderAppend.class)
+                .findWarning("4:18-4:41:verifier:String concatenation in StringBuffer.append")
+                .applyFix("FIX_StringBuilderAppend")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    private void test(int a, int b) {\n" +
+                              "        StringBuffer sb = new StringBuffer();\n" +
+                              "        sb.append(\"a\" + \"b\").append(a).append(\"c\").append(b);\n" +
+                              "    }\n" +
+                              "}\n");
     }
 
     public void testParenthesised() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    private void test(int a, int b) {\n" +
                        "        StringBuffer sb = new StringBuffer();\n" +
                        "        sb.append((\"a\" + \"b\") + a + (\"c\" + CONST));\n" +
                        "    }\n" +
                        "    private static final String CONST = \"d\";\n" +
-                       "}\n",
-                       "4:18-4:49:verifier:String concatenation in StringBuffer.append",
-                       "FIX_StringBuilderAppend",
-                       ("package test;\n" +
-                        "public class Test {\n" +
-                        "    private void test(int a, int b) {\n" +
-                        "        StringBuffer sb = new StringBuffer();\n" +
-                        "        sb.append(\"a\" + \"b\").append(a).append(\"c\" + CONST);\n" +
-                        "    }\n" +
-                        "    private static final String CONST = \"d\";\n" +
-                        "}\n").replaceAll("[ \n\t]+", " "));
+                       "}\n")
+                .run(StringBuilderAppend.class)
+                .findWarning("4:18-4:49:verifier:String concatenation in StringBuffer.append")
+                .applyFix("FIX_StringBuilderAppend")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    private void test(int a, int b) {\n" +
+                              "        StringBuffer sb = new StringBuffer();\n" +
+                              "        sb.append(\"a\" + \"b\").append(a).append(\"c\" + CONST);\n" +
+                              "    }\n" +
+                              "    private static final String CONST = \"d\";\n" +
+                              "}\n");
     }
 
     public void testNoString() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private void test(int a, int b) {\n" +
-                            "        StringBuilder sb = new StringBuilder();\n" +
-                            "        sb.append(a + b);\n" +
-                            "    }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private void test(int a, int b) {\n" +
+                       "        StringBuilder sb = new StringBuilder();\n" +
+                       "        sb.append(a + b);\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(StringBuilderAppend.class)
+                .assertWarnings();
     }
 
     public void testMoreArgs() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private void test(int a, int b) {\n" +
-                            "        StringBuilder sb = new StringBuilder();\n" +
-                            "        sb.append(\"a\" + a + \"b\" + b, 1, 2);\n" +
-                            "    }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private void test(int a, int b) {\n" +
+                       "        StringBuilder sb = new StringBuilder();\n" +
+                       "        sb.append(\"a\" + a + \"b\" + b, 1, 2);\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(StringBuilderAppend.class)
+                .assertWarnings();
     }
 
     public void testOneCluster() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private void test(int a, int b) {\n" +
-                            "        StringBuilder sb = new StringBuilder();\n" +
-                            "        sb.append(\"a\" + \"b\");\n" +
-                            "    }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private void test(int a, int b) {\n" +
+                       "        StringBuilder sb = new StringBuilder();\n" +
+                       "        sb.append(\"a\" + \"b\");\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(StringBuilderAppend.class)
+                .assertWarnings();
     }
 
     public void testTrailingCluster() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    private void test(int a, int b) {\n" +
                        "        StringBuffer sb = new StringBuffer();\n" +
                        "        sb.append((\"a\" + \"b\") + a + \"c\");\n" +
                        "    }\n" +
                        "    private static final String CONST = \"d\";\n" +
-                       "}\n",
-                       "4:18-4:39:verifier:String concatenation in StringBuffer.append",
-                       "FIX_StringBuilderAppend",
-                       ("package test;\n" +
-                        "public class Test {\n" +
-                        "    private void test(int a, int b) {\n" +
-                        "        StringBuffer sb = new StringBuffer();\n" +
-                        "        sb.append(\"a\" + \"b\").append(a).append(\"c\");\n" +
-                        "    }\n" +
-                       "    private static final String CONST = \"d\";\n" +
-                        "}\n").replaceAll("[ \n\t]+", " "));
+                       "}\n")
+                .run(StringBuilderAppend.class)
+                .findWarning("4:18-4:39:verifier:String concatenation in StringBuffer.append")
+                .applyFix("FIX_StringBuilderAppend")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    private void test(int a, int b) {\n" +
+                              "        StringBuffer sb = new StringBuffer();\n" +
+                              "        sb.append(\"a\" + \"b\").append(a).append(\"c\");\n" +
+                              "    }\n" +
+                              "    private static final String CONST = \"d\";\n" +
+                              "}\n");
     }
 
     public void testNoConst() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    private void test(int a, int b) {\n" +
                        "        StringBuffer sb = new StringBuffer();\n" +
                        "        sb.append(\"a\" + CONST);\n" +
                        "    }\n" +
                        "    private static String CONST = \"d\";\n" +
-                       "}\n",
-                       "4:18-4:29:verifier:String concatenation in StringBuffer.append",
-                       "FIX_StringBuilderAppend",
-                       ("package test;\n" +
-                        "public class Test {\n" +
-                        "    private void test(int a, int b) {\n" +
-                        "        StringBuffer sb = new StringBuffer();\n" +
-                        "        sb.append(\"a\").append(CONST);\n" +
-                        "    }\n" +
-                        "    private static String CONST = \"d\";\n" +
-                        "}\n").replaceAll("[ \n\t]+", " "));
+                       "}\n")
+                .run(StringBuilderAppend.class)
+                .findWarning("4:18-4:29:verifier:String concatenation in StringBuffer.append")
+                .applyFix("FIX_StringBuilderAppend")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    private void test(int a, int b) {\n" +
+                              "        StringBuffer sb = new StringBuffer();\n" +
+                              "        sb.append(\"a\").append(CONST);\n" +
+                              "    }\n" +
+                              "    private static String CONST = \"d\";\n" +
+                              "}\n");
     }
-
 }

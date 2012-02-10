@@ -39,78 +39,89 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints.finalize;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.test.api.TestBase;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class FinalizeDoesNotCallSuperTest extends TestBase {
+public class FinalizeDoesNotCallSuperTest extends NbTestCase {
 
     public FinalizeDoesNotCallSuperTest(final String name) {
-        super (name, FinalizeDoesNotCallSuper.class);
+        super(name);
     }
 
     public void testFinalizeWithNoSuper() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    protected final void finalize() {\n" +
-                            "    }\n" +
-                            "}",
-                            "2:25-2:33:verifier:finalize() does not call super.finalize()");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    protected final void finalize() {\n" +
+                       "    }\n" +
+                       "}")
+                .run(FinalizeDoesNotCallSuper.class)
+                .assertWarnings("2:25-2:33:verifier:finalize() does not call super.finalize()");
     }
 
     public void testFinalizeWithSuper() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    protected final void finalize() {\n" +
-                            "        super.finalize();\n"+
-                            "    }\n" +
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    protected final void finalize() throws Throwable {\n" +
+                       "        super.finalize();\n" +
+                       "    }\n" +
+                       "}")
+                .run(FinalizeDoesNotCallSuper.class)
+                .assertWarnings();
     }
 
     public void testSuppressed() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "@SuppressWarnings(\"FinalizeDoesntCallSuperFinalize\")\n"+
-                            "public class Test {\n" +
-                            "    protected final void finalize() {\n" +
-                            "    }\n" +
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "@SuppressWarnings(\"FinalizeDoesntCallSuperFinalize\")\n" +
+                       "public class Test {\n" +
+                       "    protected final void finalize() {\n" +
+                       "    }\n" +
+                       "}")
+                .run(FinalizeDoesNotCallSuper.class)
+                .assertWarnings();
     }
 
     public void testFix() throws Exception {
-        performFixTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    protected final void finalize() {\n" +
-                            "        int a = 10;" +
-                            "    }\n" +
-                            "}",
-                            "2:25-2:33:verifier:finalize() does not call super.finalize()",
-                            "Add super.finalize()",
-                            ("package test;\n" +
-                            "public class Test {\n" +
-                            "    protected final void finalize() {\n" +
-                            "        super.finalize();" +
-                            "        int a = 10;" +
-                            "    }\n" +
-                            "}").replaceAll("[ \t\n]+", " "));
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    protected final void finalize() throws Throwable {\n" +
+                       "        int a = 10;" +
+                       "    }\n" +
+                       "}")
+                .run(FinalizeDoesNotCallSuper.class)
+                .findWarning("2:25-2:33:verifier:finalize() does not call super.finalize()")
+                .applyFix("Add super.finalize()")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    protected final void finalize() throws Throwable {\n" +
+                              "        super.finalize();" +
+                              "        int a = 10;" +
+                              "    }\n" +
+                              "}");
     }
 
     public void testBroken185456() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    protected abstract void finalize();\n" +
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    protected abstract void finalize();\n" +
+                       "}", false)
+                .run(FinalizeDoesNotCallSuper.class)
+                .assertWarnings();
     }
-
 }

@@ -106,10 +106,10 @@ public class AddUnderscores {
         return ErrorDescriptionFactory.forTree(ctx, tp, displayName, f);
     }
 
-    private static final String KEY_SIZE_BINARY = "size-binary";
-    private static final String KEY_SIZE_DECIMAL = "size-decimal";
-    private static final String KEY_SIZE_HEXADECIMAL = "size-hexadecimal";
-    private static final String KEY_ALSO_WITH_UNDERSCORES = "also-with-underscores";
+    public static final String KEY_SIZE_BINARY = "size-binary";
+    public static final String KEY_SIZE_DECIMAL = "size-decimal";
+    public static final String KEY_SIZE_HEXADECIMAL = "size-hexadecimal";
+    public static final String KEY_ALSO_WITH_UNDERSCORES = "also-with-underscores";
     
     static int getSizeForRadix(Preferences prefs, int radix) {
         String key;

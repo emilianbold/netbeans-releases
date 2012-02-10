@@ -65,7 +65,6 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
-import static org.junit.Assert.*;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.JavaDataLoader;

@@ -39,146 +39,165 @@
  *
  * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints.jackpot.hintsimpl;
 
-import org.netbeans.modules.java.hints.test.api.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class LoggerStringConcatTest extends TestBase {
+public class LoggerStringConcatTest extends NbTestCase {
 
     public LoggerStringConcatTest(String name) {
-        super(name, LoggerStringConcat.class);
+        super(name);
     }
 
     public void testSimpleLogMethod() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "import java.util.logging.Level;\n" +
                        "import java.util.logging.Logger;\n" +
                        "public class Test {\n" +
                        "    private void t(Logger l, int a, int b, int c) {\n" +
                        "        l.log(Level.SEVERE, \"a=\" + a + \", b=\" + b + \", c=\" + c);\n" +
                        "    }\n" +
-                       "}\n",
-                       "5:28-5:62:verifier:Inefficient use of string concatenation in logger",
-                       "MSG_LoggerStringConcat_fix",
-                      ("package test;\n" +
-                        "import java.util.logging.Level;\n" +
-                        "import java.util.logging.Logger;\n" +
-                        "public class Test {\n" +
-                        "    private void t(Logger l, int a, int b, int c) {\n" +
-                        "        l.log(Level.SEVERE, \"a={0}, b={1}, c={2}\", new Object[]{a, b, c});\n" +
-                        "    }\n" +
-                        "}\n").replaceAll("[ \t\n]+", " "));
+                       "}\n")
+                .run(LoggerStringConcat.class)
+                .findWarning("5:28-5:62:verifier:Inefficient use of string concatenation in logger")
+                .applyFix("MSG_LoggerStringConcat_fix")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import java.util.logging.Level;\n" +
+                              "import java.util.logging.Logger;\n" +
+                              "public class Test {\n" +
+                              "    private void t(Logger l, int a, int b, int c) {\n" +
+                              "        l.log(Level.SEVERE, \"a={0}, b={1}, c={2}\", new Object[]{a, b, c});\n" +
+                              "    }\n" +
+                              "}\n");
     }
 
     public void testSimpleOtherMethod() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "import java.util.logging.Level;\n" +
                        "import java.util.logging.Logger;\n" +
                        "public class Test {\n" +
                        "    private void t(Logger l, int a, int b, int c) {\n" +
                        "        l.severe(\"a=\" + a + \", b=\" + b + \", c=\" + c);\n" +
                        "    }\n" +
-                       "}\n",
-                       "5:17-5:51:verifier:Inefficient use of string concatenation in logger",
-                       "MSG_LoggerStringConcat_fix",
-                      ("package test;\n" +
-                        "import java.util.logging.Level;\n" +
-                        "import java.util.logging.Logger;\n" +
-                        "public class Test {\n" +
-                        "    private void t(Logger l, int a, int b, int c) {\n" +
-                        "        l.log(Level.SEVERE, \"a={0}, b={1}, c={2}\", new Object[]{a, b, c});\n" +
-                        "    }\n" +
-                        "}\n").replaceAll("[ \t\n]+", " "));
+                       "}\n")
+                .run(LoggerStringConcat.class)
+                .findWarning("5:17-5:51:verifier:Inefficient use of string concatenation in logger")
+                .applyFix("MSG_LoggerStringConcat_fix")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import java.util.logging.Level;\n" +
+                              "import java.util.logging.Logger;\n" +
+                              "public class Test {\n" +
+                              "    private void t(Logger l, int a, int b, int c) {\n" +
+                              "        l.log(Level.SEVERE, \"a={0}, b={1}, c={2}\", new Object[]{a, b, c});\n" +
+                              "    }\n" +
+                              "}\n");
     }
 
     public void testEscape1() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "import java.util.logging.Level;\n" +
                        "import java.util.logging.Logger;\n" +
                        "public class Test {\n" +
                        "    private void t(Logger l, int a, int b, int c) {\n" +
                        "        l.severe(\"a'=\" + a + \",' b'='\" + b + \", c=\" + c);\n" +
                        "    }\n" +
-                       "}\n",
-                       "5:17-5:55:verifier:Inefficient use of string concatenation in logger",
-                       "MSG_LoggerStringConcat_fix",
-                      ("package test;\n" +
-                        "import java.util.logging.Level;\n" +
-                        "import java.util.logging.Logger;\n" +
-                        "public class Test {\n" +
-                        "    private void t(Logger l, int a, int b, int c) {\n" +
-                        "        l.log(Level.SEVERE, \"a''={0},'' b''=''{1}, c={2}\", new Object[]{a, b, c});\n" +
-                        "    }\n" +
-                        "}\n").replaceAll("[ \t\n]+", " "));
+                       "}\n")
+                .run(LoggerStringConcat.class)
+                .findWarning("5:17-5:55:verifier:Inefficient use of string concatenation in logger")
+                .applyFix("MSG_LoggerStringConcat_fix")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import java.util.logging.Level;\n" +
+                              "import java.util.logging.Logger;\n" +
+                              "public class Test {\n" +
+                              "    private void t(Logger l, int a, int b, int c) {\n" +
+                              "        l.log(Level.SEVERE, \"a''={0},'' b''=''{1}, c={2}\", new Object[]{a, b, c});\n" +
+                              "    }\n" +
+                              "}\n");
     }
 
     public void testEscape2() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "import java.util.logging.Level;\n" +
                        "import java.util.logging.Logger;\n" +
                        "public class Test {\n" +
                        "    private void t(Logger l, int a, int b, int c) {\n" +
                        "        l.severe(\"a=${\" + a + \"}.\");\n" +
                        "    }\n" +
-                       "}\n",
-                       "5:17-5:34:verifier:Inefficient use of string concatenation in logger",
-                       "MSG_LoggerStringConcat_fix",
-                      ("package test;\n" +
-                        "import java.util.logging.Level;\n" +
-                        "import java.util.logging.Logger;\n" +
-                        "public class Test {\n" +
-                        "    private void t(Logger l, int a, int b, int c) {\n" +
-                        "        l.log(Level.SEVERE, \"a=$'{'{0}'}'.\", a);\n" +
-                        "    }\n" +
-                        "}\n").replaceAll("[ \t\n]+", " "));
+                       "}\n")
+                .run(LoggerStringConcat.class)
+                .findWarning("5:17-5:34:verifier:Inefficient use of string concatenation in logger")
+                .applyFix("MSG_LoggerStringConcat_fix")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import java.util.logging.Level;\n" +
+                              "import java.util.logging.Logger;\n" +
+                              "public class Test {\n" +
+                              "    private void t(Logger l, int a, int b, int c) {\n" +
+                              "        l.log(Level.SEVERE, \"a=$'{'{0}'}'.\", a);\n" +
+                              "    }\n" +
+                              "}\n");
     }
 
     public void testEscape3() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "import java.util.logging.Level;\n" +
                        "import java.util.logging.Logger;\n" +
                        "public class Test {\n" +
                        "    private void t(Logger l, int a, int b, int c) {\n" +
                        "        l.severe(\"a=\" + \", b='\" + b + \"'.\");\n" +
                        "    }\n" +
-                       "}\n",
-                       "5:17-5:42:verifier:Inefficient use of string concatenation in logger",
-                       "MSG_LoggerStringConcat_fix",
-                      ("package test;\n" +
-                        "import java.util.logging.Level;\n" +
-                        "import java.util.logging.Logger;\n" +
-                        "public class Test {\n" +
-                        "    private void t(Logger l, int a, int b, int c) {\n" +
-                        "        l.log(Level.SEVERE,\"a=\" + \", b=''{0}''.\", b);\n" +
-                        "    }\n" +
-                        "}\n").replaceAll("[ \t\n]+", " "));
+                       "}\n")
+                .run(LoggerStringConcat.class)
+                .findWarning("5:17-5:42:verifier:Inefficient use of string concatenation in logger")
+                .applyFix("MSG_LoggerStringConcat_fix")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import java.util.logging.Level;\n" +
+                              "import java.util.logging.Logger;\n" +
+                              "public class Test {\n" +
+                              "    private void t(Logger l, int a, int b, int c) {\n" +
+                              "        l.log(Level.SEVERE,\"a=\" + \", b=''{0}''.\", b);\n" +
+                              "    }\n" +
+                              "}\n");
     }
 
     public void testErroneous() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "import java.util.logging.Level;\n" +
-                            "import java.util.logging.Logger;\n" +
-                            "public class Test {\n" +
-                            "    private void t(Logger l, int a, int b, int c) {\n" +
-                            "        l.severe(\"a=\" + \", b='\" + );\n" +
-                            "    }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "import java.util.logging.Level;\n" +
+                       "import java.util.logging.Logger;\n" +
+                       "public class Test {\n" +
+                       "    private void t(Logger l, int a, int b, int c) {\n" +
+                       "        l.severe(\"a=\" + \", b='\" + );\n" +
+                       "    }\n" +
+                       "}\n", false)
+                .run(LoggerStringConcat.class)
+                .assertWarnings();
     }
 
     public void test186524() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "import java.util.logging.Level;\n" +
                        "import java.util.logging.Logger;\n" +
                        "public class Test {\n" +
@@ -186,60 +205,69 @@ public class LoggerStringConcatTest extends TestBase {
                        "    private void t(Logger l, int a, int b, int c) {\n" +
                        "        l.severe(A + \"=${\" + a + \"}.\");\n" +
                        "    }\n" +
-                       "}\n",
-                       "6:17-6:37:verifier:Inefficient use of string concatenation in logger",
-                       "MSG_LoggerStringConcat_fix",
-                      ("package test;\n" +
-                        "import java.util.logging.Level;\n" +
-                        "import java.util.logging.Logger;\n" +
-                        "public class Test {\n" +
-                       "    private static final String A = \"a\";\n" +
-                        "    private void t(Logger l, int a, int b, int c) {\n" +
-                        "        l.log(Level.SEVERE,A + \"=$'{'{0}'}'.\", a);\n" +
-                        "    }\n" +
-                        "}\n").replaceAll("[ \t\n]+", " "));
+                       "}\n")
+                .run(LoggerStringConcat.class)
+                .findWarning("6:17-6:37:verifier:Inefficient use of string concatenation in logger")
+                .applyFix("MSG_LoggerStringConcat_fix")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import java.util.logging.Level;\n" +
+                              "import java.util.logging.Logger;\n" +
+                              "public class Test {\n" +
+                              "    private static final String A = \"a\";\n" +
+                              "    private void t(Logger l, int a, int b, int c) {\n" +
+                              "        l.log(Level.SEVERE,A + \"=$'{'{0}'}'.\", a);\n" +
+                              "    }\n" +
+                              "}\n");
     }
 
     public void test181962() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "import java.util.logging.Level;\n" +
                        "import java.util.logging.Logger;\n" +
                        "public class Test {\n" +
                        "    private void t(Logger l, int a, int b, int c) {\n" +
                        "        l.severe(\"A=/\" + a + '/');\n" +
                        "    }\n" +
-                       "}\n",
-                       "5:17-5:32:verifier:Inefficient use of string concatenation in logger",
-                       "MSG_LoggerStringConcat_fix",
-                      ("package test;\n" +
-                        "import java.util.logging.Level;\n" +
-                        "import java.util.logging.Logger;\n" +
-                        "public class Test {\n" +
-                        "    private void t(Logger l, int a, int b, int c) {\n" +
-                        "        l.log(Level.SEVERE, \"A=/{0}/\", a);\n" +
-                        "    }\n" +
-                        "}\n").replaceAll("[ \t\n]+", " "));
+                       "}\n")
+                .run(LoggerStringConcat.class)
+                .findWarning("5:17-5:32:verifier:Inefficient use of string concatenation in logger")
+                .applyFix("MSG_LoggerStringConcat_fix")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import java.util.logging.Level;\n" +
+                              "import java.util.logging.Logger;\n" +
+                              "public class Test {\n" +
+                              "    private void t(Logger l, int a, int b, int c) {\n" +
+                              "        l.log(Level.SEVERE, \"A=/{0}/\", a);\n" +
+                              "    }\n" +
+                              "}\n");
     }
+
     public void test204634() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "import java.util.logging.Level;\n" +
                        "import java.util.logging.Logger;\n" +
                        "public class Test extends Logger {\n" +
                        "    private void t(Logger l, int a, int b, int c) {\n" +
                        "        severe(\"A=/\" + a + '/');\n" +
                        "    }\n" +
-                       "}\n",
-                       "5:15-5:30:verifier:Inefficient use of string concatenation in logger",
-                       "MSG_LoggerStringConcat_fix",
-                      ("package test;\n" +
-                        "import java.util.logging.Level;\n" +
-                        "import java.util.logging.Logger;\n" +
-                        "public class Test extends Logger {\n" +
-                        "    private void t(Logger l, int a, int b, int c) {\n" +
-                        "        log(Level.SEVERE, \"A=/{0}/\", a);\n" +
-                        "    }\n" +
-                        "}\n").replaceAll("[ \t\n]+", " "));
+                       "}\n", false)
+                . //missing constructor
+                run(LoggerStringConcat.class)
+                .findWarning("5:15-5:30:verifier:Inefficient use of string concatenation in logger")
+                .applyFix("MSG_LoggerStringConcat_fix")
+                .assertOutput("package test;\n" +
+                              "import java.util.logging.Level;\n" +
+                              "import java.util.logging.Logger;\n" +
+                              "public class Test extends Logger {\n" +
+                              "    private void t(Logger l, int a, int b, int c) {\n" +
+                              "        log(Level.SEVERE, \"A=/{0}/\", a);\n" +
+                              "    }\n" +
+                              "}\n");
     }
 }

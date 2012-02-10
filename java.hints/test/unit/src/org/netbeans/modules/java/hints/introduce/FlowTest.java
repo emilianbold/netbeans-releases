@@ -52,7 +52,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import javax.swing.text.Document;
-import static org.junit.Assert.*;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -60,14 +59,16 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.hints.spiimpl.TestUtilities;
 import org.netbeans.modules.java.hints.introduce.Flow.FlowResult;
+import org.netbeans.modules.java.hints.spiimpl.TestUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
-/**TODO: mostly tested indirectly through IntroduceHintTest, should be rather tested here
+/**
+ * TODO: mostly tested indirectly through IntroduceHintTest, should be rather
+ * tested here
  *
  * @author lahvac
  */
@@ -79,8 +80,10 @@ public class FlowTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
-        super.setUp();
+        SourceUtilsTestUtil
+                .prepareTest(new String[0], new Object[0]);
+        super
+                .setUp();
     }
 
     public void testSimple() throws Exception {
@@ -636,49 +639,69 @@ public class FlowTest extends NbTestCase {
                               "    private final java.util.concurrent.atomic.AtomicBoolean i = new java.util.concurrent.atomic.AtomicBoolean();\n" +
                               "}\n");
     }
-    
+
     private void prepareTest(String code, boolean allowErrors) throws Exception {
         clearWorkDir();
 
-        FileObject workFO = FileUtil.toFileObject(getWorkDir());
+        FileObject workFO = FileUtil
+                .toFileObject(getWorkDir());
 
         assertNotNull(workFO);
 
-        FileObject sourceRoot = workFO.createFolder("src");
-        FileObject buildRoot  = workFO.createFolder("build");
-        FileObject cache = workFO.createFolder("cache");
+        FileObject sourceRoot = workFO
+                .createFolder("src");
+        FileObject buildRoot = workFO
+                .createFolder("build");
+        FileObject cache = workFO
+                .createFolder("cache");
 
-        FileObject data = FileUtil.createData(sourceRoot, "test/Test.java");
+        FileObject data = FileUtil
+                .createData(sourceRoot, "test/Test.java");
 
-        org.netbeans.api.java.source.TestUtilities.copyStringToFile(FileUtil.toFile(data), code);
+        org.netbeans.api.java.source.TestUtilities
+                .copyStringToFile(FileUtil
+                .toFile(data), code);
 
-        data.refresh();
+        data
+                .refresh();
 
-        SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cache);
+        SourceUtilsTestUtil
+                .prepareTest(sourceRoot, buildRoot, cache);
 
-        DataObject od = DataObject.find(data);
-        EditorCookie ec = od.getCookie(EditorCookie.class);
+        DataObject od = DataObject
+                .find(data);
+        EditorCookie ec = od
+                .getCookie(EditorCookie.class);
 
         assertNotNull(ec);
 
-        doc = ec.openDocument();
+        doc = ec
+                .openDocument();
 
-        doc.putProperty(Language.class, JavaTokenId.language());
-        doc.putProperty("mimeType", "text/x-java");
+        doc
+                .putProperty(Language.class, JavaTokenId
+                .language());
+        doc
+                .putProperty("mimeType", "text/x-java");
 
-        JavaSource js = JavaSource.forFileObject(data);
+        JavaSource js = JavaSource
+                .forFileObject(data);
 
         assertNotNull(js);
 
-        info = SourceUtilsTestUtil.getCompilationInfo(js, Phase.RESOLVED);
+        info = SourceUtilsTestUtil
+                .getCompilationInfo(js, Phase.RESOLVED);
 
         assertNotNull(info);
 
         if (!allowErrors) {
-            assertTrue(info.getDiagnostics().toString(), info.getDiagnostics().isEmpty());
+            assertTrue(info
+                    .getDiagnostics()
+                    .toString(), info
+                    .getDiagnostics()
+                    .isEmpty());
         }
     }
-
     private CompilationInfo info;
     private Document doc;
 
@@ -689,50 +712,85 @@ public class FlowTest extends NbTestCase {
     private void performTest(String code, boolean allowErrors, String... assignments) throws Exception {
         int[] span = new int[1];
 
-        code = TestUtilities.detectOffsets(code, span, "`");
+        code = TestUtilities
+                .detectOffsets(code, span, "`");
 
         prepareTest(code, allowErrors);
 
-        FlowResult flow = Flow.assignmentsForUse(info, new AtomicBoolean());
-        TreePath sel = info.getTreeUtilities().pathFor(span[0]);
+        FlowResult flow = Flow
+                .assignmentsForUse(info, new AtomicBoolean());
+        TreePath sel = info
+                .getTreeUtilities()
+                .pathFor(span[0]);
 
         Set<String> actual = new HashSet<String>();
 
-        for (TreePath tp : flow.getAssignmentsForUse().get(sel.getLeaf())) {
+        for (TreePath tp : flow
+                .getAssignmentsForUse()
+                .get(sel
+                .getLeaf())) {
             if (tp == null) {
-                actual.add("<null>");
+                actual
+                        .add("<null>");
             } else {
-                actual.add(tp.getLeaf().toString());
+                actual
+                        .add(tp
+                        .getLeaf()
+                        .toString());
             }
         }
 
-        assertEquals(new HashSet<String>(Arrays.asList(assignments)), actual);
+        assertEquals(new HashSet<String>(Arrays
+                .asList(assignments)), actual);
     }
 
     private void performDeadBranchTest(String code) throws Exception {
-        List<String> splitted = new LinkedList<String>(Arrays.asList(code.split(Pattern.quote("|"))));
-        List<Integer> goldenSpans = new ArrayList<Integer>(splitted.size() - 1);
+        List<String> splitted = new LinkedList<String>(Arrays
+                .asList(code
+                .split(Pattern
+                .quote("|"))));
+        List<Integer> goldenSpans = new ArrayList<Integer>(splitted
+                .size() - 1);
         StringBuilder realCode = new StringBuilder();
 
-        realCode.append(splitted.remove(0));
+        realCode
+                .append(splitted
+                .remove(0));
 
         for (String s : splitted) {
-            goldenSpans.add(realCode.length());
-            realCode.append(s);
+            goldenSpans
+                    .add(realCode
+                    .length());
+            realCode
+                    .append(s);
         }
 
-        prepareTest(realCode.toString(), false);
+        prepareTest(realCode
+                .toString(), false);
 
-        FlowResult flow = Flow.assignmentsForUse(info, new AtomicBoolean());
+        FlowResult flow = Flow
+                .assignmentsForUse(info, new AtomicBoolean());
 
-        List<Integer> actual = new ArrayList<Integer>(2 * flow.getDeadBranches().size());
+        List<Integer> actual = new ArrayList<Integer>(2 * flow
+                .getDeadBranches()
+                .size());
 
-        for (Tree dead : flow.getDeadBranches()) {
-            actual.add((int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), dead));
-            actual.add((int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), dead));
+        for (Tree dead : flow
+                .getDeadBranches()) {
+            actual
+                    .add((int) info
+                    .getTrees()
+                    .getSourcePositions()
+                    .getStartPosition(info
+                    .getCompilationUnit(), dead));
+            actual
+                    .add((int) info
+                    .getTrees()
+                    .getSourcePositions()
+                    .getEndPosition(info
+                    .getCompilationUnit(), dead));
         }
 
         assertEquals(goldenSpans, actual);
     }
-
 }

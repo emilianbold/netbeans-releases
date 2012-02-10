@@ -31,11 +31,10 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
-import org.netbeans.spi.java.hints.support.FixFactory;
+import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
-import static org.junit.Assert.*;
 
 /**
  * The following shell script was used to generate the code snippets

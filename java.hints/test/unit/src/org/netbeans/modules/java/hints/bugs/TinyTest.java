@@ -39,149 +39,167 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints.bugs;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.test.api.TestBase;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class TinyTest extends TestBase {
+public class TinyTest extends NbTestCase {
 
     public TinyTest(String name) {
-        super(name, Tiny.class);
+        super(name);
     }
-    
+
     public void testPositive1() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    public void test(String[] args) {\n" +
                        "        \"a\".replaceAll(\".\", \"/\");\n" +
                        "    }\n" +
-                       "}\n",
-                       "3:23-3:26:verifier:ERR_string-replace-all-dot",
-                       "FIX_string-replace-all-dot",
-                       ("package test;\n" +
-                        "public class Test {\n" +
-                        "    public void test(String[] args) {\n" +
-                        "        \"a\".replaceAll(\"\\\\.\", \"/\");\n" +
-                        "     }\n" +
-                        "}\n").replaceAll("[\t\n ]+", " "));
+                       "}\n")
+                .run(Tiny.class)
+                .findWarning("3:23-3:26:verifier:ERR_string-replace-all-dot")
+                .applyFix("FIX_string-replace-all-dot")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public void test(String[] args) {\n" +
+                              "        \"a\".replaceAll(\"\\\\.\", \"/\");\n" +
+                              "     }\n" +
+                              "}\n");
     }
 
     public void testNegative1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public void test(String[] args) {\n" +
-                            "        \"a\".replaceAll(\",\", \"/\");\n" +
-                            "    }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(String[] args) {\n" +
+                       "        \"a\".replaceAll(\",\", \"/\");\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(Tiny.class)
+                .assertWarnings();
     }
 
     public void testIgnoredNewObject1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public void test(String[] args) {\n" +
-                            "        new Object();\n" +
-                            "    }\n" +
-                            "}\n",
-                            "3:8-3:21:verifier:new Object");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(String[] args) {\n" +
+                       "        new Object();\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(Tiny.class)
+                .assertWarnings("3:8-3:21:verifier:new Object");
     }
 
     public void testIgnoredNewObject2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "        public static void test() {\n" +
-                            "            new TT().new T(1, 3);\n" +
-                            "        }\n" +
-                            "        private class T {\n" +
-                            "            public T(int i, int j) {}" +
-                            "        }\n" +
-                            "}\n",
-                            "3:12-3:33:verifier:new Object");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "        public static void test() {\n" +
+                       "            new Test().new T(1, 3);\n" +
+                       "        }\n" +
+                       "        private class T {\n" +
+                       "            public T(int i, int j) {}" +
+                       "        }\n" +
+                       "}\n")
+                .run(Tiny.class)
+                .assertWarnings("3:12-3:35:verifier:new Object");
     }
 
     public void testSystemArrayCopy() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "        public static void test(Object o1, Object[] o2, Object o3) {\n" +
-                            "            System.arraycopy(o1, 0, o2, 0, 1);\n" +
-                            "            System.arraycopy(o2, 0, o3, 0, 1);\n" +
-                            "            System.arraycopy(o2, 0 - 1, o2, 0 + 2 - 4, -1);\n" +
-                            "        }\n" +
-                            "}\n",
-                            "3:29-3:31:verifier:...o1 not an instance of an array type",
-                            "4:36-4:38:verifier:...o3 not an instance of an array type",
-                            "5:33-5:38:verifier:0-1 is negative",
-                            "5:44-5:53:verifier:0+2-4 is negative",
-                            "5:55-5:57:verifier:-1 is negative");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "        public static void test(Object o1, Object[] o2, Object o3) {\n" +
+                       "            System.arraycopy(o1, 0, o2, 0, 1);\n" +
+                       "            System.arraycopy(o2, 0, o3, 0, 1);\n" +
+                       "            System.arraycopy(o2, 0 - 1, o2, 0 + 2 - 4, -1);\n" +
+                       "        }\n" +
+                       "}\n")
+                .run(Tiny.class)
+                .assertWarnings("3:29-3:31:verifier:...o1 not an instance of an array type",
+                                "4:36-4:38:verifier:...o3 not an instance of an array type",
+                                "5:33-5:38:verifier:0-1 is negative",
+                                "5:44-5:53:verifier:0+2-4 is negative",
+                                "5:55-5:57:verifier:-1 is negative");
     }
 
     public void testEqualsNull() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    public boolean test(String arg) {\n" +
                        "        return arg.equals(null);\n" +
                        "    }\n" +
-                       "}\n",
-                       "3:15-3:31:verifier:ERR_equalsNull",
-                       "FIX_equalsNull",
-                       ("package test;\n" +
-                        "public class Test {\n" +
-                        "    public boolean test(String arg) {\n" +
-                        "        return arg == null;\n" +
-                        "    }\n" +
-                        "}\n").replaceAll("[\t\n ]+", " "));
+                       "}\n")
+                .run(Tiny.class)
+                .findWarning("3:15-3:31:verifier:ERR_equalsNull")
+                .applyFix("FIX_equalsNull")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public boolean test(String arg) {\n" +
+                              "        return arg == null;\n" +
+                              "    }\n" +
+                              "}\n");
     }
 
     public void testResultSet1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public Object test(java.sql.ResultSet set) {\n" +
-                            "        return set.getBoolean(0);\n" +
-                            "    }\n" +
-                            "}\n",
-                            "3:30-3:31:verifier:ERR_ResultSetZero");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public Object test(java.sql.ResultSet set) throws java.sql.SQLException{\n" +
+                       "        return set.getBoolean(0);\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(Tiny.class)
+                .assertWarnings("3:30-3:31:verifier:ERR_ResultSetZero");
     }
 
     public void testResultSet2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public Object test(R set) {\n" +
-                            "        return set.getBoolean(0);\n" +
-                            "    }" +
-                            "    private interface R extends java.sql.ResultSet {" +
-                            "        public boolean getBoolean(int i);" +
-                            "    }\n" +
-                            "}\n",
-                            "3:30-3:31:verifier:ERR_ResultSetZero");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public Object test(R set) {\n" +
+                       "        return set.getBoolean(0);\n" +
+                       "    }" +
+                       "    private interface R extends java.sql.ResultSet {" +
+                       "        public boolean getBoolean(int i);" +
+                       "    }\n" +
+                       "}\n")
+                .run(Tiny.class)
+                .assertWarnings("3:30-3:31:verifier:ERR_ResultSetZero");
     }
 
     public void testResultSet180027() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public Object test(R set, int i) {\n" +
-                            "        set.getBoolean(0);\n" +
-                            "        return set.getBoolean(i + 1);\n" +
-                            "    }" +
-                            "    private interface R extends java.sql.ResultSet {" +
-                            "        public boolean getBoolean(int i);" +
-                            "    }\n" +
-                            "}\n",
-                            "3:23-3:24:verifier:ERR_ResultSetZero");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public Object test(R set, int i) {\n" +
+                       "        set.getBoolean(0);\n" +
+                       "        return set.getBoolean(i + 1);\n" +
+                       "    }" +
+                       "    private interface R extends java.sql.ResultSet {" +
+                       "        public boolean getBoolean(int i);" +
+                       "    }\n" +
+                       "}\n")
+                .run(Tiny.class)
+                .assertWarnings("3:23-3:24:verifier:ERR_ResultSetZero");
     }
-
 }

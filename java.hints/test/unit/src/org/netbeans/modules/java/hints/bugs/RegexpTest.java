@@ -39,30 +39,31 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints.bugs;
 
-import org.netbeans.modules.java.hints.test.api.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class RegexpTest extends TestBase {
+public class RegexpTest extends NbTestCase {
 
     public RegexpTest(String name) {
-        super(name, Regexp.class);
+        super(name);
     }
 
     public void testSimple() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    {\n" +
-                            "        java.util.regex.Pattern.compile(\"(\");\n" +
-                            "    }\n" +
-                            "}\n",
-                            "3:40-3:43:verifier:Invalid regular expression");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    {\n" +
+                       "        java.util.regex.Pattern.compile(\"(\");\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(Regexp.class)
+                .assertWarnings("3:40-3:43:verifier:Invalid regular expression");
     }
-
 }

@@ -39,68 +39,69 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints;
 
 import org.junit.Test;
-import org.netbeans.modules.java.hints.test.api.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Jancura
  */
-public class SystemOutTest extends TestBase {
+public class SystemOutTest extends NbTestCase {
 
-    public SystemOutTest (String name) {
-        super (name, SystemOut.class);
+    public SystemOutTest(String name) {
+        super(name);
     }
 
     @Test
-    public void test1 () throws Exception {
-        performFixTest (
-            "test/Test.java",
-            "package test;\n" +
-            "class Test {\n" +
-            "    void test () {\n" +
-            "        System.out.flush ();\n" +
-            "    }\n" +
-            "}",
-            "3:15-3:18:verifier:Uses of System.out or System.err are often temporary debugging statements.",
-            "MSG_SystemOut_fix",
-            (
+    public void test1() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    void test () {\n" +
+                       "        System.out.flush ();\n" +
+                       "    }\n" +
+                       "}")
+                .run(SystemOut.class)
+                .findWarning("3:15-3:18:verifier:Uses of System.out or System.err are often temporary debugging statements.")
+                .applyFix("MSG_SystemOut_fix")
+                .assertCompilable()
+                .assertOutput(
                 "package test;\n" +
                 "class Test {\n" +
                 "    void test () {\n" +
                 "    }\n" +
-                "}"
-            ).replaceAll ("[ \t\n]+", " ")
-        );
+                "}");
     }
 
     @Test
-    public void test2 () throws Exception {
-        performFixTest (
-            "test/Test.java",
-            "package test;\n" +
-            "class Test {\n" +
-            "    void test () {\n" +
-            "        System.err.println ();\n" +
-            "    }\n" +
-            "}",
-            "3:15-3:18:verifier:Uses of System.out or System.err are often temporary debugging statements.",
-            "MSG_SystemOut_fix",
-            (
+    public void test2() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    void test () {\n" +
+                       "        System.err.println ();\n" +
+                       "    }\n" +
+                       "}")
+                .run(SystemOut.class)
+                .findWarning("3:15-3:18:verifier:Uses of System.out or System.err are often temporary debugging statements.")
+                .applyFix("MSG_SystemOut_fix")
+                .assertCompilable()
+                .assertOutput(
                 "package test;\n" +
                 "class Test {\n" +
                 "    void test () {\n" +
                 "    }\n" +
-                "}"
-            ).replaceAll ("[ \t\n]+", " ")
-        );
+                "}");
     }
-    
+
     static {
-        NbBundle.setBranding ("test");
+        NbBundle
+                .setBranding("test");
     }
 }

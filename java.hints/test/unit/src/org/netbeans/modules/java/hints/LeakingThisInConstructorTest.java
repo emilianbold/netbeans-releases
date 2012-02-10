@@ -39,83 +39,100 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.modules.java.hints.test.api.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author David Strupl
  */
-public class LeakingThisInConstructorTest extends TestBase {
+public class LeakingThisInConstructorTest extends NbTestCase {
 
     public LeakingThisInConstructorTest(String name) {
-        super(name, LeakingThisInConstructor.class);
+        super(name);
     }
 
     public void testDoNotReportMemberSelect() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public Test() { System.out.println(this.toString()); }\n" +
-                            "}"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public Test() { System.out.println(this.toString()); }\n" +
+                       "}")
+                .run(LeakingThisInConstructor.class)
+                .assertWarnings();
     }
+
     public void testDoNotReportAssignment() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private boolean a;\n" +
-                            "    public Test() { this.a = true; }\n" +
-                            "}"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private boolean a;\n" +
+                       "    public Test() { this.a = true; }\n" +
+                       "}")
+                .run(LeakingThisInConstructor.class)
+                .assertWarnings();
     }
+
     public void testReportIt() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public Test() { System.out.println(this); }\n" +
-                            "}",
-                            "2:39-2:43:verifier:Leaking this in constructor"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public Test() { System.out.println(this); }\n" +
+                       "}")
+                .run(LeakingThisInConstructor.class)
+                .assertWarnings("2:39-2:43:verifier:Leaking this in constructor");
     }
+
     public void testReportInAssignment() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public Test() { B.x = this; }\n" +
-                            "}\n" +
-                            "class B { public static Object x; }",
-                            "2:20-2:30:verifier:Leaking this in constructor"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public Test() { B.x = this; }\n" +
+                       "}\n" +
+                       "class B { public static Object x; }")
+                .run(LeakingThisInConstructor.class)
+                .assertWarnings("2:20-2:30:verifier:Leaking this in constructor");
     }
 
     public void testDoNotReportAssignmentInMethod() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public void foo() { B.x = this; }\n" +
-                            "}\n" +
-                            "class B { public static Object x; }"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void foo() { B.x = this; }\n" +
+                       "}\n" +
+                       "class B { public static Object x; }")
+                .run(LeakingThisInConstructor.class)
+                .assertWarnings();
     }
 
     public void testReportInAssignmentCheckForThis1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public Test(int a) { B.x = a; }\n" +
-                            "}\n" +
-                            "class B { public static Object x; }");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public Test(int a) { B.x = a; }\n" +
+                       "}\n" +
+                       "class B { public static Object x; }")
+                .run(LeakingThisInConstructor.class)
+                .assertWarnings();
     }
 
     public void testReportInAssignmentCheckForThis2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public Test() { B.x = B.y; }\n" +
-                            "}\n" +
-                            "class B { public static Object x; public static Object y; }");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public Test() { B.x = B.y; }\n" +
+                       "}\n" +
+                       "class B { public static Object x; public static Object y; }")
+                .run(LeakingThisInConstructor.class)
+                .assertWarnings();
     }
 }

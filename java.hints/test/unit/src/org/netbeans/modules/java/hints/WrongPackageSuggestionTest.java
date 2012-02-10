@@ -54,7 +54,6 @@ import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.Hint.Severity;
-import org.netbeans.spi.java.hints.Hint.Severity;
 
 /**
  *

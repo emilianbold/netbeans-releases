@@ -39,94 +39,113 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.java.hints.test.api.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author David Strupl
  */
-public class OverridableMethodCallInConstructorTest extends TestBase {
+public class OverridableMethodCallInConstructorTest extends NbTestCase {
 
     public OverridableMethodCallInConstructorTest(String name) {
-        super(name, OverridableMethodCallInConstructor.class);
+        super(name);
     }
 
     public void testDoNotReportPrivateCall() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public Test() { foo(); }\n" +
-                            "    private void foo() { } \n" +
-                            "}"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public Test() { foo(); }\n" +
+                       "    private void foo() { } \n" +
+                       "}")
+                .run(OverridableMethodCallInConstructor.class)
+                .assertWarnings();
     }
+
     public void testReportPackagePrivateCall() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public Test() { foo(); }\n" +
-                            "    void foo() { } \n" +
-                            "}",
-                            "2:20-2:23:verifier:Overridable method call in constructor"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public Test() { foo(); }\n" +
+                       "    void foo() { } \n" +
+                       "}")
+                .run(OverridableMethodCallInConstructor.class)
+                .assertWarnings("2:20-2:23:verifier:Overridable method call in constructor");
     }
+
     public void testReportPublicCall() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public Test() { foo(); }\n" +
-                            "    public void foo() { } \n" +
-                            "}",
-                            "2:20-2:23:verifier:Overridable method call in constructor"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public Test() { foo(); }\n" +
+                       "    public void foo() { } \n" +
+                       "}")
+                .run(OverridableMethodCallInConstructor.class)
+                .assertWarnings("2:20-2:23:verifier:Overridable method call in constructor");
     }
+
     public void testDoNotReportFinalCall() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public Test() { foo(); }\n" +
-                            "    public final void foo() { } \n" +
-                            "}"                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public Test() { foo(); }\n" +
+                       "    public final void foo() { } \n" +
+                       "}")
+                .run(OverridableMethodCallInConstructor.class)
+                .assertWarnings();
     }
+
     public void testDoNotReportStaticCall() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public Test() { foo(); }\n" +
-                            "    static void foo() { } \n" +
-                            "}"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public Test() { foo(); }\n" +
+                       "    static void foo() { } \n" +
+                       "}")
+                .run(OverridableMethodCallInConstructor.class)
+                .assertWarnings();
     }
+
     public void testDoNotReportOnFinalClass() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public final class Test {\n" +
-                            "    public Test() { foo(); }\n" +
-                            "    public void foo() { } \n" +
-                            "}"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public final class Test {\n" +
+                       "    public Test() { foo(); }\n" +
+                       "    public void foo() { } \n" +
+                       "}")
+                .run(OverridableMethodCallInConstructor.class)
+                .assertWarnings();
     }
+
     public void testDoNotReportForeignClassMethodInvocations() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public Test() { new Object().toString() }\n" +
-                            "}"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public Test() { new Object().toString(); }\n" +
+                       "}")
+                .run(OverridableMethodCallInConstructor.class)
+                .assertWarnings();
     }
-    
+
     public void testDoNotReportForeignObjectMethodInvocations() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public Test() { new Test().foo() }\n" +
-                            "    public void foo() { } \n" +
-                            "}"
-                            );
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public Test() { new Test().foo(); }\n" +
+                       "    public void foo() { } \n" +
+                       "}")
+                .run(OverridableMethodCallInConstructor.class)
+                .assertWarnings();
     }
-    
 }

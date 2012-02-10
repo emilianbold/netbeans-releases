@@ -39,35 +39,42 @@
  * 
  * Portions Copyrighted 2007-2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.modules.java.hints.test.api.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class SyncOnNonFinalTest extends TestBase {
-    
+public class SyncOnNonFinalTest extends NbTestCase {
+
     public SyncOnNonFinalTest(String testName) {
-        super(testName, SyncOnNonFinal.class);
+        super(testName);
     }
 
     public void testSimple1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test; public class Test {private Object o; private void t() {synchronized(o) {}}}",
-                            "0:81-0:84:verifier:Synchronization on non-final field");
+        HintTest
+                .create()
+                .input("package test; public class Test {private Object o; private void t() {synchronized(o) {}}}")
+                .run(SyncOnNonFinal.class)
+                .assertWarnings("0:81-0:84:verifier:Synchronization on non-final field");
     }
-    
+
     public void testSimple2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test; public class Test {private final Object o; private void t() {synchronized(o) {}}}");
+        HintTest
+                .create()
+                .input("package test; public class Test {private final Object o = new Object(); private void t() {synchronized(o) {}}}")
+                .run(SyncOnNonFinal.class)
+                .assertWarnings();
     }
-    
+
     public void testSimple3() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test; public class Test {private void t() {Object o = null; synchronized(o) {}}}");
+        HintTest
+                .create()
+                .input("package test; public class Test {private void t() {Object o = null; synchronized(o) {}}}")
+                .run(SyncOnNonFinal.class)
+                .assertWarnings();
     }
-    
 }

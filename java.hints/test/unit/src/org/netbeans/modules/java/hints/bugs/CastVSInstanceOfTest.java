@@ -39,75 +39,83 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints.bugs;
 
-import org.netbeans.modules.java.hints.test.api.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class CastVSInstanceOfTest extends TestBase {
+public class CastVSInstanceOfTest extends NbTestCase {
 
     public CastVSInstanceOfTest(String name) {
-        super(name, CastVSInstanceOf.class);
+        super(name);
     }
 
     public void testSimple1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "import java.util.List;\n" +
-                            "public class Test {\n" +
-                            "    private void test(Object o) {\n" +
-                            "        if (o instanceof List) {\n" +
-                            "            String str = (String) o;\n" +
-                            "        }\n" +
-                            "    }\n" +
-                            "}\n",
-                            "5:26-5:32:verifier:CastVSInstanceOf");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "import java.util.List;\n" +
+                       "public class Test {\n" +
+                       "    private void test(Object o) {\n" +
+                       "        if (o instanceof List) {\n" +
+                       "            String str = (String) o;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(CastVSInstanceOf.class)
+                .assertWarnings("5:26-5:32:verifier:CastVSInstanceOf");
     }
 
     public void testSimple2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "import java.util.Collection;\n" +
-                            "import java.util.List;\n" +
-                            "public class Test {\n" +
-                            "    private void test(Object o) {\n" +
-                            "        if (o instanceof List) {\n" +
-                            "            Collection<String> str = (Collection<String>) o;\n" +
-                            "        }\n" +
-                            "    }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "import java.util.Collection;\n" +
+                       "import java.util.List;\n" +
+                       "public class Test {\n" +
+                       "    private void test(Object o) {\n" +
+                       "        if (o instanceof List) {\n" +
+                       "            Collection<String> str = (Collection<String>) o;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(CastVSInstanceOf.class)
+                .assertWarnings();
     }
 
     public void testSimple3() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "import java.util.List;\n" +
-                            "public class Test {\n" +
-                            "    private void test(Object o) {\n" +
-                            "        if (o instanceof List) {\n" +
-                            "            final String str = (String) o;\n" +
-                            "        }\n" +
-                            "    }\n" +
-                            "}\n",
-                            "5:32-5:38:verifier:CastVSInstanceOf");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "import java.util.List;\n" +
+                       "public class Test {\n" +
+                       "    private void test(Object o) {\n" +
+                       "        if (o instanceof List) {\n" +
+                       "            final String str = (String) o;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(CastVSInstanceOf.class)
+                .assertWarnings("5:32-5:38:verifier:CastVSInstanceOf");
     }
 
     public void testSimple4() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "import java.util.List;\n" +
-                            "public class Test {\n" +
-                            "    private void test(String str, Object o) {\n" +
-                            "        if (o instanceof List) {\n" +
-                            "            str = (String) o;\n" +
-                            "        }\n" +
-                            "    }\n" +
-                            "}\n",
-                            "5:19-5:25:verifier:CastVSInstanceOf");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "import java.util.List;\n" +
+                       "public class Test {\n" +
+                       "    private void test(String str, Object o) {\n" +
+                       "        if (o instanceof List) {\n" +
+                       "            str = (String) o;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(CastVSInstanceOf.class)
+                .assertWarnings("5:19-5:25:verifier:CastVSInstanceOf");
     }
-
 }

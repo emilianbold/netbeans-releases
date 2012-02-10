@@ -92,7 +92,7 @@ public class ExpandEnhancedForLoop {
         TreePath tp = ctx.getPath();
         EnhancedForLoopTree efl = (EnhancedForLoopTree) tp.getLeaf();
         long statementStart = ctx.getInfo().getTrees().getSourcePositions().getStartPosition(ctx.getInfo().getCompilationUnit(), efl.getStatement());
-        int caret = CaretAwareJavaSourceTaskFactory.getLastPosition(ctx.getInfo().getFileObject());
+        int caret = ctx.getCaretLocation();
 
         if (caret >= statementStart) {
             return null;

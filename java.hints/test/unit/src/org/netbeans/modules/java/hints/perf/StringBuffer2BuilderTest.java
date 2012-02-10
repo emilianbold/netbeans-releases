@@ -39,26 +39,25 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints.perf;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.test.api.TestBase;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class StringBuffer2BuilderTest extends TestBase {
+public class StringBuffer2BuilderTest extends NbTestCase {
 
     public StringBuffer2BuilderTest(String name) {
-        super(name, StringBuffer2Builder.class);
+        super(name);
     }
 
     public void testSimple1() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "import java.util.List;" +
                        "public class Test {\n" +
                        "     private String test(List l) {\n" +
@@ -66,23 +65,26 @@ public class StringBuffer2BuilderTest extends TestBase {
                        "         buf.append(l.get(0));\n" +
                        "         return buf.toString();\n" +
                        "     }\n" +
-                       "}\n",
-                       "3:9-3:21:verifier:StringBuffer2Builder",
-                       "=>StringBuilder",
-                       ("package test;\n" +
-                       "import java.util.List;" +
-                       "public class Test {\n" +
-                       "     private String test(List l) {\n" +
-                       "         StringBuilder buf = new StringBuilder();\n" +
-                       "         buf.append(l.get(0));\n" +
-                       "         return buf.toString();\n" +
-                       "     }\n" +
-                        "}\n").replaceAll("[\t\n ]+", " "));
+                       "}\n")
+                .run(StringBuffer2Builder.class)
+                .findWarning("3:9-3:21:verifier:StringBuffer2Builder")
+                .applyFix("=>StringBuilder")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import java.util.List;" +
+                              "public class Test {\n" +
+                              "     private String test(List l) {\n" +
+                              "         StringBuilder buf = new StringBuilder();\n" +
+                              "         buf.append(l.get(0));\n" +
+                              "         return buf.toString();\n" +
+                              "     }\n" +
+                              "}\n");
     }
 
     public void testSimple2() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "import java.util.List;" +
                        "public class Test {\n" +
                        "     private String test(List l) {\n" +
@@ -90,47 +92,54 @@ public class StringBuffer2BuilderTest extends TestBase {
                        "         buf.append(l.get(0));\n" +
                        "         return buf.toString();\n" +
                        "     }\n" +
-                       "}\n",
-                       "3:9-3:21:verifier:StringBuffer2Builder",
-                       "=>StringBuilder",
-                       ("package test;\n" +
-                       "import java.util.List;" +
-                       "public class Test {\n" +
-                       "     private String test(List l) {\n" +
-                       "         StringBuilder buf = new StringBuilder(12);\n" +
-                       "         buf.append(l.get(0));\n" +
-                       "         return buf.toString();\n" +
-                       "     }\n" +
-                        "}\n").replaceAll("[\t\n ]+", " "));
+                       "}\n")
+                .run(StringBuffer2Builder.class)
+                .findWarning("3:9-3:21:verifier:StringBuffer2Builder")
+                .applyFix("=>StringBuilder")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import java.util.List;" +
+                              "public class Test {\n" +
+                              "     private String test(List l) {\n" +
+                              "         StringBuilder buf = new StringBuilder(12);\n" +
+                              "         buf.append(l.get(0));\n" +
+                              "         return buf.toString();\n" +
+                              "     }\n" +
+                              "}\n");
     }
 
     public void testSimple3() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "import java.util.List;" +
-                            "public class Test {\n" +
-                            "     private String test(List l) {\n" +
-                            "         StringBuffer buf = new StringBuffer();\n" +
-                            "         test(buf);\n" +
-                            "         return buf.toString();\n" +
-                            "     }\n" +
-                            "     private void test(StringBuffer sb) {\n" +
-                            "     }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "import java.util.List;" +
+                       "public class Test {\n" +
+                       "     private String test(List l) {\n" +
+                       "         StringBuffer buf = new StringBuffer();\n" +
+                       "         test(buf);\n" +
+                       "         return buf.toString();\n" +
+                       "     }\n" +
+                       "     private void test(StringBuffer sb) {\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(StringBuffer2Builder.class)
+                .assertWarnings();
     }
 
     public void testSimple4() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "import java.util.List;" +
-                            "public class Test {" +
-                            "     private StringBuffer sb;\n" +
-                            "     private String test(List l) {\n" +
-                            "         StringBuffer buf = new StringBuffer();\n" +
-                            "         sb = buf;\n" +
-                            "         return buf.toString();\n" +
-                            "     }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "import java.util.List;" +
+                       "public class Test {" +
+                       "     private StringBuffer sb;\n" +
+                       "     private String test(List l) {\n" +
+                       "         StringBuffer buf = new StringBuffer();\n" +
+                       "         sb = buf;\n" +
+                       "         return buf.toString();\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(StringBuffer2Builder.class)
+                .assertWarnings();
     }
-
 }

@@ -39,117 +39,134 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints;
 
 import org.junit.Test;
-import org.netbeans.modules.java.hints.test.api.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author vita
  */
-public class LoggerNotStaticFinalTest extends TestBase {
+public class LoggerNotStaticFinalTest extends NbTestCase {
 
     public LoggerNotStaticFinalTest(String name) {
-        super(name, LoggerNotStaticFinal.class);
+        super(name);
     }
 
     @Test
     public void testStaticMissing() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private final java.util.logging.Logger LOG = null;\n" +
-                            "}",
-                            "2:43-2:46:verifier:The logger declaration field LOG should be static and final");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private final java.util.logging.Logger LOG = null;\n" +
+                       "}")
+                .run(LoggerNotStaticFinal.class)
+                .assertWarnings("2:43-2:46:verifier:The logger declaration field LOG should be static and final");
     }
 
     @Test
     public void testStaticMissingFix() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    private final java.util.logging.Logger LOG = null;\n" +
-                       "}",
-                       "2:43-2:46:verifier:The logger declaration field LOG should be static and final",
-                       "MSG_LoggerNotStaticFinal_checkLoggerDeclaration_fix:LOG",
-                       ("package test;\n" +
-                       "public class Test {\n" +
-                       "    private static final java.util.logging.Logger LOG = null;\n" +
-                       "}").replaceAll("[ \t\n]+", " ")
-                       );
+                       "}")
+                .run(LoggerNotStaticFinal.class)
+                .findWarning("2:43-2:46:verifier:The logger declaration field LOG should be static and final")
+                .applyFix("MSG_LoggerNotStaticFinal_checkLoggerDeclaration_fix:LOG")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    private static final java.util.logging.Logger LOG = null;\n" +
+                              "}");
     }
 
     @Test
     public void testFinalMissing() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private static java.util.logging.Logger LOG = null;\n" +
-                            "}",
-                            "2:44-2:47:verifier:The logger declaration field LOG should be static and final");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private static java.util.logging.Logger LOG = null;\n" +
+                       "}")
+                .run(LoggerNotStaticFinal.class)
+                .assertWarnings("2:44-2:47:verifier:The logger declaration field LOG should be static and final");
     }
 
     @Test
     public void testFinalMissingFix() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    private static java.util.logging.Logger LOG = null;\n" +
-                       "}",
-                       "2:44-2:47:verifier:The logger declaration field LOG should be static and final",
-                       "MSG_LoggerNotStaticFinal_checkLoggerDeclaration_fix:LOG",
-                       ("package test;\n" +
-                       "public class Test {\n" +
-                       "    private static final java.util.logging.Logger LOG = null;\n" +
-                       "}").replaceAll("[ \t\n]+", " ")
-                       );
+                       "}")
+                .run(LoggerNotStaticFinal.class)
+                .findWarning("2:44-2:47:verifier:The logger declaration field LOG should be static and final")
+                .applyFix("MSG_LoggerNotStaticFinal_checkLoggerDeclaration_fix:LOG")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    private static final java.util.logging.Logger LOG = null;\n" +
+                              "}");
     }
 
     @Test
     public void testBothStaticAndFinalMissing() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.logging.Logger LOG = null;\n" +
-                            "}",
-                            "2:37-2:40:verifier:The logger declaration field LOG should be static and final");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.logging.Logger LOG = null;\n" +
+                       "}")
+                .run(LoggerNotStaticFinal.class)
+                .assertWarnings("2:37-2:40:verifier:The logger declaration field LOG should be static and final");
     }
 
     @Test
     public void testBothStaticAndFinalMissingFix() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    private java.util.logging.Logger LOG = null;\n" +
-                       "}",
-                       "2:37-2:40:verifier:The logger declaration field LOG should be static and final",
-                       "MSG_LoggerNotStaticFinal_checkLoggerDeclaration_fix:LOG",
-                       ("package test;\n" +
-                       "public class Test {\n" +
-                       "    private static final java.util.logging.Logger LOG = null;\n" +
-                       "}").replaceAll("[ \t\n]+", " ")
-                       );
+                       "}")
+                .run(LoggerNotStaticFinal.class)
+                .findWarning("2:37-2:40:verifier:The logger declaration field LOG should be static and final")
+                .applyFix("MSG_LoggerNotStaticFinal_checkLoggerDeclaration_fix:LOG")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    private static final java.util.logging.Logger LOG = null;\n" +
+                              "}");
     }
 
     @Test
     public void testBothStaticAndFinalPresent() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private static final java.util.logging.Logger LOG = null;\n" +
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private static final java.util.logging.Logger LOG = null;\n" +
+                       "}")
+                .run(LoggerNotStaticFinal.class)
+                .assertWarnings();
     }
 
     public void testInnerClass202795() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public class I {\n" +
-                            "        private java.util.logging.Logger LOG = null;\n" +
-                            "    }\n" +
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public class I {\n" +
+                       "        private java.util.logging.Logger LOG = null;\n" +
+                       "    }\n" +
+                       "}")
+                .run(LoggerNotStaticFinal.class)
+                .assertWarnings();
     }
-
 }

@@ -144,7 +144,7 @@ public class ConvertToDiamondBulkHint {
         return null;
     }
 
-    private static final String KEY = "enabledVariants";
+    static final String KEY = "enabledVariants";
     static final String ALL = "initializer,assignment,return,argument,other";
     
     static String getConfiguration(Preferences p) {

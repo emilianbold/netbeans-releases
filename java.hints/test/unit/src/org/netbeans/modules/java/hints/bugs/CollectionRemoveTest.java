@@ -39,221 +39,263 @@
  *
  * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints.bugs;
 
-import org.netbeans.modules.java.hints.test.api.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class CollectionRemoveTest extends TestBase {
+public class CollectionRemoveTest extends NbTestCase {
 
     public CollectionRemoveTest(String name) {
-        super(name, CollectionRemove.class);
+        super(name);
     }
 
     public void testSimple1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "    private void test () {" +
-                            "        java.util.List<String> l = null;" +
-                            "        l.remove(new Object());" +
-                            "    }" +
-                            "}",
-                            "0:106-0:128:verifier:SC: java.util.Collection.remove, Object, String");
+        HintTest
+                .create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "    private void test () {" +
+                       "        java.util.List<String> l = null;" +
+                       "        l.remove(new Object());" +
+                       "    }" +
+                       "}")
+                .run(CollectionRemove.class)
+                .assertWarnings("0:106-0:128:verifier:SC: java.util.Collection.remove, Object, String");
     }
 
     public void testSimple2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "    private void test () {" +
-                            "        java.util.List<String> l = null;" +
-                            "        l.contains(new Object());" +
-                            "    }" +
-                            "}",
-                            "0:106-0:130:verifier:SC: java.util.Collection.contains, Object, String");
+        HintTest
+                .create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "    private void test () {" +
+                       "        java.util.List<String> l = null;" +
+                       "        l.contains(new Object());" +
+                       "    }" +
+                       "}")
+                .run(CollectionRemove.class)
+                .assertWarnings("0:106-0:130:verifier:SC: java.util.Collection.contains, Object, String");
     }
 
     public void testSimple3() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "    private void test () {" +
-                            "        java.util.List<String> l = null;" +
-                            "        l.remove(Integer.valueOf(1));" +
-                            "    }" +
-                            "}",
-                            "0:106-0:134:verifier:SCIT: java.util.Collection.remove, Integer, String");
+        HintTest
+                .create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "    private void test () {" +
+                       "        java.util.List<String> l = null;" +
+                       "        l.remove(Integer.valueOf(1));" +
+                       "    }" +
+                       "}")
+                .run(CollectionRemove.class)
+                .assertWarnings("0:106-0:134:verifier:SCIT: java.util.Collection.remove, Integer, String");
     }
 
     public void testSimple4() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "    private void test () {" +
-                            "        java.util.List<String> l = null;" +
-                            "        l.contains(Integer.valueOf(1));" +
-                            "    }" +
-                            "}",
-                            "0:106-0:136:verifier:SCIT: java.util.Collection.contains, Integer, String");
+        HintTest
+                .create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "    private void test () {" +
+                       "        java.util.List<String> l = null;" +
+                       "        l.contains(Integer.valueOf(1));" +
+                       "    }" +
+                       "}")
+                .run(CollectionRemove.class)
+                .assertWarnings("0:106-0:136:verifier:SCIT: java.util.Collection.contains, Integer, String");
     }
 
     public void testSimple5() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "    private void test () {" +
-                            "        java.util.Map<String, Number> l = null;" +
-                            "        l.containsKey(Integer.valueOf(1));" +
-                            "    }" +
-                            "}",
-                            "0:113-0:146:verifier:SCIT: java.util.Map.containsKey, Integer, String");
+        HintTest
+                .create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "    private void test () {" +
+                       "        java.util.Map<String, Number> l = null;" +
+                       "        l.containsKey(Integer.valueOf(1));" +
+                       "    }" +
+                       "}")
+                .run(CollectionRemove.class)
+                .assertWarnings("0:113-0:146:verifier:SCIT: java.util.Map.containsKey, Integer, String");
     }
 
     public void testSimple6() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "    private void test () {" +
-                            "        java.util.Map<String, Number> l = null;" +
-                            "        l.containsValue(\"\");" +
-                            "    }" +
-                            "}",
-                            "0:113-0:132:verifier:SCIT: java.util.Map.containsValue, String, Number");
+        HintTest
+                .create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "    private void test () {" +
+                       "        java.util.Map<String, Number> l = null;" +
+                       "        l.containsValue(\"\");" +
+                       "    }" +
+                       "}")
+                .run(CollectionRemove.class)
+                .assertWarnings("0:113-0:132:verifier:SCIT: java.util.Map.containsValue, String, Number");
     }
 
     public void testExtends1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;" +
-                            "public class Test extends java.util.LinkedList<String> {" +
-                            "    private void test () {" +
-                            "        remove(new Object());" +
-                            "    }" +
-                            "}",
-                            "0:103-0:123:verifier:SC: java.util.Collection.remove, Object, String");
+        HintTest
+                .create()
+                .input("package test;" +
+                       "public class Test extends java.util.LinkedList<String> {" +
+                       "    private void test () {" +
+                       "        remove(new Object());" +
+                       "    }" +
+                       "}")
+                .run(CollectionRemove.class)
+                .assertWarnings("0:103-0:123:verifier:SC: java.util.Collection.remove, Object, String");
     }
 
     public void testExtends2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;" +
-                            "public class Test extends java.util.LinkedList<String> {" +
-                            "    private void test () {" +
-                            "        new Runnable() {" +
-                            "            public void run() {" +
-                            "                remove(new Object());" +
-                            "            }" +
-                            "        }" +
-                            "    }" +
-                            "}",
-                            "0:166-0:186:verifier:SC: java.util.Collection.remove, Object, String");
+        HintTest
+                .create()
+                .input("package test;" +
+                       "public class Test extends java.util.LinkedList<String> {" +
+                       "    private void test () {" +
+                       "        new Runnable() {" +
+                       "            public void run() {" +
+                       "                remove(new Object());" +
+                       "            }" +
+                       "        };" +
+                       "    }" +
+                       "}")
+                .run(CollectionRemove.class)
+                .assertWarnings("0:166-0:186:verifier:SC: java.util.Collection.remove, Object, String");
     }
 
     public void testBoxing1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "    private void test () {" +
-                            "        java.util.List<Integer> l = null;" +
-                            "        l.contains(1);" +
-                            "    }" +
-                            "}");
+        HintTest
+                .create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "    private void test () {" +
+                       "        java.util.List<Integer> l = null;" +
+                       "        l.contains(1);" +
+                       "    }" +
+                       "}")
+                .run(CollectionRemove.class)
+                .assertWarnings();
     }
 
     public void testBoxing2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "    private void test () {" +
-                            "        java.util.List<String> l = null;" +
-                            "        l.contains(1);" +
-                            "    }" +
-                            "}",
-                            "0:106-0:119:verifier:SCIT: java.util.Collection.contains, int, String");
+        HintTest
+                .create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "    private void test () {" +
+                       "        java.util.List<String> l = null;" +
+                       "        l.contains(1);" +
+                       "    }" +
+                       "}")
+                .run(CollectionRemove.class)
+                .assertWarnings("0:106-0:119:verifier:SCIT: java.util.Collection.contains, int, String");
     }
 
     public void testExtendsWildcard() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "    private void test () {" +
-                            "        java.util.List<? extends String> l = null;" +
-                            "        l.contains(\"\");" +
-                            "    }" +
-                            "}");
+        HintTest
+                .create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "    private void test () {" +
+                       "        java.util.List<? extends String> l = null;" +
+                       "        l.contains(\"\");" +
+                       "    }" +
+                       "}")
+                .run(CollectionRemove.class)
+                .assertWarnings();
     }
 
     public void testExtendsWildcard2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "    private void test (boolean b) {" +
-                            "        test(get().contains(\"\"));\n" +
-                            "    }\n" +
-                            "    private java.util.List<? extends String> get() {return null;}\n" +
-                            "}");
+        HintTest
+                .create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "    private void test (boolean b) {" +
+                       "        test(get().contains(\"\"));\n" +
+                       "    }\n" +
+                       "    private java.util.List<? extends String> get() {return null;}\n" +
+                       "}")
+                .run(CollectionRemove.class)
+                .assertWarnings();
     }
 
     public void testSuperWildcard() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "    private void test () {" +
-                            "        java.util.List<? super String> l = null;" +
-                            "        l.contains(\"\");" +
-                            "    }" +
-                            "}");
+        HintTest
+                .create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "    private void test () {" +
+                       "        java.util.List<? super String> l = null;" +
+                       "        l.contains(\"\");" +
+                       "    }" +
+                       "}")
+                .run(CollectionRemove.class)
+                .assertWarnings();
     }
 
     public void testWildcard() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "    private void test () {" +
-                            "        java.util.List<?> l = null;" +
-                            "        l.contains(\"\");" +
-                            "    }" +
-                            "}");
+        HintTest
+                .create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "    private void test () {" +
+                       "        java.util.List<?> l = null;" +
+                       "        l.contains(\"\");" +
+                       "    }" +
+                       "}")
+                .run(CollectionRemove.class)
+                .assertWarnings();
     }
 
     public void testCollectionRemoveInteger() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "    private void test () {" +
-                            "        java.util.List<String> l = null;" +
-                            "        l.remove(0);" +
-                            "    }" +
-                            "}");
+        HintTest
+                .create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "    private void test () {" +
+                       "        java.util.List<String> l = null;" +
+                       "        l.remove(0);" +
+                       "    }" +
+                       "}")
+                .run(CollectionRemove.class)
+                .assertWarnings();
     }
 
     public void testCollectionRemoveInteger2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "    private void test () {" +
-                            "        java.util.List<String> l = null;" +
-                            "        l.subList(0, 0).remove(0);" +
-                            "    }" +
-                            "}");
+        HintTest
+                .create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "    private void test () {" +
+                       "        java.util.List<String> l = null;" +
+                       "        l.subList(0, 0).remove(0);" +
+                       "    }" +
+                       "}")
+                .run(CollectionRemove.class)
+                .assertWarnings();
     }
 
     public void testInsideItsOverride196606() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;" +
-                            "public class Test extends java.util.ArrayList<String> {" +
-                            "    @Override public boolean remove(Object o) {" +
-                            "        return super.remove(o);\n" +
-                            "    }" +
-                            "}");
+        HintTest
+                .create()
+                .input("package test;" +
+                       "public class Test extends java.util.ArrayList<String> {" +
+                       "    @Override public boolean remove(Object o) {" +
+                       "        return super.remove(o);\n" +
+                       "    }" +
+                       "}")
+                .run(CollectionRemove.class)
+                .assertWarnings();
     }
 
     static {
-        NbBundle.setBranding("test");
+        NbBundle
+                .setBranding("test");
     }
-
 }

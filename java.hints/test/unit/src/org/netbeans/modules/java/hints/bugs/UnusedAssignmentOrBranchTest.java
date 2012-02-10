@@ -41,48 +41,56 @@
  */
 package org.netbeans.modules.java.hints.bugs;
 
-import org.netbeans.modules.java.hints.test.api.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class UnusedAssignmentOrBranchTest extends TestBase {
+public class UnusedAssignmentOrBranchTest extends NbTestCase {
 
     public UnusedAssignmentOrBranchTest(String name) {
-        super(name, UnusedAssignmentOrBranch.class);
+        super(name);
     }
 
     public void testSimpleUnusedAssignment() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "     {\n" +
-                            "         int i = 0;\n" +
-                            "         i = 1;\n" +
-                            "         System.err.println(i);\n" +
-                            "     }\n" +
-                            "}\n",
-                            "3:17-3:18:verifier:LBL_UNUSED_ASSIGNMENT_LABEL");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "     {\n" +
+                       "         int i = 0;\n" +
+                       "         i = 1;\n" +
+                       "         System.err.println(i);\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(UnusedAssignmentOrBranch.class)
+                .assertWarnings("3:17-3:18:verifier:LBL_UNUSED_ASSIGNMENT_LABEL");
     }
 
     public void testNoHighlightingForUnusedVariables() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "     {\n" +
-                            "         int i = 0;\n" +
-                            "         i = 1;\n" +
-                            "     }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "     {\n" +
+                       "         int i = 0;\n" +
+                       "         i = 1;\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(UnusedAssignmentOrBranch.class)
+                .assertWarnings();
     }
 
     public void testAttributeValues() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "@SuppressWarnings(\"a\")\n" +
-                            "public class Test {\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "@SuppressWarnings(\"a\")\n" +
+                       "public class Test {\n" +
+                       "}\n")
+                .run(UnusedAssignmentOrBranch.class)
+                .assertWarnings();
     }
-
 }
