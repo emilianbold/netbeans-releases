@@ -42,10 +42,13 @@
 package org.netbeans.modules.php.doctrine2;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
-import org.netbeans.modules.php.doctrine2.annotations.Doctrine2AnnotationsProvider;
+import org.netbeans.modules.php.doctrine2.annotations.odm.Doctrine2OdmAnnotationsProvider;
+import org.netbeans.modules.php.doctrine2.annotations.orm.Doctrine2OrmAnnotationsProvider;
 import org.netbeans.modules.php.doctrine2.commands.Doctrine2CommandSupport;
 import org.netbeans.modules.php.doctrine2.preferences.Doctrine2Preferences;
 import org.netbeans.modules.php.doctrine2.ui.actions.Doctrine2PhpModuleActionsExtender;
@@ -140,8 +143,10 @@ public final class Doctrine2PhpFrameworkProvider extends PhpFrameworkProvider {
     }
 
     @Override
-    public PhpAnnotationsProvider getAnnotationsProvider(PhpModule phpModule) {
-        return new Doctrine2AnnotationsProvider();
+    public List<PhpAnnotationsProvider> getAnnotationsProviders(PhpModule phpModule) {
+        return Arrays.asList(
+                new Doctrine2OrmAnnotationsProvider(),
+                new Doctrine2OdmAnnotationsProvider());
     }
 
 }
