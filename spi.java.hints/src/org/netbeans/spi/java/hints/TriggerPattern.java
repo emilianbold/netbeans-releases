@@ -46,12 +46,13 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 
 /**Find parts of the source code that satisfy the given pattern, and invoke the method
  * that is annotated with this annotation.
  *
- * The method must be {@link public static}, the return type must either be assignable to
- * {@link ErrorDescription} or to {@link Iterable<? extends ErrorDescription>}.
+ * The method must be {@code public static}, the return type must either be assignable to
+ * {@link ErrorDescription} or to {@link Iterable}{@code <? extends }{@link ErrorDescription}{@code >}.
  * Its sole parameter must be {@link HintContext}.
  *
  * @author lahvac
@@ -60,7 +61,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface TriggerPattern {
 
-    /**The pattern consists of:
+    /**
+     * Pattern to match on.
+     * The pattern consists of:
      * <ul>
      *     <li>a single Java expression</li>
      *     <li>a single Java statement</li>
@@ -68,10 +71,10 @@ public @interface TriggerPattern {
      *     <li>a Java field, method or class</li>
      * </ul>
      *
-     * Variables (identifiers starting with '$') can be used to replace part of the pattern.
+     * Variables (identifiers starting with {@code $}) can be used to replace part of the pattern.
      * During matching, the actual part of the AST that corresponds to the variable in the pattern
-     * will be 'bound' to the variable. Variables whose names that do not end with a '$' ('single' variables)
-     * will be bound to exactly one AST node, whereas variables whose names end with a '$' ('multi' variables)
+     * will be "bound" to the variable. Variables whose names that do not end with a {@code $} ("single" variables)
+     * will be bound to exactly one AST node, whereas variables whose names end with a {@code $} ("multi" variables)
      * will be bound to any number of consecutive AST nodes (with the same AST node as a parent).
      *
      * The actual AST nodes that were bound to single variables are available through {@link HintContext#getVariables() },
