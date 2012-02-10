@@ -42,50 +42,87 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.persistence.unit;
+package org.netbeans.modules.j2ee.persistence.editor.completion;
 
-import java.io.IOException;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.UniFileLoader;
-import org.openide.util.NbBundle;
+import java.net.URL;
+import javax.lang.model.element.Element;
+import javax.swing.Action;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ui.ElementJavadoc;
+import org.netbeans.spi.editor.completion.CompletionDocumentation;
 
 /**
- * @author Martin Adamek
+ *
+ * 
  */
-public class PUDataLoader extends UniFileLoader {
-    
-    public static final String REQUIRED_MIME = "text/x-persistence1.0+xml";
-    
-    public PUDataLoader() {
-        super(PUDataObject.class.getName());
-        //PUDataLoader is created once for a project when persistence.xml is detected, log uusage
-        PersistenceUtils.logUsage(PUDataLoader.class, "USG_PERSISTENCE_DETECTED", new String[]{"XML"});//NOI18N
+public abstract class PersistenceCompletionDocumentation implements CompletionDocumentation {
+
+    public static PersistenceCompletionDocumentation getAttribValueDoc(String text) {
+        return new AttribValueDoc(text);
     }
     
-    protected void initialize() {
-        super.initialize();
-        getExtensions().addMimeType(REQUIRED_MIME);
+     public static PersistenceCompletionDocumentation createJavaDoc(CompilationController cc, Element element) {
+        return new JavaElementDoc(ElementJavadoc.create(cc, element));
     }
     
-    protected String defaultDisplayName() {
-        return NbBundle.getMessage(PUDataLoader.class, "LBL_loaderName"); // NOI18N
+    @Override
+    public URL getURL() {
+        return null;
+    }
+
+    @Override
+    public CompletionDocumentation resolveLink(String link) {
+        return null;
+    }
+
+    @Override
+    public Action getGotoSourceAction() {
+        return null;
     }
     
-    protected MultiDataObject createMultiObject(FileObject pf) throws IOException {
-        return new PUDataObject(pf, this);
+    
+    
+    private static class AttribValueDoc extends PersistenceCompletionDocumentation {
+
+        private String text;
+
+        public AttribValueDoc(String text) {
+            this.text = text;
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
     }
     
-    protected String actionsContext() {
-        return "Loaders/" + REQUIRED_MIME + "/Actions";
+    private static class JavaElementDoc extends PersistenceCompletionDocumentation {
+
+        private ElementJavadoc elementJavadoc;
+
+        public JavaElementDoc(ElementJavadoc elementJavadoc) {
+            this.elementJavadoc = elementJavadoc;
+        }
+
+        @Override
+        public JavaElementDoc resolveLink(String link) {
+            ElementJavadoc doc = elementJavadoc.resolveLink(link);
+            return doc != null ? new JavaElementDoc(doc) : null;
+        }
+
+        @Override
+        public URL getURL() {
+            return elementJavadoc.getURL();
+        }
+
+        @Override
+        public String getText() {
+            return elementJavadoc.getText();
+        }
+
+        @Override
+        public Action getGotoSourceAction() {
+            return elementJavadoc.getGotoSourceAction();
+        }
     }
-    
-    protected FileObject findPrimaryFile(FileObject fo) {
-        FileObject superFo = super.findPrimaryFile(fo);
-        return (superFo != null && FileOwnerQuery.getOwner(superFo) != null)
-                ? superFo : null;
-    }
-    
 }
