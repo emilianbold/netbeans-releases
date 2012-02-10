@@ -76,6 +76,14 @@ public class CompletionContextFinderTest extends JsTestBase {
     }
     
     
+    public void testGlobal01()  throws Exception {
+       checkCompletionContext("testfiles/model/simpleObject.js", "if (this.color === \"red\") {^", CompletionContext.GLOBAL);
+    }
+    
+    public void testGlobal02()  throws Exception {
+       checkCompletionContext("testfiles/model/simpleObject.js", " ^   },", CompletionContext.GLOBAL);
+    }
+    
     private void checkCompletionContext(final String file, final String caretLine, final CompletionContext expected) throws Exception {
         
         Source testSource = getTestSource(getTestFile(file));
