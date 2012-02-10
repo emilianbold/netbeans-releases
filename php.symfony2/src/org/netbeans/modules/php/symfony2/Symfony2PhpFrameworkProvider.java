@@ -42,9 +42,12 @@
 package org.netbeans.modules.php.symfony2;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
+import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
@@ -52,6 +55,7 @@ import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
+import org.netbeans.modules.php.symfony2.annotations.security.Symfony2SecurityAnnotationsProvider;
 import org.netbeans.modules.php.symfony2.commands.Symfony2CommandSupport;
 import org.netbeans.modules.php.symfony2.commands.Symfony2Script;
 import org.netbeans.modules.php.symfony2.ui.actions.Symfony2PhpModuleActionsExtender;
@@ -153,6 +157,11 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
     @Override
     public EditorExtender getEditorExtender(PhpModule phpModule) {
         return null;
+    }
+
+    @Override
+    public List<PhpAnnotationsProvider> getAnnotationsProviders(PhpModule phpModule) {
+        return Arrays.<PhpAnnotationsProvider>asList(new Symfony2SecurityAnnotationsProvider());
     }
 
 }
