@@ -71,6 +71,8 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.jellytools.JavaProjectsTabOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.openide.cookies.EditorCookie;
 import org.openide.explorer.view.TreeView;
 
@@ -162,6 +164,8 @@ public final class WatchProjects {
     
 
     public static void assertTextDocuments() throws Exception {
+        ProjectsTabOperator pto = new JavaProjectsTabOperator();
+        pto.closeAllDocuments();
         for (TopComponent tc : new ArrayList<TopComponent>(TopComponent.getRegistry().getOpened())) {
             final EditorCookie ec = tc.getLookup().lookup(EditorCookie.class);
             if (ec != null) {
