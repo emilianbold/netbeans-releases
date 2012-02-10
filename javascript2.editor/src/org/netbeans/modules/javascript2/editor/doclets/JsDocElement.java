@@ -67,6 +67,10 @@ public class JsDocElement {
         this.description = description;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
     /**
      * Gets jsDoc element type.
      * @return jsDoc element type

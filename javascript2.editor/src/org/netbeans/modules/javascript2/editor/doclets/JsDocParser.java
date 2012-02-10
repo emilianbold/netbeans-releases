@@ -114,7 +114,7 @@ public class JsDocParser {
             //TODO - clean shared tag comments
             if (!jsDocElementText.startsWith("@")) { //NOI18N
                 if (!afterDescription) {
-                    jsDocElements.add(new JsDocElement(JsDocElement.Type.CONTEXT_SENSITIVE, ""));
+                    jsDocElements.add(new JsDocElement(JsDocElement.Type.CONTEXT_SENSITIVE, jsDocElementText));
                 }
             } else {
                 Type type;
@@ -123,7 +123,7 @@ public class JsDocParser {
                     type = Type.fromString(jsDocElementText);
                     jsDocElements.add(new JsDocElement(
                             type == null ? Type.UNKNOWN : type,
-                            jsDocElementText));
+                            ""));
                 } else {
                     type = Type.fromString(jsDocElementText.substring(0, firstSpace));
                     jsDocElements.add(new JsDocElement(

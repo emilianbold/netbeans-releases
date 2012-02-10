@@ -206,6 +206,24 @@ public class JsDocParserTest extends JsTestBase {
         checkElementTypes("testfiles/jsdoc/allTypesNoAsterisk.js");
     }
 
+    public void testParsedContextSensitiveContentNoAsterisk() throws Exception {
+        Source source = getTestSource(getTestFile("testfiles/jsdoc/allTypesNoAsterisk.js"));
+        Snapshot snapshot = source.createSnapshot();
+        List<JsDocBlock> jsDocBlocks = JsDocParser.parse(snapshot);
+        List<JsDocElement> tags = jsDocBlocks.get(0).getTags();
+        assertEquals(JsDocElement.Type.CONTEXT_SENSITIVE, tags.get(0).getType());
+        assertEquals("This could be description", tags.get(0).getDescription());
+    }
+
+    public void testParsedContextSensitiveContentAsterisks() throws Exception {
+        Source source = getTestSource(getTestFile("testfiles/jsdoc/allTypesAsterisks.js"));
+        Snapshot snapshot = source.createSnapshot();
+        List<JsDocBlock> jsDocBlocks = JsDocParser.parse(snapshot);
+        List<JsDocElement> tags = jsDocBlocks.get(0).getTags();
+        assertEquals(JsDocElement.Type.CONTEXT_SENSITIVE, tags.get(0).getType());
+        assertEquals("This could be description", tags.get(0).getDescription());
+    }
+
     private void checkElementTypes(String filePath) {
         Source source = getTestSource(getTestFile(filePath));
         Snapshot snapshot = source.createSnapshot();
