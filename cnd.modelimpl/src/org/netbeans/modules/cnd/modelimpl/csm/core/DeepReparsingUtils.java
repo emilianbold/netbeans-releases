@@ -73,7 +73,7 @@ import org.openide.filesystems.FileObject;
  * @author Alexander Simon
  */
 public final class DeepReparsingUtils {
-    private static final boolean TRACE = false;
+    private static final boolean TRACE = true;
     private static final Logger LOG = Logger.getLogger("DeepReparsingUtils"); // NOI18N
 
     private DeepReparsingUtils() {
@@ -82,7 +82,7 @@ public final class DeepReparsingUtils {
     /**
      * Reparse one file when fileImpl content changed.
      */
-    static void reparseOnEditingFile(ProjectImpl project, FileImpl fileImpl) {
+    static void reparseOnEditingFile(ProjectBase project, FileImpl fileImpl) {
         if (TRACE) {
             LOG.log(Level.INFO, "reparseOnEditingFile {0}", fileImpl.getAbsolutePath());
         }
@@ -98,6 +98,11 @@ public final class DeepReparsingUtils {
     public static void reparseOnChangedFile(FileImpl fileImpl, ProjectBase project) {
         if (TRACE) {
             LOG.log(Level.INFO, "reparseOnChangedFile {0}", fileImpl.getAbsolutePath());
+        }
+        if (TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
+            LOG.log(Level.INFO, "OPTIMISTIC reparseOnChangedFile as reparseOnEditingFile {0}", fileImpl.getAbsolutePath());
+            reparseOnEditingFile(project, fileImpl);
+            return;
         }
         // content of file was changed => invalidate cache
         APTDriver.invalidateAPT(fileImpl.getBuffer());        
