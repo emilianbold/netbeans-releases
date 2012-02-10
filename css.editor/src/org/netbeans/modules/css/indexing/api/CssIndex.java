@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.indexing;
+package org.netbeans.modules.css.indexing.api;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,6 +53,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
+import org.netbeans.modules.css.indexing.CssIndexer;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.DependenciesGraph.Node;

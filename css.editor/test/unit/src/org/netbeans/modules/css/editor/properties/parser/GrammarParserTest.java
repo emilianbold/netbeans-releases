@@ -39,71 +39,35 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.module.main;
+package org.netbeans.modules.css.editor.properties.parser;
 
-import java.net.URL;
-import org.netbeans.modules.css.editor.module.spi.Browser;
+import java.util.Collections;
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
+import org.netbeans.modules.css.editor.module.spi.Property;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class DefaultBrowser extends Browser {
+public class GrammarParserTest extends CssModuleTestBase {
 
-    private static final String DEFAULT_ICONS_LOCATION = "/org/netbeans/modules/css/resources/icons/"; //NOI18N
+    public GrammarParserTest(String name) {
+        super(name);
+    }
     
-    private String iconBase;
-    private String name, vendor, vendorSpecificPropertyId, renderingEngineId;
-    private URL active, inactive;
-
-    public DefaultBrowser(String name, String vendor, String renderingEngineId, String vendorSpecificPropertyPrefix, String iconBase) {
-        this.name = name;
-        this.vendor = vendor;
-        this.renderingEngineId = renderingEngineId;
-        this.vendorSpecificPropertyId = vendorSpecificPropertyPrefix;
-        this.iconBase = iconBase;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getVendor() {
-        return vendor;
-    }
-
-    @Override
-    public synchronized URL getActiveIcon() {
-        if(active == null) {
-            active = DefaultBrowser.class.getResource(
-                DEFAULT_ICONS_LOCATION + iconBase + ".png"); //NOI18N
+    public void testCanParserGrammarOfAllProperties() {
+        for (Property property : CssModuleSupport.getProperties()) {
+            PropertyModel model = new PropertyModel(property.getName(), Collections.singletonList(property));
+            assertNotNull(GrammarParser.parse(model.getGrammar()));
         }
-        return active;
     }
-
-    @Override
-    public synchronized URL getInactiveIcon() {
-        if(inactive == null) {
-            inactive = DefaultBrowser.class.getResource(
-                DEFAULT_ICONS_LOCATION + iconBase + "-disabled.png"); //NOI18N
-        }
-        return inactive;
+    
+    public void testParseAllGroup() {
+        String grammar = " a && b";
+        
+        GroupGrammarElement e = GrammarParser.parse(grammar);
+        assertEquals(GroupGrammarElement.Type.ALL, e.getType());
     }
-
-    @Override
-    public String getDescription() {
-        return new StringBuilder().append(getVendor()).append(' ').append(getName()).toString();
-    }
-
-    @Override
-    public String getVendorSpecificPropertyId() {
-        return vendorSpecificPropertyId;
-    }
-
-    @Override
-    public String getRenderingEngineId() {
-        return renderingEngineId;
-    }
+    
 }

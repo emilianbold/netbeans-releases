@@ -41,60 +41,37 @@
  */
 package org.netbeans.modules.css.editor.csl;
 
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.css.editor.module.spi.CssCompletionItem;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import java.awt.Color;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.swing.ImageIcon;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.modules.csl.api.CodeCompletionContext;
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.csl.api.CodeCompletionResult;
-import org.netbeans.modules.csl.api.CompletionProposal;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ParameterInfo;
-import org.netbeans.modules.csl.api.ElementHandle.UrlHandle;
-import org.netbeans.modules.csl.spi.DefaultCompletionResult;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.ElementHandle.UrlHandle;
+import org.netbeans.modules.csl.api.*;
+import org.netbeans.modules.csl.spi.DefaultCompletionResult;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.editor.CssProjectSupport;
-import org.netbeans.modules.css.editor.module.spi.HelpResolver;
-import org.netbeans.modules.css.editor.properties.parser.GrammarElement;
-import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
 import org.netbeans.modules.css.editor.HtmlTags;
 import org.netbeans.modules.css.editor.URLRetriever;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.module.spi.CompletionContext;
-import org.netbeans.modules.css.editor.module.spi.Property;
-import org.netbeans.modules.css.editor.module.spi.Utilities;
+import org.netbeans.modules.css.editor.module.spi.*;
+import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
+import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
 import org.netbeans.modules.css.editor.properties.parser.ValueGrammarElement;
-import org.netbeans.modules.css.indexing.CssIndex;
-import org.netbeans.modules.css.lib.api.CssTokenId;
-import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.NodeType;
-import org.netbeans.modules.css.lib.api.NodeUtil;
-import org.netbeans.modules.css.lib.api.NodeVisitor;
-import org.netbeans.modules.web.common.api.DependenciesGraph;
+import org.netbeans.modules.css.indexing.api.CssIndex;
+import org.netbeans.modules.css.lib.api.*;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.FileReferenceCompletion;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
@@ -238,38 +215,86 @@ public class CssCompletion implements CodeCompletionHandler {
         return proposals;
     }
 
-    private List<CompletionProposal> wrapPropertyValues(CompletionContext context,
+    private Collection<CompletionProposal> wrapPropertyValues(CompletionContext context,
             String prefix,
             Property propertyDescriptor,
-            Collection<GrammarElement> props,
+            Collection<ValueGrammarElement> props,
             int anchor,
             boolean addSemicolon,
             boolean addSpaceBeforeItem,
             boolean extendedItemsOnly) {
+
+        //there might be more grammar elements from multiple branches with the same name
+        Map<String, Collection<ValueGrammarElement>> value2GrammarElement =
+                new HashMap<String, Collection<ValueGrammarElement>>();
+        for (ValueGrammarElement element : props) {
+            String elementValue = element.value();
+            Collection<ValueGrammarElement> col = value2GrammarElement.get(elementValue);
+            if (col == null) {
+                col = new LinkedList<ValueGrammarElement>();
+                value2GrammarElement.put(elementValue, col);
+            }
+            col.add(element);
+        }
+
+
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
         boolean colorChooserAdded = false;
-        for (GrammarElement e : props) {
-            if (e instanceof ValueGrammarElement) {
-                if (((ValueGrammarElement) e).isUnit()) {
-                    continue; //skip units
-                }
+
+        for (Map.Entry<String, Collection<ValueGrammarElement>> entry : value2GrammarElement.entrySet()) {
+
+            String elementValue = entry.getKey();
+            Collection<ValueGrammarElement> elements = entry.getValue();
+            ValueGrammarElement element = elements.iterator().next();
+
+            if (element.isUnit()) {
+                proposals.add(CssCompletionItem.createUnitCompletionItem(element));
+                continue;
             }
-            CssValueElement handle = new CssValueElement(propertyDescriptor, e);
-            String origin = e.getResolvedOrigin();
-            if ("colors-list".equals(origin)) { //NOI18N
+
+            CssValueElement handle = new CssValueElement(propertyDescriptor, element);
+
+            String origin = element.origin();
+            String visibleOrigin = element.getVisibleOrigin();
+            if ("@colors-list".equals(origin)) { //NOI18N
                 if (!colorChooserAdded) {
                     //add color chooser item
-                    proposals.add(CssCompletionItem.createColorChooserCompletionItem(anchor, origin, addSemicolon));
+                    proposals.add(CssCompletionItem.createColorChooserCompletionItem(anchor, visibleOrigin, addSemicolon));
                     //add used colors items
-                    proposals.addAll(getUsedColorsItems(context, prefix, handle, origin, anchor, addSemicolon, addSpaceBeforeItem));
+                    proposals.addAll(getUsedColorsItems(context, prefix, handle, visibleOrigin, anchor, addSemicolon, addSpaceBeforeItem));
                     colorChooserAdded = true;
                 }
                 if (!extendedItemsOnly) {
-                    proposals.add(CssCompletionItem.createColorValueCompletionItem(handle, e, anchor, addSemicolon, addSpaceBeforeItem));
+                    proposals.add(CssCompletionItem.createColorValueCompletionItem(handle, element, anchor, addSemicolon, addSpaceBeforeItem));
                 }
             } else {
                 if (!extendedItemsOnly) {
-                    proposals.add(CssCompletionItem.createValueCompletionItem(handle, e, anchor, addSemicolon, addSpaceBeforeItem));
+                    //for elements which are alternatives from multiple grammar braches do not
+                    //show the origin
+
+                    //check if the visible origin off all the elements is the same, 
+                    //if so use it if not, do not show any origin
+                    String vo = null;
+                    boolean same = true;
+                    for (ValueGrammarElement e : elements) {
+                        if (vo == null) {
+                            vo = e.getVisibleOrigin();
+                        } else {
+                            if (!vo.equals(e.getVisibleOrigin())) {
+                                same = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    proposals.add(
+                            CssCompletionItem.createValueCompletionItem(
+                            handle,
+                            element,
+                            same ? visibleOrigin : "...",
+                            anchor,
+                            addSemicolon,
+                            addSpaceBeforeItem));
                 }
             }
         }
@@ -334,10 +359,10 @@ public class CssCompletion implements CodeCompletionHandler {
         return filtered;
     }
 
-    private Collection<GrammarElement> filterElements(Collection<GrammarElement> values, String propertyNamePrefix) {
+    private Collection<ValueGrammarElement> filterElements(Collection<ValueGrammarElement> values, String propertyNamePrefix) {
         propertyNamePrefix = propertyNamePrefix.toLowerCase();
-        List<GrammarElement> filtered = new ArrayList<GrammarElement>();
-        for (GrammarElement value : values) {
+        List<ValueGrammarElement> filtered = new ArrayList<ValueGrammarElement>();
+        for (ValueGrammarElement value : values) {
             if (value.toString().toLowerCase().startsWith(propertyNamePrefix)) {
                 filtered.add(value);
             }
@@ -682,8 +707,9 @@ public class CssCompletion implements CodeCompletionHandler {
         NodeType nodeType = node.type();
 
         if (prefix.length() > 0 && (node.type() == NodeType.cssId
-                || (unmappableClassOrId || nodeType == NodeType.error /*||
-                nodeType == NodeType.JJTERROR_SKIPBLOCK*/) && prefix.charAt(0) == '#')) {
+                || (unmappableClassOrId || nodeType == NodeType.error /*
+                 * || nodeType == NodeType.JJTERROR_SKIPBLOCK
+                 */) && prefix.charAt(0) == '#')) {
             //complete class selectors
             if (file != null) {
                 CssProjectSupport sup = CssProjectSupport.findFor(file);
@@ -736,7 +762,10 @@ public class CssCompletion implements CodeCompletionHandler {
 
         if (NodeUtil.isOfType(node, NodeType.root, NodeType.styleSheet, NodeType.bodylist)
                 || nodeType == NodeType.error && NodeUtil.isOfType(node.parent(), NodeType.root, NodeType.styleSheet, NodeType.bodylist)) {
-            /* somewhere between rules, in an empty or very broken file, between rules */
+            /*
+             * somewhere between rules, in an empty or very broken file, between
+             * rules
+             */
             List<CompletionProposal> all = new ArrayList<CompletionProposal>();
             //complete at keywords without prefix
             all.addAll(Utilities.createRAWCompletionProposals(AT_RULES, ElementKind.FIELD, offset));
@@ -799,11 +828,15 @@ public class CssCompletion implements CodeCompletionHandler {
 
     private void completeKeywords(CompletionContext completionContext, List<CompletionProposal> completionProposals, boolean tokenFound) {
         NodeType nodeType = completionContext.getActiveNode().type();
-        if (nodeType == NodeType.imports || nodeType == NodeType.media || nodeType == NodeType.page || nodeType == NodeType.charSet/* || nodeType == NodeType.JJTFONTFACERULE*/) {
+        if (nodeType == NodeType.imports || nodeType == NodeType.media || nodeType == NodeType.page || nodeType == NodeType.charSet/*
+                 * || nodeType == NodeType.JJTFONTFACERULE
+                 */) {
             //complete at keywords with prefix - parse tree OK
             if (tokenFound) {
                 TokenId id = completionContext.getTokenSequence().token().id();
-                if (id == CssTokenId.IMPORT_SYM || id == CssTokenId.MEDIA_SYM || id == CssTokenId.PAGE_SYM || id == CssTokenId.CHARSET_SYM /*|| id == CssTokenId.FONT_FACE_SYM*/
+                if (id == CssTokenId.IMPORT_SYM || id == CssTokenId.MEDIA_SYM || id == CssTokenId.PAGE_SYM || id == CssTokenId.CHARSET_SYM /*
+                         * || id == CssTokenId.FONT_FACE_SYM
+                         */
                         || id == CssTokenId.ERROR) {
                     //we are on the right place in the node
 
@@ -857,46 +890,167 @@ public class CssCompletion implements CodeCompletionHandler {
         String prefix = context.getPrefix();
         NodeType nodeType = node.type();
 
-        if (nodeType == NodeType.declaration) {
-            //value cc without prefix
-            //find property node
+        switch (nodeType) {
 
-            final Node[] result = new Node[2];
-            NodeVisitor propertySearch = new NodeVisitor() {
+            case declaration: {
+                //value cc without prefix
+                //find property node
 
-                @Override
-                public boolean visit(Node node) {
-                    if (node.type() == NodeType.property) {
-                        result[0] = node;
-                    } else if (node.type() == NodeType.error) {
-                        result[1] = node;
+                final Node[] result = new Node[2];
+                NodeVisitor propertySearch = new NodeVisitor() {
+
+                    @Override
+                    public boolean visit(Node node) {
+                        if (node.type() == NodeType.property) {
+                            result[0] = node;
+                        } else if (node.type() == NodeType.error) {
+                            result[1] = node;
+                        }
+                        return false;
                     }
-                    return false;
-                }
-            };
-            propertySearch.visitChildren(node);
+                };
+                propertySearch.visitChildren(node);
 
-            Node property = result[0];
-            if (property == null) {
-                return;
+                Node property = result[0];
+                if (property == null) {
+                    return;
+                }
+
+                String expressionText = ""; //NOI18N
+                if (result[1] != null) {
+                    //error in the property value
+                    //we need to extract the value from the property node image
+
+                    String propertyImage = node.image().toString().trim();
+                    //if the property is the last one in the rule then the error
+                    //contains the closing rule bracket
+                    if (propertyImage.endsWith("}")) { //NOI18N
+                        propertyImage = propertyImage.substring(0, propertyImage.length() - 1);
+                    }
+
+                    int colonIndex = propertyImage.indexOf(':'); //NOI18N
+                    if (colonIndex >= 0) {
+                        expressionText = propertyImage.substring(colonIndex + 1);
+                    }
+
+                    //use just the current line, if the expression spans to multiple
+                    //lines it is likely because of parsing error
+                    int eolIndex = expressionText.indexOf('\n');
+                    if (eolIndex > 0) {
+                        expressionText = expressionText.substring(0, eolIndex);
+                    }
+
+                }
+
+                PropertyModel prop = CssModuleSupport.getPropertyModel(property.image().toString().trim());
+                if (prop != null) {
+
+                    PropertyValue propVal = new PropertyValue(prop, expressionText);
+
+                    Collection<ValueGrammarElement> alts = propVal.getAlternatives();
+
+                    Collection<ValueGrammarElement> filteredByPrefix = filterElements(alts, prefix);
+
+                    int completionItemInsertPosition = prefix.trim().length() == 0
+                            ? context.getCaretOffset()
+                            : context.getSnapshot().getOriginalOffset(node.from());
+
+                    //test the situation when completion is invoked just after a valid token
+                    //like color: rgb|
+                    //in such case the parser offers ( alternative which is valid
+                    //so we must not use the prefix for filtering the results out.
+                    //do that only if the completion is not called in the middle of a text,
+                    //there must be a whitespace after the caret
+                    boolean addSpaceBeforeItem = false;
+                    if (alts.size() > 0 && filteredByPrefix.isEmpty() && Character.isWhitespace(charAfterCaret)) {
+                        completionItemInsertPosition = context.getCaretOffset(); //complete on the position of caret
+                        filteredByPrefix = alts; //prefix is empty, do not filter at all
+                        addSpaceBeforeItem = true;
+                    }
+
+                    completionProposals.addAll(wrapPropertyValues(context,
+                            prefix,
+                            prop.getProperty(),
+                            filteredByPrefix,
+                            completionItemInsertPosition,
+                            false,
+                            addSpaceBeforeItem,
+                            false));
+
+
+                }
             }
+            break;
 
-            String expressionText = ""; //NOI18N
-            if (result[1] != null) {
-                //error in the property value
-                //we need to extract the value from the property node image
+            case recovery:
+                Node parent = node.parent();
+                if (parent.type() != NodeType.error) {
+                    break;
+                }
+                node = parent;
+            //fall through
 
-                String propertyImage = node.image().toString().trim();
-                //if the property is the last one in the rule then the error
-                //contains the closing rule bracket
-                if (propertyImage.endsWith("}")) { //NOI18N
-                    propertyImage = propertyImage.substring(0, propertyImage.length() - 1);
+            case error:
+                NodeType parentType = node.parent().type();
+                if (!(parentType == NodeType.term || parentType == NodeType.expr || parentType == NodeType.operator)) {
+                    break;
+                }
+            //fall through
+
+            case function:
+            case term:
+            case expr:
+            case operator: {
+                //value cc with prefix
+                //a. for term nodes
+                //b. for error skip declaration nodes with declaration parent,
+                //for example if user types color: # and invokes the completion
+                //find property node
+                //1.find declaration node first
+
+                final Node[] result = new Node[1];
+                NodeVisitor declarationSearch = new NodeVisitor() {
+
+                    @Override
+                    public boolean visit(Node node) {
+                        if (node.type() == NodeType.declaration) {
+                            result[0] = node;
+                        }
+                        return false;
+                    }
+                };
+                declarationSearch.visitAncestors(node);
+                Node declaratioNode = result[0];
+
+                //2.find the property node
+                result[0] = null;
+                NodeVisitor propertySearch = new NodeVisitor() {
+
+                    @Override
+                    public boolean visit(Node node) {
+                        if (node.type() == NodeType.property) {
+                            result[0] = node;
+                        }
+                        return false;
+                    }
+                };
+                propertySearch.visitChildren(declaratioNode);
+
+                Node property = result[0];
+
+                String propertyName = property.image().toString();
+                PropertyModel propertyModel = CssModuleSupport.getPropertyModel(propertyName);
+                if (propertyModel == null) {
+                    return;
                 }
 
-                int colonIndex = propertyImage.indexOf(':'); //NOI18N
-                if (colonIndex >= 0) {
-                    expressionText = propertyImage.substring(colonIndex + 1);
-                }
+                //text from the node start to the embedded anchor offset (=embedded caret offset - prefix length)
+
+                Node expressionNode = NodeUtil.getChildByType(declaratioNode, NodeType.expr);
+
+                String expressionText = context.getSnapshot().getText().subSequence(
+                        expressionNode.from(),
+                        context.getEmbeddedAnchorOffset()).toString();
 
                 //use just the current line, if the expression spans to multiple
                 //lines it is likely because of parsing error
@@ -905,157 +1059,91 @@ public class CssCompletion implements CodeCompletionHandler {
                     expressionText = expressionText.substring(0, eolIndex);
                 }
 
-            }
+                PropertyValue propVal = new PropertyValue(propertyModel, expressionText);
+                Collection<ValueGrammarElement> alts = propVal.getAlternatives();
+                Collection<ValueGrammarElement> filteredByPrefix = filterElements(alts, prefix);
 
-            PropertyModel prop = CssModuleSupport.getPropertyModel(property.image().toString().trim());
-            if (prop != null) {
-
-                PropertyValue propVal = new PropertyValue(prop, expressionText);
-
-                Collection<GrammarElement> alts = propVal.alternatives();
-
-                Collection<GrammarElement> filteredByPrefix = filterElements(alts, prefix);
-
-                int completionItemInsertPosition = prefix.trim().length() == 0
-                        ? context.getCaretOffset()
-                        : context.getSnapshot().getOriginalOffset(node.from());
-
-                //test the situation when completion is invoked just after a valid token
-                //like color: rgb|
-                //in such case the parser offers ( alternative which is valid
-                //so we must not use the prefix for filtering the results out.
-                //do that only if the completion is not called in the middle of a text,
-                //there must be a whitespace after the caret
+                int completionItemInsertPosition = context.getAnchorOffset();
                 boolean addSpaceBeforeItem = false;
-                if (alts.size() > 0 && filteredByPrefix.isEmpty() && Character.isWhitespace(charAfterCaret)) {
-                    completionItemInsertPosition = context.getCaretOffset(); //complete on the position of caret
-                    filteredByPrefix = alts; //prefix is empty, do not filter at all
+
+                boolean includePrefixInTheExpression = false;
+                boolean extendedItemsOnly = false;
+
+                
+                block: if (Character.isWhitespace(charAfterCaret)) {
+                    //do the following heuristics only if the completion is invoked after, not inside a token
+
+                    //case #1
+                    //========
+                    //color: #| completion
+                    if (prefix.equals("#")) {
+                        completionItemInsertPosition = context.getCaretOffset() - 1;
+                        filteredByPrefix = alts; //prefix is empty, do not filter at all
+                        extendedItemsOnly = true; //do not add any default alternatives items
+                        break block;
+                    }
+
+                    //case #2
+                    //========
+                    //in the situation that there's a prefix, but no alternatives matches
+                    //we may also try alternatives after the prefix (at the end of the expression)
+                    //
+                    //animation: cubic-bezier(20|  => evaluated expression is "cubic-bezier("
+                    //                                so !number is the alternative, but filtered out since
+                    //                                the completion prefix is "20"
+                    //
+                    //so lets use "cubic-bezier(20" as the expression and empty prefix
+                    //this usually happens for unit acceptors (they typically do not put all possible
+                    //values to the completion list so the filtering fails).
+                    if (!prefix.isEmpty() && filteredByPrefix.isEmpty()) {
+                        includePrefixInTheExpression = true;
+                        break block;
+                    }
+
+                    //case #3
+                    //=======
+                    //test the situation when completion is invoked just after a valid token
+                    //like color: rgb| or font-family: cursive|
+                    for (ValueGrammarElement vge : filteredByPrefix) {
+                        if (vge.value().equals(prefix)) {
+                            includePrefixInTheExpression = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (includePrefixInTheExpression) {
+                    //re-run the property value evaluation with expression including the prefix token
+                    expressionText = context.getSnapshot().getText().subSequence(
+                            expressionNode.from(),
+                            context.getEmbeddedCaretOffset()).toString();
+
+                    //use just the current line, if the expression spans to multiple
+                    //lines it is likely because of parsing error
+                    eolIndex = expressionText.indexOf('\n');
+                    if (eolIndex > 0) {
+                        expressionText = expressionText.substring(0, eolIndex);
+                    }
+
+                    propVal = new PropertyValue(propertyModel, expressionText);
+                    alts = propVal.getAlternatives();
+                    filteredByPrefix = alts; //no prefix
+                    completionItemInsertPosition = context.getCaretOffset(); //no prefix
                     addSpaceBeforeItem = true;
                 }
 
                 completionProposals.addAll(wrapPropertyValues(context,
                         prefix,
-                        prop.getPropertyDescriptor(),
+                        propertyModel.getProperty(),
                         filteredByPrefix,
                         completionItemInsertPosition,
                         false,
                         addSpaceBeforeItem,
-                        false));
+                        extendedItemsOnly));
 
 
-            }
-
-            //Why we need the (prefix.length() > 0 || astCaretOffset == node.from())???
-            //please refer to the comment above
-//        } else if (node.type() == NodeType.JJTTERM && (prefix.length() > 0 || astCaretOffset == node.from())) {
-
-        } else if (nodeType == NodeType.term
-                || nodeType == NodeType.expr
-                || (nodeType == NodeType.error
-                && node.parent().type() == NodeType.declaration)) {
-            //value cc with prefix
-            //a. for term nodes
-            //b. for error skip declaration nodes with declaration parent,
-            //for example if user types color: # and invokes the completion
-
-            //find property node
-
-            //1.find declaration node first
-
-            final Node[] result = new Node[1];
-            NodeVisitor declarationSearch = new NodeVisitor() {
-
-                @Override
-                public boolean visit(Node node) {
-                    if (node.type() == NodeType.declaration) {
-                        result[0] = node;
-                    }
-                    return false;
-                }
-            };
-            declarationSearch.visitAncestors(node);
-            Node declaratioNode = result[0];
-
-            //2.find the property node
-            result[0] = null;
-            NodeVisitor propertySearch = new NodeVisitor() {
-
-                @Override
-                public boolean visit(Node node) {
-                    if (node.type() == NodeType.property) {
-                        result[0] = node;
-                    }
-                    return false;
-                }
-            };
-            propertySearch.visitChildren(declaratioNode);
-
-            Node property = result[0];
-
-            Property propertyDescriptor = CssModuleSupport.getProperty(property.image().toString());
-            if (propertyDescriptor == null) {
-                return;
-            }
-
-            String expressionText;
-            if (nodeType == NodeType.term) {
-                Node expression = node.parent();
-                expressionText = expression.image().toString();
-            } else {
-                //error skip decl - no expression to parse
-                expressionText = "";
-            }
-
-            //use just the current line, if the expression spans to multiple
-            //lines it is likely because of parsing error
-            int eolIndex = expressionText.indexOf('\n');
-            if (eolIndex > 0) {
-                expressionText = expressionText.substring(0, eolIndex);
-            }
-
-            PropertyModel propertyModel = CssModuleSupport.getPropertyModel(propertyDescriptor.getName());
-            PropertyValue propVal = new PropertyValue(propertyModel, expressionText);
-
-            Collection<GrammarElement> alts = propVal.alternatives();
-
-            Collection<GrammarElement> filteredByPrefix = filterElements(alts, prefix);
-
-            int completionItemInsertPosition = prefix.trim().length() == 0
-                    ? context.getCaretOffset()
-                    : context.getSnapshot().getOriginalOffset(node.from());
-
-            //test the situation when completion is invoked just after a valid token
-            //like color: rgb|
-            //in such case the parser offers ( alternative which is valid
-            //so we must not use the prefix for filtering the results out.
-            //do that only if the completion is not called in the middle of a text,
-            //there must be a whitespace after the caret
-            boolean addSpaceBeforeItem = false;
-            if (alts.size() > 0 && filteredByPrefix.isEmpty() && Character.isWhitespace(charAfterCaret)) {
-                completionItemInsertPosition = context.getCaretOffset(); //complete on the position of caret
-                filteredByPrefix = alts; //prefix is empty, do not filter at all
-                addSpaceBeforeItem = true;
-            }
-
-            //hack for color: #| completion >>>
-            boolean extendedItemsOnly = false;
-            if (prefix.equals("#")) {
-                completionItemInsertPosition--;
-                extendedItemsOnly = true; //do not add any default alternatives items
-            }
-            //<<<
-
-            completionProposals.addAll(wrapPropertyValues(context,
-                    prefix,
-                    propertyDescriptor,
-                    filteredByPrefix,
-                    completionItemInsertPosition,
-                    false,
-                    addSpaceBeforeItem,
-                    extendedItemsOnly));
-
-
-        }
+            } //case
+        } //switch
     }
 
     private static class CssFileCompletionResult extends DefaultCompletionResult {

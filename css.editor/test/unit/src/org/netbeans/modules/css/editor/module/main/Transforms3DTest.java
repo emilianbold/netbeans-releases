@@ -42,19 +42,23 @@
 package org.netbeans.modules.css.editor.module.main;
 
 /**
- * XXX the grammar parser chars escaping needs to be fixed! - see the modified (invalid) grammar definition
  *
  * @author mfukala@netbeans.org
  */
-public class GridPositioningModuleTest extends CssModuleTestBase {
-    
-    public GridPositioningModuleTest(String testName) {
+public class Transforms3DTest extends CssModuleTestBase {
+
+    public Transforms3DTest(String testName) {
         super(testName);
     }
-    
+  
     public void testProperties() {
-        assertPropertyValues("grid-rows", "4.5em (1em 4.5em)", "20px", "10%");
-        assertPropertyValues("grid-columns", "10px", "50%");   
+        assertPropertyValues("backface-visibility", "visible", "hidden");
+        assertPropertyValues("perspective", "none", "5");
+        
+        assertPropertyValues("perspective-origin", "10%", "5px", "left", "center", "right");
+        assertPropertyValues("perspective-origin", "10% 20px", "5px 5%", "left top", "center 10%", "left bottom");
+        
+        assertPropertyValues("transform", "none", "rotate(10deg)");
     }
     
 }

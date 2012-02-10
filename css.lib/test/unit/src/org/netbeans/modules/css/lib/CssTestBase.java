@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,30 +37,64 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.lib;
 
-package org.netbeans.modules.css.indexing;
-
-import org.netbeans.junit.NbTestCase;
+import java.util.Collections;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.lib.api.NodeType;
+import org.netbeans.modules.css.lib.api.NodeVisitor;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class CssIndexTest extends NbTestCase {
+public class CssTestBase extends CslTestBase {
 
-    public CssIndexTest(String name) {
-        super(name);
-    }
-    
-    public void testEncodeValueForRegexp() {
-        assertEquals("", CssIndex.encodeValueForRegexp(""));
-        assertEquals("a", CssIndex.encodeValueForRegexp("a"));
-        assertEquals("\\\\", CssIndex.encodeValueForRegexp("\\"));
-        assertEquals("a\\*b", CssIndex.encodeValueForRegexp("a*b"));
-        assertEquals("a\\\\b", CssIndex.encodeValueForRegexp("a\\b"));
-        assertEquals("\\.\\^\\$\\[\\]\\{\\}\\(\\)", CssIndex.encodeValueForRegexp(".^$[]{}()"));
+    public CssTestBase(String testName) {
+        super(testName);
     }
 
+    protected CssParserResult assertResultOK(CssParserResult result) {
+        return assertResult(result, 0);
+    }
+
+    protected CssParserResult assertResult(CssParserResult result, int problems) {
+        assertNotNull(result);
+        assertNotNull(result.getParseTree());
+
+        if (problems != result.getDiagnostics().size()) {
+            TestUtil.dumpResult(result);
+        }
+        assertEquals(problems, result.getDiagnostics().size());
+
+        return result;
+    }
+
+    protected void assertNoTokenNodeLost(CssParserResult result) {
+        final StringBuilder sourceCopy = new StringBuilder(result.getSnapshot().getText());
+
+        NodeVisitor.visitChildren(result.getParseTree(), Collections.<NodeVisitor<Node>>singleton(new NodeVisitor<Node>() {
+
+            @Override
+            public boolean visit(Node node) {
+                if (node.type() == NodeType.token) {
+                    for (int i = node.from(); i < node.to(); i++) {
+                        sourceCopy.setCharAt(i, Character.MAX_VALUE);
+                    }
+                }
+
+                return false;
+            }
+        }));
+
+        for (int i = 0; i < sourceCopy.length(); i++) {
+            if (sourceCopy.charAt(i) != Character.MAX_VALUE) {
+                assertTrue(String.format("No token node found for char '%s' at offset %s of the parser source.", sourceCopy.charAt(i), i), false);
+            }
+        }
+    }
 }

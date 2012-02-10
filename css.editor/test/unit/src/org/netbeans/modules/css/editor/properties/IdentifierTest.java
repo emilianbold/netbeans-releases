@@ -39,71 +39,35 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.module.main;
+package org.netbeans.modules.css.editor.properties;
 
-import java.net.URL;
-import org.netbeans.modules.css.editor.module.spi.Browser;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class DefaultBrowser extends Browser {
-
-    private static final String DEFAULT_ICONS_LOCATION = "/org/netbeans/modules/css/resources/icons/"; //NOI18N
+public class IdentifierTest extends NbTestCase {
     
-    private String iconBase;
-    private String name, vendor, vendorSpecificPropertyId, renderingEngineId;
-    private URL active, inactive;
-
-    public DefaultBrowser(String name, String vendor, String renderingEngineId, String vendorSpecificPropertyPrefix, String iconBase) {
-        this.name = name;
-        this.vendor = vendor;
-        this.renderingEngineId = renderingEngineId;
-        this.vendorSpecificPropertyId = vendorSpecificPropertyPrefix;
-        this.iconBase = iconBase;
+    public IdentifierTest(String name) {
+        super(name);
     }
 
-    @Override
-    public String getName() {
-        return name;
+    public void testAccepts() {
+        Identifier i = new Identifier();
+        assertTrue(i.accepts("hello"));
+        assertTrue(i.accepts("_hello"));
+        assertTrue(i.accepts("hel_lo"));
+        assertTrue(i.accepts("-hello"));
+        assertTrue(i.accepts("hel-lo"));
+        assertTrue(i.accepts("hello23"));
+        assertTrue(i.accepts("\u0080hello"));
+        assertTrue(i.accepts("hel\u0090o"));
+        assertTrue(i.accepts("hel\\uffbbo"));
+        assertTrue(i.accepts("hel\\no"));
+        
+        assertFalse(i.accepts("0hello"));
+        
     }
-
-    @Override
-    public String getVendor() {
-        return vendor;
-    }
-
-    @Override
-    public synchronized URL getActiveIcon() {
-        if(active == null) {
-            active = DefaultBrowser.class.getResource(
-                DEFAULT_ICONS_LOCATION + iconBase + ".png"); //NOI18N
-        }
-        return active;
-    }
-
-    @Override
-    public synchronized URL getInactiveIcon() {
-        if(inactive == null) {
-            inactive = DefaultBrowser.class.getResource(
-                DEFAULT_ICONS_LOCATION + iconBase + "-disabled.png"); //NOI18N
-        }
-        return inactive;
-    }
-
-    @Override
-    public String getDescription() {
-        return new StringBuilder().append(getVendor()).append(' ').append(getName()).toString();
-    }
-
-    @Override
-    public String getVendorSpecificPropertyId() {
-        return vendorSpecificPropertyId;
-    }
-
-    @Override
-    public String getRenderingEngineId() {
-        return renderingEngineId;
-    }
+    
 }

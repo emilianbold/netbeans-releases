@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,73 +37,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.module.main;
 
-import java.net.URL;
-import org.netbeans.modules.css.editor.module.spi.Browser;
+package org.netbeans.modules.css.indexing.api;
+
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author mfukala@netbeans.org
  */
-public class DefaultBrowser extends Browser {
+public class CssIndexTest extends NbTestCase {
 
-    private static final String DEFAULT_ICONS_LOCATION = "/org/netbeans/modules/css/resources/icons/"; //NOI18N
+    public CssIndexTest(String name) {
+        super(name);
+    }
     
-    private String iconBase;
-    private String name, vendor, vendorSpecificPropertyId, renderingEngineId;
-    private URL active, inactive;
-
-    public DefaultBrowser(String name, String vendor, String renderingEngineId, String vendorSpecificPropertyPrefix, String iconBase) {
-        this.name = name;
-        this.vendor = vendor;
-        this.renderingEngineId = renderingEngineId;
-        this.vendorSpecificPropertyId = vendorSpecificPropertyPrefix;
-        this.iconBase = iconBase;
+    public void testEncodeValueForRegexp() {
+        assertEquals("", CssIndex.encodeValueForRegexp(""));
+        assertEquals("a", CssIndex.encodeValueForRegexp("a"));
+        assertEquals("\\\\", CssIndex.encodeValueForRegexp("\\"));
+        assertEquals("a\\*b", CssIndex.encodeValueForRegexp("a*b"));
+        assertEquals("a\\\\b", CssIndex.encodeValueForRegexp("a\\b"));
+        assertEquals("\\.\\^\\$\\[\\]\\{\\}\\(\\)", CssIndex.encodeValueForRegexp(".^$[]{}()"));
     }
 
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getVendor() {
-        return vendor;
-    }
-
-    @Override
-    public synchronized URL getActiveIcon() {
-        if(active == null) {
-            active = DefaultBrowser.class.getResource(
-                DEFAULT_ICONS_LOCATION + iconBase + ".png"); //NOI18N
-        }
-        return active;
-    }
-
-    @Override
-    public synchronized URL getInactiveIcon() {
-        if(inactive == null) {
-            inactive = DefaultBrowser.class.getResource(
-                DEFAULT_ICONS_LOCATION + iconBase + "-disabled.png"); //NOI18N
-        }
-        return inactive;
-    }
-
-    @Override
-    public String getDescription() {
-        return new StringBuilder().append(getVendor()).append(' ').append(getName()).toString();
-    }
-
-    @Override
-    public String getVendorSpecificPropertyId() {
-        return vendorSpecificPropertyId;
-    }
-
-    @Override
-    public String getRenderingEngineId() {
-        return renderingEngineId;
-    }
 }

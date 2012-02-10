@@ -39,71 +39,49 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.module.main;
+package org.netbeans.modules.css.editor.properties.parser;
 
-import java.net.URL;
-import org.netbeans.modules.css.editor.module.spi.Browser;
+import java.util.Stack;
+import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class DefaultBrowser extends Browser {
+public class TokenizerTest extends CssModuleTestBase {
 
-    private static final String DEFAULT_ICONS_LOCATION = "/org/netbeans/modules/css/resources/icons/"; //NOI18N
+    public TokenizerTest(String name) {
+        super(name);
+    }
     
-    private String iconBase;
-    private String name, vendor, vendorSpecificPropertyId, renderingEngineId;
-    private URL active, inactive;
-
-    public DefaultBrowser(String name, String vendor, String renderingEngineId, String vendorSpecificPropertyPrefix, String iconBase) {
-        this.name = name;
-        this.vendor = vendor;
-        this.renderingEngineId = renderingEngineId;
-        this.vendorSpecificPropertyId = vendorSpecificPropertyPrefix;
-        this.iconBase = iconBase;
+  public void testFillStack() {
+        Stack<String> stack = Tokenizer.tokenize("bla , ble bli,blo,,blu bly,oh/eh//uh");
+//        dumpList(stack);
+        assertEquals(17, stack.size());
     }
 
-    @Override
-    public String getName() {
-        return name;
+    public void testFillStackWithQuotedValues() {
+        Stack<String> stack = Tokenizer.tokenize("'Times New Roman',serif");
+//        dumpList(stack); 
+        assertEquals(3, stack.size());
     }
 
-    @Override
-    public String getVendor() {
-        return vendor;
+    public void testFillStackWithBraces() {
+        Stack<String> stack = Tokenizer.tokenize("rect(20,30,40)");
+//        dumpList(stack);
+        assertEquals(8, stack.size());
     }
 
-    @Override
-    public synchronized URL getActiveIcon() {
-        if(active == null) {
-            active = DefaultBrowser.class.getResource(
-                DEFAULT_ICONS_LOCATION + iconBase + ".png"); //NOI18N
-        }
-        return active;
+    public void testFillStackWithNewLine() {
+        Stack<String> stack = Tokenizer.tokenize("marek jitka \n");
+//        dumpList(stack);
+        assertEquals(2, stack.size());
     }
-
-    @Override
-    public synchronized URL getInactiveIcon() {
-        if(inactive == null) {
-            inactive = DefaultBrowser.class.getResource(
-                DEFAULT_ICONS_LOCATION + iconBase + "-disabled.png"); //NOI18N
-        }
-        return inactive;
+    
+     public void testFillStackWithURL() {
+        Stack<String> stack = Tokenizer.tokenize("url(http://www.redballs.com/redball.png)");
+//        dumpList(stack);
+        assertEquals(4, stack.size());
     }
-
-    @Override
-    public String getDescription() {
-        return new StringBuilder().append(getVendor()).append(' ').append(getName()).toString();
-    }
-
-    @Override
-    public String getVendorSpecificPropertyId() {
-        return vendorSpecificPropertyId;
-    }
-
-    @Override
-    public String getRenderingEngineId() {
-        return renderingEngineId;
-    }
+     
 }
