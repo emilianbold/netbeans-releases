@@ -183,7 +183,7 @@ public class RefactoringUtils {
                     //Deleted file
                     continue;
                 } else {
-                    throw new NullPointerException("#120577: Cannot resolve " + subTypeHandle + "; file: " + file);
+                    throw new NullPointerException("#120577: Cannot resolve " + subTypeHandle + "; file: " + file + " Classpath: " + info.getClasspathInfo());
                 }
             }
             for (ExecutableElement method : ElementFilter.methodsIn(type.getEnclosedElements())) {
