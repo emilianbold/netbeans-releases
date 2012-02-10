@@ -525,15 +525,7 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.apisupport.refactoring</friend>
-                <friend>org.netbeans.modules.javadoc</friend>
-                <friend>org.netbeans.modules.maven.hints</friend>
-                <friend>org.netbeans.modules.maven.j2ee</friend>
-                <friend>org.netbeans.modules.web.beans</friend>
-                <friend>org.netbeans.modules.j2ee.common</friend>
-                <package>org.netbeans.modules.java.hints.spi</package>
-            </friend-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>
