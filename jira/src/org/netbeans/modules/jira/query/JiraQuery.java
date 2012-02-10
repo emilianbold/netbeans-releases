@@ -45,6 +45,8 @@ package org.netbeans.modules.jira.query;
 import com.atlassian.connector.eclipse.internal.jira.core.model.JiraFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -87,6 +89,7 @@ public class JiraQuery extends QueryProvider {
     private Node[] context;
     private boolean saved;
     protected long lastRefresh;
+    private final PropertyChangeSupport support;
 
     public JiraQuery(JiraRepository repository) {
         this(null, repository, null, false, true);
@@ -102,6 +105,8 @@ public class JiraQuery extends QueryProvider {
         this.name = name;
         this.jiraFilter = jiraFilter;
         this.lastRefresh = repository.getIssueCache().getQueryTimestamp(getStoredQueryName());
+        this.support = new PropertyChangeSupport(this);
+        
         if(initControler) {
             // enforce controller creation
             getController();
@@ -114,6 +119,31 @@ public class JiraQuery extends QueryProvider {
         }
     }
 
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+    
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
+    }
+
+    // XXX does this has to be protected
+    protected void fireQuerySaved() {
+        support.firePropertyChange(EVENT_QUERY_SAVED, null, null);
+        repository.fireQueryListChanged();
+    }
+
+    protected void fireQueryRemoved() {
+        support.firePropertyChange(EVENT_QUERY_REMOVED, null, null);
+        repository.fireQueryListChanged();
+    }
+
+    protected void fireQueryIssuesChanged() {
+        support.firePropertyChange(EVENT_QUERY_ISSUES_CHANGED, null, null);
+    }  
+    
     @Override
     public String getDisplayName() {
         return name;
@@ -276,18 +306,6 @@ public class JiraQuery extends QueryProvider {
     
     public void setFilter(Filter filter) {
         getController().selectFilter(filter);
-    }
-
-    @Override
-    public void fireQuerySaved() {
-        super.fireQuerySaved();
-        repository.fireQueryListChanged();
-    }
-
-    @Override
-    public void fireQueryRemoved() {
-        super.fireQueryRemoved();
-        repository.fireQueryListChanged();
     }
 
     @Override

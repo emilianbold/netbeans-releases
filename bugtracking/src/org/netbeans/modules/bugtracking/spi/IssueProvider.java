@@ -42,7 +42,6 @@
 package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.openide.nodes.Node;
@@ -56,8 +55,6 @@ import static java.lang.Character.isSpaceChar;
 public abstract class IssueProvider {
 
     private static final int SHORT_DISP_NAME_LENGTH = 15;
-
-    private final PropertyChangeSupport support;
 
     /**
      * issue data were refreshed
@@ -74,7 +71,6 @@ public abstract class IssueProvider {
      * Creates an issue
      */
     public IssueProvider(RepositoryProvider repository) {
-        support = new PropertyChangeSupport(this);
         this.repository = repository;
     }
 
@@ -214,20 +210,9 @@ public abstract class IssueProvider {
         IssueAction.openIssue(this, refresh);
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
+    public abstract void removePropertyChangeListener(PropertyChangeListener listener);
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-
-    /**
-     * Notify listeners on this issue that its data were changed
-     */
-    protected void fireDataChanged() {
-        support.firePropertyChange(EVENT_ISSUE_REFRESHED, null, null);
-    }
+    public abstract void addPropertyChangeListener(PropertyChangeListener listener);
 
     public abstract void setContext(Node[] nodes);
 

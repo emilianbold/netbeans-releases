@@ -3,6 +3,7 @@ package org.netbeans.modules.bugtracking.issuetable;
 
 import java.awt.Color;
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
@@ -274,6 +275,16 @@ public class QueryTableCellRendererTest {
         public void setContext(Node[] nodes) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
     private class RendererNode extends IssueNode {
@@ -376,6 +387,16 @@ public class QueryTableCellRendererTest {
         public void setContext(Node[] nodes) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
     private class RendererRepository extends RepositoryProvider {
@@ -453,6 +474,16 @@ public class QueryTableCellRendererTest {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
             }) {});
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     };
 

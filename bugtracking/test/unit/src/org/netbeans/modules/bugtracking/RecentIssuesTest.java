@@ -43,6 +43,7 @@
 package org.netbeans.modules.bugtracking;
 
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -238,6 +239,16 @@ public class RecentIssuesTest extends NbTestCase {
         public IssueProvider createIssue() {throw new UnsupportedOperationException("Not supported yet.");}
         public QueryProvider[] getQueries() {throw new UnsupportedOperationException("Not supported yet.");}
         public IssueProvider[] simpleSearch(String criteria) {throw new UnsupportedOperationException("Not supported yet.");}
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
     private class TestIssue extends IssueProvider {
@@ -268,6 +279,16 @@ public class RecentIssuesTest extends NbTestCase {
         public IssueNode getNode() {throw new UnsupportedOperationException("Not supported yet.");}
         public Map<String, String> getAttributes() {throw new UnsupportedOperationException("Not supported yet.");}
         public void setContext(Node[] nodes) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }

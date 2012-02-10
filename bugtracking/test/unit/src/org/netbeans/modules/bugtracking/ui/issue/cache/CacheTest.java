@@ -43,6 +43,7 @@
 package org.netbeans.modules.bugtracking.ui.issue.cache;
 
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -411,6 +412,16 @@ public class CacheTest extends NbTestCase {
         public void setContext(Node[] nodes) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
     private class TestRepository extends RepositoryProvider {
@@ -442,6 +453,16 @@ public class CacheTest extends NbTestCase {
         public IssueProvider createIssue() {throw new UnsupportedOperationException("Not supported yet.");}
         public QueryProvider[] getQueries() {throw new UnsupportedOperationException("Not supported yet.");}
         public IssueProvider[] simpleSearch(String criteria) {throw new UnsupportedOperationException("Not supported yet.");}
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
 
         private class TestCache extends IssueCache<String> {
             public TestCache(String nameSpace) {

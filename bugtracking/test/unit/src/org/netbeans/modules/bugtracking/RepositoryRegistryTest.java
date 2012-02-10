@@ -272,6 +272,16 @@ public class RepositoryRegistryTest extends NbTestCase {
         public IssueProvider[] simpleSearch(String criteria) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
     
     @BugtrackingConnector.Registration (

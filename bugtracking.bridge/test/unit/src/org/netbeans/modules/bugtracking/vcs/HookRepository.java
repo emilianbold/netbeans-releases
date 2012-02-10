@@ -43,6 +43,7 @@
 package org.netbeans.modules.bugtracking.vcs;
 
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.openide.util.Lookup;
@@ -103,6 +104,16 @@ public class HookRepository extends RepositoryProvider {
 
     @Override
     public Lookup getLookup() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

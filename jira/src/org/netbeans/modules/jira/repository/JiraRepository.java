@@ -55,6 +55,8 @@ import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -128,9 +130,11 @@ public class JiraRepository extends RepositoryProvider {
     public static final String ATTRIBUTE_URL = "jira.repository.attribute.url"; //NOI18N
     public static final String ATTRIBUTE_DISPLAY_NAME = "jira.repository.attribute.displayName"; //NOI18N
     private Lookup lookup;
+    private final PropertyChangeSupport support;
 
     public JiraRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
+        this.support = new PropertyChangeSupport(this);
     }
 
     public JiraRepository(RepositoryInfo info) {
@@ -156,6 +160,52 @@ public class JiraRepository extends RepositoryProvider {
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
     }
 
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Notify listeners on this repository that a query was either removed or saved
+     * XXX make use of new/old value
+     */
+    public void fireQueryListChanged() {
+        support.firePropertyChange(EVENT_QUERY_LIST_CHANGED, null, null);
+    }
+
+    /**
+     * Notify listeners on this repository that some of repository's attributes have changed.
+     * @param oldValue map of old attributes
+     * @param newValue map of new attributes
+     */
+    protected void fireAttributesChanged (java.util.Map<String, Object> oldAttributes, java.util.Map<String, Object> newAttributes) {
+        LinkedList<String> equalAttributes = new LinkedList<String>();
+        // find unchanged values
+        for (Map.Entry<String, Object> e : newAttributes.entrySet()) {
+            String key = e.getKey();
+            Object value = e.getValue();
+            Object oldValue = oldAttributes.get(key);
+            if ((value == null && oldValue == null) || (value != null && value.equals(oldValue))) {
+                equalAttributes.add(key);
+            }
+        }
+        // remove unchanged values
+        for (String equalAttribute : equalAttributes) {
+            if (oldAttributes != null) {
+                oldAttributes.remove(equalAttribute);
+            }
+            newAttributes.remove(equalAttribute);
+        }
+        if (!newAttributes.isEmpty()) {
+            support.firePropertyChange(new java.beans.PropertyChangeEvent(this, EVENT_ATTRIBUTES_CHANGED, oldAttributes, newAttributes));
+        }        
+    }
+    
     @Override
     public RepositoryInfo getInfo() {
         RepositoryInfo info = new RepositoryInfo(id, JiraConnector.ID, getUrl(), getDisplayName(), getTooltip(), getUsername(), getHttpUsername(), getPassword(), getHttpPassword());
@@ -264,36 +314,6 @@ public class JiraRepository extends RepositoryProvider {
             }
         }
         resetRepository(true);
-    }
-
-    @Override
-    public void fireQueryListChanged() {
-        super.fireQueryListChanged();
-    }
-
-    @Override
-    protected void fireAttributesChanged(Map<String, Object> oldAttributes, Map<String, Object> newAttributes) {
-        // XXX move to spi
-        LinkedList<String> equalAttributes = new LinkedList<String>();
-        // find unchanged values
-        for (Map.Entry<String, Object> e : newAttributes.entrySet()) {
-            String key = e.getKey();
-            Object value = e.getValue();
-            Object oldValue = oldAttributes.get(key);
-            if ((value == null && oldValue == null) || (value != null && value.equals(oldValue))) {
-                equalAttributes.add(key);
-            }
-        }
-        // remove unchanged values
-        for (String equalAttribute : equalAttributes) {
-            if (oldAttributes != null) {
-                oldAttributes.remove(equalAttribute);
-            }
-            newAttributes.remove(equalAttribute);
-        }
-        if (!newAttributes.isEmpty()) {
-            super.fireAttributesChanged(oldAttributes, newAttributes); // fire the event
-        }
     }
 
     public void removeQuery(JiraQuery query) {

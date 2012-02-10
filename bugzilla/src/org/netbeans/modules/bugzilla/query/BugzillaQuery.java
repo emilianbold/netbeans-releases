@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.bugzilla.query;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.io.IOException;
 import org.netbeans.modules.bugzilla.*;
@@ -88,6 +91,7 @@ public class BugzillaQuery extends QueryProvider {
     private Node[] context;
     private boolean saved;
     protected long lastRefresh;
+    private final PropertyChangeSupport support;
         
     public BugzillaQuery(BugzillaRepository repository) {
         this(null, repository, null, false, false, true);
@@ -100,6 +104,8 @@ public class BugzillaQuery extends QueryProvider {
         this.urlParameters = urlParameters;
         this.initialUrlDef = urlDef;
         this.lastRefresh = repository.getIssueCache().getQueryTimestamp(getStoredQueryName());
+        this.support = new PropertyChangeSupport(this);
+        
         if(initControler) {
             controller = createControler(repository, this, urlParameters);
         }
@@ -111,6 +117,31 @@ public class BugzillaQuery extends QueryProvider {
         }
     }
 
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+    
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
+    }
+
+    // XXX does this has to be protected
+    protected void fireQuerySaved() {
+        support.firePropertyChange(EVENT_QUERY_SAVED, null, null);
+        repository.fireQueryListChanged();
+    }
+
+    protected void fireQueryRemoved() {
+        support.firePropertyChange(EVENT_QUERY_REMOVED, null, null);
+        repository.fireQueryListChanged();
+    }
+
+    protected void fireQueryIssuesChanged() {
+        support.firePropertyChange(EVENT_QUERY_ISSUES_CHANGED, null, null);
+    }  
+    
     @Override
     public String getDisplayName() {
         return name;
@@ -297,18 +328,6 @@ public class BugzillaQuery extends QueryProvider {
         return saved;
     }
     
-    @Override
-    public void fireQuerySaved() {
-        super.fireQuerySaved();
-        repository.fireQueryListChanged();
-    }
-
-    @Override
-    public void fireQueryRemoved() {
-        super.fireQueryRemoved();
-        repository.fireQueryListChanged();
-    }
-
     @Override
     public IssueProvider[] getIssues(int includeStatus) {
         if (issues == null) {

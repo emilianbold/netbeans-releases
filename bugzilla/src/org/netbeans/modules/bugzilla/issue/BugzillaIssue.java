@@ -43,6 +43,8 @@
 package org.netbeans.modules.bugzilla.issue;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -174,13 +176,33 @@ public class BugzillaIssue extends IssueProvider implements IssueTable.NodeProvi
     private Map<String, TaskOperation> availableOperations;
 
     private static final RequestProcessor parallelRP = new RequestProcessor("BugzillaIssue", 5); //NOI18N
+    private final PropertyChangeSupport support;
 
     public BugzillaIssue(TaskData data, BugzillaRepository repo) {
         super(repo);
         this.data = data;
         this.repository = repo;
+        support = new PropertyChangeSupport(this);
     }
 
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
+    }
+
+    /**
+     * Notify listeners on this issue that its data were changed
+     */
+    protected void fireDataChanged() {
+        support.firePropertyChange(EVENT_ISSUE_REFRESHED, null, null);
+    }
+
+    
     @Override
     public boolean isNew() {
         return data == null || data.isNew();

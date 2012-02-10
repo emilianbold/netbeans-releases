@@ -45,6 +45,7 @@ package org.netbeans.modules.bugtracking.jira;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -256,6 +257,16 @@ public class JiraUpdater {
         }
         public Lookup getLookup() {
             return Lookup.EMPTY;
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            
         }
     }
 

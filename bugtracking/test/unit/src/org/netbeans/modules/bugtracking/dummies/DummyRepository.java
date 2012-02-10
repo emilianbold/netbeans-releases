@@ -43,6 +43,7 @@
 package org.netbeans.modules.bugtracking.dummies;
 
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.openide.util.ImageUtilities;
@@ -125,6 +126,16 @@ public class DummyRepository extends RepositoryProvider {
     @Override
     public String toString() {
         return getInfo().getDisplayName();
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

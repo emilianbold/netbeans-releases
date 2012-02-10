@@ -59,7 +59,6 @@ import org.openide.util.Lookup;
 public abstract class RepositoryProvider implements Lookup.Provider {
 
     private RepositoryNode node;
-    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     /**
      * a query from this repository was saved or removed
@@ -149,29 +148,8 @@ public abstract class RepositoryProvider implements Lookup.Provider {
      */
     public abstract IssueProvider[] simpleSearch(String criteria);
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
+    public abstract void removePropertyChangeListener(PropertyChangeListener listener);
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-
-    /**
-     * Notify listeners on this repository that a query was either removed or saved
-     * XXX make use of new/old value
-     */
-    protected void fireQueryListChanged() {
-        support.firePropertyChange(EVENT_QUERY_LIST_CHANGED, null, null);
-    }
-
-    /**
-     * Notify listeners on this repository that some of repository's attributes have changed.
-     * @param oldValue map of old attributes
-     * @param newValue map of new attributes
-     */
-    protected void fireAttributesChanged (java.util.Map<String, Object> oldAttributes, java.util.Map<String, Object> newAttributes) {
-        support.firePropertyChange(new java.beans.PropertyChangeEvent(this, EVENT_ATTRIBUTES_CHANGED, oldAttributes, newAttributes));
-    }
+    public abstract void addPropertyChangeListener(PropertyChangeListener listener);
 
 }

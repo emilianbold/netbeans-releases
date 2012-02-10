@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugtracking.vcs;
 
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.JComponent;
@@ -146,6 +147,16 @@ public class HookIssue extends IssueProvider {
 
     @Override
     public void setContext(Node[] nodes) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

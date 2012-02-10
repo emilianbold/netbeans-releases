@@ -56,8 +56,6 @@ import org.openide.nodes.Node;
  */
 public abstract class QueryProvider {
 
-    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
-
     /**
      * queries issue list was changed
      */
@@ -171,26 +169,9 @@ public abstract class QueryProvider {
      * EVENTS
      *********/
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
+    public abstract void removePropertyChangeListener(PropertyChangeListener listener);
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-
-    // XXX does this has to be protected
-    protected void fireQuerySaved() {
-        support.firePropertyChange(EVENT_QUERY_SAVED, null, null);
-    }
-
-    protected void fireQueryRemoved() {
-        support.firePropertyChange(EVENT_QUERY_REMOVED, null, null);
-    }
-
-    protected void fireQueryIssuesChanged() {
-        support.firePropertyChange(EVENT_QUERY_ISSUES_CHANGED, null, null);
-    }
+    public abstract void addPropertyChangeListener(PropertyChangeListener listener);
 
     public abstract void setContext(Node[] nodes);
 

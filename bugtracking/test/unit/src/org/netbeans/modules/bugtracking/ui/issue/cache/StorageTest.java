@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugtracking.ui.issue.cache;
 
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.util.*;
@@ -319,6 +320,16 @@ public class StorageTest extends NbTestCase {
 
         @Override
         public void setContext(Node[] nodes) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

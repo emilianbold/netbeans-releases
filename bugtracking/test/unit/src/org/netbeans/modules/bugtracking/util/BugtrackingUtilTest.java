@@ -43,6 +43,7 @@
 package org.netbeans.modules.bugtracking.util;
 
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
@@ -166,6 +167,16 @@ public class BugtrackingUtilTest {
         public IssueProvider[] simpleSearch(String criteria) { throw new UnsupportedOperationException("Not supported yet."); }
         @Override
         public Lookup getLookup() { throw new UnsupportedOperationException("Not supported yet."); }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
 
     }
 
