@@ -149,7 +149,7 @@ public class FSWrapperTest {
         }
     }
 
-    @Hint(category="")
+    @Hint(displayName="foo", description="bar", category="")
     @TestAnnotation1(
         b1=true,
         b3=true,

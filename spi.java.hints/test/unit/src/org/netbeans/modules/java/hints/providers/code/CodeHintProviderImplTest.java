@@ -65,7 +65,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  *
  * @author lahvac
  */
-@Hint(id="hintPattern", category="general")
+@Hint(displayName="foo", description="bar", id="hintPattern", category="general")
 public class CodeHintProviderImplTest {
 
     public CodeHintProviderImplTest() {
