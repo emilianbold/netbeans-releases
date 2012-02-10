@@ -39,49 +39,42 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doclets;
+package org.netbeans.modules.javascript2.editor.doclets.model;
 
-import java.util.List;
-import org.netbeans.modules.javascript2.editor.doclets.model.JsDocElement;
-import org.netbeans.modules.javascript2.editor.model.JsComment;
+import org.netbeans.modules.javascript2.editor.doclets.model.el.NamePath;
 
 /**
- * Represents block of JSDoc comment which contains particular {@link JsDocTag}s.
+ * Represents jsDoc elements which assigns foreign member field.
+ * <p>
+ * <i>Examples:</i> @borrows otherMemberName as thisMemberName
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JsDocBlock extends JsComment {
+public class AssignElement extends JsDocElementImpl {
 
-    private final List<JsDocElement> tags;
-    private final JsDocCommentType type;
+    private final NamePath otherMemberName;
+    private final NamePath thisMemberName;
 
-    /**
-     * Creates new {@code JsDocBlock} with given parameters.
-     *
-     * @param startOffset start offset of the comment
-     * @param endOffset end offset of the comment
-     * @param type comment {@code JsDocCommentType}
-     * @param tags list of tags contained in this block or {@code null} if block is of special type
-     */
-    public JsDocBlock(int startOffset, int endOffset, JsDocCommentType type, List<JsDocElement> tags) {
-        super(startOffset, endOffset);
-        this.type = type;
-        this.tags = tags;
+    public AssignElement(Type type, NamePath otherMemberName, NamePath thisMemberName) {
+        super(type);
+        this.otherMemberName = otherMemberName;
+        this.thisMemberName = thisMemberName;
     }
 
     /**
-     * Gets list of {@code JsDocTag}s of this block.
-     * @return list of {@code JsDocTag}s
+     * Gets other member name path.
+     * @return other member name path
      */
-    public List<JsDocElement> getTags() {
-        return tags;
+    public NamePath getOtherMemberName() {
+        return otherMemberName;
     }
 
     /**
-     * Gets type of the jsDoc block comment.
-     * @return type of the jsDoc block comment
+     * Gets this member name path.
+     * @return this member name path
      */
-    public JsDocCommentType getType() {
-        return type;
+    public NamePath getThisMemberName() {
+        return thisMemberName;
     }
+
 }

@@ -39,49 +39,41 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doclets;
+package org.netbeans.modules.javascript2.editor.doclets.model;
 
-import java.util.List;
-import org.netbeans.modules.javascript2.editor.doclets.model.JsDocElement;
-import org.netbeans.modules.javascript2.editor.model.JsComment;
+import org.netbeans.modules.javascript2.editor.doclets.model.el.Description;
+import org.openide.util.Parameters;
 
 /**
- * Represents block of JSDoc comment which contains particular {@link JsDocTag}s.
+ * Represents jsDoc elements with description text.
+ * <p>
+ * <i>Examples:</i> @author Jackie Chan, @fileOverview about this file, ...
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JsDocBlock extends JsComment {
+public class DescriptionElement extends JsDocElementImpl {
 
-    private final List<JsDocElement> tags;
-    private final JsDocCommentType type;
+    private final Description description;
 
     /**
-     * Creates new {@code JsDocBlock} with given parameters.
+     * Creates new {@code DescriptionElement}.
      *
-     * @param startOffset start offset of the comment
-     * @param endOffset end offset of the comment
-     * @param type comment {@code JsDocCommentType}
-     * @param tags list of tags contained in this block or {@code null} if block is of special type
+     * @param type {@code DescriptionElement} type, never null
+     * @param description description of the element, never null
      */
-    public JsDocBlock(int startOffset, int endOffset, JsDocCommentType type, List<JsDocElement> tags) {
-        super(startOffset, endOffset);
-        this.type = type;
-        this.tags = tags;
+    public DescriptionElement(Type type, Description description) {
+        super(type);
+        Parameters.notNull("type", type);
+        Parameters.notNull("description", description);
+        this.description = description;
     }
 
     /**
-     * Gets list of {@code JsDocTag}s of this block.
-     * @return list of {@code JsDocTag}s
+     * Gets description of the element.
+     * @return description
      */
-    public List<JsDocElement> getTags() {
-        return tags;
+    public Description getDescription() {
+        return description;
     }
 
-    /**
-     * Gets type of the jsDoc block comment.
-     * @return type of the jsDoc block comment
-     */
-    public JsDocCommentType getType() {
-        return type;
-    }
 }

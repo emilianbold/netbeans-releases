@@ -39,49 +39,40 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doclets;
+package org.netbeans.modules.javascript2.editor.doclets.model;
 
-import java.util.List;
-import org.netbeans.modules.javascript2.editor.doclets.model.JsDocElement;
-import org.netbeans.modules.javascript2.editor.model.JsComment;
+import org.netbeans.modules.javascript2.editor.doclets.model.el.Description;
 
 /**
- * Represents block of JSDoc comment which contains particular {@link JsDocTag}s.
+ * Represents base parameter element class with optional parameter type and description.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JsDocBlock extends JsComment {
+public abstract class ParameterElement extends JsDocElementImpl {
 
-    private final List<JsDocElement> tags;
-    private final JsDocCommentType type;
+    private final org.netbeans.modules.javascript2.editor.doclets.model.el.Type paramType;
+    private final Description paramDescription;
 
-    /**
-     * Creates new {@code JsDocBlock} with given parameters.
-     *
-     * @param startOffset start offset of the comment
-     * @param endOffset end offset of the comment
-     * @param type comment {@code JsDocCommentType}
-     * @param tags list of tags contained in this block or {@code null} if block is of special type
-     */
-    public JsDocBlock(int startOffset, int endOffset, JsDocCommentType type, List<JsDocElement> tags) {
-        super(startOffset, endOffset);
-        this.type = type;
-        this.tags = tags;
+    public ParameterElement(Type type, org.netbeans.modules.javascript2.editor.doclets.model.el.Type paramType, Description paramDescription) {
+        super(type);
+        this.paramType = paramType;
+        this.paramDescription = paramDescription;
     }
 
     /**
-     * Gets list of {@code JsDocTag}s of this block.
-     * @return list of {@code JsDocTag}s
+     * Gets the description of the parameter.
+     * @return parameter description
      */
-    public List<JsDocElement> getTags() {
-        return tags;
+    public Description getParamDescription() {
+        return paramDescription;
     }
 
     /**
-     * Gets type of the jsDoc block comment.
-     * @return type of the jsDoc block comment
+     * Gets the parameter type.
+     * @return parameter type
      */
-    public JsDocCommentType getType() {
-        return type;
+    public org.netbeans.modules.javascript2.editor.doclets.model.el.Type getParamType() {
+        return paramType;
     }
+
 }
