@@ -48,6 +48,7 @@ import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
 import org.openide.util.NbBundle;
 
+// http://symfony.com/doc/2.0/bundles/SensioFrameworkExtraBundle/index.html#annotations-for-controllers
 public final class Symfony2ExtraAnnotationsProvider extends PhpAnnotationsProvider {
 
     @NbBundle.Messages("Symfony2ExtraAnnotationsProvider.name=Symfony2 Extra")
