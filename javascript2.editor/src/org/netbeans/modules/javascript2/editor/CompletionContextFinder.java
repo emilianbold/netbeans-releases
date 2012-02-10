@@ -68,7 +68,7 @@ public class CompletionContextFinder {
     private static final List<JsTokenId> WHITESPACES_TOKENS = Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL);
     
     private static final List<JsTokenId> CHANGE_CONTEXT_TOKENS = Arrays.asList(
-            JsTokenId.OPERATOR_SEMICOLON, JsTokenId.BRACKET_LEFT_CURLY);
+            JsTokenId.OPERATOR_SEMICOLON, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY);
     private static final List<Object[]> OBJECT_PROPERTY_TOKENCHAINS = Arrays.asList(
         new Object[]{JsTokenId.OPERATOR_DOT},
         new Object[]{JsTokenId.OPERATOR_DOT, JsTokenId.IDENTIFIER}
@@ -113,9 +113,9 @@ public class CompletionContextFinder {
         if (tokenId == JsTokenId.IDENTIFIER || WHITESPACES_TOKENS.contains(tokenId)) {
             ts.movePrevious();
             token = LexUtilities.findPrevious(ts, WHITESPACES_TOKENS);
-            if (CHANGE_CONTEXT_TOKENS.contains(token.id())) {
-                return CompletionContext.GLOBAL;
-            }
+        }
+        if (CHANGE_CONTEXT_TOKENS.contains(token.id())) {
+            return CompletionContext.GLOBAL;
         }
         return CompletionContext.EXPRESSION;
     }
