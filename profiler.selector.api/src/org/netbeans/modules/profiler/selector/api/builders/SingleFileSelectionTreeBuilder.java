@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
+import org.netbeans.modules.profiler.selector.api.SelectionTreeBuilderType;
 import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
 import org.netbeans.modules.profiler.selector.api.nodes.ClassNode;
 import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
@@ -56,7 +57,7 @@ import org.openide.filesystems.FileObject;
  */
 public class SingleFileSelectionTreeBuilder extends SelectionTreeBuilder {
     public SingleFileSelectionTreeBuilder() {
-        super(new Type("single-file", Bundle.PackageSelectionTreeViewBuilder_PackageView()), false); // NOI18N
+        super(new SelectionTreeBuilderType("single-file", Bundle.PackageSelectionTreeViewBuilder_PackageView()), false); // NOI18N
     }
 
     @Override

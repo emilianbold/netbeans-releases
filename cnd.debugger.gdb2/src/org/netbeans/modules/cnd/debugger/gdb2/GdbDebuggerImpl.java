@@ -2363,7 +2363,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             } else {
                 if (parent.isDynamic() && parent.getDisplayHint() == GdbVariable.DisplayHint.MAP) {
                     // in pretty maps even element is a key, odd is a value
-                    exp = (childIdx % 2 == 0) ? Catalog.format("Map_Key", childIdx / 2) : Catalog.format("Map_Value", childIdx / 2);
+                    exp = (childIdx % 2 == 0) ? Catalog.format("Map_Key", childIdx / 2) : Catalog.format("Map_Value", childIdx / 2); // NOI18N
                     childIdx++;
                 } else {
                     // Show array name and index instead of only index, IZ 192123
