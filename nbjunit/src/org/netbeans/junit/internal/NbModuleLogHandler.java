@@ -124,7 +124,7 @@ public final class NbModuleLogHandler extends Handler {
         if (txt != null && record.getParameters() != null) {
             txt = MessageFormat.format(txt, record.getParameters());
         }
-        sb.append(normalize(txt));
+        sb.append(txt != null ? normalize(txt) : txt);
         Throwable t = record.getThrown();
         if (t != null) {
             sb.append('\n');
