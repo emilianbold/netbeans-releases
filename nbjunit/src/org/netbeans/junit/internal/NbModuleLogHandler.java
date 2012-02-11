@@ -45,18 +45,26 @@ package org.netbeans.junit.internal;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.ref.Reference;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
+import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbTestCase;
 
 /** Registered in 'META-INF/services/java.util.logging.Handler' via
@@ -116,7 +124,7 @@ public final class NbModuleLogHandler extends Handler {
         if (txt != null && record.getParameters() != null) {
             txt = MessageFormat.format(txt, record.getParameters());
         }
-        sb.append(txt);
+        sb.append(normalize(txt));
         Throwable t = record.getThrown();
         if (t != null) {
             sb.append('\n');
@@ -128,6 +136,25 @@ public final class NbModuleLogHandler extends Handler {
         return sb;
     }
 
+    private static final List<String> hexes = new ArrayList<String>();
+    private static final String integerToHexString = "[0-9a-fA-F]{5,8}";
+    private static final Pattern hex = Pattern.compile("(?<=@(?:" + integerToHexString + ":)?)" + integerToHexString);
+    private static synchronized String normalize(String txt) {
+        Matcher m = hex.matcher(txt.replace(Manager.getWorkDirPath(), "WORKDIR"));
+        @SuppressWarnings("StringBufferMayBeStringBuilder")
+        StringBuffer b = new StringBuffer();
+        while (m.find()) {
+            String id = m.group().toLowerCase(Locale.ENGLISH);
+            int i = hexes.indexOf(id);
+            if (i == -1) {
+                i = hexes.size();
+                hexes.add(id);
+            }
+            m.appendReplacement(b, Integer.toHexString(i));
+        }
+        m.appendTail(b);
+        return b.toString();
+    }
 
     public NbModuleLogHandler() {
     }

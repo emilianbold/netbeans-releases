@@ -44,6 +44,7 @@
 
 package org.netbeans.junit;
 
+import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -80,6 +81,42 @@ public class LogTest extends NbTestCase {
         if (seq.toString().indexOf("Look msg") == -1) {
             fail(seq.toString());
         }
+    }
+
+    public void testPublish() throws Exception {
+        CharSequence seq = Log.enable(LOG.getName(), Level.INFO);
+        LOG.info("some stuff");
+        LOG.log(Level.INFO, "found {0} great", new File(getWorkDir(), "some/thing"));
+        Object o0 = new Object();
+        Object o1 = new Object();
+        LOG.log(Level.INFO, "o0={0} o1={1}", new Object[] {o0, o1});
+        LOG.log(Level.INFO, "o0={0}", o0);
+        class Group {
+            @Override public String toString() {
+                return String.format("Group@%h", this);
+            }
+            class Item {
+                @Override public String toString() {
+                    return String.format("Item@%h:%H", this, Group.this);
+                }
+            }
+        }
+        Group g2 = new Group();
+        Object i3 = g2.new Item();
+        Object i4 = g2.new Item();
+        Group g5 = new Group();
+        Object i6 = g5.new Item();
+        LOG.log(Level.INFO, "g2={0} i3={1} i4={2}", new Object[] {g2, i3, i4});
+        LOG.log(Level.INFO, "g5={0} i6={1}", new Object[] {g5, i6});
+        LOG.log(Level.INFO, "i4={0} o1={1}", new Object[] {i4, o1});
+        assertEquals("some stuff\n"
+                + "found WORKDIR/org.netbeans.junit.LogTest/testPublish/some/thing great\n"
+                + "o0=java.lang.Object@0 o1=java.lang.Object@1\n"
+                + "o0=java.lang.Object@0\n"
+                + "g2=Group@2 i3=Item@3:2 i4=Item@4:2\n"
+                + "g5=Group@5 i6=Item@6:5\n"
+                + "i4=Item@4:2 o1=java.lang.Object@1\n",
+                seq.toString().replaceAll("(?m)^\\Q[my.log.for.test] THREAD: Test Watch Dog: testPublish MSG: \\E(.+)(\r?\n)+", "$1\n").replace('\\', '/'));
     }
 
 }
