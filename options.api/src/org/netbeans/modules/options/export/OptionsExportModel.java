@@ -101,6 +101,7 @@ public final class OptionsExportModel {
     private EditableProperties currentProperties;
     /** List of ignored folders in userdir. It speeds up folder scanning. */
     private static final List<String> IGNORED_FOLDERS = Arrays.asList("var/cache");  // NOI18N
+    private final String PASSWORDS_PATTERN = "config/Preferences/org/netbeans/modules/keyring.*";  // NOI18N
 
     /** Returns instance of export options model.
      * @param source source of export/import. It is either zip file or userdir
@@ -151,8 +152,15 @@ public final class OptionsExportModel {
      * @param state new state
      */
     void setState(State state) {
+        String passwords = NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.export.passwords.category.displayName");
         for (OptionsExportModel.Category category : getCategories()) {
-            category.setState(state);
+            if (state.equals(State.ENABLED)) {
+                if (category.getDisplayName() != null && !category.getDisplayName().equals(passwords)) {
+                    category.setState(state);
+                }
+            } else {
+                category.setState(state);
+            }
         }
     }
 
@@ -287,12 +295,17 @@ public final class OptionsExportModel {
     private Set<String> getExcludePatterns() {
         if (excludePatterns == null) {
             excludePatterns = new HashSet<String>();
+            String passwords = NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.export.passwords.displayName");
             for (OptionsExportModel.Category category : getCategories()) {
                 for (OptionsExportModel.Item item : category.getItems()) {
                     if (item.isEnabled()) {
                         String exclude = item.getExclude();
                         if (exclude != null && exclude.length() > 0) {
                             excludePatterns.addAll(parsePattern(exclude));
+                        }
+                    } else {
+                        if(item.getDisplayName().equals(passwords)) {
+                            excludePatterns.add(PASSWORDS_PATTERN);
                         }
                     }
                 }
