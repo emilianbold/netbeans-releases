@@ -53,6 +53,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
 
+@RandomlyFails
 public class InnerToOutterTest extends RefactoringTestBase {
 
     public InnerToOutterTest(String name) {
