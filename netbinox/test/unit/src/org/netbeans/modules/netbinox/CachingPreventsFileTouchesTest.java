@@ -98,6 +98,10 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
             NbModuleSuite.Configuration conf = common.reuseUserDir(true).addTest(CachingPreventsFileTouchesTest.class, "testStartAgain");
             suite.addTest(NbModuleSuite.create(conf));
         }
+        {
+            NbModuleSuite.Configuration conf = common.reuseUserDir(true).addTest(CachingPreventsFileTouchesTest.class, "testStartOnceMore");
+            suite.addTest(NbModuleSuite.create(conf));
+        }
 
         suite.addTest(new CachingPreventsFileTouchesTest("testInMiddle"));
 
@@ -169,6 +173,14 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
     }
 
     public void testStartAgain() throws Exception {
+        CachingAndExternalPathsTest.doNecessarySetup();
+        // will be reset next time the system starts
+        System.getProperties().remove("netbeans.dirs");
+        // initializes counting, but waits till netbeans.dirs are provided
+        // by NbModuleSuite
+    }
+
+    public void testStartOnceMore() throws Exception {
         CachingAndExternalPathsTest.doNecessarySetup();
         // will be reset next time the system starts
         System.getProperties().remove("netbeans.dirs");
