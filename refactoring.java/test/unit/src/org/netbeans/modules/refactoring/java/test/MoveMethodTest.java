@@ -49,6 +49,7 @@ import org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties.Visib
  *
  * @author Ralph Ruijs
  */
+@RandomlyFails
 public class MoveMethodTest extends MoveBaseTest {
 
     public MoveMethodTest(String name) {

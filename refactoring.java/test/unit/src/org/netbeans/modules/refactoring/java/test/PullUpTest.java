@@ -65,6 +65,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Ralph Ruijs
  */
+@RandomlyFails
 public class PullUpTest extends RefactoringTestBase {
 
     public PullUpTest(String name) {
