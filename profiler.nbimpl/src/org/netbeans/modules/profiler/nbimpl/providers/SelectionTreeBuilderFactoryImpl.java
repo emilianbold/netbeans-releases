@@ -42,9 +42,12 @@
 package org.netbeans.modules.profiler.nbimpl.providers;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.profiler.selector.api.builders.FolderSelectionTreeBuilder;
+import org.netbeans.modules.profiler.selector.api.builders.JarSelectionTreeBuilder;
 import org.netbeans.modules.profiler.selector.api.builders.PackageSelectionTreeViewBuilder;
 import org.netbeans.modules.profiler.selector.api.builders.SingleFileSelectionTreeBuilder;
 import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
@@ -52,6 +55,7 @@ import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilderFactoryPro
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.openide.util.Lookup.Provider;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
@@ -88,6 +92,20 @@ public class SelectionTreeBuilderFactoryImpl extends SelectionTreeBuilderFactory
     
     @Override
     public List<SelectionTreeBuilder> buildersForFile(FileObject file) {
+        if (file.getExt().equalsIgnoreCase("jar")) { // NOI18N
+            List<SelectionTreeBuilder> ret = new ArrayList<SelectionTreeBuilder>(1);
+            SelectionTreeBuilder b = new JarSelectionTreeBuilder();
+            b.setContext(Lookups.singleton(file));
+            ret.add(b);
+            return ret;
+        }
+        if (file.isFolder()) {
+            List<SelectionTreeBuilder> ret = new ArrayList<SelectionTreeBuilder>(1);
+            SelectionTreeBuilder b = new FolderSelectionTreeBuilder();
+            b.setContext(Lookups.singleton(file));
+            ret.add(b);
+            return ret;
+        }
         List<SelectionTreeBuilder> bs = new ArrayList<SelectionTreeBuilder>(MimeLookup.getLookup(file.getMIMEType()).lookupAll(SelectionTreeBuilder.class));
         for(SelectionTreeBuilder b : bs) {
             b.setContext(Lookups.singleton(file));
