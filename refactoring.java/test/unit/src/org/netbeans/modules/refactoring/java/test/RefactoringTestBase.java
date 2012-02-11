@@ -48,13 +48,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeUtilities;
@@ -65,10 +63,10 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.MimeTypes;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
-import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.gototest.TestLocator;
@@ -105,7 +103,7 @@ public class RefactoringTestBase extends NbTestCase {
             TestUtilities.copyStringToFile(fo, f.content);
         }
 
-        RepositoryUpdater.getDefault().refreshAll(false, true, false, null);
+        IndexingManager.getDefault().refreshIndexAndWait(sourceRoot.toURL(), null, true);
     }
 
     protected void verifyContent(FileObject sourceRoot, File... files) throws Exception {
@@ -181,6 +179,7 @@ public class RefactoringTestBase extends NbTestCase {
     protected FileObject src;
     protected FileObject test;
     protected Project prj;
+    private ClassPath sourcePath;
 
     @Override
     protected void setUp() throws Exception {
@@ -193,8 +192,7 @@ public class RefactoringTestBase extends NbTestCase {
             new ClassPathProvider() {
             @Override
                 public ClassPath findClassPath(FileObject file, String type) {
-                    if ((src != null && (file == src || FileUtil.isParentOf(src, file)))
-                            || (test != null && (file == test || FileUtil.isParentOf(test, file)))){
+                    if (sourcePath != null && sourcePath.contains(file)){
                         if (ClassPath.BOOT.equals(type)) {
                             return ClassPathSupport.createClassPath(System.getProperty("sun.boot.class.path"));
                         }
@@ -202,7 +200,7 @@ public class RefactoringTestBase extends NbTestCase {
                             return ClassPathSupport.createClassPath(new FileObject[0]);
                         }
                         if (ClassPath.SOURCE.equals(type)) {
-                            return ClassPathSupport.createClassPath(src, test);
+                            return sourcePath;
                         }
                     }
 
@@ -308,8 +306,8 @@ public class RefactoringTestBase extends NbTestCase {
         prepareTest();
         org.netbeans.api.project.ui.OpenProjects.getDefault().open(new Project[] {prj = ProjectManager.getDefault().findProject(src.getParent())}, false);
         MimeTypes.setAllMimeTypes(Collections.singleton("text/x-java"));
-        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {ClassPathSupport.createClassPath(src),
-                                                                                    ClassPathSupport.createClassPath(test)});
+        sourcePath = ClassPathSupport.createClassPath(src, test);
+        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {sourcePath});
         RepositoryUpdater.getDefault().start(true);
         super.setUp();
         FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Empty.java");
@@ -319,13 +317,14 @@ public class RefactoringTestBase extends NbTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        org.netbeans.api.project.ui.OpenProjects.getDefault().open(new Project[] {prj}, false);
+        GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, new ClassPath[] {sourcePath});
+        org.netbeans.api.project.ui.OpenProjects.getDefault().close(new Project[] {prj});
         prj = null;
     }
 
     private void prepareTest() throws Exception {
         FileObject workdir = SourceUtilsTestUtil.makeScratchDir(this);
-        
+
         FileObject projectFolder = FileUtil.createFolder(workdir, "testProject");
         src = FileUtil.createFolder(projectFolder, "src");
         test = FileUtil.createFolder(projectFolder, "test");
