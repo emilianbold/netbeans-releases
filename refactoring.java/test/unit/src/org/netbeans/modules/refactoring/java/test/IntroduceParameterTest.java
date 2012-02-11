@@ -50,6 +50,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.java.api.IntroduceParameterRefactoring;
@@ -314,6 +315,7 @@ public class IntroduceParameterTest extends RefactoringTestBase {
                 + "}\n"));
     }
     
+    @RandomlyFails
     public void testReplaceAll() throws Exception {
         String source;
         writeFilesAndWaitForScan(src,
