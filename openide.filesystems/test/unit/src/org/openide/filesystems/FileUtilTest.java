@@ -285,9 +285,9 @@ public class FileUtilTest extends NbTestCase {
         File f = new File(getWorkDir(), "text.txt");
         CharSequence log = Log.enable(FileUtil.class.getName(), Level.FINE);
         File one = FileUtil.normalizeFile(f);
-        String msg = "FileUtil.normalizeFile for " + f;
+        String msg = "FileUtil.normalizeFile for WORKDIR/o.o.f.F/testNormalizeFileIsCached/text.txt".replace('/', File.separatorChar);
         if (log.toString().indexOf(msg) == -1) {
-            fail("One querfy for the file shall be in logs:\n" + log);
+            fail("One query for the file shall be in logs:\n" + log);
         }
         CharSequence log2 = Log.enable(FileUtil.class.getName(), Level.FINE);
         File two = FileUtil.normalizeFile(f);
@@ -356,9 +356,9 @@ public class FileUtilTest extends NbTestCase {
         String path = f.getPath();
         CharSequence log = Log.enable(FileUtil.class.getName(), Level.FINE);
         String one = FileUtil.normalizePath(path);
-        String msg = "FileUtil.normalizeFile for " + f;
+        String msg = "FileUtil.normalizeFile for WORKDIR/o.o.f.F/testNormalizePathIsCached/textPath.txt".replace('/', File.separatorChar);
         if (log.toString().indexOf(msg) == -1) {
-            fail("One querfy for the file shall be in logs:\n" + log);
+            fail("One query for the file shall be in logs:\n" + log);
         }
         CharSequence log2 = Log.enable(FileUtil.class.getName(), Level.FINE);
         String two = FileUtil.normalizePath(path);

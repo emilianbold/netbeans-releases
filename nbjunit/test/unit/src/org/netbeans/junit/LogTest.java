@@ -86,6 +86,7 @@ public class LogTest extends NbTestCase {
     public void testPublish() throws Exception {
         CharSequence seq = Log.enable(LOG.getName(), Level.INFO);
         LOG.info("some stuff");
+        LOG.log(Level.INFO, null);
         LOG.log(Level.INFO, "found {0} great", new File(getWorkDir(), "some/thing"));
         Object o0 = new Object();
         Object o1 = new Object();
@@ -110,6 +111,7 @@ public class LogTest extends NbTestCase {
         LOG.log(Level.INFO, "g5={0} i6={1}", new Object[] {g5, i6});
         LOG.log(Level.INFO, "i4={0} o1={1}", new Object[] {i4, o1});
         assertEquals("some stuff\n"
+                + "null\n"
                 + "found WORKDIR/org.netbeans.junit.LogTest/testPublish/some/thing great\n"
                 + "o0=java.lang.Object@0 o1=java.lang.Object@1\n"
                 + "o0=java.lang.Object@0\n"
