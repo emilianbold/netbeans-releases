@@ -139,7 +139,7 @@ class FilterHelper {
      */
     public boolean fileAllowed(FileObject fo, SearchListener listener) {
         if (active) {
-            for (SearchFilterDefinition fl : filters) {
+            for (SearchFilterDefinition fl : stack.peek()) {
                 if (!fl.searchFile(fo)) {
                     listener.fileSkipped(fo, fl, null);
                     return false;
