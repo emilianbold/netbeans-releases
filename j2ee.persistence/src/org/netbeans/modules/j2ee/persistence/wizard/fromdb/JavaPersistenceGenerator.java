@@ -396,6 +396,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             try {
                 runImpl();
             } catch (IOException e) {
+                Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.INFO, "IOException, remove generated."); //NOI18N 
                 for (FileObject generatedFO : generatedFOs) {
                     generatedFO.delete();
                 }
