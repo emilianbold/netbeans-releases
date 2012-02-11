@@ -68,10 +68,13 @@ import org.netbeans.lib.profiler.utils.formatting.DefaultMethodNameFormatter;
 import org.netbeans.lib.profiler.utils.formatting.MethodNameFormatterFactory;
 import org.netbeans.modules.profiler.api.GestureSubmitter;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
+import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.api.java.SourceMethodInfo;
 import org.netbeans.modules.profiler.selector.api.nodes.*;
 import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
+import org.netbeans.modules.profiler.selector.api.SelectionTreeBuilderType;
 import org.netbeans.modules.profiler.utilities.trees.NodeFilter;
+import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -149,26 +152,17 @@ public class RootSelectorTree extends JPanel {
     public static final String SELECTION_TREE_VIEW_LIST_PROPERTY = "SELECTION_TREE_VIEW_LIST"; // NO18N
     private final Set<SourceCodeSelection> currentSelectionSet = new HashSet<SourceCodeSelection>();
     private ProgressDisplayer progress = ProgressDisplayer.DEFAULT;
-    private NodeFilter<SelectorNode> nodeFilter = DEFAULT_FILTER_INNER;
+//    private NodeFilter<SelectorNode> nodeFilter = DEFAULT_FILTER_INNER;
     private Lookup context = Lookup.EMPTY;
-    private SelectionTreeBuilder.Type builderType = null;
+    private SelectionTreeBuilderType builderType = null;
     private SearchPanel searchPanel = null;
-    
-    public RootSelectorTree(BuilderUsageCalculator usageCalculator) {
-        this(ProgressDisplayer.DEFAULT, DEFAULT_FILTER_INNER);
-    }
+    final private TreePathSearch.ClassIndex ci;
+    private Cancellable cancellHandler;
 
-    public RootSelectorTree(ProgressDisplayer pd) {
-        this(pd, DEFAULT_FILTER_INNER);
-    }
-
-    public RootSelectorTree(NodeFilter<SelectorNode> filter) {
-        this(ProgressDisplayer.DEFAULT, filter);
-    }
-
-    public RootSelectorTree(ProgressDisplayer pd, NodeFilter<SelectorNode> filter) {
+    public RootSelectorTree(ProgressDisplayer pd, TreePathSearch.ClassIndex ci) {
         this.progress = pd;
-        this.nodeFilter = filter;
+        this.ci = ci;
+//        this.nodeFilter = filter;
         init();
     }
 
@@ -177,11 +171,17 @@ public class RootSelectorTree extends JPanel {
 
         firePropertyChange(SELECTION_TREE_VIEW_LIST_PROPERTY, null, null);
     }
+    
+    public void setCancelHandler(Cancellable cancellable) {
+        this.cancellHandler = cancellable;
+    }
 
+    private AtomicBoolean isActive = new AtomicBoolean(true);
     public void setSelection(final SourceCodeSelection[] selection) {
         new SwingWorker(false) {
             
             protected void doInBackground() {
+                isActive.set(true);
                 removeSelection(getSelection());
                 applySelection(selection);
             }
@@ -197,7 +197,16 @@ public class RootSelectorTree extends JPanel {
                         cl.countDown();
                     }
                 });
-                progress.showProgress(Bundle.MSG_ApplyingSelection());
+                progress.showProgress(Bundle.MSG_ApplyingSelection(), new ProgressDisplayer.ProgressController() {
+                    @Override
+                    public boolean cancel() {
+                        isActive.set(false);
+                        if (cancellHandler != null) {
+                            cancellHandler.cancel();
+                        }
+                        return true;
+                    }
+                });
                 
                 try {
                     cl.await();
@@ -230,16 +239,16 @@ public class RootSelectorTree extends JPanel {
         return currentSelectionSet.toArray(new SourceCodeSelection[currentSelectionSet.size()]);
     }
 
-    public List<SelectionTreeBuilder.Type> getBuilderTypes() {
+    public List<SelectionTreeBuilderType> getBuilderTypes() {
 //      **** useful for testing *******
 //      return Collections.EMPTY_LIST;
 //      *******************************
         class TypeEntry {
 
-            SelectionTreeBuilder.Type type;
+            SelectionTreeBuilderType type;
             int frequency;
 
-            public TypeEntry(SelectionTreeBuilder.Type type) {
+            public TypeEntry(SelectionTreeBuilderType type) {
                 this.type = type;
                 frequency = 0;
             }
@@ -271,13 +280,14 @@ public class RootSelectorTree extends JPanel {
 
         for (SelectionTreeBuilder builder : context.lookupAll(SelectionTreeBuilder.class)) {
             if (builder.estimatedNodeCount() == -1) continue; // builder can't build the tree for some reason
-            SelectionTreeBuilder.Type type = builder.getType();
+            SelectionTreeBuilderType type = builder.getType();
             TypeEntry te = new TypeEntry(type);
             if (entries.contains(te)) {
                 int index = entries.indexOf(te);
                 te = entries.get(index);
                 te.frequency += builder.isPreferred() ? 2 : 1;
             } else {
+                te.frequency = builder.isPreferred() ? 2 : 1;
                 entries.add(te);
             }
         }
@@ -286,9 +296,9 @@ public class RootSelectorTree extends JPanel {
 
             @Override
             public int compare(TypeEntry o1, TypeEntry o2) {
-                if (o1.frequency > o2.frequency) {
+                if (o1.frequency < o2.frequency) {
                     return 1;
-                } else if (o1.frequency < o2.frequency) {
+                } else if (o1.frequency > o2.frequency) {
                     return -1;
                 } else {
                     return 0;
@@ -296,7 +306,7 @@ public class RootSelectorTree extends JPanel {
             }
         });
 
-        List<SelectionTreeBuilder.Type> types = new ArrayList<SelectionTreeBuilder.Type>(entries.size());
+        List<SelectionTreeBuilderType> types = new ArrayList<SelectionTreeBuilderType>(entries.size());
         for (TypeEntry entry : entries) {
             types.add(entry.type);
         }
@@ -304,7 +314,7 @@ public class RootSelectorTree extends JPanel {
         return types;
     }
 
-    public void setBuilderType(SelectionTreeBuilder.Type type) {
+    public void setBuilderType(SelectionTreeBuilderType type) {
         builderType = type;
         refreshTree();
     }
@@ -315,6 +325,7 @@ public class RootSelectorTree extends JPanel {
      * Should be called right before trying to show the selector tree
      */
     public void reset() {
+        isActive.set(true);
         tree.setModel(DEFAULTMODEL);
         currentSelectionSet.clear();
         context = Lookup.EMPTY;
@@ -533,7 +544,7 @@ public class RootSelectorTree extends JPanel {
     private void findNode(final String searchText) {
         GestureSubmitter.logRMSSearch(searchText);
         
-        sCont = new TreePathSearch((TreeNode)tree.getModel().getRoot(), searchText);
+        sCont = new TreePathSearch((TreeNode)tree.getModel().getRoot(), searchText, ci);
         find(false);
     }
     
@@ -618,12 +629,15 @@ public class RootSelectorTree extends JPanel {
             }
         }
     }
-
+    
     private void applySelection(SourceCodeSelection[] selections) {
+        if (!isActive.get()) return;
+        
         TreeNode root = (TreeNode) tree.getModel().getRoot();
         Enumeration childrenEnum = root.children();
 
         while (childrenEnum.hasMoreElements()) {
+            if (!isActive.get()) return;
             Object child = childrenEnum.nextElement();
 
             if (child instanceof SelectorNode) {
@@ -637,6 +651,7 @@ public class RootSelectorTree extends JPanel {
     }
 
     private void applySelection(SelectorNode node, SourceCodeSelection selection) {
+        if (!isActive.get()) return;
         SourceCodeSelection signature = node.getSignature();
 
         if (signature != null) {
@@ -654,6 +669,7 @@ public class RootSelectorTree extends JPanel {
         Enumeration childrenEnum = node.children();
 
         while (childrenEnum.hasMoreElements()) {
+            if (!isActive.get()) return;
             Object child = childrenEnum.nextElement();
 
             if (child instanceof SelectorNode) {
@@ -772,17 +788,18 @@ public class RootSelectorTree extends JPanel {
     }
 
     private void applyCurrentSelection() {
-        TreeNode root = (TreeNode) tree.getModel().getRoot();
-        Enumeration childrenEnum = root.children();
-
-        while (childrenEnum.hasMoreElements()) {
-            Object child = childrenEnum.nextElement();
-
-            if (child instanceof SelectorNode) {
-                for (SourceCodeSelection selection : currentSelectionSet) {
-                    applySelection((SelectorNode) child, selection);
-                }
-            }
-        }
+        setSelection(currentSelectionSet.toArray(new SourceCodeSelection[currentSelectionSet.size()]));
+//        TreeNode root = (TreeNode) tree.getModel().getRoot();
+//        Enumeration childrenEnum = root.children();
+//
+//        while (childrenEnum.hasMoreElements()) {
+//            Object child = childrenEnum.nextElement();
+//
+//            if (child instanceof SelectorNode) {
+//                for (SourceCodeSelection selection : currentSelectionSet) {
+//                    applySelection((SelectorNode) child, selection);
+//                }
+//            }
+//        }
     }
 }

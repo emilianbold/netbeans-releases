@@ -48,6 +48,7 @@ import java.util.List;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
 import org.netbeans.modules.profiler.j2ee.selector.nodes.ProjectNode;
 import org.netbeans.modules.profiler.j2ee.selector.nodes.ejb.ProjectChildren;
+import org.netbeans.modules.profiler.selector.api.SelectionTreeBuilderType;
 import org.netbeans.modules.profiler.selector.api.builders.ProjectSelectionTreeBuilder;
 import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
 import org.netbeans.modules.profiler.selector.api.nodes.SelectorChildren;
@@ -73,7 +74,7 @@ public class EJBSelectionTreeBuilder extends ProjectSelectionTreeBuilder {
 
     @NbBundle.Messages("EJBSelectionTreeBuilder_DisplayName=EJB Logical View")
     public EJBSelectionTreeBuilder(Lookup.Provider project, boolean isPreferred) {
-        super(new Type("ejb-application", Bundle.EJBSelectionTreeBuilder_DisplayName()), isPreferred, project); // NOI18N
+        super(new SelectionTreeBuilderType("ejb-application", Bundle.EJBSelectionTreeBuilder_DisplayName()), isPreferred, project); // NOI18N
     }
 
     @Override
