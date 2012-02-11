@@ -1,3 +1,7 @@
+#208113
+org.netbeans.modules.versioning.core.spi.VCSHistoryProvider
+org.netbeans.modules.versioning.ui.history.HistorySettings
+
 #207553
 org.apache.xerces.impl.Constants
 org.apache.xerces.impl.Constants$ArrayEnumeration
@@ -3431,7 +3435,6 @@ org.netbeans.modules.lexer.nbbridge.LanguagesEmbeddingMap
 org.netbeans.modules.lexer.nbbridge.MimeLookupFolderInfo
 org.netbeans.modules.lexer.nbbridge.MimeLookupLanguageProvider
 org.netbeans.modules.localhistory.LocalHistory
-org.netbeans.modules.localhistory.LocalHistorySettings
 org.netbeans.modules.localhistory.LocalHistoryVCS
 org.netbeans.modules.localhistory.LocalHistoryVCSAnnotator
 org.netbeans.modules.localhistory.LocalHistoryVCSInterceptor

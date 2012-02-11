@@ -57,14 +57,10 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import javax.xml.xpath.XPathExpression;
 import org.openide.filesystems.FileObject;
-import org.w3c.dom.Document;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.XMLFileSystem;
+import org.w3c.dom.Document;
 import org.openide.modules.ModuleInfo;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.xml.sax.SAXException;
 
 /** Description of <em>Feature On Demand</em> capabilities and a 
  * factory to create new instances.
@@ -73,7 +69,6 @@ import org.xml.sax.SAXException;
  */
 public final class FeatureInfo {
     private final URL delegateLayer;
-    private FileSystem fs;
     private final Set<String> cnbs;
     private final Map<String,String> nbproject = new HashMap<String,String>();
     private final Map<Object[],String> files = new HashMap<Object[],String>();
@@ -132,15 +127,9 @@ public final class FeatureInfo {
                 }
             }
         }
-        FileObject fo = info.getXMLFileSystem().findResource("Ergonomics/AntBasedProjectTypes"); // NOI18N
-        if (fo != null) {
-            for (FileObject o : fo.getChildren()) {
-                String type = (String)o.getAttribute("type"); // NOI18N
-                info.nbproject(type, "org.netbeans.modules.project.ant.AntBasedGenericType"); // NOI18N
-            }
-        }
         return info;
     }
+    
 
     public Object getProjectImporter() {
         return properties.getProperty("projectImporter");
@@ -176,25 +165,6 @@ public final class FeatureInfo {
 
     public final URL getLayerURL() {
         return delegateLayer;
-    }
-
-    public synchronized FileSystem getXMLFileSystem() {
-        if (fs == null) {
-            if (doParseXML()) {
-                URL url = delegateLayer;
-                if (url != null) {
-                    try {
-                        fs = new XMLFileSystem(url);
-                        return fs;
-                    } catch (SAXException ex) {
-                        FoDLayersProvider.LOG.log(Level.SEVERE, "Cannot parse: " + url, ex);
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-            fs = FileUtil.createMemoryFileSystem();
-        }
-        return fs;
     }
 
     /** @return 0 = no
@@ -342,7 +312,4 @@ public final class FeatureInfo {
         return map;
     }
 
-    static boolean doParseXML() {
-        return !Boolean.getBoolean("org.netbeans.modules.ide.ergonomics.noparse"); // NOI18N
-    }
 }
