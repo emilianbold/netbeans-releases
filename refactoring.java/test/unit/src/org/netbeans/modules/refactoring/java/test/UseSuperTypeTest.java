@@ -47,6 +47,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
@@ -62,6 +63,7 @@ public class UseSuperTypeTest extends RefactoringTestBase {
         super(name);
     }
 
+    @RandomlyFails
     public void test131406() throws Exception { // #131406 - [Use Supertype] Refactoring does not check method return type
         writeFilesAndWaitForScan(src,
                 new File("t/package-info.java", "package t;"),
