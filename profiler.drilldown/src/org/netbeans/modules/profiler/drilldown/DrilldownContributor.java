@@ -41,25 +41,21 @@
  */
 package org.netbeans.modules.profiler.drilldown;
 
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.swing.JPanel;
-import javax.swing.JToolBar;
 import org.netbeans.lib.profiler.ProfilerClient;
 import org.netbeans.lib.profiler.ProfilerEngineSettings;
 import org.netbeans.lib.profiler.TargetAppRunner;
 import org.netbeans.lib.profiler.common.CommonUtils;
-import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.lib.profiler.ui.cpu.LiveFlatProfilePanel;
 import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModule;
 import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModuleContainer;
 import org.netbeans.modules.profiler.categorization.api.ProjectAwareStatisticalModule;
 import org.netbeans.lib.profiler.ui.LiveResultsWindowContributor;
+import org.netbeans.lib.profiler.ui.components.ProfilerToolbar;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
@@ -77,7 +73,7 @@ public class DrilldownContributor extends LiveResultsWindowContributor.Adapter {
     volatile private boolean drillDownGroupOpened;
 
     @Override
-    public void addToCpuResults(final LiveFlatProfilePanel cpuPanel, final JToolBar toolBar, ProfilerClient client, Lookup.Provider project) {
+    public void addToCpuResults(final LiveFlatProfilePanel cpuPanel, final ProfilerToolbar toolBar, ProfilerClient client, Lookup.Provider project) {
         List<StatisticalModule> additionalStats = new ArrayList<StatisticalModule>();
 
         dd = Lookup.getDefault().lookup(DrillDownFactory.class).createDrillDown(project, client);
@@ -124,22 +120,7 @@ public class DrilldownContributor extends LiveResultsWindowContributor.Adapter {
             }
         });
 
-        JPanel toolbarSpacer = new JPanel(new FlowLayout(FlowLayout.LEADING, 0, 0)) {
-
-            public Dimension getPreferredSize() {
-                if (UIUtils.isGTKLookAndFeel() || UIUtils.isNimbusLookAndFeel()) {
-                    int currentWidth = toolBar.getSize().width;
-                    int minimumWidth = toolBar.getMinimumSize().width;
-                    int extraWidth = currentWidth - minimumWidth;
-                    return new Dimension(Math.max(extraWidth, 0), 0);
-                } else {
-                    return super.getPreferredSize();
-                }
-            }
-        };
-        toolbarSpacer.setOpaque(false);
-
-        toolBar.add(toolbarSpacer);
+        toolBar.addFiller();
         toolBar.add(drillDownWin.getPresenter());
     }
 
