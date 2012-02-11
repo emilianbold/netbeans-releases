@@ -137,16 +137,7 @@ public final class SearchIteratorTest extends NbTestCase {
                                     getRef());
         compareReferenceFiles();
     }
-    
-    public void testNonRecursiveSearchInfo() throws Exception {
-        generateSearchableFileNames(projectRoot,
-                                    false,          //not recursive
-                                    false,
-                                    false,
-                                    getRef());
-        compareReferenceFiles();
-    }
-    
+
     /**
      */
     private void generateSearchableFileNames(

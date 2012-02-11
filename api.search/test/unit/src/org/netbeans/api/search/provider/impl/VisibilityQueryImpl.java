@@ -45,11 +45,13 @@ public class VisibilityQueryImpl implements VisibilityQueryImplementation {
 
     private static final String INVISIBLE_SUFFIX = "_invisible";
 
+    @Override
     public boolean isVisible(FileObject file) {
         final String name = file.getName();
         return !name.endsWith(INVISIBLE_SUFFIX);
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
         /*
          * Does nothing - the visibility never changes so there is need
@@ -57,6 +59,7 @@ public class VisibilityQueryImpl implements VisibilityQueryImplementation {
          */
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
         /*
          * Does nothing - the visibility never changes so there is need
