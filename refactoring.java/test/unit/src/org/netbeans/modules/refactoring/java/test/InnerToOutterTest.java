@@ -124,6 +124,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                       new File("t/A.java", "package t; public class A { int i; }"));
     }
     
+    @RandomlyFails
     public void test144209() throws Exception {
         writeFilesAndWaitForScan(src,
                                  new File("t/A.java",

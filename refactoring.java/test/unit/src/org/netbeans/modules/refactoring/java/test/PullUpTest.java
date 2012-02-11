@@ -457,7 +457,8 @@ public class PullUpTest extends RefactoringTestBase {
                 + "    public abstract void method();\n"
                 + "}"));
     }
-
+    
+    @RandomlyFails
     public void testPullUpAbsMethod() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("pullup/PullUpBaseClass.java", "package pullup;\n"

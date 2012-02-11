@@ -55,6 +55,7 @@ public class MoveMethodTest extends MoveBaseTest {
         super(name);
     }
 
+    @RandomlyFails
     public void testMoveImports() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/SourceClass.java", "package t;\n"

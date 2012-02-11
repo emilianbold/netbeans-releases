@@ -56,6 +56,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
@@ -365,6 +366,7 @@ public class ChangeParametersTest extends RefactoringTestBase {
         performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 1, false, new Problem(false, "ERR_existingMethod"));
     }
     
+    @RandomlyFails
     public void test114321() throws Exception { // [Change parameters] Check if method is accessible when modifier is changed
         ParameterInfo[] paramTable = {new ParameterInfo(0, "x", "int", null)};
         

@@ -240,6 +240,7 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
                 + "}\n"));
     }
     
+    @RandomlyFails
     public void testEncapsulateFieldsCompoundByte() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("encap/A.java", "package encap;\n"
