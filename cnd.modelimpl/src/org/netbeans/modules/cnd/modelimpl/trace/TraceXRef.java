@@ -99,6 +99,8 @@ import org.netbeans.modules.cnd.modelimpl.impl.services.ReferenceRepositoryImpl;
 import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.ContextEntry;
 import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.DeclarationScope;
 import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.IncludeLevel;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.model.services.CsmReferenceStorage;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -476,6 +478,10 @@ public class TraceXRef extends TraceModel {
             CsmReference refFromStorage = CsmReferenceStorage.getDefault().get(ref);        
             boolean fromStorage = refFromStorage != null && refFromStorage.getReferencedObject() != null;
             CsmObject target = ref.getReferencedObject();
+            if (target != null && UIDProviderIml.isSelfUID(UIDs.get(target))) {
+                // skip all locals
+                return;
+            }
             boolean important = false;
             String skind;
             if (target == null) {
@@ -485,7 +491,9 @@ public class TraceXRef extends TraceModel {
             } else {
                 skind = "OBJECT"; //NOI18N
                 entry = XRefResultSet.ContextEntry.RESOLVED;
-                if(CsmKindUtilities.isDeclaration(target)) {
+                if (CsmKindUtilities.isParameter(target)) {
+                    skind = "PARAMETER"; //NOI18N
+                } else if(CsmKindUtilities.isDeclaration(target)) {
                     skind = ((CsmDeclaration)target).getKind().toString();
                 } else if(CsmKindUtilities.isNamespace(target)) {
                     skind = "NAMESPACE"; //NOI18N
@@ -493,7 +501,7 @@ public class TraceXRef extends TraceModel {
                     skind = "UNKNOWN"; //NOI18N
                 }
             }
-            if(fromStorage) {
+            if(!fromStorage) {
                 try {
                     printErr.println(skind + ":" + ref, new RefLink(ref), important); // NOI18N
                 } catch (IOException ioe) {
@@ -952,13 +960,15 @@ public class TraceXRef extends TraceModel {
                     }
                 }
             }
+            String header = String.format("%20s %10s %10s %5s", "Kind", "Indexed", "Checked", "%%"); // NOI18N
+            printOut.println(header); // NOI18N
             for (CharSequence kind : indexStats.keySet()) {
                 if(kind != null) { 
-                    String s2 = String.format("%20s %5d %5d %.2f%%", kind, indexStats.get(kind), allStats.get(kind), (double) indexStats.get(kind)*100/allStats.get(kind)); // NOI18N
+                    String s2 = String.format("%20s %10d %10d %.2f%%", kind, indexStats.get(kind), allStats.get(kind), (double) indexStats.get(kind)*100/allStats.get(kind)); // NOI18N
                     printOut.println(s2); // NOI18N
                 }
             }
-            String s = String.format("%20s %5d %5d %.2f%%", "Total", totalIndex, totalAll, (double) totalIndex*100/totalAll); // NOI18N
+            String s = String.format("%20s %10d %10d %.2f%%", "Total", totalIndex, totalAll, (double) totalIndex*100/totalAll); // NOI18N
             printOut.println(s); // NOI18N
         }        
         
