@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.refactoring.java.test;
 
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties.Visibility;
 
@@ -49,14 +48,12 @@ import org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties.Visib
  *
  * @author Ralph Ruijs
  */
-@RandomlyFails
 public class MoveMethodTest extends MoveBaseTest {
 
     public MoveMethodTest(String name) {
         super(name);
     }
 
-    @RandomlyFails
     public void testMoveImports() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/SourceClass.java", "package t;\n"
@@ -665,7 +662,6 @@ public class MoveMethodTest extends MoveBaseTest {
                 + "}\n"));
     }
 
-    @RandomlyFails
     public void testVideoStore() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("videostore/Movie.java", "package videostore;\n"
@@ -1158,7 +1154,6 @@ public class MoveMethodTest extends MoveBaseTest {
                 + "}"));
     }
 
-    @RandomlyFails
     public void testVideoStore3() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("video/Movie.java", "package video;\n"
