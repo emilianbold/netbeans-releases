@@ -5,11 +5,11 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<#if create??>
+<#if controller?? && controller != "">
 <#if package?? && package != "">
-<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml"<#if controller?? && controller != ""> fx:controller="${package}.${controller}"</#if>>
+<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml" fx:controller="${package}.${controller}">
 <#else>
-<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml"<#if controller?? && controller != ""> fx:controller="${controller}"</#if>>
+<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml" fx:controller="${controller}">
 </#if>
 <#if css?? && css != "">
     <stylesheets>
@@ -18,7 +18,7 @@
 </#if>
 </AnchorPane>
 <#else>
-<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml"<#if controller?? && controller != ""> fx:controller="${controller}"</#if>>
+<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml">
 <#if css?? && css != "">
     <stylesheets>
         <URL value="@${css}.css" />
