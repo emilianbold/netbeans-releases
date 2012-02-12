@@ -240,6 +240,7 @@ public class CachingAndExternalPathsTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails
     public void testVerifyActivatorExecuted() {
         assertEquals("1", System.getProperty("activated.count"));
     }
