@@ -4,6 +4,7 @@
 <folder name="OptionsExport">
         <folder name="Keyring">
             <attr name="displayName" bundlevalue="org.netbeans.modules.keyring.Bundle#Keyring.Options.Export.displayName"/>
+            <attr name="position" intvalue="900"/>
             <file name="Passwords">
                 <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/keyring.*"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.keyring.Bundle#Passwords.Options.Export.displayName"/>
