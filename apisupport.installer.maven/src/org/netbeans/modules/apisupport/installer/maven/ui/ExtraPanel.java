@@ -46,10 +46,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import javax.swing.JComponent;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.installer.ui.InstallerPanel;
 import org.netbeans.modules.apisupport.installer.ui.SuiteInstallerProjectProperties;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Exceptions;
@@ -73,6 +75,10 @@ public class ExtraPanel implements ProjectCustomizer.CompositeCategoryProvider {
         NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
         if (watcher!=null &&
                 NbMavenProject.TYPE_NBM_APPLICATION.equalsIgnoreCase(watcher.getPackagingType())) {
+            String version = PluginPropertyUtils.getPluginVersion(watcher.getMavenProject(), "org.codehaus.mojo", "nbm-maven-plugin");
+            if (version == null || new ComparableVersion(version).compareTo(new ComparableVersion("3.7-SNAPSHOT")) >= 0) {
+                return null; // now handled by maven.apisupport
+            }
             return ProjectCustomizer.Category.create(
                     "Installer",
                     NbBundle.getMessage(ExtraPanel.class, "LBL_InstallerPanel"),
