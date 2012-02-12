@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.modelimpl.parser;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  * @author nick
@@ -141,5 +143,9 @@ public class CppParserEmptyActionImpl implements CppParserAction {
 
     @Override
     public void onInclude(CsmFile inclFile, State stateBefore) {
+        if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+            assert inclFile instanceof FileImpl;
+            ((FileImpl) inclFile).parseOnInclude(stateBefore, this);
+        }
     }
 }
