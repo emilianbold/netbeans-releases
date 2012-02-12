@@ -205,6 +205,9 @@ final class CreateFilesWorker {
         @Override
         public void run() {
             try {
+                if (TraceFlags.PARSE_HEADERS_WITH_SOURCES && !sources) {
+                    return;
+                } 
                 for(NativeFileItem nativeFileItem : nativeFileItems) {
                     if (!createProjectFilesIfNeedRun(nativeFileItem, sources, removedFiles, validator,
                                             reparseOnEdit, reparseOnPropertyChanged, enougth)){

@@ -482,7 +482,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     // Parser Queue ensures that the same file can be parsed at the same time
     // only by one thread.
     /*package*/ void ensureParsed(Collection<APTPreprocHandler> handlers) {
-        if (TraceFlags.CPP_PARSER_ACTION && this.isHeaderFile()) {
+        if (TraceFlags.PARSE_HEADERS_WITH_SOURCES && this.isHeaderFile()) {
             return;
         }
         this.ensureParsed(handlers, null);

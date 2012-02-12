@@ -39,113 +39,34 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.parser;
+package org.netbeans.modules.cnd.modelimpl.parser.symtab;
 
-import org.netbeans.modules.cnd.antlr.Token;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import java.io.IOException;
 
 /**
- * @author nick
+ *
+ * @author Vladimir Voskresensky
  */
-public class CppParserEmptyActionImpl implements CppParserAction {
+public class CPPDictionary extends Dictionary {
 
-    @Override
-    public void enum_declaration(Token token) {
+    public CPPDictionary() {
+        super(43, 50, 30000);
+    }
+    
+    CPPSymbol createEntry(CharSequence key, int scopeIndex) {
+        return new CPPSymbol(key, getBucketIndex(key), scopeIndex);
     }
 
     @Override
-    public void enum_name(Token token) {
-    }
-
-    @Override
-    public void enum_body(Token token) {
-    }
-
-    @Override
-    public void enumerator(Token token) {
-    }
-
-    @Override
-    public void end_enum_body(Token token) {
-    }
-
-    @Override
-    public void end_enum_declaration(Token token) {
-    }
-
-    @Override
-    public void class_name(Token token) {
-    }
-
-    @Override
-    public void class_body(Token token) {
-    }
-
-    @Override
-    public void end_class_body(Token token) {
-    }
-
-    @Override
-    public void namespace_body(Token token) {
-    }
-
-    @Override
-    public void end_namespace_body(Token token) {
-    }
-
-    @Override
-    public void compound_statement(Token token) {
-    }
-
-    @Override
-    public void end_compound_statement(Token token) {
-    }
-
-    @Override
-    public void id(Token token) {
-    }
-
-    @Override
-    public boolean isType(String name) {
-        return false;
-    }
-
-    @Override
-    public void namespace_declaration(Token token) {
-    }
-
-    @Override
-    public void end_namespace_declaration(Token token) {
-    }
-
-    @Override
-    public void namespace_name(Token token) {
-    }
-
-    @Override
-    public void class_declaration(Token token) {
-    }
-
-    @Override
-    public void end_class_declaration(Token token) {
-    }
-
-    @Override
-    public void class_kind(Token token) {
-    }
-
-    @Override
-    public void simple_type_id(Token token) {
-    }
-
-    @Override
-    public void onInclude(CsmFile inclFile, State stateBefore) {
-        if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
-            assert inclFile instanceof FileImpl;
-            ((FileImpl) inclFile).parseOnInclude(stateBefore, this);
+    void dumpSymbol(Appendable stream, DictionaryEntry de) {
+        try {
+            if (de.isTypeOf(CPPSymbol.CPPObjectType.otNonTypename)) {
+                stream.append("[non-"); // NOI18N
+            } else {
+                stream.append("["); // NOI18N
+            }
+            stream.append("type: ").append(de.getType().toString()).append("\n"); // NOI18N
+        } catch (IOException e) {
         }
     }
 }

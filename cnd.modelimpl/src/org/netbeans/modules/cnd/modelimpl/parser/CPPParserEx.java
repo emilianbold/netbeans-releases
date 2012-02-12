@@ -222,12 +222,16 @@ public class CPPParserEx extends CPPParser {
         int superIndex = 0;
         int nonIncludeTokens = 0;
         do {
-            int LA = super.LA(++superIndex);
+            superIndex++;
+            int LA = super.LA(superIndex);
+            assert LA == super.LA(superIndex) : "how can LA be different?";
             if (isIncludeToken(LA)) {
                 if (nMarkers == 0 && superIndex == 1 && guessing == 0) {
                     // consume if the first an no markers
-                    Token t = super.LT(superIndex);
+                    Token t = super.LT(1);
+                    assert isIncludeToken(t.getType()) : t + " not expected ";
                     onIncludeToken(t);
+                    assert super.LT(1) == t : t + " have to be the same as " + super.LT(1);
                     super.consume();
                     superIndex = 0;
                 }

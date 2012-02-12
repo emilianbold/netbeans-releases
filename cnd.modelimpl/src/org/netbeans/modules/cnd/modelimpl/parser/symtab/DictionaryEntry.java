@@ -39,113 +39,75 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.parser;
-
-import org.netbeans.modules.cnd.antlr.Token;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+package org.netbeans.modules.cnd.modelimpl.parser.symtab;
 
 /**
- * @author nick
+ * based on DictionaryEntry removed from cppparser.g
+ *
+ * @author Vladimir Voskresensky
  */
-public class CppParserEmptyActionImpl implements CppParserAction {
+public class DictionaryEntry {
 
-    @Override
-    public void enum_declaration(Token token) {
-    }
+    static final ObjectType UNSPECIFIED_TYPE = new ObjectType() {
 
-    @Override
-    public void enum_name(Token token) {
-    }
-
-    @Override
-    public void enum_body(Token token) {
-    }
-
-    @Override
-    public void enumerator(Token token) {
-    }
-
-    @Override
-    public void end_enum_body(Token token) {
-    }
-
-    @Override
-    public void end_enum_declaration(Token token) {
-    }
-
-    @Override
-    public void class_name(Token token) {
-    }
-
-    @Override
-    public void class_body(Token token) {
-    }
-
-    @Override
-    public void end_class_body(Token token) {
-    }
-
-    @Override
-    public void namespace_body(Token token) {
-    }
-
-    @Override
-    public void end_namespace_body(Token token) {
-    }
-
-    @Override
-    public void compound_statement(Token token) {
-    }
-
-    @Override
-    public void end_compound_statement(Token token) {
-    }
-
-    @Override
-    public void id(Token token) {
-    }
-
-    @Override
-    public boolean isType(String name) {
-        return false;
-    }
-
-    @Override
-    public void namespace_declaration(Token token) {
-    }
-
-    @Override
-    public void end_namespace_declaration(Token token) {
-    }
-
-    @Override
-    public void namespace_name(Token token) {
-    }
-
-    @Override
-    public void class_declaration(Token token) {
-    }
-
-    @Override
-    public void end_class_declaration(Token token) {
-    }
-
-    @Override
-    public void class_kind(Token token) {
-    }
-
-    @Override
-    public void simple_type_id(Token token) {
-    }
-
-    @Override
-    public void onInclude(CsmFile inclFile, State stateBefore) {
-        if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
-            assert inclFile instanceof FileImpl;
-            ((FileImpl) inclFile).parseOnInclude(stateBefore, this);
+        @Override
+        public String toString() {
+            return "UNSPECIFIED_TYPE"; // NOI18N
         }
+    };
+
+    void setHashCode(int h) {
+        throw new UnsupportedOperationException("Not yet implemented"); // NOI18N
+    }
+
+    void setKey(CharSequence strdup) {
+        throw new UnsupportedOperationException("Not yet implemented"); // NOI18N
+    }
+
+    interface ObjectType {
+    }
+    private final CharSequence key;
+    private final int hashCode;
+    private DictionaryEntry next;		// next element in the bucket
+    private DictionaryEntry scope;		// next element in the scope
+    int this_scope;			// scope index
+
+    DictionaryEntry(CharSequence k, int bucketIndex, int scopeIndex) {
+        key = k;
+        hashCode = bucketIndex;
+        next = scope = null;
+        this_scope = scopeIndex;
+    }
+
+    CharSequence getKey() {
+        return key;
+    }
+
+    int getHashCode() {
+        return hashCode;
+    }
+
+    void setNext(DictionaryEntry n) {
+        next = n;
+    }
+
+    DictionaryEntry getNext() {
+        return next;
+    }
+
+    void setScope(DictionaryEntry s) {
+        scope = s;
+    }
+
+    DictionaryEntry getNextInScope() {
+        return scope;
+    }
+
+    ObjectType getType() {
+        return UNSPECIFIED_TYPE;
+    }
+
+    boolean isTypeOf(ObjectType type) {
+        return false;
     }
 }
