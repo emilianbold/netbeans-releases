@@ -126,6 +126,7 @@ public class FindSubclassesTest extends RefPerfTestCase {
         wuq[0].putValue(WhereUsedQuery.FIND_REFERENCES, false);
 
         RefactoringSession rs = RefactoringSession.create("Session");
+        Thread.sleep(1000);
         wuq[0].prepare(rs);
         rs.doRefactoring(true);
         Collection<RefactoringElement> elems = rs.getRefactoringElements();

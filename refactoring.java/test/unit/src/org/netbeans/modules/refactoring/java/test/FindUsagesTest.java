@@ -372,12 +372,13 @@ public class FindUsagesTest extends NbTestCase {
         doRefactoring("test200843", wuq, 1);
     }
     
-    private void doRefactoring(final String name, final WhereUsedQuery[] wuq, final int amount) {
+    private void doRefactoring(final String name, final WhereUsedQuery[] wuq, final int amount) throws InterruptedException {
         RefactoringSession rs = RefactoringSession.create("Session");
 
         wuq[0].preCheck();
         wuq[0].fastCheckParameters();
         wuq[0].checkParameters();
+        Thread.sleep(1000);
         wuq[0].prepare(rs);
         rs.doRefactoring(true);
         

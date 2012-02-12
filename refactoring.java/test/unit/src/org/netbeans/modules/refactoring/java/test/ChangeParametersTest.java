@@ -56,6 +56,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
@@ -365,6 +366,7 @@ public class ChangeParametersTest extends RefactoringTestBase {
         performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 1, false, new Problem(false, "ERR_existingMethod"));
     }
     
+    @RandomlyFails
     public void test114321() throws Exception { // [Change parameters] Check if method is accessible when modifier is changed
         ParameterInfo[] paramTable = {new ParameterInfo(0, "x", "int", null)};
         
@@ -671,7 +673,7 @@ public class ChangeParametersTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}\n"));
     }
-    
+
     public void test202156() throws Exception { // [Change Method Parameters] Re-order parameters and change to varargs creates wrong method call
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t; public class A {\n"
@@ -767,6 +769,39 @@ public class ChangeParametersTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}\n"));
     }
+        
+    public void test208022() throws Exception { // Refactoring Change Method Parameters - adding varargs doesn't work correctly
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public interface A {\n"
+                + "    void foo();"
+                + "    int testMethod(int x, String y);\n"
+                + "}\n"),
+                new File("t/B.java", "package t; public class B implements A {\n"
+                + "    public int testMethod(int x, String y) {\n"
+                + "         return x;\n"
+                + "    }\n"
+                + "\n"
+                + "    public void foo() {\n"
+                + "        testMethod(2, \"ddd\");\n"
+                + "    }\n"
+                + "}\n"));
+        ParameterInfo[] paramTable = new ParameterInfo[] {new ParameterInfo(0, "x", "int", null), new ParameterInfo(1, "y", "String", null), new ParameterInfo(-1, "i", "int...", "testMethod(1,\"\",2,3), 4")};
+        performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 1, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public interface A {\n"
+                + "    void foo();"
+                + "    int testMethod(int x, String y, int... i);\n"
+                + "}\n"),
+                new File("t/B.java", "package t; public class B implements A {\n"
+                + "    public int testMethod(int x, String y, int... i) {\n"
+                + "         return x;\n"
+                + "    }\n"
+                + "\n"
+                + "    public void foo() {\n"
+                + "        testMethod(2, \"ddd\", testMethod(1, \"\", 2, 3), 4);\n"
+                + "    }\n"
+                + "}\n"));
+    }
 
     private void performChangeParameters(final Set<Modifier> modifiers, String methodName, String returnType, ParameterInfo[] paramTable, final Javadoc javadoc, final int position, final boolean compatible, Problem... expectedProblems) throws Exception {
         final ChangeParametersRefactoring[] r = new ChangeParametersRefactoring[1];
@@ -783,9 +818,9 @@ public class ChangeParametersTest extends RefactoringTestBase {
                 r[0] = new ChangeParametersRefactoring(TreePathHandle.create(tp, javac));
 
                 Set<Modifier> modifierSet = modifiers;
-                if(modifiers == null) {
-                    modifierSet = new HashSet<Modifier>(testMethod.getModifiers().getFlags());
-                }
+//                if(modifiers == null) {
+//                    modifierSet = new HashSet<Modifier>(testMethod.getModifiers().getFlags());
+//                }
                 r[0].setModifiers(modifierSet);
                 r[0].setOverloadMethod(compatible);
                 r[0].getContext().add(javadoc);
@@ -801,6 +836,7 @@ public class ChangeParametersTest extends RefactoringTestBase {
 
         addAllProblems(problems, r[0].preCheck());
         if (!problemIsFatal(problems)) {
+            Thread.sleep(1000);
             addAllProblems(problems, r[0].prepare(rs));
         }
         if (!problemIsFatal(problems)) {

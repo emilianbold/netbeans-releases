@@ -41,6 +41,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
@@ -207,6 +208,7 @@ public class MoveJavaFileTest extends RefactoringTestBase {
                       new File("u/B.java", "package u; public class B { public static int c() { return 5 } }"));
     }
     
+    @RandomlyFails
     public void test121738() throws Exception { // #121738 - [Move] Fields are not accessible after move class
         writeFilesAndWaitForScan(src,
                 new File("t/package-info.java", "package t;"),
@@ -275,6 +277,7 @@ public class MoveJavaFileTest extends RefactoringTestBase {
         List<Problem> problems = new LinkedList<Problem>();
 
         addAllProblems(problems, r[0].preCheck());
+        Thread.sleep(1000);
         addAllProblems(problems, r[0].prepare(rs));
         addAllProblems(problems, rs.doRefactoring(true));
 

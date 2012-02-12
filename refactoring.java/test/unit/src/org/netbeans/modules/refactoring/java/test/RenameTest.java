@@ -52,6 +52,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -358,6 +359,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "}"));
     }
     
+    @RandomlyFails
     public void test201610() throws Exception { // #201610 [rename class] introduces behavioral change
         writeFilesAndWaitForScan(src, new File("p1/B.java", "package p1;\n"
                 + "import p2.*;\n"
@@ -522,6 +524,7 @@ public class RenameTest extends RefactoringTestBase {
 
         addAllProblems(problems, r[0].preCheck());
         if (!problemIsFatal(problems)) {
+            Thread.sleep(1000);
             addAllProblems(problems, r[0].prepare(rs));
         }
         if (!problemIsFatal(problems)) {

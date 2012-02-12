@@ -162,13 +162,13 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
                             //add all references of overriding methods
                             allMethods = new HashSet<ElementHandle<ExecutableElement>>();
                             allMethods.add(ElementHandle.create((ExecutableElement) el));
-                            for (ExecutableElement e : JavaRefactoringUtils.getOverridingMethods((ExecutableElement) el, info)) {
+                            for (ExecutableElement e : JavaRefactoringUtils.getOverridingMethods((ExecutableElement) el, info, cancelRequested)) {
                                 addMethods(e, set, info, idx);
                             }
                             //add all references of overriden methods
                             for (ExecutableElement ov : JavaRefactoringUtils.getOverriddenMethods((ExecutableElement) el, info)) {
                                 addMethods(ov, set, info, idx);
-                                for (ExecutableElement e : JavaRefactoringUtils.getOverridingMethods(ov, info)) {
+                                for (ExecutableElement e : JavaRefactoringUtils.getOverridingMethods(ov, info, cancelRequested)) {
                                     addMethods(e, set, info, idx);
                                 }
                             }
@@ -272,7 +272,7 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
             case METHOD:
                 // Method can not be polymorphic
                 Collection<ExecutableElement> overridenMethods = JavaRefactoringUtils.getOverriddenMethods((ExecutableElement) element, javac);
-                Collection<ExecutableElement> overridingMethods = JavaRefactoringUtils.getOverridingMethods((ExecutableElement) element, javac);
+                Collection<ExecutableElement> overridingMethods = JavaRefactoringUtils.getOverridingMethods((ExecutableElement) element, javac,cancelRequested);
                 if (overridenMethods.size() > 0 || overridingMethods.size() > 0) {
                     preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodPolymorphic")); //NOI18N
                     return preCheckProblem;

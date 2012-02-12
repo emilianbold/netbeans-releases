@@ -43,20 +43,25 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -66,15 +71,14 @@ import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
 import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.nodes.Node;
+import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -82,8 +86,8 @@ import org.openide.util.lookup.Lookups;
  * @author Martin Matula
  * @author Jan Becicka
  */
-public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, Openable {
-    private final AbstractRefactoring refactoring;
+public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, Openable, JavaRefactoringUIFactory {
+    private AbstractRefactoring refactoring;
     private String oldName = null;
     private String dispOldName;
     private String newName;
@@ -94,8 +98,13 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
     private FileObject byPassFolder;
     private boolean byPassPakageRename;
     private boolean pkgRename = true;
+    private Lookup lookup;
 
-    public RenameRefactoringUI(TreePathHandle handle, CompilationInfo info) {
+    private RenameRefactoringUI(Lookup lookup) {
+        this.lookup = lookup;
+    }
+    
+    private RenameRefactoringUI(TreePathHandle handle, CompilationInfo info) {
         this.handle = handle;
         this.refactoring = new RenameRefactoring(Lookups.singleton(handle));
         Element element = handle.resolveElement(info);
@@ -112,7 +121,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
 
     }
     
-    public RenameRefactoringUI(FileObject file, TreePathHandle handle, CompilationInfo info) {
+    private RenameRefactoringUI(FileObject file, TreePathHandle handle, CompilationInfo info) {
         if (handle!=null) {
             this.handle = handle;
             this.refactoring = new RenameRefactoring(Lookups.fixed(file, handle));
@@ -130,7 +139,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
         refactoring.getContext().add(cpInfo);
     }
 
-    public RenameRefactoringUI(NonRecursiveFolder file) {
+    private RenameRefactoringUI(NonRecursiveFolder file) {
         this.refactoring = new RenameRefactoring(Lookups.singleton(file));
         oldName = RefactoringUtils.getPackageName(file.getFolder());
         refactoring.getContext().add(JavaRefactoringUtils.getClasspathInfoFor(file.getFolder()));
@@ -139,7 +148,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
     }
     
     
-    RenameRefactoringUI(FileObject fileObject, String newName, TreePathHandle handle, CompilationInfo info) {
+    private RenameRefactoringUI(FileObject fileObject, String newName, TreePathHandle handle, CompilationInfo info) {
         if (handle!=null) {
             this.refactoring = new RenameRefactoring(Lookups.fixed(fileObject, handle));
             Element element = handle.resolveElement(info);
@@ -156,7 +165,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
         fromListener = true;
     }
     
-    RenameRefactoringUI(NonRecursiveFolder jmiObject, String newName) {
+    private RenameRefactoringUI(NonRecursiveFolder jmiObject, String newName) {
         this.refactoring = new RenameRefactoring(Lookups.singleton(jmiObject));
         refactoring.getContext().add(JavaRefactoringUtils.getClasspathInfoFor(jmiObject.getFolder()));
         oldName = newName;
@@ -383,4 +392,69 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
             ElementOpen.open(handle.getFileObject(), elementHandle);
         }
     }
+
+    @Override
+    public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
+        if (packages.length == 1) {
+            return new RenameRefactoringUI(packages[0]);
+        }
+        assert handles.length == 1;
+        TreePathHandle selectedElement = handles[0];
+        Element selected = handles[0].resolveElement(info);
+        if (selected == null) {
+            logger().log(Level.INFO, "doRename: " + handles[0], new NullPointerException("selected")); // NOI18N
+            return null;
+        }
+        if (selected.getKind() == ElementKind.CONSTRUCTOR) {
+            selected = selected.getEnclosingElement();
+            TreePath path = info.getTrees().getPath(selected);
+            if (path == null) {
+                logger().log(Level.INFO, "doRename: " + selected, new NullPointerException("selected")); // NOI18N
+                return null;
+            }
+            selectedElement = TreePathHandle.create(path, info);
+        }
+        if (selected.getKind() == ElementKind.PACKAGE) {
+            final FileObject pkg = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE).findResource(selected.toString().replace('.', '/'));
+            if (pkg != null) {
+                NonRecursiveFolder folder = new NonRecursiveFolder() {
+
+                    @Override
+                    public FileObject getFolder() {
+                        return pkg;
+                    }
+                };
+                return new RenameRefactoringUI(folder);
+            } else {
+                if (selected.getSimpleName().length() != 0) {
+                    return new RenameRefactoringUI(selectedElement, info);
+                } else {
+                    TreePath path = selectedElement.resolve(info);
+                    if (path != null && path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
+                        return new RenameRefactoringUI(selectedElement.getFileObject(), null, info);
+                    } else {
+                        return null;
+                    }
+                }
+            }
+        } else if (selected instanceof TypeElement && !((TypeElement) selected).getNestingKind().isNested()) {
+            ElementHandle<TypeElement> handle = ElementHandle.create((TypeElement) selected);
+            FileObject f = SourceUtils.getFile(handle, info.getClasspathInfo());
+            if (f != null && selected.getSimpleName().toString().equals(f.getName())) {
+                return new RenameRefactoringUI(f == null ? info.getFileObject() : f, selectedElement, info);
+            } else {
+                return new RenameRefactoringUI(selectedElement, info);
+            }
+        } else {
+            return new RenameRefactoringUI(selectedElement, info);
+        }
+    }
+    
+    public static JavaRefactoringUIFactory factory(Lookup lookup) {
+        return new RenameRefactoringUI(lookup);
+    }
+            private static Logger logger() {
+        return Logger.getLogger(RefactoringActionsProvider.class.getName());
+    }
+
 }

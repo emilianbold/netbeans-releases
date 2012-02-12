@@ -484,6 +484,16 @@ public class TreeLoader extends LazyTreeLoader {
                         } else if (t == HTML.Tag.CODE) {
                             if (state == 11 || state == 21)
                                 state++;
+                        } else if (t == HTML.Tag.DIV && a.containsAttribute(HTML.Attribute.CLASS, "block")) { //NOI18N
+                            if (state == 11) {
+                                setParamNames(signature, sb.toString().trim(), true);
+                                signature = null;
+                                sb = null;
+                            } else if (state == 21) {
+                                setParamNames(signature, sb.toString().trim(), false);
+                                signature = null;
+                                sb = null;
+                            }
                         }
                     }
 

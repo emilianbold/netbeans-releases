@@ -221,11 +221,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
 //        MockMimeLookup.setInstances(MimePath.get(JARMIME), jarIndexerFactory);
         MockMimeLookup.setInstances(MimePath.get(MIME), indexerFactory);
         MockMimeLookup.setInstances(MimePath.get(EMIME), eindexerFactory, new EmbParserFactory());
-        Set<String> mt = new HashSet<String>();
-        mt.add(EMIME);
-        mt.add(MIME);
-        Util.allMimeTypes = mt;
-
+        setMimeTypes(EMIME, MIME);
+        
         assertNotNull("No masterfs",wd);
         srcRoot1 = wd.createFolder("src1");
         assertNotNull(srcRoot1);
@@ -1828,7 +1825,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
                             @Override
                             public void run() {
                                 try {
-                                    IndexManager.readAccess(new IndexManager.Action<Void>() {
+                                    IndexManager.priorityAccess(new IndexManager.Action<Void>() {
                                         @Override
                                         public Void run() throws IOException, InterruptedException {
                                             return null;
@@ -2385,6 +2382,11 @@ public class RepositoryUpdaterTest extends NbTestCase {
 //        System.out.println("Time: " + h.time);
 //    }
 
+    public static void setMimeTypes(final String... mimes) {
+        Set<String> mt = new HashSet<String>(Arrays.asList(mimes));
+        Util.allMimeTypes = mt;
+    }
+    
     // <editor-fold defaultstate="collapsed" desc="Mock Services">
     public static class TestHandler extends Handler {
 

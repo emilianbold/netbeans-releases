@@ -43,6 +43,7 @@ package org.netbeans.jellytools.modules.editor;
 
 import java.awt.event.KeyEvent;
 import javax.swing.JButton;
+import javax.swing.JPanel;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -78,7 +79,7 @@ public class SearchBarOperator extends EditorPanelOperator {
     @Override
     protected JButton getExpandButton() {
         if(buttons.size()<=3) return null;
-        if(buttons.size()==4) return buttons.get(3);
+        if(buttons.size()==4) return buttons.get(2);
         return null;
         
     }
@@ -86,6 +87,13 @@ public class SearchBarOperator extends EditorPanelOperator {
     public static SearchBarOperator invoke(EditorOperator editorOperator) {
         SearchBarOperator sbo = new SearchBarOperator();
         sbo.openPanel(editorOperator);
+        return sbo;
+    }
+    
+    public static SearchBarOperator getPanel(EditorOperator editorOperator) {
+        SearchBarOperator sbo = new SearchBarOperator();
+        JPanel panel = sbo.getOpenedPanel(editorOperator);
+        if(panel==null) throw new IllegalArgumentException("Panel is not found");
         return sbo;
     }
     
@@ -139,6 +147,14 @@ public class SearchBarOperator extends EditorPanelOperator {
     
     public JCheckBoxOperator wrapAroundCheckBox() {
         return getCheckbox(4);
+    }
+
+    void uncheckAll() {
+        matchCaseCheckBox().setSelected(false);
+        highlightResultsCheckBox().setSelected(false);
+        reqularExpressionCheckBox().setSelected(false);
+        highlightResultsCheckBox().setSelected(false);
+        wrapAroundCheckBox().setSelected(false);
     }
     
 }

@@ -46,18 +46,13 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.*;
+import java.awt.event.*;
 import java.beans.BeanInfo;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
@@ -65,6 +60,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.UIResource;
+import javax.swing.plaf.metal.MetalIconFactory;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.*;
@@ -128,6 +124,8 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
     private final Action[] actions;
     private Project project;
     private SourceGroup[] groups;
+    private JLabel label;
+    private ComponentListener componenListener;
 
     /**
      * Creates new form MoveMembersPanel
@@ -183,22 +181,22 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
 //        desc.addFilter(SHOW_INHERITED,
 //                NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowInherited"), //NOI18N
 //                NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowInheritedTip"), //NOI18N
-//                false, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/filterHideInherited.png", false), //NOI18N
+//                false, ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/filterHideInherited.png", false), //NOI18N
 //                null);
         desc.addFilter(SHOW_FIELDS,
                 NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowFields"), //NOI18N
                 NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowFieldsTip"), //NOI18N
-                true, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/filterHideFields.png", false), //NOI18N
+                true, ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/filterHideFields.png", false), //NOI18N
                 null);
         desc.addFilter(SHOW_STATIC,
                 NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowStatic"), //NOI18N
                 NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowStaticTip"), //NOI18N
-                true, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/filterHideStatic.png", false), //NOI18N
+                true, ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/filterHideStatic.png", false), //NOI18N
                 null);
         desc.addFilter(SHOW_NON_PUBLIC,
                 NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowNonPublic"), //NOI18N
                 NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowNonPublicTip"), //NOI18N
-                true, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/filterHideNonPublic.png", false), //NOI18N
+                true, ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/filterHideNonPublic.png", false), //NOI18N
                 null);
         AbstractButton[] res = new AbstractButton[4];
         sortByNameButton = new JToggleButton(new SortActionSupport.SortByNameAction(this));
@@ -403,30 +401,87 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
         boolean fields = filtersManager.isSelected(SHOW_FIELDS);
         boolean inherited = /* filtersManager.isSelected(SHOW_INHERITED) */ false;
 
+        boolean warn = false;
         ArrayList<Description> result = new ArrayList<Description>(original.size());
         for (Description description : original) {
 
             if (description.isConstructor()) {
+                if(description.getSelected() == Boolean.TRUE) warn |= true;
                 continue;
             }
             if (!inherited && description.isInherited()) {
+                if(description.getSelected() == Boolean.TRUE) warn |= true;
                 continue;
             }
             if (!non_public
                     && !description.getModifiers().contains(Modifier.PUBLIC)) {
+                if(description.getSelected() == Boolean.TRUE) warn |= true;
                 continue;
             }
 
             if (!statik && description.getModifiers().contains(Modifier.STATIC)) {
+                if(description.getSelected() == Boolean.TRUE) warn |= true;
                 continue;
             }
 
             if (!fields && description.getKind() == ElementKind.FIELD) {
+                if(description.getSelected() == Boolean.TRUE) warn |= true;
                 continue;
             }
             result.add(description);
         }
         Collections.sort(result, isNaturalSort() ? Description.POSITION_COMPARATOR : Description.ALPHA_COMPARATOR);
+        if(warn) {
+            if(this.label == null) {
+                final JLayeredPane layeredPaneAbove = JLayeredPane.getLayeredPaneAbove(outlineView1);
+                ImageIcon imageIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/warning_16.png", false); //NOI18N
+                this.label = new JLabel("Some selected members are not visible", imageIcon, SwingConstants.LEFT);//NOI18N
+                this.label.setBackground(outlineView1.getBackground());
+                this.label.setOpaque(true);
+
+                Rectangle ownerCompBounds = SwingUtilities.convertRectangle(outlineView1.getParent(), outlineView1.getBounds(), layeredPaneAbove);
+
+                final Dimension labelSize = label.getPreferredSize();
+                final Insets insets = outlineView1.getInsets();
+                int x = ownerCompBounds.x + ownerCompBounds.width - labelSize.width - insets.right;
+                int y = ownerCompBounds.y + ownerCompBounds.height - labelSize.height - insets.bottom;
+                label.setBounds(x, y, labelSize.width, labelSize.height);
+                outlineView1.addComponentListener(this.componenListener = new ComponentListener() {
+
+                    @Override
+                    public void componentResized(ComponentEvent e) {
+                        Rectangle ownerCompBounds = SwingUtilities.convertRectangle(outlineView1.getParent(), outlineView1.getBounds(), layeredPaneAbove);
+                        int x = ownerCompBounds.x + ownerCompBounds.width - labelSize.width - insets.right;
+                        int y = ownerCompBounds.y + ownerCompBounds.height - labelSize.height - insets.bottom;
+                        label.setBounds(x, y, labelSize.width, labelSize.height);
+                    }
+
+                    @Override
+                    public void componentMoved(ComponentEvent e) {
+                        Rectangle ownerCompBounds = SwingUtilities.convertRectangle(outlineView1.getParent(), outlineView1.getBounds(), layeredPaneAbove);
+                        int x = ownerCompBounds.x + ownerCompBounds.width - labelSize.width - insets.right;
+                        int y = ownerCompBounds.y + ownerCompBounds.height - labelSize.height - insets.bottom;
+                        label.setBounds(x, y, labelSize.width, labelSize.height);
+                    }
+
+                    @Override
+                    public void componentShown(ComponentEvent e) {}
+
+                    @Override
+                    public void componentHidden(ComponentEvent e) {}
+                });
+                layeredPaneAbove.add(label, new Integer(JLayeredPane.POPUP_LAYER - 1));
+            }
+        } else {
+            JLayeredPane layeredPaneAbove = JLayeredPane.getLayeredPaneAbove(outlineView1);
+            if(this.label != null) {
+                outlineView1.removeComponentListener(componenListener);
+                componenListener = null;
+                layeredPaneAbove.remove(label);
+                label = null;
+                layeredPaneAbove.repaint();
+            }
+        }
         return result;
     }
 

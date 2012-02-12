@@ -186,7 +186,7 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                     ElementHandle<TypeElement> enclosingType = ElementHandle.create(elmUtils.enclosingTypeElement(el));
                     allMethods = new HashSet<ElementHandle<ExecutableElement>>();
                     allMethods.add(methodHandle);
-                    for (ExecutableElement e : JavaRefactoringUtils.getOverridingMethods(el, info)) {
+                    for (ExecutableElement e : JavaRefactoringUtils.getOverridingMethods(el, info, cancelRequested)) {
                         ElementHandle<ExecutableElement> handle = ElementHandle.create(e);
                         set.add(SourceUtils.getFile(handle, info.getClasspathInfo()));
                         ElementHandle<TypeElement> encl = ElementHandle.create(elmUtils.enclosingTypeElement(e));

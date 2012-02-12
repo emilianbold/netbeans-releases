@@ -49,6 +49,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -84,7 +86,7 @@ public final class Utils {
     private static final String JAVAFX_SOURCES_PREFIX = "javafx.src"; // NOI18N
     private static final String JAVAFX_JAVADOC_PREFIX = "javafx.javadoc"; // NOI18N
 
-//    private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.javafx2.platform.Utils"); // NOI18N
     
     private Utils() {
     }
@@ -96,12 +98,20 @@ public final class Utils {
      */
     private static boolean isTest = false;
     
-    /** isTest getter */
+    /**
+     * Returns isTest flag value
+     * 
+     * @return isTest flag value
+     */
     public static boolean isTest() {
         return isTest;
     }
 
-    /** isTest setter */
+    /**
+     * Sets isTest flag, unit test should set it to true
+     * 
+     * @param isTest flag
+     */
     public static void setIsTest(boolean test) {
         isTest = test;
     }
@@ -181,7 +191,9 @@ public final class Utils {
     }
     
     /**
-     * Creates new instance of Java Platform and register JavaFX extension for it
+     * Creates new instance of Java Platform and registers JavaFX extension for it.
+     * If Java Platform with a given name already exists, just registers JavaFX extension.
+     * If <b>isTest</b> is set to true, this method does nothing and returns null.
      * 
      * @param platformName the desired display name
      * @param sdkPath JavaFX SDK location
@@ -190,7 +202,6 @@ public final class Utils {
      * @param srcPath JavaFX sources location
      * @return instance of created Java Platform, or null if creation was not successful
      * @throws IOException if the platform was invalid or its definition could not be stored
-     * @throws IllegalArgumentException if a platform of given display name already exists
      */
     @CheckForNull
     public static JavaPlatform createJavaFXPlatform(@NonNull String platformName, @NonNull String sdkPath,
@@ -201,17 +212,36 @@ public final class Utils {
         Parameters.notNull("sdkPath", sdkPath); // NOI18N
         Parameters.notNull("runtimePath", runtimePath); // NOI18N
         
-        JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
-        JavaPlatform platform = defaultPlatform;
-        if(!isTest) {
-            // 32b vs 64b check
-            if (!isArchitechtureCorrect(runtimePath)) {
-                return null;
-            }
-            FileObject platformFolder = defaultPlatform.getInstallFolders().iterator().next();
-            platform = J2SEPlatformCreator.createJ2SEPlatform(platformFolder, platformName);
+        // 32b vs 64b check
+        if (!isArchitechtureCorrect(runtimePath) && !isTest) {
+            return null;
         }
 
+        JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
+        FileObject platformFolder = defaultPlatform.getInstallFolders().iterator().next();
+        JavaPlatform platform = null;
+
+        if(isTest) {
+            // Re-using default platform as FX platform because createJ2SEPlatform fails when called from test
+            // Note that outside tests the default platform must not be used as FX platform
+            platform = defaultPlatform;
+        } else {
+            try {
+                platform = J2SEPlatformCreator.createJ2SEPlatform(platformFolder, platformName);
+                LOGGER.log(Level.INFO, "\"{0}\" has been created successfully", platformName); // NOI18N
+            } catch (IllegalArgumentException illegalArgumentException) {
+                LOGGER.log(Level.WARNING, "Java Platform \"{0}\" already exists, skipping platform creation", platformName); // NOI18N
+                JavaPlatform[] installedPlatforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
+                for (JavaPlatform jp : installedPlatforms) {
+                    String name = jp.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
+                    if (name.equals(platformName)) {
+                        platform = jp;
+                        break;
+                    }
+                }
+            }
+        }
+        
         if (platform != null) {
             Map<String, String> map = new HashMap<String, String>(2);
             map.put(Utils.getSDKPropertyKey(platform), sdkPath);
@@ -223,6 +253,9 @@ public final class Utils {
                 map.put(Utils.getSourcesPropertyKey(platform), srcPath);
             }
             PlatformPropertiesHandler.saveGlobalProperties(map);
+            LOGGER.log(Level.INFO, "Java FX extension for \"{0}\" has been registered successfully", platformName); // NOI18N
+        } else {
+            LOGGER.log(Level.WARNING, "Java FX extension for \"{0}\" has not been registered!", platformName); // NOI18N
         }
         
         return platform;
@@ -255,6 +288,7 @@ public final class Utils {
         return true;
     }
 
+    // TODO what if jar names/locations will be changed?
     @NonNull
     public static List<? extends URL> getRuntimeClassPath(@NonNull final File javafxRuntime) {
         Parameters.notNull("javafxRuntime", javafxRuntime); //NOI18N

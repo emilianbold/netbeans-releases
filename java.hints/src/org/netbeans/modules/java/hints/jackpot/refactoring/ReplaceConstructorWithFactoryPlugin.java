@@ -39,29 +39,19 @@
 
 package org.netbeans.modules.java.hints.jackpot.refactoring;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.TypeParameterTree;
-import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.GeneratorUtilities;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.*;
 import org.netbeans.modules.java.hints.jackpot.impl.JavaFixImpl;
 import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher.OccurrenceDescription;
 import org.netbeans.modules.java.hints.jackpot.refactoring.JackpotBaseRefactoring2.Transform;
@@ -70,18 +60,17 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.spi.editor.hints.Fix;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author lahvac
  */
-public class ReplaceConstructorRefactoringPluginImpl implements RefactoringPlugin {
+public class ReplaceConstructorWithFactoryPlugin implements RefactoringPlugin {
 
-    private final ReplaceConstructorRefactoring replaceConstructorRefactoring;
+    private final ReplaceConstructorWithFactoryRefactoring replaceConstructorRefactoring;
 
-    public ReplaceConstructorRefactoringPluginImpl(ReplaceConstructorRefactoring replaceConstructorRefactoring) {
+    public ReplaceConstructorWithFactoryPlugin(ReplaceConstructorWithFactoryRefactoring replaceConstructorRefactoring) {
         this.replaceConstructorRefactoring = replaceConstructorRefactoring;
     }
 
@@ -97,6 +86,14 @@ public class ReplaceConstructorRefactoringPluginImpl implements RefactoringPlugi
 
     @Override
     public Problem fastCheckParameters() {
+        String factoryName = replaceConstructorRefactoring.getFactoryName();
+        
+        if (factoryName == null || factoryName.length() == 0) {
+            return new Problem(true, "No factory method name specified.");
+        }
+        if (!SourceVersion.isIdentifier(factoryName)) {
+            return new Problem(true, factoryName + " is not an identifier.");
+        }
         return null;
     }
 
@@ -105,7 +102,7 @@ public class ReplaceConstructorRefactoringPluginImpl implements RefactoringPlugi
 //        FileObject file = tph.getFileObject();
 //        ClassPath source = ClassPath.getClassPath(file, ClassPath.SOURCE);
 //        FileObject sourceRoot = source.findOwnerRoot(file);
-        final TreePathHandle constr = replaceConstructorRefactoring.getConstructor();
+        final TreePathHandle constr = replaceConstructorRefactoring.getRefactoringSource().lookup(TreePathHandle.class);
         final String[] ruleCode = new String[1];
         final String[] toCode = new String[1];
 

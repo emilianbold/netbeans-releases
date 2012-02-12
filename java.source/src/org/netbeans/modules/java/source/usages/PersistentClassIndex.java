@@ -198,7 +198,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             final String binaryName = SourceUtils.getJVMSignature(element)[0];
             final ElementKind kind = element.getKind();
             if (kind == ElementKind.PACKAGE) {
-                IndexManager.readAccess(new IndexManager.Action<Void> () {
+                IndexManager.priorityAccess(new IndexManager.Action<Void> () {
                     @Override
                     public Void run () throws IOException, InterruptedException {
                         final Query q = QueryUtil.scopeFilter(
@@ -224,7 +224,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                         convertor,
                         result);
                 } else {
-                    IndexManager.readAccess(new IndexManager.Action<Void> () {
+                    IndexManager.priorityAccess(new IndexManager.Action<Void> () {
                         @Override
                         public Void run () throws IOException, InterruptedException {
                             final Query usagesQuery = QueryUtil.scopeFilter(
@@ -258,7 +258,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             @NonNull final Set<? super T> result) throws InterruptedException, IOException {
         final Pair<Convertor<? super Document, T>,Index> ctu = indexPath.getPatch(convertor);
         try {
-            IndexManager.readAccess(new IndexManager.Action<Void> () {
+            IndexManager.priorityAccess(new IndexManager.Action<Void> () {
                 @Override
                 public Void run () throws IOException, InterruptedException {
                     final Query query =  QueryUtil.scopeFilter(
@@ -290,7 +290,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             final Map<T,Set<String>> result) throws InterruptedException, IOException {
         final Pair<Convertor<? super Document, T>,Index> ctu = indexPath.getPatch(convertor);
         try {
-            IndexManager.readAccess(new IndexManager.Action<Void>() {
+            IndexManager.priorityAccess(new IndexManager.Action<Void>() {
                 @Override
                 public Void run () throws IOException, InterruptedException {
                     final Query query = Queries.createTermCollectingQuery(
@@ -333,7 +333,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
     @Override
     public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) throws InterruptedException, IOException {
         try {
-            IndexManager.readAccess(new IndexManager.Action<Void>() {
+            IndexManager.priorityAccess(new IndexManager.Action<Void>() {
                 @Override
                 public Void run () throws IOException, InterruptedException {
                     final boolean cacheOp = directOnly && prefix.length() == 0;

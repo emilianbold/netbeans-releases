@@ -143,6 +143,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
             GlobalPathRegistry.getDefault().unregister(id, classpaths.toArray(new ClassPath[classpaths.size()]));
         }
 
+        MockMimeLookup.setInstances(MimePath.parse("text/plain"));
         super.tearDown();
     }
 
@@ -195,7 +196,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
         };
         MockLookup.setInstances(new testAddIndexingJob_PathRecognizer());
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), factory);
-        Util.allMimeTypes = Collections.singleton("text/plain");
+        RepositoryUpdaterTest.setMimeTypes("text/plain");
 
         ruSync.reset(RepositoryUpdaterTest.TestHandler.Type.FILELIST, 2);
         RepositoryUpdater.getDefault().addIndexingJob(srcRoot1.getURL(), Collections.singleton(file1.getURL()), false, false, false, true, true, null);
@@ -334,7 +335,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
 
         final testRootsWorkCancelling_CustomIndexer indexer = new testRootsWorkCancelling_CustomIndexer();
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer));
-        Util.allMimeTypes = Collections.singleton("text/plain");
+        RepositoryUpdaterTest.setMimeTypes("text/plain");
 
         assertEquals("No roots should be indexed yet", 0, indexer.indexedRoots.size());
         final RepositoryUpdaterTest.MutableClassPathImplementation mcpi = new RepositoryUpdaterTest.MutableClassPathImplementation();
@@ -400,9 +401,10 @@ public class RepositoryUpdater2Test extends NbTestCase {
         final Runnable action = new Runnable() {
             @Override
             public void run() {
-                awaitIndexer[counter.get()].countDown();
+                int c = counter.get();
+                awaitIndexer[c].countDown();
                 try {
-                    awaitUserTask[counter.get()].await();
+                    awaitUserTask[c].await();
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -410,38 +412,48 @@ public class RepositoryUpdater2Test extends NbTestCase {
         };
         final ActionCustomIndexer indexer = new ActionCustomIndexer(action);
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer), new FixedParserFactory(new EmptyParser()));
-        Util.allMimeTypes = Collections.singleton("text/plain");
+        try {
+            RepositoryUpdaterTest.setMimeTypes("text/plain");
 
-        assertEquals("No roots should be indexed yet", 0, indexer.indexedRoots.size());
-        final RepositoryUpdaterTest.MutableClassPathImplementation mcpi = new RepositoryUpdaterTest.MutableClassPathImplementation();
-        mcpi.addResource(srcRoot1, srcRoot2, srcRoot3);
-        globalPathRegistry_register(testRootsWorkCancelling_PathRecognizer.SOURCEPATH, new ClassPath[] { ClassPathFactory.createClassPath(mcpi) });
+            assertEquals("No roots should be indexed yet", 0, indexer.indexedRoots.size());
+            final RepositoryUpdaterTest.MutableClassPathImplementation mcpi = new RepositoryUpdaterTest.MutableClassPathImplementation();
+            mcpi.addResource(srcRoot1, srcRoot2, srcRoot3);
+            globalPathRegistry_register(testRootsWorkCancelling_PathRecognizer.SOURCEPATH, new ClassPath[] { ClassPathFactory.createClassPath(mcpi) });
 
-        for(int cnt = 1; cnt <= 3; cnt++) {
-            awaitIndexer[counter.get()].await(10, TimeUnit.SECONDS);
-            assertEquals("Wrong number of roots indexed", cnt, indexer.indexedRoots.size());
-            
-            final int fcnt = cnt;
-            final boolean [] taskCalled = new boolean [] { false };
-            ParserManager.parse("text/plain", new UserTask() {
-                public @Override void run(ResultIterator resultIterator) throws Exception {
-                    awaitUserTask[counter.getAndIncrement()].countDown();
-                    Thread.sleep(2000); //Give RU.worker chance to displatch next root - should not happen should be blocked.
-                    assertEquals("No more roots should be indexed", fcnt, indexer.indexedRoots.size());
-                    taskCalled[0] = true;
-                }
-            });
-            assertTrue("UserTask not called", taskCalled[0]);
+            for(int cnt = 1; cnt <= 3; cnt++) {
+                awaitIndexer[counter.get()].await(10, TimeUnit.SECONDS);
+                assertEquals("Wrong number of roots indexed", cnt, indexer.indexedRoots.size());
+
+                final int fcnt = cnt;
+                final boolean [] taskCalled = new boolean [] { false };
+                ParserManager.parse("text/plain", new UserTask() {
+                    public @Override void run(ResultIterator resultIterator) throws Exception {
+                        awaitUserTask[counter.getAndIncrement()].countDown();
+                        Thread.sleep(2000); //Give RU.worker chance to displatch next root - should not happen should be blocked.
+                        assertEquals("No more roots should be indexed", fcnt, indexer.indexedRoots.size());
+                        taskCalled[0] = true;
+                    }
+                });
+                assertTrue("UserTask not called", taskCalled[0]);
+            }
+
+            RepositoryUpdater.getDefault().waitUntilFinished(-1);
+
+            assertEquals("All roots should be indexed: " + indexer.indexedRoots, 3, indexer.indexedRoots.size());
+            ArrayList<URL> expectedSourceRoots = new ArrayList<URL>(indexer.indexedRoots);
+            Collections.sort(expectedSourceRoots, new RepositoryUpdater.LexicographicComparator(true));
+            assertEquals("Wrong scanned sources", expectedSourceRoots, RepositoryUpdater.getDefault().getScannedSources());
+            assertEquals("Wrong scanned binaries", 0, RepositoryUpdater.getDefault().getScannedBinaries().size());
+            assertEquals("Wrong scanned unknowns", 0, RepositoryUpdater.getDefault().getScannedUnknowns().size());
+        } finally {
+            // unfreeze everything which could be waiting
+            for (int i = 0; i < awaitUserTask.length; i++) {
+                awaitUserTask[i].countDown();
+            }
+            for (int i = 0; i < awaitIndexer.length; i++) {
+                awaitIndexer[i].countDown();
+            }
         }
-        
-        RepositoryUpdater.getDefault().waitUntilFinished(-1);
-
-        assertEquals("All roots should be indexed: " + indexer.indexedRoots, 3, indexer.indexedRoots.size());
-        ArrayList<URL> expectedSourceRoots = new ArrayList<URL>(indexer.indexedRoots);
-        Collections.sort(expectedSourceRoots, new RepositoryUpdater.LexicographicComparator(true));
-        assertEquals("Wrong scanned sources", expectedSourceRoots, RepositoryUpdater.getDefault().getScannedSources());
-        assertEquals("Wrong scanned binaries", 0, RepositoryUpdater.getDefault().getScannedBinaries().size());
-        assertEquals("Wrong scanned unknowns", 0, RepositoryUpdater.getDefault().getScannedUnknowns().size());
     }
 
     public static final class testRootsWorkCancelling_PathRecognizer extends PathRecognizer {
@@ -678,7 +690,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
 
         final testClasspathDeps1_Indexer indexer = new testClasspathDeps1_Indexer();
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer));
-        Util.allMimeTypes = Collections.singleton("text/plain");
+        RepositoryUpdaterTest.setMimeTypes("text/plain");
 
         assertEquals("No roots should be indexed yet", 0, indexer.indexedRoots.size());
 
@@ -797,7 +809,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
 
         final TestCustomIndexer indexer = new TestCustomIndexer();
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer), new FixedParserFactory(new EmptyParser()));
-        Util.allMimeTypes = Collections.singleton("text/plain");
+        RepositoryUpdaterTest.setMimeTypes("text/plain");
 
         assertEquals("No roots should be indexed yet", 0, indexer.indexed.size());
 
@@ -844,7 +856,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
 
         final TestCustomIndexer indexer = new TestCustomIndexer();
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer), new FixedParserFactory(new EmptyParser()));
-        Util.allMimeTypes = Collections.singleton("text/plain");
+        RepositoryUpdaterTest.setMimeTypes("text/plain");
 
         assertEquals("No roots should be indexed yet", 0, indexer.indexed.size());
 
