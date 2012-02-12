@@ -316,10 +316,10 @@ final class JarBundleFile extends BundleFile implements BundleContent {
     }
 
     @Override
-    public Enumeration getEntryPaths(String prefix) {
+    public Enumeration<String> getEntryPaths(String prefix) {
         BundleFile d = delegate("getEntryPaths", prefix);
         if (d == null) {
-            return Collections.enumeration(Collections.emptyList());
+            return Collections.enumeration(Collections.<String>emptyList());
         }
         return d.getEntryPaths(prefix);
     }
