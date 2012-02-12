@@ -491,7 +491,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         if (file.endsWith("tests.jar")) {
             return false;
         }
-        if (file.endsWith("org-netbeans-modules-nbjunit.jar")) {
+        if (file.endsWith("org-netbeans-modules-nbjunit.jar") || file.endsWith("org-netbeans-libs-junit4.jar")) {
             return false;
         }
         if (file.startsWith(System.getProperty("java.home").replaceAll("[/\\\\][^/\\\\]*$", ""))) {
