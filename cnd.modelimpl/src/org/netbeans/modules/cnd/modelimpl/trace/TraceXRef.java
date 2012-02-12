@@ -381,10 +381,10 @@ public class TraceXRef extends TraceModel {
             visitDeclarations(file.getDeclarations(), params, bag, out, printErr, canceled);
         } else if (params.reportIndex) {
             // otherwise visit active code in whole file
-            CsmFileReferences.getDefault().accept(file, new LWVisitor2(bag, printErr, canceled, params.reportIndex), params.interestedReferences);
+            CsmFileReferences.getDefault().accept(file, new LWReportIndexVisitor(bag, printErr, canceled, params.reportIndex), params.interestedReferences);
         } else {
             // otherwise visit active code in whole file
-            CsmFileReferences.getDefault().accept(file, new LWVisitor(bag, printErr, canceled, params.reportUnresolved), params.interestedReferences);
+            CsmFileReferences.getDefault().accept(file, new LWCheckReferenceVisitor(bag, printErr, canceled, params.reportUnresolved), params.interestedReferences);
         }
         time = System.currentTimeMillis() - time;
         // get line num
@@ -418,14 +418,14 @@ public class TraceXRef extends TraceModel {
         }
     }
 
-    private static final class LWVisitor implements CsmFileReferences.Visitor {
+    private static final class LWCheckReferenceVisitor implements CsmFileReferences.Visitor {
 
         private final XRefResultSet<XRefEntry> bag;
         private final OutputWriter printErr;
         private final AtomicBoolean canceled;
         private final boolean reportUnresolved;
 
-        public LWVisitor(XRefResultSet<XRefEntry> bag, OutputWriter printErr, AtomicBoolean canceled, boolean reportUnresolved) {
+        public LWCheckReferenceVisitor(XRefResultSet<XRefEntry> bag, OutputWriter printErr, AtomicBoolean canceled, boolean reportUnresolved) {
             this.bag = bag;
             this.printErr = printErr;
             this.canceled = canceled;
@@ -454,13 +454,13 @@ public class TraceXRef extends TraceModel {
         }
     }
 
-    private static final class LWVisitor2 implements CsmFileReferences.Visitor {
+    private static final class LWReportIndexVisitor implements CsmFileReferences.Visitor {
 
         private final XRefResultSet<XRefEntry> bag;
         private final OutputWriter printErr;
         private final AtomicBoolean canceled;
 
-        public LWVisitor2(XRefResultSet<XRefEntry> bag, OutputWriter printErr, AtomicBoolean canceled, boolean reportUnresolved) {
+        public LWReportIndexVisitor(XRefResultSet<XRefEntry> bag, OutputWriter printErr, AtomicBoolean canceled, boolean reportUnresolved) {
             this.bag = bag;
             this.printErr = printErr;
             this.canceled = canceled;
@@ -479,7 +479,7 @@ public class TraceXRef extends TraceModel {
             boolean important = false;
             String skind;
             if (target == null) {
-                skind = "UNRESOVED"; //NOI18N
+                skind = "UNRESOLVED"; //NOI18N
                 entry = XRefResultSet.ContextEntry.UNRESOLVED;
                 important = true;
             } else {
@@ -560,7 +560,7 @@ public class TraceXRef extends TraceModel {
         CsmReference ref = context.getReference();
         CsmObject target = ref.getReferencedObject();
         if (target == null) {
-            String kind = "UNRESOVED"; //NOI18N
+            String kind = "UNRESOLVED"; //NOI18N
             entry = XRefResultSet.ContextEntry.UNRESOLVED;
             boolean important = true;
             if (CsmFileReferences.isAfterUnresolved(context)) {
