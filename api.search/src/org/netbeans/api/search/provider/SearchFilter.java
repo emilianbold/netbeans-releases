@@ -46,6 +46,9 @@ import org.openide.filesystems.FileObject;
 /**
  * Implementation of search filter that is associated with a search root.
  *
+ * All search providers should respect search filters. It is only relevant if
+ * custom algorithm for for traversing is used instead of standard iterating.
+ *
  * @author jhavlin
  */
 public abstract class SearchFilter {

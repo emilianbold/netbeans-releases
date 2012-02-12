@@ -47,7 +47,8 @@ import org.netbeans.api.search.provider.SearchFilter;
 import org.openide.filesystems.FileObject;
 
 /**
- * Search root is a pair containing a folder and a set of default file filters.
+ * Search root is a pair containing a folder (or file) and a set of file
+ * filters.
  */
 public final class SearchRoot {
 
@@ -57,7 +58,7 @@ public final class SearchRoot {
             Collections.emptyList();
 
     /**
-     * Create a new search root, defined by a folder and a set fo filters.
+     * Create a new search root, defined by a folder and a set of filters.
      *
      * @param rootFile Root file, cannot be null.
      * @param filters List of default filters, can be null.
@@ -73,14 +74,17 @@ public final class SearchRoot {
     }
 
     /**
+     * Get list of filters.
+     *
      * @return List of default filters. Can be empty list, but never null.
      */
-    // TODO do not return SPI class for use
     public List<SearchFilter> getFilters() {
         return filters;
     }
 
     /**
+     * Get the file object.
+     *
      * @return Root file (regular file or folder). Never null.
      */
     public FileObject getFileObject() {

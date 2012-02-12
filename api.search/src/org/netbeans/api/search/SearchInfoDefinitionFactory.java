@@ -110,11 +110,10 @@ public final class SearchInfoDefinitionFactory {
 
     /**
      * Creates a
-     * <code>SearchInfo</code> object for given folders. The returned
-     * <code>SearchInfo</code> object's method {@link SearchInfo#canSearch()}
-     * always returns
-     * <code>true</code> and iterates through
-     * <code>DataObject</code>s found in the given folders. Files and folders
+     * <code>SearchInfoDefinition</code> object for given folders. The returned
+     * <code>SearchInfoDefinition</code> object's method {@link SearchInfoDefinition#canSearch() }
+     * always returns <code>true</code> and iterates through
+     * <code>FileObject</code>s found in the given folders. Files and folders
      * that do not pass any of the given filters are skipped (not searched). If
      * multiple filters are passed, the filters are applied on each file/folder
      * in the same order as in the array passed to this method.
@@ -150,23 +149,24 @@ public final class SearchInfoDefinitionFactory {
 
     /**
      * Creates a
-     * <code>SearchInfo</code> object combining
-     * <code>SearchInfo</code> objects returned by the node's subnodes.
+     * <code>SearchInfoDefinition</code> object combining
+     * <code>SearchInfoDefinition</code> objects returned by the node's
+     * subnodes.
      *
-     * Method {@link SearchInfo#canSearch()} of the resulting
-     * <code>SearchInfo</code> objects returns
+     * Method {@link SearchInfoDefinition#canSearch()} of the resulting
+     * <code>SearchInfoDefinition</code> objects returns
      * <code>true</code> if and only if at least one of the nodes is searchable
      * (its method
      * <code>canSearch()</code> returns
      * <code>true</code>). The iterator iterates through all
-     * <code>DataObject</code>s returned by the subnode's
-     * <code>SearchInfo</code> iterators.
+     * <code>FileObject</code>s returned by the subnode's
+     * <code>SearchInfoDefinition</code> iterators.
      *
      * @param node node to create
-     * <code>SearchInfo</code> for
+     * <code>SearchInfoDefinition</code> for
      * @return
-     * <code>SearchInfo</code> object representing combination of
-     * <code>SearchInfo</code> objects of the node's subnodes
+     * <code>SearchInfoDefinition</code> object representing combination of
+     * <code>SearchInfoDefinition</code> objects of the node's subnodes
      */
     public static SearchInfoDefinition createSearchInfoBySubnodes(Node node) {
         return new SubnodesSearchInfoDefinition(node);

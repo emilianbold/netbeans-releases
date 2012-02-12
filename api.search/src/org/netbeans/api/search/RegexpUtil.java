@@ -45,8 +45,8 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * Helper for creating regular expression patterns for search patterns and
- * searcher options.
+ * Helper for creating regular expression patterns for file-name patterns that
+ * are specified in search options.
  *
  * @author jhavlin
  */

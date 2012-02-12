@@ -45,24 +45,60 @@ import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
+import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
 
 /**
- * Info about a search scope.
+ * Info about searching under a node or a set of nodes.
  *
  * @author jhavlin
  */
 public abstract class SearchInfo {
 
+    /**
+     * Checks that searching is possible.
+     *
+     * @return False is searching is not possible (it is not supported or it is
+     * sure that there are no files to search), true if there is chance that
+     * some files can be found.
+     */
     public abstract boolean canSearch();
 
+    /**
+     * Get search roots. This information can be used for computing relative
+     * paths, or in custom algorithms for file traversing.
+     *
+     * @return List of search roots associated with this search info.
+     */
     public abstract List<SearchRoot> getSearchRoots();
 
+    /**
+     * Get {@link Iterator} that iterates over all files in the search scope
+     * that comply with search options and search filters.
+     *
+     * @param options Custom options. This object encapsulates custom search
+     * filters, file name pattern and general search settings.
+     * @param listener Listener that is notified when some important event
+     * occurs during searching. Listener passed to {@link SearchComposition}
+     * should be used here.
+     * @param terminationFlag Object that can be asked by the iterator whether
+     * the search has been terminated.
+     *
+     * @return Iterator over all files that comply with specified options (in
+     * the scope of this search info).
+     */
     public abstract Iterator<FileObject> getFilesToSearch(
             SearchScopeOptions options, SearchListener listener,
             TerminationFlag terminationFlag);
 
+    /**
+     * Get {@link Iterable} that iterates over all files in the search scope
+     * that comply with search options and search filters.
+     *
+     * This is only convenience method. The iterated files are the same that
+     * would be retrieved with {@link #getFilesToSearch(org.netbeans.api.search.SearchScopeOptions, org.netbeans.api.search.provider.SearchListener, org.netbeans.spi.search.provider.TerminationFlag)}.
+     */
     public final Iterable<FileObject> iterateFilesToSearch(
             final SearchScopeOptions options, final SearchListener listener,
             final TerminationFlag terminationFlag) {

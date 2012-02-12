@@ -59,7 +59,7 @@ public abstract class SearchResultsDisplayer<T> {
     public abstract JComponent createVisualComponent();
 
     /**
-     * This method is called from search listener when a new matching object is
+     * This method is called when a new matching object is
      * found. It should add representation of this matching object to model of
      * created visual component.
      */
