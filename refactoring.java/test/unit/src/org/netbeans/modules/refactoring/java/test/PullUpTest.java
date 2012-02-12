@@ -53,7 +53,6 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
@@ -65,7 +64,6 @@ import org.openide.filesystems.FileObject;
  *
  * @author Ralph Ruijs
  */
-@RandomlyFails
 public class PullUpTest extends RefactoringTestBase {
 
     public PullUpTest(String name) {
@@ -182,7 +180,6 @@ public class PullUpTest extends RefactoringTestBase {
                 + "}"));
     }
 
-    @RandomlyFails
     public void testPullUpClass() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("pullup/PullUpBaseClass.java", "package pullup;\n"
@@ -459,7 +456,6 @@ public class PullUpTest extends RefactoringTestBase {
                 + "}"));
     }
     
-    @RandomlyFails
     public void testPullUpAbsMethod() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("pullup/PullUpBaseClass.java", "package pullup;\n"
