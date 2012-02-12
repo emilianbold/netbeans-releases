@@ -55,6 +55,7 @@ import org.netbeans.SetupHid;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -121,6 +122,7 @@ public class CachingAndExternalPathsTest extends NbTestCase {
         return suite;
     }
 
+    @RandomlyFails
     public void testInitUserDir() throws Exception {
         File simpleModule = new File(System.getProperty("external.jar"));
 

@@ -55,6 +55,7 @@ import org.netbeans.MockModuleInstaller;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.core.netigso.NetigsoServicesTest;
+import org.netbeans.junit.RandomlyFails;
 import org.osgi.framework.Bundle;
 
 /**
@@ -68,6 +69,7 @@ public class BundleResourceTest extends NetigsoHid {
         super(name);
     }
 
+    @RandomlyFails
     public void testBundleResourceProtocol() throws Exception {
         MockModuleInstaller installer = new MockModuleInstaller();
         MockEvents ev = new MockEvents();
