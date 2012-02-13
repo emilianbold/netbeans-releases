@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl.EnumeratorBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl.NamespaceBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.parser.symtab.*;
 import org.openide.util.CharSequences;
@@ -366,8 +367,10 @@ public class CppParserActionImpl implements CppParserAction {
 
     @Override
     public void onInclude(CsmFile inclFile, APTPreprocHandler.State stateBefore) {
-        assert inclFile instanceof FileImpl;
-        ((FileImpl)inclFile).parseOnInclude(stateBefore, this);
+        if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+            assert inclFile instanceof FileImpl;
+            ((FileImpl)inclFile).parseOnInclude(stateBefore, this);
+        }
     }
         
     private SymTabStack createGlobal() {
