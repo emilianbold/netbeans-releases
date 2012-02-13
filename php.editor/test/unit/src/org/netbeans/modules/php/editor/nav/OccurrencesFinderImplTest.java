@@ -485,6 +485,10 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "$static_clas^sname::$static_property;", true);
     }
 
+    public void testStaticMethodCall() throws Exception {
+        checkOccurrences(getTestPath(), "Presenter::staticFun^ctionName($param);", true);
+    }
+
     //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated
     // and maybe fixed (NOT URGENT)
     //caused by got to declaration, mark occurences rewrite
