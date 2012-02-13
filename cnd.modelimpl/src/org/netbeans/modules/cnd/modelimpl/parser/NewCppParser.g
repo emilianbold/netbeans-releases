@@ -72,7 +72,13 @@ import org.netbeans.modules.cnd.modelimpl.parser.*;
 
 @members {
 
-    public CppParserAction3 action;
+    public /*final*/CppParserAction3 action;
+
+    public NewCppParser(TokenStream input, CppParserAction3 action) {
+        this(input);
+        assert action != null;
+        this.action = action;
+    }
 
     public void displayRecognitionError(String[] tokenNames,
                                         RecognitionException e) {

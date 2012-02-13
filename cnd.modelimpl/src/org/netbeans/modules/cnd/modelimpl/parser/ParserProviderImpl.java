@@ -318,20 +318,19 @@ public final class ParserProviderImpl extends CsmParserProvider {
         public void init(CsmObject object, TokenStream ts, CsmParseCallback callback) {
             assert parser == null : "parser can not be reused " + parser;
             assert ts != null;
+            CppParserAction3 cppCallback = (CppParserAction3)callback;
+            if (cppCallback == null) {
+                if (TraceFlags.CPP_PARSER_ACTION) {
+                    cppCallback = new CppParserAction3Impl(file);
+                } else {
+                    cppCallback = new CppParserEmptyAction3Impl(file);
+                }
+            } else {
+                cppCallback.pushFile(file);
+            }            
             org.netbeans.modules.cnd.antlr.TokenBuffer tb = new org.netbeans.modules.cnd.antlr.TokenBuffer(ts);            
             org.antlr.runtime.TokenStream tokens = new MyTokenStream(tb);
-            parser = new NewCppParser(tokens);
-            if(TraceFlags.CPP_PARSER_ACTION) {
-                objects = new HashMap<Integer, CsmObject>();
-            }
-            if (callback != null) {
-                parser.action = (CppParserAction3)callback;
-                parser.action.pushFile(file);
-            } else if(objects == null || file == null) {
-                parser.action = new CppParserEmptyAction3Impl(file);
-            } else {
-                parser.action = new CppParserAction3Impl(file);        
-            }
+            parser = new NewCppParser(tokens, cppCallback);
         }
 
         @Override
