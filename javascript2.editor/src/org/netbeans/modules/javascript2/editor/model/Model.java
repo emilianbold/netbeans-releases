@@ -63,11 +63,14 @@ public final class Model {
 
     private final OccurrencesSupport occurrencesSupport;
 
+    private final DocumentationProvider docSupport;
+    
     private ModelVisitor visitor;
 
     Model(JsParserResult parserResult) {
         this.parserResult = parserResult;
         this.occurrencesSupport = new OccurrencesSupport(this);
+        this.docSupport = DocumentationProvider.getSupport(parserResult);
     }
 
     private synchronized ModelVisitor getModelVisitor() {
