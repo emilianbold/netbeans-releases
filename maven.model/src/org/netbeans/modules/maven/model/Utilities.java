@@ -290,7 +290,10 @@ public class Utilities {
                     StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Utilities.class, "ERR_POM", NbBundle.getMessage(Utilities.class,"ERR_INVALID_MODEL")), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT).clear(10000);
                     return;
                 }
-                model.startTransaction();
+                if (!model.startTransaction()) {
+                    logger.log(Level.WARNING, "Could not start transaction on {0}", pomFileObject);
+                    return;
+                }
                 for (ModelOperation<POMModel> op : operations) {
                     op.performOperation(model);
                 }
