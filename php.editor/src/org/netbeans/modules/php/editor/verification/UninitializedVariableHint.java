@@ -413,7 +413,7 @@ public class UninitializedVariableHint extends AbstractRule implements PHPRuleWi
             }
         }
 
-        public void initializeListVariable(ListVariable node) {
+        private void initializeListVariable(ListVariable node) {
             List<VariableBase> variables = node.getVariables();
             for (VariableBase variableBase : variables) {
                 initializeVariableBase(variableBase);
