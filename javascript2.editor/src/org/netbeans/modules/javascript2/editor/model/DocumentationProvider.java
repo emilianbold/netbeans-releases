@@ -41,10 +41,16 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
+import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+
 /**
  *
- * @author petr
+ * @author Martin Fousek, Petr Pisl 
  */
 class DocumentationProvider {
+    
+    public static DocumentationProvider getSupport(JsParserResult result) {
+        return null;
+    }
     
 }
