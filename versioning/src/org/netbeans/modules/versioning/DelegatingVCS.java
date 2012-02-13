@@ -580,7 +580,14 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
                 RevisionProvider rp = new RevisionProvider() {
                     @Override
                     public void getRevisionFile(VCSFileProxy originalFile, VCSFileProxy revisionFile) {
-                        Accessor.IMPL.getRevisionProvider(he);
+                        org.netbeans.modules.versioning.spi.VCSHistoryProvider.RevisionProvider provider = Accessor.IMPL.getRevisionProvider(he);
+                        if(provider != null) {
+                            File of = originalFile.toFile();
+                            File rf = revisionFile.toFile();
+                            if(of != null && rf != null) {
+                                provider.getRevisionFile(of, rf);
+                            }
+                        }
                     }
                 };
                 proxyHistory[i] = 

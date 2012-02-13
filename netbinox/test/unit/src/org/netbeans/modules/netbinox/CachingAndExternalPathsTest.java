@@ -55,6 +55,7 @@ import org.netbeans.SetupHid;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -106,6 +107,10 @@ public class CachingAndExternalPathsTest extends NbTestCase {
             NbModuleSuite.Configuration conf = common.reuseUserDir(true).addTest(CachingAndExternalPathsTest.class, "testStartAgain");
             suite.addTest(NbModuleSuite.create(conf));
         }
+        {
+            NbModuleSuite.Configuration conf = common.reuseUserDir(true).addTest(CachingAndExternalPathsTest.class, "testStartOnceMore");
+            suite.addTest(NbModuleSuite.create(conf));
+        }
 
         suite.addTest(new CachingAndExternalPathsTest("testInMiddle"));
 
@@ -117,6 +122,7 @@ public class CachingAndExternalPathsTest extends NbTestCase {
         return suite;
     }
 
+    @RandomlyFails
     public void testInitUserDir() throws Exception {
         File simpleModule = new File(System.getProperty("external.jar"));
 
@@ -169,6 +175,11 @@ public class CachingAndExternalPathsTest extends NbTestCase {
     }
 
     public void testStartAgain() throws Exception {
+        doNecessarySetup();
+        // will be reset next time the system starts
+        System.getProperties().remove("netbeans.dirs");
+    }
+    public void testStartOnceMore() throws Exception {
         doNecessarySetup();
         // will be reset next time the system starts
         System.getProperties().remove("netbeans.dirs");
@@ -229,6 +240,7 @@ public class CachingAndExternalPathsTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails
     public void testVerifyActivatorExecuted() {
         assertEquals("1", System.getProperty("activated.count"));
     }

@@ -178,6 +178,17 @@ final class Call implements CallDescriptor {
         }
     }
     
+    /**
+     * Creates an empty Call, which will be eventually replaced by the real item
+     * 
+     * @return empty Call node, which must be replaced by the real one.
+     */
+    public static Call createEmpty() {
+        Call c = new Call();
+        c.setIncomplete(true);
+        return c;
+    }
+    
     public static Call createRoot(CompilationInfo javac, TreePath selection, Element selectionElm, boolean isCallerGraph) {
         return createReference(javac, selection, selectionElm, null, isCallerGraph, Collections.<TreePath>emptyList());
     }

@@ -80,6 +80,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.util.Version;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
@@ -111,7 +112,6 @@ public class LuceneIndex implements Index.Transactional {
 
     private static final String PROP_INDEX_POLICY = "java.index.useMemCache";   //NOI18N
     private static final String PROP_CACHE_SIZE = "java.index.size";    //NOI18N
-    private static final boolean debugIndexMerging = Boolean.getBoolean("java.index.debugMerge");     // NOI18N
     private static final CachePolicy DEFAULT_CACHE_POLICY = CachePolicy.DYNAMIC;
     private static final float DEFAULT_CACHE_SIZE = 0.05f;
     private static final CachePolicy cachePolicy = getCachePolicy();
@@ -352,11 +352,10 @@ public class LuceneIndex implements Index.Transactional {
     private <S, T> void _doStore(Collection<T> data, 
             Collection<S> toDelete, Convertor<? super T, ? extends Document> docConvertor, 
             Convertor<? super S, ? extends Query> queryConvertor, IndexWriter[] ret, boolean optimize) throws IOException {
-        final boolean create = !dirCache.exists();
-        final IndexWriter out = dirCache.acquireWriter(create);
+        final IndexWriter out = dirCache.acquireWriter();
         try {
             ret[0] = out;
-            if (!create) {
+            if (dirCache.exists()) {
                 for (S td : toDelete) {
                     out.deleteDocuments(queryConvertor.convert(td));
                 }
@@ -364,9 +363,6 @@ public class LuceneIndex implements Index.Transactional {
             if (data.isEmpty()) {
                 return;
             }
-            if (debugIndexMerging) {
-                out.setInfoStream (System.err);
-            }                
             final LowMemoryWatcher lmListener = LowMemoryWatcher.getInstance();
             Directory memDir = null;
             IndexWriter activeOut = null;
@@ -793,11 +789,10 @@ public class LuceneIndex implements Index.Transactional {
          * The writer operates under readLock(!) since we do not want to lock out readers,
          * but just close, clear and commit operations. 
          * 
-         * @param create
          * @return
          * @throws IOException 
          */
-        IndexWriter acquireWriter (final boolean create) throws IOException {
+        IndexWriter acquireWriter () throws IOException {
             checkPreconditions();
             hit();
 
@@ -815,16 +810,26 @@ public class LuceneIndex implements Index.Transactional {
                     ok = true;
                     return writer;
                 }
-                //Issue #149757 - logging
                 try {
-                    // not synchronized, volatile var is accessed
-                    final IndexWriter iw = new FlushIndexWriter (this.fsDir, analyzer, create, IndexWriter.MaxFieldLength.LIMITED);
-                    iw.setMergeScheduler(new SerialMergeScheduler());
+                    final IndexWriterConfig iwc = new IndexWriterConfig(Version.LUCENE_35, analyzer);
+                    //The posix::fsync(int) is very slow on Linux ext3,
+                    //minimize number of files sync is done on.
+                    //http://netbeans.org/bugzilla/show_bug.cgi?id=208224
+                    final boolean alwaysCFS = Utilities.getOperatingSystem() == Utilities.OS_LINUX;
+                    if (alwaysCFS) {
+                        //TieredMergePolicy has better performance:
+                        //http://blog.mikemccandless.com/2011/02/visualizing-lucenes-segment-merges.html
+                        final TieredMergePolicy mergePolicy = new TieredMergePolicy();
+                        mergePolicy.setNoCFSRatio(1.0);
+                        iwc.setMergePolicy(mergePolicy);
+                    }
+                    final IndexWriter iw = new FlushIndexWriter (this.fsDir, iwc);
                     lastUsedWriter = System.currentTimeMillis();
                     txWriter.set(iw);
                     ok = true;
                     return iw;
                 } catch (IOException ioe) {
+                    //Issue #149757 - logging
                     throw annotateException (ioe);
                 }
             } finally {
@@ -1079,8 +1084,11 @@ public class LuceneIndex implements Index.Transactional {
     //</editor-fold>
 
     private static class FlushIndexWriter extends IndexWriter {
-        public FlushIndexWriter(Directory d, Analyzer a, boolean create, MaxFieldLength mfl) throws CorruptIndexException, LockObtainFailedException, IOException {
-            super(d, a, create, mfl);
+
+        public FlushIndexWriter(
+                @NonNull final Directory d,
+                @NonNull final IndexWriterConfig conf) throws CorruptIndexException, LockObtainFailedException, IOException {
+            super(d, conf);
         }
         
         /**

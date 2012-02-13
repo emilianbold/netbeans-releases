@@ -1055,12 +1055,13 @@ public class InlineTest extends RefactoringTestBase {
         }, true);
     }
 
-    private void performRefactoring(final InlineRefactoring[] r, Problem... expectedProblems) {
+    private void performRefactoring(final InlineRefactoring[] r, Problem... expectedProblems) throws InterruptedException {
         RefactoringSession rs = RefactoringSession.create("Session");
         List<Problem> problems = new LinkedList<Problem>();
 
         addAllProblems(problems, r[0].preCheck());
         if (!problemIsFatal(problems)) {
+            Thread.sleep(1000);
             addAllProblems(problems, r[0].prepare(rs));
         }
         if (!problemIsFatal(problems)) {

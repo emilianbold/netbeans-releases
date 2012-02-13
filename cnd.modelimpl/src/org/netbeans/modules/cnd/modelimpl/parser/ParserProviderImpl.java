@@ -82,7 +82,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             if (file.getFileType() == CsmFile.FileType.SOURCE_FORTRAN_FILE) {
                 return new Antrl3FortranParser((FileImpl)file);
             }
-            if(true) {
+            if(!TraceFlags.CPP_PARSER_NEW_GRAMMAR) {
                 return new Antlr2CppParser((FileImpl)file);
             } else {
                 return new Antlr3NewCppParser((FileImpl)file);
@@ -100,6 +100,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
         private AST ast;
         private ConstructionKind kind;
         
+        private CppParserAction cppCallback;
         private Map<Integer, CsmObject> objects = null;
         
         Antlr2CppParser(FileImpl file) {
@@ -117,10 +118,17 @@ public final class ParserProviderImpl extends CsmParserProvider {
             assert object != null;
             assert ts != null;
             parserContainer = object;
-            if(TraceFlags.CPP_PARSER_ACTION) {
-                objects = new HashMap<Integer, CsmObject>();
+            cppCallback = (CppParserAction)callback;
+            if (cppCallback == null) {
+                if(TraceFlags.CPP_PARSER_ACTION) {
+                    cppCallback = new CppParserActionImpl(file);
+                } else {
+                    cppCallback = new CppParserEmptyActionImpl(file);
+                }
+            } else {
+                cppCallback.pushFile(file);
             }
-            parser = CPPParserEx.getInstance(file, ts, flags, objects, (CppParserAction)callback);
+            parser = CPPParserEx.getInstance(file, ts, flags, cppCallback);
         }
 
         @Override
@@ -155,8 +163,11 @@ public final class ParserProviderImpl extends CsmParserProvider {
             } catch (Throwable ex) {
                 System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
                 ex.printStackTrace(System.err);
+            } finally {
+                cppCallback.popFile();
             }
             ast = parser.getAST();
+            objects = cppCallback.getObjectsMap();
             return this;
         }
 
@@ -291,11 +302,13 @@ public final class ParserProviderImpl extends CsmParserProvider {
         }
     }
 
-    private final static class Antlr3NewCppParser implements CsmParserProvider.CsmParser, CsmParserProvider.CsmParserResult {
+    final static class Antlr3NewCppParser implements CsmParserProvider.CsmParser, CsmParserProvider.CsmParserResult {
         private final FileImpl file;
         private NewCppParser parser;
 
         private ConstructionKind kind;
+        
+        private Map<Integer, CsmObject> objects = null;
         
         Antlr3NewCppParser(FileImpl file) {
             this.file = file;
@@ -305,9 +318,19 @@ public final class ParserProviderImpl extends CsmParserProvider {
         public void init(CsmObject object, TokenStream ts, CsmParseCallback callback) {
             assert parser == null : "parser can not be reused " + parser;
             assert ts != null;
+            CppParserAction3 cppCallback = (CppParserAction3)callback;
+            if (cppCallback == null) {
+                if (TraceFlags.CPP_PARSER_ACTION) {
+                    cppCallback = new CppParserAction3Impl(file);
+                } else {
+                    cppCallback = new CppParserEmptyAction3Impl(file);
+                }
+            } else {
+                cppCallback.pushFile(file);
+            }            
             org.netbeans.modules.cnd.antlr.TokenBuffer tb = new org.netbeans.modules.cnd.antlr.TokenBuffer(ts);            
             org.antlr.runtime.TokenStream tokens = new MyTokenStream(tb);
-            parser = new NewCppParser(tokens);
+            parser = new NewCppParser(tokens, cppCallback);
         }
 
         @Override
@@ -323,6 +346,9 @@ public final class ParserProviderImpl extends CsmParserProvider {
             } catch (Throwable ex) {
                 System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
                 ex.printStackTrace(System.err);
+            } finally {
+                parser.action.popFile();
+                objects = parser.action.getObjectsMap();
             }
             return this;
         }
@@ -350,7 +376,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             return parser.getNumberOfSyntaxErrors();
         }
         
-        static private class MyToken implements org.antlr.runtime.Token {
+        static class MyToken implements org.antlr.runtime.Token {
 
             org.netbeans.modules.cnd.antlr.Token t;
 

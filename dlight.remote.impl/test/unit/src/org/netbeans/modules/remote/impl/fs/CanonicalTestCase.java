@@ -145,9 +145,9 @@ public class CanonicalTestCase extends RemoteFileTestBase {
             FileObject baseDirFO = getFileObject(baseDir);
             baseDirFO.refresh();
             final FileObject[] links = new FileObject[3];
-            links[0] = (RemoteFileObjectBase) getFileObject(baseDirFO, link0);
-            links[1] = (RemoteFileObjectBase) getFileObject(baseDirFO, link1);
-            links[2] = (RemoteFileObjectBase) getFileObject(baseDirFO, link3);
+            links[0] = (RemoteFileObject) getFileObject(baseDirFO, link0);
+            links[1] = (RemoteFileObject) getFileObject(baseDirFO, link1);
+            links[2] = (RemoteFileObject) getFileObject(baseDirFO, link3);
             
             final IOException[] exceptions = new IOException[3];
             final FileObject[] canonical = new FileObject[3];

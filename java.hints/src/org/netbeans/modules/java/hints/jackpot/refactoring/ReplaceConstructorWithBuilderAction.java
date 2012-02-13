@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.java.hints.jackpot.refactoring;
 
+import javax.lang.model.element.ElementKind;
+import org.netbeans.api.java.source.ui.ScanDialog;
+import org.netbeans.modules.refactoring.java.ui.ContextAnalyzer;
 import org.netbeans.modules.refactoring.java.ui.JavaRefactoringGlobalAction;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -58,7 +61,7 @@ import org.openide.util.NbBundle;
 public final class ReplaceConstructorWithBuilderAction extends JavaRefactoringGlobalAction {
 
     public ReplaceConstructorWithBuilderAction() {
-        super(NbBundle.getMessage(ReplaceConstructorAction.class, "LBL_ReplaceConstructorWithBuilderAction"), null); // NOI18N
+        super(NbBundle.getMessage(ReplaceConstructorWithFactoryAction.class, "LBL_ReplaceConstructorWithBuilderAction"), null); // NOI18N
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
@@ -71,11 +74,12 @@ public final class ReplaceConstructorWithBuilderAction extends JavaRefactoringGl
     }
 
     protected boolean enable(Lookup context) {
-        return RefactoringActionsProviderExt.canReplaceConstructorWithBuilder(context);
+        return ContextAnalyzer.canRefactorSingle(context, true);
     }
 
     @Override
     public void performAction(Lookup context) {
-        RefactoringActionsProviderExt.doReplaceConstructorWithBuilder(context);
+        Runnable task = ContextAnalyzer.createTask(context, ReplaceConstructorWithBuilderUI.factory());
+        ScanDialog.runWhenScanFinished(task, getName());
     }
 }

@@ -49,6 +49,11 @@ import java.io.IOException;
 import java.util.Date;
 import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.util.Utils;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
+import org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry;
+import org.netbeans.modules.versioning.spi.testvcs.TestVCSHistoryProvider;
 
 import org.openide.util.Lookup;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCSInterceptor;
@@ -87,6 +92,12 @@ public class VCSHistoryTest extends NbTestCase {
         assertNotNull(vs);
         VCSHistoryProvider hp = vs.getVCSHistoryProvider();
         assertNotNull(hp);
+        
+        VCSSystemProvider.VersioningSystem pvs = Utils.getOwner(VCSFileProxy.createFileProxy(f));
+        assertNotNull(pvs);
+        org.netbeans.modules.versioning.core.spi.VCSHistoryProvider php = pvs.getVCSHistoryProvider();
+        assertNotNull(php);
+        
     }
     
     public void testHistoryEntryProvidesRevision() throws IOException {
@@ -105,6 +116,36 @@ public class VCSHistoryTest extends NbTestCase {
                     provider);
         h.getRevisionFile(new File(""), new File(""));
         assertTrue(provider.revisionprovided);
+    }
+    
+    public void testHistoryGetRevisionIsReallyInvoked() throws IOException {
+        File f = new File(dataRootDir, "workdir/root-test-versioned/" + TestVCSHistoryProvider.FILE_PROVIDES_REVISIONS_SUFFIX);
+        f.createNewFile();
+        VersioningSystem vs = VersioningSupport.getOwner(f);
+        assertNotNull(vs);
+        VCSHistoryProvider hp = vs.getVCSHistoryProvider();
+        assertNotNull(hp);
+        
+        TestVCSHistoryProvider.reset();
+        HistoryEntry[] history = hp.getHistory(new File[] {f}, null);
+        assertNotNull(history);
+        assertTrue(history.length > 0);
+        history[0].getRevisionFile(new File(""), new File(""));
+        assertTrue(TestVCSHistoryProvider.instance.revisionProvided);
+        
+        // the same test again just to see that VCSSystemProvider.VersioningSystem properly delegates
+        VCSFileProxy proxy = VCSFileProxy.createFileProxy(f);
+        VCSSystemProvider.VersioningSystem pvs = Utils.getOwner(proxy);
+        assertNotNull(pvs);
+        org.netbeans.modules.versioning.core.spi.VCSHistoryProvider php = pvs.getVCSHistoryProvider();
+        assertNotNull(php);
+
+        TestVCSHistoryProvider.reset();
+        org.netbeans.modules.versioning.core.spi.VCSHistoryProvider.HistoryEntry[] phistory = php.getHistory(new VCSFileProxy[] {proxy}, null);
+        assertNotNull(phistory);
+        assertTrue(phistory.length > 0);
+        phistory[0].getRevisionFile(proxy, proxy);
+        assertTrue(TestVCSHistoryProvider.instance.revisionProvided);
     }
     
     public void testHistoryEntryDoesntProvideRevision() throws IOException {

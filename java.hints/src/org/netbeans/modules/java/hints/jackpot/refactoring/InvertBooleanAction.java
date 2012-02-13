@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.java.hints.jackpot.refactoring;
 
+import org.netbeans.api.java.source.ui.ScanDialog;
+import org.netbeans.modules.refactoring.java.ui.ContextAnalyzer;
 import org.netbeans.modules.refactoring.java.ui.JavaRefactoringGlobalAction;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -57,21 +59,25 @@ public final class InvertBooleanAction extends JavaRefactoringGlobalAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
+    @Override
     protected boolean enable(Lookup context) {
-        return RefactoringActionsProviderExt.canInvertBoolean(context);
+        return ContextAnalyzer.canRefactorSingle(context, true);
     }
 
 
     @Override
     public void performAction(Lookup context) {
-        RefactoringActionsProviderExt.doInvertBoolean(context);
+        Runnable task = ContextAnalyzer.createTask(context, InvertBooleanRefactoringUI.factory());
+        ScanDialog.runWhenScanFinished(task, getName());
     }
 }

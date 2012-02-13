@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
  */
 @NbBundle.Messages("CssResolver=CSS Files")
 @MIMEResolver.ExtensionRegistration(
-    mimeType="text/css",
+    mimeType="text/x-css",
     position=169,
     displayName="#CssResolver",
     extension={ "css" }

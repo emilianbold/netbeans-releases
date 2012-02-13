@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.db.sql.execute;
 
-import org.netbeans.modules.db.sql.history.SQLHistory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -53,9 +52,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.dataview.api.DataView;
+import org.netbeans.modules.db.sql.history.SQLHistoryEntry;
 import org.netbeans.modules.db.sql.history.SQLHistoryManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Support class for executing SQL statements.
@@ -68,7 +66,6 @@ public final class SQLExecuteHelper {
 
     private static final Logger LOGGER = Logger.getLogger(SQLExecuteHelper.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
-    private static final FileObject USERDIR = FileUtil.getConfigRoot();
     
     /**
      * Executes a SQL string, possibly containing multiple statements. Returns the execution
@@ -109,7 +106,7 @@ public final class SQLExecuteHelper {
             
             String sql = info.getSQL();
 
-            SQLExecutionResult result = null;
+            SQLExecutionResult result;
             
             
             if (LOG) {
@@ -119,7 +116,7 @@ public final class SQLExecuteHelper {
             DataView view = DataView.create(conn, sql, pageSize);
 
             // Save SQL statements executed for the SQLHistoryManager
-            SQLHistoryManager.getInstance().saveSQL(new SQLHistory(url, sql, new Date()));
+            SQLHistoryManager.getInstance().saveSQL(new SQLHistoryEntry(url, sql, new Date()));
 
             result = new SQLExecutionResult(info, view);
 
@@ -153,7 +150,7 @@ public final class SQLExecuteHelper {
         }
                 
         // Persist SQL executed
-        SQLHistoryManager.getInstance().save(USERDIR);
+        SQLHistoryManager.getInstance().save();
 
         if (!cancelled) {
             return new SQLExecutionResults(results);

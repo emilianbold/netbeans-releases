@@ -347,7 +347,7 @@ public class AutoupdateSettings {
         // 3. get superIf from .netbeans (a old place)
         File nbDir = new File (home, DEFAULT_NETBEANS_DIR);
         err.log (Level.FINE, "Does " + nbDir + " exist? " + nbDir.exists());
-        if (nbDir.exists()) {
+        if (nbDir.exists() && superFile != null) {
             File oldPlaceSuperFile = new File (nbDir, SUPER_IDENTITY_FILE_NAME);
             err.log (Level.FINE, "Does " + oldPlaceSuperFile + " exist on the old place? " + oldPlaceSuperFile.exists ());
             if (oldPlaceSuperFile.exists()) {
@@ -357,6 +357,8 @@ public class AutoupdateSettings {
                     writeSuperFile(superFile, id);
                 }
             }
+        } else if (nbDir.exists() && superFile == null) {
+            superFile = new File (nbDir, SUPER_IDENTITY_FILE_NAME);
         }
         return superFile;
     }

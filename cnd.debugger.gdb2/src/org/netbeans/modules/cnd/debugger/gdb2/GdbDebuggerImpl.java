@@ -2346,6 +2346,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         // iterate through children list
 	List<GdbVariable> children = new ArrayList<GdbVariable>();
+        int childIdx = 0;
         for (MITListItem childresult : children_list) {
             final MITList childResList = ((MIResult)childresult).value().asTuple();
 
@@ -2360,12 +2361,18 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 					exp.equals("protected")) { // NOI18N
                 getMIChildren(parent, qname, level+1);
             } else {
-                // Show array name and index instead of only index, IZ 192123
-                try {
-                    Integer.parseInt(exp);
-                    exp = parent.getVariableName() + '[' + exp + ']';
-                } catch (Exception e) {
-                    // do nothing
+                if (parent.isDynamic() && parent.getDisplayHint() == GdbVariable.DisplayHint.MAP) {
+                    // in pretty maps even element is a key, odd is a value
+                    exp = (childIdx % 2 == 0) ? Catalog.format("Map_Key", childIdx / 2) : Catalog.format("Map_Value", childIdx / 2); // NOI18N
+                    childIdx++;
+                } else {
+                    // Show array name and index instead of only index, IZ 192123
+                    try {
+                        Integer.parseInt(exp);
+                        exp = parent.getVariableName() + '[' + exp + ']';
+                    } catch (Exception e) {
+                        // do nothing
+                    }
                 }
                 GdbVariable childvar = new GdbVariable(this, parent.getUpdater(),
                         parent, exp, null, null, parent.isWatch());
@@ -2436,23 +2443,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 //            }
             GdbVariable wv = variableBag.get(mi_name, true, VariableBag.FROM_BOTH);
             if (wv != null) {
-		if (wv instanceof GdbWatch && in_scope != null) {
-		    GdbWatch w = (GdbWatch) wv;
-		    w.setInScope(Boolean.parseBoolean(in_scope));
-		}
-                
-                // update type
-                MIValue newType = updatevar.asTuple().valueOf("new_type"); //NOI18N
-                if (newType != null) {
-                    wv.setType(newType.asConst().value());
-                }
-                
-                // update children
-                MIValue newChildren = updatevar.asTuple().valueOf("new_num_children"); //NOI18N
-                if (newType != null) {
-                    wv.setNumChild(newChildren.asConst().value());
-                    wv.setChildren(null, false);
-                }
+                wv.populateUpdate(updatevar.asTuple());
                 
                 // update value
                 if (updatevar.asTuple().valueOf("value") != null) { //NOI18N

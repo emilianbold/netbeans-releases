@@ -404,7 +404,7 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
                 + "}\n"));
     }
 
-    private void performEncapsulate(FileObject source, final int[] position, Problem... expectedProblems) throws IOException, IllegalArgumentException {
+    private void performEncapsulate(FileObject source, final int[] position, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final EncapsulateFieldsRefactoring[] r = new EncapsulateFieldsRefactoring[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
 
@@ -439,6 +439,7 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
 
         addAllProblems(problems, r[0].preCheck());
         if (!problemIsFatal(problems)) {
+            Thread.sleep(1000);
             addAllProblems(problems, r[0].prepare(rs));
         }
         if (!problemIsFatal(problems)) {

@@ -482,13 +482,13 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     // Parser Queue ensures that the same file can be parsed at the same time
     // only by one thread.
     /*package*/ void ensureParsed(Collection<APTPreprocHandler> handlers) {
-        if (TraceFlags.CPP_PARSER_ACTION && this.isHeaderFile()) {
+        if (TraceFlags.PARSE_HEADERS_WITH_SOURCES && this.isHeaderFile()) {
             return;
         }
         this.ensureParsed(handlers, null);
     }
     
-    private void ensureParsed(Collection<APTPreprocHandler> handlers, CppParserAction semaHandler) {
+    private void ensureParsed(Collection<APTPreprocHandler> handlers, CsmParserProvider.CsmParseCallback semaHandler) {
         try {
             if (!inEnsureParsed.compareAndSet(false, true)) {
                 assert false : "concurrent ensureParsed in file " + getAbsolutePath() + parsingState + state; 
@@ -725,7 +725,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return errorCount;
     }
     
-    public void parseOnInclude(APTPreprocHandler.State stateBefore, CppParserAction semaHandler) {
+    public void parseOnInclude(APTPreprocHandler.State stateBefore, CsmParserProvider.CsmParseCallback semaHandler) {
         assert stateBefore != null;
         assert !stateBefore.isCleaned() : "have to be not cleaned state";
         ProjectBase prj = getProjectImpl(true);
