@@ -8,7 +8,7 @@
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/examples/descriptions/webSamplesCategory.html"/>
 
                     <file name="jstl.zip" url="jstl.zip">
-                        <attr name="position" intvalue="100"/>
+                        <attr name="position" intvalue="70"/>
                         <attr name="template" boolvalue="true"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/examples/descriptions/jstl.html"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.examples.Bundle"/>
