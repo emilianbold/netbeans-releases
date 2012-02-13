@@ -41,18 +41,14 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import java.util.Map;
 import org.antlr.runtime.Token;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 
 /**
  *
  * @author nick
  */
-public interface CppParserAction3 extends CsmParserProvider.CsmParseCallback {
+public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     
     void enum_declaration(Token token);
     void enum_name(Token token);
@@ -82,9 +78,4 @@ public interface CppParserAction3 extends CsmParserProvider.CsmParseCallback {
     void simple_type_id(Token token);
     
     boolean isType(String name);
-
-    void onInclude(CsmFile inclFile, APTPreprocHandler.State stateBefore);
-    void pushFile(CsmFile file);
-    CsmFile popFile();
-    Map<Integer, CsmObject> getObjectsMap();
 }
