@@ -108,7 +108,9 @@ import org.openide.util.RequestProcessor;
 public class MavenNbModuleImpl implements NbModuleProvider {
     private Project project;
     private DependencyAdder dependencyAdder = new DependencyAdder();
-    private RequestProcessor.Task tsk = RequestProcessor.getDefault().create(dependencyAdder);
+    private static final RequestProcessor RP = new RequestProcessor(MavenNbModuleImpl.class);
+    
+    private RequestProcessor.Task tsk = RP.create(dependencyAdder);
     
     public static final String NETBEANS_REPO_ID = "netbeans";
     /**
