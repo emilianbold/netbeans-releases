@@ -39,40 +39,51 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doclets.model;
+package org.netbeans.modules.javascript2.editor.model.impl;
 
-import org.netbeans.modules.javascript2.editor.doclets.model.el.Description;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.editor.model.Types;
 
 /**
- * Represents base parameter element class with optional parameter type and description.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public abstract class ParameterElement extends JsDocElementImpl {
+public class TypesImpl implements Types {
 
-    private final org.netbeans.modules.javascript2.editor.doclets.model.el.Types paramTypes;
-    private final Description paramDescription;
+    private final List<Type> types;
 
-    public ParameterElement(Type type, org.netbeans.modules.javascript2.editor.doclets.model.el.Types paramTypes, Description paramDescription) {
-        super(type);
-        this.paramTypes = paramTypes;
-        this.paramDescription = paramDescription;
+    public TypesImpl(String textWithTypes) {
+        this.types = parseTypes(textWithTypes);
     }
 
-    /**
-     * Gets the description of the parameter.
-     * @return parameter description
-     */
-    public Description getParamDescription() {
-        return paramDescription;
+    private static List<Type> parseTypes(String typesText) {
+        List<Type> types = new LinkedList<Type>();
+        for (String string : Arrays.asList(typesText.split("|"))) { //NOI18N
+            types.add(new TypeImpl(string));
+        }
+        return types;
     }
 
-    /**
-     * Gets the parameter type.
-     * @return parameter type
-     */
-    public org.netbeans.modules.javascript2.editor.doclets.model.el.Types getParamTypes() {
-        return paramTypes;
+    @Override
+    public List<Type> getTypes() {
+        return types;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Type type : types) {
+            sb.append(type).append("|"); //NOI18N
+        }
+        String string = sb.toString();
+        if (!string.isEmpty()) {
+            return string.substring(0, string.length() - 1);
+        } else {
+            return ""; //NOI18N
+        }
     }
 
 }

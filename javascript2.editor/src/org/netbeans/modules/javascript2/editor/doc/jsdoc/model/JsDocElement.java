@@ -39,9 +39,9 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doclets.model;
+package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
 
-import org.netbeans.modules.javascript2.editor.doclets.model.el.Description;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.Description;
 
 /**
  *

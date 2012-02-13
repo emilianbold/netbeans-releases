@@ -39,30 +39,24 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doclets.model;
+package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
 
 
 /**
- * Represents jsDoc elements with declaration purpose.
+ * Represents simple jsDoc elements without any additional property.
  * <p>
- * <i>Examples:</i> @extends otherClass, @type typeClass, ...
+ * <i>Examples:</i> @private, @public, @event, @ignore, ...
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class DeclarationElement extends JsDocElementImpl {
-
-    private final org.netbeans.modules.javascript2.editor.doclets.model.el.Type declaredType;
-
-    public DeclarationElement(Type type, org.netbeans.modules.javascript2.editor.doclets.model.el.Type declaredType) {
-        super(type);
-        this.declaredType = declaredType;
-    }
+public class SimpleElement extends JsDocElementImpl {
 
     /**
-     * Gets the type declared by this element.
-     * @return declared type
+     * Creates new {@code SimpleElement}.
+     * @param type {@code SimpleElement} type, never null
      */
-    public org.netbeans.modules.javascript2.editor.doclets.model.el.Type getDeclaredType() {
-        return declaredType;
+    public SimpleElement(Type type) {
+        super(type);
     }
+
 }

@@ -46,7 +46,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.modules.javascript2.editor.doclets.JsDocTokenId;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.JsDocTokenId;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -201,7 +201,7 @@ public enum JsTokenId implements TokenId {
     public boolean isKeyword() {
         return "keyword".equals(primaryCategory); //NOI18N
     }
-    
+
     private static final Language<JsTokenId> LANGUAGE =
         new LanguageHierarchy<JsTokenId>() {
                 @Override

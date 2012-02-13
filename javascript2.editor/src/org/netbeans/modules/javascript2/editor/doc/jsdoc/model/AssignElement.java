@@ -39,33 +39,42 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doclets;
+package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
+
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.NamePath;
 
 /**
- * Represents specific comment type for jsDoc documentation tool.
+ * Represents jsDoc elements which assigns foreign member field.
  * <p>
- * //   single line type
- * /*   traditional type <star>/
- * /**  documentation type <star>/
+ * <i>Examples:</i> @borrows otherMemberName as thisMemberName
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public enum JsDocCommentType {
+public class AssignElement extends JsDocElementImpl {
 
-    DOC_COMMON("common"), //NOI18N
-    DOC_NO_CODE_START("noCodeStart"), //NOI18N
-    DOC_NO_CODE_END("noCodeEnd"), //NOI18N
-    DOC_SHARED_TAG_START("sharedTagStart"), //NOI18N
-    DOC_SHARED_TAG_END("sharedTagEnd"); //NOI18N
+    private final NamePath otherMemberName;
+    private final NamePath thisMemberName;
 
-    private final String value;
-
-    private JsDocCommentType(String textValue) {
-        this.value = textValue;
+    public AssignElement(Type type, NamePath otherMemberName, NamePath thisMemberName) {
+        super(type);
+        this.otherMemberName = otherMemberName;
+        this.thisMemberName = thisMemberName;
     }
 
-    @Override
-    public String toString() {
-        return value;
+    /**
+     * Gets other member name path.
+     * @return other member name path
+     */
+    public NamePath getOtherMemberName() {
+        return otherMemberName;
     }
+
+    /**
+     * Gets this member name path.
+     * @return this member name path
+     */
+    public NamePath getThisMemberName() {
+        return thisMemberName;
+    }
+
 }

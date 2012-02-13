@@ -42,8 +42,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.javascript2.editor.doclets;
+package org.netbeans.modules.javascript2.editor.doc.jsdoc;
 
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.JsDocTokenId;
 import junit.framework.TestCase;
 import org.netbeans.lib.lexer.test.*;
 
@@ -57,7 +58,7 @@ public class JsDocLexerRandomTest extends TestCase {
     public JsDocLexerRandomTest(String testName) {
         super(testName);
     }
-    
+
     @Override
     protected void setUp() throws java.lang.Exception {
         // Set-up testing environment
@@ -71,11 +72,11 @@ public class JsDocLexerRandomTest extends TestCase {
     public void testRandom() throws Exception {
         test(0);
     }
-    
+
     private void test(long seed) throws Exception {
         TestRandomModify randomModify = new TestRandomModify(seed);
         randomModify.setLanguage(JsDocTokenId.language());
-        
+
 //        randomModify.setDebugOperation(true);
 //        randomModify.setDebugDocumentText(true);
 //        randomModify.setDebugHierarchy(true);
@@ -91,7 +92,7 @@ public class JsDocLexerRandomTest extends TestCase {
             FixedTextDescriptor.create("//", 0.1),
             FixedTextDescriptor.create("*/", 0.1),
         };
-        
+
         RandomCharDescriptor[] regularChars = new RandomCharDescriptor[] {
             RandomCharDescriptor.letter(0.3),
             RandomCharDescriptor.space(0.3),
@@ -100,7 +101,7 @@ public class JsDocLexerRandomTest extends TestCase {
         };
 
         RandomTextProvider regularTextProvider = new RandomTextProvider(regularChars, fixedTexts);
-        
+
         randomModify.test(
             new RandomModifyDescriptor[] {
                 new RandomModifyDescriptor(1000, regularTextProvider,
@@ -110,5 +111,5 @@ public class JsDocLexerRandomTest extends TestCase {
             }
         );
     }
-    
+
 }

@@ -39,9 +39,13 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doclets.model;
+package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
 
-import org.netbeans.modules.javascript2.editor.doclets.model.el.*;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.Name;
+import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.Description;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.NamePath;
+import org.netbeans.modules.javascript2.editor.model.impl.TypesImpl;
 
 /**
  * Contains helper classes for work with jsDoc model.
@@ -66,7 +70,7 @@ public class JsDocElementUtils {
                         (values.length > 0) ? new NamePath(values[0].trim()) : null,
                         (values.length > 2) ? new NamePath(values[2].trim()) : null);
             case DECLARATION:
-                return new DeclarationElement(type, new Type(trimmed));
+                return new DeclarationElement(type, new TypeImpl(trimmed));
             case DESCRIPTION:
                 return new DescriptionElement(type, new Description(trimmed));
             case LINK:
@@ -117,9 +121,9 @@ public class JsDocElementUtils {
         }
 
         if (named) {
-            return new NamedParameterElement(elementType, new Name(name), new Types(types), new Description(desc));
+            return new NamedParameterElement(elementType, new Name(name), new TypesImpl(types), new Description(desc));
         } else {
-            return new UnnamedParameterElement(elementType, new Types(types), new Description(desc));
+            return new UnnamedParameterElement(elementType, new TypesImpl(types), new Description(desc));
         }
     }
 

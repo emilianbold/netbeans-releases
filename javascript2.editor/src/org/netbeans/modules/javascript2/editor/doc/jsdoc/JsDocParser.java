@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doclets;
+package org.netbeans.modules.javascript2.editor.doc.jsdoc;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -50,11 +50,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.javascript2.editor.doclets.model.JsDocElement;
-import org.netbeans.modules.javascript2.editor.doclets.model.JsDocElement.Type;
-import org.netbeans.modules.javascript2.editor.doclets.model.DescriptionElement;
-import org.netbeans.modules.javascript2.editor.doclets.model.JsDocElementUtils;
-import org.netbeans.modules.javascript2.editor.doclets.model.el.Description;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElement;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElement.Type;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.DescriptionElement;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElementUtils;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.Description;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;

@@ -39,26 +39,27 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doclets.model.el;
+package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
+
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.Description;
 
 /**
+ * Represents parameter element which does not need any parameter name.
+ * <p>
+ * <i>Examples:</i> @throws {MyError} my description,...
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class NamePath {
+public class UnnamedParameterElement extends ParameterElement {
 
-    private final String namePath;
-
-    public NamePath(String namePath) {
-        this.namePath = namePath;
+    /** Creates unnamed parameter element.
+     * @param type type of the element
+     * @param paramType type of the parameter
+     * @param paramDescription description of the parameter
+     */
+    public UnnamedParameterElement(Type type,
+            org.netbeans.modules.javascript2.editor.model.impl.TypesImpl paramTypes, Description paramDescription) {
+        super(type, paramTypes, paramDescription);
     }
 
-    public String getNamePath() {
-        return namePath;
-    }
-
-    @Override
-    public String toString() {
-        return namePath;
-    }
 }

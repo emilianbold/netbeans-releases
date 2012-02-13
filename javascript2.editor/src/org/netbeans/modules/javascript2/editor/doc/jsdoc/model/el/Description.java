@@ -39,24 +39,27 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doclets.model;
-
+package org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el;
 
 /**
- * Represents simple jsDoc elements without any additional property.
- * <p>
- * <i>Examples:</i> @private, @public, @event, @ignore, ...
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class SimpleElement extends JsDocElementImpl {
+public class Description {
 
-    /**
-     * Creates new {@code SimpleElement}.
-     * @param type {@code SimpleElement} type, never null
-     */
-    public SimpleElement(Type type) {
-        super(type);
+    private final String description;
+
+    public Description(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    @Override
+    public String toString() {
+        return description;
     }
 
 }

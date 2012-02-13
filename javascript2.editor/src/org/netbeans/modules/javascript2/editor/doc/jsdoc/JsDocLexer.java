@@ -39,27 +39,64 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doclets.model.el;
+package org.netbeans.modules.javascript2.editor.doc.jsdoc;
+
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.javascript2.editor.lexer.JsLexer;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerRestartInfo;
+import org.netbeans.spi.lexer.TokenFactory;
 
 /**
- *
+ * Base JsDoc Lexer class.
+ * <p>
+ * <i>Created on base of {@link JsLexer}</i>
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class Description {
+class JsDocLexer implements Lexer<JsDocTokenId> {
 
-    private final String description;
+    private static final Logger LOGGER = Logger.getLogger(JsDocLexer.class.getName());
 
-    public Description(String description) {
-        this.description = description;
+    private final JsDocColoringLexer coloringLexer;
+
+    private TokenFactory<JsDocTokenId> tokenFactory;
+
+    private JsDocLexer(LexerRestartInfo<JsDocTokenId> info) {
+        coloringLexer = new JsDocColoringLexer(info);
+        tokenFactory = info.tokenFactory();
     }
 
-    public String getDescription() {
-        return description;
+    public static JsDocLexer create(LexerRestartInfo<JsDocTokenId> info) {
+        synchronized(JsDocLexer.class) {
+            return new JsDocLexer(info);
+        }
     }
 
     @Override
-    public String toString() {
-        return description;
+    public Token<JsDocTokenId> nextToken() {
+        try {
+            JsDocTokenId tokenId = coloringLexer.nextToken();
+//            LOGGER.log(Level.FINEST, "Lexed token is {0}", tokenId);
+            Token<JsDocTokenId> token = null;
+            if (tokenId != null) {
+                token = tokenFactory.createToken(tokenId);
+            }
+            return token;
+        } catch (IOException ex) {
+            Logger.getLogger(JsLexer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
+    @Override
+    public Object state() {
+        return coloringLexer.getState();
+    }
+
+    @Override
+    public void release() {
+    }
 }

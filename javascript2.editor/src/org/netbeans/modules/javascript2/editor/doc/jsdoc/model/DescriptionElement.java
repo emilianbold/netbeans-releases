@@ -39,19 +39,41 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
 
-import java.util.List;
-import org.netbeans.modules.javascript2.editor.model.impl.TypesImpl;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.Description;
+import org.openide.util.Parameters;
 
 /**
+ * Represents jsDoc elements with description text.
+ * <p>
+ * <i>Examples:</i> @author Jackie Chan, @fileOverview about this file, ...
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface DocumentationProvider {
+public class DescriptionElement extends JsDocElementImpl {
 
-    public TypesImpl getReturnType();
+    private final Description description;
 
-    public List<TypesImpl> getParameters();
+    /**
+     * Creates new {@code DescriptionElement}.
+     *
+     * @param type {@code DescriptionElement} type, never null
+     * @param description description of the element, never null
+     */
+    public DescriptionElement(Type type, Description description) {
+        super(type);
+        Parameters.notNull("type", type);
+        Parameters.notNull("description", description);
+        this.description = description;
+    }
+
+    /**
+     * Gets description of the element.
+     * @return description
+     */
+    public Description getDescription() {
+        return description;
+    }
 
 }

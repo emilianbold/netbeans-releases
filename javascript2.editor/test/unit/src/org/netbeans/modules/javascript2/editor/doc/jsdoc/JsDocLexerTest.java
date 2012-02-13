@@ -39,8 +39,9 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doclets;
+package org.netbeans.modules.javascript2.editor.doc.jsdoc;
 
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.JsDocTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;

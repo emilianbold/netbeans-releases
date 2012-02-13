@@ -39,10 +39,10 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doclets.model;
+package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
 
-import org.netbeans.modules.javascript2.editor.doclets.model.el.Description;
-import org.netbeans.modules.javascript2.editor.doclets.model.el.Name;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.Description;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.Name;
 
 /**
  * Represents named parameter element.
@@ -62,7 +62,7 @@ public class NamedParameterElement extends ParameterElement {
      * @param paramDescription description of the parameter
      */
     public NamedParameterElement(Type type, Name paramName,
-            org.netbeans.modules.javascript2.editor.doclets.model.el.Types paramTypes, Description paramDescription) {
+            org.netbeans.modules.javascript2.editor.model.impl.TypesImpl paramTypes, Description paramDescription) {
         super(type, paramTypes, paramDescription);
         this.paramName = paramName;
     }

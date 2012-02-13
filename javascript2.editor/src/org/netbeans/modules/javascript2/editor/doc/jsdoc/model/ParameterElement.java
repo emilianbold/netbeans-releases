@@ -39,64 +39,40 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doclets;
+package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
 
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.modules.javascript2.editor.lexer.JsLexer;
-import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerRestartInfo;
-import org.netbeans.spi.lexer.TokenFactory;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.Description;
 
 /**
- * Base JsDoc Lexer class.
- * <p>
- * <i>Created on base of {@link JsLexer}</i>
+ * Represents base parameter element class with optional parameter type and description.
+ *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-class JsDocLexer implements Lexer<JsDocTokenId> {
+public abstract class ParameterElement extends JsDocElementImpl {
 
-    private static final Logger LOGGER = Logger.getLogger(JsDocLexer.class.getName());
+    private final org.netbeans.modules.javascript2.editor.model.impl.TypesImpl paramTypes;
+    private final Description paramDescription;
 
-    private final JsDocColoringLexer coloringLexer;
-
-    private TokenFactory<JsDocTokenId> tokenFactory;
-
-    private JsDocLexer(LexerRestartInfo<JsDocTokenId> info) {
-        coloringLexer = new JsDocColoringLexer(info);
-        tokenFactory = info.tokenFactory();
+    public ParameterElement(Type type, org.netbeans.modules.javascript2.editor.model.impl.TypesImpl paramTypes, Description paramDescription) {
+        super(type);
+        this.paramTypes = paramTypes;
+        this.paramDescription = paramDescription;
     }
 
-    public static JsDocLexer create(LexerRestartInfo<JsDocTokenId> info) {
-        synchronized(JsDocLexer.class) {
-            return new JsDocLexer(info);
-        }
+    /**
+     * Gets the description of the parameter.
+     * @return parameter description
+     */
+    public Description getParamDescription() {
+        return paramDescription;
     }
 
-    @Override
-    public Token<JsDocTokenId> nextToken() {
-        try {
-            JsDocTokenId tokenId = coloringLexer.nextToken();
-//            LOGGER.log(Level.FINEST, "Lexed token is {0}", tokenId);
-            Token<JsDocTokenId> token = null;
-            if (tokenId != null) {
-                token = tokenFactory.createToken(tokenId);
-            }
-            return token;
-        } catch (IOException ex) {
-            Logger.getLogger(JsLexer.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
+    /**
+     * Gets the parameter type.
+     * @return parameter type
+     */
+    public org.netbeans.modules.javascript2.editor.model.impl.TypesImpl getParamTypes() {
+        return paramTypes;
     }
 
-    @Override
-    public Object state() {
-        return coloringLexer.getState();
-    }
-
-    @Override
-    public void release() {
-    }
 }

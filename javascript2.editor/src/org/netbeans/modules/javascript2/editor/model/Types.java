@@ -39,25 +39,16 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doclets.model.el;
+package org.netbeans.modules.javascript2.editor.model;
+
+import java.util.List;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class Name {
+public interface Types {
 
-    private final String name;
+    public List<Type> getTypes();
 
-    public Name(String name) {
-        this.name = name;
-    }
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String toString() {
-        return name;
-    }
 }

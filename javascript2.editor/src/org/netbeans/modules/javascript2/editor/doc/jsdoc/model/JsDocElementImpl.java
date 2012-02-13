@@ -39,19 +39,29 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
 
-import java.util.List;
-import org.netbeans.modules.javascript2.editor.model.impl.TypesImpl;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElement;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface DocumentationProvider {
+public abstract class JsDocElementImpl implements JsDocElement {
 
-    public TypesImpl getReturnType();
+    private final Type type;
 
-    public List<TypesImpl> getParameters();
+    public JsDocElementImpl(Type type) {
+        this.type = type;
+    }
+
+    /**
+     * Gets jsDoc element type.
+     * @return jsDoc element type
+     */
+    @Override
+    public Type getType() {
+        return type;
+    }
 
 }

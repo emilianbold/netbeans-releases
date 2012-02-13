@@ -39,13 +39,15 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doclets;
+package org.netbeans.modules.javascript2.editor.doc.jsdoc;
 
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.JsDocParser;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.JsDocBlock;
 import java.util.List;
 import java.util.regex.Matcher;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
-import org.netbeans.modules.javascript2.editor.doclets.model.DescriptionElement;
-import org.netbeans.modules.javascript2.editor.doclets.model.JsDocElement;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.DescriptionElement;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElement;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 

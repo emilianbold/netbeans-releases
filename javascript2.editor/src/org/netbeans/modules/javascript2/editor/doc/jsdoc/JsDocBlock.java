@@ -39,27 +39,49 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doclets.model;
+package org.netbeans.modules.javascript2.editor.doc.jsdoc;
 
-import org.netbeans.modules.javascript2.editor.doclets.model.el.Description;
+import java.util.List;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElement;
+import org.netbeans.modules.javascript2.editor.model.JsComment;
 
 /**
- * Represents parameter element which does not need any parameter name.
- * <p>
- * <i>Examples:</i> @throws {MyError} my description,...
+ * Represents block of JSDoc comment which contains particular {@link JsDocTag}s.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class UnnamedParameterElement extends ParameterElement {
+public class JsDocBlock extends JsComment {
 
-    /** Creates unnamed parameter element.
-     * @param type type of the element
-     * @param paramType type of the parameter
-     * @param paramDescription description of the parameter
+    private final List<JsDocElement> tags;
+    private final JsDocCommentType type;
+
+    /**
+     * Creates new {@code JsDocBlock} with given parameters.
+     *
+     * @param startOffset start offset of the comment
+     * @param endOffset end offset of the comment
+     * @param type comment {@code JsDocCommentType}
+     * @param tags list of tags contained in this block or {@code null} if block is of special type
      */
-    public UnnamedParameterElement(Type type,
-            org.netbeans.modules.javascript2.editor.doclets.model.el.Types paramTypes, Description paramDescription) {
-        super(type, paramTypes, paramDescription);
+    public JsDocBlock(int startOffset, int endOffset, JsDocCommentType type, List<JsDocElement> tags) {
+        super(startOffset, endOffset);
+        this.type = type;
+        this.tags = tags;
     }
 
+    /**
+     * Gets list of {@code JsDocTag}s of this block.
+     * @return list of {@code JsDocTag}s
+     */
+    public List<JsDocElement> getTags() {
+        return tags;
+    }
+
+    /**
+     * Gets type of the jsDoc block comment.
+     * @return type of the jsDoc block comment
+     */
+    public JsDocCommentType getType() {
+        return type;
+    }
 }

@@ -39,48 +39,26 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doclets.model.el;
-
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+package org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class Types {
+public class NamePath {
 
-    private final List<Type> types;
+    private final String namePath;
 
-    public Types(String textWithTypes) {
-        this.types = parseTypes(textWithTypes);
+    public NamePath(String namePath) {
+        this.namePath = namePath;
     }
 
-    private static List<Type> parseTypes(String typesText) {
-        List<Type> types = new LinkedList<Type>();
-        for (String string : Arrays.asList(typesText.split("|"))) { //NOI18N
-            types.add(new Type(string));
-        }
-        return types;
-    }
-
-    public List<Type> getTypes() {
-        return types;
+    public String getNamePath() {
+        return namePath;
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (Type type : types) {
-            sb.append(type).append("|"); //NOI18N
-        }
-        String string = sb.toString();
-        if (!string.isEmpty()) {
-            return string.substring(0, string.length() - 1);
-        } else {
-            return ""; //NOI18N
-        }
+        return namePath;
     }
-
 }

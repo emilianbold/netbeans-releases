@@ -39,29 +39,32 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doclets.model;
+package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
 
-import org.netbeans.modules.javascript2.editor.doclets.model.JsDocElement;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.NamePath;
 
 /**
+ * Represents jsDoc elements which points to fields, methods, classes.
+ * <p>
+ * <i>Examples:</i> @memberOf MyClass, ...
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public abstract class JsDocElementImpl implements JsDocElement {
+public class LinkElement extends JsDocElementImpl {
 
-    private final Type type;
+    private final NamePath linkedPath;
 
-    public JsDocElementImpl(Type type) {
-        this.type = type;
+    public LinkElement(Type type, NamePath linkedPath) {
+        super(type);
+        this.linkedPath = linkedPath;
     }
 
     /**
-     * Gets jsDoc element type.
-     * @return jsDoc element type
+     * Gets the name path of this linker element.
+     * @return name path
      */
-    @Override
-    public Type getType() {
-        return type;
+    public NamePath getLinkedPath() {
+        return linkedPath;
     }
 
 }
