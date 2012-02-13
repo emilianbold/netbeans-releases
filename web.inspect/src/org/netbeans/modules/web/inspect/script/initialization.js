@@ -43,7 +43,13 @@
 NetBeans = new Object();
 
 // Name of attribute used for element's identification
-NetBeans.ID_ATTRIBUTE = ' netbeansId';
+NetBeans.ATTR_ID = ':netbeans_id';
+
+// Name of attribute used to store original URL of the stylesheet
+NetBeans.ATTR_URL = ':netbeans_url';
+
+// Name of attribute used to mark document elements created by the plugin
+NetBeans.ATTR_ARTIFICIAL = ':netbeans_artificial';
 
 // Name of the parameter (in query string)
 // that is used to force reload of some resource
@@ -65,21 +71,23 @@ NetBeans.getDOM = function() {
         var result = '';
         if (e.nodeType == 1) {
             // Set ID attribute if necessary
-            if (typeof(e[self.ID_ATTRIBUTE]) === 'undefined') {
-                e[self.ID_ATTRIBUTE] = self.nextId++;
+            if (typeof(e[self.ATTR_ID]) === 'undefined') {
+                e[self.ATTR_ID] = self.nextId++;
             }
-                
-            result += '<' + e.tagName;
-            result += ' id=\"'+e[self.ID_ATTRIBUTE]+'\"';
-            if (idx !== undefined) {
-                result += ' idx=\"'+idx+'\"';
+
+            if (!e.getAttribute(self.ATTR_ARTIFICIAL)) { // skip artificial elements
+                result += '<' + e.tagName;
+                result += ' '+self.ATTR_ID+'=\"'+e[self.ATTR_ID]+'\"';
+                if (idx !== undefined) {
+                    result += ' idx=\"'+idx+'\"';
+                }
+                result += '>';
+                var i;
+                for (i=0; i<e.childNodes.length; i++) {
+                    result += code(e.childNodes[i],i);
+                }
+                result += '</' + e.tagName + '>';
             }
-            result += '>';
-            var i;
-            for (i=0; i<e.childNodes.length; i++) {
-                result += code(e.childNodes[i],i);
-            }
-            result += '</' + e.tagName + '>';
         }
         return result;
     }
@@ -146,7 +154,7 @@ NetBeans.getElement = function(handle) {
         return null;        
     }
 
-    return element = locate(handle);
+    return locate(handle);
 };
 
 // Adds the specified element into the selection.
@@ -254,7 +262,7 @@ NetBeans.getResources = function() {
     }    
     
     return resources;
-}
+};
 
 // Helper method that removes "reload" parameter from the specified URL
 NetBeans.removeReloadParameter = function(url) {
@@ -269,12 +277,12 @@ NetBeans.removeReloadParameter = function(url) {
         url = url.substring(0,idx);
     }
     return url;
-}
+};
 
 // Helper method that adds "reload" parameter to the specified URL
 NetBeans.addReloadParameter = function(url) {
     // Add the reload parameter
-    idx = url.indexOf('?')
+    var idx = url.indexOf('?')
     if (idx == -1) {
         // No query string
         url += '?';
@@ -284,29 +292,52 @@ NetBeans.addReloadParameter = function(url) {
     }
     url += this.RELOAD_PARAM + '=' + new Date().getTime();
     return url;
-}
+};
 
 // Forces reload of the style sheet with the given URL
 NetBeans.reloadCSS = function(url) {
     var found = false;
     url = this.removeReloadParameter(url);
+    var newURL = this.addReloadParameter(url);
     for (var i=0; i<document.styleSheets.length; i++) {
-        var node = document.styleSheets[i].ownerNode;
+        var sheet = document.styleSheets[i];
+        var node = sheet.ownerNode;
         var href = node.href;
-        if (href != null) {
+        if (href) {
             href = this.removeReloadParameter(href);
             if (href === url) {
                 // This is the stylesheet that should be reloaded
                 found = true;
-                var newURL = this.addReloadParameter(url);
-                node.href = newURL;
+                if (!sheet.disabled) {
+                    node.href = newURL;
+                }
+            }
+        } else {
+            href = node.getAttribute(this.ATTR_URL);
+            if (href) {
+                href = this.removeReloadParameter(href);
+                if (href && node.tagName.toLowerCase() === 'style' && href === url) {
+                    // This replacement of cross-origin stylesheet should be reloaded
+                    found = true;
+                    var request = new XMLHttpRequest();
+                    request.open('GET', newURL, false);
+                    request.send(null);
+                    var status = request.status;
+                    if (status === 0 || status === 200) { // 0 for files, 200 for http(s)
+                        node.innerText = request.responseText;
+                    } else {
+                        console.log('Unable to download stylesheet: '+url);
+                        console.log(request.statusText);
+                        console.log(request.responseText);
+                    }
+                }
             }
         }
     }
     if (!found) {
         console.log('Cannot find the style sheet to reload: '+url);
     }
-}
+};
 
 // Forces reload of the images with the given URL
 NetBeans.reloadImage = function(url) {
@@ -328,7 +359,7 @@ NetBeans.reloadImage = function(url) {
     if (!found) {
         console.log('Cannot find the image to reload: '+url);
     }
-}
+};
 
 // Forces reload and execution of the script with the given URL
 NetBeans.reloadScript = function(url) {
@@ -372,25 +403,27 @@ NetBeans.reloadScript = function(url) {
     if (!found) {
         console.log('Cannot find the script to reload: '+url);
     }
-}
+};
 
 // PENDING Chrome specific; the means of invocation
 // of this method must change because it requires
 // privilege access when rewritten to work in Firefox;
-// even Chrome impl. needs privilege access to work
-// around cross-origin and local file issues
 NetBeans.getMatchedRules = function(handle) {
     var matchedStyle = [];
     var element = this.getElement(handle);
     if (document.defaultView.getMatchedCSSRules) {
         var rules = document.defaultView.getMatchedCSSRules(element);
-        if (rules === null) {
-            // PENDING cross-origin or local file issue
-        } else {
+        if (rules) {
             for (var i=0; i<rules.length; i++) {
                 var ruleInfo = new Object();
                 var rule = rules[i];
-                ruleInfo.sourceURL = rule.parentStyleSheet.href;
+                var url = rule.parentStyleSheet.ownerNode.getAttribute(this.ATTR_URL);
+                if (url) {
+                    // Cross-origin stylesheet replaced by embedded stylesheet
+                    ruleInfo.sourceURL = url;
+                } else {
+                    ruleInfo.sourceURL = rule.parentStyleSheet.href;
+                }
                 ruleInfo.selector = rule.selectorText;
                 var styleInfo = new Object();
                 ruleInfo.style = styleInfo;
@@ -404,7 +437,84 @@ NetBeans.getMatchedRules = function(handle) {
             }
         }
     } else {
-        // PENDING getMatchedCSSRules() not available
+        console.log('getMatchedCSSRules() method not available.');
     }
     return matchedStyle;
+};
+
+// Replaces cross-origin stylesheets by embedded ones with the same content.
+// This is a workaround for a limitation of getMatchedCSSRules(). It doesn't
+// return any information about rules from cross-origin stylesheets.
+NetBeans.replaceCrossOriginStylesheets = function() {
+    // Returns string representing the origin of the given URL. The returned
+    // values are compared to identify cross-origin requests.
+    var getOrigin = function(url) {
+        var origin;
+        if (url) {
+            origin = url;
+            url = url.toLowerCase();
+            var idx1 = url.indexOf('://');
+            var scheme = url.substring(0,idx1);
+            var http = scheme === 'http';
+            var https = scheme === 'https';
+            idx1 += 3;
+            if ((http || https) && (idx1 !== -1)) {
+                var idx2 = url.indexOf('/', idx1);
+                if (idx2 !== -1) {
+                    origin = url.substring(0, idx2);
+                    var idx3 = url.indexOf(':', idx1);
+                    if (idx3 === -1) {
+                        // port not present => add the default port
+                        if (http) {
+                            origin += ':80';
+                        } else {
+                            origin += ':443';
+                        }
+                    }
+                    origin += '/';
+                }
+            }
+        } else {
+            origin = getOrigin(document.URL);
+        }
+        return origin;
+    }
+
+    // Addition of a new stylesheet modifies document.styleSheets immediatelly
+    // => remember original stylesheets before we start to modify them
+    var i;
+    var originalSheets = [];
+    for (i=0; i<document.styleSheets.length; i++) {
+        originalSheets.push(document.styleSheets[i]);
+    }
+    var documentOrigin = getOrigin(document.URL);
+    for (i=0; i<originalSheets.length; i++) {
+        var sheet = originalSheets[i];
+        var url = sheet.href;
+        var sheetOrigin = getOrigin(url);
+        if (sheetOrigin !== documentOrigin) {
+            // Cross-origin stylesheet => replace it with embedded stylesheet
+            var request = new XMLHttpRequest();
+            request.open('GET', url, false);
+            request.send(null);
+            var status = request.status;
+            if (status === 0 || status === 200) { // 0 for files, 200 for http(s)
+                var fake = document.createElement('style');
+                fake.setAttribute('type', 'text/css');
+                fake.setAttribute(this.ATTR_URL, url);
+                fake.setAttribute(this.ATTR_ARTIFICIAL, true);
+                fake.innerText = request.responseText;
+                sheet.disabled = true;
+                var original = sheet.ownerNode;
+                var parent = original.parentNode;
+                parent.insertBefore(fake, original);
+            } else {
+                console.log('Unable to download stylesheet: '+url);
+                console.log(request.statusText);
+                console.log(request.responseText);
+            }
+        }
+    }
 }
+
+NetBeans.replaceCrossOriginStylesheets();

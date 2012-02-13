@@ -69,10 +69,11 @@ public class ElementNode extends AbstractNode {
     /** Name of the property set of computed style information. */
     private static final String PROP_SET_STYLE = "style"; // NOI18N
     /**
-     * Name of a helper NetBeans attribute that shouldn't be shown to user
-     * because it is not included in the original document.
+     * If some attribute starts with this prefix then it shouldn't
+     * be shown to the user because it is not included in the original
+     * document. It has been set by the plugin (for internal purposes).
      */
-    private static final String HIDDEN_ATTRIBUTE = " netbeans"; // NOI18N
+    private static final String ATTR_HIDDEN_PREFIX = ":netbeans"; // NOI18N
     /** Index of the property set of attributes. */
     private static final int SET_ATTRIBUTES_INDEX = 0;
     /** Index of the property set of computed style information. */
@@ -163,10 +164,10 @@ public class ElementNode extends AbstractNode {
      * @return {@code true} if the attribute should be skipped (i.e., not shown
      * to the user), returns {@code false} otherwise.
      */
-    private boolean skipAttribute(String name, String value) {
+    private static boolean skipAttribute(String name, String value) {
         // Empty style attributes are result of our highlighting logic.
         return ("style".equals(name) && value.isEmpty()) // NOI18N
-                || name.contains(HIDDEN_ATTRIBUTE);
+                || name.startsWith(ATTR_HIDDEN_PREFIX);
     }
 
     @Override
@@ -275,7 +276,7 @@ public class ElementNode extends AbstractNode {
      */
     static class ElementKey {
         /** Name of the attribute where we store the ID of the element. */
-        private static final String NB_ID_ATTR = "id"; // NOI18N
+        private static final String NB_ID_ATTR = ":netbeans_id"; // NOI18N
         /** ID of the element. */
         private String id;
         /** Element corresponding to this element key. */
