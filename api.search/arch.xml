@@ -34,25 +34,25 @@
     <answer id="arch-overall">
         <p>
             There are two goals:
-            <ul>
-                <li>
-                    The module offers an SPI which can be used to make nodes
-                    searchable by "Search in Projects" dialog, and to specify
-                    how the nodes should be searched, and API which makes
-                    implementation of the SPI easier.
-                </li>
-                <li>
-                    There is also an SPI for custom search providers.
-                    Search provider is an algorithm for searching and a set of
-                    UI components for setting search options and displaying
-                    results. Each provider is represented by a tab in "Search in
-                    Projects" dialog. The SPI is accompanied by API for getting
-                    info about search settings for nodes, for creating UI for
-                    search dialog, and for communicating with
-                    search results window.
-                </li>
-            </ul>
         </p>
+        <ul>
+            <li>
+                The module offers an SPI which can be used to make nodes
+                searchable by "Search in Projects" dialog, and to specify
+                how the nodes should be searched, and API which makes
+                implementation of the SPI easier.
+            </li>
+            <li>
+                There is also an SPI for custom search providers.
+                Search provider is an algorithm for searching and a set of
+                UI components for setting search options and displaying
+                results. Each provider is represented by a tab in "Search in
+                Projects" dialog. The SPI is accompanied by API for getting
+                info about search settings for nodes, for creating UI for
+                search dialog, and for communicating with
+                search results window.
+            </li>
+        </ul>
     </answer>
 
 
@@ -118,7 +118,7 @@
         </question>
 -->
     <answer id="arch-usecases">
-        <usecase name="searchInfo">
+        <usecase id="searchInfo" name="SearchInfo API &amp; SPI">
             <p>
                 This use-case was formerly covered by module
                 org.openidex.search.
@@ -235,7 +235,7 @@
                 <code>SearchInfoDefinitionFactory</code>
             </api>
         </usecase>
-        <usecase name="searchProvider">
+        <usecase id="SearchProvider" name="Enhance IDE searching features">
             <p>
                 People that want to enhance IDE searching features (with custom
                 search criteria or specialized algorithms) can add a new tab to 
@@ -243,21 +243,21 @@
             </p>
             <p>
                 They need to implement several classes:
-                <ul>
-                    <li>
-                        <code>SearchProvider</code> to register the new search feature to the IDE or platform application.
-                    </li>
-                    <li>
-                        <code>SearchProvider.Presenter</code> that creates visual component for adding to the search dialog and that can interact with dialog buttons.
-                    </li>
-                    <li>
-                        <code>SearchResultsDisplayer</code> to show search results to the user.
-                    </li>
-                    <li>
-                        <code>SearchComposition</code> that encapsulates setting and state of searches, provide access to result displayer, and is able to start and terminate the search.
-                    </li>
-                </ul>
             </p>
+            <ul>
+                <li>
+                    <code>SearchProvider</code> to register the new search feature to the IDE or platform application.
+                </li>
+                <li>
+                    <code>SearchProvider.Presenter</code> that creates visual component for adding to the search dialog and that can interact with dialog buttons.
+                </li>
+                <li>
+                    <code>SearchResultsDisplayer</code> to show search results to the user.
+                </li>
+                <li>
+                    <code>SearchComposition</code> that encapsulates setting and state of searches, provide access to result displayer, and is able to start and terminate the search.
+                </li>
+            </ul>
             <blockquote>
                 <pre>
                     // use annotation register this provider
@@ -1093,28 +1093,26 @@
 -->
     <answer id="perf-mem">
         <!-- Taken from org.openidex.search. -->
+         <p>
+            Amount of memory consumed by implementations of class
+            <code>SearchInfoDefinition</code>, produced by class
+            <code>SearchInfoDefinitionFactory</code>,
+            is related to the maximum nesting level of folder/nodes
+            and to the maximum number of folders/nodes in each level.
+            Except for very extreme conditions, the amount of memory
+            is not essential.
+            Term &quot;extreme conditions&quot; comprises:
+        </p>
+        <ul>
+            <li>very deep hierarchy of nodes and very large number of nodes
+                in each level</li>
+            <li>very big amount (thousands and more) of nodes having defined
+                <code>SearchInfo</code> objects</li>
+        </ul>
         <p>
-             <p>
-                Amount of memory consumed by implementations of class
-                <code>SearchInfoDefinition</code>, produced by class
-                <code>SearchInfoDefinitionFactory</code>,
-                is related to the maximum nesting level of folder/nodes
-                and to the maximum number of folders/nodes in each level.
-                Except for very extreme conditions, the amount of memory
-                is not essential.
-                Term &quot;extreme conditions&quot; comprises:
-            </p>
-            <ul>
-                <li>very deep hierarchy of nodes and very large number of nodes
-                    in each level</li>
-                <li>very big amount (thousands and more) of nodes having defined
-                    <code>SearchInfo</code> objects</li>
-            </ul>
-            <p>
-                Memory footprint of <code>SearchInfo</code> implementations returned by
-                factory class <code>SearchInfoFactory</code> is low. This may not be true
-                for custom plugged-in implementations.
-            </p>
+            Memory footprint of <code>SearchInfo</code> implementations returned by
+            factory class <code>SearchInfoFactory</code> is low. This may not be true
+            for custom plugged-in implementations.
         </p>
     </answer>
 
