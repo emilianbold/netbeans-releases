@@ -54,7 +54,6 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.java.plugins.EncapsulateFieldRefactoringPlugin;
@@ -199,7 +198,6 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
                 + "}\n"));
     }
     
-    @RandomlyFails
     public void testEncapsulateFieldsCompound() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("encap/A.java", "package encap;\n"
@@ -240,7 +238,6 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
                 + "}\n"));
     }
     
-    @RandomlyFails
     public void testEncapsulateFieldsCompoundByte() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("encap/A.java", "package encap;\n"
