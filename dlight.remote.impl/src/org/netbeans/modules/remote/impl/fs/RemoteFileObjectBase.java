@@ -593,6 +593,10 @@ public abstract class RemoteFileObjectBase implements Serializable {
         }
     }
 
+    public FileObject copy(FileObject target, String name, String ext) throws IOException {
+        return copyImpl(target, name, ext, this);
+    }
+
     protected FileObject copyImpl(FileObject target, String name, String ext, RemoteFileObjectBase orig) throws IOException {
         if (USE_VCS) {
             FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
