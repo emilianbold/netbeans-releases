@@ -60,6 +60,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public enum PHPDocCommentTokenId implements TokenId {
     PHPDOC_COMMENT(null, "comment"), //NOI18N
+    PHPDOC_HTML_TAG(null, "htmltag"), //NOI18N
     PHPDOC_ANNOTATION(null, "phpdockeyword"); //NOI18N
 
     private final String fixedText;

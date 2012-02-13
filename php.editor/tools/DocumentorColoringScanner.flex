@@ -61,6 +61,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 %state ST_IN_TAG
 %state ST_NO_TAG
+%state ST_HTML_TAG
 
 %eofval{
           if(input.readLength() > 0) {
@@ -119,21 +120,36 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 ANY_CHAR=(.|[\n])
 IDENTIFIER=[[:letter:][:digit:]_\\-]+
-
-
+HTML_TAG="<"[^"\r""\n""\r\n"">"]+">"
 
 
 
 
 %%
 
-<YYINITIAL> "@" {
-    yybegin(ST_IN_TAG);
-    yypushback(1);
+<YYINITIAL> {
+    "@" {
+        yybegin(ST_IN_TAG);
+        yypushback(1);
+    }
+    "<" {
+        yybegin(ST_HTML_TAG);
+        yypushback(1);
+    }
+    [^@<]* {
+        return PHPDocCommentTokenId.PHPDOC_COMMENT;
+    }
 }
 
-<YYINITIAL>[^@]* {
-    return PHPDocCommentTokenId.PHPDOC_COMMENT;
+<ST_HTML_TAG> {
+    {HTML_TAG} {
+        yybegin(YYINITIAL);
+        return PHPDocCommentTokenId.PHPDOC_HTML_TAG;
+    }
+    {ANY_CHAR} {
+        yybegin(YYINITIAL);
+        return PHPDocCommentTokenId.PHPDOC_COMMENT;
+    }
 }
 
 <ST_IN_TAG> {
