@@ -269,4 +269,52 @@ public class JsDocLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_START, "/**");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " getColor: function () {}, ");
     }
+
+    @SuppressWarnings("unchecked")
+    public void testHtmlComment01() {
+        String text = "/** <b>text</b> */";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
+        TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "<");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "b");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, ">");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, "text");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "<");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "/b");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, ">");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_END, "*/");
+    }
+
+    @SuppressWarnings("unchecked")
+    public void testHtmlComment02() {
+        String text = "/** <a href=\"mailto:marfous@netbeans.org\">href</a> */";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
+        TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "<");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "a href=\"mailto:marfous@netbeans.org\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, ">");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, "href");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "<");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "/a");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, ">");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_END, "*/");
+    }
+
+    @SuppressWarnings("unchecked")
+    public void testHtmlComment03() {
+        String text = "/** <a */";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
+        TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "<");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "a ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_END, "*/");
+    }
 }
