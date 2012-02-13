@@ -134,7 +134,7 @@ public class Utilities {
             if (doc instanceof BaseDocument) {
                 return (BaseDocument) doc;
             } else {
-                logger.log(Level.FINE, "Got document of unexpected {0} from {1}", new Object[] {doc.getClass(), modelSourceDataObject});
+                logger.log(Level.FINER, "Got document of unexpected {0} from {1}", new Object[] {doc.getClass(), modelSourceDataObject});
                 // Replace with a BaseDocument. Mostly useful for unit test.
                 final BaseDocument doc2 = new GuardedDocument("text/xml");
                 try {
