@@ -60,6 +60,8 @@ public class FormattingVisitor extends NodeVisitor {
 
     private Token nextToken;
 
+    private int indentationLevel = 0;
+
     public FormattingVisitor(TokenSequence<? extends JsTokenId> ts) {
         this.ts = ts;
     }
@@ -75,7 +77,20 @@ public class FormattingVisitor extends NodeVisitor {
 
     @Override
     public Node visit(Block block, boolean onset) {
-        return super.visit(block, onset);
+        if (onset) {
+            if (block instanceof FunctionNode) {
+                List<FunctionNode> functions = ((FunctionNode) block).getFunctions();
+                for (int i = 0, count = functions.size(); i < count; i++) {
+                    functions.set(i, (FunctionNode)functions.get(i).accept(this));
+                }
+            }
+            
+            List<Node> statements = block.getStatements();
+            for (int i = 0, count = statements.size(); i < count; i++) {
+                statements.set(i, statements.get(i).accept(this));
+            }
+        }
+        return null;
     }
 
     @Override
@@ -130,7 +145,7 @@ public class FormattingVisitor extends NodeVisitor {
             Token token = getToken(position, JsTokenId.KEYWORD_FUNCTION);
             
             tokens.add(FormattingToken.create(FormattingToken.Kind.TEXT, ts.offset(),
-                    token.text().toString()));
+                    token.text()));
             tokens.add(FormattingToken.create(FormattingToken.Kind.AFTER_FUNCTION_KEYWORD,
                     ts.offset() + token.length(), null));
             
@@ -141,7 +156,7 @@ public class FormattingVisitor extends NodeVisitor {
                 if (token != null) {
                     // XXX node.getName()
                     tokens.add(FormattingToken.create(FormattingToken.Kind.TEXT, ts.offset(),
-                            token.text().toString()));
+                            token.text()));
                     tokens.add(FormattingToken.create(FormattingToken.Kind.AFTER_FUNCTION_NAME,
                             ts.offset() + token.length(), null));
                 }
@@ -150,7 +165,7 @@ public class FormattingVisitor extends NodeVisitor {
             // left bracket
             token = nextToken(JsTokenId.BRACKET_LEFT_PAREN);
             tokens.add(FormattingToken.create(FormattingToken.Kind.TEXT, ts.offset(),
-                        token.text().toString()));
+                        token.text()));
             
             // parameters
             List<IdentNode> params = functionNode.getParameters();
@@ -158,12 +173,12 @@ public class FormattingVisitor extends NodeVisitor {
                 for(int i = 0; i < params.size(); i++) {
                     token = nextToken(JsTokenId.IDENTIFIER);
                     tokens.add(FormattingToken.create(FormattingToken.Kind.TEXT, ts.offset(),
-                            token.text().toString()));
+                            token.text()));
                     if (i < params.size() - 1) {
                         // comma
                         token = nextToken(JsTokenId.OPERATOR_COMMA);
                         tokens.add(FormattingToken.create(FormattingToken.Kind.TEXT, ts.offset(),
-                                token.text().toString()));
+                                token.text()));
                         tokens.add(FormattingToken.create(FormattingToken.Kind.AFTER_FUNCTION_PARAMETER,
                                 ts.offset() + 1, null));
                    }
@@ -173,10 +188,15 @@ public class FormattingVisitor extends NodeVisitor {
             // right bracket
             token = nextToken(JsTokenId.BRACKET_RIGHT_PAREN);
             tokens.add(FormattingToken.create(FormattingToken.Kind.TEXT, ts.offset(),
-                        token.text().toString()));
+                    token.text()));
+            tokens.add(FormattingToken.create(FormattingToken.Kind.AFTER_FUNCTION,
+                    ts.offset() + token.length(), null));
         }
 
-        return super.visit(functionNode, onset);
+        indentationLevel++;
+        visit((Block) functionNode, onset);
+        indentationLevel--;
+        return null;
     }
 
     @Override

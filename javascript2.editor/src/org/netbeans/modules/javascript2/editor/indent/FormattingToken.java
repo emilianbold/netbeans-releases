@@ -53,21 +53,21 @@ public final class FormattingToken {
     
     private final int offset;
     
-    private final String text;
+    private final CharSequence text;
     
 
-    private FormattingToken(Kind kind, int offset, String text) {
+    private FormattingToken(Kind kind, int offset, CharSequence text) {
         this.kind = kind;
         this.offset = offset;
         this.text = text;
     }
     
-    public static FormattingToken create(Kind kind, int offset, String text) {
+    public static FormattingToken create(Kind kind, int offset, CharSequence text) {
         return new FormattingToken(kind, offset, text);
     }
 
     @CheckForNull
-    public String getText() {
+    public CharSequence getText() {
         return text;
     }
 
@@ -85,7 +85,8 @@ public final class FormattingToken {
         
         AFTER_FUNCTION_KEYWORD,
         AFTER_FUNCTION_NAME,
-        AFTER_FUNCTION_PARAMETER
+        AFTER_FUNCTION_PARAMETER,
+        AFTER_FUNCTION
     }
     
 }

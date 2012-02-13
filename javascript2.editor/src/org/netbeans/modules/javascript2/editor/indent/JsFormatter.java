@@ -80,6 +80,7 @@ public class JsFormatter implements Formatter {
         for (FormattingToken token : visitor.getTokens()) {
             System.out.println(token);
         }
+        System.out.flush();
     }
 
     @Override
