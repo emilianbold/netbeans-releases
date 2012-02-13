@@ -52,6 +52,7 @@ import org.netbeans.modules.versioning.util.Utils;
 
 import java.io.*;
 import java.util.*;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.util.SvnUtils;
 
 import org.openide.util.*;
@@ -60,6 +61,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  * Stream source for diffing CVS managed files.
@@ -228,7 +230,11 @@ public class DiffStreamSource extends StreamSource {
                             Utils.associateEncoding(file, newRemoteFile);                            
                         }
                     } catch (Exception e) {
-                        if (isBase) throw e;
+                        if (SvnClientExceptionHandler.isTargetDirectory(e.getMessage())
+                                || e.getCause() != null && SvnClientExceptionHandler.isTargetDirectory(e.getCause().getMessage())) {
+                            mimeType = "content/unknown"; // NOI18N
+                            return;
+                        } else if (isBase) throw e;
                         // we cannot check out peer file so the dataobject will not be constructed properly
                     }
                 }
