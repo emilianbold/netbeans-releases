@@ -201,7 +201,7 @@ public class RepositoryRegistryTest extends NbTestCase {
     
     public void testStoredRepository() {
         RepositoryInfo info = new RepositoryInfo("repoid", MyConnector.ID, "http://url", null, null, null, null, null, null);
-        RepositoryRegistry.getInstance().putRepository(MyConnector.ID, new MyRepository(info));
+        RepositoryRegistry.getInstance().putRepository(info);
         
         RepositoryProvider[] repos = RepositoryRegistry.getInstance().getRepositories(MyConnector.ID);
         assertEquals(1, repos.length);

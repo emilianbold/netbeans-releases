@@ -277,14 +277,10 @@ public class QueryTableCellRendererTest {
         }
 
         @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+        public void removePropertyChangeListener(PropertyChangeListener listener) {}
 
         @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+        public void addPropertyChangeListener(PropertyChangeListener listener) {}
     }
 
     private class RendererNode extends IssueNode {
