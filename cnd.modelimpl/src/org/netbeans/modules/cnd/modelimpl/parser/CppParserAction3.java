@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import org.antlr.runtime.Token;
+import java.util.Map;
+import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 
@@ -81,6 +83,8 @@ public interface CppParserAction3 extends CsmParserProvider.CsmParseCallback {
     
     boolean isType(String name);
 
-    public void onInclude(CsmFile inclFile, APTPreprocHandler.State stateBefore);
-
+    void onInclude(CsmFile inclFile, APTPreprocHandler.State stateBefore);
+    void pushFile(CsmFile file);
+    CsmFile popFile();
+    Map<Integer, CsmObject> getObjectsMap();
 }

@@ -100,6 +100,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
         private AST ast;
         private ConstructionKind kind;
         
+        private CppParserAction cppCallback;
         private Map<Integer, CsmObject> objects = null;
         
         Antlr2CppParser(FileImpl file) {
@@ -117,10 +118,17 @@ public final class ParserProviderImpl extends CsmParserProvider {
             assert object != null;
             assert ts != null;
             parserContainer = object;
-            if(TraceFlags.CPP_PARSER_ACTION) {
-                objects = new HashMap<Integer, CsmObject>();
+            cppCallback = (CppParserAction)callback;
+            if (cppCallback == null) {
+                if(TraceFlags.CPP_PARSER_ACTION) {
+                    cppCallback = new CppParserActionImpl(file);
+                } else {
+                    cppCallback = new CppParserEmptyActionImpl(file);
+                }
+            } else {
+                cppCallback.pushFile(file);
             }
-            parser = CPPParserEx.getInstance(file, ts, flags, objects, (CppParserAction)callback);
+            parser = CPPParserEx.getInstance(file, ts, flags, cppCallback);
         }
 
         @Override
@@ -155,8 +163,11 @@ public final class ParserProviderImpl extends CsmParserProvider {
             } catch (Throwable ex) {
                 System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
                 ex.printStackTrace(System.err);
+            } finally {
+                cppCallback.popFile();
             }
             ast = parser.getAST();
+            objects = cppCallback.getObjectsMap();
             return this;
         }
 

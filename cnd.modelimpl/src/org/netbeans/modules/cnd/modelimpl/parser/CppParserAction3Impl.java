@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import java.util.Map;
-import org.antlr.runtime.Token;
+import java.util.*;
+import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
@@ -79,13 +79,39 @@ public class CppParserAction3Impl implements CppParserAction3 {
 
     CppParserAction orig;
     
-    public CppParserAction3Impl(CsmFile file, Map<Integer, CsmObject> objects) {
-        orig = new CppParserActionImpl(file, objects);
+    private final SymTabStack globalSymTab;
+    private Pair currentContext;
+    private final Deque<Pair> contexts;
+    private static final class Pair {
+        final Map<Integer, CsmObject> objects = new HashMap<Integer, CsmObject>();
+        final FileImpl file;
+
+        public Pair(CsmFile file) {
+            this.file = (FileImpl)file;
+        }
+        
+    }
+
+    CppParserBuilderContext builderContext;
+    
+    public CppParserActionImpl(FileImpl startFile) {
+        this.contexts = new ArrayDeque<Pair>();
+        currentContext = new Pair(startFile);
+        this.contexts.push(currentContext);
+        this.globalSymTab = createGlobal();
+        this.builderContext = new CppParserBuilderContext();
     }
     
     @Override
     public void enum_declaration(Token token) {        
-        orig.enum_declaration(((MyToken)token).t);
+        //System.out.println("enum_declaration " + ((APTToken)token).getOffset());
+        
+        EnumBuilder enumBuilder = new EnumBuilder();
+        enumBuilder.setFile(currentContext.file);
+        if(token instanceof APTToken) {
+            enumBuilder.setStartOffset(((APTToken)token).getOffset());
+        }
+        builderContext.push(enumBuilder);
     }
 
     @Override
@@ -100,7 +126,25 @@ public class CppParserAction3Impl implements CppParserAction3 {
     
     @Override
     public void enumerator(Token token) {
-        orig.enumerator(((MyToken)token).t);
+        EnumBuilder enumBuilder = builderContext.getEnumBuilder();
+        
+        APTToken aToken = (APTToken) token;
+        final CharSequence name = aToken.getTextID();
+        SymTabEntry enumeratorEntry = globalSymTab.lookupLocal(name);
+        if (enumeratorEntry == null) {
+            enumeratorEntry = globalSymTab.enterLocal(name);
+//            enumeratorEntry.setAttribute(CppAttributes.SYM_TAB, globalSymTab.getLocal());
+        } else {
+            // ERROR redifinition
+        }
+        if(enumBuilder != null) {
+            EnumeratorBuilder builder2 = new EnumeratorBuilder();
+            builder2.setName(name);
+            builder2.setFile(currentContext.file);
+            builder2.setStartOffset(aToken.getOffset());
+            builder2.setEndOffset(aToken.getEndOffset());
+            enumBuilder.addEnumerator(builder2);
+        }
     }
     
     @Override
@@ -110,12 +154,29 @@ public class CppParserAction3Impl implements CppParserAction3 {
 
     @Override
     public void end_enum_declaration(Token token) {
-        orig.end_enum_declaration(((MyToken)token).t);
-    }
+        EnumBuilder enumBuilder = builderContext.getEnumBuilder();
+        
+        EnumImpl e = enumBuilder.create(true);
+        if(e != null) {
+            currentContext.objects.put(e.getStartOffset(), e);
+            SymTabEntry enumEntry = globalSymTab.lookupLocal(e.getName());
+            enumEntry.setAttribute(CppAttributes.DEFINITION, e);
+            for (CsmEnumerator csmEnumerator : e.getEnumerators()) {
+                SymTabEntry enumeratorEntry = globalSymTab.lookupLocal(csmEnumerator.getName());
+                assert enumeratorEntry != null;
+                enumeratorEntry.setAttribute(CppAttributes.DEFINITION, csmEnumerator);
+            }
+        }
 
     @Override
     public void class_declaration(Token token) {
-        orig.class_declaration(((MyToken)token).t);
+        ClassBuilder classBuilder = new ClassBuilder();
+        classBuilder.setParent(builderContext.top());
+        classBuilder.setFile(currentContext.file);
+        if(token instanceof APTToken) {
+            classBuilder.setStartOffset(((APTToken)token).getOffset());
+        }
+        builderContext.push(classBuilder);
     }
 
     @Override
@@ -143,9 +204,29 @@ public class CppParserAction3Impl implements CppParserAction3 {
         orig.end_class_declaration(((MyToken)token).t);
     }
 
+            ClassImpl cls = classBuilder.create();
+            if(cls != null) {
+                currentContext.objects.put(cls.getStartOffset(), cls);
+                SymTabEntry classEntry = globalSymTab.lookupLocal(cls.getName());
+                if(classEntry != null) {
+                    classEntry.setAttribute(CppAttributes.DEFINITION, cls);
+                } else {
+//                    System.out.println("classEntry is empty " + cls);
+                }
+            }
+            builderContext.pop();
+        }
+    }    
+
     @Override
     public void namespace_declaration(Token token) {
-        orig.namespace_declaration(((MyToken)token).t);
+        NamespaceBuilder nsBuilder = new NamespaceBuilder();
+        nsBuilder.setParentNamespace(builderContext.getNamespaceBuilderIfExist());
+        nsBuilder.setFile(currentContext.file);
+        if(token instanceof APTToken) {
+            nsBuilder.setStartOffset(((APTToken)token).getOffset());
+        }
+        builderContext.push(nsBuilder);
     }
 
     @Override
@@ -188,6 +269,15 @@ public class CppParserAction3Impl implements CppParserAction3 {
         orig.simple_type_id(((MyToken)token).t);
     }
             
+            if(token instanceof APTToken && CsmKindUtilities.isClassifier(def)) {
+                CsmType type = TypeFactory.createSimpleType((CsmClassifier)def, currentContext.file, ((APTToken)token).getOffset(), ((APTToken)token).getEndOffset());
+                currentContext.objects.put(type.getStartOffset(), type);
+            }
+            
+        }
+        
+    }
+
     @Override
     public boolean isType(String name) {
         return orig.isType(name);
@@ -200,5 +290,100 @@ public class CppParserAction3Impl implements CppParserAction3 {
             ((FileImpl)inclFile).parseOnInclude(stateBefore, this);
         }
     }
+     
+    @Override
+    public void pushFile(CsmFile file) {
+        this.contexts.push(currentContext);
+        currentContext = new Pair(file);
+    }
+
+    @Override
+    public CsmFile popFile() {
+        assert !contexts.isEmpty();
+        CsmFile out = currentContext.file;
+        currentContext = contexts.pop();
+        return out;
+    }
+
+    @Override
+    public Map<Integer, CsmObject> getObjectsMap() {
+        return currentContext.objects;
+    }
+    
+    private SymTabStack createGlobal() {
+        SymTabStack out = SymTabStack.create();
+        // TODO: need to push symtab for predefined types
         
     }
+
+    private static final boolean TRACE = false;
+    private void addReference(Token token, final CsmObject definition, final CsmReferenceKind kind) {
+        if (definition == null) {
+//            assert false;
+            if (TRACE) System.err.println("no definition for " + token + " in " + currentContext.file);
+            return;
+        }
+        assert token instanceof APTToken : "token is incorrect " + token;
+        if (APTUtils.isMacroExpandedToken(token)) {
+            if (TRACE) System.err.println("skip registering macro expanded " + token + " in " + currentContext.file);
+            return;
+        }
+        APTToken aToken = (APTToken) token;
+        final CharSequence name = aToken.getTextID();
+        final int startOffset = aToken.getOffset();
+        final int endOffset = aToken.getEndOffset();
+        CsmReference ref = new CsmReference() {
+
+            @Override
+            public CsmReferenceKind getKind() {
+                return kind;
+            }
+
+            @Override
+            public CsmObject getReferencedObject() {
+                return definition;
+            }
+
+            @Override
+            public CsmObject getOwner() {
+                return null;
+            }
+
+            @Override
+            public CsmFile getContainingFile() {
+                return currentContext.file;
+            }
+
+            @Override
+            public int getStartOffset() {
+                return startOffset;
+            }
+
+            @Override
+            public int getEndOffset() {
+                return endOffset;
+            }
+
+            @Override
+            public CsmOffsetable.Position getStartPosition() {
+                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            }
+
+            @Override
+            public CsmOffsetable.Position getEndPosition() {
+                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            }
+
+            @Override
+            public CharSequence getText() {
+                return name;
+            }
+
+            @Override
+            public CsmObject getClosestTopLevelObject() {
+                return null;
+            }
+        };
+        currentContext.file.addReference(ref, definition);
+    }   
+}

@@ -41,8 +41,13 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
+import java.util.ArrayDeque;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.Map;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -51,6 +56,12 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
  * @author nick
  */
 public class CppParserEmptyActionImpl implements CppParserAction {
+    private final Deque<CsmFile> files;
+
+    CppParserEmptyActionImpl(CsmFile file) {
+        files = new ArrayDeque<CsmFile>();
+        files.push(file);
+    }
 
     @Override
     public void enum_declaration(Token token) {
@@ -147,5 +158,22 @@ public class CppParserEmptyActionImpl implements CppParserAction {
             assert inclFile instanceof FileImpl;
             ((FileImpl) inclFile).parseOnInclude(stateBefore, this);
         }
+    }
+
+    @Override
+    public void pushFile(CsmFile file) {
+        files.push(file);
+    }
+
+    @Override
+    public CsmFile popFile() {
+        CsmFile out = files.peek();
+        files.pop();
+        return out;
+    }
+
+    @Override
+    public Map<Integer, CsmObject> getObjectsMap() {
+        return null;
     }
 }
