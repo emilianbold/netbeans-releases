@@ -509,6 +509,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 if (nameHolder != null) {
                     nameHolder.addReference(file, cls);
                 }
+                if(parent != null) {
+                    ((NamespaceDefinitionImpl.NamespaceBuilder)parent).addDeclaration(cls);
+                } else {
+                    ((FileImpl)file).addDeclaration(cls);
+                }
             }
             return cls;
         }

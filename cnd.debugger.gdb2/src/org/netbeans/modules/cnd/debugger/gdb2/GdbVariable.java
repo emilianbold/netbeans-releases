@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.ModelChangeDelegator;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.VariableModel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.WatchModel;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MIResult;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MITList;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 import org.openide.util.Exceptions;
@@ -109,38 +110,17 @@ class GdbVariable extends Variable {
     public boolean isInScope() {
 	return inScope;
     }
-    
-    void populateFields(MITList results) {
-        setMIName(results.getConstValue("name")); // NOI18N
-        setType(results.getConstValue("type")); // NOI18N
-        
-        String numchild_l = results.getConstValue("numchild"); // NOI18N
-        MIValue dynamicVal = results.valueOf("dynamic"); //NOI18N
-        if (dynamicVal != null) {
-            setDynamic("1".equals(dynamicVal.asConst().value())); // NOI18N
-            String hintVal = results.getConstValue("displayhint"); //NOI18N
-            try {
-                displayHint = DisplayHint.valueOf(hintVal.toUpperCase());
-            } catch (Exception e) {
-                displayHint = DisplayHint.NONE;
-            }
-            String hasMoreVal = results.getConstValue("has_more"); //NOI18N
-            if (!hasMoreVal.isEmpty()) {
-                numchild_l = hasMoreVal; // NOI18N
-            } else {
-                switch (displayHint) {
-                    case ARRAY:
-                    case MAP:
-                    case NONE:
-                        numchild_l = "1"; // NOI18N
-                }
-            }
-        }
-        setNumChild(numchild_l); // also set children if there is any
-    }
 
     public DisplayHint getDisplayHint() {
         return displayHint;
+    }
+    
+    private void setDisplayHint(String hint) {
+        try {
+            displayHint = DisplayHint.valueOf(hint.toUpperCase());
+        } catch (Exception e) {
+            displayHint = DisplayHint.NONE;
+        }
     }
 
     // override Variable
@@ -206,8 +186,8 @@ class GdbVariable extends Variable {
         return dynamic;
     }
 
-    void setDynamic(boolean dynamic) {
-        this.dynamic = dynamic;
+    private void setDynamic(String value) {
+        this.dynamic = "1".equals(value); //NOI18N
     }
 
     // override Variable
@@ -330,5 +310,58 @@ class GdbVariable extends Variable {
     @Override
     public String getFormat() {
 	return mi_format;
+    }
+    
+    //////////////
+    // Methods to populate from gdb results
+    
+    void populateFields(MITList results) {
+        setMIName(results.getConstValue("name")); // NOI18N
+        setType(results.getConstValue("type")); // NOI18N
+        
+        String numchild_l = results.getConstValue("numchild"); // NOI18N
+        MIValue dynamicVal = results.valueOf("dynamic"); //NOI18N
+        if (dynamicVal != null) {
+            setDynamic(dynamicVal.asConst().value());
+            setDisplayHint(results.getConstValue("displayhint")); //NOI18N
+            String hasMoreVal = results.getConstValue("has_more"); //NOI18N
+            if (!hasMoreVal.isEmpty()) {
+                numchild_l = hasMoreVal; // NOI18N
+            } else {
+                switch (displayHint) {
+                    case ARRAY:
+                    case MAP:
+                    case NONE:
+                        numchild_l = "1"; // NOI18N
+                }
+            }
+        }
+        setNumChild(numchild_l); // also set children if there is any
+    }
+    
+    void populateUpdate(MITList results) {
+        for (MIResult item : results.getOnly(MIResult.class)) {
+            if (item.matches("in_scope")) { //NOI18N
+                if (this instanceof GdbWatch) {
+                    setInScope(Boolean.parseBoolean(item.value().asConst().value()));
+                }
+            } else if (item.matches("new_type")) { //NOI18N
+                setType(item.value().asConst().value());
+            } else if (item.matches("new_num_children")) { //NOI18N
+                setNumChild(item.value().asConst().value());
+                setChildren(null, false);
+            } else if (item.matches("dynamic")) { //NOI18N
+                setDynamic(item.value().asConst().value());
+            } else if (item.matches("displayhint")) { //NOI18N
+                setDisplayHint(item.value().asConst().value());
+            } else if (item.matches("has_more")) { //NOI18N
+                if (!"0".equals(item.value().asConst().value())) { //NOI18N
+                    setNumChild(item.value().asConst().value());
+                    setChildren(null, false);
+                }
+            } else if (item.matches("new_children")) { //NOI18N
+                //TODO: can update new children from here
+            }
+        }
     }
 }

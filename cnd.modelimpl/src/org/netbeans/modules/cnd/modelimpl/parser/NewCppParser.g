@@ -67,9 +67,19 @@ scope Declaration {
 package org.netbeans.modules.cnd.modelimpl.parser.generated;
 
 import java.util.HashMap;
+import org.netbeans.modules.cnd.modelimpl.parser.*;
 }
 
 @members {
+
+    public /*final*/CppParserAction3 action;
+
+    public NewCppParser(TokenStream input, CppParserAction3 action) {
+        this(input);
+        assert action != null;
+        this.action = action;
+    }
+
     public void displayRecognitionError(String[] tokenNames,
                                         RecognitionException e) {
         // do nothing
@@ -143,9 +153,9 @@ import java.util.HashMap;
 
     void init_declaration(pCXX_grammar ctx, decl_kind kind)
     {
-        $Declaration::declarator.init();
-        $Declaration::decl_specifiers.init(kind);
-        $Declaration::type_specifiers_count = 0;
+//        $Declaration::declarator.init();
+//        $Declaration::decl_specifiers.init(kind);
+//        $Declaration::type_specifiers_count = 0;
     }
 
     boolean type_specifier_already_present(pCXX_grammar ctx)
@@ -465,19 +475,19 @@ scope Declaration;
 decl_specifier
     :
         storage_class_specifier
-        { $Declaration::decl_specifiers.apply_specifier($decl_specifier.start, CTX); }
+//        { $Declaration::decl_specifiers.apply_specifier($decl_specifier.start, CTX); }
     |
         function_specifier 
-        { $Declaration::decl_specifiers.apply_specifier($decl_specifier.start, CTX); }
+//        { $Declaration::decl_specifiers.apply_specifier($decl_specifier.start, CTX); }
     |
         LITERAL_friend
-        { $Declaration::decl_specifiers.apply_specifier($LITERAL_friend, CTX); }
+//        { $Declaration::decl_specifiers.apply_specifier($LITERAL_friend, CTX); }
     |
         LITERAL_typedef
-        { $Declaration::decl_specifiers.apply_specifier($LITERAL_typedef, CTX); }
+//        { $Declaration::decl_specifiers.apply_specifier($LITERAL_typedef, CTX); }
     |
         type_specifier
-        { $Declaration::decl_specifiers.add_type($type_specifier.ts, CTX); }
+//        { $Declaration::decl_specifiers.add_type($type_specifier.ts, CTX); }
     ;
 
 storage_class_specifier:
@@ -703,7 +713,14 @@ unnamed_namespace_definition:
  * This is all unnecessarily complicated. We can easily handle it by one single rule:
  */
 namespace_definition:
-        LITERAL_namespace IDENT? LCURLY namespace_body RCURLY
+        LITERAL_namespace       {action.namespace_declaration($LITERAL_namespace);}
+        (   
+            IDENT               {action.namespace_name($IDENT);}
+        )? 
+        LCURLY                  {action.namespace_body($LCURLY);}
+        namespace_body 
+        RCURLY                  {action.end_namespace_body($RCURLY);} 
+                                {action.end_namespace_declaration($RCURLY);}
     ;
 
 namespace_body:
@@ -1062,7 +1079,12 @@ class_name:
     ;
 
 class_specifier:
-        class_head LCURLY member_specification? RCURLY
+                                {action.class_declaration(input.LT(1));}
+        class_head 
+        LCURLY                  {action.class_body($LCURLY);}
+        member_specification? 
+        RCURLY                  {action.end_class_body($RCURLY);}
+                                {action.end_class_declaration(input.LT(1));}
     ;
 
 /*
@@ -1088,11 +1110,11 @@ class_head:
     ;
 
 class_key:
-        LITERAL_class 
+        LITERAL_class           {action.class_kind($LITERAL_class);}
     |
-        LITERAL_struct
+        LITERAL_struct          {action.class_kind($LITERAL_struct);}
     |
-        LITERAL_union 
+        LITERAL_union           {action.class_kind($LITERAL_union);}
     ;
 member_specification :
         member_declaration[field_decl] member_specification?
@@ -1353,7 +1375,7 @@ lookup_simple_template_id_nocheck
 
 simple_template_id_or_IDENT
     :
-        IDENT
+        IDENT                   {action.class_name($IDENT);}
         ( (LESSTHAN { (identifier_is(IDT_TEMPLATE_NAME)) }?) =>
             LESSTHAN template_argument_list? GREATERTHAN
         )?
