@@ -458,66 +458,6 @@ public class LuceneIndex implements Index.Transactional {
     
 
     //<editor-fold defaultstate="collapsed" desc="Private classes (NoNormsReader, TermComparator, CachePolicy)">
-    
-    private static class NoNormsReader extends FilterIndexReader {
-
-        //@GuardedBy (this)
-        private byte[] norms;
-
-        public NoNormsReader (final IndexReader reader) {
-            super (reader);
-        }
-
-        @Override
-        public byte[] norms(String field) throws IOException {
-            return null;
-        }
-
-        @Override
-        public void norms(String field, byte[] norm, int offset) throws IOException {
-            byte[] _norms = fakeNorms ();
-            System.arraycopy(_norms, 0, norm, offset, _norms.length);
-        }
-
-        @Override
-        public boolean hasNorms(String field) throws IOException {
-            return false;
-        }
-
-        @Override
-        protected void doSetNorm(int doc, String field, byte norm) throws CorruptIndexException, IOException {
-            //Ignore
-        }
-
-        @Override
-        protected void doClose() throws IOException {
-            synchronized (this)  {
-                this.norms = null;
-            }
-            super.doClose();
-        }
-
-        @SuppressWarnings("deprecation")
-        @Override
-        public IndexReader reopen() throws IOException {
-            final IndexReader newIn = in.reopen();
-            if (newIn == in) {
-                return this;
-            }
-            return new NoNormsReader(newIn);
-        }
-
-        /**
-         * Expert: Fakes norms, norms are not needed for Netbeans index.
-         */
-        private synchronized byte[] fakeNorms() {
-            if (this.norms == null) {
-                this.norms = new byte[maxDoc()];
-                Arrays.fill(this.norms, Similarity.getDefault().encodeNormValue(1.0f));
-            }
-            return this.norms;
-        }
-    }
         
     private enum CachePolicy {
         
@@ -883,7 +823,7 @@ public class LuceneIndex implements Index.Transactional {
                         source = fsDir;
                     }
                     assert source != null;
-                    this.reader = new NoNormsReader(IndexReader.open(source,true));
+                    this.reader = IndexReader.open(source,true);
                 } catch (final FileNotFoundException fnf) {
                     //pass - returns null
                 } catch (IOException ioe) {
