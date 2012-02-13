@@ -132,14 +132,14 @@ public final class SearchPattern {
         return result;
     }
     
-    public String toCanonicalString() {
+    String toCanonicalString() {
         char m = isMatchCase() ? 'M' : 'm';
         char r = isRegExp() ? 'R' : 'r';
         char w = isWholeWords() ? 'W' : 'w';
         return "" + m + r + w + "-" + getSearchExpression();
     }
 
-    public static SearchPattern parseSearchPattern(String canonicalString) {
+    static SearchPattern parseSearchPattern(String canonicalString) {
         //format mrw-findwhat
         if (canonicalString == null
                 || Character.toUpperCase(canonicalString.charAt(0)) != 'M'

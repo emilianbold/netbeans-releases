@@ -448,7 +448,6 @@ public class InnerToOutterTest extends RefactoringTestBase {
 
         addAllProblems(problems, r[0].preCheck());
         if (!generateOuter) r[0].setReferenceName(null);
-        Thread.sleep(1000);
         addAllProblems(problems, r[0].prepare(rs));
         addAllProblems(problems, rs.doRefactoring(true));
 
