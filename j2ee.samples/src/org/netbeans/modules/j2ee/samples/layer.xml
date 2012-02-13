@@ -7,25 +7,7 @@
                 <folder name="Enterprise">
                     <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.samples.Bundle#Templates/Project/Samples/Enterprise"/>
                     <attr name="position" intvalue="300"/>
-                        
-                    <file name="LotteryAnnotation" url="LotteryAnnotation.zip">
-                        <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.samples.Bundle#Templates/Project/Samples/Enterprise/LotteryAnnotation"/>
-                        <attr name="iconBase" stringvalue="org/netbeans/modules/j2ee/samples/EARProjectIcon.gif"/>
-                        <attr name="position" intvalue="120"/>
-                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/LotteryAnnotation.html"/>                            
-                        <attr name="template" boolvalue="true"/>
-                    </file>
-                   
-                    <file name="InterceptorStateless" url="InterceptorStateless.zip">
-                        <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.samples.Bundle#Templates/Project/Samples/Enterprise/InterceptorStateless"/>
-                        <attr name="iconBase" stringvalue="org/netbeans/modules/j2ee/samples/EARProjectIcon.gif"/>
-                        <attr name="position" intvalue="60"/>
-                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/InterceptorStateless.html"/>
-                        <attr name="template" boolvalue="true"/>
-                    </file>
-                        
+
                     <file name="AnnotOvdInterceptor" url="AnnotOvdInterceptor.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.samples.Bundle#Templates/Project/Samples/Enterprise/AnnotOvdInterceptor"/>
                         <attr name="iconBase" stringvalue="org/netbeans/modules/j2ee/samples/EARProjectIcon.gif"/>
@@ -35,12 +17,31 @@
                         <attr name="template" boolvalue="true"/>
                     </file>
                     
+                    <file name="ApplicationScopedResources" url="ApplicationScopedResources.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.samples.Bundle#Templates/Project/Samples/Enterprise/ApplicationScopedResources"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/j2ee/samples/EARProjectIcon.gif"/>
+                        <attr name="position" intvalue="20"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/ApplicationScopedResources.html"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+
+                    <file name="AsyncRequest.zip" url="AsyncRequest.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.samples.Bundle#Templates/Project/Samples/Enterprise/AsyncRequest.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
+                        <attr name="position" intvalue="30"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/AsyncRequest.html"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="prjType" stringvalue="web"/>
+                    </file>
+
                     <file name="EmbeddedGlassfish" url="EmbeddedGlassfish.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.samples.Bundle#Templates/Project/Samples/Enterprise/EmbeddedGlassfish"/>
                         <attr name="iconBase" stringvalue="org/netbeans/modules/j2ee/samples/Maven2SamplesIcon.gif"/>
                         <attr name="position" intvalue="40"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/EmbeddedGlassfish.html"/>                            
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/EmbeddedGlassfish.html"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
 
@@ -49,19 +50,19 @@
                         <attr name="iconBase" stringvalue="org/netbeans/modules/j2ee/samples/Maven2SamplesIcon.gif"/>
                         <attr name="position" intvalue="50"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/EjbContainer.html"/>                            
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/EjbContainer.html"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
                     
-                    <file name="ApplicationScopedResources" url="ApplicationScopedResources.zip">
-                        <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.samples.Bundle#Templates/Project/Samples/Enterprise/ApplicationScopedResources"/>
+                    <file name="InterceptorStateless" url="InterceptorStateless.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.samples.Bundle#Templates/Project/Samples/Enterprise/InterceptorStateless"/>
                         <attr name="iconBase" stringvalue="org/netbeans/modules/j2ee/samples/EARProjectIcon.gif"/>
-                        <attr name="position" intvalue="20"/>
+                        <attr name="position" intvalue="60"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/ApplicationScopedResources.html"/>                            
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/InterceptorStateless.html"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
-                    
+
                     <file name="JsfJpa.zip" url="JsfJpa.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.samples.Bundle#Templates/Project/Samples/Enterprise/JsfJpa.zip"/>
                         <attr name="position" intvalue="90"/>
@@ -82,13 +83,22 @@
                         <attr name="prjType" stringvalue="web"/>
                     </file>
 
-                    <file name="WebJpa.zip" url="WebJpa.zip">
-                        <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.samples.Bundle#Templates/Project/Samples/Enterprise/WebJpa.zip"/>
-                        <attr name="position" intvalue="170"/>
+                    <file name="LotteryAnnotation" url="LotteryAnnotation.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.samples.Bundle#Templates/Project/Samples/Enterprise/LotteryAnnotation"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/j2ee/samples/EARProjectIcon.gif"/>
+                        <attr name="position" intvalue="120"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/WebJpa.html"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/LotteryAnnotation.html"/>                            
                         <attr name="template" boolvalue="true"/>
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
+                    </file>
+
+                    <file name="PetCatalog.zip" url="PetCatalog.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.samples.Bundle#Templates/Project/Samples/Enterprise/PetCatalog.zip"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
+                        <attr name="position" intvalue="130"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/PetCatalog.html"/>
+                        <attr name="template" boolvalue="true"/>
                         <attr name="prjType" stringvalue="web"/>
                     </file>
 
@@ -102,26 +112,6 @@
                         <attr name="prjType" stringvalue="web"/>
                     </file>
 
-                    <file name="AsyncRequest.zip" url="AsyncRequest.zip">
-                        <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.samples.Bundle#Templates/Project/Samples/Enterprise/AsyncRequest.zip"/>
-                        <attr name="iconBase" stringvalue="org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
-                        <attr name="position" intvalue="30"/>
-                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/AsyncRequest.html"/>
-                        <attr name="template" boolvalue="true"/>
-                        <attr name="prjType" stringvalue="web"/>
-                    </file>
-
-                    <file name="PetCatalog.zip" url="PetCatalog.zip">
-                        <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.samples.Bundle#Templates/Project/Samples/Enterprise/PetCatalog.zip"/>
-                        <attr name="iconBase" stringvalue="org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
-                        <attr name="position" intvalue="130"/>
-                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/PetCatalog.html"/>
-                        <attr name="template" boolvalue="true"/>
-                        <attr name="prjType" stringvalue="web"/>
-                    </file>
-
                     <file name="ScrumToys.zip" url="ScrumToys.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.samples.Bundle#Templates/Project/Samples/Enterprise/ScrumToys.zip"/>
                         <attr name="iconBase" stringvalue="org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
@@ -131,7 +121,18 @@
                         <attr name="template" boolvalue="true"/>
                         <attr name="prjType" stringvalue="web"/>
                     </file>
+
+                    <file name="WebJpa.zip" url="WebJpa.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.samples.Bundle#Templates/Project/Samples/Enterprise/WebJpa.zip"/>
+                        <attr name="position" intvalue="170"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/WebJpa.html"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
+                        <attr name="prjType" stringvalue="web"/>
+                    </file>
                 </folder>
+                
                 <!-- this is failing the commit-validation testFolderOrding todo fix this test-->
                 <!--<folder name="Glassfish">
                      <file name="EmbeddedGlassfish" url="EmbeddedGlassfish.zip">
