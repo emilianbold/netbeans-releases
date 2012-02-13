@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.modelimpl.parser;
 
 import java.util.Map;
-import org.netbeans.modules.cnd.antlr.Token;
+import org.antlr.runtime.Token;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
  *
  * @author nick
  */
-public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
+public interface CppParserAction3 extends CsmParserProvider.CsmParseCallback {
     
     void enum_declaration(Token token);
     void enum_name(Token token);

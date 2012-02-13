@@ -2443,23 +2443,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 //            }
             GdbVariable wv = variableBag.get(mi_name, true, VariableBag.FROM_BOTH);
             if (wv != null) {
-		if (wv instanceof GdbWatch && in_scope != null) {
-		    GdbWatch w = (GdbWatch) wv;
-		    w.setInScope(Boolean.parseBoolean(in_scope));
-		}
-                
-                // update type
-                MIValue newType = updatevar.asTuple().valueOf("new_type"); //NOI18N
-                if (newType != null) {
-                    wv.setType(newType.asConst().value());
-                }
-                
-                // update children
-                MIValue newChildren = updatevar.asTuple().valueOf("new_num_children"); //NOI18N
-                if (newType != null) {
-                    wv.setNumChild(newChildren.asConst().value());
-                    wv.setChildren(null, false);
-                }
+                wv.populateUpdate(updatevar.asTuple());
                 
                 // update value
                 if (updatevar.asTuple().valueOf("value") != null) { //NOI18N

@@ -204,17 +204,10 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
     
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(VCSOwnerTestCase_.class);
+        suite.addTestSuite(VCSOwnerTestCase.class);
         suite.addTestSuite(VCSInterceptorTestCase_.class);
         suite.addTestSuite(VCSAnnotationProviderTestCase_.class);
         return new RemoteVCSTCKTest(suite);
-    }
-    
-    public static final class VCSOwnerTestCase_ extends VCSOwnerTestCase {
-
-        public VCSOwnerTestCase_(String testName) {
-            super(testName);
-        }
     }
     
     public static final class VCSInterceptorTestCase_ extends VCSInterceptorTestCase {

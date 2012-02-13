@@ -114,8 +114,10 @@ public class CPPParserEx extends CPPParser {
     //Change statementTrace from cppparser.g directly 
     //private final boolean trace = Boolean.getBoolean("cnd.parser.trace");
     //private TokenStreamSelector selector = new TokenStreamSelector();
-    protected CPPParserEx(TokenStream stream) {
+    protected CPPParserEx(TokenStream stream, CppParserAction callback) {
         super(stream);
+        assert callback != null;
+        this.action = callback;
     }
 
     @Override
@@ -128,17 +130,15 @@ public class CPPParserEx extends CPPParser {
     }
 
     public static CPPParserEx getInstance(CsmFile file, TokenStream ts, int flags) {
-        return getInstance(file, ts, flags, null, null);
+        return getInstance(file, ts, flags, new CppParserEmptyActionImpl(file));
     }
     
-    public static CPPParserEx getInstance(CsmFile file, TokenStream ts, int flags, Map<Integer, CsmObject> objects, CppParserAction callback) {
+    public static CPPParserEx getInstance(CsmFile file, TokenStream ts, int flags, CppParserAction callback) {
         assert (ts != null);
         assert (file != null);
-        CPPParserEx parser = new CPPParserEx(ts);
+        CPPParserEx parser = new CPPParserEx(ts, callback);
         parser.init(file.getName().toString(), flags);
-        parser.init2(file, objects, callback);
         return parser;
-
     }
 
     @Override
@@ -149,17 +149,6 @@ public class CPPParserEx extends CPPParser {
         setASTFactory(new AstFactoryEx(getTokenTypeToASTClassMap()));
         getASTFactory().setASTNodeClass(CsmAST.class);
         super.init(filename, flags);
-    }
-
-    private void init2(CsmFile file, Map<Integer, CsmObject> objects, CppParserAction callback) {
-        if (callback != null) {
-            action = callback;
-        } else if(objects == null || file == null) {
-            action = new CppParserEmptyActionImpl();
-        } else {
-            action = new CppParserActionImpl(file, objects);        
-        }
-//        skipIncludeTokensIfNeeded(1);
     }
 
     private void onIncludeToken(Token t) {
