@@ -90,12 +90,14 @@ public class ExtraPanel implements ProjectCustomizer.CompositeCategoryProvider {
         return null;
     }
 
+    @Messages("LBL_deprecated=Using deprecated Ant-based installer creator. Upgrade to 3.7+ plugin to fix.")
     public @Override JComponent createComponent(Category category, Lookup context) {
         Project project = context.lookup(Project.class);
         SuiteInstallerProjectProperties installerProjectProperties =
                 new SuiteInstallerProjectProperties(project);
         // use OkListener to create new configuration first
         category.setStoreListener(new SavePropsListener(installerProjectProperties));
+        category.setErrorMessage(LBL_deprecated());
         return new InstallerPanel(installerProjectProperties);
     }
 
