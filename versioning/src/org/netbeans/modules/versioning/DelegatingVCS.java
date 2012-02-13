@@ -650,8 +650,10 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
     private VCSFileProxy[] toProxies(File[] files) {
         VCSFileProxy[] proxies = new VCSFileProxy[files.length];
         for (int i = 0; i < files.length; i++) {
-            proxies[i] = VCSFileProxy.createFileProxy(files[i]);
             assert files[i] != null;
+            if(files[i] != null) {
+                proxies[i] = VCSFileProxy.createFileProxy(files[i]);
+            }
         }
         return proxies;
     }

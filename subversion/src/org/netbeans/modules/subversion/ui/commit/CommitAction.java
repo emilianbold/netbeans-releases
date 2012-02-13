@@ -741,7 +741,7 @@ public class CommitAction extends ContextAction {
 
                 // one commit for each wc
                 List<File> commitList = itCandidates.next();
-                File[] commitedFiles = commitList.toArray(new File[commitFiles.size()]);
+                File[] commitedFiles = commitList.toArray(new File[commitList.size()]);
 
                 CommitCmd cmd = new CommitCmd(client, support, message, handleHooks ? logs : null);
                 // handle recursive commits - deleted and copied folders can't be commited non recursively
