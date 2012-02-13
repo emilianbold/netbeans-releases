@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.remote.impl.fs;
 
-import com.sun.org.apache.xerces.internal.impl.dv.dtd.NMTOKENDatatypeValidator;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -281,6 +280,11 @@ public final class RemoteFileObject extends FileObject implements Serializable {
     @Override
     public void refresh(boolean expected) {
         getImplementor().refresh(expected);
+    }
+
+    @Override
+    public FileObject copy(FileObject target, String name, String ext) throws IOException {
+        return getImplementor().copy(target, name, ext);
     }
 
     @Override
