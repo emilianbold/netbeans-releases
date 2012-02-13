@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.antlr.runtime.tree.CommonTree;
@@ -64,8 +63,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.fsm.core.DataRenderer;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CXXParser;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.FortranParser;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.NewCppParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -304,7 +303,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
     final static class Antlr3NewCppParser implements CsmParserProvider.CsmParser, CsmParserProvider.CsmParserResult {
         private final FileImpl file;
-        private NewCppParser parser;
+        private CXXParser parser;
 
         private ConstructionKind kind;
         
@@ -330,7 +329,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             }            
             org.netbeans.modules.cnd.antlr.TokenBuffer tb = new org.netbeans.modules.cnd.antlr.TokenBuffer(ts);            
             org.antlr.runtime.TokenStream tokens = new MyTokenStream(tb);
-            parser = new NewCppParser(tokens, cppCallback);
+            parser = new CXXParser(tokens, cppCallback);
         }
 
         @Override

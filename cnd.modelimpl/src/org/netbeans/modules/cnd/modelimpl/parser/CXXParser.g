@@ -45,7 +45,7 @@
  * @author Fedor Sergeev
  */
 
-parser grammar NewCppParser;
+parser grammar CXXParser;
 
 options {
     tokenVocab = APTTokenTypes;
@@ -74,8 +74,8 @@ import org.netbeans.modules.cnd.modelimpl.parser.*;
 
     public /*final*/CppParserAction3 action;
 
-    public NewCppParser(TokenStream input, CppParserAction3 action) {
-        this(input);
+    public CXXParser(TokenStream input, CppParserAction3 action) {
+        super(input);
         assert action != null;
         this.action = action;
     }
