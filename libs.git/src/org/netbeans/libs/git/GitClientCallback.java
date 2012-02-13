@@ -49,7 +49,7 @@ package org.netbeans.libs.git;
  * requires authentication then this is the class it should use to pass the credentials.
  * <h5>How to use this class</h5>
  * <ol>
- * <li>Get an instance of {@link GitClient} you want to run the fetch command with, see {@link GitClientFactory}</li>
+ * <li>Get an instance of {@link GitClient} you want to run the fetch command with, see {@link GitRepository}</li>
  * <li>Extend this class and implement all abstract methods</li>
  * <li>Pass the instance of the class to the git client, see {@link GitClient#setCallback(org.netbeans.libs.git.GitClientCallback) }</li>
  * <li>Run a remote command, see e.g. {@link GitClient#fetch(java.lang.String, org.netbeans.libs.git.progress.ProgressMonitor) }</li>
@@ -59,7 +59,7 @@ package org.netbeans.libs.git;
  * Let's assume we want to run a fetch command on a remote repository at http://myrepositoryhost/path 
  * that requires credentials username/password:
  * <pre>
- * GitClient client = {@link GitClientFactory#getInstance() GitClientFactory.getInstance()}.{@link GitClientFactory#getClient(java.io.File) getClient(myLocalReposiry)};
+ * GitClient client = {@link GitRepository#getInstance(java.io.File) GitRepository.getInstance(myLocalReposiry)}.{@link GitRepository#getClient() getClient()};
  * GitClientCallback myCallback = {@link GitClientCallback#GitClientCallback() new GitClientCallback ()} {
  *     public String askQuestion (String uri, String prompt) { return null; }
  *     

@@ -112,10 +112,8 @@ import org.netbeans.libs.git.progress.StatusListener;
  * A client of the API should follow these steps in order to run a certain git commands:
  * <ol>
  * <li><h6>Acquire an instance of a git client</h6>
- * <p>Instances of a git client are provided by {@link GitClientFactory}. To get one call
- * {@link GitClientFactory#getClient(java.io.File) }. The method takes as a parameter a repository
- * root folder. In case you want to initialize a not yet existing repository, you construct the client
- * with a folder that tells the client where the repository should be created.</p>
+ * <p>Instances of a git client are provided by {@link GitRepository}. To get one call
+ * {@link GitRepository#getClient() }.</p>
  * </li>
  * <li><h6>Configure the client</h6>
  * <p>Some git client commands may (or may not) require additional setup of the client to successfully finish their work.
