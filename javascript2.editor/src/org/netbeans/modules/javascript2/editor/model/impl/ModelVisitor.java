@@ -46,6 +46,7 @@ import com.oracle.nashorn.ir.*;
 import com.oracle.nashorn.parser.Token;
 import com.oracle.nashorn.parser.TokenType;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.Modifier;
@@ -457,6 +458,11 @@ public class ModelVisitor extends PathNodeVisitor {
             Node expression = returnNode.getExpression(); 
             if (expression instanceof IdentNode) {
                 addOccurence((IdentNode)expression);
+            }
+            Collection<String> types = ModelUtils.resolveTypeOfExpression(expression);
+            if(!types.isEmpty()) {
+                JsFunctionImpl function = (JsFunctionImpl)modelBuilder.getCurrentDeclarationScope();
+                function.getReturnTypes().addAll(types);
             }
         }
         return super.visit(returnNode, onset);

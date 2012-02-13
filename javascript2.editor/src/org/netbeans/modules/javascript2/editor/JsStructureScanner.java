@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
-import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
@@ -51,7 +50,6 @@ import java.util.*;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
@@ -63,6 +61,9 @@ public class JsStructureScanner implements StructureScanner {
     //private static final String LAST_CORRECT_FOLDING_PROPERTY = "LAST_CORRECT_FOLDING_PROPERY";
     
     private static final String FOLD_CODE_BLOCKS = "codeblocks"; //NOI18N
+    
+    private static final String FONT_GRAY_COLOR = "<font color=\"#999999\">"; //NOI18N
+    private static final String CLOSE_FONT = "</font>";                   //NOI18N
     
     @Override
     public List<? extends StructureItem> scan(ParserResult info) {
@@ -307,6 +308,22 @@ public class JsStructureScanner implements StructureScanner {
             }
             formatter.parameters(false);
             formatter.appendText(")");   //NOI18N
+            
+            Collection<String> returnTypes = function.getReturnTypes();
+            if (!returnTypes.isEmpty()) {
+                formatter.appendHtml(FONT_GRAY_COLOR);
+                formatter.appendText(" : ");
+                boolean addDelimiter = false;
+                for (String type : returnTypes) {
+                    if (addDelimiter) {
+                        formatter.appendText("|");
+                    } else {
+                        addDelimiter = true;
+                    }
+                    formatter.appendHtml(type);
+                }
+                formatter.appendHtml(CLOSE_FONT);
+            }
         }
 
         @Override

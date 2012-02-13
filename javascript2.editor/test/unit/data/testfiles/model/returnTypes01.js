@@ -1,4 +1,4 @@
-/*
+/* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
@@ -39,16 +39,43 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
 
-import java.util.Collection;
-
-/**
- *
- * @author Petr Pisl
- */
-public interface JsFunction  extends JsObject{
-    public Collection<? extends JsObject> getParameters();
-    public JsObject getParameter(String name);
-    public Collection<String> getReturnTypes();
+var testReturnType = {
+    isGreat: true,
+    isGood1 : function () {
+        return true;
+    },
+    isGood2 : function () {
+        if(isGreate) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+    getSimpleDescription: function() {
+        return "Simple Description";
+    },
+    getInteger: function () {
+        return 22;
+    },
+    getDouble: function () {
+        return 22.2;
+    },
+    getBigNumber: function () {
+        return 32e20;
+    },
+    simpleMix: function() {
+      if(isGood()) {
+          return 10;
+      }  
+      return "default";
+    }
 }
+
+formatter.println("isGood1():" + testReturnType.isGood1());
+formatter.println("getSimpleDescription: " + testReturnType.getSimpleDescription());
+formatter.println("getInteger: " + testReturnType.getInteger());
+formatter.println("getDouble: " + testReturnType.getDouble());
+formatter.println("getBigNumber: " + testReturnType.getBigNumber());
+
+

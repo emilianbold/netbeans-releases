@@ -415,9 +415,43 @@ public class ModelTest extends JsTestBase {
         
         property = object.getProperty("getColor");
         assertEquals(true, property.isDeclared());
-        assertEquals(JsElement.Kind.METHOD, property.getJSKind());
+        assertEquals(JsElement.Kind.METHOD, property.getJSKind());   
+    }
+    
+    public void testSimpleReturnTypes01() throws Exception {
+        Model model = getModel("testfiles/model/returnTypes01.js");
+        assertNotNull(model);
+        
+        JsObject  global = model.getGlobalObject();
+        JsObject object = global.getProperty("testReturnType");
+        
+        JsFunction function = (JsFunction)object.getProperty("isGood1");
+        assertEquals(1, function.getReturnTypes().size());
+        assertTrue(function.getReturnTypes().contains("boolean"));
+        
+        function = (JsFunction)object.getProperty("getSimpleDescription");
+        assertEquals(1, function.getReturnTypes().size());
+        assertTrue(function.getReturnTypes().contains("string"));
+        
+        function = (JsFunction)object.getProperty("getInteger");
+        assertEquals(1, function.getReturnTypes().size());
+        assertTrue(function.getReturnTypes().contains("number"));
+        
+        function = (JsFunction)object.getProperty("getDouble");
+        assertEquals(1, function.getReturnTypes().size());
+        assertTrue(function.getReturnTypes().contains("number"));
+        
+        function = (JsFunction)object.getProperty("getBigNumber");
+        assertEquals(1, function.getReturnTypes().size());
+        assertTrue(function.getReturnTypes().contains("number"));
+        
+        function = (JsFunction)object.getProperty("simpleMix");
+        assertEquals(2, function.getReturnTypes().size());
+        assertTrue(function.getReturnTypes().contains("string"));
+        assertTrue(function.getReturnTypes().contains("number"));
         
     }
+    
     
 //    public void testPrivateMethod01() throws Exception {
 //        Model model = getModel("testfiles/model/privateMethod.js");
