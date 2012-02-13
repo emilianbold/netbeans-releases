@@ -62,7 +62,7 @@ public class NamedParameterElement extends ParameterElement {
      * @param paramDescription description of the parameter
      */
     public NamedParameterElement(Type type, Name paramName,
-            org.netbeans.modules.javascript2.editor.model.impl.TypesImpl paramTypes, Description paramDescription) {
+            org.netbeans.modules.javascript2.editor.model.Types paramTypes, Description paramDescription) {
         super(type, paramTypes, paramDescription);
         this.paramName = paramName;
     }
