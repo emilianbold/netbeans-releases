@@ -639,6 +639,9 @@ public final class MainWindow {
        if( isFullScreenMode == fullScreenMode || isSwitchingFullScreenMode ) {
            return;
        }
+       if( fullScreenMode && !MacFullScreenSupport.check() ) {
+           return;
+       }
        isSwitchingFullScreenMode = true;
        if( !isFullScreenMode ) {
            restoreExtendedState = frame.getExtendedState();
