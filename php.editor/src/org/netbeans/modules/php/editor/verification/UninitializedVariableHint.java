@@ -395,12 +395,21 @@ public class UninitializedVariableHint extends AbstractRule implements PHPRuleWi
         }
 
         private void initializeVariableBase(VariableBase variableBase) {
-            if (variableBase instanceof Variable) {
+            if (variableBase instanceof ArrayAccess) {
+                initializeArrayAccessVariable((ArrayAccess) variableBase);
+            } else if (variableBase instanceof Variable) {
                 initializeVariable((Variable) variableBase);
             } else if (variableBase instanceof ListVariable) {
                 initializeListVariable((ListVariable) variableBase);
             } else {
                 super.visit(variableBase);
+            }
+        }
+
+        private void initializeArrayAccessVariable(ArrayAccess node) {
+            VariableBase name = node.getName();
+            if (name instanceof Variable) {
+                initializeVariable((Variable) name);
             }
         }
 
