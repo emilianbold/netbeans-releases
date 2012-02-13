@@ -47,7 +47,8 @@ import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
  *
  * @author Martin Fousek, Petr Pisl 
  */
-class DocumentationProvider {
+
+public class DocumentationProvider {
     
     public static DocumentationProvider getSupport(JsParserResult result) {
         return null;

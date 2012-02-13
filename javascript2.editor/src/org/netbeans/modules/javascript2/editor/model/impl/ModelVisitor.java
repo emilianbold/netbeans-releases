@@ -51,12 +51,7 @@ import java.util.List;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
-import org.netbeans.modules.javascript2.editor.model.JsFunction;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Occurrence;
+import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.openide.filesystems.FileObject;
 
@@ -72,12 +67,14 @@ public class ModelVisitor extends PathNodeVisitor {
      */
     private final List<List<FunctionNode>> functionStack;
     private final JsParserResult parserResult;
+    private final DocumentationProvider docSupport;
     
-    public ModelVisitor(JsParserResult parserResult) {
+    public ModelVisitor(JsParserResult parserResult, DocumentationProvider docSupport) {
         FileObject fileObject = parserResult.getSnapshot().getSource().getFileObject();
         this.modelBuilder = new ModelBuilder(JsFunctionImpl.createGlobal(fileObject));
         this.functionStack = new ArrayList<List<FunctionNode>>();
         this.parserResult = parserResult;
+        this.docSupport = docSupport;
     }
 
     public JsObject getGlobalObject() {

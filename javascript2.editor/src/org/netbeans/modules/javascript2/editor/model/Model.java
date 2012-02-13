@@ -76,7 +76,7 @@ public final class Model {
     private synchronized ModelVisitor getModelVisitor() {
         if (visitor == null) {
             long start = System.currentTimeMillis();
-            visitor = new ModelVisitor(parserResult);
+            visitor = new ModelVisitor(parserResult, docSupport);
             FunctionNode root = parserResult.getRoot();
             if (root != null) {
                 root.accept(visitor);
