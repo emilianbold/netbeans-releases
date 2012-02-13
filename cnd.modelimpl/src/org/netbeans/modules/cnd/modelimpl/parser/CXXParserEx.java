@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,61 +34,36 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ws.qaf.saas;
+package org.netbeans.modules.cnd.modelimpl.parser;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
+import java.util.Map;
+import org.antlr.runtime.TokenStream;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CXXParser;
 
 /**
  *
- * @author lukas
+ * @author nick
  */
-public class AmazonTest extends SaasTestBase {
+public class CXXParserEx extends CXXParser {
     
-    protected static Server server = Server.GLASSFISH;
-
-    public AmazonTest(String name, Server server) {
-        super(name, server);
-    }
+    private final CXXParserActionEx action;
     
-     public AmazonTest(String name) {
-        super(name, server);
+    public CXXParserEx(TokenStream input, CXXParserActionEx action) {
+        super(input, action);
+        this.action = action;
     }
 
-    @Override
-    protected String getSaasServiceID() {
-        return "AS3S"; //Amazon S3 Service
+    void popFile() {
+        action.popFile();
     }
 
-    @Override
-    protected String getSaasServiceNodePath() {
-        return "Amazon|S3 Service|[/]|getBuckets";
+    Map<Integer, CsmObject> getObjectsMap() {
+        return action.getObjectsMap();
     }
-
-    public static Test suite() {
-        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(AmazonTest.class),
-                "testRestDrop",
-                "testJspDrop",
-                "testServletDrop",
-                "testJavaDrop"
-                ).enableModules(".*").clusters(".*"));
-    }
-    
-//    public static TestSuite suite() {
-//        TestSuite ts = new NbTestSuite();
-//        ts.addTest(new AmazonTest("testRestDrop"));
-//        ts.addTest(new AmazonTest("testJspDrop"));
-//        ts.addTest(new AmazonTest("testServletDrop"));
-//        ts.addTest(new AmazonTest("testJavaDrop"));
-//        return ts;
-//    }
-//
-//    public static void main(String... args) {
-//        TestRunner.run(suite());
-//    }
 }

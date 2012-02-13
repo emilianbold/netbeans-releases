@@ -14,6 +14,9 @@
     <fontcolor name="phpdockeyword" default="comment">
         <font style="bold"/>
     </fontcolor>
+    <fontcolor name="htmltag" default="comment" foreColor="9999FF">
+        <font style="bold"/>
+    </fontcolor>
     <fontcolor name="keyword" default="keyword" />
     <fontcolor name="identifier" default="identifier" />
     <fontcolor name="string" default="string" />

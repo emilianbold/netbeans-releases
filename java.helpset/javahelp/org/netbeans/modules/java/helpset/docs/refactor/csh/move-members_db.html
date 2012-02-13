@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright © 1997, 2012, Oracle and/or its affiliates. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Move Members Dialog Box</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Move Members Dialog Box</h2>
+        <p><small> <a href="#seealso">See Also</a> </small></p>
+        <p>Use the Move Members dialog box to specify the target class where selected methods and fields of the source class are to be moved. 
+        The Move Members dialog box appears after you have chosen the Refactor &gt; Move refactoring command while having a class method or field selected in the Source Editor or in the Members View of the Navigator.</p>
+
+        <p>The dialog box has the following fields:</p>
+        <ul>
+		<li><b>Move members from.</b> Displays the name of the source class containing members to be moved. The value is already filled in and is read-only.</li>
+		<li><b>Target.</b>
+            Displays fields for specifying a fully qualified name of the target class.
+              <ul>
+              <li><b>Project.</b> Specify the name of the project to which you are moving the members.            </li>
+              <li><b>Location.</b> Specify the part of the project to which you are moving the members. 
+                The appropriate value here is generally Source Packages, but it is also 
+                possible to have other source roots represented in this field.            </li>
+            <li><b>Package.</b> Specify the package of the project to which you are moving the members.            </li>
+			<li><b>To Class.</b> Specify the class to which you are moving the members.            </li>
+			</ul></li>
+		<li><b>Members to be moved.</b> Lists all members detected in the source class. Select checkboxes next to the members you want to move. You can move more than one member at a time.
+		<p>The following table lists buttons that are available in the toolbar at the bottom of the members list. Hold the cursor over a button to display a description of the command.</p>
+        <table border="1" cellpadding="5" cellspacing="0">
+	<tr>
+		<th align="left" scope="col">Button</th>
+		<th align="center" scope="col">Function</th>
+	</tr>
+	        <tr valign="top">
+		<td align="center"><img src="../images/filterHideFields.png" alt="Show fields"></td>
+		<td><b>Show fields.</b> Click to display fields in the  list.</td>
+	</tr>
+        <tr valign="top">
+		<td align="center"><img src="../images/filterHideStatic.png" alt="Show static members"></td>
+		<td><b>Show static members.</b> Click to display static members in the  list.</td>
+	</tr>
+	<tr>
+		<td align="center"><img src="../images/filterHideNonPublic.png" alt="Show non-public members"></td>
+		<td><b>Show non-public members.</b> Click to display non-public members in the list. </td>
+	</tr>
+       
+	<tr>
+		<td align="center"><img src="../images/sortAlpha.png" alt="Sort by name"></td>
+		<td><b>Sort by name.</b> Click to display members sorted out by names. </td>
+	</tr>
+	<tr>
+		<td align="center"><img src="../images/sortPosition.png" alt="Sort by source"></td>
+		<td><b>Sort by source.</b> Click to display members sorted out by their position in the source code. </td>
+	</tr>         
+	<tr>
+		<td align="center"><img src="../images/selected.png" alt="Select all"></td>
+		<td><b>Select all.</b> Click to select all members in the list. </td>
+	</tr>
+	<tr>
+		<td align="center"><img src="../images/deselected.png" alt="Deselect all"></td>
+		<td><b>Deselect all.</b> Click to deselect all members in the list. </td>
+	</tr>
+</table>
+<ul class="note">
+  <li> You can toggle the display of the toolbar by clicking the black arrow in the center of the divider. </li>
+</ul>
+</li>
+<li><b>Visibility.</b> Specify visibility level using six options available (<tt>Escalate</tt>, <tt>As is</tt>, <tt>Private</tt>, <tt>&lt;default&gt;</tt>, <tt>Protected</tt>, <tt>Public</tt>).</li>
+<li><b>Javadoc.</b> Specify whether the Javadoc documentation is to be kept as is or updated during the refactoring using the two options available (<tt>As is</tt>, <tt>Update</tt>).</li>
+<li><b>Keep original method(s) and delegate to the moved method.</b> Select to 
+  keep original method(s) in the source class and generate a proxy method that will delegate to  the moved method.
+    <ul>
+<li><b>Deprecate the old method(s).</b> Select to deprecate the old method(s) in the source class after refactoring. </li>
+</ul></li>
+        </ul>
+		<ul class="note">
+  <li>The IDE displays an error message when target class is identical to source class or when target class belongs to the same target package. </li>
+		</ul>
+        <p>If you want the class to be moved immediately, click Refactor.</p>
+        <p>If you want to preview the change first, follow these steps:</p>
+        <ol>
+            <li>Click Preview. 
+                <p>The Refactoring 
+                window opens and displays a tree view of the code to be affected by the refactoring.</p>
+            </li>
+            <li>Check the items displayed in the Refactoring window to make sure that you want them 
+            all changed. Clear the checkbox next to any parts of the code that 
+            you do not want changed.</li>
+            <li>Click Do Refactoring.</li>
+        </ol>
+        
+        <ul class="note">
+            <li>You should always perform a clean build after completing
+                any refactoring commands. You can do a clean build by right-clicking the project's 
+                node in the Projects window and choosing Clean and Build Project.
+            </li>
+        </ul>
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../refactorQuickRef.html">Refactoring: Quick Reference</a></dd>
+			<dd><a href="move-class_db.html">Move Class Dialog Box</a></dd>
+            <dd><a href="../renameClass.html">Renaming a Class or Interface</a></dd>
+            <dd><a href="../renameField.html">Renaming a Field or Method</a></dd>
+            <dd><a href="../moveClass.html">Moving a Class to Another Java Package</a></dd>
+			<dd><a href="../undo.html">Undoing Refactoring Changes</a></dd> 
+        </dl>
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small>
+        <table cellpadding="50" border="0">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

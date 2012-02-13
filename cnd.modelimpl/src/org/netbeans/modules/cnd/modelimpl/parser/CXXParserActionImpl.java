@@ -47,123 +47,121 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.parser.ParserProviderImpl.Antlr3NewCppParser.MyToken;
 
 /**
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
-public class CppParserAction3Impl implements CppParserAction3 {
+public class CXXParserActionImpl implements CXXParserActionEx {
 
-    CppParserAction orig;
+    private final CppParserAction orig;
 
-    public CppParserAction3Impl(CsmFile file) {
+    public CXXParserActionImpl(CsmFile file) {
         orig = new CppParserActionImpl((FileImpl) file);
     }
 
     @Override
     public void enum_declaration(Token token) {
-        orig.enum_declaration(((MyToken) token).t);
+        orig.enum_declaration(convertToken(token));
     }
 
     @Override
     public void enum_name(Token token) {
-        orig.enum_name(((MyToken) token).t);
+        orig.enum_name(convertToken(token));
     }
 
     @Override
     public void enum_body(Token token) {
-        orig.enum_body(((MyToken) token).t);
+        orig.enum_body(convertToken(token));
     }
 
     @Override
     public void enumerator(Token token) {
-        orig.enumerator(((MyToken) token).t);
+        orig.enumerator(convertToken(token));
     }
 
     @Override
     public void end_enum_body(Token token) {
-        orig.end_enum_body(((MyToken) token).t);
+        orig.end_enum_body(convertToken(token));
     }
 
     @Override
     public void end_enum_declaration(Token token) {
-        orig.end_enum_declaration(((MyToken) token).t);
+        orig.end_enum_declaration(convertToken(token));
     }
 
     @Override
     public void class_declaration(Token token) {
-        orig.class_declaration(((MyToken) token).t);
+        orig.class_declaration(convertToken(token));
     }
 
     @Override
     public void class_kind(Token token) {
-        orig.class_kind(((MyToken) token).t);
+        orig.class_kind(convertToken(token));
     }
 
     @Override
     public void class_name(Token token) {
-        orig.class_name(((MyToken) token).t);
+        orig.class_name(convertToken(token));
     }
 
     @Override
     public void class_body(Token token) {
-        orig.class_body(((MyToken) token).t);
+        orig.class_body(convertToken(token));
     }
 
     @Override
     public void end_class_body(Token token) {
-        orig.end_class_body(((MyToken) token).t);
+        orig.end_class_body(convertToken(token));
     }
 
     @Override
     public void end_class_declaration(Token token) {
-        orig.end_class_declaration(((MyToken) token).t);
+        orig.end_class_declaration(convertToken(token));
     }
 
     @Override
     public void namespace_declaration(Token token) {
-        orig.namespace_declaration(((MyToken) token).t);
+        orig.namespace_declaration(convertToken(token));
     }
 
     @Override
     public void namespace_name(Token token) {
-        orig.namespace_name(((MyToken) token).t);
+        orig.namespace_name(convertToken(token));
     }
 
     @Override
     public void namespace_body(Token token) {
-        orig.namespace_body(((MyToken) token).t);
+        orig.namespace_body(convertToken(token));
     }
 
     @Override
     public void end_namespace_body(Token token) {
-        orig.end_namespace_body(((MyToken) token).t);
+        orig.end_namespace_body(convertToken(token));
     }
 
     @Override
     public void end_namespace_declaration(Token token) {
-        orig.end_namespace_declaration(((MyToken) token).t);
+        orig.end_namespace_declaration(convertToken(token));
     }
 
     @Override
     public void compound_statement(Token token) {
-        orig.compound_statement(((MyToken) token).t);
+        orig.compound_statement(convertToken(token));
     }
 
     @Override
     public void end_compound_statement(Token token) {
-        orig.end_compound_statement(((MyToken) token).t);
+        orig.end_compound_statement(convertToken(token));
     }
 
     @Override
     public void id(Token token) {
-        orig.id(((MyToken) token).t);
+        orig.id(convertToken(token));
     }
 
     @Override
     public void simple_type_id(Token token) {
-        orig.simple_type_id(((MyToken) token).t);
+        orig.simple_type_id(convertToken(token));
     }
 
     @Override
@@ -173,10 +171,7 @@ public class CppParserAction3Impl implements CppParserAction3 {
 
     @Override
     public void onInclude(CsmFile inclFile, APTPreprocHandler.State stateBefore) {
-        if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
-            assert inclFile instanceof FileImpl;
-            ((FileImpl) inclFile).parseOnInclude(stateBefore, this);
-        }
+        orig.onInclude(inclFile, stateBefore);
     }
 
     @Override
@@ -192,5 +187,9 @@ public class CppParserAction3Impl implements CppParserAction3 {
     @Override
     public Map<Integer, CsmObject> getObjectsMap() {
         return orig.getObjectsMap();
+    }
+
+    private org.netbeans.modules.cnd.antlr.Token convertToken(Token token) {
+        return ParserProviderImpl.convertToken(token);
     }
 }

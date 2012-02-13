@@ -121,7 +121,8 @@ public final class PropertiesClient {
                     SvnClient client = Subversion.getInstance().getClient(file);
                     if (client != null) {
                         ISVNInfo info = client.getInfoFromWorkingCopy(file);
-                        if (info != null && (info.getUrl() != null || info.getCopyUrl() != null)) {
+                        if (info != null && (info.getUrl() != null || info.getCopyUrl() != null) && info.getRevision() != null
+                                && info.getRevision().getNumber() > -1) {
                             ISVNProperty[] props = client.getProperties(info.getCopyUrl() == null ? info.getUrl() : info.getCopyUrl(),
                                     SVNRevision.getRevision(info.getRevision().toString()),
                                     SVNRevision.getRevision(info.getRevision().toString()));
