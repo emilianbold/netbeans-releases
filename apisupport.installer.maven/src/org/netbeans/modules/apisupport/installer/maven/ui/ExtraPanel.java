@@ -48,6 +48,7 @@ import java.io.IOException;
 import javax.swing.JComponent;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.netbeans.api.project.Project;
+import static org.netbeans.modules.apisupport.installer.maven.ui.Bundle.*;
 import org.netbeans.modules.apisupport.installer.ui.InstallerPanel;
 import org.netbeans.modules.apisupport.installer.ui.SuiteInstallerProjectProperties;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -56,7 +57,7 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -69,6 +70,7 @@ import org.openide.util.NbBundle;
 )
 public class ExtraPanel implements ProjectCustomizer.CompositeCategoryProvider {
     
+    @Messages("LBL_InstallerPanel=Installer")
     @Override
         public Category createCategory(Lookup context) {
         Project project = context.lookup(Project.class);
@@ -81,7 +83,7 @@ public class ExtraPanel implements ProjectCustomizer.CompositeCategoryProvider {
             }
             return ProjectCustomizer.Category.create(
                     "Installer",
-                    NbBundle.getMessage(ExtraPanel.class, "LBL_InstallerPanel"),
+                    LBL_InstallerPanel(),
                     null,
                     (ProjectCustomizer.Category[])null);
         }
