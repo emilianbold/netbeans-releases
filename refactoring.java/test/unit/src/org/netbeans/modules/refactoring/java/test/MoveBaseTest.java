@@ -112,7 +112,6 @@ public class MoveBaseTest extends RefactoringTestBase {
         List<Problem> problems = new LinkedList<Problem>();
         addAllProblems(problems, r[0].preCheck());
         if (!problemIsFatal(problems)) {
-            Thread.sleep(1000);
             addAllProblems(problems, r[0].prepare(rs));
         }
         if (!problemIsFatal(problems)) {
@@ -151,7 +150,6 @@ public class MoveBaseTest extends RefactoringTestBase {
         List<Problem> problems = new LinkedList<Problem>();
         addAllProblems(problems, r[0].preCheck());
         if (!problemIsFatal(problems)) {
-            Thread.sleep(1000);
             addAllProblems(problems, r[0].prepare(rs));
         }
         if (!problemIsFatal(problems)) {
@@ -203,7 +201,6 @@ public class MoveBaseTest extends RefactoringTestBase {
             addAllProblems(problems, r[0].checkParameters());
         }
         if (!problemIsFatal(problems)) {
-            Thread.sleep(1000);
             addAllProblems(problems, r[0].prepare(rs));
         }
         if (!problemIsFatal(problems)) {

@@ -180,7 +180,7 @@ made subject to such option by the copyright holder.
             replace='@SuppressWarnings({"unchecked", "cast", "fallthrough"}) public class FortranParser_FortranParser2 \1'
             flags="mg" />
 
-        <!-- New C++ Parser -->
+        <!-- CXX Parser -->
         <mkdir dir="${antlr3.cppparser.output.dir}"/>
         <copy file="${antlr.output.dir}/APTTokenTypes.tokens"
                     tofile="${antlr3.cppparser.output.dir}/APTTokenTypes.tokens"
@@ -190,16 +190,14 @@ made subject to such option by the copyright holder.
         <java classname="org.antlr.Tool" fork="true" failonerror="true">
             <arg value="-o"/>
             <arg value="${antlr3.cppparser.output.dir}"/>
-            <arg value="${antlr3.cppparser.grammar.dir}/NewCppParser.g"/>
+            <arg value="${antlr3.cppparser.grammar.dir}/CXXParser.g"/>
             <classpath path="${antlr3.jar}"/>
         </java>
 
-        <replaceregexp file="${antlr3.cppparser.output.dir}/NewCppParser.java"
-            match='^public class NewCppParser (.*)'
-            replace='@SuppressWarnings({"unchecked", "cast", "fallthrough"}) public class NewCppParser \1'
+        <replaceregexp file="${antlr3.cppparser.output.dir}/CXXParser.java"
+            match='^public class CXXParser (.*)'
+            replace='@SuppressWarnings({"unchecked", "cast", "fallthrough"}) public class CXXParser \1'
             flags="mg" />
-
-        <delete file="${antlr3.cppparser.output.dir}/NewCppLexer.java" />
 
 
         <!-- Expression evaluator -->

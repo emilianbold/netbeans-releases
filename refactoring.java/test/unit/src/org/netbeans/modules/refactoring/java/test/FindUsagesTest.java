@@ -378,7 +378,6 @@ public class FindUsagesTest extends NbTestCase {
         wuq[0].preCheck();
         wuq[0].fastCheckParameters();
         wuq[0].checkParameters();
-        Thread.sleep(1000);
         wuq[0].prepare(rs);
         rs.doRefactoring(true);
         

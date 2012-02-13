@@ -42,10 +42,10 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.antlr.runtime.tree.CommonTree;
+import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.fsm.core.DataRenderer;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.FortranParser;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.NewCppParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -302,9 +301,14 @@ public final class ParserProviderImpl extends CsmParserProvider {
         }
     }
 
-    final static class Antlr3NewCppParser implements CsmParserProvider.CsmParser, CsmParserProvider.CsmParserResult {
+    static Token convertToken(org.antlr.runtime.Token token) {
+        assert token instanceof Antlr3NewCppParser.MyToken;
+        return ((Antlr3NewCppParser.MyToken) token).t;
+    }
+
+    private final static class Antlr3NewCppParser implements CsmParserProvider.CsmParser, CsmParserProvider.CsmParserResult {
         private final FileImpl file;
-        private NewCppParser parser;
+        private CXXParserEx parser;
 
         private ConstructionKind kind;
         
@@ -318,19 +322,19 @@ public final class ParserProviderImpl extends CsmParserProvider {
         public void init(CsmObject object, TokenStream ts, CsmParseCallback callback) {
             assert parser == null : "parser can not be reused " + parser;
             assert ts != null;
-            CppParserAction3 cppCallback = (CppParserAction3)callback;
+            CXXParserActionEx cppCallback = (CXXParserActionEx)callback;
             if (cppCallback == null) {
                 if (TraceFlags.CPP_PARSER_ACTION) {
-                    cppCallback = new CppParserAction3Impl(file);
+                    cppCallback = new CXXParserActionImpl(file);
                 } else {
-                    cppCallback = new CppParserEmptyAction3Impl(file);
+                    cppCallback = new CXXParserEmptyActionImpl(file);
                 }
             } else {
                 cppCallback.pushFile(file);
             }            
             org.netbeans.modules.cnd.antlr.TokenBuffer tb = new org.netbeans.modules.cnd.antlr.TokenBuffer(ts);            
             org.antlr.runtime.TokenStream tokens = new MyTokenStream(tb);
-            parser = new NewCppParser(tokens, cppCallback);
+            parser = new CXXParserEx(tokens, cppCallback);
         }
 
         @Override
@@ -347,8 +351,8 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
                 ex.printStackTrace(System.err);
             } finally {
-                parser.action.popFile();
-                objects = parser.action.getObjectsMap();
+                parser.popFile();
+                objects = parser.getObjectsMap();
             }
             return this;
         }

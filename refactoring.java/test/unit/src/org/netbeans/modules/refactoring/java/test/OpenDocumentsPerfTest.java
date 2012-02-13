@@ -110,7 +110,6 @@ public class OpenDocumentsPerfTest extends RefPerfTestCase {
         
         wuq[0].putValue(WhereUsedQueryConstants.FIND_SUBCLASSES, true);
         RefactoringSession rs = RefactoringSession.create("Session");
-        Thread.sleep(1000);
         wuq[0].prepare(rs);
         rs.doRefactoring(true);
         Collection<RefactoringElement> elems = rs.getRefactoringElements();
