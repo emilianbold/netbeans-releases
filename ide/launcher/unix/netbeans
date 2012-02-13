@@ -62,7 +62,7 @@ progdir=`dirname "$PRG"`
 case "`uname`" in
     Darwin*)
         # set default userdir and cachedir on MacOS
-        DEFAULT_USERDIR_ROOT=${HOME}/Library/Application Support/NetBeans
+        DEFAULT_USERDIR_ROOT="${HOME}/Library/Application Support/NetBeans"
         DEFAULT_CACHEDIR_ROOT=${HOME}/Library/Caches/NetBeans
         ;;
     *) 
