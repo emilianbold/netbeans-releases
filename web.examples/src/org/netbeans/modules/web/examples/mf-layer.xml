@@ -5,7 +5,6 @@
         <folder name="Project">
             <folder name="Samples">
                 <folder name="Enterprise">
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.web.examples.Bundle#Templates/Project/Samples/Enterprise"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/examples/descriptions/webSamplesCategory.html"/>
 
                     <file name="jstl.zip" url="jstl.zip">
