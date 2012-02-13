@@ -41,17 +41,17 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
-import java.util.List;
-import org.netbeans.modules.javascript2.editor.doclets.model.el.Types;
+import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
  *
- * @author Martin Fousek <marfous@netbeans.org>
+ * @author Martin Fousek, Petr Pisl
  */
-public interface DocumentationProvider {
 
-    public Types getReturnType();
+public class DocumentationSupport {
 
-    public List<Types> getParameters();
+    public static DocumentationProvider getSupport(JsParserResult result) {
+        return null;
+    }
 
 }

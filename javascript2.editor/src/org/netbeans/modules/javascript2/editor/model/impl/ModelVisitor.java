@@ -68,7 +68,7 @@ public class ModelVisitor extends PathNodeVisitor {
     private final List<List<FunctionNode>> functionStack;
     private final JsParserResult parserResult;
     private final DocumentationProvider docSupport;
-    
+
     public ModelVisitor(JsParserResult parserResult, DocumentationProvider docSupport) {
         FileObject fileObject = parserResult.getSnapshot().getSource().getFileObject();
         this.modelBuilder = new ModelBuilder(JsFunctionImpl.createGlobal(fileObject));
@@ -80,7 +80,7 @@ public class ModelVisitor extends PathNodeVisitor {
     public JsObject getGlobalObject() {
         return modelBuilder.getGlobal();
     }
-    
+
     JsObjectImpl fromAN = null;
     @Override
     public Node visit(AccessNode accessNode, boolean onset) {
@@ -98,7 +98,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         if (property == null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
                                 || current.getParent().getJSKind() == JsElement.Kind.OBJECT)) {
                             current = current.getParent();
-                            property = current.getProperty(iNode.getName());                            
+                            property = current.getProperty(iNode.getName());
                         }
                         if (property != null) {
                             ((JsObjectImpl)property).addOccurrence(ModelUtils.documentOffsetRange(parserResult, iNode.getStart(), iNode.getFinish()));
@@ -118,13 +118,13 @@ public class ModelVisitor extends PathNodeVisitor {
                 } else {
                     fromAN = modelBuilder.getCurrentObject();
                 }
-            } 
+            }
             if (fromAN != null) {
                 JsObjectImpl property = (JsObjectImpl)fromAN.getProperty(accessNode.getProperty().getName());
                 if (property != null) {
                     property.addOccurrence(ModelUtils.documentOffsetRange(parserResult, accessNode.getProperty().getStart(), accessNode.getProperty().getFinish()));
                     fromAN = property;
-                }                
+                }
             }
             if (!(getPath().get(getPath().size() - 1) instanceof AccessNode)) {
                 fromAN = null;
@@ -133,14 +133,14 @@ public class ModelVisitor extends PathNodeVisitor {
         return super.visit(accessNode, onset);
     }
 
-    
+
     @Override
     public Node visit(BinaryNode binaryNode, boolean onset) {
-        if (onset) {            
-            if (binaryNode.tokenType() == TokenType.ASSIGN 
+        if (onset) {
+            if (binaryNode.tokenType() == TokenType.ASSIGN
                     && !(binaryNode.rhs() instanceof ReferenceNode || binaryNode.rhs() instanceof ObjectNode)
                     && (binaryNode.lhs() instanceof AccessNode || binaryNode.lhs() instanceof IdentNode)) {
-                // TODO probably not only assign                
+                // TODO probably not only assign
                 JsObjectImpl parent = modelBuilder.getCurrentDeclarationScope();
                 if (binaryNode.lhs() instanceof AccessNode) {
                     List<Identifier> name = getName(binaryNode);
@@ -149,7 +149,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     if (aNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)aNode.getBase()).getName())) { //NOI18N
                         // a usage of field
                         String fieldName = aNode.getProperty().getName();
-                        if(!ModelUtils.isGlobal(parent.getParent()) && 
+                        if(!ModelUtils.isGlobal(parent.getParent()) &&
                             (parent.getParent() instanceof JsFunctionImpl
                                 || isInPropertyNode())) {
                             parent = (JsObjectImpl)parent.getParent();
@@ -163,7 +163,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         List<Identifier> fqName = getName(aNode);
                         ModelUtils.getJsObject(modelBuilder, fqName);
                     }
-                    
+
                 } else {
                     IdentNode ident = (IdentNode)binaryNode.lhs();
                     final Identifier name = ModelElementFactory.create(parserResult, ident);
@@ -212,12 +212,12 @@ public class ModelVisitor extends PathNodeVisitor {
             if (calledFunction instanceof AccessNode) {
                 AccessNode aNode = (AccessNode)callNode.getFunction();
                 if (aNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)aNode.getBase()).getName())) {
-                    
+
                 } else {
                     List<Identifier> name = getName(aNode);
                     JsObject parent = ModelUtils.getJsObject(modelBuilder, name.subList(0, 1));
                     JsObject property;
-                    
+
                     for (int i = 1; i < name.size(); i++) {
                         Identifier iden = name.get(i);
                         property = parent.getProperty(iden.getName());
@@ -226,9 +226,9 @@ public class ModelVisitor extends PathNodeVisitor {
                                 property = new JsObjectImpl(parent, iden, iden.getOffsetRange());
                                 parent.addProperty(property.getName(), property);
                             }
-                        } 
+                        }
                     }
-                    
+
                     for(Node argument : callNode.getArgs()) {
                         if (argument instanceof IdentNode) {
                             addOccurence((IdentNode)argument);
@@ -251,12 +251,12 @@ public class ModelVisitor extends PathNodeVisitor {
 //                        parent.addProperty(property.getName(), property);
 //                    }
                 }
-            } 
+            }
         }
         return super.visit(callNode, onset);
     }
 
-    
+
     @Override
     public Node visit(FunctionNode functionNode, boolean onset) {
 //        System.out.println("FunctionNode: " + functionNode.getName() + " , path: " + getPath().size() + " , onset: " + onset);
@@ -303,7 +303,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 } else {
                     end = parserResult.getSnapshot().getText().length();
                 }
-                name.add(new IdentifierImpl(functionNode.getIdent().getName(), 
+                name.add(new IdentifierImpl(functionNode.getIdent().getName(),
                         new OffsetRange(start, end)));
             }
             functionStack.add(functions);
@@ -312,7 +312,7 @@ public class ModelVisitor extends PathNodeVisitor {
             if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
                 DeclarationScopeImpl scope = modelBuilder.getCurrentDeclarationScope();
                 JsFunctionImpl fncScope = ModelElementFactory.create(parserResult, functionNode, name, modelBuilder);
-                fncScope.setAnonymous(getPath().get(pathSize - 2) instanceof ReferenceNode 
+                fncScope.setAnonymous(getPath().get(pathSize - 2) instanceof ReferenceNode
                         && getPath().get(pathSize - 3) instanceof CallNode);
                 if (isPrivate) {
 //                    Set<Modifier> modifier = fncScope.getModifiers();
@@ -328,7 +328,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     fn.accept(this);
                 }
             }
-            
+
             for (Node node : functionNode.getStatements()) {
                 node.accept(this);
             }
@@ -349,7 +349,7 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         return super.visit(functionNode, onset);
     }
-    
+
     @Override
     public Node visit(ObjectNode objectNode, boolean onset) {
         Node previousVisited = getPath().get(getPath().size() - (onset ? 1 : 2));
@@ -361,7 +361,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 modelBuilder.setCurrentObject(object);
                 return super.visit(objectNode, onset);
             }
-            if (!(previousVisited instanceof ReturnNode 
+            if (!(previousVisited instanceof ReturnNode
                     || previousVisited instanceof CallNode)) {
                 List<Identifier> fqName = null;
                 int pathSize = getPath().size();
@@ -414,11 +414,11 @@ public class ModelVisitor extends PathNodeVisitor {
             } else if (key instanceof LiteralNode) {
                 name = ModelElementFactory.create(parserResult, (LiteralNode)key);
             }
-            
+
             if (name != null) {
                 JsObject property = scope.getProperty(name.getName());
-                if (property == null) {   
-                    property = new JsObjectImpl(scope, name, name.getOffsetRange());   
+                if (property == null) {
+                    property = new JsObjectImpl(scope, name, name.getOffsetRange());
                 } else {
                     // The property can be already defined, via a usage before declaration (see testfiles/model/simpleObject.js - called property)
                     JsObjectImpl newProperty = new JsObjectImpl(scope, name, name.getOffsetRange());
@@ -454,7 +454,7 @@ public class ModelVisitor extends PathNodeVisitor {
     @Override
     public Node visit(ReturnNode returnNode, boolean onset) {
         if (onset) {
-            Node expression = returnNode.getExpression(); 
+            Node expression = returnNode.getExpression();
             if (expression instanceof IdentNode) {
                 addOccurence((IdentNode)expression);
             }
@@ -462,7 +462,7 @@ public class ModelVisitor extends PathNodeVisitor {
         return super.visit(returnNode, onset);
     }
 
-    
+
     @Override
     public Node visit(UnaryNode unaryNode, boolean onset) {
         if (onset) {
@@ -476,12 +476,12 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         return super.visit(unaryNode, onset);
     }
-    
+
     @Override
     public Node visit(VarNode varNode, boolean onset) {
         if (onset && !(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode)) {
             JsObject parent = modelBuilder.getCurrentObject();
-            Identifier name = new IdentifierImpl(varNode.getName().getName(), 
+            Identifier name = new IdentifierImpl(varNode.getName().getName(),
                     ModelUtils.documentOffsetRange(parserResult, varNode.getName().getStart(), varNode.getName().getFinish()));
             JsObjectImpl variable =  new JsObjectImpl(parent, name, name.getOffsetRange());
             variable.setDeclared(true);
@@ -497,9 +497,9 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         return super.visit(varNode, onset);
     }
-    
+
 //--------------------------------End of visit methods--------------------------------------
-    
+
     private List<Identifier> getName(PropertyNode propertyNode) {
         List<Identifier> name = new ArrayList(1);
         if (propertyNode.getKey() instanceof IdentNode) {
@@ -513,14 +513,14 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         return name;
     }
-    
+
     private List<Identifier> getName(VarNode varNode) {
         List<Identifier> name = new ArrayList();
-        name.add(new IdentifierImpl(varNode.getName().getName(), 
+        name.add(new IdentifierImpl(varNode.getName().getName(),
                 ModelUtils.documentOffsetRange(parserResult, varNode.getName().getStart(), varNode.getName().getFinish())));
         return name;
     }
-    
+
     private List<Identifier> getName(BinaryNode binaryNode) {
         List<Identifier> name = new ArrayList();
         Node lhs = binaryNode.lhs();
@@ -533,7 +533,7 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         return name;
     }
-    
+
     private List<Identifier> getName(AccessNode aNode) {
         List<Identifier> name = new ArrayList();
         name.add(new IdentifierImpl(aNode.getProperty().getName(),
@@ -553,7 +553,7 @@ public class ModelVisitor extends PathNodeVisitor {
         Collections.reverse(name);
         return name;
     }
-    
+
 //    private Variable findVarWithName(final Scope scope, final String name) {
 //        Variable result = null;
 //        Collection<Variable> variables = ScopeImpl.filter(scope.getElements(), new ScopeImpl.ElementFilter() {
@@ -564,7 +564,7 @@ public class ModelVisitor extends PathNodeVisitor {
 //                        && element.getName().equals(name);
 //            }
 //        });
-//        
+//
 //        if (!variables.isEmpty()) {
 //            result = variables.iterator().next();
 //        } else {
@@ -572,10 +572,10 @@ public class ModelVisitor extends PathNodeVisitor {
 //                result = findVarWithName((Scope)scope.getInElement(), name);
 //            }
 //        }
-//        
+//
 //        return result;
 //    }
-//    
+//
 //    private Field findFieldWithName(FunctionScope function, final String name) {
 //        Field result = null;
 //        Collection<? extends Field> fields = function.getFields();
@@ -587,7 +587,7 @@ public class ModelVisitor extends PathNodeVisitor {
 //        }
 //        return result;
 //    }
-    
+
     private boolean isInPropertyNode() {
         boolean inFunction = false;
         for (int i = getPath().size() - 1; i > 0 ; i--) {
@@ -604,7 +604,7 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         return false;
     }
-    
+
     private void addOccurence(IdentNode iNode) {
         DeclarationScope scope = modelBuilder.getCurrentDeclarationScope();
         JsObject property = null;

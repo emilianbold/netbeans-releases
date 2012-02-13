@@ -56,21 +56,21 @@ import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
  * @author Petr Pisl
  */
 public final class Model {
-    
+
     private static final Logger LOGGER = Logger.getLogger(OccurrencesSupport.class.getName());
-    
+
     private final JsParserResult parserResult;
 
     private final OccurrencesSupport occurrencesSupport;
 
     private final DocumentationProvider docSupport;
-    
+
     private ModelVisitor visitor;
 
     Model(JsParserResult parserResult) {
         this.parserResult = parserResult;
         this.occurrencesSupport = new OccurrencesSupport(this);
-        this.docSupport = DocumentationProvider.getSupport(parserResult);
+        this.docSupport = DocumentationSupport.getSupport(parserResult);
     }
 
     private synchronized ModelVisitor getModelVisitor() {
@@ -94,7 +94,7 @@ public final class Model {
     public OccurrencesSupport getOccurrencesSupport() {
         return occurrencesSupport;
     }
-    
+
     public Collection<? extends JsObject> getVariables(int offset) {
         List<JsObject> result = new ArrayList<JsObject>();
         DeclarationScope scope = ModelUtils.getDeclarationScope(this, offset);
