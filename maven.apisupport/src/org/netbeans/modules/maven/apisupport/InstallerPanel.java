@@ -51,6 +51,7 @@ import javax.swing.JPanel;
 import javax.swing.text.JTextComponent;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -72,7 +73,6 @@ import org.openide.util.Utilities;
 
 public class InstallerPanel extends JPanel {
 
-    private static final String GOAL = "build-installers";
     private static final String PROP_LICENSE = "installerLicenseFile";
     private static final String PROP_LINUX = "installerOsLinux";
     private static final String PROP_MAC = "installerOsMacosx";
@@ -80,11 +80,13 @@ public class InstallerPanel extends JPanel {
     private static final String PROP_SOLARIS = "installerOsSolaris";
     private static final String PROP_WINDOWS = "installerOsWindows";
 
+    private final ProjectCustomizer.Category category;
     private final Project project;
     private final ModelHandle handle;
 
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
-    public InstallerPanel(Project project, ModelHandle handle) {
+    private InstallerPanel(ProjectCustomizer.Category category, Project project, ModelHandle handle) {
+        this.category = category;
         this.project = project;
         this.handle = handle;
         initComponents();
@@ -212,6 +214,7 @@ public class InstallerPanel extends JPanel {
         pack200CheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.jCheckBox5.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
+    @Messages("InstallerPanel_not_collocated=License file reference might not be portable; maybe copy into project.")
     private void licenseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_licenseButtonActionPerformed
         File dir = FileUtil.toFile(project.getProjectDirectory());
         if (dir == null) {
@@ -219,7 +222,13 @@ public class InstallerPanel extends JPanel {
         }
         JFileChooser jfc = new JFileChooser(dir);
         if (jfc.showOpenDialog(licenseButton) == JFileChooser.APPROVE_OPTION) {
-            licenseField.setText(FileUtilities.relativizeFile(dir, jfc.getSelectedFile()));
+            File license = jfc.getSelectedFile();
+            licenseField.setText(FileUtilities.relativizeFile(dir, license));
+            if (CollocationQuery.areCollocated(license.toURI(), dir.toURI())) {
+                category.setErrorMessage(null);
+            } else {
+                category.setErrorMessage(InstallerPanel_not_collocated());
+            }
         }
     }//GEN-LAST:event_licenseButtonActionPerformed
 
@@ -369,7 +378,7 @@ public class InstallerPanel extends JPanel {
         }
 
         @Override public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-            return new InstallerPanel(context.lookup(Project.class), context.lookup(ModelHandle.class));
+            return new InstallerPanel(category, context.lookup(Project.class), context.lookup(ModelHandle.class));
         }
 
     }
