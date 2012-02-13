@@ -84,7 +84,7 @@ public class JsFormatter implements Formatter {
 
     @Override
     public void reindent(Context context) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // TODO
     }
 
 }
