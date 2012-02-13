@@ -488,7 +488,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         this.ensureParsed(handlers, null);
     }
     
-    private void ensureParsed(Collection<APTPreprocHandler> handlers, CppParserAction semaHandler) {
+    private void ensureParsed(Collection<APTPreprocHandler> handlers, CsmParserProvider.CsmParseCallback semaHandler) {
         try {
             if (!inEnsureParsed.compareAndSet(false, true)) {
                 assert false : "concurrent ensureParsed in file " + getAbsolutePath() + parsingState + state; 
@@ -725,7 +725,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return errorCount;
     }
     
-    public void parseOnInclude(APTPreprocHandler.State stateBefore, CppParserAction semaHandler) {
+    public void parseOnInclude(APTPreprocHandler.State stateBefore, CsmParserProvider.CsmParseCallback semaHandler) {
         assert stateBefore != null;
         assert !stateBefore.isCleaned() : "have to be not cleaned state";
         ProjectBase prj = getProjectImpl(true);
