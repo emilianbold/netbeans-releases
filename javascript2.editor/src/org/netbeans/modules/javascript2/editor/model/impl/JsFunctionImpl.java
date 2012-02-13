@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.*;
+import java.util.HashSet;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.openide.filesystems.FileObject;
@@ -54,7 +55,9 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
 
     final private HashMap <String, JsObject> parametersByName;
     final private List<JsObject> parameters;
+    final private Set<String> returnTypes;
     private boolean isAnonymous;
+    
     
     public JsFunctionImpl(DeclarationScope scope, JsObject parentObject, Identifier name, List<Identifier> parameters, OffsetRange offsetRange) {
         super(scope, parentObject, name, offsetRange);
@@ -66,6 +69,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
             this.parameters.add(parameter);
         }
         this.isAnonymous = false;
+        this.returnTypes = new HashSet<String>();
         setDeclared(true);
     }
     
@@ -119,8 +123,9 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         JsObject result = parametersByName.get(name);
         return result;
     }
-    
-    
-    
-    
+
+    @Override
+    public Collection<String> getReturnTypes() {
+        return this.returnTypes;
+    }    
 }

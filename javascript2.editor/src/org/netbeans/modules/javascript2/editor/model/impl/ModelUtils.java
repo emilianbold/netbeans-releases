@@ -41,9 +41,14 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
+import com.oracle.nashorn.ir.LiteralNode;
+import com.oracle.nashorn.ir.Node;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -198,6 +203,24 @@ public class ModelUtils {
                 }
             }
         }
+        return result;
+    }
+    
+    public static Collection<String> resolveTypeOfExpression(Node expression) {
+        Set<String> result = new HashSet<String>();
+        if (expression instanceof LiteralNode) {
+            LiteralNode lNode = (LiteralNode)expression;
+            Object value = lNode.getObject();
+            if (value instanceof Boolean) {
+                result.add("boolean"); //NOI18N
+            } else if (value instanceof String) {
+                result.add("string");
+            } else if (value instanceof Integer 
+                    || value instanceof Float
+                    || value instanceof Double) {
+                result.add("number");
+            }
+        } 
         return result;
     }
 }
