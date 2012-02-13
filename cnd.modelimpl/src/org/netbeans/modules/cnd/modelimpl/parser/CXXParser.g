@@ -72,9 +72,9 @@ import org.netbeans.modules.cnd.modelimpl.parser.*;
 
 @members {
 
-    public /*final*/CppParserAction3 action;
+    private /*final*/ CXXParserAction action;
 
-    public CXXParser(TokenStream input, CppParserAction3 action) {
+    protected CXXParser(TokenStream input, CXXParserAction action) {
         super(input);
         assert action != null;
         this.action = action;
