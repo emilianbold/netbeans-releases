@@ -41,10 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.doclets.model;
 
-import org.netbeans.modules.javascript2.editor.doclets.model.el.Description;
-import org.netbeans.modules.javascript2.editor.doclets.model.el.Name;
-import org.netbeans.modules.javascript2.editor.doclets.model.el.NamePath;
-import org.netbeans.modules.javascript2.editor.doclets.model.el.Type;
+import org.netbeans.modules.javascript2.editor.doclets.model.el.*;
 
 /**
  * Contains helper classes for work with jsDoc model.
@@ -88,7 +85,7 @@ public class JsDocElementUtils {
 
     private static ParameterElement createParameterElement(JsDocElement.Type elementType,
             String elementText, boolean named) {
-        String type = "", name = "", desc = ""; //NOI18N
+        String types = "", name = "", desc = ""; //NOI18N
         int process = 0;
         String[] parts = elementText.split("(\\s)*"); //NOI18N
 
@@ -97,9 +94,9 @@ public class JsDocElementUtils {
             if (parts[0].startsWith("{")) { //NOI18N
                 int rparIndex = parts[0].indexOf("}"); //NOI18N
                 if (rparIndex == -1) {
-                    type = parts[0].trim();
+                    types = parts[0].trim();
                 } else {
-                    type = parts[0].substring(1, rparIndex);
+                    types = parts[0].substring(1, rparIndex);
                 }
                 process++;
             }
@@ -120,9 +117,9 @@ public class JsDocElementUtils {
         }
 
         if (named) {
-            return new NamedParameterElement(elementType, new Name(name), new Type(type), new Description(desc));
+            return new NamedParameterElement(elementType, new Name(name), new Types(types), new Description(desc));
         } else {
-            return new UnnamedParameterElement(elementType, new Type(type), new Description(desc));
+            return new UnnamedParameterElement(elementType, new Types(types), new Description(desc));
         }
     }
 

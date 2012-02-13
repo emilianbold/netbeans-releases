@@ -52,6 +52,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %char
 
 %state JSDOC
+%state HTML
 %state STAR
 %state AT
 
@@ -190,8 +191,15 @@ IDENTIFIER=[[:letter:][:digit:]]+
 
 <JSDOC> {
     "@"                             { yybegin(AT); yypushback(1); }
-    "*"                             { yybegin(STAR); yypushback(1); }
-    [^@*]*                          { return JsDocTokenId.COMMENT_BLOCK; }
+    "*"                             { yybegin(STAR); yypushback(1); }    "<"                             { yybegin(HTML); return JsDocTokenId.HTML; }
+    [^@*<]*                         { return JsDocTokenId.COMMENT_BLOCK; }
+}
+
+<HTML> {
+    ">"                             { yybegin(JSDOC); return JsDocTokenId.HTML; }
+    "*/"                            { yybegin(JSDOC); return JsDocTokenId.COMMENT_END; }
+    [^>] ~("*" | ">")               { yypushback(1); return JsDocTokenId.HTML; }
+    {ANY_CHAR}                      { return JsDocTokenId.HTML; }
 }
 
 <STAR> {

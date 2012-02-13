@@ -39,40 +39,48 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doclets.model;
+package org.netbeans.modules.javascript2.editor.doclets.model.el;
 
-import org.netbeans.modules.javascript2.editor.doclets.model.el.Description;
-import org.netbeans.modules.javascript2.editor.doclets.model.el.Name;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
- * Represents named parameter element.
- * <p>
- * <i>Examples:</i> @param {MyType} myName myDescription,...
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class NamedParameterElement extends ParameterElement {
+public class Types {
 
-    private final Name paramName;
+    private final List<Type> types;
 
-    /** Creates named parameter element.
-     * @param type type of the element
-     * @param paramName name of the parameter
-     * @param paramType type of the parameter
-     * @param paramDescription description of the parameter
-     */
-    public NamedParameterElement(Type type, Name paramName,
-            org.netbeans.modules.javascript2.editor.doclets.model.el.Types paramTypes, Description paramDescription) {
-        super(type, paramTypes, paramDescription);
-        this.paramName = paramName;
+    public Types(String textWithTypes) {
+        this.types = parseTypes(textWithTypes);
     }
 
-    /**
-     * Gets name of the parameter.
-     * @return parameter name.
-     */
-    public Name getParamName() {
-        return paramName;
+    private static List<Type> parseTypes(String typesText) {
+        List<Type> types = new LinkedList<Type>();
+        for (String string : Arrays.asList(typesText.split("|"))) { //NOI18N
+            types.add(new Type(string));
+        }
+        return types;
+    }
+
+    public List<Type> getTypes() {
+        return types;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Type type : types) {
+            sb.append(type).append("|"); //NOI18N
+        }
+        String string = sb.toString();
+        if (!string.isEmpty()) {
+            return string.substring(0, string.length() - 1);
+        } else {
+            return ""; //NOI18N
+        }
     }
 
 }

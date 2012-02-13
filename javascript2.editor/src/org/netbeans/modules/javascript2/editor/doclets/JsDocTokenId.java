@@ -53,7 +53,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
  * JSDoc TokenId class.
- * 
+ *
  * @author Martin Fousek <marfous@netbeans.org>
  */
 public enum JsDocTokenId implements TokenId {
@@ -70,7 +70,8 @@ public enum JsDocTokenId implements TokenId {
     COMMENT_CODE("COMMENT"), //NOI18N
     COMMENT_SHARED_END("COMMENT"), //NOI18N
     COMMENT_SHARED_BEGIN("COMMENT"), //NOI18N
-    UNKNOWN("UNKNOWN"); //NOI18N
+    UNKNOWN("UNKNOWN"), //NOI18N
+    HTML("COMMENT_HTML"); //NOI18N
 
     public static final String JSDOC_MIME_TYPE = "text/javascript-comment"; //NOI18N
     private final String primaryCategory;
@@ -109,9 +110,9 @@ public enum JsDocTokenId implements TokenId {
 
                 @Override
                 protected LanguageEmbedding<?> embedding(Token<JsDocTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
-                    
+
                     // No embedding
-                    return null; 
+                    return null;
                 }
             }.language();
 

@@ -14,7 +14,7 @@
     <fontcolor name="WHITESPACE" default="whitespace"/>
 
     <fontcolor name="mod-regexp" foreColor="9933CC" default="regexp" />
-    
+
     <fontcolor name="mod-method">
         <font style="bold" />
     </fontcolor>
@@ -22,7 +22,7 @@
         <font style="bold" />
     </fontcolor>
     <fontcolor name="mod-field" default="field"/>
-    <fontcolor name="mod-global" foreColor="9F0D79"/> 
+    <fontcolor name="mod-global" foreColor="9F0D79"/>
     <fontcolor name="mark-occurrences" bgColor="ECEBA3"/>
 
     <!-- COMMENTS fonts&colors -->
@@ -30,6 +30,9 @@
     <fontcolor name="COMMENT_SHARED_TAG" default="comment"/>
     <fontcolor name="COMMENT_NOCODE" default="comment" foreColor="BB9955"/>
     <fontcolor name="COMMENT_KEYWORD" default="comment">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="COMMENT_HTML" default="comment" foreColor="9999FF">
         <font style="bold"/>
     </fontcolor>
 </fontscolors>
