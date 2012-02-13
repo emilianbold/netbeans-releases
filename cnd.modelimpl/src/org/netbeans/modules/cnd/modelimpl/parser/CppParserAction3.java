@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.modelimpl.parser;
 
 import java.util.Map;
-import org.netbeans.modules.cnd.antlr.Token;
+import org.antlr.runtime.Token;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;

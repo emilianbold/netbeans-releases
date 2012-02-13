@@ -45,7 +45,7 @@ import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.Map;
-import org.netbeans.modules.cnd.antlr.Token;
+import org.antlr.runtime.Token;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
@@ -55,10 +55,10 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 /**
  * @author nick
  */
-public class CppParserEmptyActionImpl implements CppParserAction {
+public class CppParserEmptyAction3Impl implements CppParserAction3 {
     private final Deque<CsmFile> files;
 
-    CppParserEmptyActionImpl(CsmFile file) {
+    CppParserEmptyAction3Impl(CsmFile file) {
         files = new ArrayDeque<CsmFile>();
         files.push(file);
     }

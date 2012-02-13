@@ -326,10 +326,11 @@ public final class ParserProviderImpl extends CsmParserProvider {
             }
             if (callback != null) {
                 parser.action = (CppParserAction3)callback;
+                parser.action.pushFile(file);
             } else if(objects == null || file == null) {
-                parser.action = new CppParserEmptyAction3Impl();
+                parser.action = new CppParserEmptyAction3Impl(file);
             } else {
-                parser.action = new CppParserAction3Impl(file, objects);        
+                parser.action = new CppParserAction3Impl(file);        
             }
         }
 
@@ -346,6 +347,9 @@ public final class ParserProviderImpl extends CsmParserProvider {
             } catch (Throwable ex) {
                 System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
                 ex.printStackTrace(System.err);
+            } finally {
+                parser.action.popFile();
+                objects = parser.action.getObjectsMap();
             }
             return this;
         }
