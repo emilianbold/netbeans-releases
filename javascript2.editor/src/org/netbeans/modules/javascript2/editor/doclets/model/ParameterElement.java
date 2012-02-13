@@ -50,12 +50,12 @@ import org.netbeans.modules.javascript2.editor.doclets.model.el.Description;
  */
 public abstract class ParameterElement extends JsDocElementImpl {
 
-    private final org.netbeans.modules.javascript2.editor.doclets.model.el.Type paramType;
+    private final org.netbeans.modules.javascript2.editor.doclets.model.el.Types paramTypes;
     private final Description paramDescription;
 
-    public ParameterElement(Type type, org.netbeans.modules.javascript2.editor.doclets.model.el.Type paramType, Description paramDescription) {
+    public ParameterElement(Type type, org.netbeans.modules.javascript2.editor.doclets.model.el.Types paramTypes, Description paramDescription) {
         super(type);
-        this.paramType = paramType;
+        this.paramTypes = paramTypes;
         this.paramDescription = paramDescription;
     }
 
@@ -71,8 +71,8 @@ public abstract class ParameterElement extends JsDocElementImpl {
      * Gets the parameter type.
      * @return parameter type
      */
-    public org.netbeans.modules.javascript2.editor.doclets.model.el.Type getParamType() {
-        return paramType;
+    public org.netbeans.modules.javascript2.editor.doclets.model.el.Types getParamTypes() {
+        return paramTypes;
     }
 
 }

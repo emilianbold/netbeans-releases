@@ -57,8 +57,9 @@ public class UnnamedParameterElement extends ParameterElement {
      * @param paramType type of the parameter
      * @param paramDescription description of the parameter
      */
-    public UnnamedParameterElement(Type type, org.netbeans.modules.javascript2.editor.doclets.model.el.Type paramType, Description paramDescription) {
-        super(type, paramType, paramDescription);
+    public UnnamedParameterElement(Type type,
+            org.netbeans.modules.javascript2.editor.doclets.model.el.Types paramTypes, Description paramDescription) {
+        super(type, paramTypes, paramDescription);
     }
 
 }
