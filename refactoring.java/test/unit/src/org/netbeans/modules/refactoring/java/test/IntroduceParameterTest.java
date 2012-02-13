@@ -372,7 +372,6 @@ public class IntroduceParameterTest extends RefactoringTestBase {
 
         addAllProblems(problems, r[0].preCheck());
         if (!problemIsFatal(problems)) {
-            Thread.sleep(1000);
             addAllProblems(problems, r[0].prepare(rs));
         }
         if (!problemIsFatal(problems)) {
