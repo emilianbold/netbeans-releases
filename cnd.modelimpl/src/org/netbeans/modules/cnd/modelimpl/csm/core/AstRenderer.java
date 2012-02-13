@@ -122,7 +122,7 @@ public class AstRenderer {
                         if(o instanceof ClassImpl) {
                             ClassImpl cls = (ClassImpl)o;
                             cls.render(token, isRenderingLocalContext());
-                            container.addDeclaration(cls);
+                            //container.addDeclaration(cls);
                             addTypedefs(renderTypedef(token, cls, currentNamespace).typedefs, currentNamespace, container, cls);
                             renderVariableInClassifier(token, cls, currentNamespace, container);
                         } else {

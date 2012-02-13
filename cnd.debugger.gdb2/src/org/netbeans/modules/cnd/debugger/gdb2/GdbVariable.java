@@ -355,7 +355,7 @@ class GdbVariable extends Variable {
             } else if (item.matches("displayhint")) { //NOI18N
                 setDisplayHint(item.value().asConst().value());
             } else if (item.matches("has_more")) { //NOI18N
-                if (!"0".equals(item.value().asConst().value())) {
+                if (!"0".equals(item.value().asConst().value())) { //NOI18N
                     setNumChild(item.value().asConst().value());
                     setChildren(null, false);
                 }

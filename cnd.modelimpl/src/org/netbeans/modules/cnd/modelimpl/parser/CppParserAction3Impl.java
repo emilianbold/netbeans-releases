@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,123 +37,142 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import java.util.ArrayDeque;
-import java.util.Collections;
-import java.util.Deque;
 import java.util.Map;
-import org.netbeans.modules.cnd.antlr.Token;
+import org.antlr.runtime.Token;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.parser.ParserProviderImpl.Antlr3NewCppParser.MyToken;
 
 /**
- * @author nick
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
-public class CppParserEmptyActionImpl implements CppParserAction {
-    private final Deque<CsmFile> files;
+public class CppParserAction3Impl implements CppParserAction3 {
 
-    CppParserEmptyActionImpl(CsmFile file) {
-        files = new ArrayDeque<CsmFile>();
-        files.push(file);
+    CppParserAction orig;
+
+    public CppParserAction3Impl(CsmFile file) {
+        orig = new CppParserActionImpl((FileImpl) file);
     }
 
     @Override
     public void enum_declaration(Token token) {
+        orig.enum_declaration(((MyToken) token).t);
     }
 
     @Override
     public void enum_name(Token token) {
+        orig.enum_name(((MyToken) token).t);
     }
 
     @Override
     public void enum_body(Token token) {
+        orig.enum_body(((MyToken) token).t);
     }
 
     @Override
     public void enumerator(Token token) {
+        orig.enumerator(((MyToken) token).t);
     }
 
     @Override
     public void end_enum_body(Token token) {
+        orig.end_enum_body(((MyToken) token).t);
     }
 
     @Override
     public void end_enum_declaration(Token token) {
-    }
-
-    @Override
-    public void class_name(Token token) {
-    }
-
-    @Override
-    public void class_body(Token token) {
-    }
-
-    @Override
-    public void end_class_body(Token token) {
-    }
-
-    @Override
-    public void namespace_body(Token token) {
-    }
-
-    @Override
-    public void end_namespace_body(Token token) {
-    }
-
-    @Override
-    public void compound_statement(Token token) {
-    }
-
-    @Override
-    public void end_compound_statement(Token token) {
-    }
-
-    @Override
-    public void id(Token token) {
-    }
-
-    @Override
-    public boolean isType(String name) {
-        return false;
-    }
-
-    @Override
-    public void namespace_declaration(Token token) {
-    }
-
-    @Override
-    public void end_namespace_declaration(Token token) {
-    }
-
-    @Override
-    public void namespace_name(Token token) {
+        orig.end_enum_declaration(((MyToken) token).t);
     }
 
     @Override
     public void class_declaration(Token token) {
-    }
-
-    @Override
-    public void end_class_declaration(Token token) {
+        orig.class_declaration(((MyToken) token).t);
     }
 
     @Override
     public void class_kind(Token token) {
+        orig.class_kind(((MyToken) token).t);
+    }
+
+    @Override
+    public void class_name(Token token) {
+        orig.class_name(((MyToken) token).t);
+    }
+
+    @Override
+    public void class_body(Token token) {
+        orig.class_body(((MyToken) token).t);
+    }
+
+    @Override
+    public void end_class_body(Token token) {
+        orig.end_class_body(((MyToken) token).t);
+    }
+
+    @Override
+    public void end_class_declaration(Token token) {
+        orig.end_class_declaration(((MyToken) token).t);
+    }
+
+    @Override
+    public void namespace_declaration(Token token) {
+        orig.namespace_declaration(((MyToken) token).t);
+    }
+
+    @Override
+    public void namespace_name(Token token) {
+        orig.namespace_name(((MyToken) token).t);
+    }
+
+    @Override
+    public void namespace_body(Token token) {
+        orig.namespace_body(((MyToken) token).t);
+    }
+
+    @Override
+    public void end_namespace_body(Token token) {
+        orig.end_namespace_body(((MyToken) token).t);
+    }
+
+    @Override
+    public void end_namespace_declaration(Token token) {
+        orig.end_namespace_declaration(((MyToken) token).t);
+    }
+
+    @Override
+    public void compound_statement(Token token) {
+        orig.compound_statement(((MyToken) token).t);
+    }
+
+    @Override
+    public void end_compound_statement(Token token) {
+        orig.end_compound_statement(((MyToken) token).t);
+    }
+
+    @Override
+    public void id(Token token) {
+        orig.id(((MyToken) token).t);
     }
 
     @Override
     public void simple_type_id(Token token) {
+        orig.simple_type_id(((MyToken) token).t);
     }
 
     @Override
-    public void onInclude(CsmFile inclFile, State stateBefore) {
+    public boolean isType(String name) {
+        return orig.isType(name);
+    }
+
+    @Override
+    public void onInclude(CsmFile inclFile, APTPreprocHandler.State stateBefore) {
         if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
             assert inclFile instanceof FileImpl;
             ((FileImpl) inclFile).parseOnInclude(stateBefore, this);
@@ -162,18 +181,16 @@ public class CppParserEmptyActionImpl implements CppParserAction {
 
     @Override
     public void pushFile(CsmFile file) {
-        files.push(file);
+        orig.pushFile(file);
     }
 
     @Override
     public CsmFile popFile() {
-        CsmFile out = files.peek();
-        files.pop();
-        return out;
+        return orig.popFile();
     }
 
     @Override
     public Map<Integer, CsmObject> getObjectsMap() {
-        return null;
+        return orig.getObjectsMap();
     }
 }
