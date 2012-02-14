@@ -246,12 +246,13 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
                             c = taskRepository != null ? taskRepository.getCredentials(AuthenticationType.HTTP) : null;
                             if(c != null) {
                                 String httpUser = c.getUserName();
-                                String httpPsswd = c.getPassword();
-                                if(httpUser != null && !httpUser.equals("") &&          // NOI18N
-                                   httpPsswd != null && !httpPsswd.equals(""))          // NOI18N
-                                {
+                                String httpPsswd = c.getPassword();;
+                                if(httpUser != null && !httpUser.equals("")) {
                                     panel.httpCheckBox.setSelected(true);
                                     panel.httpUserField.setText(httpUser);
+                                }
+                                if(httpPsswd != null && !httpPsswd.equals("")) {
+                                    panel.httpCheckBox.setSelected(true);
                                     panel.httpPsswdField.setText(httpPsswd);
                                 }
                             }
@@ -404,11 +405,16 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
                 handle.finish();
             }
             panel.cancelButton.removeActionListener(this);
-            panel.progressPanel.setVisible(false);
-            panel.validateLabel.setVisible(false);
-            panel.validateButton.setVisible(true);
-            panel.cancelButton.setVisible(false);
-            panel.enableFields(true);
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {            
+                    panel.progressPanel.setVisible(false);
+                    panel.validateLabel.setVisible(false);
+                    panel.validateButton.setVisible(true);
+                    panel.cancelButton.setVisible(false);
+                    panel.enableFields(true);
+                }
+            });
         }
 
         @Override
