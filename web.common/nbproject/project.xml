@@ -180,16 +180,19 @@
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <friend>org.netbeans.modules.web.jsfapi</friend>
                 <friend>org.netbeans.modules.web.project</friend>
+                <friend>org.netbeans.modules.extbrowser</friend>
                 <package>org.netbeans.modules.web.common.api</package>
+                <package>org.netbeans.modules.web.common.api.browser</package>
                 <package>org.netbeans.modules.web.common.refactoring</package>
                 <package>org.netbeans.modules.web.common.spi</package>
+                <package>org.netbeans.modules.web.common.spi.browser</package>
                 <package>org.netbeans.modules.web.common.taginfo</package>
                 <package>org.netbeans.modules.web.common.reload</package>
                 <package>org.netbeans.modules.web.common.websocket</package>
             </friend-packages>
             <extra-compilation-unit>
                 <package-root>antsrc</package-root>
-                <classpath>${module.classpath}:${ant.jar}:${tools.jar}</classpath>
+                <classpath>${module.classpath}:${ant.jar}:${tools.jar}:${extra.cp}</classpath>
                 <built-to>build/antclasses</built-to>
                 <built-to>${cluster}/ant/nblib/org-netbeans-modules-web-common-ant.jar</built-to>
             </extra-compilation-unit>
