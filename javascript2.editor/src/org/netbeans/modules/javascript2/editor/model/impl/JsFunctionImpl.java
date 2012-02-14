@@ -56,6 +56,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     final private HashMap <String, JsObject> parametersByName;
     final private List<JsObject> parameters;
     final private Set<String> returnTypes;
+    private boolean areReturnTypesResolved;
     private boolean isAnonymous;
     
     
@@ -71,6 +72,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         this.isAnonymous = false;
         this.returnTypes = new HashSet<String>();
         setDeclared(true);
+        this.areReturnTypesResolved = false;
     }
     
     public static JsFunctionImpl createGlobal(FileObject file) {
@@ -126,6 +128,16 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
 
     @Override
     public Collection<String> getReturnTypes() {
+        if (!areReturnTypesResolved) {
+            Set<String> realTypes = new HashSet<String>(returnTypes.size());
+            for (String semiType : returnTypes) {
+                String realType = ModelUtils.resolveTypeFromSemiType(this, semiType);
+                realTypes.add(realType);
+            }
+            returnTypes.clear();
+            returnTypes.addAll(realTypes);
+            areReturnTypesResolved = true;
+        }
         return Collections.unmodifiableCollection(this.returnTypes);
     }    
     
@@ -135,5 +147,9 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     
     public void addReturnType(Collection<String> types) {
         this.returnTypes.addAll(types);
+    }
+    
+    public boolean areReturnTypesEmpty() {
+        return returnTypes.isEmpty();
     }
 }

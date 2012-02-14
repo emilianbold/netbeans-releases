@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
+import com.oracle.nashorn.ir.IdentNode;
 import com.oracle.nashorn.ir.LiteralNode;
 import com.oracle.nashorn.ir.Node;
 import java.util.ArrayList;
@@ -202,7 +203,7 @@ public class ModelUtils {
         return result;
     }
     
-    public static Collection<String> resolveTypeOfExpression(Node expression) {
+    public static Collection<String> resolveSemiTypeOfExpression(Node expression) {
         Set<String> result = new HashSet<String>();
         if (expression instanceof LiteralNode) {
             LiteralNode lNode = (LiteralNode)expression;
@@ -216,7 +217,37 @@ public class ModelUtils {
                     || value instanceof Double) {
                 result.add(Type.NUMBER);
             }
-        } 
+        } else if (expression instanceof IdentNode) {
+            IdentNode iNode = (IdentNode)expression;
+            if (iNode.getName().equals("this")) {
+                result.add("@this");
+            }
+        }
         return result;
     }
+    
+    public static String resolveTypeFromSemiType(JsObject object, String type) {
+        String result = Type.UNRESOLVED;
+        if (Type.UNRESOLVED.equals(type) 
+                || Type.BOOLEAN.equals(type)
+                || Type.STRING.equals(type)
+                || Type.NUMBER.equals(type)) {
+            result = type;
+        } else if (Type.UNDEFINED.equals(type) && object.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
+            result = ModelUtils.createFQN(object);
+        } else if ("@this".equals(type)) {
+            result = type;
+            JsObject parent = null;
+            if (object.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
+                parent = object;
+            } else if (object.getJSKind() == JsElement.Kind.METHOD) {
+                parent = object.getParent();
+            }
+            if (parent != null) {
+                result = ModelUtils.createFQN(parent);
+            }
+        }
+        return result;
+    }
+    
 }

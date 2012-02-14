@@ -332,7 +332,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 node.accept(this);
             }
 
-            if (fncScope != null && fncScope.getReturnTypes().isEmpty()) {
+            if (fncScope != null && fncScope.areReturnTypesEmpty()) {
                 // the functio doesn't have return statement -> returns undefined
                 fncScope.addReturnType(Type.UNDEFINED);
             }
@@ -439,7 +439,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     // in the testFiles/model/property02.js file
                     return null;
                 } else {
-                    Collection<String> types = ModelUtils.resolveTypeOfExpression(value);
+                    Collection<String> types = ModelUtils.resolveSemiTypeOfExpression(value);
                     if (!types.isEmpty()) {
                         property.addAssignment(types, name.getOffsetRange().getStart());
                     }
@@ -468,7 +468,7 @@ public class ModelVisitor extends PathNodeVisitor {
             if (expression instanceof IdentNode) {
                 addOccurence((IdentNode)expression);
             }
-            Collection<String> types = ModelUtils.resolveTypeOfExpression(expression);
+            Collection<String> types = ModelUtils.resolveSemiTypeOfExpression(expression);
             if(types.isEmpty()) {
                types.add(Type.UNRESOLVED); 
             }
