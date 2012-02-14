@@ -108,7 +108,7 @@ public class NetigsoReloadTest extends NetigsoHid {
         LOG.info("Deployed new module");
         
         Bundle newB = NetigsoServicesTest.findBundle("org.activate");
-//        assertEquals("new version 1.2.1", "1.2.1", newB.getVersion());
+        assertEquals("new version 1.2", "1.2.0", newB.getVersion().toString());
         
         Class<?> main = m1.getClassLoader().loadClass("org.activate.Main");
         Object s = main.getField("start").get(null);
