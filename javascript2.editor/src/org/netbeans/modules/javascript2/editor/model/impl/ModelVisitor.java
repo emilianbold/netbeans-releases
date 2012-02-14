@@ -307,9 +307,10 @@ public class ModelVisitor extends PathNodeVisitor {
             functionStack.add(functions);
 
             // todo parameters;
+            JsFunctionImpl fncScope = null;
             if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
                 DeclarationScopeImpl scope = modelBuilder.getCurrentDeclarationScope();
-                JsFunctionImpl fncScope = ModelElementFactory.create(parserResult, functionNode, name, modelBuilder);
+                fncScope = ModelElementFactory.create(parserResult, functionNode, name, modelBuilder);
                 fncScope.setAnonymous(getPath().get(pathSize - 2) instanceof ReferenceNode
                         && getPath().get(pathSize - 3) instanceof CallNode);
                 if (isPrivate) {
@@ -331,7 +332,11 @@ public class ModelVisitor extends PathNodeVisitor {
                 node.accept(this);
             }
 
-
+            if (fncScope != null && fncScope.getReturnTypes().isEmpty()) {
+                // the functio doesn't have return statement -> returns undefined
+                fncScope.addReturnType(Type.UNDEFINED);
+            }
+                
             for (FunctionNode fn : functions) {
                 if (fn.getIdent().getStart() >= fn.getIdent().getFinish()) {
                     fn.accept(this);
@@ -468,7 +473,7 @@ public class ModelVisitor extends PathNodeVisitor {
                types.add(Type.UNRESOLVED); 
             }
             JsFunctionImpl function = (JsFunctionImpl)modelBuilder.getCurrentDeclarationScope();
-            function.getReturnTypes().addAll(types);
+            function.addReturnType(types);
         }
         return super.visit(returnNode, onset);
     }

@@ -126,6 +126,14 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
 
     @Override
     public Collection<String> getReturnTypes() {
-        return this.returnTypes;
+        return Collections.unmodifiableCollection(this.returnTypes);
     }    
+    
+    public void addReturnType(String type) {
+        this.returnTypes.add(type);
+    }
+    
+    public void addReturnType(Collection<String> types) {
+        this.returnTypes.addAll(types);
+    }
 }
