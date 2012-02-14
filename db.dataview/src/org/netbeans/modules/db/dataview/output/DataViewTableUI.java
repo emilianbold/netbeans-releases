@@ -155,18 +155,15 @@ final class DataViewTableUI extends ResultSetJXTable {
             Object obj = dataView.getDataViewPageContext().getColumnData(
                     table.convertRowIndexToModel(row),
                     table.convertColumnIndexToModel(column));
-            if (value == null) {
-                return c;
-            }
 
             if (isSelected) {
-                if (obj != null && value.equals(obj)) {
+                if ((obj == null && value == null) || (obj != null && value != null && value.equals(obj))) {
                     c.setForeground(gray);
                 } else {
                     c.setForeground(Color.ORANGE);
                 }
             } else {
-                if (obj != null && value.equals(obj)) {
+                if ((obj == null && value == null) || (obj != null && value != null && value.equals(obj))) {
                     c.setForeground(table.getForeground());
                 } else {
                     c.setForeground(green);
