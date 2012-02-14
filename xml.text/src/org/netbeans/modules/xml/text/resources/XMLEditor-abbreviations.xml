@@ -58,7 +58,4 @@ made subject to such option by the copyright holder.
     <codetemplate abbreviation="!en"><code><![CDATA[<!ENTITY ${cursor}>]]></code></codetemplate>
     <codetemplate abbreviation="pu"><code><![CDATA[PUBLIC "${cursor}"]]></code></codetemplate>
     <codetemplate abbreviation="sy"><code><![CDATA[SYSTEM "${cursor}"]]></code></codetemplate>
-    
-    <codetemplate>
-        </codetemplate>
 </codetemplates>
