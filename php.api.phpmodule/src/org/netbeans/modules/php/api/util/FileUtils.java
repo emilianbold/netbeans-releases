@@ -270,7 +270,7 @@ public final class FileUtils {
      */
     @NbBundle.Messages("FileUtils.validateFile.file=File")
     public static String validateFile(String filePath, boolean writable) {
-        return validateDirectory(Bundle.FileUtils_validateFile_file(), filePath, writable);
+        return validateFile(Bundle.FileUtils_validateFile_file(), filePath, writable);
     }
 
     /**

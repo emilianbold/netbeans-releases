@@ -50,6 +50,7 @@ PACKAGE    Ns                              [PUBLIC]   Testing
 PACKAGE    Test                            [PUBLIC]   App
 PACKAGE    UI                              [PUBLIC]   Nette\Application
 PACKAGE    User                            [PUBLIC]   Package2
+PACKAGE    Utils                           [PUBLIC]   Nette
 PACKAGE    a                               [PUBLIC]   Test204925_06_P
 PACKAGE    a                               [PUBLIC]   Test204925_07_P
 PACKAGE    a                               [PUBLIC]   Test204925_08_P
@@ -179,6 +180,7 @@ CLASS      PresenterComponent              [PUBLIC]   Nette\Application\UI
 CLASS      Request                         [PUBLIC]   Brite\Base
 CLASS      SimpleObject                    [PUBLIC,   issue159970.php
 CLASS      SmartCompletion                 [PUBLIC]   issue201032.php
+CLASS      Strings                         [PUBLIC]   Nette\Utils
 CLASS      SubClass157534                  [PUBLIC]   issue157534.php
 CLASS      SuperClass157534                [PUBLIC]   issue157534.php
 CLASS      SuperUser                       [PUBLIC]   XUser

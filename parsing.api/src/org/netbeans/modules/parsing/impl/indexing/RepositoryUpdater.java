@@ -1410,7 +1410,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
     public void runAsWork(@NonNull final Runnable r) {
         assert r != null;
-        final Work work = new Work(false, false, false, true, SuspendStatus.NOP, null) {
+        final Work work = new Work(false, false, false, true, SuspendSupport.NOP, null) {
             @Override
             protected boolean getDone() {
                 r.run();
@@ -4732,7 +4732,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     // delaying of these tasks was just copied from the old java.source RepositoryUpdater
                     RP.create(new Runnable() {
                         public @Override void run() {
-                            schedule(new Work(false, false, false, true, SuspendStatus.NOP, null) {
+                            schedule(new Work(false, false, false, true, SuspendSupport.NOP, null) {
                                 protected @Override boolean getDone() {
                                     if (tasks != null) {
                                         for(Runnable task : tasks) {
