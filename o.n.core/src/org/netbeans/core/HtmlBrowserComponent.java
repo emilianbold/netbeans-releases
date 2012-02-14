@@ -61,6 +61,7 @@ import javax.swing.SwingUtilities;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.CloneableTopComponent;
 
@@ -187,6 +188,8 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
     protected void componentActivated () {
         if( null == browserComponent ) {
             add (browserComponent = new HtmlBrowser (browserFactory, toolbarVisible, statusVisible), BorderLayout.CENTER);
+            // associate with this TopComponent lookup provided by browser (HtmlBrowser.Impl.getLookup)
+            associateLookup(getBrowserLookup());
 
             browserComponent.getBrowserImpl().addPropertyChangeListener (this);
 
@@ -231,6 +234,14 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
         }
         removeAll();
         browserComponent = null;
+    }
+
+    Lookup getBrowserLookup() {
+        if (browserComponent != null) {
+            return browserComponent.getBrowserImpl().getLookup();
+        } else {
+            return Lookup.EMPTY;
+        }
     }
 
     @Override
@@ -362,9 +373,11 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
         return "HtmlBrowserComponent"; //NOI18N
     }
 
-    void setURLAndOpen( URL url ) {
+    public void setURLAndOpen( URL url ) {
         if( null == browserComponent ) {
             add (browserComponent = new HtmlBrowser (browserFactory, toolbarVisible, statusVisible), BorderLayout.CENTER);
+            // associate with this TopComponent lookup provided by browser (HtmlBrowser.Impl.getLookup)
+            associateLookup(getBrowserLookup());
 
             browserComponent.getBrowserImpl().addPropertyChangeListener (this);
 
@@ -379,7 +392,7 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
             requestActive();
         }
     }
-
+    
 public static final class BrowserReplacer implements java.io.Externalizable {
     
     /** serial version UID */

@@ -58,6 +58,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.accessibility.Accessible;
@@ -72,6 +73,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -660,7 +662,7 @@ public class HtmlBrowser extends JPanel {
          */
         public Impl createHtmlBrowserImpl();
     }
-
+    
     // innerclasses ..............................................................
 
     /**
@@ -763,6 +765,8 @@ public class HtmlBrowser extends JPanel {
 
         /** history property name */
         public static final String PROP_HISTORY = "history"; // NOI18N
+
+        public static final String PROP_BROWSER_WAS_CLOSED = "browser.was.closed"; // NOI18N
 
         /**
         * Returns visual component of html browser.
@@ -894,6 +898,10 @@ public class HtmlBrowser extends JPanel {
          * @since 7.11
          */
         public void dispose() {
+        }
+        
+        public Lookup getLookup() {
+            return Lookup.EMPTY;
         }
     }
 
