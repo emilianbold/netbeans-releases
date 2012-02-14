@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.spi;
+package org.netbeans.modules.bugtracking.kenai.spi;
 
 /**
  * Repository user.

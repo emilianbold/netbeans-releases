@@ -42,54 +42,52 @@
 
 package org.netbeans.modules.jira;
 
-import java.awt.Image;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.jira.repository.JiraRepository;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.jira.issue.JiraIssueFinder;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProviders({@ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class),
-                                           @ServiceProvider(service=org.netbeans.modules.jira.JiraConnector.class)})
+@BugtrackingConnector.Registration (
+        id=JiraConnector.ID,
+        displayName="#LBL_ConnectorName",
+        tooltip="#LBL_ConnectorTooltip"
+)    
 public class JiraConnector extends BugtrackingConnector {
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.jira.JiraConnector");  //  NOI18N
     private JiraIssueFinder issueFinder;
     private boolean alreadyLogged = false;
 
-    @Override
-    public String getID() {
-        return "org.netbeans.modules.jira";                                     //  NOI18N
+    public static final String ID = "org.netbeans.modules.jira";                                     //  NOI18N
+    private static JiraConnector instance;
+
+    public JiraConnector() {
+        instance = this;
+    }
+
+    static JiraConnector getInstance() {
+        return instance;
     }
 
     @Override
-    public Image getIcon() {
-        return null;
+    public RepositoryProvider createRepository(RepositoryInfo info) {
+        return new JiraRepository(info);
     }
-
+    
     @Override
-    public String getDisplayName() {
-        return getConnectorName();
-    }
-
-    @Override
-    public String getTooltip() {
-        return NbBundle.getMessage(BugtrackingConnector.class, "LBL_ConnectorTooltip"); // NOI18N
-    }
-
-    @Override
-    public Repository createRepository() {
+    public RepositoryProvider createRepository() {
         try {
             Jira.init();
         } catch (Throwable t) {
@@ -100,15 +98,6 @@ public class JiraConnector extends BugtrackingConnector {
             return null;
         }
         return new JiraRepository();
-    }
-
-    @Override
-    public Repository[] getRepositories() {
-        Jira jira = getJira();
-        if(jira != null) {
-            return jira.getRepositories();
-        }
-        return new Repository[0];
     }
 
     public static String getConnectorName() {
@@ -131,11 +120,6 @@ public class JiraConnector extends BugtrackingConnector {
             return Lookups.singleton(jira.getKenaiSupport());
         }
         return Lookup.EMPTY;
-    }
-
-    @Override
-    protected void fireRepositoriesChanged(Collection<Repository> oldRepositories, Collection<Repository> newRepositories) {
-        super.fireRepositoriesChanged(oldRepositories, newRepositories);
     }
 
     private Jira getJira() {

@@ -43,15 +43,9 @@
 package org.netbeans.modules.jira;
 
 import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.Icon;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
 
@@ -63,7 +57,6 @@ public class JiraConfig {
 
     private static JiraConfig instance = null;
     private static final String LAST_CHANGE_FROM    = "jira.last_change_from";      // NOI18N // XXX
-    private static final String REPO_ID           = "jira.repository_";           // NOI18N
     private static final String QUERY_NAME          = "jira.query_";                // NOI18N
     private static final String QUERY_REFRESH_INT   = "jira.query_refresh";         // NOI18N
     private static final String QUERY_AUTO_REFRESH  = "jira.query_auto_refresh_";   // NOI18N
@@ -118,122 +111,6 @@ public class JiraConfig {
         return getPreferences().getBoolean(CHECK_UPDATES, true);
     }
 
-    public String getUrlParams(JiraRepository repository, String queryName) {
-//        String value = getStoredQuery(repository, queryName);
-//        if(value == null) {
-//            return null;
-//        }
-//        String[] values = value.split(DELIMITER);
-//        assert values.length == 2;
-//        return values[0];
-        throw new UnsupportedOperationException();
-    }
-
-    public void putRepository(String repoID, JiraRepository repository) {
-        String repoName = repository.getDisplayName();
-
-        String user = repository.getUsername();        
-
-        String httpUser = repository.getHttpUsername();        
-        String url = repository.getUrl();
-        getPreferences().put(
-                REPO_ID + repoID,
-                url + DELIMITER +
-                user + DELIMITER +
-                "" + DELIMITER +          // NOI18N - skip password, will be saved via keyring
-                httpUser + DELIMITER +
-                "" + DELIMITER +          // NOI18N - skip http password, will be saved via keyring
-                repoName);
-
-        String password = repository.getPassword();
-        String httpPassword = repository.getHttpPassword();
-        BugtrackingUtil.savePassword(password, null, user, url);
-        BugtrackingUtil.savePassword(httpPassword, "http", httpUser, url); // NOI18N
-
-    }
-
-    public String getRepositoryName(String repoId) {
-        String repoString = getPreferences().get(REPO_ID + repoId, "");         // NOI18N
-        if(repoString.equals("")) {                                             // NOI18N
-            return null;
-        }
-        String[] values = repoString.split(DELIMITER);
-        return values.length > 5 ? values[5] : repoId;
-    }
-
-    public JiraRepository getRepository(String repoID) {
-        String repoString = getPreferences().get(REPO_ID + repoID, "");     // NOI18N
-        if(repoString.equals("")) {                                             // NOI18N
-            return null;
-        }
-        String[] values = repoString.split(DELIMITER);
-        String url = values[0];
-        String repoName;
-        if(values.length > 5) {
-            repoName = values[5];
-        } else {
-            repoName = repoID;
-        }
-
-        JiraRepository repo = new JiraRepository(repoID, repoName, url, null, null, null, null);
-
-        // make sure tha scrambled password is removed
-        if(!values[2].trim().equals("") || (values.length > 3 && !values[3].trim().equals(""))) {
-            putRepository(repoID, repo);
-        }
-
-        return repo;
-    }
-
-    public void setupCredentials(JiraRepository repository) {
-        String repoID = repository.getID();
-        String[] values = getRepositoryValues(repoID);
-        if(values == null) {
-            return;
-        }
-
-        String url = repository.getUrl();
-        String user = values[1];
-        String password = new String(BugtrackingUtil.readPassword(values[2], null, user, url));
-        String httpUser = values.length > 3 ? values[3] : null;
-        String httpPassword = new String(values.length > 3 ? BugtrackingUtil.readPassword(values[4], "http", httpUser, url) : null); // NOI18N
-
-        repository.setCredentials(user, password, httpUser, httpPassword);
-    }
-
-
-    public String[] getRepositories() {
-        return getKeysWithPrefix(REPO_ID);
-    }
-
-    public void removeRepository(String name) {
-        getPreferences().remove(REPO_ID + name);
-    }
-
-    private String[] getKeysWithPrefix(String prefix) {
-        String[] keys = null;
-        try {
-            keys = getPreferences().keys();
-        } catch (BackingStoreException ex) {
-            Jira.LOG.log(Level.SEVERE, null, ex); // XXX
-        }
-        if (keys == null || keys.length == 0) {
-            return new String[0];
-        }
-        List<String> ret = new ArrayList<String>();
-        for (String key : keys) {
-            if (key.startsWith(prefix)) {
-                ret.add(key.substring(prefix.length()));
-            }
-        }
-        return ret.toArray(new String[ret.size()]);
-    }
-//
-//    private String getStoredQuery(JiraRepository repository, String queryName) {
-//        String value = getPreferences().get(getQueryKey(repository.getDisplayName(), queryName), null);
-//        return value;
-//    }
-
     public void setLastChangeFrom(String value) {
         getPreferences().put(LAST_CHANGE_FROM, value);
     }
@@ -252,14 +129,6 @@ public class JiraConfig {
             priorityIcons.put(Priority.TRIVIAL_ID, ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/trivial.png", true));   // NOI18N
         }
         return priorityIcons.get(priorityId);
-    }
-
-    private String[] getRepositoryValues(String repoID) {
-        String repoString = getPreferences().get(REPO_ID + repoID, "");         // NOI18N
-        if(repoString.equals("")) {                                             // NOI18N
-            return null;
-        }
-        return repoString.split(DELIMITER);
     }
 
 }

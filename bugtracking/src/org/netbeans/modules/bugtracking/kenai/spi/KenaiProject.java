@@ -44,7 +44,7 @@ package org.netbeans.modules.bugtracking.kenai.spi;
 
 import java.net.URL;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport.BugtrackingType;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 
 /**
  * Wrapper for a KenaiProject instance returned by kenai
@@ -87,6 +87,6 @@ public abstract class KenaiProject {
      * Notifies kenai that a query was activated
      * @param query
      */
-    public abstract void fireQueryActivated(Query query);
+    public abstract void fireQueryActivated(QueryProvider query);
 
 }

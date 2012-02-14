@@ -66,8 +66,9 @@ public abstract class IssuetableTestFactory extends NbTestSetup {
         registerMap (test);
     }
 
-    public abstract Query createQuery();
-    public abstract IssueTable getTable(Query q);
+    public abstract QueryProvider createQuery();
+    public abstract void setSaved(QueryProvider q);
+    public abstract IssueTable getTable(QueryProvider q);
     public abstract int getColumnsCountBeforeSave();
     public abstract int getColumnsCountAfterSave();
 

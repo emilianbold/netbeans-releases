@@ -55,9 +55,9 @@ import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.kenai.api.Kenai;
@@ -132,11 +132,11 @@ class KenaiHandler {
         lastLoggedUser = getKenaiUser();
     }
 
-    List<QueryHandle> getQueryHandles(ProjectHandle project, Query... queries) {
+    List<QueryHandle> getQueryHandles(ProjectHandle project, QueryProvider... queries) {
         return getQueryHandles(project.getKenaiProject().getName(), queries);
     }
 
-    List<QueryHandle> getQueryHandles(String projectId, Query... queries) {
+    List<QueryHandle> getQueryHandles(String projectId, QueryProvider... queries) {
         List<QueryHandle> ret = new ArrayList<QueryHandle>();
         synchronized (queryHandles) {
             Map<String, QueryHandle> m = queryHandles.get(projectId);
@@ -145,7 +145,7 @@ class KenaiHandler {
                 queryHandles.put(projectId, m);
             } else {
                 List<String> l = new ArrayList<String>();
-                for (Query q : queries) {
+                for (QueryProvider q : queries) {
                     if (q != null) {
                         String qName = q.getDisplayName();
                         l.add(qName);
@@ -153,11 +153,11 @@ class KenaiHandler {
                 }
                 m.keySet().retainAll(l);
             }
-            for (Query q : queries) {
+            for (QueryProvider q : queries) {
                 String qName = q.getDisplayName();
                 QueryHandle qh = m.get(qName);
                 if (qh == null) {
-                    Issue[] issues = q.getIssues();
+                    IssueProvider[] issues = q.getIssues();
                     // XXX HACK - totaly new queries should be refreshed.
                     //            unfortunatelly, an already refreshed query with
                     //            will be unnecessarilly refreshed one more time
@@ -176,8 +176,8 @@ class KenaiHandler {
         return ret;
     }
 
-    private QueryHandleImpl createQueryHandle(Query q, boolean needsRefresh) {
-        Repository repo = q.getRepository();
+    private QueryHandleImpl createQueryHandle(QueryProvider q, boolean needsRefresh) {
+        RepositoryProvider repo = q.getRepository();
         KenaiSupport support = repo.getLookup().lookup(KenaiSupport.class);
         boolean predefined = false;
         if(support != null) {
@@ -190,8 +190,8 @@ class KenaiHandler {
         return new QueryHandleImpl(q, needsRefresh, predefined);
     }
 
-    List<QueryHandle> getQueryHandles(Repository repo, ProjectHandle projectHandle) {
-        Query[] queries = repo.getQueries();
+    List<QueryHandle> getQueryHandles(RepositoryProvider repo, ProjectHandle projectHandle) {
+        QueryProvider[] queries = repo.getQueries();
         if(queries == null) {
             // XXX is this possible - at least preset queries
             return Collections.emptyList();
@@ -243,15 +243,15 @@ class KenaiHandler {
         }
     }
 
-    void registerRepository(Repository repo, ProjectHandle project) {
+    void registerRepository(RepositoryProvider repo, ProjectHandle project) {
         KenaiRepositoryListener krl = null;
         synchronized (kenaiRepoListeners) {
             String url = project.getKenaiProject().getKenai().getUrl().toString();
-            krl = kenaiRepoListeners.get(repo.getID());
+            krl = kenaiRepoListeners.get(repo.getInfo().getId());
             if (krl == null) {
                 krl = new KenaiRepositoryListener(repo, project);
                 repo.addPropertyChangeListener(krl);
-                kenaiRepoListeners.put(repo.getID(), krl);
+                kenaiRepoListeners.put(repo.getInfo().getId(), krl);
             }
         }
     }
@@ -277,7 +277,7 @@ class KenaiHandler {
         }
     }
 
-    Action getFindIssuesAction(final Repository repo) {
+    Action getFindIssuesAction(final RepositoryProvider repo) {
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -297,7 +297,7 @@ class KenaiHandler {
         };
     }
 
-    Action getCreateIssueAction(final Repository repo) {
+    Action getCreateIssueAction(final RepositoryProvider repo) {
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -317,12 +317,12 @@ class KenaiHandler {
         };
     }
 
-    private KenaiSupport.BugtrackingType getBugtrackingType(Repository repo) {
+    private KenaiSupport.BugtrackingType getBugtrackingType(RepositoryProvider repo) {
         KenaiSupport support = repo.getLookup().lookup(KenaiSupport.class);
         if(support != null) {
             return support.getType();
         } else {
-            assert false : "no KenaiSupport available for repository [" + repo.getDisplayName() + "]";  // NOI18N
+            assert false : "no KenaiSupport available for repository [" + repo.getInfo().getDisplayName() + "]";  // NOI18N
         }
         return null;
     }
@@ -347,7 +347,7 @@ class KenaiHandler {
                     }
                     for (QueryHandle qh : queries) {
                         if(qh instanceof QueryHandleImpl) {
-                            Query query = ((QueryHandleImpl)qh).getQuery();
+                            QueryProvider query = ((QueryHandleImpl)qh).getQuery();
                             KenaiSupport ks = query.getRepository().getLookup().lookup(KenaiSupport.class);
                             assert ks != null;
                             if(ks != null) {
@@ -375,16 +375,16 @@ class KenaiHandler {
 
     private class KenaiRepositoryListener implements PropertyChangeListener {
         private final ProjectHandle ph;
-        private Repository repo;
+        private RepositoryProvider repo;
 
-        public KenaiRepositoryListener(Repository repo, ProjectHandle ph) {
+        public KenaiRepositoryListener(RepositoryProvider repo, ProjectHandle ph) {
             this.ph = ph;
             this.repo = repo;
         }
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
+            if(evt.getPropertyName().equals(RepositoryProvider.EVENT_QUERY_LIST_CHANGED)) {
                 List<QueryHandle> queryHandles = getQueryHandles(repo, ph);
                 for (QueryHandle queryHandle : queryHandles) {
                     if(queryHandle instanceof QueryHandleImpl) {
@@ -404,7 +404,7 @@ class KenaiHandler {
 
     private class LoginAwareQueryHandle extends QueryHandleImpl {
         private String notLoggedIn = NbBundle.getMessage(QueryAccessorImpl.class, "LBL_NotLoggedIn"); // NOI18N
-        public LoginAwareQueryHandle(Query query, boolean needsRefresh, boolean predefined) {
+        public LoginAwareQueryHandle(QueryProvider query, boolean needsRefresh, boolean predefined) {
             super(query, needsRefresh, predefined);
         }
         @Override

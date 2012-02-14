@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,23 +37,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.bugtracking.util;
 
-package org.netbeans.modules.bugtracking.ui.issue;
-
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.openide.nodes.Node;
+import java.util.Comparator;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 
 /**
  *
  * @author Tomas Stupka
  */
-public abstract class IssueAccessor {
-    protected static IssueAccessor IMPL;
-    public abstract void setSelection(Issue issue, Node[] nodes);
-    
-    static IssueAccessor getInstance() {
-        return IMPL;
+public class RepositoryComparator implements Comparator<RepositoryProvider> {
+    public int compare(RepositoryProvider r1, RepositoryProvider r2) {
+        if(r1 == null && r2 == null) return 0;
+        if(r1 == null) return -1;
+        if(r2 == null) return 1;
+        return r1.getInfo().getDisplayName().compareTo(r2.getInfo().getDisplayName());
     }
 }

@@ -58,8 +58,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
 
@@ -73,7 +73,7 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HookPanel");  // NOI18N
 
     private QuickSearchComboBar qs;
-    private Repository selectedRepository;
+    private RepositoryProvider selectedRepository;
 
     private class FieldValues {
         private boolean addLinkInfo = false;
@@ -117,11 +117,11 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         repositoryComboBox.addItemListener(this);
     }
 
-    Issue getIssue() {
+    IssueProvider getIssue() {
         return qs.getIssue();
     }
 
-    public Repository getSelectedRepository() {
+    public RepositoryProvider getSelectedRepository() {
         return selectedRepository;
     }
 
@@ -149,7 +149,7 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
 
     private boolean isRepositorySelected() {
         Object selectedItem = repositoryComboBox.getSelectedItem();
-        return selectedItem instanceof Repository;
+        return selectedItem instanceof RepositoryProvider;
     }
 
     /** This method is called from within the constructor to
@@ -302,7 +302,7 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
 }//GEN-LAST:event_linkCheckBoxActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        Repository repo = BugtrackingUtil.createRepository();
+        RepositoryProvider repo = BugtrackingUtil.createRepository();
         if(repo == null) {
             return;
         }
@@ -342,7 +342,7 @@ public class HookPanel extends VerticallyNonResizingPanel implements ItemListene
         enableFields();
         if(e.getStateChange() == ItemEvent.SELECTED) {
             Object item = e.getItem();
-            Repository repo = (item instanceof Repository) ? (Repository) item : null;
+            RepositoryProvider repo = (item instanceof RepositoryProvider) ? (RepositoryProvider) item : null;
             selectedRepository = repo;
             if(repo != null) {
                 qs.setRepository(repo);

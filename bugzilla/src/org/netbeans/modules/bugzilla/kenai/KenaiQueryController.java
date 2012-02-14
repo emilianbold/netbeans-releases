@@ -78,7 +78,7 @@ public class KenaiQueryController extends QueryController {
     public void populate(String urlParameters) {
         if(BugzillaUtil.isNbRepository(getRepository())) {
             if(urlParameters == null) {
-                Node[] selection = query.getSelection();
+                Node[] selection = query.getContext();
                 if(selection == null) {
                     // XXX not sure why we need this - i'm going to keep it for now,
                     // doesn't seem to harm

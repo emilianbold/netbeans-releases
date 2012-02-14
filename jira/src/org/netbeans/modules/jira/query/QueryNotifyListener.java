@@ -40,20 +40,30 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.ui.query;
+package org.netbeans.modules.jira.query;
 
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.openide.nodes.Node;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 
 /**
- *
+ * Notifies changes on a query
  * @author Tomas Stupka
  */
-public abstract class QueryAccessor {
-    protected static QueryAccessor IMPL;
-    public abstract void setSelection(Query query, Node[] nodes);
-    
-    static QueryAccessor getInstance() {
-        return IMPL;
-    }
+public interface QueryNotifyListener {
+
+    /**
+     * Query execution was started
+     */
+    public void started();
+
+    /**
+     *
+     * @param issue
+     */
+    public void notifyData(IssueProvider issue);
+
+    /**
+     * Query execution was finished
+     */
+    public void finished();
+
 }
