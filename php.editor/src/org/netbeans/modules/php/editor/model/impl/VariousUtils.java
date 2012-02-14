@@ -970,15 +970,7 @@ public class VariousUtils {
                                 }
                             }
                         } else {
-                            String currentMetaAll = metaAll.toString();
-                            int indexOfType = currentMetaAll.indexOf("@"); //NOI18N
-                            if (indexOfType != -1) {
-                                String lastType = currentMetaAll.substring(0, indexOfType);
-                                if (!lastType.trim().isEmpty()) {
-                                    String qualifiedTypeName = qualifyTypeNames(lastType, tokenSequence.offset(), varScope);
-                                    metaAll = new StringBuilder(qualifiedTypeName + currentMetaAll.substring(indexOfType));
-                                }
-                            }
+                            metaAll = transformToFullyQualifiedType(metaAll, tokenSequence, varScope);
                         }
                         state = State.STOP;
                         break;
