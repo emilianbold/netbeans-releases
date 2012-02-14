@@ -451,10 +451,10 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
         assert (endIndex <= pCount) : "endIndex=" + endIndex + " > pCount=" + pCount; // NOI18N
         int rStartIndex = startIndex;
         int rEndIndex = endIndex;
+        int origEndIndex = endIndex; // For error tracing only
         boolean updated = false;
         TextLayoutCache tlCache = docView.op.getTextLayoutCache();
         if (pCount > 0) {
-            String origDocView = null;
             // Find out what needs to be rebuilt
             ParagraphView pView = get(rStartIndex);
             if (pView.isChildrenValid()) { // First pView has valid children (will not use extraStartCount)
@@ -505,7 +505,6 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
                 // Ensure that layout cache has sufficient size and does not drop built children directly
                 // Note: setCapacityOrDefault() drops extra entries if size is going to be lower than before
                 tlCache.setCapacityOrDefault(Math.max(rEndIndex - rStartIndex, endIndex - startIndex));
-                origDocView = docView.toStringDetailNeedsLock();
                 docView.op.initParagraphs(rStartIndex, rEndIndex);
                 updated = true;
                 // recompute endIndex since rebuilding could change number of paragraphs
@@ -516,12 +515,17 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
             Rectangle2D docViewRect = docView.getAllocation();
             for (int pIndex = startIndex; pIndex < endIndex; pIndex++) {
                 pView = get(pIndex);
-                assert (pView.isChildrenValid()) :
-                        "Null children of pView[" + pIndex + "] from <" + startIndex + "," + endIndex + // NOI18N
-                        ">, rebuild<" + rStartIndex + "," + rEndIndex + ">." + // NOI18N
-                        " cache integrity: " + tlCache.findIntegrityError() + // NOI18N
-                        " origDocView:\n" + origDocView + "\n\n" +
-                        " Current docView:\n" + docView.toStringDetailNeedsLock(); // NOI18N
+                if (!pView.isChildrenValid()) {
+                    StringBuilder sb = new StringBuilder(200);
+                    sb.append("Null children of pView[").append(pIndex). // NOI18N
+                            append("] from <").append(startIndex).append(",").append(endIndex). // NOI18N
+                            append("> origEndIndex=").append(origEndIndex).append(", rebuild<"). // NOI18N
+                            append(rStartIndex).append(",").append(rEndIndex). // NOI18N
+                            append(">. cache integrity: ").append(tlCache.findIntegrityError()). // NOI18N
+                            append(" docView:\n"); // NOI18N
+                    docView.appendViewInfo(sb, 4, null, pIndex);
+                    throw new IllegalStateException(sb.toString());
+                }
                 if (!pView.isLayoutValid()) {
                     Shape pAlloc = docView.getChildAllocation(pIndex, docViewRect);
                     pView.updateLayoutAndScheduleRepaint(pIndex, ViewUtils.shapeAsRect(pAlloc));
