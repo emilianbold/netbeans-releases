@@ -91,7 +91,7 @@ public class JsDocElementUtils {
             String elementText, boolean named) {
         String types = "", name = "", desc = ""; //NOI18N
         int process = 0;
-        String[] parts = elementText.split("(\\s)*"); //NOI18N
+        String[] parts = elementText.split("[\\s]+"); //NOI18N
 
         if (parts.length > process) {
             // get type value if any

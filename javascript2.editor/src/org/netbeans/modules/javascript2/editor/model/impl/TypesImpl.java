@@ -53,22 +53,26 @@ import org.netbeans.modules.javascript2.editor.model.Types;
  */
 public class TypesImpl implements Types {
 
-    private final List<Type> types;
+    private final List<? extends Type> types;
 
-    public TypesImpl(String textWithTypes) {
-        this.types = parseTypes(textWithTypes);
+    public TypesImpl(Type type) {
+        types = Arrays.asList(type);
+    }
+
+    public TypesImpl(String typesText) {
+        this.types = parseTypes(typesText);
     }
 
     private static List<Type> parseTypes(String typesText) {
         List<Type> types = new LinkedList<Type>();
-        for (String string : Arrays.asList(typesText.split("|"))) { //NOI18N
+        for (String string : Arrays.asList(typesText.split("[|]+"))) { //NOI18N
             types.add(new TypeImpl(string));
         }
         return types;
     }
 
     @Override
-    public List<Type> getTypes() {
+    public List<? extends Type> getTypes() {
         return types;
     }
 

@@ -56,4 +56,12 @@ public class JsComment {
         this.endOffset = endOffset;
     }
 
+    public int getEndOffset() {
+        return endOffset;
+    }
+
+    public int getStartOffset() {
+        return startOffset;
+    }
+
 }
