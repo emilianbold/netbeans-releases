@@ -54,6 +54,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
@@ -143,9 +144,8 @@ public class RepositoryRegistry {
         Collection<RepositoryProvider> newRepos;
         synchronized(REPOSITORIES_LOCK) {
             oldRepos = Collections.unmodifiableCollection(new LinkedList<RepositoryProvider>(getStoredRepositories().getRepositories()));
-            String connectorID = repository.getInfo().getConnectorId();
-            getStoredRepositories().put(repository.getInfo().getConnectorId(), repository); // cache
-            putRepository(connectorID, repository); // persist
+            getStoredRepositories().put(repository); // cache
+            putRepository(repository.getInfo()); // persist
             newRepos = Collections.unmodifiableCollection(getStoredRepositories().getRepositories());
 
         }
@@ -217,9 +217,18 @@ public class RepositoryRegistry {
     void flushRepositories() {
         repositories = null;
     }
+
+    private String getRepositoryKey(RepositoryInfo info) {
+        return REPO_ID + info.getConnectorId() + DELIMITER + info.getId();
+    }
+    
     private RepositoriesMap getStoredRepositories() {
         if (repositories == null) {
             repositories = new RepositoriesMap();
+            
+            migrateBugzilla();
+            migrateJira();
+            
             String[] ids = getRepositoryIds();
             if (ids == null || ids.length == 0) {
                 return repositories;
@@ -227,14 +236,14 @@ public class RepositoryRegistry {
             DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
             for (String id : ids) {
                 String idArray[] = id.split(DELIMITER);
-                String connectorId = idArray[1];
+                String connectorId = idArray[0].substring(REPO_ID.length());
                 for (DelegatingConnector c : connectors) {
                     if(c.getID().equals(connectorId)) {
                         RepositoryInfo info = SPIAccessor.IMPL.read(getPreferences(), id);
                         if(info != null) {
                             RepositoryProvider repo = c.createRepository(info);
                             if (repo != null) {
-                                repositories.put(connectorId, repo);
+                                repositories.put(repo);
                             }
                         }
                     }
@@ -251,9 +260,8 @@ public class RepositoryRegistry {
     /**
      * for testing 
      */
-    void putRepository(String connectorID, RepositoryProvider repository) {
-        RepositoryInfo info = repository.getInfo();
-        final String key = REPO_ID + DELIMITER + connectorID + DELIMITER + info.getId();
+    void putRepository(RepositoryInfo info) {
+        String key = getRepositoryKey(info);
         SPIAccessor.IMPL.store(getPreferences(), info, key);
 
         char[] password = info.getPassword();
@@ -301,7 +309,8 @@ public class RepositoryRegistry {
                 m.remove(repository.getInfo().getId());
             }
         }
-        public void put(String connectorID, RepositoryProvider repository) {
+        public void put(RepositoryProvider repository) {
+            String connectorID = repository.getInfo().getConnectorId();
             Map<String, RepositoryProvider> m = get(connectorID);
             if(m == null) {
                 m = new HashMap<String, RepositoryProvider>();
@@ -318,4 +327,149 @@ public class RepositoryRegistry {
         }
         
     }
+    
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private static final String JIRA_REPO_ID                    = "jira.repository_";           // NOI18N 
+    private static final String BUGZILLA_REPO_ID                = "bugzilla.repository_";       // NOI18N
+    private static final String NB_BUGZILLA_USERNAME            = "nbbugzilla.username";        // NOI18N
+    private static final String NB_BUGZILLA_PASSWORD            = "nbbugzilla.password";        // NOI18N
+    private static final String REPOSITORY_SETTING_SHORT_LOGIN  = "bugzilla.shortLoginEnabled"; // NOI18N
+    
+    private void migrateBugzilla() {
+        Preferences preferences = getBugzillaPreferences();
+        String[] repoIds = getRepoIds(preferences, BUGZILLA_REPO_ID);
+        for (String id : repoIds) {
+            migrateBugzillaRepository(preferences, id);
+            preferences.remove(BUGZILLA_REPO_ID + id);
+        }
+        preferences.remove(NB_BUGZILLA_USERNAME);
+    }
+    
+    private void migrateJira() {
+        Preferences preferences = getJiraPreferences();
+        String[] repoIds = getRepoIds(preferences, JIRA_REPO_ID);
+        for (String id : repoIds) {
+            migrateJiraRepository(preferences, id);
+            preferences.remove(JIRA_REPO_ID + id);
+        }
+    }
+    
+    private String[] getRepoIds(Preferences preferences, String repoId) {
+        String[] keys = null;
+        try {
+            keys = preferences.keys();
+        } catch (BackingStoreException ex) {
+            BugtrackingManager.LOG.log(Level.SEVERE, null, ex); 
+        }
+        if (keys == null || keys.length == 0) {
+            return new String[0];
+        }
+        List<String> ret = new ArrayList<String>();
+        for (String key : keys) {
+            if (key.startsWith(repoId)) {
+                ret.add(key.substring(repoId.length()));
+            }
+        }
+        return ret.toArray(new String[ret.size()]);
+    }    
+    private void migrateBugzillaRepository(Preferences preferences, String repoID) {
+        String[] values = getRepositoryValues(preferences, BUGZILLA_REPO_ID, repoID);
+        if(values == null) {
+            return;
+        }
+        assert values.length == 3 || values.length == 6 || values.length == 7;
+        String url = values[0];
+        
+        String user;
+        String password;
+        if(BugtrackingUtil.isNbRepository(url)) {
+            user = getNBUsername();
+            char[] psswdArray = getNBPassword();
+            password = psswdArray != null ? new String(psswdArray) : null;
+        } else {
+            user = values[1];
+            password = new String(BugtrackingUtil.readPassword(values[2], null, user, url));
+        }
+        String httpUser = values.length > 3 ? values[3] : null;
+        String httpPassword = new String(values.length > 3 ? BugtrackingUtil.readPassword(values[4], "http", httpUser, url) : null); // NOI18N
+        
+        String shortNameEnabled = "false"; // NOI18N
+        if (values.length > 5) {
+            shortNameEnabled = values[5];
+        }
+        
+        String name;
+        if (values.length > 6) {
+            name = values[6];
+        } else {
+            name = repoID;
+        }
+        RepositoryInfo info = new RepositoryInfo(
+                repoID, 
+                "org.netbeans.modules.bugzilla", // NOI18N
+                url, 
+                name, 
+                name, 
+                user, 
+                httpUser, 
+                password.toCharArray(), 
+                httpPassword.toCharArray()); 
+        info.putValue(REPOSITORY_SETTING_SHORT_LOGIN, shortNameEnabled);
+        SPIAccessor.IMPL.store(getPreferences(), info, getRepositoryKey(info));
+    }
+    
+    private void migrateJiraRepository(Preferences preferences, String repoID) {
+        String[] values = getRepositoryValues(preferences, JIRA_REPO_ID, repoID);
+        String url = values[0];
+        String user = values[1];
+        String password = new String(BugtrackingUtil.readPassword(values[2], null, user, url));
+        String httpUser = values.length > 3 ? values[3] : null;
+        String httpPassword = new String(values.length > 3 ? BugtrackingUtil.readPassword(values[4], "http", httpUser, url) : null); // NOI18N
+        
+        String repoName;
+        if(values.length > 5) {
+            repoName = values[5];
+        } else {
+            repoName = repoID;
+        }
+        
+        RepositoryInfo info = new RepositoryInfo(
+                repoID, 
+                "org.netbeans.modules.jira", // NOI18N
+                url, 
+                repoName, 
+                repoName, 
+                user, 
+                httpUser, 
+                password.toCharArray(), 
+                httpPassword.toCharArray());
+        SPIAccessor.IMPL.store(getPreferences(), info, getRepositoryKey(info));
+    }
+
+    private static String[] getRepositoryValues(Preferences preferences, String repoPrefix, String repoID) {
+        String repoString = preferences.get(repoPrefix + repoID, "");         // NOI18N
+        if(repoString.equals("")) {                                           // NOI18N
+            return null;
+        }
+        return repoString.split(DELIMITER);
+    }
+    
+    private static Preferences getBugzillaPreferences() {
+        return NbPreferences.root().node("org/netbeans/modules/bugzilla"); // NOI18N
+    }
+    
+    private static Preferences getJiraPreferences() {
+        return NbPreferences.root().node("org/netbeans/modules/jira"); // NOI18N
+    }
+
+    private static String getNBUsername() {
+        String user = getBugzillaPreferences().get(NB_BUGZILLA_USERNAME, ""); // NOI18N
+        return user;                         
+    }
+    
+    private static char[] getNBPassword() {
+        return Keyring.read(NB_BUGZILLA_PASSWORD);
+    }    
+    
 }
