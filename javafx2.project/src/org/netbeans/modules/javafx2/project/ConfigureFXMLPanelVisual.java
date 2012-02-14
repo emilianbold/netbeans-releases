@@ -68,12 +68,12 @@ import org.openide.util.*;
  * @author Anton Chechel <anton.chechel@oracle.com>
  */
 public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, DocumentListener {
-    private static final String FXML_FILE_EXTENSION = ".fxml"; // NOI18N
     
     private Panel observer;
     private Project project;
     private SourceGroup groups[];
 
+    private File[] srcRoots;
     private File rootFolder;
     private boolean ignoreRootCombo;
     private RequestProcessor.Task updatePackagesTask;
@@ -91,6 +91,11 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
         this.observer = observer;
         this.project = project;
         this.groups = groups;
+        
+        srcRoots = new File[groups.length];
+        for (int i = 0; i < groups.length; i++) {
+            srcRoots[i] = FileUtil.toFile(groups[i].getRootFolder());
+        }
         
         initComponents(); // Matisse
         initComponents2(); // My own
@@ -150,7 +155,7 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
                 if (preselectedFolder != null) {
                     int index = 0;
                     while (true) {
-                        FileObject fo = preselectedFolder.getFileObject(activeName, template.getExt()); // NOI18N
+                        FileObject fo = preselectedFolder.getFileObject(activeName, JFXProjectProperties.FXML_EXTENSION);
                         if (fo == null) {
                             break;
                         }
@@ -164,6 +169,10 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
         
         updatePackages();
         updateText();
+    }
+    
+    private File[] getSrcRoots() {
+        return srcRoots;
     }
     
     private File getRootFolder() {
@@ -369,7 +378,7 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
             String packageName = getPackageFileName();
             String fxmlName = getFXMLName();
             if (fxmlName != null && fxmlName.length() > 0) {
-                fxmlName = fxmlName + FXML_FILE_EXTENSION;
+                fxmlName = fxmlName + FXMLTemplateWizardIterator.FXML_FILE_EXTENSION;
             }
             String packagePath = (packageName.startsWith("/") || packageName.startsWith(File.separator) ? "" : "/") + // NOI18N
                     packageName
@@ -399,9 +408,6 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
      * Displays a {@link SourceGroup} in {@link #rootComboBox}.
      */
     private static final class GroupListCellRenderer extends DefaultListCellRenderer {
-
-        public GroupListCellRenderer() {
-        }
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -470,7 +476,8 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
             if (isValid()) {
                 Templates.setTargetFolder(settings, getTargetFolderFromView());
                 Templates.setTargetName(settings, component.getFXMLName());
-                settings.putProperty(FXMLTemplateWizardIterator.ROOT_FOLDER, component.getRootFolder());
+                settings.putProperty(FXMLTemplateWizardIterator.PROP_SRC_ROOTS, component.getSrcRoots());
+                settings.putProperty(FXMLTemplateWizardIterator.PROP_ROOT_FOLDER, component.getRootFolder());
             }
             settings.putProperty("NewFileWizard_Title", null); // NOI18N
         }
@@ -480,7 +487,9 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
             if (component.getFXMLName() == null) {
                 FXMLTemplateWizardIterator.setInfoMessage("WARN_ConfigureFXMLPanel_Provide_FXML_Name", settings); // NOI18N
                 return false;
-            } else if (!FXMLTemplateWizardIterator.isValidPackageName(component.getPackageName())) {
+            }
+            
+            if (!FXMLTemplateWizardIterator.isValidPackageName(component.getPackageName())) {
                 FXMLTemplateWizardIterator.setErrorMessage("WARN_ConfigureFXMLPanel_Provide_Package_Name", settings); // NOI18N
                 return false;
             }
@@ -490,11 +499,9 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
                 return false;
             }
 
-            // check if the files can be created
-            FileObject template = Templates.getTemplate(settings);
-
             FileObject rootFolder = component.getLocationFolder();
-            String errorMessage = FXMLTemplateWizardIterator.canUseFileName(rootFolder, component.getPackageFileName(), component.getFXMLName(), template.getExt());
+            String errorMessage = FXMLTemplateWizardIterator.canUseFileName(rootFolder, 
+                    component.getPackageFileName(), component.getFXMLName(), JFXProjectProperties.FXML_EXTENSION);
             settings.getNotificationLineSupport().setErrorMessage(errorMessage);
             if (errorMessage != null) {
                 return false;

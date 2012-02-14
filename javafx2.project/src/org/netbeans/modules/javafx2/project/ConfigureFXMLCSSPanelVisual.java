@@ -48,7 +48,6 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.filechooser.FileFilter;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -58,16 +57,15 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author Anton Chechel <anton.chechel@oracle.com>
  */
 public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListener {
-    private static final String CSS_FILE_EXTENSION = ".css"; // NOI18N
     
     private Panel observer;
+    private File[] srcRoots;
     private File rootFolder;
     private String fxmlName;
 
@@ -86,11 +84,17 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
         existingNameTextField.getDocument().addDocumentListener(this);
     }
 
-    public void initValues(FileObject template, String fxmlName, File rootFolder) {
+    public void initValues(FileObject template, String fxmlName, File[] srcRoots, File rootFolder) {
         if (template == null) {
                 throw new IllegalArgumentException(
                         NbBundle.getMessage(ConfigureFXMLCSSPanelVisual.class,
                             "MSG_ConfigureFXMLPanel_Template_Error")); // NOI18N
+        }
+
+        if (srcRoots == null || srcRoots.length < 1) {
+                throw new IllegalArgumentException(
+                        NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class,
+                            "MSG_ConfigureFXMLPanel_SGs_Error")); // NOI18N
         }
 
         String displayName;
@@ -103,6 +107,7 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
         putClientProperty("NewFileWizard_Title", displayName); // NOI18N        
 
         this.fxmlName = fxmlName;
+        this.srcRoots = srcRoots;
         this.rootFolder = rootFolder;
         updateText();
         updateResult();
@@ -286,9 +291,9 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
     }//GEN-LAST:event_cssCheckBoxItemStateChanged
 
     private void chooseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseButtonActionPerformed
-        JFileChooser chooser = new JFileChooser();
+        JFileChooser chooser = new JFileChooser(new FXMLTemplateWizardIterator.SrcFileSystemView(srcRoots));
         chooser.setDialogTitle(NbBundle.getMessage(ConfigureFXMLCSSPanelVisual.class, "LBL_ConfigureFXMLPanel_FileChooser_Select_CSS")); // NOI18N
-        chooser.setFileFilter(new CSSFileFilter());
+        chooser.setFileFilter(FXMLTemplateWizardIterator.FXMLTemplateFileFilter.createCSSFilter());
         String existingPath = existingNameTextField.getText();
         if (existingPath.length() > 0) {
             File f = new File(existingPath);
@@ -300,12 +305,11 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
         }
         
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-            File controllerClass = chooser.getSelectedFile();
-            final String srcPath = FileUtil.normalizeFile(rootFolder).getPath();
-            final String path = FileUtil.normalizeFile(controllerClass).getPath();
-            final String relativePath = path.substring(srcPath.length() + 1);
-            final String relativePathWithoutExt = relativePath.substring(0, relativePath.indexOf(CSS_FILE_EXTENSION));
-            existingNameTextField.setText(relativePathWithoutExt.replace(File.separatorChar, '.')); // NOI18N
+            String cssFile = FileUtil.normalizeFile(chooser.getSelectedFile()).getPath();
+            // XXX check other roots ?
+            final String srcPath = FileUtil.normalizeFile(srcRoots[0]).getPath();
+            final String relativePath = cssFile.substring(srcPath.length() + 1);
+            existingNameTextField.setText(relativePath);
         }
     }//GEN-LAST:event_chooseButtonActionPerformed
 
@@ -352,21 +356,35 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
     private void updateText() {
         String cssName = getNewCSSName();
         if (cssName == null) {
-            cssName = fxmlName.toLowerCase();
+            cssName = fxmlName.toLowerCase() + FXMLTemplateWizardIterator.CSS_FILE_EXTENSION;
             createdNameTextField.setText(cssName);
         }
     }
 
     private void updateResult() {
-        String controllerName = shouldCreateCSS() ? getNewCSSName() : getExistingCSSName();
-        if (controllerName == null) {
+        String cssName = shouldCreateCSS() ? getNewCSSName() : getExistingCSSName();
+        if (cssName == null) {
             fileTextField.setText(null);
             return;
         }
-        String file = FileUtil.getFileDisplayName(FileUtil.toFileObject(rootFolder)) + File.separator + controllerName + CSS_FILE_EXTENSION;
-        fileTextField.setText(file);
+
+        if (shouldCreateCSS()) {
+            String file = FileUtil.getFileDisplayName(FileUtil.toFileObject(rootFolder)) + 
+                    File.separator + cssName;
+            fileTextField.setText(file);
+        } else {
+            fileTextField.setText(getPathForExistingCSS(cssName));
+        }
     }
 
+    private String getPathForExistingCSS(String controllerName) {
+        assert controllerName != null;
+        return FileUtil.normalizeFile(srcRoots[0]).getPath() + File.separatorChar + controllerName;
+    }
+    
+    /**
+     * Returns error message or null if no error occurred
+     */
     String isCSSValid() {
         if (createNewRadioButton.isSelected()) {
             return FXMLTemplateWizardIterator.canUseFileName(rootFolder, getNewCSSName());
@@ -376,34 +394,13 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
             return "WARN_ConfigureFXMLPanel_Provide_CSS_Name"; // NOI18N
         }
         
-        final String path = existingNameTextField.getText().replace('.', File.separatorChar); // NOI18N
-        final File file = new File(rootFolder.getPath() + File.separatorChar + path + CSS_FILE_EXTENSION);
-//        return file.exists();
-        return null;
+        return FXMLTemplateWizardIterator.fileExist(getPathForExistingCSS(getExistingCSSName()));
     }
 
     boolean shouldCreateCSS() {
         return cssCheckBox.isSelected() && createNewRadioButton.isSelected();
     }
 
-    // Private innerclasses ----------------------------------------------------
-    private static class CSSFileFilter extends FileFilter {
-        
-        @Override
-        public boolean accept(File f) {
-            if (f.isDirectory()) {
-                return true;
-            }
-
-            return ("." + FileUtil.getExtension(f.getName())).equals(CSS_FILE_EXTENSION); // NOI18N
-        }
-
-        @Override
-        public String getDescription() {
-            return NbBundle.getMessage(ConfigureFXMLCSSPanelVisual.class, "LBL_ConfigureFXMLPanel_FileChooser_CSS_Description"); // NOI18N
-        }
-    }
-    
     static class Panel implements WizardDescriptor.Panel<WizardDescriptor> {
         
         private ConfigureFXMLCSSPanelVisual component;
@@ -428,8 +425,9 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
         public void readSettings(WizardDescriptor settings) {
             this.settings = settings;
             String fxmlName = Templates.getTargetName(settings);
-            File rootFolder = (File) settings.getProperty(FXMLTemplateWizardIterator.ROOT_FOLDER);
-            component.initValues(Templates.getTemplate(settings), fxmlName, rootFolder);
+            File[] srcRoots = (File[]) settings.getProperty(FXMLTemplateWizardIterator.PROP_SRC_ROOTS);
+            File rootFolder = (File) settings.getProperty(FXMLTemplateWizardIterator.PROP_ROOT_FOLDER);
+            component.initValues(Templates.getTemplate(settings), fxmlName, srcRoots, rootFolder);
 
             // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
             // this name is used in NewFileWizard to modify the title
@@ -448,8 +446,8 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
                 return;
             }
             if (isValid()) {
-                settings.putProperty(FXMLTemplateWizardIterator.CSS_CREATE, component.shouldCreateCSS());
-                settings.putProperty(FXMLTemplateWizardIterator.CSS_NAME_PROPERTY, 
+                settings.putProperty(FXMLTemplateWizardIterator.PROP_CSS_CREATE, component.shouldCreateCSS());
+                settings.putProperty(FXMLTemplateWizardIterator.PROP_CSS_NAME_PROPERTY, 
                     component.shouldCreateCSS() ? component.getNewCSSName() : component.getExistingCSSName());
             }
             settings.putProperty("NewFileWizard_Title", null); // NOI18N
@@ -458,9 +456,9 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
         @Override
         public boolean isValid() {
             if (component.isCSSEnabled()) {
-                String msg = component.isCSSValid();
-                FXMLTemplateWizardIterator.setErrorMessage(msg, settings);
-                return msg == null;
+                String errorMessage = component.isCSSValid();
+                settings.getNotificationLineSupport().setErrorMessage(errorMessage);
+                return errorMessage == null;
             }
             return true;
         }

@@ -303,22 +303,23 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
         int offset = 0;
         if (pIndex >= 0) {
             ParagraphView pView = get(pIndex);
-            if (pView.isChildrenNull()) {
-                // Perf.optimization: if pView.children == null return default char's width from pView's begining.
-                // It may be disabled if it causes problems but computing children
-                // requires much more processing (especially when offsets for view2model are spread across the document).
+            // Build the children if they are null.
+            // As perf.optimization it could return default char's width from pView's begining
+            // but clients that request measurements in not yet visible area would not get expected result:
+            // e.g. PgDn/Up would not be respecting magic caret pos etc.
+            // All these clients would be required to pre-build area in which they want to perform view-to-model.
+            if (ensureParagraphViewChildrenValid(docView, pIndex, pView)) {
+                pView = get(pIndex);
+            }
+            Shape pAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
+            if (pView.checkLayoutUpdate(pIndex, pAlloc)) {
+                pAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
+            }
+            docView.op.getTextLayoutCache().activate(pView);
+            if (x == 0d && !pView.children.isWrapped()) {
                 offset = pView.getStartOffset();
             } else {
-                Shape pAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
-                if (pView.checkLayoutUpdate(pIndex, pAlloc)) {
-                    pAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
-                }
-                docView.op.getTextLayoutCache().activate(pView);
-                if (x == 0d && !pView.children.isWrapped()) {
-                    offset = pView.getStartOffset();
-                } else {
-                    offset = pView.viewToModelChecked(x, y, pAlloc, biasReturn);
-                }
+                offset = pView.viewToModelChecked(x, y, pAlloc, biasReturn);
             }
         } else { // no pViews
             offset = docView.getStartOffset();
