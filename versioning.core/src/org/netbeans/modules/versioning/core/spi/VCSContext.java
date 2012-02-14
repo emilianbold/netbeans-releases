@@ -320,10 +320,13 @@ public final class VCSContext {
                     }
                     if (rootChildFo != null && 
                         rootChildFo.isValid() && 
-                        !sourceGroup.contains(rootChildFo) && 
-                        SharabilityQuery.getSharability(rootChildFo) != Sharability.NOT_SHARABLE) 
+                        !sourceGroup.contains(rootChildFo)) 
                     {
-                        rootFilesExclusions.add(child);
+                        child = child.normalizeFile();
+                        rootChildFo = child.toFileObject();
+                        if(SharabilityQuery.getSharability(rootChildFo) != Sharability.NOT_SHARABLE) {
+                            rootFilesExclusions.add(child);
+                        }
                     }
                 } catch (IllegalArgumentException ex) {
                     // #161904
