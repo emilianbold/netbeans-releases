@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import org.netbeans.modules.cnd.antlr.Token;
-import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
-
 /**
  *
- * @author nick
+ * @author Vladimir Voskresensky
  */
-public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
+public interface CppParserActionEx extends CppParserAction, PreprocessorAction {
     
-    void enum_declaration(Token token);
-    void enum_name(Token token);
-    void enum_body(Token token);
-    void enumerator(Token token);
-    void end_enum_body(Token token);
-    void end_enum_declaration(Token token);
-
-    void class_declaration(Token token);
-    void class_kind(Token token);
-    void class_name(Token token);
-    void class_body(Token token);
-    void end_class_body(Token token);
-    void end_class_declaration(Token token);
-    
-    void namespace_declaration(Token token);
-    void namespace_name(Token token);
-    void namespace_body(Token token);    
-    void end_namespace_body(Token token);
-    void end_namespace_declaration(Token token);
-
-    void compound_statement(Token token);
-    void end_compound_statement(Token token);
-    
-    void declaration(Token token);
-    void end_declaration(Token token);
-    
-    void id(Token token);
-    
-    void simple_type_id(Token token);
-    
-    boolean isType(String name);
 }

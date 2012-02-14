@@ -61,46 +61,22 @@ import org.openide.util.*;
  * 
  * @author Jaroslav Bachorik
  */
-@NbBundle.Messages("CTL_OpenAction=Open")
-@ActionID(category="Edit", id="org.netbeans.modules.javafx2.editor.fxml.FXMLOpenAction")
-@ActionReference(path="Loaders/text/x-fxml+xml/Actions", position=300)
-@ActionRegistration(displayName="#CTL_OpenAction", lazy=false)
-public class FXMLOpenAction extends AbstractAction implements ContextAwareAction, LookupListener {
+@NbBundle.Messages("CTL_EditAction=Edit")
+@ActionID(category="Edit", id="org.netbeans.modules.javafx2.editor.fxml.FXMLEditAction")
+@ActionReference(path="Loaders/text/x-fxml+xml/Actions", position=320)
+@ActionRegistration(displayName="#CTL_EditAction", lazy=false)
+public class FXMLEditAction extends AbstractAction implements ContextAwareAction, LookupListener {
     private final Lookup context;
     private Lookup.Result<DataObject> lkpInfo;
     
-    private FXMLOpener opener;
-    private FXMLOpener defaultOpener = new FXMLOpener() {
-        @Override
-        public boolean isEnabled(Lookup context) {
-            return context.lookupAll(DataObject.class).size() == 1;
-        }
-
-        @Override
-        public boolean open(Lookup context) {
-            DataObject dobj = context.lookup(DataObject.class);
-            OpenCookie oc = dobj.getCookie(OpenCookie.class);
-            if (oc != null) {
-                oc.open();
-                return true;
-            }
-            return false;
-        }
-    };
-    public FXMLOpenAction() {
+    public FXMLEditAction() {
         this(Utilities.actionsGlobalContext());
     }
     
-    public FXMLOpenAction(Lookup context) {
+    public FXMLEditAction(Lookup context) {
         this.context = context;
-        putValue(AbstractAction.NAME, Bundle.CTL_OpenAction());
+        putValue(AbstractAction.NAME, Bundle.CTL_EditAction());
         putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
-        
-        setupOpener();
-    }
-    
-    private void setupOpener() {
-        opener = Lookup.getDefault().lookup(FXMLOpener.class);
     }
     
     void init() {
@@ -121,7 +97,7 @@ public class FXMLOpenAction extends AbstractAction implements ContextAwareAction
     @Override
     public boolean isEnabled() {
         init();
-        return opener != null && super.isEnabled();
+        return super.isEnabled() && context.lookupAll(DataObject.class).size() == 1;
     }
  
     @Override
@@ -131,15 +107,15 @@ public class FXMLOpenAction extends AbstractAction implements ContextAwareAction
  
     @Override
     public Action createContextAwareInstance(Lookup context) {
-        return new FXMLOpenAction(context);
+        return new FXMLEditAction(context);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (opener != null) {
-            opener.open(context);
-        } else if (defaultOpener.isEnabled(context)) {
-            defaultOpener.open(context);
+        DataObject dobj = context.lookup(DataObject.class);
+        OpenCookie oc = dobj.getCookie(OpenCookie.class);
+        if (oc != null) {
+            oc.open();
         }
     }
 }

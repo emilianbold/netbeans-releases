@@ -50,42 +50,61 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 /**
- * Locates and validates a SceneBuilder installation
+ * Creates {@linkplain Home} instance for an SB installation path
  * @author Jaroslav Bachorik
  */
-public class SBHomeLocator {
+public class SBHomeFactory {
     private static final String VER_CURRENT = "1.0"; // NOI18N
-    private static final String PROPERTIES_FILE = "scenebuilder.properties"; // NOI18N
     
-    private static final HomeLocator WINDOWS_HOME_LOCATOR = new HomeLocator() {
+    private static final HomeFactory WINDOWS_HOME_LOCATOR = new HomeFactory() {
         final private static String WKIP = "C:\\Program Files\\Oracle\\JavaFX Scene Builder " + VER_CURRENT; // NOI18N
         final private static String WKIP_MIX = "C:\\Program Files (x86)\\Oracle\\JavaFX Scene Builder " + VER_CURRENT; // NOI18N
-        
+        final private static String LAUNCHER_PATH = "bin/scenebuilder.exe"; // NOI18N
+        final private static String PROPERTIES_PATH = "bin/scenebuilder.properties"; // NOI18N
         @Override
-        public Home locateHome() {
-            Home h = getHomeForPath(WKIP);
+        public Home loadHome(String customPath) {
+            return getHomeForPath(customPath, LAUNCHER_PATH, PROPERTIES_PATH);
+        }
+
+        @Override
+        public Home defaultHome() {
+            Home h = loadHome(WKIP);
             if (h == null) {
-                h = getHomeForPath(WKIP_MIX);
+                h = loadHome(WKIP_MIX);
             }
+            
             return h;
         }
     };
-    private static final HomeLocator MAC_HOME_LOCATOR = new HomeLocator() {
-        final private static String WKIP = "/Applications/JavaFX Scene Builder 1.0.app/Contents/Resources/SceneBuilder"; // NOI18N
+    private static final HomeFactory MAC_HOME_LOCATOR = new HomeFactory() {
+        final private static String WKIP = "/Applications/JavaFX Scene Builder " + VER_CURRENT + ".app"; // NOI18N
+        final private static String LAUNCHER_PATH = "Contents/MacOS/scenebuilder-launcher.sh"; // NOI18N
+        final private static String PROPERTIES_PATH = "Contents/Resources/SceneBuilder/scenebuilder.properties"; // NOI18N
+        
         @Override
-        public Home locateHome() {
-            return getHomeForPath(WKIP);
+        public Home defaultHome() {
+            return loadHome(WKIP);
         }
-    };
-    private static final HomeLocator UX_HOME_LOCATOR = new HomeLocator() {
 
         @Override
-        public Home locateHome() {
+        public Home loadHome(String customPath) {
+            return getHomeForPath(customPath, LAUNCHER_PATH, PROPERTIES_PATH);
+        }
+    };
+    private static final HomeFactory UX_HOME_LOCATOR = new HomeFactory() {
+
+        @Override
+        public Home defaultHome() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Home loadHome(String customPath) {
             throw new UnsupportedOperationException();
         }
     };
     
-    public static HomeLocator getLocator() {
+    public static HomeFactory getDefault() {
         if (Utilities.isWindows()) {
             return WINDOWS_HOME_LOCATOR;
         } else if (Utilities.isMac()) {
@@ -95,17 +114,17 @@ public class SBHomeLocator {
         }
     }
     
-    private static Home getHomeForPath(String path) {
+    private static Home getHomeForPath(String path, String launcherPath, String propertiesPath) {
         File installDir = new File(path);
         if (installDir != null && installDir.exists() && installDir.isDirectory()) {
             FileObject installDirFO = FileUtil.toFileObject(installDir);
 
-            FileObject propertiesFO = installDirFO.getFileObject("bin/" + PROPERTIES_FILE); // NOI18N
+            FileObject propertiesFO = installDirFO.getFileObject(propertiesPath); // NOI18N
             if (propertiesFO != null && propertiesFO.isValid() && propertiesFO.isData()) {
                 try {
                     Properties props = new Properties();
                     props.load(new FileReader(FileUtil.toFile(propertiesFO)));
-                    return new Home(path, props.getProperty("version", "1.0")); // NOI18N
+                    return new Home(path, launcherPath, propertiesPath, props.getProperty("version", "1.0")); // NOI18N
                 } catch (IOException e) {
                 }
             }

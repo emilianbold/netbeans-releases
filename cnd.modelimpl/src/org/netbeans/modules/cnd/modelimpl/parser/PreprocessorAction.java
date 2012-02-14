@@ -41,128 +41,14 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import org.antlr.runtime.Token;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 
 /**
- * @author nick
+ *
+ * @author Vladimir Voskresensky
  */
-public class CXXParserEmptyActionImpl implements CXXParserActionEx {
-    private final Deque<CsmFile> files;
+public interface PreprocessorAction {
+    void pushFile(CsmFile file);
 
-    CXXParserEmptyActionImpl(CsmFile file) {
-        files = new ArrayDeque<CsmFile>();
-        files.push(file);
-    }
-
-    @Override
-    public void enum_declaration(Token token) {
-    }
-
-    @Override
-    public void enum_name(Token token) {
-    }
-
-    @Override
-    public void enum_body(Token token) {
-    }
-
-    @Override
-    public void enumerator(Token token) {
-    }
-
-    @Override
-    public void end_enum_body(Token token) {
-    }
-
-    @Override
-    public void end_enum_declaration(Token token) {
-    }
-
-    @Override
-    public void class_name(Token token) {
-    }
-
-    @Override
-    public void class_body(Token token) {
-    }
-
-    @Override
-    public void end_class_body(Token token) {
-    }
-
-    @Override
-    public void namespace_body(Token token) {
-    }
-
-    @Override
-    public void end_namespace_body(Token token) {
-    }
-
-    @Override
-    public void compound_statement(Token token) {
-    }
-
-    @Override
-    public void end_compound_statement(Token token) {
-    }
-
-    @Override
-    public void id(Token token) {
-    }
-
-    @Override
-    public boolean isType(String name) {
-        return false;
-    }
-
-    @Override
-    public void namespace_declaration(Token token) {
-    }
-
-    @Override
-    public void end_namespace_declaration(Token token) {
-    }
-
-    @Override
-    public void namespace_name(Token token) {
-    }
-
-    @Override
-    public void class_declaration(Token token) {
-    }
-
-    @Override
-    public void end_class_declaration(Token token) {
-    }
-
-    @Override
-    public void class_kind(Token token) {
-    }
-
-    @Override
-    public void simple_type_id(Token token) {
-    }
-
-    @Override
-    public void pushFile(CsmFile file) {
-        files.push(file);
-    }
-
-    @Override
-    public CsmFile popFile() {
-        CsmFile out = files.peek();
-        files.pop();
-        return out;
-    }
-
-    @Override
-    public void declaration(Token token) {
-    }
-
-    @Override
-    public void end_declaration(Token token) {
-    }
+    CsmFile popFile();
 }

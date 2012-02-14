@@ -478,32 +478,39 @@ public class TraceXRef extends TraceModel {
             CsmReference refFromStorage = CsmReferenceStorage.getDefault().get(ref);        
             boolean fromStorage = refFromStorage != null && refFromStorage.getReferencedObject() != null;
             CsmObject target = ref.getReferencedObject();
-            if (target != null && UIDProviderIml.isSelfUID(UIDs.get(target))) {
+            if (target == null) {
+                // skip all unresolved
+                if (fromStorage) {
+                    try {
+                        printErr.println("INDEXED UNRESOLVED" + ":" + ref, new RefLink(ref), true); // NOI18N
+                    } catch (IOException ioe) {
+                        // skip it
+                    }
+                }
+                return;
+            }
+            if (UIDProviderIml.isSelfUID(UIDs.get(target))) {
                 // skip all locals
                 return;
             }
-            boolean important = false;
+            if (CsmKindUtilities.isParameter(target)) {
+                // skip parameters
+                return;
+            }
             String skind;
-            if (target == null) {
-                skind = "UNRESOLVED"; //NOI18N
-                entry = XRefResultSet.ContextEntry.UNRESOLVED;
-                important = true;
+            entry = XRefResultSet.ContextEntry.RESOLVED;
+            if (CsmKindUtilities.isParameter(target)) {
+                skind = "PARAMETER"; //NOI18N
+            } else if(CsmKindUtilities.isDeclaration(target)) {
+                skind = ((CsmDeclaration)target).getKind().toString();
+            } else if(CsmKindUtilities.isNamespace(target)) {
+                skind = "NAMESPACE"; //NOI18N
             } else {
-                skind = "OBJECT"; //NOI18N
-                entry = XRefResultSet.ContextEntry.RESOLVED;
-                if (CsmKindUtilities.isParameter(target)) {
-                    skind = "PARAMETER"; //NOI18N
-                } else if(CsmKindUtilities.isDeclaration(target)) {
-                    skind = ((CsmDeclaration)target).getKind().toString();
-                } else if(CsmKindUtilities.isNamespace(target)) {
-                    skind = "NAMESPACE"; //NOI18N
-                } else {
-                    skind = "UNKNOWN"; //NOI18N
-                }
+                skind = "UNKNOWN"; //NOI18N
             }
             if(!fromStorage) {
                 try {
-                    printErr.println(skind + ":" + ref, new RefLink(ref), important); // NOI18N
+                    printErr.println(skind + ":" + ref, new RefLink(ref), false); // NOI18N
                 } catch (IOException ioe) {
                     // skip it
                 }

@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
@@ -65,7 +64,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl.EnumeratorBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl.NamespaceBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.parser.symtab.*;
 import org.openide.util.CharSequences;
@@ -73,7 +71,7 @@ import org.openide.util.CharSequences;
 /**
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
-public class CppParserActionImpl implements CppParserAction {
+public class CppParserActionImpl implements CppParserActionEx {
 
     private enum CppAttributes implements SymTabEntryKey {
         SYM_TAB, DEFINITION, TYPE
@@ -235,7 +233,7 @@ public class CppParserActionImpl implements CppParserAction {
                 // error
             }
 
-            classBuilder.setName(name);
+            classBuilder.setName(name, aToken.getOffset(), aToken.getEndOffset());
         }
     }
     
@@ -324,6 +322,14 @@ public class CppParserActionImpl implements CppParserAction {
     }
     
     @Override
+    public void declaration(Token token) {
+    }
+
+    @Override
+    public void end_declaration(Token token) {
+    }
+    
+    @Override
     public void compound_statement(Token token) {
         globalSymTab.push();
     }
@@ -369,14 +375,6 @@ public class CppParserActionImpl implements CppParserAction {
         }
         return false;
     }
-
-    @Override
-    public void onInclude(CsmFile inclFile, APTPreprocHandler.State stateBefore) {
-        if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
-            assert inclFile instanceof FileImpl;
-            ((FileImpl)inclFile).parseOnInclude(stateBefore, this);
-        }
-    }
      
     @Override
     public void pushFile(CsmFile file) {
@@ -392,8 +390,7 @@ public class CppParserActionImpl implements CppParserAction {
         return out;
     }
 
-    @Override
-    public Map<Integer, CsmObject> getObjectsMap() {
+    Map<Integer, CsmObject> getObjectsMap() {
         return currentContext.objects;
     }
     

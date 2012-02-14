@@ -50,6 +50,8 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.j2ee.persistence.editor.*;
+import org.netbeans.modules.j2ee.persistence.provider.Provider;
+import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.unit.PersistenceCfgProperties;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
@@ -72,14 +74,9 @@ public final class PUCompletionManager {
 
     private void setupCompletors() {
 
-        // Completion items for configuration properties
-        String[] propertyNames = new String[]{
-            org.eclipse.persistence.config.PersistenceUnitProperties.ALLOW_NATIVE_SQL_QUERIES, NbBundle.getMessage(PUCompletionManager.class, "ALLOW_NATIVE_SQL_QUERIES_DESC"),
-            org.eclipse.persistence.config.PersistenceUnitProperties.JDBC_DRIVER, NbBundle.getMessage(PUCompletionManager.class, "JDBC_DRIVER_DESC")
-        };
 
         // Items for property names 
-        Completor.PersistencePropertyNameCompletor propertyNamesCompletor = new Completor.PersistencePropertyNameCompletor(propertyNames);
+        Completor.PersistencePropertyNameCompletor propertyNamesCompletor = new Completor.PersistencePropertyNameCompletor(PersistenceCfgProperties.getAllKeyAndValues());
         registerCompletor(PersistenceCfgXmlConstants.PROPERTY_TAG, PersistenceCfgXmlConstants.NAME_ATTRIB, propertyNamesCompletor);
 
         // Items for mapping xml files

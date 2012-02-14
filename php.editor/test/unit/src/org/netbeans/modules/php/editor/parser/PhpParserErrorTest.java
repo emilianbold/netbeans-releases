@@ -211,4 +211,8 @@ public class PhpParserErrorTest extends CslTestBase {
     public void testStaticExpressionCall_02() throws Exception {
         checkErrors("testfiles/parser/staticExpressionCall_02.php");
     }
+
+    public void testCfunction() throws Exception {
+        checkErrors("testfiles/parser/cfunction.php");
+    }
 }

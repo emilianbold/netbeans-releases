@@ -244,7 +244,15 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass, JavaRefa
         if (e == null) {
             return null;
         }
-        JEditorPane textC = ec.getOpenedPanes()[0];
+        JEditorPane[] openedPanes = ec.getOpenedPanes();
+        if (openedPanes == null) {
+            try {
+                return new MoveClassUI(DataObject.find(files[0]), tar, paste, Arrays.asList(handles));
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        JEditorPane textC = openedPanes[0];
         int startOffset = textC.getSelectionStart();
         int endOffset = textC.getSelectionEnd();
         if (startOffset == endOffset) {
