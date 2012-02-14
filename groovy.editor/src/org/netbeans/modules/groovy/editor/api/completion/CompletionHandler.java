@@ -2535,48 +2535,30 @@ public class CompletionHandler implements CodeCompletionHandler {
             if (definitionLine) {
                 newVars = getNewVarNameSuggestion(request.ctx);
             } else {
-
                 if (!(request.location == CaretLocation.OUTSIDE_CLASSES
                         || request.location == CaretLocation.INSIDE_STRING)) {
-                    // complete packages
                     completePackages(proposals, request);
-
-                    // complete classes, interfaces and enums
-
                     completeTypes(proposals, request);
-
                 }
 
                 if (!request.behindImport) {
-
                     if (request.location != CaretLocation.INSIDE_STRING) {
-                        // complete keywords
                         completeKeywords(proposals, request);
-
-                        // complete methods
                         completeMethods(proposals, request);
                     }
 
-                    // complete fields
                     completeFields(proposals, request);
-
-                    // complete local variables
                     completeLocalVars(proposals, request);
-
                 }
             }
 
-            // proposals for new vars
             completeNewVars(proposals, request, newVars);
-
-            // CamelCase completion
             completeCamelCase(proposals, request);
 
             return new DefaultCompletionResult(proposals, false);
         } finally {
             doc.readUnlock();
         }
-    //return proposals;
     }
 
     /**
