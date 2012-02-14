@@ -141,6 +141,27 @@ public abstract class Tabbed {
     public abstract boolean isTransparent();
     
     public abstract void setTransparent( boolean transparent );
+
+    /**
+     * Notify user that given TopComponent is 'busy' (some lengthy process is
+     * running in it).
+     * @param tc
+     * @param busy True to make the TopComponent busy, false to cancel the notification.
+     * @since 1.34
+     */
+    public void makeBusy( TopComponent tc, boolean busy ) {
+    }
+
+    /**
+     * Check if given TopComponent is busy
+     * @param tc
+     * @return True if the TopComponent is busy and its header should be painted
+     * in a special way, false otherwise.
+     * @since 1.34
+     */
+    public boolean isBusy( TopComponent tc ) {
+        return false;
+    }
     
     /**
      * Visual containers that hold the tabbed components must implement this interface

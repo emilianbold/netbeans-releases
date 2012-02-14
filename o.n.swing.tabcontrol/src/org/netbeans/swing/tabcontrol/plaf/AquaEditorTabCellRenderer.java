@@ -92,6 +92,9 @@ final class AquaEditorTabCellRenderer extends AbstractTabCellRenderer {
 
     @Override
     protected void paintIconAndText(Graphics g) {
+        if( isBusy() ) {
+            setIcon( BusyTabsSupport.getDefault().getBusyIcon( isSelected() ) );
+        }
         super.paintIconAndText(g);
     }
 
