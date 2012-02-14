@@ -74,6 +74,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -81,8 +82,8 @@ import org.openide.util.ImageUtilities;
  */
 public abstract class JPACompletionItem implements CompletionItem {
 
-    static JPACompletionItem createAttribValueItem(int substitutionOffset, String displayText, String docText) {
-        return new AttribValueItem(substitutionOffset, displayText, docText);
+    static JPACompletionItem createAttribValueItem(int substitutionOffset, String displayText) {
+        return new AttribValueItem(substitutionOffset, displayText);
     }
 
     static JPACompletionItem createTypeItem(int substitutionOffset, TypeElement typeElement, ElementHandle<TypeElement> create, boolean deprecated, boolean b) {
@@ -765,12 +766,10 @@ public abstract class JPACompletionItem implements CompletionItem {
     private static class AttribValueItem extends PersistenceXmlCompletionItem {
 
         private String displayText;
-        private String docText;
 
-        public AttribValueItem(int substitutionOffset, String displayText, String docText) {
+        public AttribValueItem(int substitutionOffset, String displayText) {
             super(substitutionOffset);
             this.displayText = displayText;
-            this.docText = docText;
         }
 
         @Override
@@ -804,6 +803,12 @@ public abstract class JPACompletionItem implements CompletionItem {
 
                 @Override
                 protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+                    String docText = null;
+                    try{
+                        docText = NbBundle.getMessage(PUCompletionManager.class, displayText+"_DESC");//NOI18N
+                    } catch (Exception ex){
+                        //just do not have doc by any reason
+                    }
                     if (docText != null) {
                         CompletionDocumentation documentation = PersistenceCompletionDocumentation.getAttribValueDoc(docText);
                         resultSet.setDocumentation(documentation);
