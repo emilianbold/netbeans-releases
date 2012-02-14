@@ -428,34 +428,34 @@ public class ModelTest extends JsTestBase {
         
         JsFunction function = (JsFunction)object.getProperty("isGood1");
         assertEquals(1, function.getReturnTypes().size());
-        assertTrue(function.getReturnTypes().contains("boolean"));
+        assertTrue(function.getReturnTypes().contains(Type.BOOLEAN));
         
         function = (JsFunction)object.getProperty("getSimpleDescription");
         assertEquals(1, function.getReturnTypes().size());
-        assertTrue(function.getReturnTypes().contains("string"));
+        assertTrue(function.getReturnTypes().contains(Type.STRING));
         
         function = (JsFunction)object.getProperty("getInteger");
         assertEquals(1, function.getReturnTypes().size());
-        assertTrue(function.getReturnTypes().contains("number"));
+        assertTrue(function.getReturnTypes().contains(Type.NUMBER));
         
         function = (JsFunction)object.getProperty("getDouble");
         assertEquals(1, function.getReturnTypes().size());
-        assertTrue(function.getReturnTypes().contains("number"));
+        assertTrue(function.getReturnTypes().contains(Type.NUMBER));
         
         function = (JsFunction)object.getProperty("getBigNumber");
         assertEquals(1, function.getReturnTypes().size());
-        assertTrue(function.getReturnTypes().contains("number"));
+        assertTrue(function.getReturnTypes().contains(Type.NUMBER));
         
         function = (JsFunction)object.getProperty("simpleMix");
         assertEquals(2, function.getReturnTypes().size());
-        assertTrue(function.getReturnTypes().contains("string"));
-        assertTrue(function.getReturnTypes().contains("number"));
+        assertTrue(function.getReturnTypes().contains(Type.STRING));
+        assertTrue(function.getReturnTypes().contains(Type.NUMBER));
         
         JsObject property = object.getProperty("isGreat");
         assertEquals(JsElement.Kind.PROPERTY, property.getJSKind());
         Collection<String> types = property.getAssignmentTypeNames(property.getDeclarationName().getOffsetRange().getEnd());
         assertEquals(1, types.size());
-        assertTrue(types.contains("boolean"));
+        assertTrue(types.contains(Type.BOOLEAN));
     }
     
     

@@ -46,7 +46,15 @@ package org.netbeans.modules.javascript2.editor.model;
  * @author Martin Fousek <marfous@netbeans.org>
  */
 public interface Type {
-
+    public static String BOOLEAN = "boolean";   //NOI18N
+    public static String NUMBER = "number";     //NOI18N
+    public static String STRING = "string";     //NOI18N
+    /**
+     * When the type is unknown / we are not able to resolve it
+     */
+    public static String UNRESOLVED = "unresolved"; //NOI18N 
+    public static String UNDEFINED = "undefined";   //NOI18N
+    
     public String getType();
 
 }

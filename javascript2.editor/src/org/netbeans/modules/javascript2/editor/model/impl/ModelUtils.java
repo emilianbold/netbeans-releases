@@ -54,11 +54,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
@@ -212,13 +208,13 @@ public class ModelUtils {
             LiteralNode lNode = (LiteralNode)expression;
             Object value = lNode.getObject();
             if (value instanceof Boolean) {
-                result.add("boolean"); //NOI18N
+                result.add(Type.BOOLEAN);
             } else if (value instanceof String) {
-                result.add("string");
+                result.add(Type.STRING);
             } else if (value instanceof Integer 
                     || value instanceof Float
                     || value instanceof Double) {
-                result.add("number");
+                result.add(Type.NUMBER);
             }
         } 
         return result;

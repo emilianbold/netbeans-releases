@@ -464,10 +464,11 @@ public class ModelVisitor extends PathNodeVisitor {
                 addOccurence((IdentNode)expression);
             }
             Collection<String> types = ModelUtils.resolveTypeOfExpression(expression);
-            if(!types.isEmpty()) {
-                JsFunctionImpl function = (JsFunctionImpl)modelBuilder.getCurrentDeclarationScope();
-                function.getReturnTypes().addAll(types);
+            if(types.isEmpty()) {
+               types.add(Type.UNRESOLVED); 
             }
+            JsFunctionImpl function = (JsFunctionImpl)modelBuilder.getCurrentDeclarationScope();
+            function.getReturnTypes().addAll(types);
         }
         return super.visit(returnNode, onset);
     }
