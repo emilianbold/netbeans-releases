@@ -269,6 +269,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
             List<Identifier> name = null;
             boolean isPrivate = false;
+            boolean isStatic = false; 
             int pathSize = getPath().size();
             if (pathSize > 1 && getPath().get(pathSize - 2) instanceof ReferenceNode) {
                 List<FunctionNode> siblings = functionStack.get(functionStack.size() - 1);
@@ -303,6 +304,10 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
                 name.add(new IdentifierImpl(functionNode.getIdent().getName(),
                         new OffsetRange(start, end)));
+                if (pathSize > 2 && getPath().get(pathSize - 2) instanceof FunctionNode) {
+                    isPrivate = true;
+                    isStatic = true;
+                }
             }
             functionStack.add(functions);
 
@@ -313,10 +318,13 @@ public class ModelVisitor extends PathNodeVisitor {
                 fncScope = ModelElementFactory.create(parserResult, functionNode, name, modelBuilder);
                 fncScope.setAnonymous(getPath().get(pathSize - 2) instanceof ReferenceNode
                         && getPath().get(pathSize - 3) instanceof CallNode);
+                Set<Modifier> modifiers = fncScope.getModifiers();
                 if (isPrivate) {
-//                    Set<Modifier> modifier = fncScope.getModifiers();
-//                    modifier.clear();
-//                    modifier.add(Modifier.PRIVATE);
+                    modifiers.remove(Modifier.PUBLIC);
+                    modifiers.add(Modifier.PRIVATE);
+                }
+                if (isStatic) {
+                    modifiers.add(Modifier.STATIC);
                 }
                 scope.addDeclaredScope(fncScope);
                 modelBuilder.setCurrentObject((JsObjectImpl)fncScope);

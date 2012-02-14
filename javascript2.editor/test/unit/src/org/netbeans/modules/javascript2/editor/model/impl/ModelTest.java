@@ -459,6 +459,22 @@ public class ModelTest extends JsTestBase {
     }
     
     
+    public void testReturnTypes02() throws Exception {
+        Model model = getModel("testfiles/model/returnTypes02.js");
+        assertNotNull(model);
+        
+        JsObject global = model.getGlobalObject();
+        JsObject object = global.getProperty("Man");
+        
+        JsFunction function = (JsFunction)object.getProperty("createAddress");
+        assertEquals(2, function.getModifiers().size());
+        assertTrue(function.getModifiers().contains(Modifier.STATIC));
+        assertTrue(function.getModifiers().contains(Modifier.PRIVATE));
+        assertEquals(JsElement.Kind.METHOD, function.getJSKind());
+        
+        
+    }
+    
 //    public void testPrivateMethod01() throws Exception {
 //        Model model = getModel("testfiles/model/privateMethod.js");
 //        assertNotNull(model);
