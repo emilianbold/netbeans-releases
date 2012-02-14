@@ -44,8 +44,6 @@ package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.nodes.Node;
@@ -56,9 +54,7 @@ import org.openide.nodes.Node;
  *
  * @author Tomas Stupka
  */
-public abstract class Query implements Comparable<Query> {
-
-    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+public abstract class QueryProvider {
 
     /**
      * queries issue list was changed
@@ -75,20 +71,14 @@ public abstract class Query implements Comparable<Query> {
      */
     public final static String EVENT_QUERY_REMOVED = "bugtracking.query.removed";     // NOI18N
 
-
-    private List<QueryNotifyListener> notifyListeners;
-    protected boolean saved;
-    private long lastRefresh = -1;
-
     static {
-        QueryAccessorImpl.create();
+        SPIAccessorImpl.createAccesor();
     }
-    private Node[] selection;
-
+    
     /**
      * Creates a query
      */
-    public Query() {
+    public QueryProvider() {
     }
 
     /**
@@ -112,54 +102,34 @@ public abstract class Query implements Comparable<Query> {
 
     /**
      *
-     * Returns this queries {@link Repository}
+     * Returns this queries {@link RepositoryProvider}
      *
-     * @return {@link Repository}
+     * @return {@link RepositoryProvider}
      */
-    public abstract Repository getRepository();
+    public abstract RepositoryProvider getRepository();
 
     /**
      * XXX should this realy be in the spi?
      * @param query
      */
-    public static void openNew(Repository repository) {
+    public static void openNew(RepositoryProvider repository) {
         QueryAction.openQuery(null, repository);
-    }
-
-    /*********
-     * DATA
-     *********/
-    /**
-     * Sets the queries status as saved. The {@link IssueTable} associated with
-     * this query will change its column layout
-     *
-     * @param saved
-     * XXX saved always true, isn't it?
-     */
-    protected void setSaved(boolean saved) {
-        this.saved = saved;
-        if(saved) {
-            selection = null;
-        }
-        fireQuerySaved(); 
     }
 
     /**
      * Returns true if query is saved
      * @return
      */
-    public boolean isSaved() {
-        return saved;
-    }
+    public abstract boolean isSaved();
 
     /**
      * Returns issue given by the last refresh
      * @return
      */
     // XXX used only by kenai - move out from spi
-    public abstract Issue[] getIssues(int includeStatus);
+    public abstract IssueProvider[] getIssues(int includeStatus);
 
-    public Issue[] getIssues() {
+    public IssueProvider[] getIssues() {
         return getIssues(~0);
     }
 
@@ -168,7 +138,7 @@ public abstract class Query implements Comparable<Query> {
      * @param issue
      * @return
      */
-    public abstract boolean contains(Issue issue);
+    public abstract boolean contains(IssueProvider issue);
 
     /**
      * Returns all issues given by the last refresh for
@@ -182,30 +152,8 @@ public abstract class Query implements Comparable<Query> {
     // XXX Shouldn't be called while running
     // XXX move to simple search
 
-    public Issue[] getIssues(String criteria) {
+    public IssueProvider[] getIssues(String criteria) {
         return BugtrackingUtil.getByIdOrSummary(getIssues(), criteria);
-    }
-
-    /**
-     * 
-     * @param q
-     * @return 
-     * @deprecated
-     */
-    public int compareTo(Query q) {
-        if(q == null) {
-            return 1;
-        }
-        return getDisplayName().compareTo(q.getDisplayName());
-    }    
-
-    /**
-     * 
-     * @return 
-     * @deprecated 
-     */
-    public long getLastRefresh() {
-        return lastRefresh;
     }
 
     /**
@@ -215,104 +163,16 @@ public abstract class Query implements Comparable<Query> {
      * @deprecated
      */
     // XXX used only by issue table - move out from spi    
-    public abstract int getIssueStatus(Issue issue);
+    public abstract int getIssueStatus(IssueProvider issue);
 
     /*********
      * EVENTS
      *********/
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
+    public abstract void removePropertyChangeListener(PropertyChangeListener listener);
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
+    public abstract void addPropertyChangeListener(PropertyChangeListener listener);
 
-    // XXX does this has to be protected
-    protected void fireQuerySaved() {
-        support.firePropertyChange(EVENT_QUERY_SAVED, null, null);
-    }
+    public abstract void setContext(Node[] nodes);
 
-    protected void fireQueryRemoved() {
-        support.firePropertyChange(EVENT_QUERY_REMOVED, null, null);
-    }
-
-    protected void fireQueryIssuesChanged() {
-        support.firePropertyChange(EVENT_QUERY_ISSUES_CHANGED, null, null);
-    }
-
-    public void addNotifyListener(QueryNotifyListener l) {
-        List<QueryNotifyListener> list = getNotifyListeners();
-        synchronized(list) {
-            list.add(l);
-        }
-    }
-
-    public void removeNotifyListener(QueryNotifyListener l) {
-        List<QueryNotifyListener> list = getNotifyListeners();
-        synchronized(list) {
-            list.remove(l);
-        }
-    }
-
-    protected void fireNotifyData(Issue issue) {
-        QueryNotifyListener[] listeners = getListeners();
-        for (QueryNotifyListener l : listeners) {
-            l.notifyData(issue);
-        }
-    }
-
-    protected void fireStarted() {
-        QueryNotifyListener[] listeners = getListeners();
-        for (QueryNotifyListener l : listeners) {
-            l.started();
-        }
-    }
-
-    protected void fireFinished() {
-        QueryNotifyListener[] listeners = getListeners();
-        for (QueryNotifyListener l : listeners) {
-            l.finished();
-        }
-    }
-
-    protected void executeQuery (Runnable r) {
-        fireStarted();
-        try {
-            r.run();
-        } finally {
-            fireFinished();
-            fireQueryIssuesChanged();
-            setLastRefresh(System.currentTimeMillis());
-        }
-    }
-
-    protected void setLastRefresh(long lastRefresh) {
-        this.lastRefresh = lastRefresh;
-    }
-
-    private QueryNotifyListener[] getListeners() {
-        List<QueryNotifyListener> list = getNotifyListeners();
-        QueryNotifyListener[] listeners;
-        synchronized (list) {
-            listeners = list.toArray(new QueryNotifyListener[list.size()]);
-        }
-        return listeners;
-    }
-
-    private List<QueryNotifyListener> getNotifyListeners() {
-        if(notifyListeners == null) {
-            notifyListeners = new ArrayList<QueryNotifyListener>();
-        }
-        return notifyListeners;
-    }
-
-    void setSelection(Node[] nodes) {
-        this.selection = nodes;
-    }
-
-    protected Node[] getSelection() {
-        return selection;
-    }
 }

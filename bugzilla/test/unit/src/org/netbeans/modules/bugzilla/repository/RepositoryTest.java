@@ -48,18 +48,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.*;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
-import org.openide.util.Lookup;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -67,7 +63,7 @@ import org.openide.util.Lookup;
  */
 public class RepositoryTest extends NbTestCase implements TestConstants {
 
-    private static String REPO_NAME = "Beautiful";
+    private static String REPO_NAME; 
     private static String QUERY_NAME = "Hilarious";
 
     public RepositoryTest(String arg0) {
@@ -82,24 +78,21 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        REPO_NAME = "Beautiful-" + System.currentTimeMillis();
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
-        // cleanup repositories
-        String[] repos = BugzillaConfig.getInstance().getRepositories();
-        for (String id : repos) {
-            BugzillaConfig.getInstance().removeRepository(id);
-        }
+        MockLookup.setLayersAndInstances();
+
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        BugzillaConfig.getInstance().removeRepository(REPO_NAME);
     }
 
     public void testController() throws Throwable {
         BugzillaConnector bc = getConnector();
         BugzillaRepository repo = (BugzillaRepository) bc.createRepository();       
-        RepositoryController c = getController(repo);
+        BugzillaRepositoryController c = getController(repo);
         
         // populate
         // only name
@@ -142,7 +135,7 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
     public void testControllerOnValidate() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, Throwable {
         BugzillaConnector bc = getConnector();
         BugzillaRepository repo = (BugzillaRepository) bc.createRepository();
-        RepositoryController c = getController(repo);
+        BugzillaRepositoryController c = getController(repo);
 
         checkOnValidate(c, REPO_NAME, REPO_URL, null, REPO_PASSWD, true);
 
@@ -159,7 +152,7 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         checkOnValidate(c, REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD, true);
     }
 
-    private void checkOnValidate(RepositoryController c, String repoName, String repoUrl, String user, String psswd, boolean assertWorked) throws Throwable {
+    private void checkOnValidate(BugzillaRepositoryController c, String repoName, String repoUrl, String user, String psswd, boolean assertWorked) throws Throwable {
 
         populate(c, repoName, repoUrl, user, psswd); //
         assertTrue(c.isValid());
@@ -180,13 +173,13 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
     }
 
     public void testRepo() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, Throwable {
-        BugzillaRepository repo = new BugzillaRepository(REPO_NAME, REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD, null, null);
+        BugzillaRepository repo = new BugzillaRepository(REPO_NAME, REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD.toCharArray(), null, null);
 
         // test queries
-        Query[] queries = repo.getQueries();
+        QueryProvider[] queries = repo.getQueries();
         assertEquals(0, queries.length);
 
-        Query q = repo.createQuery();
+        QueryProvider q = repo.createQuery();
         queries = repo.getQueries();
         assertEquals(0, queries.length); // returns only saved queries
 
@@ -207,7 +200,7 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
 
         // get issue
         String id = TestUtil.createIssue(repo, "somari");
-        Issue i = repo.getIssue(id);
+        IssueProvider i = repo.getIssue(id);
         assertNotNull(i);
         assertEquals(id, i.getID());
         assertEquals("somari", i.getSummary());
@@ -217,12 +210,12 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         long ts = System.currentTimeMillis();
         String summary1 = "somary" + ts;
         String summary2 = "mary" + ts;
-        BugzillaRepository repo = new BugzillaRepository(REPO_NAME, REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD, null, null);
+        BugzillaRepository repo = new BugzillaRepository(REPO_NAME, REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD.toCharArray(), null, null);
 
         String id1 = TestUtil.createIssue(repo, summary1);
         String id2 = TestUtil.createIssue(repo, summary2);
 
-        Issue[] issues = repo.simpleSearch(summary1);
+        IssueProvider[] issues = repo.simpleSearch(summary1);
         assertEquals(1, issues.length);
         assertEquals(summary1, issues[0].getSummary());
 
@@ -230,8 +223,8 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         // at least one as id might be also contained
         // in another issues summary
         assertTrue(issues.length > 0);
-        Issue i = null;
-        for(Issue issue : issues) {
+        IssueProvider i = null;
+        for(IssueProvider issue : issues) {
             if(issue.getID().equals(id1)) {
                 i = issue;
                 break;
@@ -243,7 +236,7 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         assertEquals(2, issues.length);
         List<String> summaries = new ArrayList<String>();
         List<String> ids = new ArrayList<String>();
-        for(Issue issue : issues) {
+        for(IssueProvider issue : issues) {
             summaries.add(issue.getSummary());
             ids.add(issue.getID());
         }
@@ -254,7 +247,7 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
     }
 
     private BugzillaConnector getConnector() {
-        Collection<BugtrackingConnector> c = (Collection<BugtrackingConnector>) Lookup.getDefault().lookupAll(BugtrackingConnector.class);
+        BugtrackingConnector[] c = BugtrackingUtil.getBugtrackingConnectors();
         BugzillaConnector bc = null;
         for (BugtrackingConnector bugtrackingConnector : c) {
             if(bugtrackingConnector instanceof BugzillaConnector) {
@@ -266,21 +259,21 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         return bc;
     }
 
-    private RepositoryController getController(BugzillaRepository repo) {
+    private BugzillaRepositoryController getController(BugzillaRepository repo) {
         assertNotNull(repo);
-        BugtrackingController c = repo.getController();
+        RepositoryController c = repo.getController();
         assertNotNull(c);
         assertFalse(c.isValid());
-        return (RepositoryController) c;
+        return (BugzillaRepositoryController) c;
     }
 
-    private RepositoryPanel getRepositoryPanel(BugtrackingController c) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+    private RepositoryPanel getRepositoryPanel(RepositoryController c) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         Field f = c.getClass().getDeclaredField("panel");
         f.setAccessible(true);
         return (RepositoryPanel) f.get(c);
     }
 
-    private void populate(RepositoryController c, String name, String url, String user, String psswd) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    private void populate(BugzillaRepositoryController c, String name, String url, String user, String psswd) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         RepositoryPanel panel = getRepositoryPanel(c);
         resetPanel(panel);        
         panel.nameField.setText(name);
@@ -297,13 +290,13 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         panel.psswdField.setText("");
     }
 
-    private void onValidate(RepositoryController c) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    private void onValidate(BugzillaRepositoryController c) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         Method m = c.getClass().getDeclaredMethod("onValidate");
         m.setAccessible(true);
         m.invoke(c);
     }
     
-    private void setPopulated(RepositoryController c) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
+    private void setPopulated(BugzillaRepositoryController c) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
         Field f = c.getClass().getDeclaredField("populated");
         f.setAccessible(true);
         f.set(c, true);

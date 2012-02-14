@@ -55,8 +55,6 @@ import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.Icon;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.bugzilla.util.FileUtils;
@@ -71,7 +69,6 @@ public class BugzillaConfig {
 
     private static BugzillaConfig instance = null;
     private static final String LAST_CHANGE_FROM    = "bugzilla.last_change_from";      // NOI18N // XXX
-    private static final String REPO_ID           = "bugzilla.repository_";           // NOI18N
     private static final String QUERY_NAME          = "bugzilla.query_";                // NOI18N
     private static final String QUERY_REFRESH_INT   = "bugzilla.query_refresh";         // NOI18N
     private static final String QUERY_AUTO_REFRESH  = "bugzilla.query_auto_refresh_";   // NOI18N
@@ -165,104 +162,6 @@ public class BugzillaConfig {
 
     public String[] getQueries(String repoID) {
         return getKeysWithPrefix(QUERY_NAME + repoID + DELIMITER);
-    }
-
-    public void putRepository(String repoID, BugzillaRepository repository) {
-        String repoName = repository.getDisplayName();
-
-        String user = repository.getUsername();
-
-        String httpUser = repository.getHttpUsername();
-        String url = repository.getUrl();
-        String shortNameEnabled = Boolean.toString(repository.isShortUsernamesEnabled());
-        getPreferences().put(
-                REPO_ID + repoID,
-                url + DELIMITER +
-                user + DELIMITER +
-                "" + DELIMITER +                // NOI18N - skip password, will be saved via keyring
-                httpUser + DELIMITER +
-                "" + DELIMITER +                // NOI18N - skip password, will be saved via keyring
-                shortNameEnabled + DELIMITER +
-                repoName);
-
-
-        String password = repository.getPassword();
-        String httpPassword = repository.getHttpPassword();
-        if(BugtrackingUtil.isNbRepository(repository)) {
-            NBBugzillaUtils.saveNBUsername(user);
-            String psswd = repository.getPassword();
-            NBBugzillaUtils.saveNBPassword(psswd != null ? psswd.toCharArray() : null);
-        } else {
-            BugtrackingUtil.savePassword(password, null, user, url);
-            BugtrackingUtil.savePassword(httpPassword, "http", httpUser, url); // NOI18N
-        }
-    }
-
-    public String getRepositoryName(String repoID) {
-        String[] values = getRepositoryValues(repoID);
-        if(values == null) {
-            return null;
-        }
-        return values.length > 6 ? values[6] : repoID;
-    }
-
-    public BugzillaRepository getRepository(String repoID) {
-        String[] values = getRepositoryValues(repoID);
-        if(values == null) {
-            return null;
-        }
-        assert values.length == 3 || values.length == 6 || values.length == 7;
-        String url = values[0];
-        boolean shortNameEnabled = false;
-        if (values.length > 5) {
-            shortNameEnabled = Boolean.parseBoolean(values[5]);
-        }
-        String name;
-        if (values.length > 6) {
-            name = values[6];
-        } else {
-            name = repoID;
-        }
-        BugzillaRepository repo = new BugzillaRepository(repoID, name, url, null, null, null, null, shortNameEnabled);
-
-        // make sure tha scrambled password is removed
-        if(!values[2].trim().equals("") || (values.length > 3 && !values[3].trim().equals(""))) {
-            putRepository(repoID, repo);
-        }
-
-        return repo;
-    }
-
-    public void setupCredentials(BugzillaRepository repository) {
-        String repoID = repository.getID();
-        String[] values = getRepositoryValues(repoID);
-        if(values == null) {
-            return;
-        }
-
-        String url = repository.getUrl();
-        String user;
-        String password;
-        if(BugtrackingUtil.isNbRepository(url)) {
-            user = NBBugzillaUtils.getNBUsername();
-            char[] psswdArray = NBBugzillaUtils.getNBPassword();
-            password = psswdArray != null ? new String(psswdArray) : null;
-        } else {
-            user = values[1];
-            password = new String(BugtrackingUtil.readPassword(values[2], null, user, url));
-        }
-        String httpUser = values.length > 3 ? values[3] : null;
-        String httpPassword = new String(values.length > 3 ? BugtrackingUtil.readPassword(values[4], "http", httpUser, url) : null); // NOI18N
-
-        repository.setCredentials(user, password, httpUser, httpPassword);
-    }
-
-    public String[] getRepositories() {
-        return getKeysWithPrefix(REPO_ID);
-    }
-
-    public void removeRepository(String id) {
-        getPreferences().remove(REPO_ID + id);
     }
 
     private String[] getKeysWithPrefix(String prefix) {
@@ -425,13 +324,5 @@ public class BugzillaConfig {
         }
         String nbHome = System.getProperty("netbeans.user");            //NOI18N
         return nbHome + "/config/issue-tracking/org-netbeans-modules-bugzilla"; //NOI18N
-    }
-
-    private String[] getRepositoryValues(String repoID) {
-        String repoString = getPreferences().get(REPO_ID + repoID, "");         // NOI18N
-        if(repoString.equals("")) {                                             // NOI18N
-            return null;
-        }
-        return repoString.split(DELIMITER);
     }
 }

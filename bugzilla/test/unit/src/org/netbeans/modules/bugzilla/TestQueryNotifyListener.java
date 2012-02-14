@@ -44,9 +44,9 @@ package org.netbeans.modules.bugzilla;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
+import org.netbeans.modules.bugzilla.query.QueryNotifyListener;
 
 /**
  *
@@ -55,7 +55,7 @@ import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 public class TestQueryNotifyListener implements QueryNotifyListener {
     public boolean started = false;
     public boolean finished = false;
-    public List<Issue> issues = new ArrayList<Issue>();
+    public List<IssueProvider> issues = new ArrayList<IssueProvider>();
     private BugzillaQuery q;
     public TestQueryNotifyListener(BugzillaQuery q) {
         this.q = q;
@@ -64,7 +64,7 @@ public class TestQueryNotifyListener implements QueryNotifyListener {
     public void started() {
         started = true;
     }
-    public void notifyData(Issue issue) {
+    public void notifyData(IssueProvider issue) {
         issues.add(issue);
     }
     public void finished() {
@@ -73,11 +73,11 @@ public class TestQueryNotifyListener implements QueryNotifyListener {
     public void reset() {
         started = false;
         finished = false;
-        issues = new ArrayList<Issue>();
+        issues = new ArrayList<IssueProvider>();
     }
-    public List<Issue> getIssues(int includeStatus) {
-        List<Issue> ret = new ArrayList<Issue>();
-        for (Issue issue : issues) {
+    public List<IssueProvider> getIssues(int includeStatus) {
+        List<IssueProvider> ret = new ArrayList<IssueProvider>();
+        for (IssueProvider issue : issues) {
             if (q == null || (q.getIssueStatus(issue) & includeStatus) != 0) {
                 ret.add(issue);
             }

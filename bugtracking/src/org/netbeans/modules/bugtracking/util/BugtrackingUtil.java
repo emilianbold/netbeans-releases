@@ -44,20 +44,8 @@ package org.netbeans.modules.bugtracking.util;
 
 import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
-import java.awt.AWTKeyStroke;
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.FontMetrics;
-import java.awt.KeyboardFocusManager;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.io.File;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -77,23 +65,20 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JViewport;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
 import org.netbeans.api.keyring.Keyring;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.bugtracking.BugtrackingConfig;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.DelegatingConnector;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.issue.PatchContextChooser;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
@@ -104,13 +89,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.*;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.TopComponent;
 
@@ -176,18 +155,18 @@ public class BugtrackingUtil {
      * 
      * @return issues
      */
-    public static Issue[] getOpenIssues() {
+    public static IssueProvider[] getOpenIssues() {
         Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
-        List<Issue> issues = new ArrayList<Issue>();
+        List<IssueProvider> issues = new ArrayList<IssueProvider>();
         for (TopComponent tc : tcs) {
             if(tc instanceof IssueTopComponent) {
-                Issue issue = ((IssueTopComponent)tc).getIssue();
+                IssueProvider issue = ((IssueTopComponent)tc).getIssue();
                 if(!issue.isNew()) {
                     issues.add(issue);
                 }
             }
         }
-        return issues.toArray(new Issue[issues.size()]);
+        return issues.toArray(new IssueProvider[issues.size()]);
     }
 
     /**
@@ -195,7 +174,7 @@ public class BugtrackingUtil {
      * @param issue
      * @return true in case the given issue is opened in the editor are, otherwise false
      */
-    public static boolean isOpened(Issue issue) {
+    public static boolean isOpened(IssueProvider issue) {
         IssueTopComponent tc = IssueTopComponent.find(issue, false);
         return tc != null ? tc.isOpened() : false;
     }
@@ -207,7 +186,7 @@ public class BugtrackingUtil {
      * @return true in case the given issue is opened in the editor area
      *         and showing on the screen, otherwise false
      */
-    public static boolean isShowing(Issue issue) {
+    public static boolean isShowing(IssueProvider issue) {
         IssueTopComponent tc = IssueTopComponent.find(issue, false);
         return tc != null ? tc.isShowing() : false;
     }
@@ -217,7 +196,7 @@ public class BugtrackingUtil {
      * @param query
      * @return
      */
-    public static boolean isOpened(Query query) {
+    public static boolean isOpened(QueryProvider query) {
         QueryTopComponent tc = QueryTopComponent.find(query);
         return tc != null ? tc.isOpened() : false;
     }
@@ -228,7 +207,7 @@ public class BugtrackingUtil {
      * @param query
      * @return
      */
-    public static boolean isShowing(Query query) {
+    public static boolean isShowing(QueryProvider query) {
         QueryTopComponent tc = QueryTopComponent.find(query);
         return tc != null ? tc.isShowing() : false;
     }
@@ -242,7 +221,7 @@ public class BugtrackingUtil {
      * @param criteria
      * @return
      */
-    public static Issue[] getByIdOrSummary(Issue[] issues, String criteria) {
+    public static IssueProvider[] getByIdOrSummary(IssueProvider[] issues, String criteria) {
         if(criteria == null) {
             return issues;
         }
@@ -251,8 +230,8 @@ public class BugtrackingUtil {
             return issues;
         }
         criteria = criteria.toLowerCase();
-        List<Issue> ret = new ArrayList<Issue>();
-        for (Issue issue : issues) {
+        List<IssueProvider> ret = new ArrayList<IssueProvider>();
+        for (IssueProvider issue : issues) {
             if(issue.isNew()) continue;
             String id = issue.getID();
             if(id == null) continue;
@@ -263,30 +242,35 @@ public class BugtrackingUtil {
                 ret.add(issue);
             }  
         }
-        return ret.toArray(new Issue[ret.size()]);
+        return ret.toArray(new IssueProvider[ret.size()]);
     }
 
-    public static Repository createRepository() {
+    public static RepositoryProvider createRepository() {
         RepositorySelector rs = new RepositorySelector();
-        Repository repo = rs.create();
+        RepositoryProvider repo = rs.create();
         return repo;
     }
 
-    public static boolean editRepository(Repository repository, String errorMessage) {
+    public static boolean editRepository(RepositoryProvider repository, String errorMessage) {
         RepositorySelector rs = new RepositorySelector();
         return rs.edit(repository, errorMessage);
     }
 
-    public static boolean editRepository(Repository repository) {
+    public static boolean editRepository(RepositoryProvider repository) {
         return editRepository(repository, null);
     }
 
-    public static Repository[] getKnownRepositories(boolean pingOpenProjects) {
+    public static RepositoryProvider[] getKnownRepositories(boolean pingOpenProjects) {
         return BugtrackingManager.getInstance().getKnownRepositories(pingOpenProjects);
     }
 
     public static BugtrackingConnector[] getBugtrackingConnectors() {
-        return BugtrackingManager.getInstance().getConnectors();
+        DelegatingConnector[] dcs = BugtrackingManager.getInstance().getConnectors();
+        BugtrackingConnector[] cons = new BugtrackingConnector[dcs.length];
+        for (int i = 0; i < cons.length; i++) {
+            cons[i] = dcs[i].getDelegate();
+        }
+        return cons;
     }
 
     public static String scramble(String str) {
@@ -297,7 +281,7 @@ public class BugtrackingUtil {
         return Scrambler.getInstance().descramble(str);
     }
 
-    public static Issue selectIssue(String message, Repository repository, JPanel caller, HelpCtx helpCtx) {
+    public static IssueProvider selectIssue(String message, RepositoryProvider repository, JPanel caller, HelpCtx helpCtx) {
         QuickSearchComboBar bar = new QuickSearchComboBar(caller);
         bar.setRepository(repository);
         bar.setAlignmentX(0f);
@@ -325,7 +309,7 @@ public class BugtrackingUtil {
                 0,
                 layoutStyle.getContainerGap(panel, SwingConstants.EAST, null)));
         panel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_IssueSelector"));
-        Issue issue = null;
+        IssueProvider issue = null;
         JButton ok = new JButton(bundle.getString("LBL_Select")); // NOI18N
         ok.getAccessibleContext().setAccessibleDescription(ok.getText());
         JButton cancel = new JButton(bundle.getString("LBL_Cancel")); // NOI18N
@@ -393,7 +377,7 @@ public class BugtrackingUtil {
         logBugtrackingEvents(USG_BUGTRACKING_AUTOMATIC_REFRESH, new Object[] {connector, queryName, isKenai, on} );
     }
 
-    public static synchronized void logBugtrackingUsage(Repository repository, String operation) {
+    public static synchronized void logBugtrackingUsage(RepositoryProvider repository, String operation) {
         if (repository == null) {
             return;
         }
@@ -438,9 +422,9 @@ public class BugtrackingUtil {
         return buf.toString();
     }
 
-    private static String getBugtrackingType(Repository repository) {
+    private static String getBugtrackingType(RepositoryProvider repository) {
         // XXX hack: there's no clean way to determine the type of bugtracking
-        // from Repository (need BugtrackingConnector.getDisplayName)
+        // from RepositoryProvider (need BugtrackingConnector.getDisplayName)
         String clsName = repository.getClass().getName();
         if (clsName.contains(".bugzilla.")) { // NOI18N
             return "Bugzilla"; // NOI18N
@@ -517,14 +501,14 @@ public class BugtrackingUtil {
     
     private static Pattern netbeansUrlPattern = Pattern.compile("(https|http)://(([a-z]|\\d)+\\.)*([a-z]|\\d)*netbeans([a-z]|\\d)*(([a-z]|\\d)*\\.)+org(.*)"); // NOI18N
     /**
-     * Determines wheter the given {@link Repository} is the
+     * Determines wheter the given {@link RepositoryProvider} is the
      * repository hosting netbeans or not
      *
      * @param repo
      * @return true if the given repository is the netbenas bugzilla, otherwise false
      */
-    public static boolean isNbRepository(Repository repo) {
-        String url = repo.getUrl();
+    public static boolean isNbRepository(RepositoryProvider repo) {
+        String url = repo.getInfo().getUrl();
         return isNbRepository(url);
     }
 
@@ -549,8 +533,12 @@ public class BugtrackingUtil {
      * @throws MissingResourceException
      */
     public static void savePassword(String password, String prefix, String user, String url) throws MissingResourceException {
-        if (password != null && !password.trim().equals("")) {                  // NOI18N
-            Keyring.save(getPasswordKey(prefix, user, url), password.toCharArray(), NbBundle.getMessage(BugtrackingUtil.class, "password_keyring_description", url)); // NOI18N
+        savePassword(password.toCharArray(), prefix, user, url);
+    }
+    
+    public static void savePassword(char[] password, String prefix, String user, String url) throws MissingResourceException {
+        if (password != null && password.length != 0) {                  
+            Keyring.save(getPasswordKey(prefix, user, url), password, NbBundle.getMessage(BugtrackingUtil.class, "password_keyring_description", url)); // NOI18N
         } else {
             Keyring.delete(getPasswordKey(prefix, user, url));
         }
@@ -565,7 +553,7 @@ public class BugtrackingUtil {
      * @return
      */
     public static char[] readPassword(String scrambledPassword, String keyPrefix, String user, String url) {
-        if (!scrambledPassword.equals("")) {                                    // NOI18N
+        if (scrambledPassword != null && !scrambledPassword.equals("")) {                                    // NOI18N
             return BugtrackingUtil.descramble(scrambledPassword).toCharArray();
         } else {
             char[] password = Keyring.read(getPasswordKey(keyPrefix, user, url));
@@ -594,7 +582,7 @@ public class BugtrackingUtil {
         return false;
     }
 
-    public static void openQuery(final Query query, final Repository repository, final boolean suggestedSelectionOnly) {
+    public static void openQuery(final QueryProvider query, final RepositoryProvider repository, final boolean suggestedSelectionOnly) {
         QueryAction.openQuery(query, repository, suggestedSelectionOnly);
     }
 
@@ -606,26 +594,80 @@ public class BugtrackingUtil {
         return BugtrackingManager.getInstance().getAllRecentIssues();
     }
 
-    public static Collection<Issue> getRecentIssues(Repository repo) {
+    public static Collection<IssueProvider> getRecentIssues(RepositoryProvider repo) {
         return BugtrackingManager.getInstance().getRecentIssues(repo);
     }
 
-    public static void closeQuery(Query query) {
+    public static void closeQuery(QueryProvider query) {
         QueryAction.closeQuery(query);
     }
 
-    public static void createIssue(Repository repo) {
+    public static void createIssue(RepositoryProvider repo) {
         IssueAction.createIssue(repo);
     }
 
-    public static String getPasswordLog(String psswd) {
+    public static String getPasswordLog(char[] psswd) {
         if(psswd == null) {
             return ""; // NOI18N
         }
         if("true".equals(System.getProperty("org.netbeans.modules.bugtracking.logPasswords", "false"))) { // NOI18N
-            return psswd; 
+            return new String(psswd); 
         }
         return "******"; // NOI18N
     }
+
+    public static RepositoryProvider[] getRepositories(String id) {
+        return RepositoryRegistry.getInstance().getRepositories(id);
+    }    
     
+    private static final String NB_BUGZILLA_PASSWORD = "nbbugzilla.password";                // NOI18N
+    private static final String NB_BUGZILLA_USERNAME = "nbbugzilla.username";                // NOI18N
+    
+    /**
+     * Returns the netbeans.org username
+     * Shouldn't be called in awt
+     *
+     * @return username
+     */
+    public static String getNBUsername() {
+        String user = BugtrackingConfig.getInstance().getPreferences().get(NB_BUGZILLA_USERNAME, ""); // NOI18N
+        return user.equals("") ? null : user;                         // NOI18N
+    }
+
+    /**
+     * Returns the netbeans.org password
+     * Shouldn't be called in awt
+     *
+     * @return password
+     */
+    public static char[] getNBPassword() {
+        return Keyring.read(NB_BUGZILLA_PASSWORD);
+    }
+
+    /**
+     * Save the given username as a netbeans.org username.
+     * Shouldn't be called in awt
+     */
+    public static void saveNBUsername(String username) {
+        BugtrackingConfig.getInstance().getPreferences().put(NB_BUGZILLA_USERNAME, username);
+    }
+
+    /**
+     * Saves the given value as a netbeans.org password
+     * Shouldn't be called in awt
+     */
+    public static void saveNBPassword(char[] password) {
+        if(password == null) {
+            Keyring.delete(NB_BUGZILLA_PASSWORD);
+        } else {
+            Keyring.save(
+                NB_BUGZILLA_PASSWORD,
+                password,
+                NbBundle.getMessage(
+                    BugtrackingUtil.class,
+                    "NBRepositorySupport.password_keyring_description"));       // NOI18N
+
+        }
+    }
+      
 }

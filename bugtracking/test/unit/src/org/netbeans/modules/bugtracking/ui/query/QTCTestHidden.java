@@ -43,6 +43,7 @@
 package org.netbeans.modules.bugtracking.ui.query;
 
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -53,13 +54,9 @@ import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
@@ -120,7 +117,7 @@ public class QTCTestHidden extends NbTestCase {
 //
 //        JPanel queriesPanel = (JPanel) getField(qtc2, "queriesPanel");
 //        assertTrue(queriesPanel.isVisible());
-//        Query[] savedQueries = (Query[]) getField(qtc2, "savedQueries");
+//        QueryProvider[] savedQueries = (QueryProvider[]) getField(qtc2, "savedQueries");
 //        assertEquals(1, savedQueries.length);
 //    }
 
@@ -192,8 +189,8 @@ public class QTCTestHidden extends NbTestCase {
         return qtc;
     }
 
-    private Query[] getSavedQueries(QueryTopComponent tc) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        return (Query[]) getField(tc, "savedQueries");
+    private QueryProvider[] getSavedQueries(QueryTopComponent tc) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        return (QueryProvider[]) getField(tc, "savedQueries");
     }
 
     private Object getField(Object o, String name) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
@@ -202,19 +199,22 @@ public class QTCTestHidden extends NbTestCase {
         return f.get(o);
     }
 
-    private static class MyRepository extends Repository {
-        List<Query> queries = new ArrayList<Query>();
+    private static class MyRepository extends RepositoryProvider {
+        List<QueryProvider> queries = new ArrayList<QueryProvider>();
         MyQuery newquery;
         private static int c = 0;
         private final int i;
+        private RepositoryInfo info;
         public MyRepository() {
             this.newquery = new MyQuery(this);
             this.i = c++;
+            String name = "repoid" + i;
+            info = new RepositoryInfo(name, name, "http://repo", name, name, null, null, null, null);
         }
 
         @Override
-        public String getID() {
-            return "repoid";
+        public RepositoryInfo getInfo() {
+            return info;
         }
 
         @Override
@@ -223,22 +223,7 @@ public class QTCTestHidden extends NbTestCase {
         }
 
         @Override
-        public String getDisplayName() {
-            return "repo"+i;
-        }
-
-        @Override
-        public String getTooltip() {
-            return "repo"+i;
-        }
-
-        @Override
-        public String getUrl() {
-            return "http://repo";
-        }
-
-        @Override
-        public Issue getIssue(String id) {
+        public IssueProvider getIssue(String id) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -248,27 +233,27 @@ public class QTCTestHidden extends NbTestCase {
         }
 
         @Override
-        public BugtrackingController getController() {
+        public RepositoryController getController() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public Query createQuery() {
+        public QueryProvider createQuery() {
             return newquery;
         }
 
         @Override
-        public Issue createIssue() {
+        public IssueProvider createIssue() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public Query[] getQueries() {
-            return queries.toArray(new Query[queries.size()]);
+        public QueryProvider[] getQueries() {
+            return queries.toArray(new QueryProvider[queries.size()]);
         }
 
         @Override
-        public Issue[] simpleSearch(String criteria) {
+        public IssueProvider[] simpleSearch(String criteria) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -281,13 +266,19 @@ public class QTCTestHidden extends NbTestCase {
         }
 
         @Override
-        public Collection<RepositoryUser> getUsers() {
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
     }
 
-    private static class MyQuery extends Query {
-        private Repository repository;
+    private static class MyQuery extends QueryProvider {
+        private RepositoryProvider repository;
         private static int c = 0;
         private final int i;
 
@@ -308,8 +299,9 @@ public class QTCTestHidden extends NbTestCase {
             @Override
             public void applyChanges() throws IOException {}
         };
+        private boolean saved;
 
-        public MyQuery(Repository repository) {
+        public MyQuery(RepositoryProvider repository) {
             this.repository = repository;
             i = c++;
         }
@@ -327,55 +319,63 @@ public class QTCTestHidden extends NbTestCase {
             return controler;
         }
         @Override
-        public Repository getRepository() {
+        public RepositoryProvider getRepository() {
             return repository;
         }        
         @Override
-        public Issue[] getIssues(int includeStatus) {
+        public IssueProvider[] getIssues(int includeStatus) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
         @Override
-        public boolean contains(Issue issue) {
+        public boolean contains(IssueProvider issue) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
         @Override
-        public int getIssueStatus(Issue issue) {
+        public int getIssueStatus(IssueProvider issue) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void setSaved(boolean saved) {
+            this.saved = saved;
+        }
+
+        @Override
+        public boolean isSaved() {
+            return saved;
+        }
+        
+        @Override
+        public void setContext(Node[] nodes) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public void setSaved(boolean saved) {
-            super.setSaved(saved);
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
     }
     
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class)
+    @BugtrackingConnector.Registration (
+        id=MyConnector.ID,
+        displayName="Dummy bugtracking connector",
+        tooltip="bugtracking connector created for testing purposes"
+    )
     public static class MyConnector extends BugtrackingConnector {
-        static String ID = "QTCconector";
+        final static String ID = "QTCconector";
         private static MyRepository repo = new MyRepository();
 
         public MyConnector() {
         }
 
         @Override
-        public String getDisplayName() {
-            return ID;
-        }
-
-        @Override
-        public String getTooltip() {
-            return ID;
-        }
-
-        @Override
-        public Repository createRepository() {
+        public RepositoryProvider createRepository() {
                 throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Repository[] getRepositories() {
-            return new Repository[] {repo};
         }
 
         public Lookup getLookup() {
@@ -383,15 +383,9 @@ public class QTCTestHidden extends NbTestCase {
         }
 
         @Override
-        public String getID() {
+        public RepositoryProvider createRepository(RepositoryInfo info) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-
-        @Override
-        public Image getIcon() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
     }
 
 }
