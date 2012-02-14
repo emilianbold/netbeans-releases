@@ -199,10 +199,9 @@ public class CasualDiff {
         td.diffTree(oldTree, newTree, (JCTree) (oldTreePath.getParentPath() != null ? oldTreePath.getParentPath().getLeaf() : null), new int[] {start, bounds[1]});
         String resultSrc = td.printer.toString().substring(start - lineStart);
         String originalText = isCUT ? origText : origText.substring(start, end);
-        new DiffFacility(td.diffs).makeListMatch(originalText, resultSrc, start);
         userInfo.putAll(td.diffInfo);
 
-        return td.getDiffs();
+        return DiffUtilities.diff(originalText, resultSrc, start);
     }
 
     public static Collection<Diff> diff(Context context,
@@ -234,10 +233,9 @@ public class CasualDiff {
 
         String resultSrc = td.printer.toString();
         String originalText = td.diffContext.origText.substring(start, end);
-        new DiffFacility(td.diffs).makeListMatch(originalText, resultSrc, start);
         userInfo.putAll(td.diffInfo);
 
-        return td.getDiffs();
+        return DiffUtilities.diff(originalText, resultSrc, start);
     }
 
     public int endPos(JCTree t) {

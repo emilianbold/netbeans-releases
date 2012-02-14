@@ -43,6 +43,11 @@
 package org.netbeans.spi.java.hints;
 
 import com.sun.source.util.TreePath;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,6 +56,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -58,6 +64,7 @@ import org.netbeans.modules.java.hints.spiimpl.JavaFixImpl;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
 
 /**A base class for fixes that modify Java source code. Using this class
  * as a base class makes creating the fix somewhat simpler, but also supports
@@ -79,7 +86,7 @@ public abstract class JavaFix {
      * @param tp a {@link TreePath} that will be passed back to the
      *           {@link #performRewrite(org.netbeans.spi.java.hints.JavaFix.TransformationContext) } method
      */
-    protected JavaFix(CompilationInfo info, TreePath tp) {
+    protected JavaFix(@NonNull CompilationInfo info, @NonNull TreePath tp) {
         this(info, tp, Collections.<String, String>emptyMap());
     }
 
@@ -94,7 +101,7 @@ public abstract class JavaFix {
      * @param handle a {@link TreePathHandle} that will be resolved and passed back to the
      *              {@link #performRewrite(org.netbeans.spi.java.hints.JavaFix.TransformationContext) } method
      */
-    protected JavaFix(TreePathHandle handle) {
+    protected JavaFix(@NonNull TreePathHandle handle) {
         this(handle, Collections.<String, String>emptyMap());
     }
 
@@ -107,13 +114,13 @@ public abstract class JavaFix {
      *
      * @return the display text of the fix.
      */
-    protected abstract String getText();
+    protected abstract @NonNull String getText();
 
     /**Do the transformations needed to implement the hint's function.
      *
      * @param ctx a context over which the fix should operate
      */
-    protected abstract void performRewrite(TransformationContext ctx);
+    protected abstract void performRewrite(@NonNull TransformationContext ctx);
 
     /**Convert this {@link JavaFix} into the Editor Hints {@link Fix}.
      *
@@ -131,7 +138,7 @@ public abstract class JavaFix {
                 return jf.getText();
             }
             @Override
-            public ChangeInfo process(JavaFix jf, WorkingCopy wc, boolean canShowUI) throws Exception {
+            public ChangeInfo process(JavaFix jf, WorkingCopy wc, boolean canShowUI, Map<FileObject, byte[]> resourceContent) throws Exception {
                 TreePath tp = jf.handle.resolve(wc);
 
                 if (tp == null) {
@@ -139,7 +146,7 @@ public abstract class JavaFix {
                     return null;
                 }
 
-                jf.performRewrite(new TransformationContext(wc, tp, canShowUI));
+                jf.performRewrite(new TransformationContext(wc, tp, canShowUI, resourceContent));
 
                 return null;
             }
@@ -177,10 +184,12 @@ public abstract class JavaFix {
         private final WorkingCopy workingCopy;
         private final TreePath path;
         private final boolean canShowUI;
-        TransformationContext(WorkingCopy workingCopy, TreePath path, boolean canShowUI) {
+        private final Map<FileObject, byte[]> resourceContentChanges;
+        TransformationContext(WorkingCopy workingCopy, TreePath path, boolean canShowUI, Map<FileObject, byte[]> resourceContentChanges) {
             this.workingCopy = workingCopy;
             this.path = path;
             this.canShowUI = canShowUI;
+            this.resourceContentChanges = resourceContentChanges;
         }
 
         boolean isCanShowUI() {
@@ -191,15 +200,64 @@ public abstract class JavaFix {
          *
          * @return the {@link TreePath} that was passed to a {@link JavaFix} constructor.
          */
-        public TreePath getPath() {
+        public @NonNull TreePath getPath() {
             return path;
         }
 
         /**A {@link WorkingCopy} over which the transformation should operate.
          * @return {@link WorkingCopy} over which the transformation should operate.
          */
-        public WorkingCopy getWorkingCopy() {
+        public @NonNull WorkingCopy getWorkingCopy() {
             return workingCopy;
+        }
+
+        /**Allows access to non-Java resources. The content of this InputStream will
+         * include all changes done through {@link #getResourceOutput(org.openide.filesystems.FileObject) }
+         * before calling this method.
+         *
+         * @param file whose content should be returned
+         * @return the file's content
+         * @throws IOException if something goes wrong while opening the file
+         * @throws IllegalArgumentException if {@code file} parameter is null, or
+         *                                  if it represents a Java file
+         */
+        public @NonNull InputStream getResourceContent(@NonNull FileObject file) throws IOException, IllegalArgumentException {
+            Parameters.notNull("file", file);
+            if ("text/x-java".equals(file.getMIMEType("text/x-java")))
+                throw new IllegalArgumentException("Cannot access Java files");
+            if (resourceContentChanges == null) return file.getInputStream();
+
+            byte[] newContent = resourceContentChanges.get(file);
+
+            if (newContent == null) {
+                return file.getInputStream();
+            } else {
+                return new ByteArrayInputStream(newContent);
+            }
+        }
+
+        /**Record a changed version of a file. The changes will be applied altogether with
+         * changes to the Java file. In Inspect&Transform, changes done through this
+         * method will be part of the preview.
+         *
+         * @param file whose content should be changed
+         * @return an {@link java.io.OutputStream} into which the new content of the file should be written
+         * @throws IOException if something goes wrong while opening the file
+         * @throws IllegalArgumentException if {@code file} parameter is null, or
+         *                                  if it represents a Java file
+         */
+        public @NonNull OutputStream getResourceOutput(@NonNull final FileObject file) throws IOException {
+            Parameters.notNull("file", file);
+            if ("text/x-java".equals(file.getMIMEType("text/x-java")))
+                throw new IllegalArgumentException("Cannot access Java files");
+            if (resourceContentChanges == null) return file.getOutputStream();
+
+            return new ByteArrayOutputStream() {
+                @Override public void close() throws IOException {
+                    super.close();
+                    resourceContentChanges.put(file, toByteArray());
+                }
+            };
         }
     }
 

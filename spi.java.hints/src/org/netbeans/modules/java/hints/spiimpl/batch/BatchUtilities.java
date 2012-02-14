@@ -49,6 +49,8 @@ import com.sun.tools.javac.util.Log;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -65,6 +67,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -82,6 +85,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.java.editor.semantic.SemanticHighlighter;
 import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch.BatchResult;
@@ -95,12 +99,13 @@ import org.netbeans.modules.java.hints.spiimpl.SyntheticFix;
 import org.netbeans.modules.java.hints.spiimpl.ipi.upgrade.ProjectDependencyUpgrader;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
+import org.netbeans.modules.java.source.save.DiffUtilities;
 import org.netbeans.modules.java.source.save.ElementOverlay;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -114,6 +119,7 @@ public class BatchUtilities {
     public static Collection<ModificationResult> applyFixes(BatchResult candidates, @NonNull final ProgressHandleWrapper progress, AtomicBoolean cancel, final Collection<? super MessageImpl> problems) {
         final Map<Project, Set<String>> processedDependencyChanges = new IdentityHashMap<Project, Set<String>>();
         final Map<FileObject, List<ModificationResult.Difference>> result = new LinkedHashMap<FileObject, List<ModificationResult.Difference>>();
+        final Map<FileObject, byte[]> resourceContentChanges = new HashMap<FileObject, byte[]>();
 
         BatchSearch.VerifiedSpansCallBack callback = new BatchSearch.VerifiedSpansCallBack() {
             private ElementOverlay overlay;
@@ -135,7 +141,7 @@ public class BatchUtilities {
                 copy.toPhase(Phase.RESOLVED);
                 progress.tick();
                 
-                if (applyFixes(copy, processedDependencyChanges, hints, problems)) {
+                if (applyFixes(copy, processedDependencyChanges, hints, resourceContentChanges, problems)) {
                     return false;
                 }
 
@@ -163,7 +169,22 @@ public class BatchUtilities {
         };
 
         BatchSearch.getVerifiedSpans(candidates, progress, callback, problems, cancel);
-        
+
+        for (Entry<FileObject, byte[]> e : resourceContentChanges.entrySet()) {
+            try {
+                byte[] origBytes = e.getKey().asBytes();
+                Charset encoding = FileEncodingQuery.getEncoding(e.getKey());
+                String origContent = encoding.newDecoder().decode(ByteBuffer.wrap(origBytes)).toString();
+                String newContent  = encoding.newDecoder().decode(ByteBuffer.wrap(e.getValue())).toString();
+
+                result.put(e.getKey(), DiffUtilities.diff2ModificationResultDifference(e.getKey(), null, Collections.<Integer, String>emptyMap(), origContent, newContent));
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
         return Collections.singletonList(JavaSourceAccessor.getINSTANCE().createModificationResult(result, Collections.<Object, int[]>emptyMap()));
     }
 
@@ -209,7 +230,7 @@ public class BatchUtilities {
         }
     }
 
-    public static boolean applyFixes(WorkingCopy copy, Map<Project, Set<String>> processedDependencyChanges, Collection<? extends ErrorDescription> hints, Collection<? super MessageImpl> problems) throws IllegalStateException, Exception {
+    public static boolean applyFixes(WorkingCopy copy, Map<Project, Set<String>> processedDependencyChanges, Collection<? extends ErrorDescription> hints, Map<FileObject, byte[]> resourceContentChanges, Collection<? super MessageImpl> problems) throws IllegalStateException, Exception {
         List<JavaFix> fixes = new ArrayList<JavaFix>();
         for (ErrorDescription ed : hints) {
             if (!ed.getFixes().isComputed()) {
@@ -248,7 +269,7 @@ public class BatchUtilities {
         for (JavaFix f : fixes) {
 //                    if (cancel.get()) return ;
 
-            JavaFixImpl.Accessor.INSTANCE.process(f, copy, false);
+            JavaFixImpl.Accessor.INSTANCE.process(f, copy, false, resourceContentChanges);
         }
         return false;
     }

@@ -179,7 +179,7 @@ public class UseNbBundleMessages {
             return null;
         }
         final boolean isAlreadyRegistered = isAlreadyRegistered(treePath, key);
-        final EditableProperties ep;
+        EditableProperties ep;
         final FileObject bundleProperties;
         if (isAlreadyRegistered) {
             if (mit == null) {
@@ -258,27 +258,32 @@ public class UseNbBundleMessages {
                             default:
                                 modifiers = ((ClassTree) enclosing).getModifiers();
                             }
+                try {
+                            EditableProperties ep = new EditableProperties(true);
+                            InputStream is = ctx.getResourceContent(bundleProperties);
+                            try {
+                                ep.load(is);
+                            } finally {
+                                is.close();
+                            }
                             List<ExpressionTree> lines = new ArrayList<ExpressionTree>();
                             for (String comment : ep.getComment(key)) {
                                 lines.add(make.Literal(comment));
                             }
                             lines.add(make.Literal(key + '=' + ep.remove(key)));
                             wc.rewrite(modifiers, addMessage(wc, modifiers, lines));
-                        }
                         // XXX remove NbBundle import if now unused
-                try {
-                    if (!isAlreadyRegistered) {
-                        OutputStream os = bundleProperties.getOutputStream();
+                        OutputStream os = ctx.getResourceOutput(bundleProperties);
                         try {
                             ep.store(os);
                         } finally {
                             os.close();
                         }
-                    }
                 } catch (IOException x) {
                     // XXX how to handle? cannot roll back (#207577 JG13)
                     Exceptions.printStackTrace(x);
                 }
+                    }
                 // XXX after JavaFix rewrite, Savable.save (on DataObject.find(src)) no longer works (JG13 again)
             }
                     // borrowed from FindBugsHint:

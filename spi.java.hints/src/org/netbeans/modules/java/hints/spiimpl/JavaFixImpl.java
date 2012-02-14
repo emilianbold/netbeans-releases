@@ -92,7 +92,7 @@ public final class JavaFixImpl implements Fix {
                     return;
                 }
 
-                Accessor.INSTANCE.process(jf, wc, true);
+                Accessor.INSTANCE.process(jf, wc, true, null);
             }
         }).commit();
 
@@ -112,7 +112,7 @@ public final class JavaFixImpl implements Fix {
         public static Accessor INSTANCE;
 
         public abstract String getText(JavaFix jf);
-        public abstract ChangeInfo process(JavaFix jf, WorkingCopy wc, boolean canShowUI) throws Exception;
+        public abstract ChangeInfo process(JavaFix jf, WorkingCopy wc, boolean canShowUI, Map<FileObject, byte[]> resourceContent) throws Exception;
         public abstract FileObject getFile(JavaFix jf);
         public abstract Map<String, String> getOptions(JavaFix jf);
         public abstract Fix rewriteFix(CompilationInfo info, String displayName, TreePath what, final String to, Map<String, TreePath> parameters, Map<String, Collection<? extends TreePath>> parametersMulti, final Map<String, String> parameterNames, Map<String, TypeMirror> constraints, Map<String, String> options, String... imports);
