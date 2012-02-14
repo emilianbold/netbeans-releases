@@ -334,6 +334,10 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("staticExpressionCall_02");
     }
 
+    public void testCfunction() throws Exception {
+        performTest("cfunction");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");
