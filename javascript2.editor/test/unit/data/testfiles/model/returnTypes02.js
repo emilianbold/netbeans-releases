@@ -1,4 +1,4 @@
-/*
+/* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
@@ -39,22 +39,66 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
-
-/**
- *
- * @author Martin Fousek <marfous@netbeans.org>
- */
-public interface Type {
-    public static String BOOLEAN = "boolean";   //NOI18N
-    public static String NUMBER = "number";     //NOI18N
-    public static String STRING = "string";     //NOI18N
-    /**
-     * When the type is unknown / we are not able to resolve it
-     */
-    public static String UNRESOLVED = "unresolved"; //NOI18N 
-    public static String UNDEFINED = "undefined";   //NOI18N
+function Man (firstName, lastName, street, town, zip) {
     
-    public String getType();
-
+    var address = createAddress(street, town, zip);
+    
+    function Address (streetp, townp, zipp) {
+        var street = streetp,
+            town = townp,
+            zip = zipp;
+        
+        this.printAddress = function() {
+            formatter.println("Address:")
+            formatter.addIndent(4);
+            formatter.println("Stree: " + street)
+            formatter.println("Town: " + town);
+            formatter.println("Zip: " + zip);
+            formatter.removeIndent(4);
+            var tmp = createAddress(street, town, zip+1);
+            formatter.println("Bigger zip: " + tmp.getZip());
+        }    
+        
+        this.correct = function() {
+            if (zip < 15000) {
+                zip = 15000;
+            }
+            
+            return this;
+        }
+        
+        this.getZip =  function() {
+            return zipp;
+        }
+        
+    }
+    
+    /*
+      This function is not visible outside.   
+    */
+    function createAddress(street, town, zip) {
+        return new Address(street, town, zip);
+    }
+    
+    this.getAddress = function () {
+        return address;
+    }
+    
+    this.print = function () {
+        formatter.println("Man info:");
+        formatter.addIndent(4);
+        formatter.println("First name: " + firstName);
+        formatter.println("Last name: " + lastName);
+        this.getAddress().printAddress();
+        formatter.removeIndent(4);
+        return this;
+    }
+   
 }
+
+var person = new Man("Josef", "Scriptu", "Delnicka", "Prague", 85);
+person.print();
+formatter.println("");
+formatter.println("Corrected address: ")
+person.getAddress().correct().printAddress();
+

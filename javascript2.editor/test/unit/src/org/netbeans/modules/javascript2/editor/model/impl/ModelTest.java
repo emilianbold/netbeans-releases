@@ -428,36 +428,53 @@ public class ModelTest extends JsTestBase {
         
         JsFunction function = (JsFunction)object.getProperty("isGood1");
         assertEquals(1, function.getReturnTypes().size());
-        assertTrue(function.getReturnTypes().contains("boolean"));
+        assertTrue(function.getReturnTypes().contains(Type.BOOLEAN));
         
         function = (JsFunction)object.getProperty("getSimpleDescription");
         assertEquals(1, function.getReturnTypes().size());
-        assertTrue(function.getReturnTypes().contains("string"));
+        assertTrue(function.getReturnTypes().contains(Type.STRING));
         
         function = (JsFunction)object.getProperty("getInteger");
         assertEquals(1, function.getReturnTypes().size());
-        assertTrue(function.getReturnTypes().contains("number"));
+        assertTrue(function.getReturnTypes().contains(Type.NUMBER));
         
         function = (JsFunction)object.getProperty("getDouble");
         assertEquals(1, function.getReturnTypes().size());
-        assertTrue(function.getReturnTypes().contains("number"));
+        assertTrue(function.getReturnTypes().contains(Type.NUMBER));
         
         function = (JsFunction)object.getProperty("getBigNumber");
         assertEquals(1, function.getReturnTypes().size());
-        assertTrue(function.getReturnTypes().contains("number"));
+        assertTrue(function.getReturnTypes().contains(Type.NUMBER));
         
         function = (JsFunction)object.getProperty("simpleMix");
         assertEquals(2, function.getReturnTypes().size());
-        assertTrue(function.getReturnTypes().contains("string"));
-        assertTrue(function.getReturnTypes().contains("number"));
+        assertTrue(function.getReturnTypes().contains(Type.STRING));
+        assertTrue(function.getReturnTypes().contains(Type.NUMBER));
         
         JsObject property = object.getProperty("isGreat");
         assertEquals(JsElement.Kind.PROPERTY, property.getJSKind());
         Collection<String> types = property.getAssignmentTypeNames(property.getDeclarationName().getOffsetRange().getEnd());
         assertEquals(1, types.size());
-        assertTrue(types.contains("boolean"));
+        assertTrue(types.contains(Type.BOOLEAN));
     }
     
+    
+    public void testReturnTypes02() throws Exception {
+        Model model = getModel("testfiles/model/returnTypes02.js");
+        assertNotNull(model);
+        
+        JsObject global = model.getGlobalObject();
+        JsObject object = global.getProperty("Man");
+        
+        JsFunction function = (JsFunction)object.getProperty("createAddress");
+        assertEquals(2, function.getModifiers().size());
+        assertTrue(function.getModifiers().contains(Modifier.STATIC));
+        assertTrue(function.getModifiers().contains(Modifier.PRIVATE));
+        assertEquals(JsElement.Kind.METHOD, function.getJSKind());
+        assertEquals(1, function.getReturnTypes().size());
+        assertTrue(function.getReturnTypes().contains("Man.Address"));
+        
+    }
     
 //    public void testPrivateMethod01() throws Exception {
 //        Model model = getModel("testfiles/model/privateMethod.js");

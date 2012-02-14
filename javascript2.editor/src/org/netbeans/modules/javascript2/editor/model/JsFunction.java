@@ -50,5 +50,11 @@ import java.util.Collection;
 public interface JsFunction  extends JsObject{
     public Collection<? extends JsObject> getParameters();
     public JsObject getParameter(String name);
+    /**
+     * 
+     * @return collection of possible types that can be returned by the function.
+     * It can return {@link Type.UNRESOLVED} if the type can not be resolved. The function
+     * also can return {@link Type.UNDEFINED} if there is no return statement.
+     */
     public Collection<String> getReturnTypes();
 }
