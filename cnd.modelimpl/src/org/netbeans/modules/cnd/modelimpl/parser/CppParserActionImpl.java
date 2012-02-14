@@ -233,7 +233,7 @@ public class CppParserActionImpl implements CppParserActionEx {
                 // error
             }
 
-            classBuilder.setName(name);
+            classBuilder.setName(name, aToken.getOffset(), aToken.getEndOffset());
         }
     }
     
@@ -319,6 +319,14 @@ public class CppParserActionImpl implements CppParserActionEx {
         }
         builderContext.pop();
         nsBuilder.create();
+    }
+    
+    @Override
+    public void declaration(Token token) {
+    }
+
+    @Override
+    public void end_declaration(Token token) {
     }
     
     @Override

@@ -158,4 +158,11 @@ public class CppParserEmptyActionImpl implements CppParserActionEx {
         return out;
     }
 
+    @Override
+    public void declaration(Token token) {
+    }
+
+    @Override
+    public void end_declaration(Token token) {
+    }
 }

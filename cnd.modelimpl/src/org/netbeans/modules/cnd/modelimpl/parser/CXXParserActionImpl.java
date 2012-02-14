@@ -185,4 +185,14 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     private org.netbeans.modules.cnd.antlr.Token convertToken(Token token) {
         return ParserProviderImpl.convertToken(token);
     }
+
+    @Override
+    public void declaration(Token token) {
+        orig.declaration(convertToken(token));
+    }
+
+    @Override
+    public void end_declaration(Token token) {
+        orig.end_declaration(convertToken(token));
+    }
 }

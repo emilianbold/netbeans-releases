@@ -73,6 +73,9 @@ public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
     void compound_statement(Token token);
     void end_compound_statement(Token token);
     
+    void declaration(Token token);
+    void end_declaration(Token token);
+    
     void id(Token token);
     
     void simple_type_id(Token token);

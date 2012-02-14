@@ -157,4 +157,12 @@ public class CXXParserEmptyActionImpl implements CXXParserActionEx {
         files.pop();
         return out;
     }
+
+    @Override
+    public void declaration(Token token) {
+    }
+
+    @Override
+    public void end_declaration(Token token) {
+    }
 }
