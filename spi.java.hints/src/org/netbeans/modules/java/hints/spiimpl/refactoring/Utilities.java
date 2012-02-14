@@ -190,6 +190,7 @@ public class Utilities {
             HashMap<HintMetadata, Collection<HintDescription>> localHints = new HashMap<HintMetadata, Collection<HintDescription>>();
 
             RulesManagerImpl.sortByMetadata(listedHints, localHints);
+            localHints.putAll((Map<HintMetadata, Collection<HintDescription>>) RulesManager.getInstance().readHints(null, null, null));
 
             this.hints = localHints;
         }
