@@ -270,6 +270,23 @@ public class JsStructureScanner implements StructureScanner {
             return modelElement;
         }
         
+        protected void appendTypeInfo(HtmlFormatter formatter, Collection<String> types) {
+            if (!types.isEmpty()) {
+                formatter.appendHtml(FONT_GRAY_COLOR);
+                formatter.appendText(" : ");
+                boolean addDelimiter = false;
+                for (String type : types) {
+                    if (addDelimiter) {
+                        formatter.appendText("|");
+                    } else {
+                        addDelimiter = true;
+                    }
+                    formatter.appendHtml(type);
+                }
+                formatter.appendHtml(CLOSE_FONT);
+            }
+        }
+        
     }
     
     private class JsFunctionStructureItem extends JsStructureItem {
@@ -309,21 +326,7 @@ public class JsStructureScanner implements StructureScanner {
             formatter.parameters(false);
             formatter.appendText(")");   //NOI18N
             
-            Collection<String> returnTypes = function.getReturnTypes();
-            if (!returnTypes.isEmpty()) {
-                formatter.appendHtml(FONT_GRAY_COLOR);
-                formatter.appendText(" : ");
-                boolean addDelimiter = false;
-                for (String type : returnTypes) {
-                    if (addDelimiter) {
-                        formatter.appendText("|");
-                    } else {
-                        addDelimiter = true;
-                    }
-                    formatter.appendHtml(type);
-                }
-                formatter.appendHtml(CLOSE_FONT);
-            }
+            appendTypeInfo(formatter, function.getReturnTypes());
         }
 
         @Override
@@ -337,8 +340,6 @@ public class JsStructureScanner implements StructureScanner {
         public JsObjectStructureItem(JsObject elementHandle, List<? extends StructureItem> children, JsParserResult parserResult) {
             super(elementHandle, children, "ob", parserResult); //NOI18N
         }
-
-        
 
         @Override
         public String getHtml(HtmlFormatter formatter) {
@@ -358,9 +359,11 @@ public class JsStructureScanner implements StructureScanner {
     }
     
     private class JsSimpleStructureItem extends JsStructureItem {
-
+        private final JsObject object;
+        
         public JsSimpleStructureItem(JsObject elementHandle, String sortPrefix, JsParserResult parserResult) {
             super(elementHandle, null, sortPrefix, parserResult);
+            this.object = elementHandle;
         }
 
         
@@ -368,6 +371,8 @@ public class JsStructureScanner implements StructureScanner {
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
             formatter.appendText(getElementHandle().getName());
+            Collection<String> types = object.getAssignmentTypeNames(object.getDeclarationName().getOffsetRange().getEnd());
+            appendTypeInfo(formatter, types);
             return formatter.getText();
         }
         

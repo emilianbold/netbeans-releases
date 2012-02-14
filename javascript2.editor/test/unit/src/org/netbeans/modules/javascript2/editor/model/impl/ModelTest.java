@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import org.netbeans.modules.csl.api.Modifier;
@@ -422,7 +423,7 @@ public class ModelTest extends JsTestBase {
         Model model = getModel("testfiles/model/returnTypes01.js");
         assertNotNull(model);
         
-        JsObject  global = model.getGlobalObject();
+        JsObject global = model.getGlobalObject();
         JsObject object = global.getProperty("testReturnType");
         
         JsFunction function = (JsFunction)object.getProperty("isGood1");
@@ -450,6 +451,11 @@ public class ModelTest extends JsTestBase {
         assertTrue(function.getReturnTypes().contains("string"));
         assertTrue(function.getReturnTypes().contains("number"));
         
+        JsObject property = object.getProperty("isGreat");
+        assertEquals(JsElement.Kind.PROPERTY, property.getJSKind());
+        Collection<String> types = property.getAssignmentTypeNames(property.getDeclarationName().getOffsetRange().getEnd());
+        assertEquals(1, types.size());
+        assertTrue(types.contains("boolean"));
     }
     
     

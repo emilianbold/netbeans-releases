@@ -45,10 +45,7 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 import com.oracle.nashorn.ir.*;
 import com.oracle.nashorn.parser.Token;
 import com.oracle.nashorn.parser.TokenType;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
@@ -417,7 +414,7 @@ public class ModelVisitor extends PathNodeVisitor {
             }
 
             if (name != null) {
-                JsObject property = scope.getProperty(name.getName());
+                JsObjectImpl property = (JsObjectImpl)scope.getProperty(name.getName());
                 if (property == null) {
                     property = new JsObjectImpl(scope, name, name.getOffsetRange());
                 } else {
@@ -430,12 +427,19 @@ public class ModelVisitor extends PathNodeVisitor {
                     property = newProperty;
                 }
                 scope.addProperty(name.getName(), property);
-                ((JsObjectImpl)property).setDeclared(true);
-                if(propertyNode.getValue() instanceof CallNode) {
+                property.setDeclared(true);
+                Node value = propertyNode.getValue();
+                if(value instanceof CallNode) {
                     // TODO for now, don't continue. There shoudl be handled cases liek
                     // in the testFiles/model/property02.js file
                     return null;
+                } else {
+                    Collection<String> types = ModelUtils.resolveTypeOfExpression(value);
+                    if (!types.isEmpty()) {
+                        property.addAssignment(types, name.getOffsetRange().getStart());
+                    }
                 }
+                
             }
         }
         return super.visit(propertyNode, onset);
