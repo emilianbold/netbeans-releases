@@ -123,7 +123,7 @@ public final class FormatToken {
         
         AFTER_FUNCTION_KEYWORD,
         AFTER_FUNCTION_NAME,
-        AFTER_FUNCTION_PARAMETER,
+        //AFTER_FUNCTION_PARAMETER,
         AFTER_FUNCTION,
 
         BEFORE_BINARY_OPERATOR,

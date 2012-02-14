@@ -86,7 +86,7 @@ public class JsFormatter implements Formatter {
             public void run() {
                 FormatTokenStream tokenStream = FormatTokenStream.create(LexUtilities.getJsTokenSequence(compilationInfo.getSnapshot()),
                         context.startOffset(), context.endOffset());
-                FormattingVisitor visitor = new FormattingVisitor(tokenStream,
+                FormatVisitor visitor = new FormatVisitor(tokenStream,
                         LexUtilities.getJsTokenSequence(compilationInfo.getSnapshot()));
 
                 FunctionNode root = ((JsParserResult) compilationInfo).getRoot();

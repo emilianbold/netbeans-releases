@@ -51,7 +51,7 @@ import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
  *
  * @author Petr Hejl
  */
-public class FormattingVisitor extends NodeVisitor {
+public class FormatVisitor extends NodeVisitor {
 
     private final TokenSequence<? extends JsTokenId> ts;
 
@@ -59,9 +59,7 @@ public class FormattingVisitor extends NodeVisitor {
 
     private Token nextToken;
 
-    private int indentationLevel = 0;
-
-    public FormattingVisitor(FormatTokenStream tokenStream, TokenSequence<? extends JsTokenId> ts) {
+    public FormatVisitor(FormatTokenStream tokenStream, TokenSequence<? extends JsTokenId> ts) {
         this.ts = ts;
         this.tokenStream = tokenStream;
     }
@@ -74,6 +72,15 @@ public class FormattingVisitor extends NodeVisitor {
     @Override
     public Node visit(Block block, boolean onset) {
         if (onset) {
+
+            Token token = getToken(block.position(), JsTokenId.BRACKET_LEFT_CURLY);
+            if (token != null && !isScript(block)) {
+                FormatToken formatToken = tokenStream.getToken(ts.offset());
+                if (formatToken != null) {
+                    appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+                }
+            }
+
             if (block instanceof FunctionNode) {
                 for (FunctionNode function : ((FunctionNode) block).getFunctions()) {
                     function.accept(this);
@@ -82,6 +89,14 @@ public class FormattingVisitor extends NodeVisitor {
 
             for (Node statement : block.getStatements()) {
                 statement.accept(this);
+            }
+
+            token = getToken(block.getFinish(), JsTokenId.BRACKET_RIGHT_CURLY);
+            if (token != null && !isScript(block) && ts.movePrevious()) {
+                FormatToken formatToken = tokenStream.getToken(ts.offset());
+                if (formatToken != null) {
+                    appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
+                }
             }
         }
         return null;
@@ -134,7 +149,7 @@ public class FormattingVisitor extends NodeVisitor {
 
     @Override
     public Node visit(FunctionNode functionNode, boolean onset) {
-        if (onset && functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
+        if (onset && !isScript(functionNode)) {
             int position = functionNode.position();
             getToken(position, JsTokenId.KEYWORD_FUNCTION);
 
@@ -166,10 +181,10 @@ public class FormattingVisitor extends NodeVisitor {
                     if (i < (params.size() - 1)) {
                         // comma
                         nextToken(JsTokenId.OPERATOR_COMMA);
-                        formatToken = tokenStream.getToken(ts.offset());
-                        if (formatToken != null) {
-                            appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_FUNCTION_PARAMETER));
-                        }
+//                        formatToken = tokenStream.getToken(ts.offset());
+//                        if (formatToken != null) {
+//                            appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_FUNCTION_PARAMETER));
+//                        }
                    }
                 }
             }
@@ -182,9 +197,7 @@ public class FormattingVisitor extends NodeVisitor {
             }
         }
 
-        indentationLevel++;
         visit((Block) functionNode, onset);
-        indentationLevel--;
         return null;
     }
 
@@ -300,6 +313,9 @@ public class FormattingVisitor extends NodeVisitor {
             while (expected != token.id() && ts.movePrevious()) {
                 token = ts.token();
             }
+            if (expected != token.id()) {
+                return null;
+            }
         }
         return token;
     }
@@ -324,6 +340,11 @@ public class FormattingVisitor extends NodeVisitor {
             return null;
         }
         return token;
+    }
+
+    private boolean isScript(Node node) {
+        return (node instanceof FunctionNode)
+                && ((FunctionNode) node).getKind() == FunctionNode.Kind.SCRIPT;
     }
 
     private static void appendToken(FormatToken previous, FormatToken token) {
