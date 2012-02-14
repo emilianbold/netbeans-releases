@@ -58,7 +58,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@MIMEResolver.Registration(resource="mime-resolver-rule.xml", displayName="#MYNAME")
+@MIMEResolver.Registration(resource="mime-resolver-rule.xml", displayName="#MYNAME", position=91)
 @NbBundle.Messages({
     "MYNAME=My Name",
     "EXTNAME=XYZ extension",
@@ -67,7 +67,8 @@ import org.openide.util.lookup.Lookups;
 @MIMEResolver.ExtensionRegistration(
     displayName="#EXTNAME", 
     extension={"abc", "xyz"}, 
-    mimeType="text/x-yz"
+    mimeType="text/x-yz",
+    position=92
 )
 @MIMEResolver.NamespaceRegistration(
     displayName="#SPACENAME",
@@ -76,7 +77,8 @@ import org.openide.util.lookup.Lookups;
     mimeType="text/x-my+xml",
     doctypePublicId={ "-//My/Type/EN", "-//Your/Type/EN" },
     elementName="myandyour",
-    elementNS="http://some.org/ns/123"
+    elementNS="http://some.org/ns/123",
+    position=93
 )
 public class MIMEResolverProcessorTest extends NbTestCase {
     private FileObject root;
