@@ -41,22 +41,9 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import java.util.Map;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-
 /**
  *
  * @author nick
  */
-public interface CXXParserActionEx extends CXXParserAction {
-    
-    void onInclude(CsmFile inclFile, APTPreprocHandler.State stateBefore);
-
-    void pushFile(CsmFile file);
-
-    CsmFile popFile();
-
-    Map<Integer, CsmObject> getObjectsMap();
+public interface CXXParserActionEx extends CXXParserAction, PreprocessorAction {
 }

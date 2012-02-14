@@ -41,9 +41,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import java.util.Map;
 import org.antlr.runtime.TokenStream;
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CXXParser;
 
 /**
@@ -57,13 +55,5 @@ public class CXXParserEx extends CXXParser {
     public CXXParserEx(TokenStream input, CXXParserActionEx action) {
         super(input, action);
         this.action = action;
-    }
-
-    void popFile() {
-        action.popFile();
-    }
-
-    Map<Integer, CsmObject> getObjectsMap() {
-        return action.getObjectsMap();
     }
 }
