@@ -64,6 +64,7 @@ import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.UIManager;
+import org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
 
 
@@ -195,6 +196,18 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
                      + BUMP_Y_PAD_UPPER, height - (BUMP_Y_PAD_UPPER
                      + BUMP_Y_PAD_BOTTOM));
         }
+
+        boolean slidedOut = false;
+        WinsysInfoForTabbedContainer winsysInfo = displayer.getContainerWinsysInfo();
+        if( null != winsysInfo && winsysInfo.isSlidedOutContainer() )
+            slidedOut = false;
+        if( isTabBusy( index ) && !slidedOut ) {
+            Icon busyIcon = BusyTabsSupport.getDefault().getBusyIcon( isSelected( index ) );
+            txtWidth -= busyIcon.getIconWidth() - 3 - TXT_X_PAD;
+            busyIcon.paintIcon( displayer, g, x+TXT_X_PAD, y+(height-busyIcon.getIconHeight())/2);
+            x += busyIcon.getIconWidth() + 3;
+        }
+
         HtmlRenderer.renderString(text, g, x + TXT_X_PAD, y + fm.getAscent()
                 + TXT_Y_PAD, txtWidth, height, getTxtFont(),
                 txtC,

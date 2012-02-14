@@ -114,6 +114,11 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
         //not implemented
     }
 
+    @Override
+    public void makeBusy(TopComponent tc, boolean busy) {
+        tabbedHandler.makeBusy( tc, busy );
+    }
+
     /** */
     @Override
     protected Component getModeComponent() {

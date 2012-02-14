@@ -50,6 +50,21 @@ made subject to such option by the copyright holder.
 <apidef name="winsys">Window System API</apidef>
 </apidefs>
 <changes>
+<change id="topcomponent.busy">
+    <api name="winsys"/>
+    <summary>Added method TopComponent.makeBusy(boolean).</summary>
+    <version major="6" minor="51"/>
+    <date day="14" month="2" year="2012"/>
+    <author login="saubrecht"/>
+    <compatibility addition="yes" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        <p>The new method can be used to inform user that some (possibly lengthy)
+        process is being run in given <code>TopComponent.</code></p>
+    </description>
+    <class package="org.openide.windows" name="WindowManager"/>
+    <class package="org.openide.windows" name="TopComponent"/>
+    <issue number="208026"/>
+</change>
 <change id="jtabbedpane.replacement.for.tabbedcontainer">
     <api name="winsys"/>
     <summary>Added branding options to replace the custom TabbedContainer with
