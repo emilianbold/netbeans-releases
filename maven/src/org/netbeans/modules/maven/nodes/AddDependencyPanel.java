@@ -189,6 +189,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 if (groupId.length() > 0) {
                     artifactCompleter.setLoading(true);
                     RP.post(new Runnable() {
+                        @Override
                         public void run() {
                             populateArtifact(groupId);
                         }
@@ -205,6 +206,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 if (groupId.length() > 0 && artifactId.length() > 0) {
                     versionCompleter.setLoading(true);
                     RP.post(new Runnable() {
+                        @Override
                         public void run() {
                             populateVersion(groupId, artifactId);
                         }
@@ -217,14 +219,17 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
         DocumentListener docList = new DocumentListener() {
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 checkValidState();
             }
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 checkValidState();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 checkValidState();
             }
@@ -235,6 +240,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         checkValidState();
         groupCompleter.setLoading(true);
         RP.post(new Runnable() {
+            @Override
             public void run() {
                 populateGroupId();
             }
@@ -707,6 +713,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         assert !SwingUtilities.isEventDispatchThread();
         final List<String> lst = new ArrayList<String>(RepositoryQueries.getGroups(RepositoryPreferences.getInstance().getRepositoryInfos()));
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 groupCompleter.setValueList(lst);
             }
@@ -719,6 +726,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
         final List<String> lst = new ArrayList<String>(RepositoryQueries.getArtifacts(groupId, RepositoryPreferences.getInstance().getRepositoryInfos()));
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 artifactCompleter.setValueList(lst);
             }
@@ -749,6 +757,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         Collections.sort(propList);
         vers.addAll(propList);
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 versionCompleter.setValueList(vers);
             }
@@ -1023,6 +1032,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             }
 
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     resultsRootNode.setOneChild(getSearchingNode());
                     AddDependencyPanel.this.searchField.setForeground(defSearchC);
@@ -1069,6 +1079,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                         if (queryRequest.countObservers()>0) {
                             try {
                                 SwingUtilities.invokeLater(new Runnable() {
+                                    @Override
                                     public void run() {
                                         AddDependencyPanel.this.nls.setInformationMessage(NbBundle.getMessage(AddDependencyPanel.class, "MSG_ClassesExcluded")); //NOI18N
                                     }
@@ -1078,6 +1089,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                             } catch (BooleanQuery.TooManyClauses exc2) {
                                 // if still failing, report to the user
                                 SwingUtilities.invokeLater(new Runnable() {
+                                    @Override
                                     public void run() {
                                         AddDependencyPanel.this.searchField.setForeground(Color.RED);
                                         AddDependencyPanel.this.nls.setWarningMessage(NbBundle.getMessage(AddDependencyPanel.class, "MSG_TooGeneral")); //NOI18N
@@ -1094,6 +1106,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                         // but most probably this thread will be it
                         // trying to indicate the condition to the user here
                         SwingUtilities.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 AddDependencyPanel.this.searchField.setForeground(Color.RED);
                                 AddDependencyPanel.this.nls.setWarningMessage(NbBundle.getMessage(AddDependencyPanel.class, "MSG_TooGeneral")); //NOI18N
@@ -1106,12 +1119,14 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
             t.addTaskListener(new TaskListener() {
 
+                @Override
                 public void taskFinished(Task task) {
                     synchronized (LOCK) {
                         String localText = inProgressText;
                         inProgressText = null;
                         if (lastQueryText != null && !lastQueryText.equals(localText)) {
                             SwingUtilities.invokeLater(new Runnable() {
+                                @Override
                                 public void run() {
                                     if (lastQueryText != null) {
                                         find(lastQueryText);
@@ -1124,6 +1139,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             });
         }
 
+        @Override
         public ExplorerManager getExplorerManager() {
             return manager;
         }
@@ -1165,6 +1181,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         /** Impl of comparator, sorts artifacts asfabetically with exception
          * of items that contain current query string, which take precedence.
          */
+        @Override
         public int compare(String s1, String s2) {
 
             int index1 = s1.indexOf(inProgressText);
@@ -1183,6 +1200,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         }
 
         /** PropertyChangeListener impl, stores maven coordinates of selected artifact */
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
                 Node[] selNodes = manager.getSelectedNodes();
@@ -1245,6 +1263,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             Collections.sort(keyList, QueryPanel.this);
 
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     updateResultNodes(keyList, map);
                 }
@@ -1284,6 +1303,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             RPofDMListPanel.post(this);
         }
 
+        @Override
         public ExplorerManager getExplorerManager() {
             return manager;
         }
@@ -1330,30 +1350,37 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             }
         }
 
+        @Override
         public void ancestorAdded(AncestorEvent event) {
             loadArtifacts();
         }
 
+        @Override
         public void ancestorRemoved(AncestorEvent event) {
         }
 
+        @Override
         public void ancestorMoved(AncestorEvent event) {
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             Node[] selNodes = manager.getSelectedNodes();
             changeSelection(selNodes.length == 1 ? selNodes[0].getLookup() : Lookup.EMPTY);
         }
 
         /** Loads dependencies outside EQ thread, updates tab state in EQ */
+        @Override
         public void run() {
             synchronized (DM_DEPS_LOCK) {
                 dmDeps = getDependenciesFromDM(project);
             }
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     boolean dmEmpty = dmDeps.isEmpty();
                     tabPane.setEnabledAt(2, !dmEmpty);
@@ -1384,16 +1411,19 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             RPofOpenListPanel.post(this);
         }
 
+        @Override
         public ExplorerManager getExplorerManager() {
             return manager;
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             Node[] selNodes = manager.getSelectedNodes();
             changeSelection(selNodes.length == 1 ? selNodes[0].getLookup() : Lookup.EMPTY);
         }
 
         /** Loads dependencies outside EQ thread, updates tab state in EQ */
+        @Override
         public void run() {
             Project[] prjs = OpenProjects.getDefault().getOpenProjects();
             final List<Node> toRet = new ArrayList<Node>();
@@ -1412,6 +1442,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             Node root = new AbstractNode(ch);
             getExplorerManager().setRootContext(root);
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     boolean opEmpty = toRet.isEmpty();
                     tabPane.setEnabledAt(1, !opEmpty);
@@ -1430,6 +1461,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             lookup = look;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             Project prj = lookup.lookup(Project.class);
             boolean set = false;
@@ -1472,6 +1504,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             }
         }
 
+        @Override
         public Action createContextAwareInstance(Lookup actionContext) {
             return new DefAction(close, actionContext);
         }
