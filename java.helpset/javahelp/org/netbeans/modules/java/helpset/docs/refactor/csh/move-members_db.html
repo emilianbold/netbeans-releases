@@ -12,7 +12,7 @@
     <body>
         <h2>Move Members Dialog Box</h2>
         <p><small> <a href="#seealso">See Also</a> </small></p>
-        <p>Use the Move Members dialog box to specify the target class where selected methods and fields of the source class are to be moved. 
+        <p>Use the Move Members dialog box to specify the target where selected methods and fields of the source are to be moved. 
         The Move Members dialog box appears after you have chosen the Refactor &gt; Move refactoring command while having a class method or field selected in the Source Editor or in the Members View of the Navigator.</p>
 
         <p>The dialog box has the following fields:</p>
@@ -69,10 +69,43 @@
   <li> You can toggle the display of the toolbar by clicking the black arrow in the center of the divider. </li>
 </ul>
 </li>
-<li><b>Visibility.</b> Specify visibility level using six options available (<tt>Escalate</tt>, <tt>As is</tt>, <tt>Private</tt>, <tt>&lt;default&gt;</tt>, <tt>Protected</tt>, <tt>Public</tt>).</li>
+<li><b>Visibility.</b> Specify visibility level using six options available.
+<p>The following table lists the visibility levels that a member can have.</p>
+        <table border="1" cellpadding="5" cellspacing="0">
+	<tr>
+		<th align="center" scope="col">Level</th>
+		<th align="center" scope="col">Description</th>
+	</tr>
+	        <tr valign="top">
+		<td align="center"><b>Escalate</b></td>
+		<td> Automatically raise the visibility to a necessary level based on usages.</td>
+	</tr>
+        <tr valign="top">
+		<td align="center"><b>As is</b></td>
+		<td>Keep the current visibility level of the member.</td>
+	</tr>
+	<tr>
+		<td align="center"><b>Private</b></td>
+		<td>Change to or keep the visibility private. </td>
+	</tr>
+	<tr>
+		<td align="center"><b>&lt;default&gt;</b></td>
+		<td>Change to or keep the visibility the default level. </td>
+	</tr>
+	<tr>
+		<td align="center"><b>Protected</b></td>
+		<td>Change to or keep the visibility protected. </td>
+	</tr>
+	<tr>
+		<td align="center"><b>Public</b></td>
+		<td>Change to or keep the visibility public. </td>
+	</tr>
+	</table>
+</li>
+
 <li><b>Javadoc.</b> Specify whether the Javadoc documentation is to be kept as is or updated during the refactoring using the two options available (<tt>As is</tt>, <tt>Update</tt>).</li>
 <li><b>Keep original method(s) and delegate to the moved method.</b> Select to 
-  keep original method(s) in the source class and generate a proxy method that will delegate to  the moved method.
+  keep original method(s) signature in the source class and let it call the newly created method in the target class.
     <ul>
 <li><b>Deprecate the old method(s).</b> Select to deprecate the old method(s) in the source class after refactoring. </li>
 </ul></li>

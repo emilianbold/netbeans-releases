@@ -408,7 +408,8 @@
 <mapID target="org.netbeans.modules.java.hints.jackpot.refactoring.ReplaceConstructorWithBuilderUI" url="refactor/csh/replace-constructor-builder_db.html" />
 <!--Invert Boolean dialog box: -->
 <mapID target="org.netbeans.modules.java.hints.jackpot.refactoring.InvertBooleanRefactoringUI" url="refactor/csh/invert-boolean_db.html" />
-
+<!--Move Members dialog box: -->
+<mapID target="org.netbeans.modules.refactoring.java.ui.MoveMembersUI" url="refactor/csh/move-members_db.html" />
 
 
 
