@@ -42,11 +42,7 @@
 package org.netbeans.modules.j2ee.persistence.editor.completion;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
@@ -66,6 +62,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.j2ee.persistence.editor.CompletionContext;
 import org.netbeans.modules.j2ee.persistence.editor.JPAEditorUtil;
+import org.netbeans.modules.j2ee.persistence.provider.Provider;
+import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -122,10 +120,10 @@ public abstract class Completor {
      */
     public static class AttributeValueCompletor extends Completor {
 
-        private String[] itemTextAndDocs;
+        private String[] itemTexts;
 
         public AttributeValueCompletor(String[] itemTextAndDocs) {
-            this.itemTextAndDocs = itemTextAndDocs;
+            this.itemTexts = itemTextAndDocs;
         }
 
         public List<JPACompletionItem> doCompletion(CompletionContext context) {
@@ -133,10 +131,10 @@ public abstract class Completor {
             int caretOffset = context.getCaretOffset();
             String typedChars = context.getTypedPrefix();
 
-            for (int i = 0; i < itemTextAndDocs.length; i += 2) {
-                if (itemTextAndDocs[i].startsWith(typedChars.trim())) {
+            for (int i = 0; i < itemTexts.length; i += 1) {
+                if (itemTexts[i].startsWith(typedChars.trim())) {
                     JPACompletionItem item = JPACompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
-                            itemTextAndDocs[i], itemTextAndDocs[i + 1]);
+                            itemTexts[i]);
                     results.add(item);
                 }
             }
@@ -361,22 +359,26 @@ public abstract class Completor {
      */
     public static class PersistencePropertyNameCompletor extends Completor {
 
-        private String[] itemTextAndDocs;
+        private Map<Provider, Map<String, Object>> allKeyAndValues;
 
-        public PersistencePropertyNameCompletor(String[] itemTextAndDocs) {
-            this.itemTextAndDocs = itemTextAndDocs;
+        PersistencePropertyNameCompletor(Map<Provider, Map<String, Object>> allKeyAndValues) {
+            this.allKeyAndValues = allKeyAndValues;
         }
 
         public List<JPACompletionItem> doCompletion(CompletionContext context) {
             List<JPACompletionItem> results = new ArrayList<JPACompletionItem>();
             int caretOffset = context.getCaretOffset();
             String typedChars = context.getTypedPrefix();
+            ArrayList<String> keys = new ArrayList<String>();
+            keys.addAll(allKeyAndValues.get(null).keySet());
+            keys.addAll(allKeyAndValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).keySet());
+            String itemTexts[] = keys.toArray(new String[]{});//TODO: get proper provider
             
-            for (int i = 0; i < itemTextAndDocs.length; i += 2) {
-                if (itemTextAndDocs[i].startsWith(typedChars.trim()) 
-                        || itemTextAndDocs[i].startsWith( "javax.persistence." + typedChars.trim()) ) { // NOI18N
+            for (int i = 0; i < itemTexts.length; i ++) {
+                if (itemTexts[i].startsWith(typedChars.trim()) 
+                        || itemTexts[i].startsWith( "javax.persistence." + typedChars.trim()) ) { // NOI18N
                     JPACompletionItem item = JPACompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
-                            itemTextAndDocs[i], itemTextAndDocs[i + 1]);
+                            itemTexts[i]);
                     results.add(item);
                 }
             }
