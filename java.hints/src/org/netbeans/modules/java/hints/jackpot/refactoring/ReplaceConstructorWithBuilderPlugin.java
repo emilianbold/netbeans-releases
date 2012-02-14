@@ -59,6 +59,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -91,6 +92,12 @@ public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
         }
         if (!SourceVersion.isName(builderName)) {
             return new Problem(true, builderName + " is not an identifier.");
+        }
+        final TreePathHandle constr = replaceConstructorWithBuilder.getRefactoringSource().lookup(TreePathHandle.class);
+        ClassPath classPath = ClassPath.getClassPath(constr.getFileObject(), ClassPath.SOURCE);
+        FileObject resource = classPath.findResource(replaceConstructorWithBuilder.getBuilderName().replace(".", "/") + ".java");
+        if (resource !=null) {
+            return new Problem(true, "File " + resource.getName() + " already exists.");
         }
         return null;
     }
