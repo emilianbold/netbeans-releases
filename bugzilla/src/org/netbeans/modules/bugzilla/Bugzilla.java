@@ -45,25 +45,15 @@ package org.netbeans.modules.bugzilla;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClientManager;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.net.MalformedURLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
-import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssueProvider;
-import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.kenai.KenaiSupportImpl;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -73,19 +63,14 @@ import org.openide.util.RequestProcessor;
 public class Bugzilla {
 
     private BugzillaRepositoryConnector brc;
-    private Set<BugzillaRepository> repositories;
-
-    private static final Object REPOSITORIES_LOCK = new Object();
     private static Bugzilla instance;
 
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugzilla.Bugzilla"); // NOI18N
 
     private RequestProcessor rp;
-    private BugzillaCorePlugin bcp;
     private BugzillaClientManager clientManager;
 
     private KenaiSupport kenaiSupport;
-    private BugzillaConnector connector;
 
     private Bugzilla() {
 
@@ -152,68 +137,9 @@ public class Bugzilla {
         }
         return rp;
     }
-
-    public void addRepository(BugzillaRepository repository) {
-        assert repository != null;
-        if(repository instanceof KenaiRepository) {
-            // we don't store kenai repositories - XXX  shouldn't be even called
-            return;        
-        }
-        Collection<Repository> oldRepos;
-        Collection<Repository> newRepos;
-        synchronized(REPOSITORIES_LOCK) {
-            Set<BugzillaRepository> repos = getStoredRepositories();
-            oldRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
-            repos.add(repository);
-            newRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
-
-            BugzillaConfig.getInstance().putRepository(repository.getID(), repository);
-        }
-        getConnector().fireRepositoriesChanged(oldRepos, newRepos);
-    }
-
+    
     public BugzillaConnector getConnector() {
-        if (connector == null) {
-            connector = Lookup.getDefault().lookup(BugzillaConnector.class);
-        }
-        return connector;
-    }
-
-    public void removeRepository(BugzillaRepository repository) {
-        Collection<Repository> oldRepos;
-        Collection<Repository> newRepos;
-        synchronized(REPOSITORIES_LOCK) {
-            Set<BugzillaRepository> repos = getStoredRepositories();
-            oldRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
-            repos.remove(repository);
-            newRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
-            BugzillaConfig.getInstance().removeRepository(repository.getID());
-        }
-        getConnector().fireRepositoriesChanged(oldRepos, newRepos);
-    }
-
-    public BugzillaRepository[] getRepositories() {
-        synchronized(REPOSITORIES_LOCK) {
-            Set<BugzillaRepository> s = getStoredRepositories();
-            return s.toArray(new BugzillaRepository[s.size()]);
-        }
-    }
-
-    private Set<BugzillaRepository> getStoredRepositories() {
-        if (repositories == null) {
-            repositories = new HashSet<BugzillaRepository>();
-            String[] names = BugzillaConfig.getInstance().getRepositories();
-            if (names == null || names.length == 0) {
-                return repositories;
-            }
-            for (String name : names) {
-                BugzillaRepository repo = BugzillaConfig.getInstance().getRepository(name);
-                if (repo != null) {
-                    repositories.add(repo);
-                }
-            }
-        }
-        return repositories;
+        return BugzillaConnector.getInstance();
     }
 
 }

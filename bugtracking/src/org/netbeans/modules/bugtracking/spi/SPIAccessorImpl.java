@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,23 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.bugtracking.spi;
+
+import java.util.prefs.Preferences;
+import org.netbeans.modules.bugtracking.SPIAccessor;
+import org.openide.nodes.Node;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
-public class QueryAccessor {
-    private final Query query;
-
-    public QueryAccessor(Query query) {
-        this.query = query;
+class SPIAccessorImpl extends SPIAccessor {
+    static void createAccesor() {
+        if (IMPL == null) {
+            IMPL = new SPIAccessorImpl();
+        }
     }
 
-    public void setSaved(boolean bl) {
-        query.setSaved(bl);
+    private SPIAccessorImpl() {
     }
+    
+    @Override
+    public RepositoryInfo read(Preferences preferences, String key) {
+        return RepositoryInfo.read(preferences, key);
+    }
+
+    @Override
+    public void store(Preferences preferences, RepositoryInfo info, String key) {
+        info.store(preferences, key);
+    }
+
+    @Override
+    public void setSelection(IssueProvider issue, Node[] nodes) {
+        issue.setContext(nodes);
+    }
+    
+    @Override
+    public void setSelection(QueryProvider query, Node[] nodes) {
+        query.setContext(nodes);
+    }    
 }

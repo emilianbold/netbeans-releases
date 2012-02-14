@@ -42,10 +42,10 @@
 
 package org.netbeans.modules.bugtracking.spi;
 
-import java.awt.Image;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.util.Collection;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import org.openide.util.Lookup;
 
 /**
@@ -56,54 +56,19 @@ import org.openide.util.Lookup;
 // XXX provide commit hook support instead of addComment() and addAttachent() in Issue
 public abstract class BugtrackingConnector implements Lookup.Provider {
 
-    private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
-
     /**
-     * a repository from this connector was created, removed or changed
+     * 
+     * @param info
+     * @return 
      */
-    public final static String EVENT_REPOSITORIES_CHANGED = "bugtracking.repositories.changed"; // NOI18N
+    public abstract RepositoryProvider createRepository(RepositoryInfo info);  
     
-    /**
-     * Returns a unique ID for this connector
-     *
-     * @return
-     */
-    public abstract String getID();
-
-    /**
-     * Returns the icon for this connector or null if not available
-     *
-     * @return
-     */
-    public abstract Image getIcon();
-
-    /**
-     * Returns the display name for this connector
-     *
-     * @return the display name for this connector
-     */
-    public abstract String getDisplayName();
-
-    /**
-     * Returns tooltip for this connector
-     *
-     * @return tooltip for this connector
-     */
-    public abstract String getTooltip();
-
     /**
      * Creates a new repository instance.
      * 
      * @return the created repository
      */
-    public abstract Repository createRepository();
-
-    /**
-     * Returns all available valid repositories for this connector.
-     *
-     * @return known repositories
-     */
-    public abstract Repository[] getRepositories();
+    public abstract RepositoryProvider createRepository();
 
     /**
      * Returns an {@code IssueFinder} for the connector, or {@code null}
@@ -118,37 +83,36 @@ public abstract class BugtrackingConnector implements Lookup.Provider {
         return null;
     }
 
-    /**
-     * remove a listener from this conector
-     * @param listener
-     */
-    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
-        changeSupport.removePropertyChangeListener(listener);
-    }
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE, ElementType.METHOD})
+    public @interface Registration {    
+        /**
+         * Returns a unique ID for this connector
+         *
+         * @return
+         */
+        public String id();
 
-    /**
-     * Add a listener to this connector to listen on events
-     * @param listener
-     */
-    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
-        changeSupport.addPropertyChangeListener(listener);
-    }
+        /**
+         * Returns the icon path for this connector
+         *
+         * @return
+         */
+        public String iconPath() default "";
 
-    /**
-     * Notify listeners on this connector that a repository was either removed or saved
-     * XXX make use of new/old value
-     */
-    @Deprecated
-    protected void fireRepositoriesChanged() {
-        fireRepositoriesChanged(null, null);
-    }
+        /**
+         * Returns the display name for this connector
+         *
+         * @return the display name for this connector
+         */
+        public String displayName();
 
-    /**
-     *
-     * @param oldRepositories - lists repositories which were available for the connector before the change
-     * @param newRepositories - lists repositories which are available for the connector after the change
-     */
-    protected void fireRepositoriesChanged(Collection<Repository> oldRepositories, Collection<Repository> newRepositories) {
-        changeSupport.firePropertyChange(EVENT_REPOSITORIES_CHANGED, oldRepositories, newRepositories);
-    }
+        /**
+         * Returns tooltip for this connector
+         *
+         * @return tooltip for this connector
+         */
+        public String tooltip();    
+        
+    }    
 }

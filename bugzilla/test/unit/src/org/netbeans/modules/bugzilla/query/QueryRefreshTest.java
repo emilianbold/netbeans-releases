@@ -49,8 +49,8 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugzilla.Bugzilla;
@@ -137,7 +137,7 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
         assertEquals(0, q.getIssues().length);
         q.refresh(); // refresh the query - so it won't be refreshed via first time open
 
-        Issue[] issues = q.getIssues();
+        IssueProvider[] issues = q.getIssues();
         assertEquals(0, issues.length);
 
         String id = TestUtil.createIssue(repo, summary);
@@ -177,35 +177,35 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
     
     public static class DummyBugtrackingOwnerSupport extends BugtrackingOwnerSupport {
         @Override
-        protected Repository getRepository(DataObject dataObj) {
+        protected RepositoryProvider getRepository(DataObject dataObj) {
             return null;
         }
         @Override
-        public Repository getRepository(Project project, boolean askIfUnknown) {
+        public RepositoryProvider getRepository(Project project, boolean askIfUnknown) {
             return null;
         }
         @Override
-        public Repository getRepository(File file, String issueId, boolean askIfUnknown) {
+        public RepositoryProvider getRepository(File file, String issueId, boolean askIfUnknown) {
             return null;
         }
         @Override
-        protected Repository getRepositoryForContext(File context, String issueId, boolean askIfUnknown) {
+        protected RepositoryProvider getRepositoryForContext(File context, String issueId, boolean askIfUnknown) {
             return null;
         }
         @Override
-        public void setFirmAssociation(File file, Repository repository) {
+        public void setFirmAssociation(File file, RepositoryProvider repository) {
             // do nothing
         }
         @Override
-        public void setFirmAssociations(File[] files, Repository repository) {
+        public void setFirmAssociations(File[] files, RepositoryProvider repository) {
             // do nothing
         }
         @Override
-        public void setLooseAssociation(ContextType contextType, Repository repository) {
+        public void setLooseAssociation(ContextType contextType, RepositoryProvider repository) {
             // do nothing
         }
         @Override
-        public void setLooseAssociation(File file, Repository repository) {
+        public void setLooseAssociation(File file, RepositoryProvider repository) {
             // do nothing
         }        
     }

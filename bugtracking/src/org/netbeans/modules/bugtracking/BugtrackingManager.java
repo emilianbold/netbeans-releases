@@ -60,8 +60,8 @@ import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
 import org.openide.util.Lookup;
@@ -113,41 +113,25 @@ public final class BugtrackingManager implements LookupListener {
      * @param pingOpenProjects 
      * @return repositories
      */
-    public Repository[] getKnownRepositories(boolean pingOpenProjects) {
-        Repository[] kenaiRepos = KenaiUtil.getRepositories(pingOpenProjects);
-        Repository[] otherRepos = getRepositories();
-        Repository[] ret = new Repository[kenaiRepos.length + otherRepos.length];
+    public RepositoryProvider[] getKnownRepositories(boolean pingOpenProjects) {
+        RepositoryProvider[] kenaiRepos = KenaiUtil.getRepositories(pingOpenProjects);
+        RepositoryProvider[] otherRepos = RepositoryRegistry.getInstance().getRepositories();
+        RepositoryProvider[] ret = new RepositoryProvider[kenaiRepos.length + otherRepos.length];
         System.arraycopy(kenaiRepos, 0, ret, 0, kenaiRepos.length);
         System.arraycopy(otherRepos, 0, ret, kenaiRepos.length, otherRepos.length);
         return ret;
-    }
-
-    /**
-     * Returns all user defined repositories
-     * @return
-     */
-    public Repository[] getRepositories() {
-        List<Repository> repos = new ArrayList<Repository>(10);
-        BugtrackingConnector[] conns = getConnectors();
-        for (BugtrackingConnector bc : conns) {
-            Repository[] rs = bc.getRepositories();
-            if(rs != null) {
-                repos.addAll(Arrays.asList(rs));
-            }
-        }
-        return repos.toArray(new Repository[repos.size()]);
     }
 
     public RequestProcessor getRequestProcessor() {
         return rp;
     }
 
-    public BugtrackingConnector[] getConnectors() {
+    public DelegatingConnector[] getConnectors() {
         synchronized(connectors) {
             if(connectorsLookup == null) {
                 refreshConnectors();
             }
-            return connectors.toArray(new BugtrackingConnector[connectors.size()]);
+            return connectors.toArray(new DelegatingConnector[connectors.size()]);
         }
     }
 
@@ -156,28 +140,28 @@ public final class BugtrackingManager implements LookupListener {
         refreshConnectors();
     }
 
-    public List<Issue> getRecentIssues(Repository repo) {
+    public List<IssueProvider> getRecentIssues(RepositoryProvider repo) {
         assert repo != null;
-        List<RecentIssue> l = getRecentIssues().get(repo.getID());
+        List<RecentIssue> l = getRecentIssues().get(repo.getInfo().getId());
         if(l == null) {
             return Collections.EMPTY_LIST;
         }
-        List<Issue> ret = new ArrayList<Issue>(l.size());
+        List<IssueProvider> ret = new ArrayList<IssueProvider>(l.size());
         for (RecentIssue recentIssue : l) {
             ret.add(recentIssue.getIssue());
         }
         return ret;
     }
 
-    public void addRecentIssue(Repository repo, Issue issue) {
+    public void addRecentIssue(RepositoryProvider repo, IssueProvider issue) {
         assert repo != null && issue != null;
         if (issue.getID() == null) {
             return;
         }
-        List<RecentIssue> l = getRecentIssues().get(repo.getID());
+        List<RecentIssue> l = getRecentIssues().get(repo.getInfo().getId());
         if(l == null) {
             l = new LinkedList<RecentIssue>();
-            getRecentIssues().put(repo.getID(), l);
+            getRecentIssues().put(repo.getInfo().getId(), l);
         }
         for (RecentIssue i : l) {
             if(i.getIssue().getID().equals(issue.getID())) {
@@ -193,7 +177,7 @@ public final class BugtrackingManager implements LookupListener {
                         Level.FINE,
                         "recent issue: [{0}, {1}, {2}]",                        // NOI18N
                         new Object[]{
-                            ri.getIssue().getRepository().getDisplayName(),
+                            ri.getIssue().getRepository().getInfo().getDisplayName(),
                             ri.getIssue().getID(),
                             f.format(new Date(ri.getTimestamp()))});                                                   // NOI18N
             }
@@ -226,8 +210,12 @@ public final class BugtrackingManager implements LookupListener {
             }
             Collection<? extends BugtrackingConnector> conns = connectorsLookup.allInstances();
             if(LOG.isLoggable(Level.FINER)) {
-                for (BugtrackingConnector repository : conns) {
-                    LOG.log(Level.FINER, "registered provider: {0}", repository.getDisplayName()); // NOI18N
+                for (BugtrackingConnector c : conns) {
+                    DelegatingConnector dc = 
+                        c instanceof DelegatingConnector ? 
+                            (DelegatingConnector) c :
+                            new DelegatingConnector(c, "Unknown", "Unknown", "Unknown", null); // NOI18N
+                    LOG.log(Level.FINER, "registered provider: {0}", dc.getDisplayName()); // NOI18N
                 }
             }
             connectors.clear();
@@ -246,7 +234,7 @@ public final class BugtrackingManager implements LookupListener {
                     return;
                 }
                 IssueTopComponent itc = (IssueTopComponent) tc;
-                Issue issue = itc.getIssue();
+                IssueProvider issue = itc.getIssue();
                 LOG.log(Level.FINE, "activated issue : {0}", issue); // NOI18N
                 if(issue == null || issue.isNew()) {
                     return;

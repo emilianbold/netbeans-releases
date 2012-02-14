@@ -61,7 +61,7 @@ public class KenaiQuery extends BugzillaQuery {
         super(name, repository, urlParameters, saved, false, false);
         this.product = product;
         this.predefinedQuery = predefined;
-        this.setLastRefresh(repository.getIssueCache().getQueryTimestamp(getStoredQueryName()));
+        this.lastRefresh = repository.getIssueCache().getQueryTimestamp(getStoredQueryName());
         controller = createControler(repository, this, urlParameters);
         boolean autoRefresh = BugzillaConfig.getInstance().getQueryAutoRefresh(getDisplayName());
         if(autoRefresh) {

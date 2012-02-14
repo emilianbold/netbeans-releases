@@ -60,9 +60,9 @@ import java.util.MissingResourceException;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.jira.Jira;
@@ -101,7 +101,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
     }
 
     @Override
-    public Query createQuery() {
+    public QueryProvider createQuery() {
         FilterDefinition fd = new FilterDefinition();
         JiraConfiguration configuration = getConfiguration();
         if(configuration == null) {
@@ -114,15 +114,15 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
     }
 
     @Override
-    public Issue createIssue() {
+    public IssueProvider createIssue() {
         return super.createIssue();
     }
 
     @Override
-    public synchronized Query[] getQueries() {
-        Query[] qs = super.getQueries();
-        Query[] dq = getDefinedQueries();
-        Query[] ret = new Query[qs.length + dq.length];
+    public synchronized QueryProvider[] getQueries() {
+        QueryProvider[] qs = super.getQueries();
+        QueryProvider[] dq = getDefinedQueries();
+        QueryProvider[] ret = new QueryProvider[qs.length + dq.length];
         System.arraycopy(qs, 0, ret, 0, qs.length);
         System.arraycopy(dq, 0, ret, qs.length, dq.length);
         return ret;
@@ -142,28 +142,28 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         return host;
     }
 
-    private Query[] getDefinedQueries() {
-        List<Query> queries = new ArrayList<Query>();
+    private QueryProvider[] getDefinedQueries() {
+        List<QueryProvider> queries = new ArrayList<QueryProvider>();
 
         JiraConfiguration configuration = getConfiguration();
         if(configuration == null) {
-            return new Query[0];
+            return new QueryProvider[0];
         }
 
-        Query mi = getMyIssuesQuery(configuration);
+        QueryProvider mi = getMyIssuesQuery(configuration);
         if(mi != null) {
             queries.add(mi);
         }
 
-        Query ai = getAllIssuesQuery(configuration);
+        QueryProvider ai = getAllIssuesQuery(configuration);
         if(ai != null) {
             queries.add(ai);
         }
 
-        return queries.toArray(new Query[queries.size()]);
+        return queries.toArray(new QueryProvider[queries.size()]);
     }
 
-    Query getMyIssuesQuery() throws MissingResourceException {
+    QueryProvider getMyIssuesQuery() throws MissingResourceException {
         JiraConfiguration configuration = getConfiguration();
         if(configuration == null) {
             return null;
@@ -171,7 +171,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         return getMyIssuesQuery(configuration);
     }
 
-    synchronized private Query getMyIssuesQuery(JiraConfiguration configuration) throws MissingResourceException {
+    synchronized private QueryProvider getMyIssuesQuery(JiraConfiguration configuration) throws MissingResourceException {
         if(myIssues == null) {
             Project p = configuration.getProjectByKey(projectName);
             if(p != null) {
@@ -194,7 +194,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         return myIssues;
     }
 
-    Query getAllIssuesQuery() throws MissingResourceException {
+    QueryProvider getAllIssuesQuery() throws MissingResourceException {
         JiraConfiguration configuration = getConfiguration();
         if(configuration == null) {
             return null;
@@ -202,7 +202,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         return getAllIssuesQuery(configuration);
     }
 
-    synchronized private Query getAllIssuesQuery(JiraConfiguration configuration) throws MissingResourceException {
+    synchronized private QueryProvider getAllIssuesQuery(JiraConfiguration configuration) throws MissingResourceException {
         if (allIssues == null) {
             Project p = configuration.getProjectByKey(projectName);
             if (p != null) {
@@ -243,7 +243,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         return c;
     }
 
-    protected void setCredentials(String user, String password) {
+    protected void setCredentials(String user, char[] password) {
         super.setCredentials(user, password, null, null);
     }
 
@@ -265,7 +265,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         String user = pa.getUserName();
         char[] password = pa.getPassword();
 
-        setCredentials(user, new String(password));
+        setCredentials(user, password);
 
         return true;
     }
@@ -278,12 +278,12 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         return "";                                                              // NOI18N
     }
 
-    private static String getKenaiPassword(KenaiProject kenaiProject) {
+    private static char[] getKenaiPassword(KenaiProject kenaiProject) {
         PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false);
         if(pa != null) {
-            return new String(pa.getPassword());
+            return pa.getPassword();
         }
-        return "";                                                              // NOI18N
+        return new char[0];                                                              
     }
 
     /**
@@ -345,15 +345,15 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
             // XXX move to spi?
             // get kenai credentials
             String user;
-            String psswd;
+            char[] psswd;
             PasswordAuthentication pa =
                 KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false); // do not force login
             if(pa != null) {
                 user = pa.getUserName();
-                psswd = new String(pa.getPassword());
+                psswd = pa.getPassword();
             } else {
                 user = "";                                                      // NOI18N
-                psswd = "";                                                     // NOI18N
+                psswd = new char[0]; 
             }
 
             setCredentials(user, psswd);
