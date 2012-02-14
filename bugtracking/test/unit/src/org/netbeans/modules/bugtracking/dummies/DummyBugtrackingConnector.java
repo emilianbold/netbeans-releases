@@ -44,6 +44,7 @@ package org.netbeans.modules.bugtracking.dummies;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
@@ -55,11 +56,14 @@ import org.openide.util.Lookup;
  */
 @BugtrackingConnector.Registration (
     id=DummyBugtrackingConnector.ID,
-    displayName="Dummy bugtracking connector",
-    tooltip="bugtracking connector created for testing purposes"
+    displayName=DummyBugtrackingConnector.DISPLAY_NAME,
+    tooltip=DummyBugtrackingConnector.TOOLTIP
 )    
 public class DummyBugtrackingConnector extends BugtrackingConnector {
     public static final String ID = "DummyBugtrackingConnector";
+    public static final String DISPLAY_NAME = "Dummy bugtracking connector";
+    public static final String TOOLTIP = "bugtracking connector created for testing purposes";
+    
     private char newRepositoryName = 'A';
     private int newRepositoryNumber = 0;
     private List<RepositoryProvider> repositories;
@@ -93,6 +97,7 @@ public class DummyBugtrackingConnector extends BugtrackingConnector {
             repositories = new ArrayList<RepositoryProvider>();
         }
         repositories.add(repository);
+        RepositoryRegistry.getInstance().addRepository(repository);
     }
 
     void removeRepository(DummyRepository repository) {
@@ -101,10 +106,16 @@ public class DummyBugtrackingConnector extends BugtrackingConnector {
         }
 
         repositories.remove(repository);
+        RepositoryRegistry.getInstance().removeRepository(repository);
     }
 
     public void reset() {
-        repositories = null;
+        if(repositories != null) {
+            for (RepositoryProvider repository : repositories) {
+                RepositoryRegistry.getInstance().removeRepository(repository);
+            }
+            repositories = null;
+        }
     }
 
     public Lookup getLookup() {

@@ -73,6 +73,7 @@ import static org.netbeans.modules.bugtracking.util.RepositoryComboSupport.LOADI
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupport.SELECT_REPOSITORY;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupportTest.ThreadType.AWT;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupportTest.ThreadType.NON_AWT;
+import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -80,18 +81,21 @@ import org.openide.util.test.MockLookup;
  * @author Marian Petras
  */
 public class RepositoryComboSupportTest {
-    private static DummyWindowManager wm;
-    private static DummyBugtrackingOwnerSupport bos;
-
     private volatile JComboBox comboBox;
     private volatile RepositoryComboSupport comboSupport;
 
     @BeforeClass
     public static void setLookup() {
-        MockLookup.setLayersAndInstances();
-        System.setProperty("org.openide.util.Lookup", TestLookup.class.getName());
-        wm = new DummyWindowManager();
-        bos = new DummyBugtrackingOwnerSupport();
+        MockLookup.setLayersAndInstances(
+            new DummyKenaiRepositories(), 
+            new DummyWindowManager(), 
+            new DummyBugtrackingOwnerSupport(),
+            new DelegatingConnector(
+                new DummyBugtrackingConnector(),
+                DummyBugtrackingConnector.ID,
+                DummyBugtrackingConnector.DISPLAY_NAME,
+                DummyBugtrackingConnector.TOOLTIP,
+                null));
     }
 
     @Before
@@ -109,11 +113,11 @@ public class RepositoryComboSupportTest {
     }
 
     private static DummyTopComponentRegistry getTopComponentRegistry() {
-        return wm.registry;
+        return Lookup.getDefault().lookup(DummyWindowManager.class).registry;
     }
 
     private static DummyBugtrackingOwnerSupport getBugtrackingOwnerSupport() {
-        return bos;
+        return Lookup.getDefault().lookup(DummyBugtrackingOwnerSupport.class);
     }
 
     abstract class AbstractRepositoryComboTezt {
@@ -369,9 +373,9 @@ public class RepositoryComboSupportTest {
                 super.scheduleTests(progressTester);
                 progressTester.scheduleResumingTest  (Progress.DISPLAYED_REPOS, AWT,
                                                         new ComboBoxItemsTezt(
-                                                                SELECT_REPOSITORY,
-                                                                repository1,
-                                                                repository2,
+                                                    SELECT_REPOSITORY,
+                                                    repository1,
+                                                    repository2,
                                                                 repository3),
                                                         new SelectedItemtezt(
                                                                 SELECT_REPOSITORY));
@@ -874,7 +878,6 @@ public class RepositoryComboSupportTest {
     }
 
     final class ComboBoxItemsTezt implements Runnable {
-
         private final Object[] expectedItems;
 
         ComboBoxItemsTezt(Object... expectedItems) {
