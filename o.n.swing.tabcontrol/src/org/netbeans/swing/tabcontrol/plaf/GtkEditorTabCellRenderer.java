@@ -90,6 +90,14 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
     public Color getForeground() {
         return getSelectedForeground();
     }
+
+    @Override
+    protected void paintIconAndText( Graphics g ) {
+        if( isBusy() ) {
+            setIcon( BusyTabsSupport.getDefault().getBusyIcon( isSelected() ) );
+        }
+        super.paintIconAndText( g );
+    }
     
     /**
      * #56245 - need more space between icon and edge on classic for the case

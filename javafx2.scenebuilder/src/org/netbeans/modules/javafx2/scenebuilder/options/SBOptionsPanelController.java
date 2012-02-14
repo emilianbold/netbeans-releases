@@ -57,7 +57,7 @@ displayName = "#AdvancedOption_DisplayName_SB",
 keywords = "#AdvancedOption_Keywords_SB",
 keywordsCategory = "Advanced/SB",
 id=SBOptionsPanelController.SUBREG_ID)
-@org.openide.util.NbBundle.Messages({"AdvancedOption_DisplayName_SB=JavaFX SceneBuilder", "AdvancedOption_Keywords_SB=javafx launcher tool"})
+@org.openide.util.NbBundle.Messages({"AdvancedOption_DisplayName_SB=JavaFX Scene Builder", "AdvancedOption_Keywords_SB=javafx launcher tool"})
 public final class SBOptionsPanelController extends OptionsPanelController {
     final public static String SUBREG_CAT = OptionsDisplayer.ADVANCED;
     final public static String SUBREG_ID = "SceneBuilder"; // NOI18N

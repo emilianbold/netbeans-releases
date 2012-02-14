@@ -126,7 +126,23 @@ public class RemoteFileObjectFactory {
         }
     }
 
-    public RemoteDirectory createRemoteDirectory(RemoteFileObjectBase parent, String remotePath, File cacheFile) {
+    public RemoteFileObjectBase createFileObject(RemoteDirectory parent, DirEntry entry) {
+        File childCache = new File(parent.getCache(), entry.getCache());
+        String childPath = parent.getPath() + '/' + entry.getName();
+        RemoteFileObjectBase fo = null;
+        if (entry.isDirectory()) {
+            fo = createRemoteDirectory(parent, childPath, childCache);
+        }  else if (entry.isLink()) {
+            fo = createRemoteLink(parent, childPath, entry.getLinkTarget());
+        } else if (entry.isPlainFile()) {
+            fo = createRemotePlainFile(parent, childPath, childCache, FileType.Regular);
+        } else {
+            fo = createSpecialFile(parent, childPath, childCache, entry.getFileType());
+        }
+        return fo;
+    }
+
+    private RemoteDirectory createRemoteDirectory(RemoteFileObjectBase parent, String remotePath, File cacheFile) {
         cacheRequests++;
         if (fileObjectsCache.size() == 0) {
             scheduleCleanDeadEntries(); // schedule on 1-st request
@@ -153,7 +169,7 @@ public class RemoteFileObjectFactory {
         return (RemoteDirectory) fo;
     }
 
-    public RemotePlainFile createRemotePlainFile(RemoteDirectory parent, String remotePath, File cacheFile, FileType fileType) {
+    private RemotePlainFile createRemotePlainFile(RemoteDirectory parent, String remotePath, File cacheFile, FileType fileType) {
         cacheRequests++;
         if (fileObjectsCache.size() == 0) {
             scheduleCleanDeadEntries(); // schedule on 1-st request
@@ -180,7 +196,7 @@ public class RemoteFileObjectFactory {
         return (RemotePlainFile) fo;
     }
 
-    SpecialRemoteFileObject createSpecialFile(RemoteDirectory parent, String remotePath, File cacheFile, FileType fileType) {
+    private SpecialRemoteFileObject createSpecialFile(RemoteDirectory parent, String remotePath, File cacheFile, FileType fileType) {
         cacheRequests++;
         if (fileObjectsCache.size() == 0) {
             scheduleCleanDeadEntries(); // schedule on 1-st request
@@ -208,7 +224,7 @@ public class RemoteFileObjectFactory {
     }
 
 
-    public RemoteLink createRemoteLink(RemoteFileObjectBase parent, String remotePath, String link) {
+    private RemoteLink createRemoteLink(RemoteFileObjectBase parent, String remotePath, String link) {
         RemoteLink fo = new RemoteLink(new RemoteFileObject(fileSystem), fileSystem, env, parent, remotePath, link);
         RemoteFileObjectBase result = putIfAbsent(remotePath, fo);
         if (result instanceof RemoteLink) {

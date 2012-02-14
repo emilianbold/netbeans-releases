@@ -278,18 +278,24 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
         if (handle==null) {
             postfix = ".JavaPackage";//NOI18N
         } else {
-            ElementKind k = handle.getElementHandle().getKind();
-            
-            if (k==null) {
+            ElementHandle elHandle = handle.getElementHandle();
+            if (elHandle == null) {
                 postfix = "";
-            } else if (k.isClass() || k.isInterface())
-                postfix = ".JavaClass";//NOI18N
-            else if (k == ElementKind.METHOD)
-                postfix = ".Method";//NOI18N
-            else if (k.isField())
-                postfix = ".Field";//NOI18N
-            else
-                postfix = "";
+            } else {
+                ElementKind k = elHandle.getKind();
+
+                if (k == null) {
+                    postfix = "";
+                } else if (k.isClass() || k.isInterface()) {
+                    postfix = ".JavaClass";//NOI18N
+                } else if (k == ElementKind.METHOD) {
+                    postfix = ".Method";//NOI18N
+                } else if (k.isField()) {
+                    postfix = ".Field";//NOI18N
+                } else {
+                    postfix = "";
+                }
+            }
         }
         
         return new HelpCtx(RenameRefactoringUI.class.getName() + postfix);

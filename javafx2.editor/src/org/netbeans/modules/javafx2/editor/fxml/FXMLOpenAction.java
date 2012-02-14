@@ -86,7 +86,6 @@ public class FXMLOpenAction extends AbstractAction implements ContextAwareAction
             }
             return false;
         }
-
     };
     public FXMLOpenAction() {
         this(Utilities.actionsGlobalContext());
@@ -102,9 +101,6 @@ public class FXMLOpenAction extends AbstractAction implements ContextAwareAction
     
     private void setupOpener() {
         opener = Lookup.getDefault().lookup(FXMLOpener.class);
-        if (opener == null) {
-            opener = defaultOpener;
-        }
     }
     
     void init() {
@@ -125,7 +121,7 @@ public class FXMLOpenAction extends AbstractAction implements ContextAwareAction
     @Override
     public boolean isEnabled() {
         init();
-        return super.isEnabled() && opener.isEnabled(context);
+        return opener != null && super.isEnabled();
     }
  
     @Override
@@ -140,7 +136,9 @@ public class FXMLOpenAction extends AbstractAction implements ContextAwareAction
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (!opener.open(context) && opener != defaultOpener) {
+        if (opener != null) {
+            opener.open(context);
+        } else if (defaultOpener.isEnabled(context)) {
             defaultOpener.open(context);
         }
     }
