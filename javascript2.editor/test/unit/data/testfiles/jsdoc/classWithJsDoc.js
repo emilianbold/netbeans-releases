@@ -154,6 +154,13 @@ Shape.prototype.clone2 = function(){
 }
 
 /**
+ * Here should be returned null since no type or return tag is available.
+ */
+Shape.prototype.clone3 = function(){
+   return new Shape();
+}
+
+/**
  * Create a new Rectangle instance.
  * @class A basic rectangle class, inherits from Shape.
  * This class could be considered a concrete implementation class

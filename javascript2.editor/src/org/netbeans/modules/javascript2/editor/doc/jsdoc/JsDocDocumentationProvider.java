@@ -72,12 +72,12 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
 
     @Override
     public Types getReturnType(Node node) {
+        // TODO - process shared tags and nocode comments
         int offset = node.getStart();
-        int endOffset = getEndOffsetOfLastComment(offset);
+        int endOffset = getEndOffsetOfAssociatedComment(offset);
         if (endOffset > 0) {
             JsComment comment = getCommentByEndOffset(endOffset);
             JsDocBlock jsDocBlock = (JsDocBlock) comment;
-            // TODO - process shared tags and nocode comments
             if (jsDocBlock.getType() == JsDocCommentType.DOC_COMMON) {
                 for (JsDocElement jsDocElement : jsDocBlock.getTags()) {
                     if (jsDocElement.getType() == JsDocElement.Type.RETURN
@@ -97,14 +97,35 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
         return null;
     }
 
-    private int getEndOffsetOfLastComment(int offset) {
+    private int getNearestNodeForOffset(int offset) {
+        int nearestOffset = Integer.MAX_VALUE;
+        FunctionNode root = parserResult.getRoot();
+        for (Node node : root.getStatements()) {
+            if (node.getFinish() < offset) {
+                nearestOffset = node.getFinish();
+            }
+        }
+        return nearestOffset;
+    }
+
+    private boolean isAssociatedComment(int nodeOffset, int commentEndOffset) {
+        int nearestNodeOffset = getNearestNodeForOffset(nodeOffset);
+        return nearestNodeOffset < commentEndOffset;
+    }
+
+    private int getEndOffsetOfAssociatedComment(int offset) {
         Snapshot snapshot = parserResult.getSnapshot();
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot());
         if (ts != null) {
             ts.move(offset);
-            while(ts.movePrevious()) {
+            while (ts.movePrevious()) {
                 if (ts.token().id() == JsTokenId.DOC_COMMENT) {
-                    return ts.token().offset(snapshot.getTokenHierarchy()) + ts.token().length();
+                    int commentEndOffset = ts.token().offset(snapshot.getTokenHierarchy()) + ts.token().length();
+                    if (isAssociatedComment(offset, commentEndOffset)) {
+                        return commentEndOffset;
+                    } else {
+                        return -1;
+                    }
                 }
             }
         }
