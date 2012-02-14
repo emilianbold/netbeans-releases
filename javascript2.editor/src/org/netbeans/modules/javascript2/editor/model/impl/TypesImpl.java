@@ -61,7 +61,7 @@ public class TypesImpl implements Types {
 
     private static List<Type> parseTypes(String typesText) {
         List<Type> types = new LinkedList<Type>();
-        for (String string : Arrays.asList(typesText.split("|"))) { //NOI18N
+        for (String string : Arrays.asList(typesText.split("[|]+"))) { //NOI18N
             types.add(new TypeImpl(string));
         }
         return types;
