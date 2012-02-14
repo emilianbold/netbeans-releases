@@ -71,9 +71,8 @@ final class SearchScopeOpenProjects extends AbstractProjectSearchScope {
         return NbBundle.getMessage(getClass(),
                                    "SearchScopeNameOpenProjects");      //NOI18N
     }
-    
-    @Override
-    protected boolean checkIsApplicable() {
+        
+    private boolean checkIsApplicable() {
         return OpenProjects.getDefault().getOpenProjects().length > 0;
     }
 
@@ -89,7 +88,7 @@ final class SearchScopeOpenProjects extends AbstractProjectSearchScope {
              * is being removed in another thread than this action was
              * invoked from.
              */
-            return createEmptySearchInfo();
+            return SearchInfoUtils.createEmptySearchInfo();
         }
         
         if (openProjects.length == 1) {
@@ -103,4 +102,13 @@ final class SearchScopeOpenProjects extends AbstractProjectSearchScope {
         return SearchInfoUtils.createCompoundSearchInfo(prjSearchInfos);
     }
 
+    @Override
+    public boolean isApplicable() {
+        return checkIsApplicable();
+    }
+
+    @Override
+    public int getPriority() {
+        return 200;
+    }
 }

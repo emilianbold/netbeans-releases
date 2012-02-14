@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,68 +34,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.search;
 
-package org.netbeans.modules.search.project;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.provider.SearchInfo;
-import org.netbeans.api.search.provider.SearchInfoUtils;
-import org.openide.util.NbBundle;
+import org.netbeans.spi.search.SearchScopeDefinition;
 
 /**
- * Defines search scope across the main project.
  *
- * @author  Marian Petras
+ * @author jhavlin
  */
-final class SearchScopeMainProject extends AbstractProjectSearchScope {
-    
-    SearchScopeMainProject() {
-        super(OpenProjects.PROPERTY_MAIN_PROJECT);
-    }
+public class SearchScopeBrowse extends SearchScopeDefinition {
 
     @Override
     public String getTypeId() {
-        return "main project";                                          //NOI18N
+        return "Browse";                                                //NOI18N
     }
-    
+
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(getClass(),
-                                   "SearchScopeNameMainProject");       //NOI18N
-    }
-
-    protected boolean checkIsApplicable() {
-        return OpenProjects.getDefault().getMainProject() != null;
-    }
-
-    @Override
-    public SearchInfo getSearchInfo() {
-        Project mainProject = OpenProjects.getDefault().getMainProject();
-        if (mainProject == null) {
-            /*
-             * We cannot prevent this situation. The action may be invoked
-             * between moment the main project had been closed and the removal
-             * notice was distributed to the main project listener (and this
-             * action disabled). This may happen if the the main project
-             * is being closed in another thread than this action was
-             * invoked from.
-             */
-            return SearchInfoUtils.createEmptySearchInfo();
-        }
-        
-        return createSingleProjectSearchInfo(mainProject);
+        return "Browse";                                            // TODO I18N
     }
 
     @Override
     public boolean isApplicable() {
-        return checkIsApplicable();
+        return true;
+    }
+
+    @Override
+    public SearchInfo getSearchInfo() {
+        List<SearchRoot> roots = Collections.emptyList();
+        return null; // TODO
     }
 
     @Override
     public int getPriority() {
-        return 100;
+        return 500;
     }
-    
+
+    @Override
+    public void clean() {
+        // nothing to do
+    }
 }

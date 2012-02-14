@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,24 +34,68 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.netbeans.modules.utilities;
-
-import org.netbeans.modules.openfile.RecentFiles;
-import org.openide.modules.ModuleInstall;
-
-/** Module install class for Utilities module.
  *
- * @author Jesse Glick, Petr Kuzel, Martin Ryzl
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-public class Installer extends ModuleInstall {
+package org.netbeans.modules.search.ui;
+
+import java.awt.Color;
+import java.awt.EventQueue;
+import javax.swing.AbstractButton;
+import javax.swing.JLabel;
+import javax.swing.UIManager;
+import org.netbeans.modules.search.BasicSearchCriteria;
+import org.netbeans.modules.search.BasicSearchProvider;
+import org.netbeans.spi.search.SearchScopeDefinition;
+import org.openide.awt.Mnemonics;
+import org.openide.util.NbBundle;
+
+/**
+ *
+ * @author jhavlin
+ */
+public class UiUtils {
+
+    private static Color ERROR_COLOR = null;
+    public static final String HTML_LINK_PREFIX =
+            "<html><u><a href=\"#\">";                                  //NOI18N
+    public static final String HTML_LINK_SUFFIX = "</a></u></html>";    //NOI18N
+
+    public static Color getErrorTextColor() {
+
+        assert EventQueue.isDispatchThread();
+
+        if (ERROR_COLOR == null) {
+            ERROR_COLOR = UIManager.getDefaults().getColor(
+                    "TextField.errorForeground");                       //NOI18N
+            if (ERROR_COLOR == null) {
+                ERROR_COLOR = Color.RED;
+            }
+        }
+        return ERROR_COLOR;
+    }
+
+    public static String getText(String bundleKey) {
+        return NbBundle.getMessage(BasicSearchProvider.class, bundleKey);
+    }
+
+    public static String getHtmlLink(String key) {
+        return HTML_LINK_PREFIX + getText(key) + HTML_LINK_SUFFIX;
+    }
 
     /**
-     * Restores module. Restores &quot;sub-module&quot; Search.
+     * Convenience method for setting localized text and mnemonics of buttons.
      */
-    @Override
-    public void restored() {
-        RecentFiles.init();
+    public static void lclz(AbstractButton obj, String key) {
+        Mnemonics.setLocalizedText(obj, getText(key));
+    }
+
+    /**
+     * Convenience method for setting localized text and mnemonics of labels
+     */
+    public static void lclz(JLabel obj, String key) {
+        Mnemonics.setLocalizedText(obj, getText(key));
     }
 }

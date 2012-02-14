@@ -54,9 +54,9 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.search.SearchInfoDefinitionFactory;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchInfoUtils;
-import org.netbeans.modules.search.AbstractSearchScope;
 import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.SearchInfoDefinition;
+import org.netbeans.spi.search.SearchScopeDefinition;
 import org.openide.filesystems.FileObject;
 import org.openide.util.WeakListeners;
 
@@ -66,7 +66,7 @@ import org.openide.util.WeakListeners;
  *
  * @author  Marian Petras
  */
-abstract class AbstractProjectSearchScope extends AbstractSearchScope
+abstract class AbstractProjectSearchScope extends SearchScopeDefinition
                                           implements PropertyChangeListener {
     
     private final String interestingProperty;
@@ -75,27 +75,23 @@ abstract class AbstractProjectSearchScope extends AbstractSearchScope
     protected AbstractProjectSearchScope(String interestingProperty) {
         super();
         this.interestingProperty = interestingProperty;
-    }
-    
-    @Override
-    protected void startListening() {
         OpenProjects openProjects = OpenProjects.getDefault();
         openProjectsWeakListener = WeakListeners.propertyChange(this,
                 openProjects);
         openProjects.addPropertyChangeListener(openProjectsWeakListener);
     }
-    
+
     @Override
-    protected void stopListening() {
+    public void clean() {
         OpenProjects.getDefault().removePropertyChangeListener(
                 openProjectsWeakListener);
         openProjectsWeakListener = null;
     }
-    
+
     @Override
     public final void propertyChange(PropertyChangeEvent e) {
         if (interestingProperty.equals(e.getPropertyName())) {
-            updateIsApplicable();
+            notifyListeners();
         }
     }
     
