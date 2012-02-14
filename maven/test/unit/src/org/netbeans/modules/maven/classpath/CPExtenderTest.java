@@ -46,6 +46,7 @@ import java.beans.Customizer;
 import java.net.URL;
 import java.util.Collections;
 import java.util.logging.Level;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
@@ -54,6 +55,8 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.project.libraries.DefaultLibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
@@ -85,13 +88,15 @@ public class CPExtenderTest extends NbTestCase {
         Library lib = LibraryManager.getDefault().createLibrary("j2se", "Stuff", Collections.singletonMap("maven-pom", Collections.singletonList(new URL("http://repo1.maven.org/maven2/grp/stuff/1.0/stuff-1.0.pom"))));
         Library lib2 = LibraryManager.getDefault().createLibrary("j2se", "Stuff2", Collections.singletonMap("maven-pom", Collections.singletonList(new URL("http://repo1.maven.org/maven2/grp/stuff/2.0/stuff-2.0.pom"))));
         FileObject d = FileUtil.toFileObject(getWorkDir());
-        TestFileUtils.writeFile(d, "pom.xml", "<project><modelVersion>4.0.0</modelVersion>"
+        FileObject pom = TestFileUtils.writeFile(d, "pom.xml", "<project><modelVersion>4.0.0</modelVersion>"
                 + "<groupId>test</groupId><artifactId>prj</artifactId>"
                 + "<packaging>jar</packaging><version>1.0</version></project>");
         FileObject java = TestFileUtils.writeFile(d, "src/main/java/p/C.java", "package p; class C {}");
         Project p = ProjectManager.getDefault().findProject(d);
         NbMavenProject mp = p.getLookup().lookup(NbMavenProject.class);
         assertEquals("[]", mp.getMavenProject().getDependencies().toString());
+        @SuppressWarnings("DLS_DEAD_LOCAL_STORE") // just seeing if holding a strong ref affects random failures
+        Object r = POMModelFactory.getDefault().getModel(Utilities.createModelSource(pom));
         assertTrue(ProjectClassPathModifier.addLibraries(new Library[] {lib}, java, ClassPath.COMPILE));
         assertFalse(ProjectClassPathModifier.addLibraries(new Library[] {lib}, java, ClassPath.COMPILE));
         NbMavenProject.fireMavenProjectReload(p); // XXX why is this necessary?
@@ -99,6 +104,7 @@ public class CPExtenderTest extends NbTestCase {
         assertFalse(ProjectClassPathModifier.removeLibraries(new Library[] {lib2}, java, ClassPath.COMPILE));
         assertTrue(ProjectClassPathModifier.removeLibraries(new Library[] {lib}, java, ClassPath.COMPILE));
         assertFalse(ProjectClassPathModifier.removeLibraries(new Library[] {lib}, java, ClassPath.COMPILE));
+        assertEquals(r, POMModelFactory.getDefault().getModel(Utilities.createModelSource(pom)));
         NbMavenProject.fireMavenProjectReload(p);
         assertEquals("[]", mp.getMavenProject().getDependencies().toString());
     }
