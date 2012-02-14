@@ -79,6 +79,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/model/parameters01.js", "head = bo^dy;", true);
     }
     
+    public void testAssignments03() throws Exception {
+        checkOccurrences("testfiles/model/returnTypes02.js", "zi^p = 15000;", true);
+    }
+    
     public void testFunctionParameters01() throws Exception {
         checkOccurrences("testfiles/model/parameters01.js", "function Joke (name, autor, descri^ption) {", true);
     }
@@ -94,7 +98,7 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testMethod01() throws Exception {
         checkOccurrences("testfiles/model/parameters01.js", "formatter.println(\"Name: \" + this.getNa^me());", true);
     }
-
+    
     @Override
     protected void assertDescriptionMatches(FileObject fileObject,
             String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
