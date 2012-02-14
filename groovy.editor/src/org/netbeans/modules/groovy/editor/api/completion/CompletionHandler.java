@@ -1012,15 +1012,11 @@ public class CompletionHandler implements CodeCompletionHandler {
         return stuffAdded;
     }
 
-    /**
+    /*
      * Complete the fields for a class. There are two principal completions for fields:
      *
      * 1.) We are invoked right behind a dot. Then we have to retrieve the type in front of this dot.
      * 2.) We are located inside a type. Then we gotta get the fields for this class.
-     *
-     * @param proposals
-     * @param request
-     * @return
      */
     private boolean completeFields(List<CompletionProposal> proposals, CompletionRequest request) {
         LOG.log(Level.FINEST, "-> completeFields"); // NOI18N
@@ -1248,26 +1244,27 @@ public class CompletionHandler implements CodeCompletionHandler {
         if (ctx == null || ctx.before1 == null) {
             return result;
         }
-
+        
         // Check for primitive types first:
         // int long char byte double float short boolean
-
-        if (ctx.before1.id() == GroovyTokenId.LITERAL_boolean) {
-            result.add("b");
-        } else if (ctx.before1.id() == GroovyTokenId.LITERAL_byte) {
-            result.add("b");
-        } else if (ctx.before1.id() == GroovyTokenId.LITERAL_char) {
-            result.add("c");
-        } else if (ctx.before1.id() == GroovyTokenId.LITERAL_double) {
-            result.add("d");
-        } else if (ctx.before1.id() == GroovyTokenId.LITERAL_float) {
-            result.add("f");
-        } else if (ctx.before1.id() == GroovyTokenId.LITERAL_int) {
-            result.add("i");
-        } else if (ctx.before1.id() == GroovyTokenId.LITERAL_long) {
-            result.add("l");
-        } else if (ctx.before1.id() == GroovyTokenId.LITERAL_short) {
-            result.add("s");
+        GroovyTokenId tokenBefore = ctx.before1.id();
+        switch (tokenBefore) {
+            case LITERAL_boolean:
+                result.add("b"); break;
+            case LITERAL_byte:
+                result.add("b"); break;
+            case LITERAL_char:
+                result.add("c"); break;
+            case LITERAL_double:
+                result.add("d"); break;
+            case LITERAL_float:
+                result.add("f"); break;
+            case LITERAL_int:
+                result.add("i"); break;
+            case LITERAL_long:
+                result.add("l"); break;
+            case LITERAL_short:
+                result.add("s"); break;
         }
 
         // now we propose variable names based on the type
