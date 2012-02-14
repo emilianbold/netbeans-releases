@@ -66,7 +66,7 @@ import org.netbeans.modules.java.hints.providers.code.FSWrapper.ClassWrapper;
 import org.netbeans.modules.java.hints.providers.code.FSWrapper.FieldWrapper;
 import org.netbeans.modules.java.hints.providers.code.FSWrapper.MethodWrapper;
 import org.netbeans.modules.java.hints.providers.code.ReflectiveCustomizerProvider.OptionDescriptor;
-import org.netbeans.modules.java.hints.providers.spi.CustomizerProvider;
+import org.netbeans.spi.java.hints.CustomizerProvider;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription.Worker;
 import org.netbeans.modules.java.hints.providers.spi.HintDescriptionFactory;
@@ -170,10 +170,10 @@ public class CodeHintProviderImpl implements HintProvider {
     }
 
     private static CustomizerProvider createCustomizerProvider(ClassWrapper clazz, MethodWrapper method, String id, Hint hint) {
-        Class<? extends JComponent> customizerClass = hint.customizerProvider();
+        Class<? extends CustomizerProvider> customizerClass = hint.customizerProvider();
 
-        if (customizerClass != JComponent.class) {
-            return new JComponentBasedCustomizerProvider(customizerClass);
+        if (customizerClass != CustomizerProvider.class) {
+            return new DelegatingCustomizerProvider(customizerClass);
         }
 
         Set<String> allowedOptions = null;
@@ -368,8 +368,8 @@ public class CodeHintProviderImpl implements HintProvider {
             return Hint.class;
         }
 
-        public Class<? extends JComponent> customizerProvider() {
-            return JComponent.class;
+        public Class<? extends CustomizerProvider> customizerProvider() {
+            return CustomizerProvider.class;
         }
 
         public Kind hintKind() {
@@ -392,22 +392,18 @@ public class CodeHintProviderImpl implements HintProvider {
 
     }
 
-    private static final class JComponentBasedCustomizerProvider implements CustomizerProvider {
+    private static final class DelegatingCustomizerProvider implements CustomizerProvider {
 
-        private final Class<? extends JComponent> component;
+        private final Class<? extends CustomizerProvider> component;
 
-        public JComponentBasedCustomizerProvider(Class<? extends JComponent> component) {
+        public DelegatingCustomizerProvider(Class<? extends CustomizerProvider> component) {
             this.component = component;
         }
 
         @Override
         public JComponent getCustomizer(Preferences prefs) {
             try {
-                Constructor<? extends JComponent> constr = component.getDeclaredConstructor(Preferences.class);
-
-                return constr.newInstance(prefs);
-            } catch (NoSuchMethodException ex) {
-                Exceptions.printStackTrace(ex);
+                return component.newInstance().getCustomizer(prefs);
             } catch (SecurityException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (InstantiationException ex) {
@@ -415,8 +411,6 @@ public class CodeHintProviderImpl implements HintProvider {
             } catch (IllegalAccessException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (InvocationTargetException ex) {
                 Exceptions.printStackTrace(ex);
             }
 

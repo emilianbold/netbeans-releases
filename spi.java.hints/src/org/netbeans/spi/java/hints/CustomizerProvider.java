@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,20 +37,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010-2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.hints.providers.spi;
+package org.netbeans.spi.java.hints;
 
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import org.netbeans.api.annotations.common.NonNull;
 
-/**
+/**A factory for hint customizer.
  *
  * @author lahvac
  */
 public interface CustomizerProvider {
 
-    public JComponent getCustomizer(Preferences prefs);
+    /**Create a customizer component. The hint settings are in the given
+     * {@link Preferences}. The customizer can write into the provided {@link Preferences}
+     * immediately, the values will be persisted or rolled-back automatically
+     * based on the user's gesture.
+     *
+     * @param prefs the hints preferences from which the data to show should be read,
+     *              and to which the new settings should be written
+     * @return a customizer component
+     */
+    public @NonNull JComponent getCustomizer(@NonNull Preferences prefs);
 
 }

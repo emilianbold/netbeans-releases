@@ -59,7 +59,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import org.netbeans.modules.java.hints.providers.spi.CustomizerProvider;
+import org.netbeans.spi.java.hints.CustomizerProvider;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription.Worker;

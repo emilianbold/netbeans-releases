@@ -78,10 +78,9 @@ public @interface Hint {
     public Severity severity() default Severity.WARNING;
     /**Suppress warnings keys that should automatically suppress the hint.*/
     public String[] suppressWarnings() default {};
-    /**A customizer that allows to customize hint's preferences. The given class should have
-     * a publicly accessible constructor, taking one parameter of type {@link Preferences}.
+    /**A customizer that allows to customize hint's preferences.
      */
-    public Class<? extends JComponent> customizerProvider() default JComponent.class;
+    public Class<? extends CustomizerProvider> customizerProvider() default CustomizerProvider.class;
     /**Whether the hint should be considered a {@link Kind#HINT hint}, e.g. it detects a code smell,
      * or otherwise leads to improving the code, or a {@link Kind#SUGGESTION}, which is simply
      * an offer to do automatically do something for the user.

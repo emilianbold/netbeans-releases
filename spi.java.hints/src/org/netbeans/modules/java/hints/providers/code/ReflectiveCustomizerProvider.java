@@ -51,7 +51,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.java.hints.providers.spi.CustomizerProvider;
+import org.netbeans.spi.java.hints.CustomizerProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 

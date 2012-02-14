@@ -63,7 +63,7 @@ import static org.junit.Assert.*;
 import org.netbeans.modules.java.hints.providers.code.FSWrapper.AnnotatableWrapper;
 import org.netbeans.modules.java.hints.providers.code.FSWrapper.ClassWrapper;
 import org.netbeans.modules.java.hints.providers.code.FSWrapper.MethodWrapper;
-import org.netbeans.modules.java.hints.providers.spi.CustomizerProvider;
+import org.netbeans.spi.java.hints.CustomizerProvider;
 
 /**
  *

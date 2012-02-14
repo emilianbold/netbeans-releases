@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.java.hints.providers.spi;
 
+import org.netbeans.spi.java.hints.CustomizerProvider;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;

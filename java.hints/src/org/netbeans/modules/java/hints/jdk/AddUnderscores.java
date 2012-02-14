@@ -49,9 +49,10 @@ import javax.lang.model.SourceVersion;
 import javax.swing.JComponent;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.jdk.AddUnderscores.CustomizerProviderImpl;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
-import org.netbeans.modules.java.hints.providers.spi.CustomizerProvider;
+import org.netbeans.spi.java.hints.CustomizerProvider;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
@@ -66,7 +67,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.AddUnderscores", description = "#DESC_org.netbeans.modules.java.hints.jdk.AddUnderscores", id=AddUnderscores.ID, category="rules15", enabled=false, severity=Severity.CURRENT_LINE_WARNING, customizerProvider=AddUnderscoresPanel.class)
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.AddUnderscores", description = "#DESC_org.netbeans.modules.java.hints.jdk.AddUnderscores", id=AddUnderscores.ID, category="rules15", enabled=false, severity=Severity.CURRENT_LINE_WARNING, customizerProvider=CustomizerProviderImpl.class)
 public class AddUnderscores {
     public static final String ID = "org.netbeans.modules.java.hints.jdk.AddUnderscores";
 
@@ -214,4 +215,11 @@ public class AddUnderscores {
 
     }
 
+    static final class CustomizerProviderImpl implements CustomizerProvider {
+
+        @Override public JComponent getCustomizer(Preferences prefs) {
+            return new AddUnderscoresPanel(prefs);
+        }
+
+    }
 }

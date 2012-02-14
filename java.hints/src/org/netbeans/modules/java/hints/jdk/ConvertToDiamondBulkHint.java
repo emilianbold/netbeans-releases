@@ -56,10 +56,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.prefs.Preferences;
+import javax.swing.JComponent;
 import javax.tools.Diagnostic;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.jdk.ConvertToDiamondBulkHint.CustomizerProviderImpl;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerPatterns;
@@ -72,15 +74,15 @@ import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.CustomizerProvider;
 import org.netbeans.spi.java.hints.Hint.Kind;
-import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author lahvac
  */
-@Hint(displayName = "#DN_Javac_canUseDiamond", description = "#DESC_Javac_canUseDiamond", id=ConvertToDiamondBulkHint.ID, category="rules15",enabled=true, hintKind=Kind.HINT, customizerProvider=ConvertToDiamondBulkHintPanel.class)
+@Hint(displayName = "#DN_Javac_canUseDiamond", description = "#DESC_Javac_canUseDiamond", id=ConvertToDiamondBulkHint.ID, category="rules15",enabled=true, hintKind=Kind.HINT, customizerProvider=CustomizerProviderImpl.class)
 public class ConvertToDiamondBulkHint {
 
     public static final String ID = "Javac_canUseDiamond";
@@ -194,6 +196,14 @@ public class ConvertToDiamondBulkHint {
             ParameterizedTypeTree nue = make.ParameterizedType(ptt.getType(), Collections.<Tree>emptyList());
 
             copy.rewrite(ptt, nue);
+        }
+
+    }
+
+    static final class CustomizerProviderImpl implements CustomizerProvider {
+
+        @Override public JComponent getCustomizer(Preferences prefs) {
+            return new ConvertToDiamondBulkHintPanel(prefs);
         }
 
     }
