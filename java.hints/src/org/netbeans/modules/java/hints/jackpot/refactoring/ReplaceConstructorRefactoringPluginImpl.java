@@ -157,7 +157,7 @@ public class ReplaceConstructorRefactoringPluginImpl implements RefactoringPlugi
                 @Override public void transform(WorkingCopy copy, Occurrence occurrence) {
                     try {
                         Fix toFix = JavaFixImpl.Accessor.INSTANCE.rewriteFix(copy, "whatever", occurrence.getOccurrenceRoot(), toCode[0], occurrence.getVariables(), occurrence.getMultiVariables(), occurrence.getVariables2Names(), Collections.<String, TypeMirror>emptyMap(), Collections.<String, String>emptyMap());
-                        JavaFixImpl.Accessor.INSTANCE.process(((JavaFixImpl) toFix).jf, copy, false);
+                        JavaFixImpl.Accessor.INSTANCE.process(((JavaFixImpl) toFix).jf, copy, false, null);
                     } catch (Exception ex) {
                         Exceptions.printStackTrace(ex);
                     }

@@ -73,7 +73,7 @@ public class Hacks {
         List<MessageImpl> problems = new LinkedList<MessageImpl>();
 
         try {
-            if (BatchUtilities.applyFixes(copy, Collections.<Project, Set<String>>emptyMap(), errs, problems)) {
+            if (BatchUtilities.applyFixes(copy, Collections.<Project, Set<String>>emptyMap(), errs, null, problems)) {
                 throw new IllegalStateException();
             }
         } catch (IllegalStateException ex) {
