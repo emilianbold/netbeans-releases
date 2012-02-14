@@ -78,9 +78,14 @@ class MacFullScreenSupport extends javax.swing.JPanel {
         if( !Utilities.isMac() )
             return true;
         String jdkVersion = System.getProperty("java.version"); //NOI18N
+        if( jdkVersion.length() >= 3 && "1.8".compareTo(jdkVersion.substring(0, 3)) <= 0) //NOI18N
+            return true;
         if( jdkVersion.startsWith("1.7") ) { //NOI18N
+            int index = jdkVersion.indexOf('-');
+            if( index > 0 )
+                jdkVersion = jdkVersion.substring(0, index);
+            index = jdkVersion.indexOf('_');
             int updateNum = 0;
-            int index = jdkVersion.indexOf('_');
             if( index > 0 ) {
                 try {
                     updateNum = Integer.parseInt(jdkVersion.substring(index+1));
