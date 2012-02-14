@@ -332,7 +332,7 @@ public final class VCSContext {
                     // #161904
                     Logger logger = LOG;
                     logger.log(Level.WARNING, "addProjectFiles: IAE");
-                    logger.log(Level.WARNING, "rootFO: " + srcRootFo);
+                    logger.log(Level.WARNING, "rootFO: {0}", srcRootFo);
                     if (srcRootFo != sourceGroup.getRootFolder()) {
                         logger.log(Level.WARNING, "root FO has changed");
                     }
@@ -341,12 +341,12 @@ public final class VCSContext {
                         children += "\"" + fo.getPath() + "\", ";
                     }
                     children += "]";
-                    logger.log(Level.WARNING, "srcRootFo.getChildren(): " + children);
+                    logger.log(Level.WARNING, "srcRootFo.getChildren(): {0}", children);
                     if (!rootChildFo.isValid()) {
-                        logger.log(Level.WARNING, rootChildFo + " does not exist ");
+                        logger.log(Level.WARNING, "{0} does not exist ", rootChildFo);
                     }
                     if (!FileUtil.isParentOf(srcRootFo, rootChildFo)) {
-                        logger.log(Level.WARNING, rootChildFo + " is not under " + srcRootFo);
+                        logger.log(Level.WARNING, "{0} is not under {1}", new Object[]{rootChildFo, srcRootFo});
                     }
                     logger.log(Level.WARNING, null, ex);
                 }
