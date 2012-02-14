@@ -144,6 +144,15 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         occurrences.add(new OccurrenceImpl(offsetRange, this));
     }
     
+    public void addAssignment(Collection<String> typeNames, int offset){
+        Collection<String> types = assignments.get(offset);
+        if (types == null) {
+            types = new ArrayList<String>();
+            assignments.put(offset, types);
+        }
+        types.addAll(typeNames);
+    }
+    
     public void addAssignment(String typeName, int offset){
         Collection<String> types = assignments.get(offset);
         if (types == null) {
