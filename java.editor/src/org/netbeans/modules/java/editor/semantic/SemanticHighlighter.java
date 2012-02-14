@@ -63,6 +63,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -1468,6 +1469,17 @@ public class SemanticHighlighter extends JavaParserResultTask {
         public Void visitLambdaExpression(LambdaExpressionTree node, EnumSet<UseTypes> p) {
             scan(node.getParameters(), EnumSet.of(UseTypes.WRITE));
             scan(node.getBody(), EnumSet.noneOf(UseTypes.class));
+            return null;
+        }
+
+        @Override
+        public Void visitMemberReference(MemberReferenceTree node, EnumSet<UseTypes> p) {
+            scan(node.getQualifierExpression(), EnumSet.of(UseTypes.READ));
+            tl.moveToEnd(node.getQualifierExpression());
+            scan(node.getTypeArguments(), null);
+            tl.moveToEnd(node.getTypeArguments());
+            handlePossibleIdentifier(getCurrentPath(), EnumSet.of(UseTypes.EXECUTE));
+            firstIdentifier(node.getName().toString());
             return null;
         }
 

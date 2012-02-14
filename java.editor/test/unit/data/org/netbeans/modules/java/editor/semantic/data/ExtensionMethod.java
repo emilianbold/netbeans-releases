@@ -6,6 +6,8 @@ import java.util.List;
 
 public interface ExtensionMethod<T> extends List<T> {
     
-    extension void sort(Comparator<T> c) default Collections.<T>sort;
+    void sort(Comparator<T> c) default {
+        Collections.<T>sort(this, c);
+    }
 
 }

@@ -421,6 +421,11 @@ public class DetectorTest extends TestBase {
         performTest("ExtensionMethod");
     }
 
+    public void testMemberReference() throws Exception {
+        setSourceLevel("1.8");
+        performTest("MemberReference");
+    }
+
     private void performTest(String fileName) throws Exception {
         performTest(fileName, new Performer() {
             public void compute(CompilationController parameter, Document doc, ErrorDescriptionSetter setter) {
