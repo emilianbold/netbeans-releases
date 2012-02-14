@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.JsDocDocumentationProvider;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
@@ -50,8 +51,8 @@ import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 public class DocumentationSupport {
 
-    public static DocumentationProvider getSupport(JsParserResult result) {
-        return null;
+    public static DocumentationProvider getDocumentationProvider(JsParserResult result) {
+        return new JsDocDocumentationProvider(result);
     }
 
 }

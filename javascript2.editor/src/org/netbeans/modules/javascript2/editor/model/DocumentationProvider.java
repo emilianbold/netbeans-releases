@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
+import com.oracle.nashorn.ir.Node;
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.model.impl.TypesImpl;
 
 /**
  *
@@ -50,8 +50,8 @@ import org.netbeans.modules.javascript2.editor.model.impl.TypesImpl;
  */
 public interface DocumentationProvider {
 
-    public TypesImpl getReturnType();
+    public Types getReturnType(Node node);
 
-    public List<TypesImpl> getParameters();
+    public List<Types> getParameters(Node node);
 
 }

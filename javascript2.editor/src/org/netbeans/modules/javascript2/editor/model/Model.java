@@ -70,7 +70,7 @@ public final class Model {
     Model(JsParserResult parserResult) {
         this.parserResult = parserResult;
         this.occurrencesSupport = new OccurrencesSupport(this);
-        this.docSupport = DocumentationSupport.getSupport(parserResult);
+        this.docSupport = DocumentationSupport.getDocumentationProvider(parserResult);
     }
 
     private synchronized ModelVisitor getModelVisitor() {

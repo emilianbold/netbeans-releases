@@ -49,6 +49,6 @@ import java.util.List;
  */
 public interface Types {
 
-    public List<Type> getTypes();
+    public List<? extends Type> getTypes();
 
 }
