@@ -42,28 +42,43 @@
 package org.netbeans.modules.javascript2.editor.indent;
 
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  *
  * @author Petr Hejl
  */
-public final class FormattingToken {
-    
-    private final Kind kind;
-    
-    private final int offset;
-    
-    private final CharSequence text;
-    
+public final class FormatToken {
 
-    private FormattingToken(Kind kind, int offset, CharSequence text) {
+    private final Kind kind;
+
+    private final int offset;
+
+    private final CharSequence text;
+
+    private FormatToken next;
+
+    private FormatToken(Kind kind, int offset, CharSequence text) {
         this.kind = kind;
         this.offset = offset;
         this.text = text;
     }
-    
-    public static FormattingToken create(Kind kind, int offset, CharSequence text) {
-        return new FormattingToken(kind, offset, text);
+
+    public static FormatToken forText(int offset, CharSequence text) {
+        return new FormatToken(Kind.TEXT, offset, text);
+    }
+
+    public static FormatToken forFormat(Kind kind) {
+        return new FormatToken(kind, -1, null);
+    }
+
+    public static FormatToken forAny(Kind kind, int offset, CharSequence text) {
+        return new FormatToken(kind, offset, text);
+    }
+
+    @NonNull
+    public Kind getKind() {
+        return kind;
     }
 
     @CheckForNull
@@ -75,18 +90,50 @@ public final class FormattingToken {
         return offset;
     }
 
+    @CheckForNull
+    public FormatToken next() {
+        return next;
+    }
+
     @Override
     public String toString() {
         return "FormattingToken{" + "kind=" + kind + ", offset=" + offset + ", text=" + text + '}';
     }
 
+    void setNext(FormatToken next) {
+        this.next = next;
+    }
+
     public static enum Kind {
         TEXT,
+        
+        WHITESPACE,
+        
+        EOL,
+
+        BEFORE_LINE_COMMENT,
+        LINE_COMMENT,
+        
+        DOC_COMMENT,
+        
+        BLOCK_COMMENT,
+
+        INDENTATION_INC,
+        INDENTATION_DEC,
         
         AFTER_FUNCTION_KEYWORD,
         AFTER_FUNCTION_NAME,
         AFTER_FUNCTION_PARAMETER,
-        AFTER_FUNCTION
+        AFTER_FUNCTION,
+
+        BEFORE_BINARY_OPERATOR,
+        AFTER_BINARY_OPERATOR,
+
+        BEFORE_ASSIGNMENT_OPERATOR,
+        AFTER_ASSIGNMENT_OPERATOR,
+
+        BEFORE_COMMA,
+        AFTER_COMMA
     }
-    
+
 }

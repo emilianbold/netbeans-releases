@@ -42,7 +42,6 @@
 package org.netbeans.modules.javascript2.editor.indent;
 
 import com.oracle.nashorn.ir.*;
-import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -55,19 +54,16 @@ import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 public class FormattingVisitor extends NodeVisitor {
 
     private final TokenSequence<? extends JsTokenId> ts;
-    
-    private final List<FormattingToken> tokens = new ArrayList<FormattingToken>();
+
+    private final FormatTokenStream tokenStream;
 
     private Token nextToken;
 
     private int indentationLevel = 0;
 
-    public FormattingVisitor(TokenSequence<? extends JsTokenId> ts) {
+    public FormattingVisitor(FormatTokenStream tokenStream, TokenSequence<? extends JsTokenId> ts) {
         this.ts = ts;
-    }
-
-    public List<FormattingToken> getTokens() {
-        return tokens;
+        this.tokenStream = tokenStream;
     }
 
     @Override
@@ -79,15 +75,13 @@ public class FormattingVisitor extends NodeVisitor {
     public Node visit(Block block, boolean onset) {
         if (onset) {
             if (block instanceof FunctionNode) {
-                List<FunctionNode> functions = ((FunctionNode) block).getFunctions();
-                for (int i = 0, count = functions.size(); i < count; i++) {
-                    functions.set(i, (FunctionNode)functions.get(i).accept(this));
+                for (FunctionNode function : ((FunctionNode) block).getFunctions()) {
+                    function.accept(this);
                 }
             }
-            
-            List<Node> statements = block.getStatements();
-            for (int i = 0, count = statements.size(); i < count; i++) {
-                statements.set(i, statements.get(i).accept(this));
+
+            for (Node statement : block.getStatements()) {
+                statement.accept(this);
             }
         }
         return null;
@@ -142,55 +136,50 @@ public class FormattingVisitor extends NodeVisitor {
     public Node visit(FunctionNode functionNode, boolean onset) {
         if (onset && functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
             int position = functionNode.position();
-            Token token = getToken(position, JsTokenId.KEYWORD_FUNCTION);
-            
-            tokens.add(FormattingToken.create(FormattingToken.Kind.TEXT, ts.offset(),
-                    token.text()));
-            tokens.add(FormattingToken.create(FormattingToken.Kind.AFTER_FUNCTION_KEYWORD,
-                    ts.offset() + token.length(), null));
-            
+            getToken(position, JsTokenId.KEYWORD_FUNCTION);
+
+            FormatToken formatToken = tokenStream.getToken(ts.offset());
+            if (formatToken != null) {
+                appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_FUNCTION_KEYWORD));
+            }
+
             // identifier
             IdentNode node = functionNode.getIdent();
             if (node != null) {
-                token = nextToken(JsTokenId.IDENTIFIER);
+                Token token = nextToken(JsTokenId.IDENTIFIER);
                 if (token != null) {
-                    // XXX node.getName()
-                    tokens.add(FormattingToken.create(FormattingToken.Kind.TEXT, ts.offset(),
-                            token.text()));
-                    tokens.add(FormattingToken.create(FormattingToken.Kind.AFTER_FUNCTION_NAME,
-                            ts.offset() + token.length(), null));
+                    formatToken = tokenStream.getToken(ts.offset());
+                    if (formatToken != null) {
+                        appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_FUNCTION_NAME));
+                    }
                 }
             }
 
             // left bracket
-            token = nextToken(JsTokenId.BRACKET_LEFT_PAREN);
-            tokens.add(FormattingToken.create(FormattingToken.Kind.TEXT, ts.offset(),
-                        token.text()));
-            
+            nextToken(JsTokenId.BRACKET_LEFT_PAREN);
+
             // parameters
             List<IdentNode> params = functionNode.getParameters();
             if (!params.isEmpty()) {
                 for(int i = 0; i < params.size(); i++) {
-                    token = nextToken(JsTokenId.IDENTIFIER);
-                    tokens.add(FormattingToken.create(FormattingToken.Kind.TEXT, ts.offset(),
-                            token.text()));
-                    if (i < params.size() - 1) {
+                    nextToken(JsTokenId.IDENTIFIER);
+                    if (i < (params.size() - 1)) {
                         // comma
-                        token = nextToken(JsTokenId.OPERATOR_COMMA);
-                        tokens.add(FormattingToken.create(FormattingToken.Kind.TEXT, ts.offset(),
-                                token.text()));
-                        tokens.add(FormattingToken.create(FormattingToken.Kind.AFTER_FUNCTION_PARAMETER,
-                                ts.offset() + 1, null));
+                        nextToken(JsTokenId.OPERATOR_COMMA);
+                        formatToken = tokenStream.getToken(ts.offset());
+                        if (formatToken != null) {
+                            appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_FUNCTION_PARAMETER));
+                        }
                    }
                 }
             }
-            
+
             // right bracket
-            token = nextToken(JsTokenId.BRACKET_RIGHT_PAREN);
-            tokens.add(FormattingToken.create(FormattingToken.Kind.TEXT, ts.offset(),
-                    token.text()));
-            tokens.add(FormattingToken.create(FormattingToken.Kind.AFTER_FUNCTION,
-                    ts.offset() + token.length(), null));
+            nextToken(JsTokenId.BRACKET_RIGHT_PAREN);
+            formatToken = tokenStream.getToken(ts.offset());
+            if (formatToken != null) {
+                appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_FUNCTION));
+            }
         }
 
         indentationLevel++;
@@ -305,7 +294,7 @@ public class FormattingVisitor extends NodeVisitor {
         if (!ts.moveNext() && !ts.movePrevious()) {
             return null;
         }
-        
+
         Token<?extends JsTokenId> token = ts.token();
         if (expected != null) {
             while (expected != token.id() && ts.movePrevious()) {
@@ -314,7 +303,7 @@ public class FormattingVisitor extends NodeVisitor {
         }
         return token;
     }
-    
+
     private Token nextToken(JsTokenId expected) {
         if (nextToken != null) {
             Token token = nextToken;
@@ -326,12 +315,20 @@ public class FormattingVisitor extends NodeVisitor {
                 || ts.token().id() == JsTokenId.BLOCK_COMMENT
                 || ts.token().id() == JsTokenId.LINE_COMMENT
                 || ts.token().id() == JsTokenId.DOC_COMMENT
-                || ts.token().id() == JsTokenId.EOL));
+                || ts.token().id() == JsTokenId.EOL)) {
+        }
+
         Token token = ts.token();
         if (expected != token.id()) {
             nextToken = token;
             return null;
         }
         return token;
+    }
+
+    private static void appendToken(FormatToken previous, FormatToken token) {
+        FormatToken original = previous.next();
+        previous.setNext(token);
+        token.setNext(original);
     }
 }
