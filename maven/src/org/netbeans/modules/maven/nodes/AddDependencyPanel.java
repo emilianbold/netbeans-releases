@@ -1475,8 +1475,11 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 NBVersionInfo vi = lookup.lookup(NBVersionInfo.class);
                 if (vi != null) {
                     //in dm panel we want to pass empty version
-                    String ver = AddDependencyPanel.this.queryPanel.isVisible() ? vi.getVersion() : "";
-                    AddDependencyPanel.this.setFields(vi.getGroupId(), vi.getArtifactId(), ver, vi.getType(), vi.getClassifier());
+                    boolean isDM = lookup.lookup(DependencyManagement.class) != null;
+                    String ver =  isDM ?  "" : vi.getVersion();
+                    String type = isDM ? "" : vi.getType();
+                    String classifier = isDM ? "" : vi.getClassifier();
+                    AddDependencyPanel.this.setFields(vi.getGroupId(), vi.getArtifactId(), ver, type, classifier);
                     set = true;
                 }
             }
@@ -1532,7 +1535,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
         @Override
         public Action getPreferredAction() {
-            return new DefAction(true, getOriginal().getLookup());
+            return new DefAction(true, getLookup());
         }
 
         @Override
