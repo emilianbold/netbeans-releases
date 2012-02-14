@@ -471,7 +471,8 @@ public class ModelTest extends JsTestBase {
         assertTrue(function.getModifiers().contains(Modifier.STATIC));
         assertTrue(function.getModifiers().contains(Modifier.PRIVATE));
         assertEquals(JsElement.Kind.METHOD, function.getJSKind());
-        
+        assertEquals(1, function.getReturnTypes().size());
+        assertTrue(function.getReturnTypes().contains("Man.Address"));
         
     }
     

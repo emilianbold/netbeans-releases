@@ -41,10 +41,8 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import com.oracle.nashorn.ir.IdentNode;
-import com.oracle.nashorn.ir.LiteralNode;
-import com.oracle.nashorn.ir.Node;
-import java.util.ArrayList;
+import com.oracle.nashorn.ir.*;
+import com.oracle.nashorn.parser.TokenType;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -204,39 +202,21 @@ public class ModelUtils {
     }
     
     public static Collection<String> resolveSemiTypeOfExpression(Node expression) {
-        Set<String> result = new HashSet<String>();
-        if (expression instanceof LiteralNode) {
-            LiteralNode lNode = (LiteralNode)expression;
-            Object value = lNode.getObject();
-            if (value instanceof Boolean) {
-                result.add(Type.BOOLEAN);
-            } else if (value instanceof String) {
-                result.add(Type.STRING);
-            } else if (value instanceof Integer 
-                    || value instanceof Float
-                    || value instanceof Double) {
-                result.add(Type.NUMBER);
-            }
-        } else if (expression instanceof IdentNode) {
-            IdentNode iNode = (IdentNode)expression;
-            if (iNode.getName().equals("this")) {
-                result.add("@this");
-            }
-        }
-        return result;
+        SemiTypeResolverVisitor visitor = new SemiTypeResolverVisitor();
+        expression.accept(visitor);
+        return visitor.getSemiTypes();
     }
     
-    public static String resolveTypeFromSemiType(JsObject object, String type) {
-        String result = Type.UNRESOLVED;
+    public static Collection<String> resolveTypeFromSemiType(JsObject object, String type) {
+        Set<String> result = new HashSet<String>();
         if (Type.UNRESOLVED.equals(type) 
                 || Type.BOOLEAN.equals(type)
                 || Type.STRING.equals(type)
                 || Type.NUMBER.equals(type)) {
-            result = type;
+            result.add(type);
         } else if (Type.UNDEFINED.equals(type) && object.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
-            result = ModelUtils.createFQN(object);
+            result.add(ModelUtils.createFQN(object));
         } else if ("@this".equals(type)) {
-            result = type;
             JsObject parent = null;
             if (object.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
                 parent = object;
@@ -244,10 +224,83 @@ public class ModelUtils {
                 parent = object.getParent();
             }
             if (parent != null) {
-                result = ModelUtils.createFQN(parent);
+                result.add(ModelUtils.createFQN(parent));
+            }
+        } else if (type.startsWith("@new:")) {
+            String function = type.substring(5);
+            JsObject possible = null;
+            JsObject parent = object;
+            while (possible == null && parent != null) {
+                possible = parent.getProperty(function);
+                if(possible != null && !(possible instanceof JsFunction)) {
+                    possible = null;
+                }
+                parent = parent.getParent();
+            }
+            if (possible != null) {
+                result.addAll(((JsFunction)possible).getReturnTypes());
             }
         }
         return result;
     }
-    
+
+    private static class SemiTypeResolverVisitor extends PathNodeVisitor {
+        
+        private final Set<String> result = new HashSet<String>();
+        
+        public SemiTypeResolverVisitor() {
+        }
+        
+        public Collection<String> getSemiTypes() {
+            return result;
+        }
+
+        @Override
+        public Node visit(IdentNode iNode, boolean onset) {
+            if (onset) {
+                if (getPath().isEmpty() && iNode.getName().equals("this")) {   //NOI18N
+                    result.add("@this");                //NOI18N
+                }
+            }
+            return super.visit(iNode, onset);
+        }
+
+        
+        @Override
+        public Node visit(LiteralNode lNode, boolean onset) {
+            if (onset) {
+                Object value = lNode.getObject();
+                if (value instanceof Boolean) {
+                    result.add(Type.BOOLEAN);
+                } else if (value instanceof String) {
+                    result.add(Type.STRING);
+                } else if (value instanceof Integer
+                        || value instanceof Float
+                        || value instanceof Double) {
+                    result.add(Type.NUMBER);
+                }
+                return null;
+            }
+            return super.visit(lNode, onset);
+        }
+
+        @Override
+        public Node visit(UnaryNode uNode, boolean onset) {
+            if (onset) {
+                if (com.oracle.nashorn.parser.Token.descType(uNode.getToken()) == TokenType.NEW) {
+                    if (uNode.rhs() instanceof CallNode
+                        && ((CallNode)uNode.rhs()).getFunction() instanceof IdentNode) {
+                            result.add("@new:" + ((IdentNode)((CallNode)uNode.rhs()).getFunction()).getName());
+                            return null;
+                    }
+                }
+            }
+            return super.visit(uNode, onset);
+        }
+        
+        
+        
+        
+        
+    }
 }

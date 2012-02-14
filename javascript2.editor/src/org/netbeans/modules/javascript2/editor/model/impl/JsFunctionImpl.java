@@ -131,8 +131,8 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         if (!areReturnTypesResolved) {
             Set<String> realTypes = new HashSet<String>(returnTypes.size());
             for (String semiType : returnTypes) {
-                String realType = ModelUtils.resolveTypeFromSemiType(this, semiType);
-                realTypes.add(realType);
+                Collection<String> realType = ModelUtils.resolveTypeFromSemiType(this, semiType);
+                realTypes.addAll(realType);
             }
             returnTypes.clear();
             returnTypes.addAll(realTypes);
