@@ -194,7 +194,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         LOG.log(Level.FINER, "Looking for owner of {0}", file);
         String[] coordinates = findCoordinates(file);
         if (coordinates == null) {
-            LOG.log(Level.FINE, "{0} not an artifact in local repo", file);
+            LOG.log(Level.FINER, "{0} not an artifact in local repo", file);
             return null;
         }
         return getOwner(coordinates[0], coordinates[1], coordinates[2]);
