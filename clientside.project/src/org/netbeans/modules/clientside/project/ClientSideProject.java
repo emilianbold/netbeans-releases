@@ -42,12 +42,13 @@
 package org.netbeans.modules.clientside.project;
 
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.clientside.project.ui.ClientSideProjectLogicalView;
-import org.netbeans.modules.web.common.reload.BrowserReload;
+import org.netbeans.modules.web.common.api.browser.BrowserSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.*;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
@@ -75,6 +76,7 @@ public class ClientSideProject implements Project {
     private final ReferenceHelper refHelper;
     private final PropertyEvaluator eval;
     private final Lookup lookup;
+    private BrowserSupport browserSupport;
     
     public ClientSideProject(AntProjectHelper helper) {
         this.helper = helper;
@@ -84,6 +86,12 @@ public class ClientSideProject implements Project {
         lookup = createLookup(configuration);
     }
 
+    public synchronized BrowserSupport getBrowserSupport() {
+        if (browserSupport == null) {
+            browserSupport = BrowserSupport.getDefault();
+        }
+        return browserSupport;
+    }
     
     public AntProjectHelper getHelper() {
         return helper;
@@ -124,8 +132,9 @@ public class ClientSideProject implements Project {
                 getEvaluator(),
                 new ClientSideProjectLogicalView(this),
                 new RecommendedAndPrivilegedTemplatesImpl(),
-                new ClientSideProjectActionProvider(),
+                new ClientSideProjectActionProvider(this),
                 new OpenHookImpl(this),
+                getBrowserSupport(),
         });
     }
 
@@ -197,7 +206,7 @@ public class ClientSideProject implements Project {
         
         @Override
         protected void projectOpened() {
-            projectFileChangesListener = new ProjectFilesListener();
+            projectFileChangesListener = new ProjectFilesListener(p.getBrowserSupport());
             FileUtil.addRecursiveListener(projectFileChangesListener, FileUtil.toFile(p.getProjectDirectory()));
         }
 
@@ -210,10 +219,10 @@ public class ClientSideProject implements Project {
     
     private static class ProjectFilesListener implements FileChangeListener {
 
-        private final BrowserReload br;
-
-        ProjectFilesListener() {
-            br = BrowserReload.getInstance();
+        private BrowserSupport bs;
+        
+        ProjectFilesListener(BrowserSupport bs) {
+            this.bs = bs;
         }
         
         @Override
@@ -232,7 +241,8 @@ public class ClientSideProject implements Project {
         @Override
         public void fileDeleted(FileEvent fe) {
             FileObject fo = fe.getFile();
-            if (br.canReload(fo)) {
+            URL u = bs.getBrowserURL(fo, false);
+            if (u != null) {
                 // XXX: close browser's tab ???
             }
         }
@@ -247,8 +257,10 @@ public class ClientSideProject implements Project {
         }
 
         private void refreshInBrowser(FileObject fo) {
-            if (br.canReload(fo)) {
-                br.reload(fo);
+            URL u = bs.getBrowserURL(fo, true);
+            if (u != null) {
+                assert bs.canReload(u) : u;
+                bs.reload(u);
             }
         }
     }

@@ -1529,8 +1529,7 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="-display-browser-nb" if="do.display.browser.nb">
-                <nbbregister filePath="${{browser.file}}" url="${{client.url}}"/>
-                <nbbrowse url="${{client.url}}"/>
+                <nbbrowse2 url="${{client.url}}" filePath="${{browser.file}}"/>
             </target>
             
             <target name="-get-browser" if="do.display.browser.cl" unless="browser">

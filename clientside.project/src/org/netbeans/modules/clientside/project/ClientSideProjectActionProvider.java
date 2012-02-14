@@ -43,9 +43,8 @@ package org.netbeans.modules.clientside.project;
 
 import java.net.URISyntaxException;
 import java.net.URL;
-import org.netbeans.modules.web.common.reload.BrowserReload;
+import org.netbeans.modules.web.common.api.browser.BrowserSupport;
 import org.netbeans.spi.project.ActionProvider;
-import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
@@ -57,6 +56,12 @@ import org.openide.util.Lookup;
  */
 public class ClientSideProjectActionProvider implements ActionProvider {
 
+    private ClientSideProject p;
+
+    public ClientSideProjectActionProvider(ClientSideProject p) {
+        this.p = p;
+    }
+    
     @Override
     public String[] getSupportedActions() {
         return new String[]{
@@ -70,10 +75,10 @@ public class ClientSideProjectActionProvider implements ActionProvider {
         if (fo == null) {
             return;
         }
-        browseFile(fo);
+        browseFile(p.getBrowserSupport(), fo);
     }
     
-    public static void browseFile(FileObject fo) {
+    private static void browseFile(BrowserSupport bs, FileObject fo) {
         URL url;
         String urlString;
         try {
@@ -87,14 +92,8 @@ public class ClientSideProjectActionProvider implements ActionProvider {
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);
             return;
-        }        
-        BrowserReload br = BrowserReload.getInstance();
-        br.register(fo, urlString);
-        if (br.canReload(fo)) {
-            br.reload(fo);
-        } else {
-            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
         }
+        bs.load(url, fo);
     }
 
     @Override
