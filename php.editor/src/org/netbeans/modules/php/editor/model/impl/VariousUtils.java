@@ -985,6 +985,9 @@ public class VariousUtils {
                 }
             } else {
                 if (state.equals(State.CLASSNAME)) {
+                    if (!metaAll.toString().startsWith("\\")) { //NOI18N
+                        metaAll = transformToFullyQualifiedType(metaAll, tokenSequence, varScope);
+                    }
                     state = State.STOP;
                     break;
                 } else if (state.equals(State.METHOD)) {
@@ -1010,6 +1013,20 @@ public class VariousUtils {
             }
         }
         return null;
+    }
+
+    private static StringBuilder transformToFullyQualifiedType(final StringBuilder metaAll, final TokenSequence<PHPTokenId> tokenSequence, final Scope varScope) {
+        StringBuilder result = metaAll;
+        String currentMetaAll = metaAll.toString();
+        int indexOfType = currentMetaAll.indexOf("@"); //NOI18N
+        if (indexOfType != -1) {
+            String lastType = currentMetaAll.substring(0, indexOfType);
+            if (!lastType.trim().isEmpty()) {
+                String qualifiedTypeName = qualifyTypeNames(lastType, tokenSequence.offset(), varScope);
+                result = new StringBuilder(qualifiedTypeName + currentMetaAll.substring(indexOfType));
+            }
+        }
+        return result;
     }
 
     // XXX
