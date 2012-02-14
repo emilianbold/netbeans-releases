@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,66 +42,56 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.search.project;
+package org.netbeans.api.search.impl;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.api.search.provider.SearchInfo;
-import org.netbeans.api.search.provider.SearchInfoUtils;
-import org.openide.util.NbBundle;
+import org.openide.modules.ModuleInstall;
+import org.openide.util.SharedClassObject;
 
-/**
- * Defines search scope across the main project.
+/** Module install class for Utilities module.
  *
- * @author  Marian Petras
+ * @author Jesse Glick, Petr Kuzel, Martin Ryzl
  */
-final class SearchScopeMainProject extends AbstractProjectSearchScope {
-    
-    SearchScopeMainProject() {
-        super(OpenProjects.PROPERTY_MAIN_PROJECT);
-    }
+public class Installer extends ModuleInstall {
 
-    @Override
-    public String getTypeId() {
-        return "main project";                                          //NOI18N
-    }
-    
-    @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(getClass(),
-                                   "SearchScopeNameMainProject");       //NOI18N
-    }
+    /** Installation instance for &quot;sub-module&quot; Search.  */
+    private final org.netbeans.modules.search.Installer searchInstaller;
 
-    protected boolean checkIsApplicable() {
-        return OpenProjects.getDefault().getMainProject() != null;
-    }
-
-    @Override
-    public SearchInfo getSearchInfo() {
-        Project mainProject = OpenProjects.getDefault().getMainProject();
-        if (mainProject == null) {
-            /*
-             * We cannot prevent this situation. The action may be invoked
-             * between moment the main project had been closed and the removal
-             * notice was distributed to the main project listener (and this
-             * action disabled). This may happen if the the main project
-             * is being closed in another thread than this action was
-             * invoked from.
-             */
-            return SearchInfoUtils.createEmptySearchInfo();
-        }
-        
-        return createSingleProjectSearchInfo(mainProject);
-    }
-
-    @Override
-    public boolean isApplicable() {
-        return checkIsApplicable();
-    }
-
-    @Override
-    public int getPriority() {
-        return 100;
+    /** Constructs modules installer. */
+    public Installer() {
+        searchInstaller = SharedClassObject.findObject(
+                                  org.netbeans.modules.search.Installer.class,
+                                  true);
     }
     
+    /**
+     * Restores module. Restores &quot;sub-module&quot; Search.
+     */
+    @Override
+    public void restored() {
+        searchInstaller.restored();
+    }
+    
+    /**
+     * Uninstalls module. Uninstalls
+     * the Search &quot;sub-module&quot;.
+     */
+    @Override
+    public void uninstalled() {
+        searchInstaller.uninstalled();
+    }
+    
+    /**
+     */
+    @Override
+    public void close() {
+        searchInstaller.close();
+    }
+    
+    /**
+     */
+    @Override
+    public boolean closing() {
+        return searchInstaller.closing();
+    }
+
 }

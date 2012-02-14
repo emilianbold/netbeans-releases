@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,66 +42,45 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.search.project;
+package org.netbeans.modules.search;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.api.search.provider.SearchInfo;
-import org.netbeans.api.search.provider.SearchInfoUtils;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- * Defines search scope across the main project.
+ * The same as the {@link FindInFilesAction} except that this action asks for
+ * a replacement string and allows to replace some or all matching substrings
+ * with the given replacement string.
  *
  * @author  Marian Petras
  */
-final class SearchScopeMainProject extends AbstractProjectSearchScope {
-    
-    SearchScopeMainProject() {
-        super(OpenProjects.PROPERTY_MAIN_PROJECT);
+public class ReplaceInFilesAction extends FindInFilesAction {
+
+    static final long serialVersionUID = 4554342565076372612L;
+
+    @Override
+    protected void initialize() {
+        super.initialize();
+
+        putProperty(REPLACING, Boolean.TRUE, false);
     }
 
     @Override
-    public String getTypeId() {
-        return "main project";                                          //NOI18N
-    }
-    
-    @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(getClass(),
-                                   "SearchScopeNameMainProject");       //NOI18N
-    }
-
-    protected boolean checkIsApplicable() {
-        return OpenProjects.getDefault().getMainProject() != null;
-    }
-
-    @Override
-    public SearchInfo getSearchInfo() {
-        Project mainProject = OpenProjects.getDefault().getMainProject();
-        if (mainProject == null) {
-            /*
-             * We cannot prevent this situation. The action may be invoked
-             * between moment the main project had been closed and the removal
-             * notice was distributed to the main project listener (and this
-             * action disabled). This may happen if the the main project
-             * is being closed in another thread than this action was
-             * invoked from.
-             */
-            return SearchInfoUtils.createEmptySearchInfo();
-        }
-        
-        return createSingleProjectSearchInfo(mainProject);
-    }
-
-    @Override
-    public boolean isApplicable() {
-        return checkIsApplicable();
-    }
-
-    @Override
-    public int getPriority() {
-        return 100;
+    protected String iconResource() {
+        return "org/openide/resources/actions/find.gif";    //PENDING   //NOI18N
     }
     
+    @Override
+    public String getName() {
+        String key = Utils.hasProjectSearchScope()
+                     ? "LBL_Action_ReplaceInProjects"                   //NOI18N
+                     : "LBL_Action_ReplaceInFiles";                     //NOI18N
+        return NbBundle.getMessage(getClass(), key);
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ReplaceInFilesAction.class);
+    }
+
 }

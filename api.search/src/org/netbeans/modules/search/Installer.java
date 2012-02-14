@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,67 +41,27 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.search;
 
-package org.netbeans.modules.search.project;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.api.search.provider.SearchInfo;
-import org.netbeans.api.search.provider.SearchInfoUtils;
-import org.openide.util.NbBundle;
+import org.openide.modules.ModuleInstall;
 
 /**
- * Defines search scope across the main project.
+ * Module installation class for search 'sub module'.
  *
- * @author  Marian Petras
+ * @author Marian Petras
  */
-final class SearchScopeMainProject extends AbstractProjectSearchScope {
-    
-    SearchScopeMainProject() {
-        super(OpenProjects.PROPERTY_MAIN_PROJECT);
+public class Installer extends ModuleInstall {
+
+    @Override
+    public void restored() {
+        ActionManager.FindActionManager.getInstance().init();
+        ActionManager.ReplaceActionManager.getInstance().init();
     }
 
     @Override
-    public String getTypeId() {
-        return "main project";                                          //NOI18N
+    public void uninstalled() {
+        ActionManager.FindActionManager.getInstance().cleanup();
+        ActionManager.ReplaceActionManager.getInstance().cleanup();
+        Manager.getInstance().doCleanup();
     }
-    
-    @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(getClass(),
-                                   "SearchScopeNameMainProject");       //NOI18N
-    }
-
-    protected boolean checkIsApplicable() {
-        return OpenProjects.getDefault().getMainProject() != null;
-    }
-
-    @Override
-    public SearchInfo getSearchInfo() {
-        Project mainProject = OpenProjects.getDefault().getMainProject();
-        if (mainProject == null) {
-            /*
-             * We cannot prevent this situation. The action may be invoked
-             * between moment the main project had been closed and the removal
-             * notice was distributed to the main project listener (and this
-             * action disabled). This may happen if the the main project
-             * is being closed in another thread than this action was
-             * invoked from.
-             */
-            return SearchInfoUtils.createEmptySearchInfo();
-        }
-        
-        return createSingleProjectSearchInfo(mainProject);
-    }
-
-    @Override
-    public boolean isApplicable() {
-        return checkIsApplicable();
-    }
-
-    @Override
-    public int getPriority() {
-        return 100;
-    }
-    
 }
