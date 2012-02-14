@@ -95,6 +95,11 @@ public final class DefaultSplitContainer extends AbstractModeContainer {
         tabbedHandler.cancelRequestAttention(tc);
     }
 
+    @Override
+    public void makeBusy(TopComponent tc, boolean busy) {
+        tabbedHandler.makeBusy( tc, busy );
+    }
+
     /** */
     protected Component getModeComponent() {
         return panel;

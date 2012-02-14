@@ -45,6 +45,16 @@ package org.netbeans.modules.javafx2.scenebuilder;
  *
  * @author Jaroslav Bachorik
  */
-public interface HomeLocator {
-    Home locateHome();
+public interface HomeFactory {
+    /**
+     * Try to locate the default SB installation path
+     * @return Returns the default SB installation path or null
+     */
+    Home defaultHome();
+    /**
+     * Loads a custom SB installation path
+     * @param customPath The custom SB installation path
+     * @return Returns a valid home or null
+     */
+    Home loadHome(String customPath);
 }

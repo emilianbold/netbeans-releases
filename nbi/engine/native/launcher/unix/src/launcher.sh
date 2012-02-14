@@ -1069,42 +1069,42 @@ searchJava() {
 
 normalizePath() {	
 	argument="$1"
-
-	# replace XXX/../YYY to 'dirname XXX'/YYY
-	while [ 0 -eq 0 ] ; do	
-		beforeDotDot=`echo "$argument" | sed "s/\/\.\.\/.*//g" 2> /dev/null`
-                if [ 0 -eq `ifEquals "$beforeDotDot" "$argument"` ] && [ 0 -eq `ifEquals "$beforeDotDot" "."` ] && [ 0 -eq `ifEquals "$beforeDotDot" ".."` ] ; then
-	            esc=`echo "$beforeDotDot" | sed "s/\\\//\\\\\\\\\//g"`
-                    afterDotDot=`echo "$argument" | sed "s/^$esc\/\.\.//g" 2> /dev/null` 
-		    parent=`dirname "$beforeDotDot"`
-		    argument=`echo "$parent""$afterDotDot"`
-		else 
-                    break
-		fi	
-	done
-
-	# replace XXX/.. to 'dirname XXX'
-	while [ 0 -eq 0 ] ; do	
-		beforeDotDot=`echo "$argument" | sed "s/\/\.\.$//g" 2> /dev/null`
-                if [ 0 -eq `ifEquals "$beforeDotDot" "$argument"` ] && [ 0 -eq `ifEquals "$beforeDotDot" "."` ] && [ 0 -eq `ifEquals "$beforeDotDot" ".."` ] ; then
-		    argument=`dirname "$beforeDotDot"`
-		else 
-                    break
-		fi	
-	done
-
-	# replace all /./ to /
+  
+  # replace all /./ to /
 	while [ 0 -eq 0 ] ; do	
 		testArgument=`echo "$argument" | sed 's/\/\.\//\//g' 2> /dev/null`
 		if [ -n "$testArgument" ] && [ 0 -eq `ifEquals "$argument" "$testArgument"` ] ; then
-		    	# something changed
+		  # something changed
 			argument="$testArgument"
 		else
 			break
 		fi	
 	done
 
-        # remove /. a the end (if the resulting string is not zero)
+	# replace XXX/../YYY to 'dirname XXX'/YYY
+	while [ 0 -eq 0 ] ; do	
+		beforeDotDot=`echo "$argument" | sed "s/\/\.\.\/.*//g" 2> /dev/null`
+      if [ 0 -eq `ifEquals "$beforeDotDot" "$argument"` ] && [ 0 -eq `ifEquals "$beforeDotDot" "."` ] && [ 0 -eq `ifEquals "$beforeDotDot" ".."` ] ; then
+        esc=`echo "$beforeDotDot" | sed "s/\\\//\\\\\\\\\//g"`
+        afterDotDot=`echo "$argument" | sed "s/^$esc\/\.\.//g" 2> /dev/null` 
+        parent=`dirname "$beforeDotDot"`
+        argument=`echo "$parent""$afterDotDot"`
+		else 
+      break
+		fi	
+	done
+
+	# replace XXX/.. to 'dirname XXX'
+	while [ 0 -eq 0 ] ; do	
+		beforeDotDot=`echo "$argument" | sed "s/\/\.\.$//g" 2> /dev/null`
+    if [ 0 -eq `ifEquals "$beforeDotDot" "$argument"` ] && [ 0 -eq `ifEquals "$beforeDotDot" "."` ] && [ 0 -eq `ifEquals "$beforeDotDot" ".."` ] ; then
+		  argument=`dirname "$beforeDotDot"`
+		else 
+      break
+		fi	
+	done
+
+  # remove /. a the end (if the resulting string is not zero)
 	testArgument=`echo "$argument" | sed 's/\/\.$//' 2> /dev/null`
 	if [ -n "$testArgument" ] ; then
 		argument="$testArgument"

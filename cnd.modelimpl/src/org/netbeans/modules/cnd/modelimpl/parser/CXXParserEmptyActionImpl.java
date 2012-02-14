@@ -43,13 +43,8 @@ package org.netbeans.modules.cnd.modelimpl.parser;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.Map;
 import org.antlr.runtime.Token;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  * @author nick
@@ -152,14 +147,6 @@ public class CXXParserEmptyActionImpl implements CXXParserActionEx {
     }
 
     @Override
-    public void onInclude(CsmFile inclFile, State stateBefore) {
-        if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
-            assert inclFile instanceof FileImpl;
-            ((FileImpl) inclFile).parseOnInclude(stateBefore, this);
-        }
-    }
-
-    @Override
     public void pushFile(CsmFile file) {
         files.push(file);
     }
@@ -172,7 +159,10 @@ public class CXXParserEmptyActionImpl implements CXXParserActionEx {
     }
 
     @Override
-    public Map<Integer, CsmObject> getObjectsMap() {
-        return null;
+    public void declaration(Token token) {
+    }
+
+    @Override
+    public void end_declaration(Token token) {
     }
 }
