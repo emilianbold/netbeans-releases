@@ -71,15 +71,13 @@ package org.netbeans.modules.cnd.modelimpl.parser;
 import org.netbeans.modules.cnd.antlr.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.Hashtable;
-import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
-import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 
 /**
  * Extends CPPParser to implement logic, ported from Support.cpp.
@@ -93,9 +91,11 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 public class CPPParserEx extends CPPParser {
 
     private boolean lazyCompound = TraceFlags.EXCLUDE_COMPOUND;
-
+    private final CppParserActionEx action;
+    
     private static class AstFactoryEx extends org.netbeans.modules.cnd.antlr.ASTFactory {
 
+        @SuppressWarnings("UseOfObsoleteCollectionType") 
         public AstFactoryEx(Hashtable tokenTypeToClassMap) {
             super(tokenTypeToClassMap);
         }
@@ -114,8 +114,8 @@ public class CPPParserEx extends CPPParser {
     //Change statementTrace from cppparser.g directly 
     //private final boolean trace = Boolean.getBoolean("cnd.parser.trace");
     //private TokenStreamSelector selector = new TokenStreamSelector();
-    protected CPPParserEx(TokenStream stream, CppParserAction callback) {
-        super(stream);
+    protected CPPParserEx(TokenStream stream, CppParserActionEx callback) {
+        super(stream, callback);
         assert callback != null;
         this.action = callback;
     }
@@ -133,7 +133,7 @@ public class CPPParserEx extends CPPParser {
         return getInstance(file, ts, flags, new CppParserEmptyActionImpl(file));
     }
     
-    public static CPPParserEx getInstance(CsmFile file, TokenStream ts, int flags, CppParserAction callback) {
+    public static CPPParserEx getInstance(CsmFile file, TokenStream ts, int flags, CppParserActionEx callback) {
         assert (ts != null);
         assert (file != null);
         CPPParserEx parser = new CPPParserEx(ts, callback);
@@ -152,12 +152,21 @@ public class CPPParserEx extends CPPParser {
     }
 
     private void onIncludeToken(Token t) {
-        if (t instanceof APTToken) {
-            APTToken aptToken = (APTToken) t;
-            APTPreprocHandler.State stateBefore = (APTPreprocHandler.State) aptToken.getProperty(APTPreprocHandler.State.class);
-            CsmFile inclFile = (CsmFile) aptToken.getProperty(CsmFile.class);
-            if (stateBefore != null && inclFile != null) {
-                action.onInclude(inclFile, stateBefore);
+        if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+            if (t instanceof APTToken) {
+                APTToken aptToken = (APTToken) t;
+                APTPreprocHandler.State stateBefore = (APTPreprocHandler.State) aptToken.getProperty(APTPreprocHandler.State.class);
+                CsmFile inclFile = (CsmFile) aptToken.getProperty(CsmFile.class);
+                if (stateBefore != null && inclFile != null) {
+                    try {
+                        action.pushFile(inclFile);
+                        assert inclFile instanceof FileImpl;
+                        ((FileImpl) inclFile).parseOnInclude(stateBefore, action);
+                    } finally {
+                        CsmFile popFile = action.popFile();
+                        assert popFile == inclFile;
+                    }
+                }
             }
         }
     }
@@ -588,7 +597,7 @@ public class CPPParserEx extends CPPParser {
      */
     }
 
-    private final boolean isValidIdentifier(String id) {
+    private boolean isValidIdentifier(String id) {
         if (id != null && id.length() > 0) {
             if (Character.isJavaIdentifierStart(id.charAt(0))) {
                 for (int i = 1; i < id.length(); i++) {

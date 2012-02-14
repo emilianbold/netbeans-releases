@@ -45,7 +45,6 @@ import java.util.Map;
 import org.antlr.runtime.Token;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 
 /**
@@ -53,7 +52,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
  */
 public class CXXParserActionImpl implements CXXParserActionEx {
 
-    private final CppParserAction orig;
+    private final CppParserActionImpl orig;
 
     public CXXParserActionImpl(CsmFile file) {
         orig = new CppParserActionImpl((FileImpl) file);
@@ -170,11 +169,6 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     }
 
     @Override
-    public void onInclude(CsmFile inclFile, APTPreprocHandler.State stateBefore) {
-        orig.onInclude(inclFile, stateBefore);
-    }
-
-    @Override
     public void pushFile(CsmFile file) {
         orig.pushFile(file);
     }
@@ -184,8 +178,7 @@ public class CXXParserActionImpl implements CXXParserActionEx {
         return orig.popFile();
     }
 
-    @Override
-    public Map<Integer, CsmObject> getObjectsMap() {
+    Map<Integer, CsmObject> getObjectsMap() {
         return orig.getObjectsMap();
     }
 

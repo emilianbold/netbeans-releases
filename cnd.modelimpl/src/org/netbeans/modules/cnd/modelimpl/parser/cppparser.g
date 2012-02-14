@@ -270,7 +270,11 @@ tokens {
 }
 
 {
-    public CppParserAction action;
+    private CppParserAction action;
+    protected CPPParser(TokenStream stream, CppParserAction action) {
+        this(stream);
+        this.action = action;
+    }
 
     // Defines for flags passed to init methods
     public static final int CPP_STATEMENT_TRACE		= 0x1;
