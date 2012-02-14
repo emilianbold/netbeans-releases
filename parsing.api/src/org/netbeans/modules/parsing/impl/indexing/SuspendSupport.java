@@ -140,5 +140,15 @@ final class SuspendSupport implements SuspendStatus {
             }
         }
     }
+    
+    static final SuspendStatus NOP = new SuspendStatus () {
+        @Override
+        public boolean isSuspended() {
+            return false;
+        }
+        @Override
+        public void parkWhileSuspended() throws InterruptedException {
+        }
+    };
 
 }

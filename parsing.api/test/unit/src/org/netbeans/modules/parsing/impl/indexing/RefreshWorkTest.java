@@ -130,7 +130,7 @@ public class RefreshWorkTest  extends NbTestCase {
             false, // logStatistics
             Collections.singleton(outerFolder1), // suspectFilesOrFolders
             new RepositoryUpdater.FSRefreshInterceptor(),
-            SuspendStatus.NOP,
+            SuspendSupport.NOP,
             null);
 
         Indexer indexer = new Indexer();
@@ -156,7 +156,7 @@ public class RefreshWorkTest  extends NbTestCase {
             false, // logStatistics
             Collections.singleton(ff), // suspectFilesOrFolders
             new RepositoryUpdater.FSRefreshInterceptor(),
-            SuspendStatus.NOP,
+            SuspendSupport.NOP,
             null);
 
         Indexer indexer = new Indexer();
@@ -178,7 +178,7 @@ public class RefreshWorkTest  extends NbTestCase {
             false, // logStatistics
             Collections.singleton(innerFolder), // suspectFilesOrFolders
             new RepositoryUpdater.FSRefreshInterceptor(),
-            SuspendStatus.NOP,
+            SuspendSupport.NOP,
             null);
 
         Indexer indexer = new Indexer();
@@ -209,7 +209,7 @@ public class RefreshWorkTest  extends NbTestCase {
             false, // logStatistics
             Collections.singleton(innerFile), // suspectFilesOrFolders
             new RepositoryUpdater.FSRefreshInterceptor(),
-            SuspendStatus.NOP,
+            SuspendSupport.NOP,
             null);
 
         Indexer indexer = new Indexer();

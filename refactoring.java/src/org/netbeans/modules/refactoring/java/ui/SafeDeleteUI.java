@@ -45,6 +45,7 @@
 package org.netbeans.modules.refactoring.java.ui;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.ResourceBundle;
@@ -290,6 +291,9 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass, JavaRef
         final boolean b = lookup.lookup(ExplorerContext.class)!=null;
         if (packages.length == 1) {
             return new SafeDeleteUI(packages[0], b);
+        }
+        if (handles.length == 0) {
+            return new SafeDeleteUI(files, Arrays.asList(handles), b);
         }
         TreePathHandle selectedElement = handles[0];
         Element selected = selectedElement.resolveElement(info);
