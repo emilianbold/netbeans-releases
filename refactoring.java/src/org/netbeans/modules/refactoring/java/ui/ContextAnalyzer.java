@@ -137,7 +137,7 @@ public final class ContextAnalyzer {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
                     if (!created) 
-                        ui = factory.create(null, handles.toArray(new TreePathHandle[handles.size()]), selectedElements, pkg);
+                        ui = factory.create(null, handles.toArray(new TreePathHandle[handles.size()]), selectedElements, pkg.toArray(new NonRecursiveFolder[pkg.size()]));
                     return ui;
                 }
             };
@@ -415,7 +415,7 @@ public final class ContextAnalyzer {
     
     private static abstract class NodeToFileObjectTask implements Runnable, CancellableTask<CompilationController> {
         private Collection<? extends Node> nodes;
-        public NonRecursiveFolder pkg[];
+        public ArrayList<NonRecursiveFolder> pkg;
         Collection<TreePathHandle> handles = new ArrayList<TreePathHandle>();
         private Node currentNode;
      
@@ -468,7 +468,7 @@ public final class ContextAnalyzer {
         @Override
         public void run() {
             FileObject[] fobs = new FileObject[nodes.size()];
-            pkg = new NonRecursiveFolder[fobs.length];
+            pkg = new ArrayList<NonRecursiveFolder>();
             int i = 0;
             for (Node node:nodes) {
                 DataObject dob = node.getCookie(DataObject.class);
@@ -489,8 +489,10 @@ public final class ContextAnalyzer {
                             currentNode = null;
                         }
                     }
-                    
-                    pkg[i++] = node.getLookup().lookup(NonRecursiveFolder.class);
+                    final NonRecursiveFolder nonrecursivefolder = node.getLookup().lookup(NonRecursiveFolder.class);
+                    if (nonrecursivefolder !=null)
+                        pkg.add(nonrecursivefolder);
+                    i++;
                 }
             }
             RefactoringUI ui = createRefactoringUI(fobs, handles);
