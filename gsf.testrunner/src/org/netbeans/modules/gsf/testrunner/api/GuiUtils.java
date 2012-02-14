@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.junit;
+package org.netbeans.modules.gsf.testrunner.api;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -74,6 +74,10 @@ public final class GuiUtils {
     
     /** */
     public static final String TEMPLATES_DIR = "Templates/JUnit";       //NOI18N
+    
+    
+    public static final String JUNIT_TEST_FRAMEWORK = "JUnit";             //NOI18N
+    public static final String TESTNG_TEST_FRAMEWORK = "TestNG";             //NOI18N
     
     /** */
     public static final String CHK_PUBLIC = "Public";                   //NOI18N
@@ -197,7 +201,7 @@ public final class GuiUtils {
             }
             
             JCheckBox chkBox = new JCheckBox();
-            String baseName = "JUnitCfgOfCreate.chk" + id;              //NOI18N
+            String baseName = "CommonTestsCfgOfCreate.chk" + id;              //NOI18N
             AccessibleContext accessCtx = chkBox.getAccessibleContext();
             Mnemonics.setLocalizedText(
                     chkBox,

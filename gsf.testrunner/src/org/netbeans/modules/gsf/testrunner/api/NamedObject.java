@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.junit;
+package org.netbeans.modules.gsf.testrunner.api;
 
 /**
  * Object wrapper which allows to assign a name to an object.

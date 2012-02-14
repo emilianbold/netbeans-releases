@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.junit;
+package org.netbeans.modules.gsf.testrunner;
 
 /**
  * Manager of layered messages.
