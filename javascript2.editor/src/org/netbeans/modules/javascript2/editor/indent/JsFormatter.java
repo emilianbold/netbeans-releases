@@ -42,6 +42,11 @@
 package org.netbeans.modules.javascript2.editor.indent;
 
 import com.oracle.nashorn.ir.FunctionNode;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.spi.Context;
@@ -53,6 +58,8 @@ import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
  * @author Petr Hejl
  */
 public class JsFormatter implements Formatter {
+
+    private static final Logger LOGGER = Logger.getLogger(JsFormatter.class.getName());
 
     @Override
     public int hangingIndentSize() {
@@ -70,17 +77,61 @@ public class JsFormatter implements Formatter {
     }
 
     @Override
-    public void reformat(Context context, ParserResult compilationInfo) {
-        FormattingVisitor visitor = new FormattingVisitor(
-                LexUtilities.getJsTokenSequence(compilationInfo.getSnapshot()));
-        FunctionNode root = ((JsParserResult) compilationInfo).getRoot();
-        if (root != null) {
-            root.accept(visitor);
+    public void reformat(final Context context, final ParserResult compilationInfo) {
+        final BaseDocument doc = (BaseDocument) context.document();
+        
+        doc.runAtomic(new Runnable() {
+
+            @Override
+            public void run() {
+                FormatTokenStream tokenStream = FormatTokenStream.create(LexUtilities.getJsTokenSequence(compilationInfo.getSnapshot()),
+                        context.startOffset(), context.endOffset());
+                FormattingVisitor visitor = new FormattingVisitor(tokenStream,
+                        LexUtilities.getJsTokenSequence(compilationInfo.getSnapshot()));
+
+                FunctionNode root = ((JsParserResult) compilationInfo).getRoot();
+                if (root != null) {
+                    root.accept(visitor);
+                }
+                
+                int offsetDiff = 0;
+                List<FormatToken> tokens = tokenStream.getTokens();
+                for (int i = 0; i < tokens.size(); i++) {
+                    FormatToken token = tokens.get(i);
+                    LOGGER.log(Level.FINE, token.toString());
+                    
+                    switch (token.getKind()) {
+                        case EOL:
+                            // remove trailing spaces
+                            FormatToken start = null;
+                            for (int j = i - 1; j > 0; j--) {
+                                if (tokens.get(j).getKind() != FormatToken.Kind.WHITESPACE) {
+                                    break;
+                                } else {
+                                    start = tokens.get(j);
+                                }
+                            }
+                            while (start != null
+                                    && start.getKind() != FormatToken.Kind.EOL) {
+                                offsetDiff = remove(doc, start.getOffset(),
+                                        start.getText().length(), offsetDiff);
+                                start = start.next();
+                            }
+                            break;
+                    }
+                }
+            }
+        });
+    }
+
+    private int remove(BaseDocument doc, int offset, int length, int offsetDiff) {
+        try {
+            doc.remove(offset + offsetDiff, length);
+            return offsetDiff - length;
+        } catch (BadLocationException ex) {
+            LOGGER.log(Level.INFO, null, ex);
         }
-        for (FormattingToken token : visitor.getTokens()) {
-            System.out.println(token);
-        }
-        System.out.flush();
+        return 0;
     }
 
     @Override
