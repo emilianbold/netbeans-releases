@@ -478,8 +478,16 @@ public class TraceXRef extends TraceModel {
             CsmReference refFromStorage = CsmReferenceStorage.getDefault().get(ref);        
             boolean fromStorage = refFromStorage != null && refFromStorage.getReferencedObject() != null;
             CsmObject target = ref.getReferencedObject();
+            if (target == null && !fromStorage) {
+                // skip all non-indexed unresolved
+                return;
+            }
             if (target != null && UIDProviderIml.isSelfUID(UIDs.get(target))) {
                 // skip all locals
+                return;
+            }
+            if (CsmKindUtilities.isParameter(target)) {
+                // skip parameters
                 return;
             }
             boolean important = false;
@@ -501,7 +509,7 @@ public class TraceXRef extends TraceModel {
                     skind = "UNKNOWN"; //NOI18N
                 }
             }
-            if(!fromStorage) {
+            if((!fromStorage && target != null) || (fromStorage && target == null)) {
                 try {
                     printErr.println(skind + ":" + ref, new RefLink(ref), important); // NOI18N
                 } catch (IOException ioe) {
