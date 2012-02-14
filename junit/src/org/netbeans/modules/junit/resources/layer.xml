@@ -158,43 +158,44 @@ made subject to such option by the copyright holder.
                             <attr name="position" intvalue="220"/>
                         </file>
                     </folder>
-                    <file name="org-netbeans-modules-junit-actions-RunTestMethodAction.shadow">
+                    <!--<file name="org-netbeans-modules-junit-actions-RunTestMethodAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-actions-RunTestMethodAction.instance"/>
                         <attr name="position" intvalue="1795"/>
                     </file>
                     <file name="org-netbeans-modules-junit-actions-DebugTestMethodAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-actions-DebugTestMethodAction.instance"/>
                         <attr name="position" intvalue="1797"/>
-                    </file>
+                    </file>-->
                 </folder>
             </folder>
         </folder>
     </folder>
 
     <!-- actions -->
-    <folder name="Actions">
+      <!--<folder name="Actions">
         <folder name="JUnitTests">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/>
-            <file name="org-netbeans-modules-junit-CreateTestAction.instance"/>
+          <file name="org-netbeans-modules-junit-CreateTestAction.instance"/>
             <file name="org-netbeans-modules-junit-actions-RunTestMethodAction.instance"/>
             <file name="org-netbeans-modules-junit-actions-DebugTestMethodAction.instance"/>
         </folder>
-    </folder>
-    <folder name="UI">
+    </folder>-->
+    <!--<folder name="UI">
         <folder name="ToolActions">
             <folder name="Java">
                 <file name="org-netbeans-modules-junit-CreateTestAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-CreateTestAction.instance"/>
+                    <attr name="position" intvalue="100"/>
                 </file>
             </folder>
         </folder>
-    </folder>
+    </folder>-->
     
     <!-- shortcuts -->
-    <folder name="Shortcuts">
+    <!--<folder name="Shortcuts">
         <file name="DS-U.shadow">
             <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-CreateTestAction.instance"/>
         </file>
-    </folder>
+    </folder>-->
     
 </filesystem>

@@ -61,7 +61,8 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
+//import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
+import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin.CreateTestParam;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 

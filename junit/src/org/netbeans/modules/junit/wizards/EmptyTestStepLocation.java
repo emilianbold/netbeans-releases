@@ -50,8 +50,10 @@ import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.junit.GuiUtils;
-import org.netbeans.modules.junit.SelfResizingPanel;
+//import org.netbeans.modules.junit.GuiUtils;
+//import org.netbeans.modules.junit.SelfResizingPanel;
+import org.netbeans.modules.gsf.testrunner.api.GuiUtils;
+import org.netbeans.modules.gsf.testrunner.api.SelfResizingPanel;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -78,7 +80,7 @@ class EmptyTestStepLocation implements WizardDescriptor.Panel<WizardDescriptor> 
         JComponent optCode = GuiUtils.createChkBoxGroup(
                 NbBundle.getMessage(
                         GuiUtils.class,
-                        "JUnitCfgOfCreate.groupOptCode"),               //NOI18N
+                        "CommonTestsCfgOfCreate.groupOptCode"),               //NOI18N
                 chkBoxes = GuiUtils.createCheckBoxes(new String[] {
                         GuiUtils.CHK_SETUP,
                         GuiUtils.CHK_TEARDOWN}));
@@ -88,7 +90,7 @@ class EmptyTestStepLocation implements WizardDescriptor.Panel<WizardDescriptor> 
         JComponent optComments = GuiUtils.createChkBoxGroup(
                 NbBundle.getMessage(
                         GuiUtils.class,
-                        "JUnitCfgOfCreate.groupOptComments"),           //NOI18N
+                        "CommonTestsCfgOfCreate.groupOptComments"),           //NOI18N
                 chkBoxes = GuiUtils.createCheckBoxes(new String[] {
                         GuiUtils.CHK_HINTS}));
         chkCodeHints = chkBoxes[0];

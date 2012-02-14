@@ -90,8 +90,12 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.junit.TestabilityResult.SkippedClass;
 import org.netbeans.modules.junit.plugin.JUnitPlugin;
-import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
-import org.netbeans.modules.junit.plugin.JUnitPlugin.Location;
+//import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
+//import org.netbeans.modules.junit.plugin.JUnitPlugin.Location;
+import org.netbeans.modules.gsf.testrunner.api.GuiUtils;
+import org.netbeans.modules.gsf.testrunner.api.SelfResizingPanel;
+import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin.CreateTestParam;
+import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin.Location;
 import org.netbeans.modules.junit.wizards.Utils;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -810,7 +814,7 @@ public final class DefaultPlugin extends JUnitPlugin {
         progress.show();
 
         String msg = NbBundle.getMessage(
-                    CreateTestAction.class,
+                    JUnitTestCreatorProvider.class,
                     "MSG_StatusBar_CreateTest_Begin");                  //NOI18N
         progress.displayStatusText(msg);
 
@@ -2182,7 +2186,7 @@ public final class DefaultPlugin extends JUnitPlugin {
      */
     private static void noTemplateMessage(String temp) {
         String msg = NbBundle.getMessage(
-                CreateTestAction.class,
+                JUnitTestCreatorProvider.class,
                 "MSG_template_not_found",                           //NOI18N
                 temp);
         NotifyDescriptor descr = new NotifyDescriptor.Message(
@@ -2209,8 +2213,8 @@ public final class DefaultPlugin extends JUnitPlugin {
      *         andKey.
      */
     private static String strReason(TestabilityResult reason, String commaKey, String andKey) {
-        String strComma = NbBundle.getMessage(CreateTestAction.class,commaKey);
-        String strAnd = NbBundle.getMessage(CreateTestAction.class,andKey);
+        String strComma = NbBundle.getMessage(JUnitTestCreatorProvider.class,commaKey);
+        String strAnd = NbBundle.getMessage(JUnitTestCreatorProvider.class,andKey);
         String strReason = reason.getReason( // string representation of the reasons
                         strComma.substring(1, strComma.length()-1),
                         strAnd.substring(1, strAnd.length()-1));

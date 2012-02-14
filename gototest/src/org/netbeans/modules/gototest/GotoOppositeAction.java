@@ -45,11 +45,14 @@
 package org.netbeans.modules.gototest;
 
 import java.awt.EventQueue;
+import java.io.IOException;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
-import org.netbeans.modules.csl.api.UiUtils;
+import javax.swing.text.StyledDocument;
 import org.netbeans.spi.gototest.TestLocator;
 import org.netbeans.spi.gototest.TestLocator.FileType;
 import org.netbeans.spi.gototest.TestLocator.LocationListener;
@@ -57,14 +60,19 @@ import org.netbeans.spi.gototest.TestLocator.LocationResult;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.UserQuestionException;
 import org.openide.util.Utilities;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.TopComponent;
@@ -84,6 +92,7 @@ public class GotoOppositeAction extends CallableSystemAction {
     private FileObject cachedLocatorFo;
     private FileObject cachedFileTypeFo;
     private FileType cachedFileType;
+    private static final Logger LOG = Logger.getLogger(GotoOppositeAction.class.getName());
 
     public GotoOppositeAction() {
         putValue("noIconInMenu", Boolean.TRUE); //NOI18N
@@ -163,13 +172,70 @@ public class GotoOppositeAction extends CallableSystemAction {
     private void handleResult(LocationResult opposite) {
         FileObject fileObject = opposite.getFileObject();
         if (fileObject != null) {
-            UiUtils.open(fileObject, opposite.getOffset());
+            doOpenDocument(fileObject, opposite.getOffset());
         } else if (opposite.getErrorMessage() != null) {
             String msg = opposite.getErrorMessage();
             NotifyDescriptor descr = new NotifyDescriptor.Message(msg, 
                     NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(descr);
         }
+    }
+    
+    private boolean doOpenDocument(FileObject fo, int offset) {
+        assert fo != null;
+        DataObject dobj = null;
+        try {
+            dobj = DataObject.find(fo);
+        } catch (DataObjectNotFoundException ex) {
+            LOG.log(Level.WARNING, null, ex);
+        }
+        if (dobj != null) {
+            try {
+                EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+                LineCookie lc = dobj.getLookup().lookup(LineCookie.class);
+                if ((ec != null) && (lc != null) && (offset != -1)) {
+                    StyledDocument doc = null;
+                    try {
+                        doc = ec.openDocument();
+                    } catch (UserQuestionException uqe) {
+                        final Object value = DialogDisplayer.getDefault().notify(
+                                new NotifyDescriptor.Confirmation(uqe.getLocalizedMessage(),
+                                NbBundle.getMessage(GotoOppositeAction.class, "TXT_Question"),
+                                NotifyDescriptor.YES_NO_OPTION));
+                        if (value != NotifyDescriptor.YES_OPTION) {
+                            return false;
+                        }
+                        uqe.confirmed();
+                        doc = ec.openDocument();
+                    }
+
+                    if (doc != null) {
+                        int line = NbDocument.findLineNumber(doc, offset);
+                        int lineOffset = NbDocument.findLineOffset(doc, line);
+                        int column = offset - lineOffset;
+
+                        if (line != -1) {
+                            Line l = lc.getLineSet().getCurrent(line);
+
+                            if (l != null) {
+                                l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS, column);
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+                OpenCookie oc = dobj.getLookup().lookup(OpenCookie.class);
+
+                if (oc != null) {
+                    oc.open();
+                    return true;
+                }
+            } catch (IOException ioe) {
+                LOG.log(Level.WARNING, null, ioe);
+            }
+        }
+        return false;
     }
     
     private TestLocator getLocatorFor(FileObject fo) {

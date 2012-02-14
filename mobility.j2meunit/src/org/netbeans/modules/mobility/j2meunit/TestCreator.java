@@ -84,7 +84,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
-import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
+import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin.CreateTestParam;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
