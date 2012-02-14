@@ -699,17 +699,14 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                             }
                         } else {
                             changed = true;
-                            RemoteFileObject removedFO = invalidate(oldEntry);
-                            // remove old
-                            if (removedFO != null) {
-                                filesToFireDeleted.add(removedFO);
-                            }
-                            // add new 
-                            entriesToFireCreated.add(newEntry);
-                            cacheName = RemoteFileSystemUtils.escapeFileName(newEntry.getName());
+                            getFileSystem().getFactory().changeImplementor(this, oldEntry, newEntry);
+                            entriesToFireChanged.add(newEntry);
+                            cacheName = null; // unchanged
                         }
                     }
-                    newEntry.setCache(cacheName);
+                    if (cacheName !=null) {
+                        newEntry.setCache(cacheName);
+                    }
                     String lowerCacheName = RemoteFileSystemUtils.isSystemCaseSensitive() ? newEntry.getCache() : newEntry.getCache().toLowerCase();
                     List<DirEntry> dupEntries = dupLowerNames.get(lowerCacheName);
                     if (dupEntries == null) {
@@ -1020,17 +1017,14 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                             }
                         } else {
                             changed = true;
-                            RemoteFileObject removedFO = invalidate(oldEntry);
-                            // remove old
-                            if (removedFO != null) {
-                                filesToFireDeleted.add(removedFO);
-                            }
-                            // add new 
-                            entriesToFireCreated.add(newEntry);
-                            cacheName = RemoteFileSystemUtils.escapeFileName(newEntry.getName());
+                            getFileSystem().getFactory().changeImplementor(this, oldEntry, newEntry);
+                            entriesToFireChanged.add(newEntry);
+                            cacheName = null; // unchanged
                         }
                     }
-                    newEntry.setCache(cacheName);
+                    if (cacheName !=null) {
+                        newEntry.setCache(cacheName);
+                    }
                     String lowerCacheName = RemoteFileSystemUtils.isSystemCaseSensitive() ? newEntry.getCache() : newEntry.getCache().toLowerCase();
                     List<DirEntry> dupEntries = dupLowerNames.get(lowerCacheName);
                     if (dupEntries == null) {
