@@ -832,7 +832,12 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             version = "${project.version}"; //NOI18N
         }
         txtVersion.setText(version);
-        txtType.setText(type != null && !type.equals("jar") ? type : null);
+        if (type != null) {
+            if (type.equals("jar") || ("nbm".equals(project.getPackaging()) && type.equals("nbm"))) {
+                type = null;
+            }
+        }
+        txtType.setText(type);
         txtClassifier.setText(classifier);
     }
 
