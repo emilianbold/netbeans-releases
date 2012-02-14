@@ -68,33 +68,26 @@ public class ModelTestBase extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        
+
         MockServices.setServices(BuiltInDiffProvider.class);
-        
+
         //disable checking for model access so tests doesn't have to use 
         //the Model.runRead/WriteModel(...) methods
         ModelAccess.checkModelAccess = false;
     }
-    
+
     protected Model createModel(String source) {
-        try {
-            CssParserResult result = TestUtil.parse(source);
-            return new Model(result);
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
+        CssParserResult result = TestUtil.parse(source);
+        return new Model(result);
     }
-    
+
     protected void assertBox(Box<MarginWidth> box, String top, String right, String bottom, String left) {
         assertEquals(top, box.getEdge(Edge.TOP).getTextRepresentation());
         assertEquals(right, box.getEdge(Edge.RIGHT).getTextRepresentation());
         assertEquals(bottom, box.getEdge(Edge.BOTTOM).getTextRepresentation());
         assertEquals(left, box.getEdge(Edge.LEFT).getTextRepresentation());
     }
-    
+
     protected void dumpTree(org.netbeans.modules.css.lib.api.properties.Node node) {
         PrintWriter pw = new PrintWriter(System.out);
         dump(node, 0, pw);
