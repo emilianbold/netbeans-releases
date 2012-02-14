@@ -64,13 +64,13 @@ import org.netbeans.modules.profiler.api.JavaPlatform;
  * @author Jiri Sedlacek
  */
 @NbBundle.Messages({
-    "ProfilerOptionsPanel_UseProjectJvmText=<Use Java Platform defined in Project>",
+//    "ProfilerOptionsPanel_UseProjectJvmText=<Use Java Platform defined in Project>",
     "ProfilerOptionsPanel_KeyOpenAlways=Always",
     "ProfilerOptionsPanel_KeyOpenMonitoring=For Monitoring Only",
     "ProfilerOptionsPanel_KeyOpenNever=Never",
     "ProfilerOptionsPanel_EngineSettingsBorderText=General",
-    "ProfilerOptionsPanel_JavaPlatformLabelText=Profiler &Java Platform:",
-    "ProfilerOptionsPanel_ManagePlatformsButtonName=&Manage Platforms...",
+//    "ProfilerOptionsPanel_JavaPlatformLabelText=Profiler &Java Platform:",
+//    "ProfilerOptionsPanel_ManagePlatformsButtonName=&Manage Platforms...",
     "ProfilerOptionsPanel_CommPortLabelText=Communication &Port:",
     "ProfilerOptionsPanel_WindowsSettingsBorderText=When Profiling Session Starts",
     "ProfilerOptionsPanel_TelemetryOverviewLabelText=Open Telemetry &Overview:",
@@ -155,15 +155,15 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
-    private ArrayList supportedJavaPlatforms = new ArrayList();
-    private ArrayList supportedJavaPlatformsNames = new ArrayList();
-    private JButton managePlatformsButton;
+//    private ArrayList supportedJavaPlatforms = new ArrayList();
+//    private ArrayList supportedJavaPlatformsNames = new ArrayList();
+//    private JButton managePlatformsButton;
     private JButton oomeDetectionChooseDirButton;
     private JButton resetConfirmationsButton;
     private JCheckBox cpuLiveResultsCheckbox;
     private JCheckBox enableHeapWalkerAnalysisCheckbox;
     private JCheckBox memoryLiveResultsCheckbox;
-    private JComboBox javaPlatformCombo;
+//    private JComboBox javaPlatformCombo;
     private JComboBox oomeCombo;
     private JComboBox openThreadsViewCombo;
     private JComboBox takingSnapshotCombo;
@@ -180,15 +180,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public JavaPlatform getSelectedJavaPlatform() {
-        int selectedJavaPlatformIndex = javaPlatformCombo.getSelectedIndex();
-
-        if ((selectedJavaPlatformIndex == -1) || (selectedJavaPlatformIndex == 0)) {
-            return null; // not selected, or <use project> selected
-        }
-
-        selectedJavaPlatformIndex--;
-
-        return (JavaPlatform) supportedJavaPlatforms.get(selectedJavaPlatformIndex);
+        return null;
     }
 
     /**
@@ -198,10 +190,10 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         if (e.getSource() == resetConfirmationsButton) {
             ProfilerIDESettings.getInstance().clearDoNotShowAgainMap();
             resetConfirmationsButton.setEnabled(false);
-        } else if (e.getSource() == managePlatformsButton) {
-            JavaPlatform platform = getSelectedJavaPlatform();
-            JavaPlatform.showCustomizer(/* FIXX platform */ );
-            updateJavaPlatformComboItems();
+//        } else if (e.getSource() == managePlatformsButton) {
+//            JavaPlatform platform = getSelectedJavaPlatform();
+//            JavaPlatform.showCustomizer(/* FIXX platform */ );
+//            updateJavaPlatformComboItems();
         } else if (e.getSource() == oomeDetectionChooseDirButton) {
             JFileChooser chooser = new JFileChooser();
             chooser.setCurrentDirectory(new java.io.File(oomeDetectionDirTextField.getText()));
@@ -220,9 +212,9 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         // GlobalProfilingSettings
         pis.setPortNo(((Number) portNoSpinner.getValue()).intValue());
 
-        JavaPlatform sel = getSelectedJavaPlatform();
-
-        pis.setJavaPlatformForProfiling((sel == null) ? null : sel.getDisplayName());
+//        JavaPlatform sel = getSelectedJavaPlatform();
+//
+//        pis.setJavaPlatformForProfiling((sel == null) ? null : sel.getDisplayName());
 
         // ProfilerIDESettings
         pis.setDisplayLiveResultsCPU(cpuLiveResultsCheckbox.isSelected());
@@ -345,17 +337,17 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
             }
         }
 
-        JavaPlatform sel = getSelectedJavaPlatform();
-
-        if (sel == null) {
-            if (settings.getJavaPlatformForProfiling() != null) {
-                return false;
-            }
-        } else {
-            if (!sel.getDisplayName().equals(settings.getJavaPlatformForProfiling())) {
-                return false;
-            }
-        }
+//        JavaPlatform sel = getSelectedJavaPlatform();
+//
+//        if (sel == null) {
+//            if (settings.getJavaPlatformForProfiling() != null) {
+//                return false;
+//            }
+//        } else {
+//            if (!sel.getDisplayName().equals(settings.getJavaPlatformForProfiling())) {
+//                return false;
+//            }
+//        }
 
         if (settings.getHeapWalkerAnalysisEnabled() != enableHeapWalkerAnalysisCheckbox.isSelected()) {
             return false;
@@ -366,16 +358,16 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
 
     public void init(ProfilerIDESettings pis) {
         resetConfirmationsButton.setEnabled(true);
-        updateJavaPlatformComboItems();
+//        updateJavaPlatformComboItems();
 
         // GlobalProfilingSettings
         portNoSpinner.setValue(Integer.valueOf(pis.getPortNo()));
 
-        if (pis.getJavaPlatformForProfiling() != null) {
-            javaPlatformCombo.setSelectedItem(pis.getJavaPlatformForProfiling());
-        } else {
-            javaPlatformCombo.setSelectedIndex(0);
-        }
+//        if (pis.getJavaPlatformForProfiling() != null) {
+//            javaPlatformCombo.setSelectedItem(pis.getJavaPlatformForProfiling());
+//        } else {
+//            javaPlatformCombo.setSelectedIndex(0);
+//        }
 
         // ProfilerIDESettings
         cpuLiveResultsCheckbox.setSelected(pis.getDisplayLiveResultsCPU());
@@ -455,46 +447,46 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         gridBagConstraints.insets = new Insets(2, 0, 0, 6);
         add(generalSeparator, gridBagConstraints);
 
-        // javaPlatformLabel
-        JLabel javaPlatformLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(javaPlatformLabel, Bundle.ProfilerOptionsPanel_JavaPlatformLabelText());
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new Insets(5, 10, 0, 5);
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        add(javaPlatformLabel, gridBagConstraints);
-
-        // javaPlatformCombo
-        javaPlatformCombo = new JComboBox() {
-                public Dimension getMinimumSize() {
-                    return getPreferredSize();
-                }
-            };
-        javaPlatformCombo.getAccessibleContext().setAccessibleDescription(Bundle.ProfilerOptionsPanel_JavaPlatformComboAccessDescr());
-        javaPlatformLabel.setLabelFor(javaPlatformCombo);
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new Insets(5, 10, 0, 5);
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        add(javaPlatformCombo, gridBagConstraints);
-
-        // managePlatformsButton
-        managePlatformsButton = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(managePlatformsButton, Bundle.ProfilerOptionsPanel_ManagePlatformsButtonName());
-        managePlatformsButton.getAccessibleContext().setAccessibleDescription(Bundle.ProfilerOptionsPanel_ManagePlatformsButtonName());
-        managePlatformsButton.addActionListener(this);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(5, 3, 0, 6);
-        gridBagConstraints.fill = GridBagConstraints.NONE;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        add(managePlatformsButton, gridBagConstraints);
+//        // javaPlatformLabel
+//        JLabel javaPlatformLabel = new JLabel();
+//        org.openide.awt.Mnemonics.setLocalizedText(javaPlatformLabel, Bundle.ProfilerOptionsPanel_JavaPlatformLabelText());
+//        gridBagConstraints = new GridBagConstraints();
+//        gridBagConstraints.gridx = 0;
+//        gridBagConstraints.gridy = 1;
+//        gridBagConstraints.insets = new Insets(5, 10, 0, 5);
+//        gridBagConstraints.anchor = GridBagConstraints.WEST;
+//        add(javaPlatformLabel, gridBagConstraints);
+//
+//        // javaPlatformCombo
+//        javaPlatformCombo = new JComboBox() {
+//                public Dimension getMinimumSize() {
+//                    return getPreferredSize();
+//                }
+//            };
+//        javaPlatformCombo.getAccessibleContext().setAccessibleDescription(Bundle.ProfilerOptionsPanel_JavaPlatformComboAccessDescr());
+//        javaPlatformLabel.setLabelFor(javaPlatformCombo);
+//        gridBagConstraints = new GridBagConstraints();
+//        gridBagConstraints.gridx = 1;
+//        gridBagConstraints.gridy = 1;
+//        gridBagConstraints.weightx = 1.0;
+//        gridBagConstraints.gridwidth = 2;
+//        gridBagConstraints.insets = new Insets(5, 10, 0, 5);
+//        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+//        gridBagConstraints.anchor = GridBagConstraints.WEST;
+//        add(javaPlatformCombo, gridBagConstraints);
+//
+//        // managePlatformsButton
+//        managePlatformsButton = new JButton();
+//        org.openide.awt.Mnemonics.setLocalizedText(managePlatformsButton, Bundle.ProfilerOptionsPanel_ManagePlatformsButtonName());
+//        managePlatformsButton.getAccessibleContext().setAccessibleDescription(Bundle.ProfilerOptionsPanel_ManagePlatformsButtonName());
+//        managePlatformsButton.addActionListener(this);
+//        gridBagConstraints = new java.awt.GridBagConstraints();
+//        gridBagConstraints.gridx = 3;
+//        gridBagConstraints.gridy = 1;
+//        gridBagConstraints.insets = new java.awt.Insets(5, 3, 0, 6);
+//        gridBagConstraints.fill = GridBagConstraints.NONE;
+//        gridBagConstraints.anchor = GridBagConstraints.WEST;
+//        add(managePlatformsButton, gridBagConstraints);
 
         // portNoLabel
         JLabel portNoLabel = new JLabel();
@@ -526,7 +518,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         portNoSpinner.fixAccessibility();
         portNoSpinner.setModel(new SpinnerNumberModel(5140, 1, 65535, 1));
         portNoSpinner.setPreferredSize(new Dimension(portNoSpinner.getPreferredSize().width,
-                                                     javaPlatformCombo.getPreferredSize().height));
+                                                     new JComboBox().getPreferredSize().height));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -851,6 +843,7 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 12;
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+        gridBagConstraints.weightx = 1;
         gridBagConstraints.weighty = 1;
         gridBagConstraints.insets = new Insets(5, 10, 0, 6);
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
@@ -864,42 +857,42 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
         oomeDetectionChooseDirButton.setEnabled(customOOMEdirSelected);
     }
 
-    private void updateJavaPlatformComboItems() {
-        updateJavaPlatforms();
-
-        Object selectedJavaPlatform = javaPlatformCombo.getSelectedItem();
-
-        javaPlatformCombo.removeAllItems();
-
-        DefaultComboBoxModel javaPlatformComboModel = new DefaultComboBoxModel(supportedJavaPlatformsNames.toArray());
-        javaPlatformComboModel.insertElementAt(Bundle.ProfilerOptionsPanel_UseProjectJvmText(), 0);
-
-        javaPlatformCombo.setModel(javaPlatformComboModel);
-
-        if (selectedJavaPlatform != null) {
-            javaPlatformCombo.setSelectedItem(selectedJavaPlatform);
-        }
-    }
-
-    private void updateJavaPlatforms() {
-        supportedJavaPlatforms.clear();
-        supportedJavaPlatformsNames.clear();
-
-        Iterator supportedPlatforms = JavaPlatform.getPlatforms().iterator();
-
-        JavaPlatform supportedJavaPlatform;
-        String supportedJavaPlatformName;
-
-        while (supportedPlatforms.hasNext()) {
-            supportedJavaPlatform = (JavaPlatform) supportedPlatforms.next();
-            supportedJavaPlatformName = supportedJavaPlatform.getDisplayName();
-
-            if (!supportedJavaPlatformsNames.contains(supportedJavaPlatformName)) {
-                supportedJavaPlatforms.add(supportedJavaPlatform);
-                supportedJavaPlatformsNames.add(supportedJavaPlatformName);
-            }
-        }
-
-        supportedJavaPlatforms.addAll(JavaPlatform.getPlatforms());
-    }
+//    private void updateJavaPlatformComboItems() {
+//        updateJavaPlatforms();
+//
+//        Object selectedJavaPlatform = javaPlatformCombo.getSelectedItem();
+//
+//        javaPlatformCombo.removeAllItems();
+//
+//        DefaultComboBoxModel javaPlatformComboModel = new DefaultComboBoxModel(supportedJavaPlatformsNames.toArray());
+//        javaPlatformComboModel.insertElementAt(Bundle.ProfilerOptionsPanel_UseProjectJvmText(), 0);
+//
+//        javaPlatformCombo.setModel(javaPlatformComboModel);
+//
+//        if (selectedJavaPlatform != null) {
+//            javaPlatformCombo.setSelectedItem(selectedJavaPlatform);
+//        }
+//    }
+//
+//    private void updateJavaPlatforms() {
+//        supportedJavaPlatforms.clear();
+//        supportedJavaPlatformsNames.clear();
+//
+//        Iterator supportedPlatforms = JavaPlatform.getPlatforms().iterator();
+//
+//        JavaPlatform supportedJavaPlatform;
+//        String supportedJavaPlatformName;
+//
+//        while (supportedPlatforms.hasNext()) {
+//            supportedJavaPlatform = (JavaPlatform) supportedPlatforms.next();
+//            supportedJavaPlatformName = supportedJavaPlatform.getDisplayName();
+//
+//            if (!supportedJavaPlatformsNames.contains(supportedJavaPlatformName)) {
+//                supportedJavaPlatforms.add(supportedJavaPlatform);
+//                supportedJavaPlatformsNames.add(supportedJavaPlatformName);
+//            }
+//        }
+//
+//        supportedJavaPlatforms.addAll(JavaPlatform.getPlatforms());
+//    }
 }

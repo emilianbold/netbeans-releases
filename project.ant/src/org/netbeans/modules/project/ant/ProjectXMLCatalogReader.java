@@ -63,7 +63,6 @@ import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -96,11 +95,7 @@ public class ProjectXMLCatalogReader implements CatalogReader, CatalogDescriptor
         if (name.startsWith(PREFIX)) {
             FileObject rsrc = FileUtil.getConfigFile(CATALOG + "/" + name.substring(PREFIX.length()) + "." + EXTENSION);
             if (rsrc != null) {
-                try {
-                    return rsrc.getURL().toString();
-                } catch (FileStateInvalidException x) {
-                    Exceptions.printStackTrace(x);
-                }
+                return rsrc.toURL().toString();
             }
         }
         return null;
@@ -179,7 +174,7 @@ public class ProjectXMLCatalogReader implements CatalogReader, CatalogDescriptor
                     try {
                         InputStream is = f.getInputStream();
                         streams.add(is);
-                        sources.add(new StreamSource(is, f.getURL().toString()));
+                        sources.add(new StreamSource(is, f.toURL().toString()));
                     } catch (IOException x) {
                         Exceptions.printStackTrace(x);
                     }
@@ -192,7 +187,7 @@ public class ProjectXMLCatalogReader implements CatalogReader, CatalogDescriptor
                     // Try to determine the culprit and report appropriately.
                     for (FileObject f : schemas) {
                         try {
-                            schemaFactory.newSchema(new StreamSource(f.getURL().toString()));
+                            schemaFactory.newSchema(new StreamSource(f.toURL().toString()));
                         } catch (Exception x2) {
                             Exceptions.attachMessage(x2, "While parsing: " + f.getPath()); // NOI18N
                             Exceptions.printStackTrace(x2);

@@ -43,32 +43,78 @@
  */
 package org.netbeans.modules.versioning.core;
 
-import org.netbeans.spi.queries.CollocationQueryImplementation;
+import java.net.MalformedURLException;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 
-import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.spi.queries.CollocationQueryImplementation2;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 
 /**
  * Delegates the work to the owner of files in query.
  * 
  * @author Maros Sandor
+ * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.CollocationQueryImplementation.class, position=50)
-public class VcsCollocationQueryImplementation implements CollocationQueryImplementation {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.CollocationQueryImplementation2.class, position=50)
+public class VcsCollocationQueryImplementation implements CollocationQueryImplementation2 {
 
-    public boolean areCollocated(File a, File b) {
-        VersioningSystem vsa = VersioningManager.getInstance().getOwner(VCSFileProxy.createFileProxy(a));
-        VersioningSystem vsb = VersioningManager.getInstance().getOwner(VCSFileProxy.createFileProxy(b));
+    @Override
+    public boolean areCollocated(URI file1, URI file2) {
+        VCSFileProxy proxy1 = toFileProxy(file1);
+        VCSFileProxy proxy2 = toFileProxy(file2);
+        
+        if(proxy1 == null || proxy2 == null) return false;
+        VersioningSystem vsa = VersioningManager.getInstance().getOwner(proxy1);
+        VersioningSystem vsb = VersioningManager.getInstance().getOwner(proxy2);
         if (vsa == null || vsa != vsb) return false;
         
-        CollocationQueryImplementation cqi = vsa.getCollocationQueryImplementation();
-        return cqi != null && cqi.areCollocated(a, b);
+        CollocationQueryImplementation2 cqi = vsa.getCollocationQueryImplementation();
+        return cqi != null && cqi.areCollocated(file1, file2);
     }
 
-    public File findRoot(File file) {
-        VersioningSystem system = VersioningManager.getInstance().getOwner(VCSFileProxy.createFileProxy(file));
-        CollocationQueryImplementation cqi = system.getCollocationQueryImplementation();
-        return cqi == null ? null : cqi.findRoot(file);
+    @Override
+    public URI findRoot(URI file) {
+        VCSFileProxy proxy = toFileProxy(file);
+        if(proxy != null) {
+            VersioningSystem system = VersioningManager.getInstance().getOwner(proxy);
+            CollocationQueryImplementation2 cqi = system != null ? system.getCollocationQueryImplementation() : null;
+            return cqi != null ? cqi.findRoot(file) : null;
+        }
+        return null;
+    }
+    
+    private static VCSFileProxy toFileProxy(URI uri) {
+        FileObject fo = getFileObject(uri);
+        return fo != null ? VCSFileProxy.createFileProxy(fo) : null;
+    }        
+    
+    private static FileObject getFileObject(URI uri) {
+        FileObject fo = null;
+        try {
+            fo = URLMapper.findFileObject(uri.toURL());
+        } catch (MalformedURLException ex) {
+            VersioningManager.LOG.log(Level.WARNING, uri != null ? uri.toString() : null, ex);
+        }
+        if(fo == null) {
+            // file doesn't exists? use parent for the query then.
+            // By the means of VCS it has to be collocated in the same way.
+            String path = uri.getPath();
+            URI parent;
+            try {
+                parent = new URI(path.endsWith("/") ? path : path + "/").resolve(".."); // NOI18N
+                path = parent.getPath();
+                uri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), path, uri.getQuery(), uri.getFragment());
+            } catch (URISyntaxException ex) {
+                VersioningManager.LOG.log(Level.WARNING, path, ex);
+                return null;
+            }
+            fo = getFileObject(uri);
+        }
+        return fo;
     }
 }

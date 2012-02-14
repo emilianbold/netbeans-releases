@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
@@ -46,12 +46,12 @@ import java.util.List;
 /**
  * Represents a class declaration
  * <pre>
- * <pre>e.g.<pre> 
+ * <pre>e.g.<pre>
  * class MyClass { },
- * class MyClass extends SuperClass implements Interface1, Interface2 { 
- *   const MY_CONSTANT = 3; 
- *   public static final $myVar = 5, $yourVar; 
- *   var $anotherOne; 
+ * class MyClass extends SuperClass implements Interface1, Interface2 {
+ *   const MY_CONSTANT = 3;
+ *   public static final $myVar = 5, $yourVar;
+ *   var $anotherOne;
  *   private function myFunction($a) { }
  * }
  */
@@ -62,7 +62,7 @@ public class ClassDeclaration extends TypeDeclaration {
         ABSTRACT,
         FINAL
     }
-    
+
     private ClassDeclaration.Modifier modifier;
     private Expression superClass;
 
@@ -84,7 +84,7 @@ public class ClassDeclaration extends TypeDeclaration {
     public Expression getSuperClass() {
         return superClass;
     }
-    
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);

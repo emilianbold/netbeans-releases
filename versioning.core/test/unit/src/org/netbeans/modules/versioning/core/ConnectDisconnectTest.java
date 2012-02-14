@@ -53,8 +53,8 @@ import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
-import org.netbeans.modules.versioning.core.spi.VCSContext;
-import org.netbeans.spi.queries.CollocationQueryImplementation;
+import org.netbeans.modules.versioning.core.spi.*;
+import org.netbeans.spi.queries.CollocationQueryImplementation2;
 import org.openide.util.NbPreferences;
 import org.openide.util.test.MockLookup;
 
@@ -256,12 +256,12 @@ public class ConnectDisconnectTest extends NbTestCase {
         }
 
         @Override
-        public VCSAnnotator getAnnotator() {
+        public VCSAnnotator getVCSAnnotator() {
             return null;
         }
 
         @Override
-        public VCSInterceptor getInterceptor() {
+        public VCSInterceptor getVCSInterceptor() {
             return null;
         }
 
@@ -269,12 +269,12 @@ public class ConnectDisconnectTest extends NbTestCase {
         public void getOriginalFile(VCSFileProxy workingCopy, VCSFileProxy originalFile) { }
 
         @Override
-        public CollocationQueryImplementation getCollocationQueryImplementation() {
+        public CollocationQueryImplementation2 getCollocationQueryImplementation() {
             return null;
         }
 
         @Override
-        public VCSVisibilityQuery getVisibility() {
+        public VCSVisibilityQuery getVisibilityQuery() {
             return null;
         }
 
@@ -306,6 +306,11 @@ public class ConnectDisconnectTest extends NbTestCase {
         @Override
         public boolean accept(VCSContext ctx) {
             return true;
+        }
+
+        @Override
+        public VCSHistoryProvider getVCSHistoryProvider() {
+            return null;
         }
         
     }

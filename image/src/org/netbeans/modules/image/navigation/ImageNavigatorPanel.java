@@ -60,6 +60,12 @@ import org.openide.util.*;
  *
  * @author jpeska
  */
+@NavigatorPanel.Registrations({
+    @NavigatorPanel.Registration(mimeType="image/png", displayName="#Navigator_DisplayName"),
+    @NavigatorPanel.Registration(mimeType="image/jpeg", displayName="#Navigator_DisplayName"),
+    @NavigatorPanel.Registration(mimeType="image/bmp", displayName="#Navigator_DisplayName"),
+    @NavigatorPanel.Registration(mimeType="image/gif", displayName="#Navigator_DisplayName")
+})
 public class ImageNavigatorPanel implements NavigatorPanel {
 
     /**

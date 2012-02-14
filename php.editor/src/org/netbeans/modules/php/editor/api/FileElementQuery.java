@@ -58,6 +58,7 @@ import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.TraitElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
@@ -68,6 +69,7 @@ import org.netbeans.modules.php.editor.elements.FunctionElementImpl;
 import org.netbeans.modules.php.editor.elements.InterfaceElementImpl;
 import org.netbeans.modules.php.editor.elements.MethodElementImpl;
 import org.netbeans.modules.php.editor.elements.NamespaceElementImpl;
+import org.netbeans.modules.php.editor.elements.TraitElementImpl;
 import org.netbeans.modules.php.editor.elements.TypeConstantElementImpl;
 import org.netbeans.modules.php.editor.elements.VariableElementImpl;
 import org.netbeans.modules.php.editor.model.Model;
@@ -84,6 +86,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
@@ -120,9 +123,14 @@ public class FileElementQuery extends AbstractElementQuery implements ElementQue
 
     public final TypeElement create(final NamespaceElement namespace, final TypeDeclaration node) {
         Parameters.notNull("node", node);//NOI18N
-        final TypeElement retval = (node instanceof ClassDeclaration)
-                ? create(namespace, (ClassDeclaration) node)
-                : create(namespace, (InterfaceDeclaration) node);
+        TypeElement retval = null;
+        if (node instanceof ClassDeclaration) {
+            retval = create(namespace, (ClassDeclaration) node);
+        } else if (node instanceof InterfaceDeclaration) {
+            retval = create(namespace, (InterfaceDeclaration) node);
+        } else if (node instanceof TraitDeclaration) {
+            retval = create(namespace, (InterfaceDeclaration) node);
+        }
         addElement(retval);
         return retval;
     }
@@ -137,6 +145,13 @@ public class FileElementQuery extends AbstractElementQuery implements ElementQue
     public final InterfaceElement create(final NamespaceElement namespace, final InterfaceDeclaration node) {
         Parameters.notNull("node", node);//NOI18N
         final InterfaceElement retval = InterfaceElementImpl.fromNode(namespace, node, this);
+        addElement(retval);
+        return retval;
+    }
+
+    public final TraitElement create(final NamespaceElement namespace, final TraitDeclaration node) {
+        Parameters.notNull("node", node);//NOI18N
+        final TraitElement retval = TraitElementImpl.fromNode(namespace, node, this);
         addElement(retval);
         return retval;
     }

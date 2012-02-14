@@ -159,7 +159,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
     public void testGetSourceRoots () throws Exception {
         SFBQImpl query = Lookup.getDefault().lookup(SFBQImpl.class);
         assertNotNull ("SourceForBinaryQueryImplementation not found in lookup",query);                
-        query.addPair(cp3.getRoots()[0].getURL(),new FileObject[0]);
+        query.addPair(cp3.getRoots()[0].toURL(),new FileObject[0]);
         ClassPathTest.TestClassPathImplementation cpChangingImpl = new ClassPathTest.TestClassPathImplementation();
         ClassPath cpChanging = ClassPathFactory.createClassPath(cpChangingImpl);
         assertEquals("cpChangingImpl is empty", 0, cpChanging.getRoots().length);
@@ -179,7 +179,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
         assertTrue ("Missing roots from cp2",result.containsAll (Arrays.asList(cp2.getRoots())));                
         cpChangingImpl.removeResource(u);
         
-        query.addPair(cp3.getRoots()[0].getURL(),cp4.getRoots());       
+        query.addPair(cp3.getRoots()[0].toURL(),cp4.getRoots());
         result = r.getSourceRoots();
         assertEquals ("Wrong number of source roots",result.size(),cp1.getRoots().length + cp2.getRoots().length+cp4.getRoots().length);
         assertTrue ("Missing roots from cp1",result.containsAll (Arrays.asList(cp1.getRoots())));
@@ -222,11 +222,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
         FileObject src2excluded1 = FileUtil.createData(src2, "excluded/file1");
         class PRI extends PathResourceBase implements FilteringPathResourceImplementation {
             public URL[] getRoots() {
-                try {
-                    return new URL[] {src1.getURL()};
-                } catch (FileStateInvalidException x) {
-                    throw new AssertionError(x);
-                }
+                    return new URL[] {src1.toURL()};
             }
             public boolean includes(URL root, String resource) {
                 return resource.startsWith("incl");
@@ -256,7 +252,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
         assertEquals(Collections.<FileObject>emptySet(), reg.getSourceRoots());
         r.register(ClassPath.COMPILE, new ClassPath[] {cp3});
         SFBQImpl query = Lookup.getDefault().lookup(SFBQImpl.class);
-        query.addPair(cp3.getRoots()[0].getURL(),cp4.getRoots());       
+        query.addPair(cp3.getRoots()[0].toURL(),cp4.getRoots());
         //There should be one translated source root
         assertEquals(1, reg.getSourceRoots().size());
         assertEquals(1, reg.getResults().size());

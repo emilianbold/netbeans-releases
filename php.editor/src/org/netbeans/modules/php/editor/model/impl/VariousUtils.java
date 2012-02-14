@@ -73,6 +73,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.QualifiedNameKind;
 import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.UseElement;
 import org.netbeans.modules.php.editor.model.VariableName;
@@ -391,7 +392,11 @@ public class VariousUtils {
                         recentTypes = IndexScopeImpl.getTypes(QualifiedName.create(frag),varScope);
                     } else if (operation.startsWith(VariousUtils.CONSTRUCTOR_TYPE_PREFIX)) {
                         //new FooImpl()-> not allowed in php
-                        return Collections.emptyList();
+                        Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
+                        QualifiedName fullyQualifiedName = getFullyQualifiedName(createQuery(frag, varScope), offset, varScope);
+                        newRecentTypes.addAll(IndexScopeImpl.getClasses(fullyQualifiedName, varScope));
+                        recentTypes = newRecentTypes;
+                        operation = null;
                     } else if (operation.startsWith(VariousUtils.METHOD_TYPE_PREFIX)) {
                         Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
                         for (TypeScope tScope : oldRecentTypes) {
@@ -518,8 +523,15 @@ public class VariousUtils {
     }
 
     private static QualifiedName createQuery(String semiTypeName, final Scope scope) {
+        QualifiedName result = null;
         final QualifiedName query = QualifiedName.create(semiTypeName);
-        return query.toNamespaceName(query.getKind().isFullyQualified()).append(translateSpecialClassName(scope, query.getName()));
+        final String translatedName = translateSpecialClassName(scope, query.getName());
+        if (translatedName != null && translatedName.startsWith("\\")) { //NOI18N
+            result = QualifiedName.create(translatedName);
+        } else {
+            result = query.toNamespaceName(query.getKind().isFullyQualified()).append(translatedName);
+        }
+        return result;
     }
 
     public static Stack<? extends ModelElement> getElemenst(FileScope topScope, final VariableScope varScope, String semiTypeName, int offset) throws IllegalStateException {
@@ -832,6 +844,7 @@ public class VariousUtils {
 
     public static String getSemiType(TokenSequence<PHPTokenId> tokenSequence, State state, VariableScope varScope) throws IllegalStateException {
         int commasCount = 0;
+        String possibleClassName = null;
         int anchor = -1;
         int leftBraces = 0;
         int rightBraces = State.PARAMS.equals(state) ? 1 : 0;
@@ -882,7 +895,7 @@ public class VariousUtils {
                         state = State.INVALID;
                         if (isString(token)) {
                             metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX);
-                            metaAll.insert(0, qualifyTypeNames(token.text().toString(), tokenSequence.offset(), varScope));
+                            metaAll.insert(0, token.text().toString());
                             state = State.CLASSNAME;
                         } else if (isSelf(token) || isParent(token) || isStatic(token)) {
                             metaAll.insert(0, "@" + VariousUtils.FIELD_TYPE_PREFIX);
@@ -904,6 +917,8 @@ public class VariousUtils {
                             leftBraces++;
                         } else if (isRightBracket(token)) {
                             rightBraces++;
+                        } else if (isString(token)) {
+                            possibleClassName = token.text().toString();
                         }
                         if (leftBraces == rightBraces) {
                             state = State.FUNCTION;
@@ -954,12 +969,17 @@ public class VariousUtils {
                                     break;
                                 }
                             }
+                        } else {
+                            metaAll = transformToFullyQualifiedType(metaAll, tokenSequence, varScope);
                         }
                         state = State.STOP;
                         break;
                 }
             } else {
                 if (state.equals(State.CLASSNAME)) {
+                    if (!metaAll.toString().startsWith("\\")) { //NOI18N
+                        metaAll = transformToFullyQualifiedType(metaAll, tokenSequence, varScope);
+                    }
                     state = State.STOP;
                     break;
                 } else if (state.equals(State.METHOD)) {
@@ -971,6 +991,10 @@ public class VariousUtils {
                         metaAll.insert(0, "@" + VariousUtils.FUNCTION_TYPE_PREFIX);
                     }
                     break;
+                } else if (state.equals(State.PARAMS) && possibleClassName != null && token.id() != null && PHPTokenId.PHP_NEW.equals(token.id()) && (rightBraces - 1 == leftBraces)) {
+                    state = State.STOP;
+                    metaAll.insert(0, "@" + VariousUtils.CONSTRUCTOR_TYPE_PREFIX + possibleClassName);
+                    break;
                 }
             }
         }
@@ -981,6 +1005,20 @@ public class VariousUtils {
             }
         }
         return null;
+    }
+
+    private static StringBuilder transformToFullyQualifiedType(final StringBuilder metaAll, final TokenSequence<PHPTokenId> tokenSequence, final Scope varScope) {
+        StringBuilder result = metaAll;
+        String currentMetaAll = metaAll.toString();
+        int indexOfType = currentMetaAll.indexOf("@"); //NOI18N
+        if (indexOfType != -1) {
+            String lastType = currentMetaAll.substring(0, indexOfType);
+            if (!lastType.trim().isEmpty()) {
+                String qualifiedTypeName = qualifyTypeNames(lastType, tokenSequence.offset(), varScope);
+                result = new StringBuilder(qualifiedTypeName + currentMetaAll.substring(indexOfType));
+            }
+        }
+        return result;
     }
 
     // XXX
@@ -1012,15 +1050,23 @@ public class VariousUtils {
             classScope = (ClassScope)scp;
         } else if (scp instanceof MethodScope) {
             MethodScope msi = (MethodScope) scp;
-            classScope = (ClassScope) msi.getInScope();
+            Scope inScope = msi.getInScope();
+            if (inScope instanceof ClassScope) {
+                classScope = (ClassScope) inScope;
+            }
         }
         if (classScope != null) {
             if ("self".equals(clsName) || "this".equals(clsName) || "static".equals(clsName)) {//NOI18N
                 clsName = classScope.getName();
             } else if ("parent".equals(clsName)) {
-                ClassScope clzScope = ModelUtils.getFirst(classScope.getSuperClasses());
-                if (clzScope != null) {
-                    clsName = clzScope.getName();
+                QualifiedName fullyQualifiedName = ModelUtils.getFirst(classScope.getPossibleFQSuperClassNames());
+                if (fullyQualifiedName != null) {
+                    clsName = fullyQualifiedName.toString();
+                } else {
+                    ClassScope clzScope = ModelUtils.getFirst(classScope.getSuperClasses());
+                    if (clzScope != null) {
+                        clsName = clzScope.getName();
+                    }
                 }
             }
         }
@@ -1090,7 +1136,12 @@ public class VariousUtils {
         TypeScope csi = null;
         if (inScope instanceof MethodScope) {
             MethodScope msi = (MethodScope) inScope;
-            csi = (ClassScope) msi.getInScope();
+            Scope methodInScope = msi.getInScope();
+            if (methodInScope instanceof ClassScope) {
+                csi = (ClassScope) methodInScope;
+            } else if (methodInScope instanceof TraitScope) {
+                csi = (TraitScope) methodInScope;
+            }
         }
         if (inScope instanceof ClassScope || inScope instanceof InterfaceScope) {
             csi = (TypeScope)inScope;

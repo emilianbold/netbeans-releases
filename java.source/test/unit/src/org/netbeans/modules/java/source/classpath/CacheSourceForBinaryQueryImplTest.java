@@ -53,6 +53,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.source.ClassIndexTestCase;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -64,8 +65,8 @@ import org.openide.filesystems.URLMapper;
  *
  * @author Tomas Zezula
  */
-public class CacheSourceForBinaryQueryImplTest extends NbTestCase {
-
+public class CacheSourceForBinaryQueryImplTest extends ClassIndexTestCase {
+    
     FileObject[] srcRoots;
     ClasspathInfo cpInfo;
     CacheSourceForBinaryQueryImpl sfbq;
@@ -92,6 +93,9 @@ public class CacheSourceForBinaryQueryImplTest extends NbTestCase {
         gpr.register(ClassPath.SOURCE, new ClassPath[]{srcPath});
         gpr.register(ClassPath.BOOT, new ClassPath[] {bootPath});
         gpr.register(ClassPath.COMPILE, new ClassPath[] {compilePath});
+
+        beginTx();
+
         this.cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath,compilePath,srcPath,null,true,false,false,false);
         this.sfbq = new CacheSourceForBinaryQueryImpl ();
     }

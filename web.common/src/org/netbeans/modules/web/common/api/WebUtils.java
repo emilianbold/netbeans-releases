@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
@@ -65,6 +66,7 @@ import org.openide.util.Parameters;
  */
 public class WebUtils {
 
+    private static final Logger LOGGER = Logger.getLogger(WebUtils.class.getName());
     static boolean UNIT_TESTING = false;
     static FileObject WEB_ROOT;
 
@@ -214,23 +216,43 @@ public class WebUtils {
 
     }
 
-    /** finds first ResultIterator of the given mimetype */
+    private static int getMimePathSize(ResultIterator ri) {
+        return ri.getSnapshot().getMimePath().size();
+    }
+
+    /** Finds ResultIterator of the given mimetype with the shortest {@link MimePath}. */
     public static ResultIterator getResultIterator(ResultIterator ri, String mimetype) {
         if (ri.getSnapshot().getMimeType().equals(mimetype)) {
             return ri;
         }
+
+        List<ResultIterator>resultIterators = new ArrayList<ResultIterator>();
         for (Embedding e : ri.getEmbeddings()) {
             ResultIterator eri = ri.getResultIterator(e);
             if (e.getMimeType().equals(mimetype)) {
-                return eri;
+                // not returned immediately to be able detect mimePaths with equal size
+                resultIterators.add(eri);
             } else {
                 ResultIterator eeri = getResultIterator(eri, mimetype);
                 if (eeri != null) {
-                    return eeri;
+                    resultIterators.add(eeri);
                 }
             }
         }
-        return null;
+
+        // choses the one with the shortest MimePath
+        ResultIterator shortestMimePathRI = null;
+        for (ResultIterator resultIterator : resultIterators) {
+            if (shortestMimePathRI == null || getMimePathSize(resultIterator) < getMimePathSize(shortestMimePathRI)) {
+                shortestMimePathRI = resultIterator;
+            } else if (getMimePathSize(resultIterator) == getMimePathSize(shortestMimePathRI)) {
+                LOGGER.log(Level.INFO, "Equally long MimePaths for MimeType={0} found: {1}; {2}", new Object[]{
+                    mimetype,
+                    shortestMimePathRI.getSnapshot().getMimePath().getPath(),
+                    resultIterator.getSnapshot().getMimePath().getPath()});
+            }
+        }
+        return shortestMimePathRI;
     }
 
     public static String unquotedValue(CharSequence value) {

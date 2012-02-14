@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.68
+#Version 1.72
 
 CLSS public java.io.IOException
 cons public init()
@@ -374,8 +374,10 @@ hcls Item,NbTestSuiteLogCheck,S
 
 CLSS public final static org.netbeans.junit.NbModuleSuite$Configuration
  outer org.netbeans.junit.NbModuleSuite
+meth public !varargs org.netbeans.junit.NbModuleSuite$Configuration addStartupArgument(java.lang.String[])
 meth public !varargs org.netbeans.junit.NbModuleSuite$Configuration addTest(java.lang.Class<? extends junit.framework.TestCase>,java.lang.String[])
 meth public !varargs org.netbeans.junit.NbModuleSuite$Configuration addTest(java.lang.String[])
+meth public junit.framework.Test suite()
 meth public org.netbeans.junit.NbModuleSuite$Configuration addTest(java.lang.Class<? extends junit.framework.Test>)
 meth public org.netbeans.junit.NbModuleSuite$Configuration clusters(java.lang.String)
 meth public org.netbeans.junit.NbModuleSuite$Configuration enableClasspathModules(boolean)
@@ -384,10 +386,11 @@ meth public org.netbeans.junit.NbModuleSuite$Configuration enableModules(java.la
 meth public org.netbeans.junit.NbModuleSuite$Configuration failOnException(java.util.logging.Level)
 meth public org.netbeans.junit.NbModuleSuite$Configuration failOnMessage(java.util.logging.Level)
 meth public org.netbeans.junit.NbModuleSuite$Configuration gui(boolean)
+meth public org.netbeans.junit.NbModuleSuite$Configuration hideExtraModules(boolean)
 meth public org.netbeans.junit.NbModuleSuite$Configuration honorAutoloadEager(boolean)
 meth public org.netbeans.junit.NbModuleSuite$Configuration reuseUserDir(boolean)
 supr java.lang.Object
-hfds clusterRegExp,enableClasspathModules,failOnException,failOnMessage,gui,honorAutoEager,latestTestCaseClass,moduleRegExp,parentClassLoader,reuseUserDir,tests
+hfds clusterRegExp,enableClasspathModules,failOnException,failOnMessage,gui,hideExtraModules,honorAutoEager,latestTestCaseClass,moduleRegExp,parentClassLoader,reuseUserDir,startupArgs,tests
 
 CLSS public abstract interface org.netbeans.junit.NbPerformanceTest
 innr public static PerformanceData

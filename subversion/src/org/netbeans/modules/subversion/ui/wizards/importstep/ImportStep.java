@@ -284,7 +284,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                         // if the user came back from the last step and changed the repository folder name,
                         // then this could be already a working copy ...    
                         FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + SvnUtils.SVN_ADMIN_DIR)); // NOI18N
-                        File importDummyFolder = new File(System.getProperty("java.io.tmpdir") + "/svn_dummy/" + importDirectory.getName()); // NOI18N
+                        File importDummyFolder = new File(Utils.getTempFolder(), importDirectory.getName());
                         importDummyFolder.mkdirs();                     
                         importDummyFolder.deleteOnExit();
                         client.doImport(importDummyFolder, repositoryFile.getFileUrl(), getImportMessage(), false);

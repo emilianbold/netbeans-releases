@@ -44,13 +44,22 @@ package org.netbeans.modules.debugger.jpda.visual.ui;
 import java.awt.BorderLayout;
 import java.awt.Canvas;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ContainerEvent;
+import java.awt.event.ContainerListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.Point2D;
 import java.awt.image.ImageObserver;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -61,10 +70,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo;
@@ -75,6 +88,7 @@ import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -97,6 +111,9 @@ public class ScreenshotComponent extends TopComponent {
                          new HashMap<DebuggerEngine, Set<ScreenshotComponent>>();
     private static volatile ScreenshotComponent activeScreenshotComponent;
     
+    private static final String[] ZOOM_PERCENTS = { "10%", "25%", "50%", "75%", "100%", "150%", "200%", "300%" }; // NOI18N
+    private static final String PROP_ZOOM = "zoom";     // NOI18N
+    
     private RemoteScreenshot screenshot;
     private ScreenshotUIManager manager;
     private NavigatorLookupHint componentHierarchyNavigatorHint = new ComponentHierarchyNavigatorHint();
@@ -108,14 +125,17 @@ public class ScreenshotComponent extends TopComponent {
     public ScreenshotComponent(RemoteScreenshot screenshot, ScreenshotUIManager manager) {
         this.screenshot = screenshot;
         this.manager = manager;
+        setFocusable(true);
         screenshot.getImage();
         ScreenshotCanvas c = new ScreenshotCanvas(screenshot.getImage());
+        this.canvas = c;
         scrollPane = new JScrollPane(c);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         setLayout(new BorderLayout());
         add(scrollPane, BorderLayout.CENTER);
-        this.canvas = c;
+        JToolBar toolBar = createToolBar();
+        add(toolBar, BorderLayout.NORTH);
         String title = screenshot.getTitle();
         title = (title == null) ? NbBundle.getMessage(ScreenshotComponent.class, "LBL_DebuggerSnapshot") :
                     NbBundle.getMessage(ScreenshotComponent.class, "LBL_DebuggerSnapshotOf", title);
@@ -128,6 +148,204 @@ public class ScreenshotComponent extends TopComponent {
         } else {
             setActivatedNodes(new Node[] { componentNodes });
         }
+        addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                char c = e.getKeyChar();
+                switch (c) {
+                    case '+':
+                    case '=': canvas.zoomIn();
+                              break;
+                    case '-':
+                    case '_': canvas.zoomOut();
+                              break;
+                    case '1': canvas.zoom(1.0);
+                              break;
+                    case '2': canvas.zoom(2.0);
+                              break;
+                    case '3': canvas.zoom(3.0);
+                              break;
+                    case '4': canvas.zoom(4.0);
+                              break;
+                    case '7': canvas.zoom(1.0/4.0);
+                              break;
+                    case '8': canvas.zoom(1.0/3.0);
+                              break;
+                    case '9': canvas.zoom(1.0/2.0);
+                              break;
+                    case 'X':
+                    case 'x': canvas.zoomFit();
+                              break;
+                }
+            }
+            @Override
+            public void keyPressed(KeyEvent e) {}
+            @Override
+            public void keyReleased(KeyEvent e) {}
+        });
+    }
+    
+    private JToolBar createToolBar() {
+        JToolBar toolBar = new JToolBar(NbBundle.getMessage(ScreenshotComponent.class, "CTL_ToolBarName"));
+        toolBar.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ScreenshotComponent.class, "CTL_ToolBarA11yName"));
+        toolBar.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScreenshotComponent.class, "CTL_ToolBarA11yDescr"));
+        toolBar.add(createZoomInButton());
+        toolBar.add(createZoomOutButton());
+        toolBar.addSeparator();
+        toolBar.add(createZoomOrigButton());
+        toolBar.addSeparator();
+        toolBar.add(createZoomFitButton());
+        toolBar.addSeparator();
+        toolBar.add(createZoomPercent());
+        toolBar.addSeparator();
+        return toolBar;
+    }
+    
+    private JButton createZoomInButton() {
+        JButton inButton = new JButton(ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/debugger/jpda/visual/resources/zoomIn.gif")));
+        inButton.setToolTipText(NbBundle.getMessage(ScreenshotComponent.class, "TLTP_ZoomIn"));
+        inButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScreenshotComponent.class, "LBL_ZoomInA11yDescr"));
+        inButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                canvas.zoomIn();
+            }
+        });
+        inButton.setAlignmentX(CENTER_ALIGNMENT);
+        return inButton;
+    }
+    
+    private JButton createZoomOutButton() {
+        JButton outButton = new JButton(ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/debugger/jpda/visual/resources/zoomOut.gif")));
+        outButton.setToolTipText(NbBundle.getMessage(ScreenshotComponent.class, "TLTP_ZoomOut"));
+        outButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScreenshotComponent.class, "LBL_ZoomOutA11yDescr"));
+        outButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                canvas.zoomOut();
+            }
+        });
+        outButton.setAlignmentX(CENTER_ALIGNMENT);
+        return outButton;
+    }
+    
+    private JButton createZoomOrigButton() {
+        JButton origButton = new JButton(NbBundle.getMessage(ScreenshotComponent.class, "LBL_ZoomOrig"));
+        origButton.setToolTipText(NbBundle.getMessage(ScreenshotComponent.class, "TLTP_ZoomOrig"));
+        origButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScreenshotComponent.class, "LBL_ZoomOrigA11yDescr"));
+        origButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                canvas.zoom(1);
+            }
+        });
+        origButton.setAlignmentX(CENTER_ALIGNMENT);
+        return origButton;
+    }
+    
+    private JButton createZoomFitButton() {
+        JButton fitButton = new JButton(NbBundle.getMessage(ScreenshotComponent.class, "LBL_ZoomFit"));
+        fitButton.setToolTipText(NbBundle.getMessage(ScreenshotComponent.class, "TLTP_ZoomFit"));
+        fitButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScreenshotComponent.class, "LBL_ZoomFitA11yDescr"));
+        fitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                canvas.zoomFit();
+            }
+        });
+        fitButton.setAlignmentX(CENTER_ALIGNMENT);
+        return fitButton;
+    }
+    
+    private JComboBox createZoomPercent() {
+        final JComboBox cb = new JComboBox(ZOOM_PERCENTS);
+        final boolean[] ignoreChanges = { false };
+        cb.setEditable(true);
+        Font font = cb.getEditor().getEditorComponent().getFont();
+        int textWidth = cb.getEditor().getEditorComponent().getFontMetrics(font).stringWidth(ZOOM_PERCENTS[ZOOM_PERCENTS.length - 1]);
+        for (Component c : cb.getComponents()) {
+            if (c instanceof AbstractButton) {
+                int buttonWidth = c.getMinimumSize().width;
+                Dimension dim = new Dimension(buttonWidth + textWidth + 10, cb.getPreferredSize().height);
+                cb.setPreferredSize(dim);
+                cb.setMinimumSize(dim);
+                cb.setMaximumSize(dim);
+                break;
+            }
+        }
+        //cb.setPreferredSize(new Dimension(textWidth, cb.getPreferredSize().height));
+        cb.setPrototypeDisplayValue(ZOOM_PERCENTS[ZOOM_PERCENTS.length - 1]);
+        cb.setMaximumSize(cb.getPreferredSize());
+        cb.setToolTipText(NbBundle.getMessage(ScreenshotComponent.class, "TLTP_ZoomPercent"));
+        cb.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScreenshotComponent.class, "LBL_ZoomPercentA11yDescr"));
+        double scale = canvas.getScale();
+        int pc = (int) (scale * 100);
+        String str = Integer.toString(pc) + '%';
+        cb.setSelectedItem(str);
+        cb.addContainerListener(new ContainerListener() {
+            @Override
+            public void componentAdded(ContainerEvent e) {
+                Component child = e.getChild();
+                if (child instanceof AbstractButton) {
+                    int buttonWidth = child.getMinimumSize().width;
+                    Font font = cb.getEditor().getEditorComponent().getFont();
+                    int textWidth = cb.getEditor().getEditorComponent().getFontMetrics(font).stringWidth(ZOOM_PERCENTS[ZOOM_PERCENTS.length - 1]);
+                    int width = buttonWidth + textWidth + 10;
+                    Dimension dim = new Dimension(width, cb.getPreferredSize().height);
+                    cb.setPreferredSize(dim);
+                    cb.setMinimumSize(dim);
+                    cb.setMaximumSize(dim);
+                    cb.removeContainerListener(this);
+                }
+            }
+            @Override
+            public void componentRemoved(ContainerEvent e) {}
+        });
+        cb.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (ignoreChanges[0]) return;
+                String selected = (String) cb.getSelectedItem();
+                selected = selected.trim();
+                if (selected.endsWith("%")) {
+                    selected = selected.substring(0, selected.length() - 1);
+                }
+                int pc;
+                try {
+                    pc = Integer.parseInt(selected);
+                    double scale = pc / 100.0;
+                    canvas.setScale(scale);
+                } catch (NumberFormatException nfex) {
+                    // Wrong value - set the current one.
+                    pc = (int) (canvas.getScale() * 100);
+                    String str = Integer.toString(pc) + '%';
+                    ignoreChanges[0] = true;
+                    try {
+                        cb.setSelectedItem(str);
+                    } finally {
+                        ignoreChanges[0] = false;
+                    }
+                }
+            }
+        });
+        canvas.addPropertyChangeListener(PROP_ZOOM, new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                double newScale = (Double) evt.getNewValue();
+                int pc = (int) (newScale * 100);
+                String str = Integer.toString(pc) + '%';
+                if (!str.equals(cb.getSelectedItem())) {
+                    ignoreChanges[0] = true;
+                    try {
+                        cb.setSelectedItem(str);
+                    } finally {
+                        ignoreChanges[0] = false;
+                    }
+                }
+            }
+        });
+        cb.setAlignmentX(CENTER_ALIGNMENT);
+        return cb;
     }
     
     private static ComponentInfo getFirstCustomComponent(Node node) {
@@ -287,14 +505,16 @@ public class ScreenshotComponent extends TopComponent {
         private final Set<Rectangle> breakpoints = new HashSet<Rectangle>();
         private Listener listener;
         private boolean active;
+        private double scale = 1D;
+        private final double SCALLE_FACTOR = Math.sqrt(2.0D);  // Treated as static
         
         public ScreenshotCanvas(Image image) {
             this.image = image;
             listener = new Listener();
-            initSize();
+            updateSize();
         }
         
-        private void initSize() {
+        private void updateSize() {
             ImageObserver io = new ImageObserver() {
                 @Override
                 public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
@@ -308,8 +528,8 @@ public class ScreenshotComponent extends TopComponent {
                     return false;
                 }
             };
-            int width = image.getWidth(io);
-            int height = image.getHeight(io);
+            int width = (int) (scale * image.getWidth(io)) + 2;
+            int height = (int) (scale * image.getHeight(io)) + 2;
             if (width > 0 && height > 0) {
                 setSize(width, height);
                 setPreferredSize(getSize());
@@ -318,20 +538,27 @@ public class ScreenshotComponent extends TopComponent {
 
         @Override
         public void paintComponent(Graphics g) {
-            g.drawImage(image, 1, 1, null);
-            g.drawRect(0, 0, image.getWidth(null) + 2, image.getHeight(null) + 2);
+            int imageWidth = image.getWidth(this);
+            int imageHeight = image.getHeight(this);
+            int scaledWidth = (int) (scale * imageWidth);
+            int scaledHeight = (int) (scale * imageHeight);
+            g.drawImage(image, 1, 1, scaledWidth + 1, scaledHeight + 1,
+                        0, 0, imageWidth, imageHeight, this);
+            g.drawRect(0, 0, scaledWidth + 2, scaledHeight + 2);
             synchronized (breakpoints) {
                 Color c = g.getColor();
                 g.setColor(Color.RED);
                 for (Rectangle r : breakpoints) {
-                    g.drawRect(r.x, r.y, r.width + 1, r.height + 1);
+                    g.drawRect((int) (scale * r.x), (int) (scale * r.y),
+                               (int) (scale * r.width) + 1, (int) (scale * r.height) + 1);
                 }
                 g.setColor(c);
             }
             if (selection != null) {
                 Color c = g.getColor();
                 g.setColor(Color.BLUE);
-                g.drawRect(selection.x, selection.y, selection.width + 1, selection.height + 1);
+                g.drawRect((int) (scale * selection.x), (int) (scale * selection.y),
+                           (int) (scale * selection.width) + 1, (int) (scale * selection.height) + 1);
                 g.setColor(c);
             }
             //image.getSource();
@@ -339,7 +566,7 @@ public class ScreenshotComponent extends TopComponent {
         
         void activated() {
             if (selection != null) {
-                listener.selectComponentAt(selection.x + 1, selection.y + 1, true);
+                listener.selectComponentAt((int) (scale * selection.x) + 1, (int) (scale * selection.y) + 1, true);
             }
             if (!active) {
                 addMouseListener(listener);
@@ -376,6 +603,81 @@ public class ScreenshotComponent extends TopComponent {
                 breakpoints.remove(r);
             }
             repaint(r.x, r.y, r.width + 3, r.height + 3);
+        }
+        
+        public void zoomIn() {
+            setScale(scale * SCALLE_FACTOR);
+        }
+        
+        public void zoomOut() {
+            double newScale = scale / SCALLE_FACTOR;
+            if (newScale * image.getWidth(null) < 1 && newScale * image.getHeight(null) < 1) {
+                // Too small to further zoom out
+                return ;
+            }
+            setScale(newScale);
+        }
+        
+        public void zoomFit() {
+            Rectangle bounds = scrollPane.getViewportBorderBounds();
+            int imageWidth = image.getWidth(null);
+            int imageHeight = image.getHeight(null);
+            if (imageWidth <= 0 || imageHeight <= 0) {
+                // nothing known yet
+                return;
+            }
+            double scalew = ((double) bounds.width)/(imageWidth + 2);
+            double scaleh = ((double) bounds.height)/(imageHeight + 2);
+            setScale(Math.min(scalew, scaleh));
+        }
+        
+        public void zoom(double newScale) {
+            int imageWidth = image.getWidth(null);
+            int imageHeight = image.getHeight(null);
+            if (imageWidth <= 0 || imageHeight <= 0) {
+                // nothing known yet
+                return;
+            }
+            if (newScale * imageWidth < 1 && newScale * imageHeight < 1) {
+                newScale = Math.min(((double) 1)/imageWidth, ((double) 1)/imageHeight);
+            }
+            setScale(newScale);
+        }
+        
+        private void setScale(double scale) {
+            if (this.scale != scale) {
+                Point2D.Double center = computeCenterPoint();
+                double oldScale = this.scale;
+                this.scale = scale;
+                updateSize();
+                setCenterPoint(center);
+                repaint();
+                firePropertyChange(PROP_ZOOM, oldScale, scale);
+            }
+        }
+        
+        public double getScale() {
+            return scale;
+        }
+        
+        /** Computes the current image point, that is in the center in the current view area. */
+        private Point2D.Double computeCenterPoint() {
+            Point p = scrollPane.getViewport().getViewPosition();
+            Rectangle viewRect = scrollPane.getViewport().getViewRect();
+            p.x += viewRect.width/2;
+            p.y += viewRect.height/2;
+            return new Point2D.Double(p.x / scale, p.y / scale);
+        }
+        
+        /** Sets the current view area to have the image point in it's center. */
+        private void setCenterPoint(Point2D.Double pd) {
+            Rectangle viewRect = scrollPane.getViewport().getViewRect();
+            Point p = new Point((int) (pd.x * scale), (int) (pd.y * scale));
+            p.x -= viewRect.width/2;
+            if (p.x < 0) p.x = 0;
+            p.y -= viewRect.height/2;
+            if (p.y < 0) p.y = 0;
+            scrollPane.getViewport().setViewPosition(p);
         }
         
         private class Listener implements MouseListener, PropertyChangeListener {
@@ -435,7 +737,9 @@ public class ScreenshotComponent extends TopComponent {
             
             private void selectComponentAt(int x, int y, boolean reActivated) {
                 x -= 1;
+                x = (int) (x / scale);
                 y -= 1;
+                y = (int) (y / scale);
                 ComponentInfo ci = screenshot.findAt(x, y);
                 logger.fine("Component Info at "+x+", "+y+" is: "+((ci != null) ? ci.getDisplayName() : null));
                 selectComponent(ci, reActivated);
@@ -453,9 +757,11 @@ public class ScreenshotComponent extends TopComponent {
                         if (oldSelection.equals(selection) && !reActivated) {
                             return ; // already selected
                         }
-                        repaint(oldSelection.x, oldSelection.y, oldSelection.width + 3, oldSelection.height + 3);
+                        repaint((int) (scale * oldSelection.x), (int) (scale * oldSelection.y),
+                                (int) (scale * oldSelection.width) + 3, (int) (scale * oldSelection.height) + 3);
                     }
-                    repaint(selection.x, selection.y, selection.width + 3, selection.height + 3);
+                    repaint((int) (scale * selection.x), (int) (scale * selection.y),
+                            (int) (scale * selection.width) + 3, (int) (scale * selection.height) + 3);
                     logger.fine("New selection = "+selection);
                     node = componentNodes.findNodeFor(ci);
                     logger.fine("FindNodeFor("+ci+") on '"+componentNodes+"' gives: "+node);

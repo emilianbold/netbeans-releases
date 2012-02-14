@@ -457,6 +457,10 @@ public class PHPTopLexerTest extends PHPLexerTestBase {
         PHPLexerUtils.next(ts, PHPTopTokenId.T_PHP_CLOSE_DELIMITER, "?>");
     }
 
+    public void testHereDoc29() throws Exception {
+        performTest("heredoc_015");
+    }
+
     public void testNowDoc01() throws Exception {
         performTest("nowdoc01");
     }

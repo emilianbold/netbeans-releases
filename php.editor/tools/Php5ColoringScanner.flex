@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -92,7 +92,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     private boolean short_tags_allowed;
 
     private LexerInput input;
-    
+
     /*public PhpLexer5(int state){
         initialize(state);
     }*/
@@ -108,7 +108,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         this.firstPos = offset;
     }
 
-    
+
 
     public void reset(java.io.Reader  reader, char[] buffer, int[] parameters){
     	this.zzReader = reader;
@@ -118,7 +118,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     	this.zzCurrentPos = parameters[2];
     	this.zzStartRead = parameters[3];
     	this.zzEndRead = parameters[4];
-    	this.yyline = parameters[5];  
+    	this.yyline = parameters[5];
     	initialize(parameters[6]);
     }
     */
@@ -126,7 +126,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             this.input = info.input();
             this.asp_tags = asp_tags_allowed;
             this.short_tags_allowed = short_tags_allowed;
-            
+
             if(info.state() != null) {
                 //reset state
                 setState((LexerState)info.state());
@@ -140,7 +140,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
                 }
                 stack.clear();
             }
-            
+
         }
 
         public static final class LexerState  {
@@ -218,7 +218,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
      protected boolean isHeredocState(int state){
     	    	return state == ST_PHP_HEREDOC || state == ST_PHP_START_HEREDOC || state == ST_PHP_END_HEREDOC || state == ST_PHP_NOWDOC;
     }
-    
+
     public int[] getParamenters(){
     	return new int[]{zzMarkedPos, zzPushbackPos, zzCurrentPos, zzStartRead, zzEndRead, yyline, zzLexicalState};
     }
@@ -238,7 +238,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     public char[] getZZBuffer() {
         return zzBuffer;
     }
-    
+
     protected int getZZStartRead() {
     	return this.zzStartRead;
     }
@@ -260,7 +260,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 		yybegin(state);
 	}
 
-    
+
  // End user code
 
 %}
@@ -269,6 +269,7 @@ LNUM=[0-9]+
 DNUM=([0-9]*[\.][0-9]+)|([0-9]+[\.][0-9]*)
 EXPONENT_DNUM=(({LNUM}|{DNUM})[eE][+-]?{LNUM})
 HNUM="0x"[0-9a-fA-F]+
+BNUM="0b"[01]+
 //LABEL=[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*
 LABEL=[[:letter:]_\x7f-\xff][[:letter:][:digit:]_\x7f-\xff]*
 WHITESPACE=[ \n\r\t]+
@@ -281,7 +282,7 @@ DOUBLE_QUOTES_LITERAL_DOLLAR=("$"+([^a-zA-Z_\x7f-\xff$\"\\{]|("\\"{ANY_CHAR})))
 BACKQUOTE_LITERAL_DOLLAR=("$"+([^a-zA-Z_\x7f-\xff$`\\{]|("\\"{ANY_CHAR})))
 
 HEREDOC_LITERAL_DOLLAR=("$"+([^a-zA-Z_\x7f-\xff$\n\r\\{]|("\\"[^\n\r])))
-HEREDOC_NEWLINE=((({LABEL}";"?((("{"+|"$"+)"\\"?)|"\\"))|(("{"*|"$"*)"\\"?)){NEWLINE}) 
+HEREDOC_NEWLINE=((({LABEL}";"?((("{"+|"$"+)"\\"?)|"\\"))|(("{"*|"$"*)"\\"?)){NEWLINE})
 HEREDOC_CURLY_OR_ESCAPE_OR_DOLLAR=(("{"+[^$\n\r\\{])|("{"*"\\"[^\n\r])|{HEREDOC_LITERAL_DOLLAR})
 HEREDOC_NON_LABEL=([^a-zA-Z_\x7f-\xff$\n\r\\{]|{HEREDOC_CURLY_OR_ESCAPE_OR_DOLLAR})
 HEREDOC_LABEL_NO_NEWLINE=({LABEL}([^a-zA-Z0-9_\x7f-\xff;$\n\r\\{]|(";"[^$\n\r\\{])|(";"?{HEREDOC_CURLY_OR_ESCAPE_OR_DOLLAR})))
@@ -447,6 +448,10 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     return PHPTokenId.PHP_INSTANCEOF;
 }
 
+<ST_PHP_IN_SCRIPTING>"insteadof" {
+    return PHPTokenId.PHP_INSTEADOF;
+}
+
 <ST_PHP_IN_SCRIPTING>"as" {
     return PHPTokenId.PHP_AS;
 }
@@ -489,6 +494,10 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 
 <ST_PHP_IN_SCRIPTING>"class" {
     return PHPTokenId.PHP_CLASS;
+}
+
+<ST_PHP_IN_SCRIPTING>"trait" {
+    return PHPTokenId.PHP_TRAIT;
 }
 
 <ST_PHP_IN_SCRIPTING>"interface" {
@@ -717,13 +726,17 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 
 <ST_PHP_IN_SCRIPTING>"}" {
              //  if (!stack.isEmpty()) {
-            
+
             //we are pushing state when we enter the PHP code,
             //so we need to ensure we do not pop the top most state
             if(stack.size() > 1) {
                 popState();
     }
     return  PHPTokenId.PHP_CURLY_CLOSE;
+}
+
+<ST_PHP_IN_SCRIPTING>{BNUM} {
+    return PHPTokenId.PHP_NUMBER;
 }
 
 <ST_PHP_IN_SCRIPTING>{LNUM} {
@@ -794,11 +807,11 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 	return PHPTokenId.PHP_TOKEN;
 }
 
-<ST_PHP_VAR_OFFSET>"[" { 
+<ST_PHP_VAR_OFFSET>"[" {
 	return PHPTokenId.PHP_TOKEN;
 }
 
-<ST_PHP_VAR_OFFSET>{TOKENS}|[;{}\"`] {//the difference from the original rules comes from the fact that we took ';' out out of tokens 
+<ST_PHP_VAR_OFFSET>{TOKENS}|[;{}\"`] {//the difference from the original rules comes from the fact that we took ';' out out of tokens
 	return  PHPTokenId.UNKNOWN_TOKEN;
 }
 
@@ -980,7 +993,7 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     }
 }
 
-               
+
 <ST_PHP_NOWDOC>{NOWDOC_CHARS}*{NEWLINE}+{LABEL}";"?[\n\r] {
     int label_len = yylength() - 1;
     int back = 1;
@@ -1011,7 +1024,7 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     yypushback(back);
     return PHPTokenId.PHP_NOWDOC_TAG;
 }
-                     
+
 <ST_PHP_IN_SCRIPTING>b?"<<<"{TABS_AND_SPACES}({LABEL}|"\""{LABEL}"\""){NEWLINE} {
     int bprefix = (yytext().charAt(0) != '<') ? 1 : 0;
     int startString=3+bprefix;

@@ -48,6 +48,7 @@
  */
 package org.netbeans.test.subversion.operators;
 
+import javax.swing.JPanel;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jemmy.operators.*;
 
@@ -96,7 +97,8 @@ public class RepositoryStepOperator extends WizardOperator {
     private JButtonOperator _btFinish;
     private JButtonOperator _btCancel;
     private JButtonOperator _btHelp;
-    private JLabelOperator _lblWarning;
+    private JTextPaneOperator _txtPaneWarning;
+    
     
     //******************************
     // Subcomponents definition part
@@ -262,11 +264,11 @@ public JButtonOperator btProxyConfiguration() {
         return _lblWizardDescriptor$FixedHeightLabel;
     }
     
-    public JLabelOperator lblWarning() {
-        if (_lblWarning == null) {
-            _lblWarning = new JLabelOperator(this, 5);
+    public JTextPaneOperator txtPaneWarning() {
+        if (_txtPaneWarning == null) {
+            _txtPaneWarning = new JTextPaneOperator(this);
         }
-        return _lblWarning;
+        return _txtPaneWarning;
     }
 
     /** Tries to find "Stop" JButton in this dialog.
@@ -398,8 +400,8 @@ public JButtonOperator btProxyConfiguration() {
     }
     
     public void setRepositoryURL(String url) {
-        cboRepositoryURL().clearText();
-        cboRepositoryURL().typeText(url);
+        cboRepositoryURL().getTextField().clearText();
+        cboRepositoryURL().getTextField().typeText(url);
     }
 
     /** types text for cboRepositoryURL

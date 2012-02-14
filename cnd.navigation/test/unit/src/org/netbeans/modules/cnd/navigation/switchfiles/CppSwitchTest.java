@@ -46,6 +46,8 @@ package org.netbeans.modules.cnd.navigation.switchfiles;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
@@ -60,6 +62,11 @@ public class CppSwitchTest extends TraceModelTestBase {
         super(testName);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+    
     public void testTwoNamesakes() throws Exception {
         String source = "welcome.cc"; // NOI18N
         performTest("", source + ".dat", source + ".err"); // NOI18N

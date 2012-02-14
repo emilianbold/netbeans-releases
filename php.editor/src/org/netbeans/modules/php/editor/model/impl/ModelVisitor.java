@@ -126,8 +126,12 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.SwitchStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitMethodAliasDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitConflictResolutionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TryStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
@@ -422,7 +426,33 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
 
     @Override
+    public void visit(UseTraitStatementPart node) {
+        super.addToPath(node);
+    }
+
+    @Override
+    public void visit(TraitMethodAliasDeclaration node) {
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(TraitConflictResolutionDeclaration node) {
+        super.visit(node);
+    }
+
+    @Override
     public void visit(ClassDeclaration node) {
+        modelBuilder.build(node, occurencesBuilder);
+        checkComments(node);
+        try {
+            super.visit(node);
+        } finally {
+            modelBuilder.reset();
+        }
+    }
+
+    @Override
+    public void visit(TraitDeclaration node) {
         modelBuilder.build(node, occurencesBuilder);
         checkComments(node);
         try {
@@ -650,11 +680,11 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         //super.visit(node);
         if (field instanceof ArrayAccess) {
             ArrayAccess access = (ArrayAccess) field;
-            scan(access.getIndex());
+            scan(access.getDimension());
             VariableBase name = access.getName();
             while (name instanceof ArrayAccess) {
                 ArrayAccess access1 = (ArrayAccess) name;
-                scan(access1.getIndex());
+                scan(access1.getDimension());
                 name = access1.getName();
             }
         }
@@ -769,7 +799,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                         declaredFields = ElementFilter.forName(NameKind.exact(name)).filter(declaredFields);
                         if (declaredFields.isEmpty()) {
                             String typeName = VariousUtils.extractVariableTypeFromExpression(rightHandSide, new HashMap<String, AssignmentImpl>());
-                            new FieldElementImpl(classScope, typeName, fieldAccessInfo);
+                            String typeFQName = VariousUtils.qualifyTypeNames(typeName, fieldAccess.getStartOffset(), scope);
+                            new FieldElementImpl(classScope, typeName, typeFQName, fieldAccessInfo);
                         }
                     }
                 }
@@ -998,15 +1029,20 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         //Scope scope = currentScope.peek();
         Scope scope = modelBuilder.getCurrentScope();
         occurencesBuilder.prepare(node, scope);
-        occurencesBuilder.prepare(Kind.CLASS, node.getClassName(), scope);
+        Expression className = node.getClassName();
+        if (className instanceof Variable) {
+            scan(className);
+        } else {
+            occurencesBuilder.prepare(Kind.CLASS, node.getClassName(), scope);
+        }
         Variable field = node.getField();
         if (field instanceof ArrayAccess) {
             ArrayAccess access = (ArrayAccess) field;
-            scan(access.getIndex());
+            scan(access.getDimension());
             VariableBase name = access.getName();
             while (name instanceof ArrayAccess) {
                 ArrayAccess access1 = (ArrayAccess) name;
-                scan(access1.getIndex());
+                scan(access1.getDimension());
                 name = access1.getName();
             }
         }
@@ -1027,16 +1063,22 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         List<? extends PhpDocTypeTagInfo> tagInfos = PhpDocTypeTagInfo.create(node, currentScope);
         for (Iterator<? extends PhpDocTypeTagInfo> it = tagInfos.iterator(); it.hasNext();) {
             PhpDocTypeTagInfo phpDocTypeTagInfo = it.next();
-            if (phpDocTypeTagInfo.getKind().equals(Kind.FIELD)) {
+            if (phpDocTypeTagInfo.getKind().equals(Kind.FIELD) && !phpDocTypeTagInfo.getName().isEmpty()) {
                 String typeName = phpDocTypeTagInfo.getTypeName();
+                StringBuilder fqNames = new StringBuilder();
                 if (typeName != null) {
                     if (sb.length() > 0) {
                         sb.append("|");//NOI18N
                     }
+                    if (fqNames.length() > 0) {
+                        fqNames.append("|"); //NOI18N
+                    }
+                    String qualifiedTypeNames = VariousUtils.qualifyTypeNames(typeName, node.getStartOffset(), currentScope);
+                    fqNames.append(qualifiedTypeNames);
                     sb.append(typeName);
                 }
                 if (currentScope instanceof ClassScope && !it.hasNext()) {
-                    new FieldElementImpl(currentScope, sb.length() > 0 ? sb.toString() : null, phpDocTypeTagInfo);
+                    new FieldElementImpl(currentScope, sb.length() > 0 ? sb.toString() : null, fqNames.length() > 0 ? fqNames.toString() : null, phpDocTypeTagInfo);
                 }
             } else if (node.getKind().equals(PHPDocTag.Type.GLOBAL) && phpDocTypeTagInfo.getKind().equals(Kind.VARIABLE)) {
                 final String typeName = phpDocTypeTagInfo.getTypeName();
@@ -1244,13 +1286,21 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             if (modelElement instanceof VariableScope) {
                 VariableScope varScope = (VariableScope) modelElement;
                 final OffsetRange blockRange = varScope.getBlockRange();
-                if (blockRange != null && blockRange.containsInclusive(offset)) {
-                    if (retval == null ||
-                            retval.getBlockRange().overlaps(varScope.getBlockRange())) {
+                if (blockRange != null) {
+                    boolean possibleScope = true;
+                    if (modelElement instanceof FunctionScope || modelElement instanceof ClassScope) {
+                        if (blockRange.getEnd() == offset) {
+                            possibleScope = false;
+                        }
+                    }
+                    if (possibleScope && blockRange.containsInclusive(offset)
+                            && (retval == null || retval.getBlockRange().overlaps(varScope.getBlockRange()))) {
                         retval = varScope;
                     }
                 }
             } else if (modelElement instanceof ClassScope) {
+                //TODO: remove this block of code
+                assert false : "This block of code should be never called (ClassScope extends VariableScope)";
                 ClassScope clsScope = (ClassScope) modelElement;
                 Collection<? extends MethodScope> allMethods = clsScope.getDeclaredMethods();
                 for (MethodScope methodScope : allMethods) {

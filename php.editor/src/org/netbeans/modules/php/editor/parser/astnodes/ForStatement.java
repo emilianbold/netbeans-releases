@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
@@ -49,7 +49,7 @@ import java.util.List;
  * <pre>e.g.<pre>
  * for (expr1; expr2; expr3)
  * 	 statement;
- * 
+ *
  * for (expr1; expr2; expr3):
  * 	 statement
  * 	 ...
@@ -92,12 +92,12 @@ public class ForStatement extends Statement {
      * Returns the live ordered list of initializer expressions in this for
      * statement.
      * <p>
-     * The list should consist of either a list of so called statement 
-     * expressions (JLS2, 14.8), or a single <code>VariableDeclarationExpression</code>. 
+     * The list should consist of either a list of so called statement
+     * expressions (JLS2, 14.8), or a single <code>VariableDeclarationExpression</code>.
      * Otherwise, the for statement would have no Java source equivalent.
      * </p>
-     * 
-     * @return the live list of initializer expressions 
+     *
+     * @return the live list of initializer expressions
      *    (element type: <code>Expression</code>)
      */
     public List<Expression> getInitializers() {
@@ -105,10 +105,10 @@ public class ForStatement extends Statement {
     }
 
     /**
-     * Returns the condition expression of this for statement, or 
+     * Returns the condition expression of this for statement, or
      * <code>null</code> if there is none.
-     * 
-     * @return the condition expression node, or <code>null</code> if 
+     *
+     * @return the condition expression node, or <code>null</code> if
      *     there is none
      */
     public List<Expression> getConditions() {
@@ -122,8 +122,8 @@ public class ForStatement extends Statement {
      * The list should consist of so called statement expressions. Otherwise,
      * the for statement would have no Java source equivalent.
      * </p>
-     * 
-     * @return the live list of update expressions 
+     *
+     * @return the live list of update expressions
      *    (element type: <code>Expression</code>)
      */
     public List<Expression> getUpdaters() {
@@ -132,7 +132,7 @@ public class ForStatement extends Statement {
 
     /**
      * Returns the body of this for statement.
-     * 
+     *
      * @return the body statement node
      */
     public Statement getBody() {

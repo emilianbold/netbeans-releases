@@ -67,7 +67,6 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
@@ -151,11 +150,7 @@ public final class LayerHandle {
                     return fs = FileUtil.createMemoryFileSystem();
                 }
             }
-            try {
-                fs = new DualLayers(new WritableXMLFileSystem(xml.getURL(), cookie = LayerUtils.cookieForFile(xml), LayerUtils.findResourceCP(project)));
-            } catch (FileStateInvalidException e) {
-                throw new AssertionError(e);
-            }
+            fs = new DualLayers(new WritableXMLFileSystem(xml.toURL(), cookie = LayerUtils.cookieForFile(xml), LayerUtils.findResourceCP(project)));
             cookie.addPropertyChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     //System.err.println("changed in mem");

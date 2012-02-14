@@ -76,7 +76,6 @@ import org.netbeans.modules.project.ui.ProjectTab;
 import org.netbeans.modules.project.ui.ProjectUtilities;
 import static org.netbeans.modules.project.ui.groups.Bundle.*;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -325,11 +324,7 @@ public abstract class Group {
     protected List<String> projectPaths() {
         List<String> urls = new ArrayList<String>();
         for (Project p : getProjects()) {
-            try {
-                urls.add(p.getProjectDirectory().getURL().toString());
-            } catch (FileStateInvalidException x) {
-                Exceptions.printStackTrace(x);
-            }
+            urls.add(p.getProjectDirectory().toURL().toString());
         }
         return urls;
     }
@@ -354,11 +349,7 @@ public abstract class Group {
         LOG.log(Level.FINE, "updating main project for {0} to {1}", new Object[] {id, mainProject});
         URL f = null;
         if (mainProject != null && getProjects().contains(mainProject)) {
-            try {
-                f = mainProject.getProjectDirectory().getURL();
-            } catch (FileStateInvalidException x) {
-                LOG.log(Level.WARNING, null, x);
-            }
+            f = mainProject.getProjectDirectory().toURL();
         }
         if (f != null) {
             prefs().put(KEY_MAIN, f.toExternalForm());

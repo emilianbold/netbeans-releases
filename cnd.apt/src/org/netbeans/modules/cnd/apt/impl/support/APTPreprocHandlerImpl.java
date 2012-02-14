@@ -76,10 +76,12 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
         this.compileContext = compileContext;
     }
     
+    @Override
     public APTMacroMap getMacroMap() {
         return macroMap;
     }
 
+    @Override
     public APTIncludeHandler getIncludeHandler() {
         return inclHandler;
     }   
@@ -87,10 +89,12 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
     ////////////////////////////////////////////////////////////////////////////
     // manage state (save/restore)
     
+    @Override
     public State getState() {
         return createStateImpl();
     }
     
+    @Override
     public void setState(State state) {
         if (state instanceof StateImpl) {
             ((StateImpl)state).restoreTo(this);
@@ -101,10 +105,12 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
         this.isValid = isValid;
     }
 
+    @Override
     public boolean isValid() {
         return isValid;
     }
     
+    @Override
     public boolean isCompileContext() {
         return compileContext;
     }
@@ -256,14 +262,17 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             return hash;
         }
                 
+        @Override
         public boolean isCompileContext() {
             return (this.attributes & COMPILE_CONTEXT_FLAG) == COMPILE_CONTEXT_FLAG;
         }
         
+        @Override
         public boolean isCleaned() {
             return (this.attributes & CLEANED_FLAG) == CLEANED_FLAG;
         }
 
+        @Override
         public boolean isValid() {
             return (this.attributes & VALID_FLAG) == VALID_FLAG;
         }

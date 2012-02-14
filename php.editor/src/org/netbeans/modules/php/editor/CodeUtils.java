@@ -74,7 +74,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation;
 import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation.Operator;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions;
+import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Parameters;
@@ -104,13 +104,34 @@ public class CodeUtils {
         return null;
     }
 
+    public static  boolean isPhp_52(FileObject file) {
+        Parameters.notNull("file", file);
+        boolean result = false;
+        PhpLanguageProperties forFileObject = PhpLanguageProperties.forFileObject(file);
+        if (forFileObject.getPhpVersion() == PhpLanguageProperties.PhpVersion.PHP_5) {
+            result = true;
+        }
+        return result;
+    }
+
     public static  boolean isPhp_53(FileObject file) {
         Parameters.notNull("file", file);
-        PhpLanguageOptions.Properties props = PhpLanguageOptions.getDefault().getProperties(file);
-        if (props.getPhpVersion() == PhpLanguageOptions.PhpVersion.PHP_53) {
-            return true;
+        boolean result = false;
+        PhpLanguageProperties forFileObject = PhpLanguageProperties.forFileObject(file);
+        if (forFileObject.getPhpVersion() == PhpLanguageProperties.PhpVersion.PHP_53) {
+            result = true;
         }
-        return false;
+        return result;
+    }
+
+    public static  boolean isPhp_54(FileObject file) {
+        Parameters.notNull("file", file);
+        boolean result = false;
+        PhpLanguageProperties forFileObject = PhpLanguageProperties.forFileObject(file);
+        if (forFileObject.getPhpVersion() == PhpLanguageProperties.PhpVersion.PHP_54) {
+            result = true;
+        }
+        return result;
     }
 
     //TODO: extracting name needs to be take into account namespaces

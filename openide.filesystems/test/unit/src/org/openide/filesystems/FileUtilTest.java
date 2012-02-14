@@ -140,7 +140,7 @@ public class FileUtilTest extends NbTestCase {
         clearWorkDir();
         lfs.setRootDirectory(getWorkDir());
         MockLookup.setInstances(new URLMapper() {
-            String rootURL = lfs.getRoot().getURL().toString();
+            String rootURL = lfs.getRoot().toURL().toString();
             @Override
             public FileObject[] getFileObjects(URL url) {
                 String u = url.toString();
@@ -220,7 +220,7 @@ public class FileUtilTest extends NbTestCase {
         final File wd = getWorkDir();
         lfs.setRootDirectory(wd);
         MockLookup.setInstances(new URLMapper() {
-            String rootURL = lfs.getRoot().getURL().toString();
+            String rootURL = lfs.getRoot().toURL().toString();
             @Override
             public FileObject[] getFileObjects(URL url) {
                 String u = url.toString();
@@ -285,13 +285,12 @@ public class FileUtilTest extends NbTestCase {
         File f = new File(getWorkDir(), "text.txt");
         CharSequence log = Log.enable(FileUtil.class.getName(), Level.FINE);
         File one = FileUtil.normalizeFile(f);
-        String msg = "FileUtil.normalizeFile for " + f;
-        if (log.toString().indexOf(msg) == -1) {
-            fail("One querfy for the file shall be in logs:\n" + log);
+        if (!log.toString().matches("(?s).*FileUtil.normalizeFile for .+text.txt.*")) {
+            fail("One query for the file shall be in logs:\n" + log);
         }
         CharSequence log2 = Log.enable(FileUtil.class.getName(), Level.FINE);
         File two = FileUtil.normalizeFile(f);
-        if (log2.toString().contains(msg)) {
+        if (log2.toString().matches("(?s).*FileUtil.normalizeFile for .+text.txt.*")) {
             fail("No second FileUtil.normalizeFile for in:\n" + log);
         }
         assertEquals("Files are equal", one, two);
@@ -356,13 +355,12 @@ public class FileUtilTest extends NbTestCase {
         String path = f.getPath();
         CharSequence log = Log.enable(FileUtil.class.getName(), Level.FINE);
         String one = FileUtil.normalizePath(path);
-        String msg = "FileUtil.normalizeFile for " + f;
-        if (log.toString().indexOf(msg) == -1) {
-            fail("One querfy for the file shall be in logs:\n" + log);
+        if (!log.toString().matches("(?s).*FileUtil.normalizeFile for .+textPath.txt.*")) {
+            fail("One query for the file shall be in logs:\n" + log);
         }
         CharSequence log2 = Log.enable(FileUtil.class.getName(), Level.FINE);
         String two = FileUtil.normalizePath(path);
-        if (log2.toString().contains(msg)) {
+        if (log2.toString().matches("(?s).*FileUtil.normalizeFile for .+textPath.txt.*")) {
             fail("No second FileUtil.normalizeFile for in:\n" + log);
         }
         assertEquals("Files are equal", one, two);

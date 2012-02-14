@@ -67,8 +67,6 @@ abstract public class AnnotationProvider {
     protected AnnotationProvider() {
     }
 
-    public abstract void registerFileStatusListener(FileStatusListener listener);
-    
     /**
      * Annotate the name of a file cluster.
      * @param name the name suggested by default

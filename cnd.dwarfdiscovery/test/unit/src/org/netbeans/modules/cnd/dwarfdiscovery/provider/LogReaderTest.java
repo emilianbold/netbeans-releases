@@ -92,6 +92,45 @@ public class LogReaderTest extends TestCase {
     }
 
     /**
+    make:
+        cc  -DAA=3   -DAA1='3' -DAA2="3" -DBB=\"3\" "-DBB1='3'" '-DBB2="3"'  -DBB3=\'3\' "-DBB4=\"3\"" -DBB5='"3"' -c qq.c
+    build log:
+        cc  -DAA=3   -DAA1='3' -DAA2="3" -DBB=\"3\" "-DBB1='3'" '-DBB2="3"'  -DBB3=\'3\' "-DBB4=\"3\"" -DBB5='"3"' -c qq.c
+    compile line:
+        cc  -DAA='3' -DAA1='3' -DAA2='3' -DBB='"3"'  -DBB1=''3'' -DBB2='"3"' -DBB3=''3''  -DBB4='"3"'  -DBB5='"3"' -c qq.c
+    exec log:
+        cc  -DAA=3   -DAA1=3   -DAA2=3   -DBB="3"    -DBB1='3'   -DBB2="3"   -DBB3='3'    -DBB4="3"    -DBB5="3"   -c qq.c
+    dwarf:
+        cc    AA=3     AA1=3     AA2=3     BB="3"      BB1='3'     BB2="3"     BB3='3'      BB4="3"      BB5="3"
+
+     * Test of scanCommandLine method, of class DwarfSource.
+     */
+    public void testProcessLine() {
+        String build   = "cc  -DAA=3   -DAA1='3' -DAA2=\"3\" -DBB=\\\"3\\\" \"-DBB1='3'\" '-DBB2=\"3\"'  -DBB3=\\\'3\\\' \"-DBB4=\\\"3\\\"\" -DBB5='\"3\"' -c qq.c";
+        String compile = "cc  -DAA='3' -DAA1='3' -DAA2='3' -DBB='\"3\"'  -DBB1=''3'' -DBB2='\"3\"' -DBB3=''3''  -DBB4='\"3\"'  -DBB5='\"3\"' -c qq.c";
+        String exec    = "cc  -DAA=3   -DAA1=3   -DAA2=3   -DBB=\"3\"    -DBB1='3'   -DBB2=\"3\"   -DBB3='3'    -DBB4=\"3\"    -DBB5=\"3\" -c qq.c";
+        String expResult =
+                      "Source:qq.c\n"+
+                      "Macros:\n"+
+                      "AA=3\n"+
+                      "AA1=3\n"+
+                      "AA2=3\n"+
+                      "BB=\"3\"\n"+
+                      "BB1='3'\n"+
+                      "BB2=\"3\"\n"+
+                      "BB3='3'\n"+
+                      "BB4=\"3\"\n"+
+                      "BB5=\"3\"\n"+
+                      "Paths:";
+        String result = processLine(build, DiscoveryUtils.LogOrigin.BuildLog);
+        assertDocumentText(build, expResult, result);
+        result = processLine(compile, DiscoveryUtils.LogOrigin.DwarfCompileLine);
+        assertDocumentText(compile, expResult, result);
+        result = processLine(exec, DiscoveryUtils.LogOrigin.ExecLog);
+        assertDocumentText(exec, expResult, result);
+    }
+   
+    /**
      * Test of scanCommandLine method, of class DwarfSource.
      */
     public void testLinuxCommandLine() {
@@ -119,9 +158,10 @@ public class LogReaderTest extends TestCase {
                       "/export/home/av202691/NetBeansProjects/linux-2.6.28-gentoo-r5/arch/x86/include\n"+
                       "include/linux/autoconf.h\n"+
                       "arch/x86/include/asm/mach-default";
-        String result = processLine(line, true);
+        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
     }
+    
     /**
      * Test of scanCommandLine method, of class DwarfSource.
      */
@@ -140,7 +180,7 @@ public class LogReaderTest extends TestCase {
                       "SOFTOKEN_SHLIB_VERSION=\"3\"\n"+
                       "USE_UTIL_DIRECTLY\n"+
                       "Paths:";
-        String result = processLine(line, true);
+        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
     }
 
@@ -151,7 +191,7 @@ public class LogReaderTest extends TestCase {
     public void testFirefoxCommandLine() {
         String line = "c++ -o nsDependentString.o -c -I../../../dist/include/system_wrappers "+
                       "-include /mozilla-1.9.1/config/gcc_hidden.h "+
-                      "-DMOZILLA_INTERNAL_API -DOSTYPE=\"Linux2.6\" -DOSARCH=Linux -D_IMPL_NS_COM  "+
+                      "-DMOZILLA_INTERNAL_API -DOSTYPE=\\\"Linux2.6\\\" -DOSARCH=Linux -D_IMPL_NS_COM  "+
                       "-I/mozilla-1.9.1/xpcom/string/src -I. "+
                       "-I../../../dist/include/xpcom -I../../../dist/include   -I../../../dist/include/string "+
                       "-I/mozilla-1.9.1/ff-dbg/dist/include/nspr       "+
@@ -183,7 +223,7 @@ public class LogReaderTest extends TestCase {
                       "../../../dist/include/string\n"+
                       "/mozilla-1.9.1/ff-dbg/dist/include/nspr\n"+
                       "../../../mozilla-config.h";
-        String result = processLine(line, true);
+        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
     }
 
@@ -224,7 +264,7 @@ public class LogReaderTest extends TestCase {
     public void testScanCommandLine() {
         String line = "/set/c++/bin/5.9/intel-S2/prod/bin/CC -c -g -DHELLO=75 -Idist  main.cc -Qoption ccfe -prefix -Qoption ccfe .XAKABILBpivFlIc.";
         String expResult = "Source:main.cc\nMacros:\nHELLO=75\nPaths:\ndist";
-        String result = processLine(line, true);
+        String result = processLine(line, DiscoveryUtils.LogOrigin.DwarfCompileLine);
         assertDocumentText(line, expResult, result);
     }
 
@@ -251,66 +291,7 @@ public class LogReaderTest extends TestCase {
                 "/export/opensolaris/testws77/usr/src/common\n" +
                 "../../intel" +
                 "\n../../common";
-        String result = processLine(line, false);
-        assertDocumentText(line, expResult, result);
-    }
-
-    /**
-     * Test of scanCommandLine method, of class DwarfSource.
-     */
-    public void testScanCommandLine3() {
-        String line =
-                "+ /opt/SUNWspro/bin/cc -xO3 -xarch=amd64 -Ui386 -U__i386 -K pic -Xa -xildoff -errtags=yes " +
-                "-errwarn=%all -erroff=E_EMPTY_TRANSLATION_UNIT -erroff=E_STATEMENT_NOT_REACHED " +
-                "-erroff=E_UNRECOGNIZED_PRAGMA_IGNORED -xc99=%all -D_XOPEN_SOURCE=600 " +
-                "-D__EXTENSIONS__=1 -W0,-xglobalstatic -v -xstrconst -g -xc99=%all " +
-                "-D_XOPEN_SOURCE=600 -D__EXTENSIONS__=1 -W0,-noglobal -xdebugformat=stabs " +
-                "-DTEXT_DOMAIN=\"SUNW_OST_OSLIB\" -D_TS_ERRNO -Isrc/cmd/ksh93 " +
-                "-I../common/include -I/export/home/thp/opensolaris/proto/root_i386/usr/include/ast " +
-                "-DKSHELL -DSHOPT_BRACEPAT -DSHOPT_CMDLIB_BLTIN=0 -DSH_CMDLIB_DIR=\"/usr/ast/bin\" " +
-                "-DSHOPT_CMDLIB_HDR=\"solaris_cmdlist.h\" -DSHOPT_DYNAMIC -DSHOPT_ESH " +
-                "-DSHOPT_FILESCAN -DSHOPT_HISTEXPAND -DSHOPT_KIA -DSHOPT_MULTIBYTE " +
-                "-DSHOPT_NAMESPACE -DSHOPT_OPTIMIZE -DSHOPT_PFSH -DSHOPT_RAWONLY " +
-                "-DSHOPT_SUID_EXEC -DSHOPT_SYSRC -DSHOPT_VSH -D_BLD_shell " +
-                "-D_PACKAGE_ast -DERROR_CONTEXT_T=Error_context_t " +
-                "-DUSAGE_LICENSE= \"[-author?David Korn <dgk@research.att.com>]\" \"[-copyright?Copyright (c) 1982-2007 AT&T Knowledge Ventures]\" \"[-license?http://www.opensource.org/licenses/cpl1.0.txt]\" \"[--catalog?libshell]\" " +
-                "-DPIC -D_REENTRANT -c -o pics/data/builtins.o ../common/data/builtins.c";
-        String expResult = "Source:../common/data/builtins.c\n" +
-                "Macros:\n" +
-                "ERROR_CONTEXT_T=Error_context_t\n" +
-                "KSHELL\n" +
-                "PIC\n" +
-                "SHOPT_BRACEPAT\n" +
-                "SHOPT_CMDLIB_BLTIN=0\n" +
-                "SHOPT_CMDLIB_HDR=\"solaris_cmdlist.h\"\n" +
-                "SHOPT_DYNAMIC\n" +
-                "SHOPT_ESH\n" +
-                "SHOPT_FILESCAN\n" +
-                "SHOPT_HISTEXPAND\n" +
-                "SHOPT_KIA\n" +
-                "SHOPT_MULTIBYTE\n" +
-                "SHOPT_NAMESPACE\n" +
-                "SHOPT_OPTIMIZE\n" +
-                "SHOPT_PFSH\n" +
-                "SHOPT_RAWONLY\n" +
-                "SHOPT_SUID_EXEC\n" +
-                "SHOPT_SYSRC\n" +
-                "SHOPT_VSH\n" +
-                "SH_CMDLIB_DIR=\"/usr/ast/bin\"\n" +
-                "TEXT_DOMAIN=\"SUNW_OST_OSLIB\"\n" +
-                "USAGE_LICENSE=\"[-author?David Korn <dgk@research.att.com>]\" \"[-copyright?Copyright (c) 1982-2007 AT&T Knowledge Ventures]\" \"[-license?http://www.opensource.org/licenses/cpl1.0.txt]\" \"[--catalog?libshell]\"\n" +
-                "_BLD_shell\n" +
-                "_PACKAGE_ast\n" +
-                "_REENTRANT\n" +
-                "_TS_ERRNO\n" +
-                "_XOPEN_SOURCE=600\n" +
-                "__EXTENSIONS__=1\n" +
-                "Paths:\n" +
-                "src/cmd/ksh93\n" +
-                "../common/include\n" +
-                "/export/home/thp/opensolaris/proto/root_i386/usr/include/ast";
-
-        String result = processLine(line, false);
+        String result = processLine(line, DiscoveryUtils.LogOrigin.DwarfCompileLine);
         assertDocumentText(line, expResult, result);
     }
 
@@ -323,7 +304,7 @@ public class LogReaderTest extends TestCase {
                 "-erroff=E_STATEMENT_NOT_REACHED -erroff=E_UNRECOGNIZED_PRAGMA_IGNORED -xc99=%all " +
                 "-D_XOPEN_SOURCE=600 -D__EXTENSIONS__=1    -W0,-xglobalstatic -v  -xstrconst -g " +
                 "-xc99=%all -D_XOPEN_SOURCE=600 -D__EXTENSIONS__=1 -W0,-noglobal -_gcc=-fno-dwarf2-indirect-strings " +
-                "-xdebugformat=stabs -DTEXT_DOMAIN=\"SUNW_OST_OSLIB\" -D_TS_ERRNO  " +
+                "-xdebugformat=stabs -DTEXT_DOMAIN=\\\"SUNW_OST_OSLIB\\\" -D_TS_ERRNO  " +
                 "-Isrc/cmd/ksh93  -I../common/include  -I/export/home/thp/opensolaris/proto/root_i386/usr/include/ast  " +
                 "-DKSHELL  -DSHOPT_BRACEPAT  -DSHOPT_CMDLIB_BLTIN=0  '-DSH_CMDLIB_DIR=\"/usr/ast/bin\"'  " +
                 "'-DSHOPT_CMDLIB_HDR=\"solaris_cmdlist.h\"'  -DSHOPT_DYNAMIC  -DSHOPT_ESH  -DSHOPT_FILESCAN  " +
@@ -368,7 +349,7 @@ public class LogReaderTest extends TestCase {
                 "src/cmd/ksh93\n" +
                 "../common/include\n" +
                 "/export/home/thp/opensolaris/proto/root_i386/usr/include/ast";
-        String result = processLine(line, true);
+        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
     }
 
@@ -411,7 +392,7 @@ public class LogReaderTest extends TestCase {
                 "../../../libjava/../libffi/include\n" +
                 "../libffi/include\n" +
                 "/usr/openwin/include";
-        String result = processLine(line, false);
+        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
     }
 
@@ -434,7 +415,7 @@ public class LogReaderTest extends TestCase {
                 "Paths:\n" +
                 ".\n" +
                 "../include";
-        String result = processLine(line, false);
+        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
     }
 
@@ -545,15 +526,15 @@ public class LogReaderTest extends TestCase {
                 "ENABLE_SERVER_SOCKET=1\n"+
                 "ENABLE_VM_PROFILES=0\n"+
                 "ENABLE_WTK_DEBUG=0\n"+
-                "FULL_VERSION='\"ap160621:11.28.08-19:33\"'\n"+
+                "FULL_VERSION=\"ap160621:11.28.08-19:33\"\n"+
                 "HARDWARE_LITTLE_ENDIAN=1\n"+
                 "HOST_LITTLE_ENDIAN=1\n"+
-                "IMPL_VERSION='\"\"'\n"+
-                "JVM_BUILD_VERSION='internal'\n"+
-                "JVM_NAME='phoneME Feature VM'\n"+
-                "JVM_RELEASE_VERSION='1.1'\n"+
-                "PROJECT_NAME='\"Sun Java Wireless Client\"'\n"+
-                "RELEASE='\"ap160621:11.28.08-19:33\"'\n"+
+                "IMPL_VERSION=\"\"\n"+
+                "JVM_BUILD_VERSION=internal\n"+
+                "JVM_NAME=phoneME Feature VM\n"+
+                "JVM_RELEASE_VERSION=1.1\n"+
+                "PROJECT_NAME=\"Sun Java Wireless Client\"\n"+
+                "RELEASE=\"ap160621:11.28.08-19:33\"\n"+
                 "REQUIRES_JVMCONFIG_H=1\n"+
                 "ROMIZING\n"+
                 "WIN32\n"+
@@ -654,14 +635,14 @@ public class LogReaderTest extends TestCase {
                 "/ws/cheetah/midp/src/links/include\n"+
                 "/ws/cheetah/jsr135/src/cldc_application/native/common\n"+
                 "/ws/cheetah/jsr135/src/share/components/direct-player/native";
-        String result = processLine(line, true);
+        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
         LogReader.LineInfo li = LogReader.testCompilerInvocation(line);
         assert li.compilerType == LogReader.CompilerType.CPP;
     }
 
 
-    private String processLine(String line, boolean isScriptOutput) {
+    private String processLine(String line, DiscoveryUtils.LogOrigin isScriptOutput) {
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new TreeMap<String, String>();
         line = LogReader.trimBackApostropheCalls(line, null);
@@ -734,7 +715,7 @@ public class LogReaderTest extends TestCase {
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
         List<String> languageArtifacts = new ArrayList<String>();
-        List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(line, true, userIncludes, userMacros, null, languageArtifacts, null, false);
+        List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.BuildLog, userIncludes, userMacros, null, languageArtifacts, null, false);
         assertTrue(sourcesList.size() == size);
         for(String what :sourcesList) {
             CommandLineSource cs = new CommandLineSource(li, languageArtifacts, "/", what, userIncludes, userMacros, null);

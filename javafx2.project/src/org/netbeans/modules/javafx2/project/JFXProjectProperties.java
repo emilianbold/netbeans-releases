@@ -84,6 +84,8 @@ public final class JFXProjectProperties {
 
     public static final String JAVAFX_ENABLED = "javafx.enabled"; // NOI18N
     public static final String JAVAFX_PRELOADER = "javafx.preloader"; // NOI18N
+    public static final String JAVAFX_DISABLE_AUTOUPDATE = "javafx.disable.autoupdate"; // NOI18N
+    public static final String JAVAFX_DISABLE_AUTOUPDATE_NOTIFICATION = "javafx.disable.autoupdate.notification"; // NOI18N
     
     /** The standard extension for FXML source files. */
     public static final String FXML_EXTENSION = "fxml"; // NOI18N    
@@ -411,6 +413,17 @@ public final class JFXProjectProperties {
     
     /** Keeps singleton instance of JFXProjectProperties for any fx project for which property customizer is opened at once */
     private static Map<String, JFXProjectProperties> propInstance = new TreeMap<String, JFXProjectProperties>();
+
+    /** Keeps set of category markers used to identify validity of JFXProjectProperties instance */
+    private Set<String> instanceMarkers = new TreeSet<String>();
+    
+    public void markInstance(@NonNull String marker) {
+        instanceMarkers.add(marker);
+    }
+    
+    public boolean isInstanceMarked(@NonNull String marker) {
+        return instanceMarkers.contains(marker);
+    }
     
     /** Factory method */
     public static JFXProjectProperties getInstance(Lookup context) {
@@ -424,6 +437,38 @@ public final class JFXProjectProperties {
         return prop;
     }
 
+    /** Factory method 
+     * This is to prevent reuse of the same instance after the properties dialog
+     * has been cancelled. Called by each FX category provider at the time
+     * when properties dialog is opened, it checks/stores category-specific marker strings. 
+     * Previous existence of marker string indicates that properties dialog had been opened
+     * before and ended by Cancel, otherwise this instance would not exist (OK would
+     * cause properties to be saved and the instance deleted by a call to JFXProjectProperties.cleanup()).
+     * (Note that this is a workaround to avoid adding listener to properties dialog close event.)
+     * 
+     * @param category marker string to indicate which category provider is calling this
+     * @return instance of JFXProjectProperties shared among category panels in the current Project Properties dialog only
+     */
+    public static JFXProjectProperties getInstancePerSession(Lookup context, String category) {
+        Project proj = context.lookup(Project.class);
+        String projDir = proj.getProjectDirectory().getPath();
+        JFXProjectProperties prop = propInstance.get(projDir);
+        if(prop != null) {
+            if(prop.isInstanceMarked(category)) {
+                // category marked before - create new instance to avoid reuse after Cancel
+                prop = null;
+            } else {
+                prop.markInstance(category);
+            }
+        }
+        if(prop == null) {
+            prop = new JFXProjectProperties(context);
+            propInstance.put(projDir, prop);
+            prop.markInstance(category);
+        }
+        return prop;
+    }
+    
     /** Getter method */
     public static JFXProjectProperties getInstanceIfExists(Project proj) {
         assert proj != null;
@@ -605,7 +650,7 @@ public final class JFXProjectProperties {
             // can be ignored
         }
         for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER_ENABLED, PRELOADER_TYPE, PRELOADER_PROJECT, PRELOADER_JAR_PATH, PRELOADER_JAR_FILENAME, PRELOADER_CLASS, 
-                                        RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLTEMPLATE, RUN_IN_BROWSER, RUN_AS}) {
+                                        RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLTEMPLATE, RUN_IN_BROWSER, RUN_IN_BROWSER_PATH, RUN_AS}) {
             String v = ep.getProperty(prop);
             if (v == null) {
                 v = pep.getProperty(prop);
@@ -621,9 +666,9 @@ public final class JFXProjectProperties {
             def.put(RUN_APP_HEIGHT, DEFAULT_APP_HEIGHT);
         }
         m.put(null, def);
-        FileObject configs = project.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
-        if (configs != null) {
-            for (FileObject kid : configs.getChildren()) {
+        FileObject configsFO = project.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
+        if (configsFO != null) {
+            for (FileObject kid : configsFO.getChildren()) {
                 if (!kid.hasExt("properties")) { // NOI18N
                     continue;
                 }
@@ -636,9 +681,9 @@ public final class JFXProjectProperties {
                 m.put(kid.getName(), new TreeMap<String,String>(cep) );
             }
         }
-        configs = project.getProjectDirectory().getFileObject("nbproject/private/configs"); // NOI18N
-        if (configs != null) {
-            for (FileObject kid : configs.getChildren()) {
+        configsFO = project.getProjectDirectory().getFileObject("nbproject/private/configs"); // NOI18N
+        if (configsFO != null) {
+            for (FileObject kid : configsFO.getChildren()) {
                 if (!kid.hasExt("properties")) { // NOI18N
                     continue;
                 }
@@ -712,9 +757,9 @@ public final class JFXProjectProperties {
         }       
         p.put(null, def);
 
-        FileObject configs = project.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
-        if (configs != null) {
-            for (FileObject kid : configs.getChildren()) {
+        FileObject configsFO = project.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
+        if (configsFO != null) {
+            for (FileObject kid : configsFO.getChildren()) {
                 if (!kid.hasExt("properties")) { // NOI18N
                     continue;
                 }
@@ -747,9 +792,9 @@ public final class JFXProjectProperties {
                 p.put(kid.getName(), params );
             }
         }
-        configs = project.getProjectDirectory().getFileObject("nbproject/private/configs"); // NOI18N
-        if (configs != null) {
-            for (FileObject kid : configs.getChildren()) {
+        configsFO = project.getProjectDirectory().getFileObject("nbproject/private/configs"); // NOI18N
+        if (configsFO != null) {
+            for (FileObject kid : configsFO.getChildren()) {
                 if (!kid.hasExt("properties")) { // NOI18N
                     continue;
                 }
@@ -838,6 +883,14 @@ public final class JFXProjectProperties {
             }
         }
     }
+
+    private boolean removePropertyIfEmptyInConfig(@NonNull Map<String, String> c, @NonNull String prop, @NonNull EditableProperties props) {
+        if( !c.containsKey(prop) && props.containsKey(prop) ) {
+            props.remove(prop);
+            return true;
+        }
+        return false;
+    }
     
     /**
      * A royal mess. (modified from J2SEProjectProperties)
@@ -848,13 +901,14 @@ public final class JFXProjectProperties {
         //System.err.println("storeRunConfigs: " + configs);
         Map<String,String> def = configs.get(null);
         for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER_ENABLED, PRELOADER_TYPE, PRELOADER_PROJECT, PRELOADER_JAR_PATH, PRELOADER_JAR_FILENAME, PRELOADER_CLASS, 
-                                        RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLTEMPLATE, RUN_IN_BROWSER, RUN_AS}) {
+                                        RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLTEMPLATE, RUN_IN_BROWSER, RUN_IN_BROWSER_PATH, RUN_AS}) {
             String v = def.get(prop);
             EditableProperties ep =
                     (//prop.equals(APPLICATION_ARGS) ||
                     prop.equals(RUN_WORK_DIR)  ||
                     prop.equals(RUN_IN_HTMLTEMPLATE)  ||
                     prop.equals(RUN_IN_BROWSER)  ||
+                    prop.equals(RUN_IN_BROWSER_PATH)  ||
                     prop.equals(RUN_AS)  ||
                     privateProperties.containsKey(prop)) ?
                 privateProperties : projectProperties;
@@ -918,6 +972,7 @@ public final class JFXProjectProperties {
                          prop.equals(RUN_WORK_DIR) ||
                          prop.equals(RUN_IN_HTMLTEMPLATE)  ||
                          prop.equals(RUN_IN_BROWSER)  ||
+                         prop.equals(RUN_IN_BROWSER_PATH)  ||
                          prop.equals(RUN_AS)  ||
                          privateCfgProps.containsKey(prop)) ?
                     privateCfgProps : sharedCfgProps;
@@ -930,6 +985,17 @@ public final class JFXProjectProperties {
                     privatePropsChanged |= ep == privateCfgProps;
                 }
             }
+            for (String prop : new String[] {RUN_IN_BROWSER, RUN_IN_BROWSER_PATH}) {
+                privatePropsChanged |= removePropertyIfEmptyInConfig(c, prop, privateCfgProps);
+            }
+//            if( !c.containsKey(RUN_IN_BROWSER) && privateCfgProps.containsKey(RUN_IN_BROWSER) ) {
+//                privateCfgProps.remove(RUN_IN_BROWSER);
+//                privatePropsChanged = true;
+//            }
+//            if( !c.containsKey(RUN_IN_BROWSER_PATH) && privateCfgProps.containsKey(RUN_IN_BROWSER_PATH) ) {
+//                privateCfgProps.remove(RUN_IN_BROWSER_PATH);
+//                privatePropsChanged = true;
+//            }
             index = 0;
             List<Map<String,String/*|null*/>> paramsConfig = params.get(config);
             if(paramsConfig != null) {
@@ -1227,7 +1293,6 @@ public final class JFXProjectProperties {
         final FileObject projPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         final EditableProperties pep = new EditableProperties(true);
         final FileObject privPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        final String selectedBrowserPath = getSelectedBrowserPath();
         
         try {
             final InputStream is = projPropsFO.getInputStream();
@@ -1251,9 +1316,6 @@ public final class JFXProjectProperties {
                     }
                     fxPropGroup.store(ep);
                     storeRest(ep, pep);
-                    if(selectedBrowserPath != null) {
-                        pep.setProperty(RUN_IN_BROWSER_PATH, selectedBrowserPath);
-                    }
                     storeRunConfigs(RUN_CONFIGS, APP_PARAMS, ep, pep);
                     storeActiveConfig();
                     OutputStream os = null;
@@ -1430,13 +1492,13 @@ public final class JFXProjectProperties {
         }
     }
 
-    private String getSelectedBrowserPath() {
-        if (browserPaths == null) {
-            return null;
-        }
-        String selectedName = configsGet(activeConfig).get(RUN_IN_BROWSER);
-        return browserPaths.get(selectedName);
-    }
+//    private String getSelectedBrowserPath() {
+//        if (browserPaths == null) {
+//            return null;
+//        }
+//        String selectedName = configsGet(activeConfig).get(RUN_IN_BROWSER);
+//        return browserPaths.get(selectedName);
+//    }
     
     public class PreloaderClassComboBoxModel extends DefaultComboBoxModel {
         

@@ -13,5 +13,8 @@ import javax.ejb.Remote;
  */
 @Remote
 public interface ${name} {
-    
+
+<#if timerExist && exposeTimer>
+    public void myTimer();
+</#if>
 }

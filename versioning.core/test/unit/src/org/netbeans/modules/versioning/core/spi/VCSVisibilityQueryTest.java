@@ -80,6 +80,7 @@ public class VCSVisibilityQueryTest extends NbTestCase {
     public void testVQ() throws FileStateInvalidException, IOException, Exception {
         File folder = new File(getWorkDir(), TestVCS.VERSIONED_FOLDER_SUFFIX);
         folder.mkdirs();
+        new File(folder, TestVCS.TEST_VCS_METADATA).mkdirs();
         
         VQChangeListener cl = new VQChangeListener();
         VisibilityQuery.getDefault().addChangeListener(cl);

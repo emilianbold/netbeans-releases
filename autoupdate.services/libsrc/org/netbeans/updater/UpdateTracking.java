@@ -849,8 +849,7 @@ public final class UpdateTracking {
                     parentDir = p != null ? p.getName() : "";
                 }
                 needToWrite = needToWrite || n.indexOf(ModuleDeactivator.MODULES) >= 0 || osgi;
-                if (n.endsWith(".jar")) {
-                    // NOI18N
+                if (n.endsWith(".jar") && ! parentDir.equals("ext")) { // NOI18N
                     // ok, module candidate
                     candidate = f.getName();
                     // the correct candidate looks as e.g. org.netbeans.modules.mymodule

@@ -60,6 +60,7 @@ import org.netbeans.modules.css.lib.nbparser.CssParser;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -69,12 +70,19 @@ public class TestUtil {
     
     public static final String bodysetPath = "styleSheet/body/bodyItem/";
 
-    public static CssParserResult parse(String code) throws BadLocationException, ParseException {
-        Document doc = new PlainDocument();
-        doc.putProperty("mimeType", "text/x-css");
-        doc.insertString(0, code, null);
-        Source source = Source.create(doc);
-        return parse(source);
+    public static CssParserResult parse(String code) {
+        try {
+            Document doc = new PlainDocument();
+            doc.putProperty("mimeType", "text/x-css");
+            doc.insertString(0, code, null);
+            Source source = Source.create(doc);
+            return parse(source);
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 
     public static CssParserResult parse(FileObject file) throws ParseException, BadLocationException, IOException {
@@ -83,7 +91,7 @@ public class TestUtil {
         StringBuilder builder = new StringBuilder();
 
         char[] buffer = new char[8096];
-        int read = 0;
+        int read;
         while ((read = reader.read(buffer)) > 0) {
             builder.append(buffer, 0, read);
         }

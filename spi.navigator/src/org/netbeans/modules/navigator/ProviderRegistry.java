@@ -60,7 +60,7 @@ import org.openide.util.lookup.Lookups;
 class ProviderRegistry {
     
     /** folder in layer file system where navigator panels are searched for */
-    private static final String PANELS_FOLDER = "/Navigator/Panels/"; //NOI18N
+    static final String PANELS_FOLDER = "Navigator/Panels/"; //NOI18N
     /** template for finding all NavigatorPanel instances in lookup */
     private static final Lookup.Template<NavigatorPanel> NAV_PANEL_TEMPLATE = 
             new Lookup.Template<NavigatorPanel>(NavigatorPanel.class);

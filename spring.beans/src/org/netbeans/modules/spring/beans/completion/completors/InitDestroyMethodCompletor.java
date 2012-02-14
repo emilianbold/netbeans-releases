@@ -77,6 +77,6 @@ public class InitDestroyMethodCompletor extends JavaMethodCompletor {
     protected String getTypeName(CompletionContext context) {
         Node beanTag = SpringXMLConfigEditorUtils.getBean(context.getTag());
         return new BeanClassFinder(SpringXMLConfigEditorUtils.getTagAttributes(beanTag),
-                context.getFileObject()).findImplementationClass();
+                context.getFileObject()).findImplementationClass(true);
     }
 }

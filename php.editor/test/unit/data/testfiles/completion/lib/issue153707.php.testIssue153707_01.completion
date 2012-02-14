@@ -12,11 +12,15 @@ PACKAGE    Data                            [PUBLIC]   null
 PACKAGE    Extra                           [PUBLIC]   null
 PACKAGE    ExtraThrow                      [PUBLIC]   null
 PACKAGE    Foo                             [PUBLIC]   null
+PACKAGE    MC                              [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
 PACKAGE    MySpaceThrow                    [PUBLIC]   null
+PACKAGE    Nette                           [PUBLIC]   null
 PACKAGE    Package1                        [PUBLIC]   null
 PACKAGE    Package2                        [PUBLIC]   null
 PACKAGE    Shit                            [PUBLIC]   null
+PACKAGE    ShowMe                          [PUBLIC]   null
+PACKAGE    TC                              [PUBLIC]   null
 PACKAGE    Test204925_01_C                 [PUBLIC]   null
 PACKAGE    Test204925_01_P                 [PUBLIC]   null
 PACKAGE    Test204925_02_C                 [PUBLIC]   null
@@ -33,6 +37,7 @@ PACKAGE    Test204925_07_C                 [PUBLIC]   null
 PACKAGE    Test204925_07_P                 [PUBLIC]   null
 PACKAGE    Test204925_08_C                 [PUBLIC]   null
 PACKAGE    Test204925_08_P                 [PUBLIC]   null
+PACKAGE    Testing                         [PUBLIC]   null
 PACKAGE    XUser                           [PUBLIC]   null
 CLASS      Book                            [PUBLIC]   issue153707.php
 VARIABLE   ? $name                         [PUBLIC]   issue153707.php
@@ -41,13 +46,17 @@ KEYWORD    parent::                                   null
 KEYWORD    self::                                     null
 KEYWORD    static::                                   null
 ------------------------------------
+PACKAGE    Application                     [PUBLIC]   Nette
 PACKAGE    BNS                             [PUBLIC]   ANS
 PACKAGE    Base                            [PUBLIC]   Brite
 PACKAGE    Controller                      [PUBLIC]   Brite
 PACKAGE    Data                            [PUBLIC]   Shit
 PACKAGE    NNS                             [PUBLIC]   CNS
+PACKAGE    Ns                              [PUBLIC]   Testing
 PACKAGE    Test                            [PUBLIC]   App
+PACKAGE    UI                              [PUBLIC]   Nette\Application
 PACKAGE    User                            [PUBLIC]   Package2
+PACKAGE    Utils                           [PUBLIC]   Nette
 PACKAGE    a                               [PUBLIC]   Test204925_06_P
 PACKAGE    a                               [PUBLIC]   Test204925_07_P
 PACKAGE    a                               [PUBLIC]   Test204925_08_P
@@ -72,17 +81,24 @@ CLASS      A                               [PUBLIC]   test.php
 CLASS      A135618                         [PUBLIC]   issue135618.php
 CLASS      AA                              [PUBLIC]   Test197084.php
 CLASS      Admin                           [PUBLIC]   Admin
+CLASS      AnonymousObject                 [PUBLIC]   anonymousObjectVariables.php
+CLASS      ArraysCc                        [PUBLIC]   arrays.php
 CLASS      Author                          [PUBLIC]   mixedtypes.php
 CLASS      Author_1                        [PUBLIC]   mixedtypes_1.php
 CLASS      B                               [PUBLIC]   Test197084.php
 CLASS      B                               [PUBLIC]   test.php
 CLASS      B135618                         [PUBLIC]   issue135618.php
+CLASS      BadRequestException             [PUBLIC]   Nette\Application
 CLASS      Bar                             [PUBLIC]   issue191666.php
+CLASS      BaseClass                       [PUBLIC]   traits.php
 CLASS      Basic142234                     [PUBLIC]   issue142234.php
+CLASS      Blah                            [PUBLIC]   Testing\Ns
 CLASS      Book                            [PUBLIC]   issue197453.php
 CLASS      Book                            [PUBLIC]   mixedtypes.php
 CLASS      Book_1                          [PUBLIC]   mixedtypes_1.php
+CLASS      Buuu                            [PUBLIC]   ShowMe
 CLASS      C                               [PUBLIC]   test.php
+CLASS      CallableClass                   [PUBLIC]   callableTypeHint.php
 CLASS      ChildClass                      [PUBLIC]   class_member_visibility.php
 CLASS      ChildInterface                  [PUBLIC]   interfaces.php
 CLASS      ClassName                       [PUBLIC]   issue194300.php
@@ -99,6 +115,7 @@ CLASS      ClsDeclarationTest              [PUBLIC]   clsDeclaration02.php
 CLASS      ClsFromFactory                  [PUBLIC]   issue144830.php
 CLASS      ClsFromFactory                  [PUBLIC]   issue144840_01.php
 CLASS      ComplexObject                   [PUBLIC]   issue159970.php
+CLASS      Control                         [PUBLIC]   Nette\Application\UI
 CLASS      Controller                      [PUBLIC]   Brite\Controller
 CLASS      DatabaseRecord                  [PUBLIC]   DatabaseRecord.php
 CLASS      EmptyClass                      [PUBLIC]   issue194875.php
@@ -112,13 +129,17 @@ CLASS      ExMyExceptionFromNs             [PUBLIC]   Extra
 CLASS      ExMyExceptionFromNs             [PUBLIC]   ExtraThrow
 CLASS      Exception                       [PUBLIC]   MySpace
 CLASS      Exception                       [PUBLIC]   MySpaceThrow
+CLASS      Exception                       [PUBLIC]   Nette\Application
+CLASS      Exception                       [PUBLIC]   exceptions.php
 CLASS      Exception                       [PUBLIC]   issue194875.php
 CLASS      Exception                       [PUBLIC]   issue201310.php
 CLASS      Exception1                      [PUBLIC]   issue204958.php
+CLASS      ExceptionClassName              [PUBLIC]   issue207594.php
 CLASS      Foo                             [PUBLIC]   issue159970.php
 CLASS      Foo                             [PUBLIC]   issue191666.php
 CLASS      Foo                             [PUBLIC]   test203294.php
 CLASS      ForClsCtxCodeCompletion         [PUBLIC]   insideClass3.php
+CLASS      ForbiddenRequestException       [PUBLIC]   Nette\Application
 CLASS      HTML                            [PUBLIC]   html.php
 CLASS      HTMLbase                        [PUBLIC]   htmlbase.php
 CLASS      Hello146648                     [PUBLIC]   issue146648.php
@@ -144,6 +165,7 @@ CLASS      Magazine_1                      [PUBLIC]   mixedtypes_1.php
 CLASS      MagicMethods                    [PUBLIC]   issue196714.php
 CLASS      MethodExample                   [PUBLIC]   test201870.php
 CLASS      Mine                            [PUBLIC]   tests144653.php
+CLASS      MockClass                       [PUBLIC]   MC
 CLASS      MyAbstractClass                 [PUBLIC,   issue200795.php
 CLASS      MyIface                         [PUBLIC]   insideInterface.php
 CLASS      MyNonAbstractClass              [PUBLIC]   issue200795.php
@@ -158,14 +180,19 @@ CLASS      ParentInterface                 [PUBLIC]   interfaces.php
 CLASS      Person148213                    [PUBLIC]   issue148213.php
 CLASS      PhpDoc01Magazine                [PUBLIC]   typeInPHPDoc01.php
 CLASS      PhpDoc01News                    [PUBLIC]   typeInPHPDoc01.php
+CLASS      Presenter                       [PUBLIC]   Nette\Application\UI
+CLASS      PresenterComponent              [PUBLIC]   Nette\Application\UI
 CLASS      Request                         [PUBLIC]   Brite\Base
 CLASS      SimpleObject                    [PUBLIC,   issue159970.php
 CLASS      SmartCompletion                 [PUBLIC]   issue201032.php
+CLASS      Strings                         [PUBLIC]   Nette\Utils
 CLASS      SubClass157534                  [PUBLIC]   issue157534.php
 CLASS      SuperClass157534                [PUBLIC]   issue157534.php
 CLASS      SuperUser                       [PUBLIC]   XUser
 CLASS      System147427                    [PUBLIC]   issue147427.php
+CLASS      TaskList                        [PUBLIC]   TaskList.php
 CLASS      Test                            [PUBLIC]   issue142024.php
+CLASS      Test1                           [PUBLIC]   test207188.php
 CLASS      Test141999                      [PUBLIC]   issue141999.php
 CLASS      Test142234                      [PUBLIC]   issue142234.php
 CLASS      Test144409                      [PUBLIC]   issue144409.php
@@ -202,6 +229,7 @@ CLASS      Test204925_08_A                 [PUBLIC]   Test204925_08_P\a\b\c
 CLASS      Test204925_08_B                 [PUBLIC]   Test204925_08_C\d\e\f
 CLASS      TestCCOnMethods                 [PUBLIC]   test_cc_on_methods.php
 CLASS      TestCCOnMethodsParentClass      [PUBLIC]   test_cc_on_methods.php
+CLASS      TestCase                        [PUBLIC]   TC
 CLASS      TestClass                       [PUBLIC]   Extra
 CLASS      TestClass                       [PUBLIC]   function_return_type.php
 CLASS      TestClass                       [PUBLIC]   issue194875.php
@@ -212,6 +240,7 @@ CLASS      TestIssue145206                 [PUBLIC]   issue145206.php
 CLASS      TestIssue146176                 [PUBLIC]   issue146176.php
 CLASS      TestMethod                      [PUBLIC]   test202530.php
 CLASS      TestOptionalArgsClass           [PUBLIC]   optional_args.php
+CLASS      TraitedClass                    [PUBLIC]   traits.php
 CLASS      Types                           [PUBLIC]   Package1
 CLASS      TypesinPHPDoc                   [PUBLIC]   types_in_phpdoc.php
 CLASS      UsageReturnTypeInOtherFile      [PUBLIC]   Usage.php
@@ -227,6 +256,7 @@ CLASS      User147427                      [PUBLIC]   issue147427.php
 CLASS      VarAdvancedTest                 [PUBLIC]   varAssignment2.php
 CLASS      VarTypeCommentTest              [PUBLIC]   varTypeComment.php
 CLASS      ViewController                  [PUBLIC]   Brite\Controller
+CLASS      WithMultiUses                   [PUBLIC]   traitsMultiUse.php
 CLASS      XUser                           [PUBLIC]   XUser
 CLASS      XUserAbstract                   [PUBLIC,   XUser
 CLASS      XUserInterface                  [PUBLIC]   XUser
@@ -273,11 +303,14 @@ METHOD     Recommendations()               [PUBLIC]   html.php
 METHOD     Signatures()                    [PUBLIC]   html.php
 METHOD     WorkAdjustment()                [PUBLIC]   html.php
 METHOD     WorkHistory()                   [PUBLIC]   html.php
+METHOD     aa()                            [PUBLIC]   test207188.php
+METHOD     arrayFunctionName()             [PUBLIC]   arrays.php
 METHOD     bar($x = -5)                    [PUBLIC]   issue200178.php
 METHOD     bar($x = -5, $y = 3)            [PUBLIC]   issue200178.php
 METHOD     bar()                           [PUBLIC]   issue141999.php
 METHOD     bar()                           [PUBLIC]   issue200178.php
 METHOD     bar(Test &$t)                   [PUBLIC]   issue142024.php
+METHOD     callableTypeHint(callable $arg  [PUBLIC]   callableTypeHint.php
 METHOD     f1(&$request1)                  [PUBLIC]   issue136092.php
 METHOD     f2(&$request2)                  [PUBLIC]   issue136092.php
 METHOD     fc142091(cls142091 $p)          [PUBLIC]   issue142091.php

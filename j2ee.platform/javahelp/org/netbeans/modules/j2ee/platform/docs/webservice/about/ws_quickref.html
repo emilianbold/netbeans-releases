@@ -62,15 +62,67 @@
 <tr valign="top"> 
     <td>Create a JAX-WS web service.</td>
     <td> 
-	    <ul>		    
-		    
-		    <li>Right-click the project and choose New &gt; Web Service.</li>
-      </ul>
+	    <ol>		    
+                <li>Create a Java Web project.</li>   
+                <li>Right-click the project and choose New &gt; Web Service or New &gt; Web Service from WSDL.</li>
+                <li>Complete the wizard. If you don't understand the UI, click Help.</li>
+      </ol>
+        <p>See <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://netbeans.org/kb/docs/websvc/jax-ws.html">
+                <param name="text" value="<html><u>Getting Started with JAX-WS Web Services</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>.</p>
     </td>
   </tr>
   <tr valign="top">
       <td>Create a RESTful (JAX-RS/Jersey) web service.</td>
-      <td><ul><li>Right-click the project and choose New &gt; RESTful Web Service from Entity Classes/Patterns/Database.</li></ul></td>
+      <td><ol><li>Create a Java Web project.</li>
+              <li>Right-click the project and choose New &gt; RESTful Web Service from Database or RESTful Web Service from Patterns. If you have an existing project with database entity classes, you can use the RESTful Web Service from Entities wizard, but only if you created JAXB annotations for the entity classes.</li></ol>
+          <p>See <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                  <param name="content" value="http://netbeans.org/kb/docs/websvc/rest.html">
+                  <param name="text" value="<html><u>Getting Started with RESTful Web Services</u></html>">
+                  <param name="textFontSize" value="medium">
+                  <param name="textColor" value="blue">
+              </object>.</p>
+      </td>
+  </tr>
+  <tr valign="top">
+      <td>Create a JAX-WS Service Client</td>
+      <td><ol>
+              <li>Create a Java Web or Java project.</li>
+              <li>Right-click the project and select New &gt; Web Service Client (or New &gt; Other &gt; Web Services &gt; Web Service Client). A wizard opens in which you point to a local project or the URL of a remote WSDL. After completing the wizard, your project has a Web Service References node.</li>
+              <li>Expand the project's Web Service References node.</li>
+              <li>Drag and drop the web service operation you want from the Web Services Node into your code, depending on the type of client you want to implement:
+                  <ul><li>In a plain Java project, drag it into the <code>main</code> class.</li>
+                      <li>In a Java Web application, either drag the operation into the JSP file...</li>
+                      <li>...or add a servlet to the Java Web application and drag the operation into the servlet.</li>
+                      
+                  </ul></li>
+                  <li>Write your implementation code.</li>
+          </ol>
+      <p>See <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://netbeans.org/kb/docs/websvc/jax-ws.html">
+                <param name="text" value="<html><u>Getting Started with JAX-WS Web Services</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>.</p></td>
+  </tr>
+  <tr valign="top">
+      <td>Create a Java client for a RESTful web service</td>
+      <td><ol>
+              <li>Create a Java, Java Web, or NetBeans Module project.</li>
+              <li>Right-click the project node and select New &gt; Other &gt; Web Services &gt; RESTful Java Client. A wizard opens.</li>
+              <li>Complete the wizard. You can choose either a RESTful service in a local NetBeans project or you can choose a service that is registered in the IDE.
+                  <ul class="note"><li>You can register a remote web service with the IDE provided you have the URL of the service's WADL or WSDL file. Open the Services window, right-click the Web Services node and choose Add Web Service.</li></ul></li>
+              <li>Code the graphical client, for example in Swing (for a Java application) or in a JSP/JSF file (for a Java Web application).</li>
+          </ol>
+          <p>See <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                  <param name="content" value="http://netbeans.org/kb/docs/websvc/jersey-rcp-client.html">
+                  <param name="text" value="<html><u>Creating RESTful Service Clients in NetBeans Modules</u></html>">
+                  <param name="textFontSize" value="medium">
+                  <param name="textColor" value="blue">
+              </object>.</p></td>
   </tr>
   <tr valign="top"> 
     <td>Build a project.</td>

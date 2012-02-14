@@ -121,7 +121,7 @@ public class J2EEProjectWorkflow extends MemoryFootprintTestCase {
 
        
         if (xmlEditor.isModified() )
-            xmlEditor.saveDocument();
+            xmlEditor.save();
         
         Node node = new Node(new SourcePackagesNode(j2eeproject_app), new SourcePackagesNode(j2eeproject_app).getChildren()[0]+"|Main.java" );
         EPFootprintUtilities.openFile(node,"Main.java",true);

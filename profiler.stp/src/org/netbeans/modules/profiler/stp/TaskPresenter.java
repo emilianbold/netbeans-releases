@@ -163,7 +163,7 @@ public class TaskPresenter implements TaskChooser.Item {
         private JScrollPane configurationsScrollPane;
         private TPHyperlinkTextArea createCustom;
         private int activeSettingsIndex = -1; // valid only when popup menu is opened!
-        private int selectedSettingsIndex = 0;
+        private int selectedSettingsIndex = -1;
 
         //~ Constructors ---------------------------------------------------------------------------------------------------------
 
@@ -177,6 +177,7 @@ public class TaskPresenter implements TaskChooser.Item {
         public void setProfilingSettings(ArrayList<ProfilingSettings> profilingSettings) {
             resetProfilingSettings();
             this.profilingSettings.addAll(profilingSettings);
+            selectedSettingsIndex = this.profilingSettings.isEmpty() ? -1 : 0;
             updateItems();
         }
 
@@ -193,7 +194,7 @@ public class TaskPresenter implements TaskChooser.Item {
         }
 
         public void resetProfilingSettings() {
-            selectedSettingsIndex = 0;
+            selectedSettingsIndex = -1;
             profilingSettings.clear();
         }
 

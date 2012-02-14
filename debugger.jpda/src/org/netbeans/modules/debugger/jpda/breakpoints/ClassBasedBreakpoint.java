@@ -45,9 +45,7 @@
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
 import com.sun.jdi.ClassLoaderReference;
-import com.sun.jdi.Field;
 import com.sun.jdi.ReferenceType;
-import com.sun.jdi.Value;
 import com.sun.jdi.event.ClassPrepareEvent;
 import com.sun.jdi.event.ClassUnloadEvent;
 import com.sun.jdi.event.Event;
@@ -70,7 +68,6 @@ import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
@@ -102,7 +99,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
     private SourceRootsChangedListener srChListener;
     private PropertyChangeListener weakSrChListener;
     
-    private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.breakpoints"); // NOI18N
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.breakpoints"); // NOI18N
 
     public ClassBasedBreakpoint (
         JPDABreakpoint breakpoint, 
@@ -340,6 +337,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         return matched;
     }
 
+    @Override
     public boolean exec (Event event) {
         try {
             if (event instanceof ClassPrepareEvent) {
@@ -359,6 +357,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         return true;
     }
 
+    @Override
     public void removed(EventRequest eventRequest) {
     }
     

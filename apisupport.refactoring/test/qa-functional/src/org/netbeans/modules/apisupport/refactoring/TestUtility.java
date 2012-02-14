@@ -45,11 +45,10 @@
 package org.netbeans.modules.apisupport.refactoring;
 
 import java.io.File;
-import org.openide.filesystems.FileStateInvalidException;
 
 public class TestUtility {
 
-    public static File getFile(File dataDir,String projectName, String fileName) throws FileStateInvalidException {
+    public static File getFile(File dataDir,String projectName, String fileName) {
         String result = dataDir.getAbsolutePath() +"/" + projectName + "/" + fileName;
         System.out.println("looking for file: " + result);
         return new File(result);

@@ -56,6 +56,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -68,8 +69,7 @@ import org.netbeans.Stamps;
 import org.netbeans.core.startup.Main;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Places;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.*;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 import org.osgi.framework.Bundle;
@@ -95,13 +95,14 @@ import org.osgi.service.startlevel.StartLevel;
 })
 public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     static final Logger LOG = Logger.getLogger(Netigso.class.getName());
-    private static final ThreadLocal<Boolean> SELF_QUERY = new ThreadLocal<Boolean>();
+    private static final AtomicBoolean SELF_QUERY = new AtomicBoolean();
     private static final String[] EMPTY = {};
 
     private Framework framework;
     private ClassLoader frameworkLoader;
     private NetigsoActivator activator;
     private Integer defaultStartLevel;
+    private String defaultCoveredPkgs;
 
     Framework getFramework() {
         return framework;
@@ -124,10 +125,10 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         if (framework == null) {
             readBundles();
             
-            Map<String, Object> configMap = new HashMap<String, Object>();
+            Map configMap = new HashMap();
             final String cache = getNetigsoCache().getPath();
             configMap.put(Constants.FRAMEWORK_STORAGE, cache);
-            activator = new NetigsoActivator();
+            activator = new NetigsoActivator(this);
             configMap.put("netigso.archive", NetigsoArchiveFactory.DEFAULT.create(this)); // NOI18N
             configMap.put("felix.log.level", "4"); // NOI18N
             configMap.put("felix.bootdelegation.classloaders", activator); // NOI18N
@@ -151,7 +152,6 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             NetigsoServices ns = new NetigsoServices(this, framework);
             LOG.finer("OSGi Container initialized"); // NOI18N
         }
-        activator.register(preregister);
         for (Module mi : preregister) {
             try {
                 fakeOneModule(mi, null);
@@ -212,8 +212,10 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     @Override
     protected void shutdown() {
         try {
-            framework.stop();
-            framework.waitForStop(10000);
+            if (framework != null) {
+                framework.stop();
+                framework.waitForStop(10000);
+            }
             framework = null;
             frameworkLoader = null;
         } catch (InterruptedException ex) {
@@ -248,17 +250,19 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             if (knownPkgs == EMPTY) {
                 try {
                     SELF_QUERY.set(true);
-                    Enumeration en = b.findEntries("", null, true);
-                    if (en == null) {
-                        LOG.log(Level.INFO, "Bundle {0}: {1} is empty", new Object[] { b.getBundleId(), b.getSymbolicName() });
-                    } else {
-                        while (en.hasMoreElements()) {
-                            URL url = (URL) en.nextElement();
-                            if (url.getFile().startsWith("/META-INF")) {
-                                pkgs.add(url.getFile().substring(9));
-                                continue;
+                    if (findCoveredPkgs()) {
+                        Enumeration en = b.findEntries("", null, true);
+                        if (en == null) {
+                            LOG.log(Level.INFO, "Bundle {0}: {1} is empty", new Object[] { b.getBundleId(), b.getSymbolicName() });
+                        } else {
+                            while (en.hasMoreElements()) {
+                                URL url = (URL) en.nextElement();
+                                if (url.getFile().startsWith("/META-INF")) {
+                                    pkgs.add(url.getFile().substring(9));
+                                    continue;
+                                }
+                                pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));
                             }
-                            pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));
                         }
                     }
                     Object exported = b.getHeaders("").get("Export-Package");
@@ -291,7 +295,10 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                 LOG.log(Level.FINE, "Starting bundle {0}: {1}", new Object[] { m.getCodeNameBase(), start });
                 if (start) {
                     b.start();
-                    if (b.getState() == Bundle.INSTALLED && isRealBundle(b)) {
+                    if (
+                        findCoveredPkgs() &&
+                        b.getState() == Bundle.INSTALLED && isRealBundle(b)
+                    ) {
                         throw new IOException("Cannot start " + m.getCodeName() + " state remains INSTALLED after start()"); // NOI18N
                     }
                 }
@@ -332,6 +339,13 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     }
 
     @Override
+    protected Enumeration<URL> findResources(Module m, String resName) {
+        Bundle b = findBundle(m.getCodeNameBase());
+        URL u = b.getEntry(resName);
+        return u == null ? Enumerations.<URL>empty() : Enumerations.singleton(u);
+    }
+
+    @Override
     protected void reload(Module m) throws IOException {
         try {
             Bundle b = findBundle(m.getCodeNameBase());
@@ -346,27 +360,55 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     // take care about the registered bundles
     //
     private final Map<String,String[]> registered = new HashMap<String,String[]>();
-    
+
+    private static final RequestProcessor RP = new RequestProcessor("Netigso Events"); // NOI18N
     final void notifyBundleChange(final String symbolicName, final Version version, final int action) {
-        Main.getModuleSystem().getManager().mutex().postReadRequest(new Runnable() {
+        final Exception stack = Netigso.LOG.isLoggable(Level.FINER) ? new Exception("StackTrace") : null;
+        final Runnable doLog = new Runnable() {
             @Override
             public void run() {
-                if (activator.isUnderOurControl(symbolicName)) {
+                if (isEnabled(symbolicName)) {
+                    return;
+                }
+                final Mutex mutex = Main.getModuleSystem().getManager().mutex();
+                if (!mutex.isReadAccess()) {
+                    mutex.postReadRequest(this);
                     return;
                 }
                 String type = "" + action;
+                Level notify = Level.INFO;
                 switch (action) {
-                    case BundleEvent.INSTALLED: return; // no message for installed
-                    case BundleEvent.RESOLVED: type = "resolved"; break;
-                    case BundleEvent.STARTED: type = "started"; break;
-                    case BundleEvent.STOPPED: type = "stopped"; break;
-                    case BundleEvent.UNINSTALLED: return; // nothing for uninstalled
+                    case BundleEvent.INSTALLED:
+                        return; // no message for installed
+                    case BundleEvent.RESOLVED:
+                        type = "resolved";
+                        break;
+                    case BundleEvent.STARTED:
+                        type = "started";
+                        break;
+                    case BundleEvent.STOPPED:
+                        type = "stopped";
+                        break;
+                    case BundleEvent.UNINSTALLED:
+                        return; // nothing for uninstalled
+                    case BundleEvent.LAZY_ACTIVATION:
+                        type = "lazy";
+                        notify = Level.FINEST;
+                        break;
+                    case BundleEvent.STARTING:
+                        type = "starting";
+                        notify = Level.FINEST;
+                        break;
                 }
-                Netigso.LOG.log(Level.INFO, "bundle {0}@{2} {1}", new Object[]{
-                    symbolicName, type, version
-                });
+                Netigso.LOG.log(notify, "bundle {0}@{2} {1}", new Object[]{
+                            symbolicName, type, version
+                        });
+                if (stack != null) {
+                    Netigso.LOG.log(Level.FINER, null, stack);
+                }
             }
-        });
+        };
+        RP.post(doLog);
     }
 
     private File getNetigsoCache() throws IllegalStateException {
@@ -385,10 +427,11 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     }
 
     private void fakeOneModule(Module m, Bundle original) throws IOException {
-        if (registered.get(m.getCodeNameBase()) != null && original == null) {
+        String cnb = m.getCodeNameBase();
+        if (registered.get(cnb) != null && original == null) {
             return;
         }
-        registered.put(m.getCodeNameBase(), EMPTY);
+        registered.put(cnb, EMPTY);
         Bundle b;
         try {
             String symbolicName = (String) m.getAttribute("Bundle-SymbolicName");
@@ -425,9 +468,10 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                         original.update(is);
                         b = original;
                     } else {
-                        b = framework.getBundleContext().installBundle(
-                            "netigso://" + m.getCodeNameBase(), is
-                        );
+                        assert framework != null;
+                        BundleContext bc = framework.getBundleContext();
+                        assert bc != null;
+                        b = bc.installBundle("netigso://" + cnb, is);
                     }
                     is.close();
                 }
@@ -592,10 +636,14 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     }
 
     public byte[] fromArchive(long bundleId, String resource, ArchiveResources ar) throws IOException {
-        if (Boolean.TRUE.equals(SELF_QUERY.get())) {
+        if (SELF_QUERY.get()) {
             return ar.resource(resource);
         }
         return fromArchive(ar, resource);
+    }
+
+    public boolean isArchiveActive() {
+        return !SELF_QUERY.get();
     }
 
     private static String toURI(final File file) {
@@ -616,5 +664,20 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             }
         }
         return new VFile().toURI().toString();
+    }
+
+    private boolean findCoveredPkgs() {
+        if (defaultCoveredPkgs == null) {
+            defaultCoveredPkgs = NbBundle.getMessage(Netigso.class, "FIND_COVERED_PKGS"); // NOI18N
+        }
+        return "findEntries".equals(defaultCoveredPkgs); // NOI18N
+    }
+
+    final ClassLoader findClassLoader(String cnb) {
+        return createClassLoader(cnb);
+    }
+    private boolean isEnabled(String cnd) {
+        Module m = findModule(cnd);
+        return m != null && m.isEnabled();
     }
 }

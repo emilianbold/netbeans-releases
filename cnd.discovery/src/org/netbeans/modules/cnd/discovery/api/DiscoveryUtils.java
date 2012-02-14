@@ -241,7 +241,7 @@ public class DiscoveryUtils {
     /**
      * parse compile line
      */
-    public static List<String> gatherCompilerLine(String line, boolean isScriptOutput,
+    public static List<String> gatherCompilerLine(String line, LogOrigin isScriptOutput,
             List<String> userIncludes, Map<String, String> userMacros, Set<String> libraries, List<String> languageArtifacts, ProjectBridge bridge, boolean isCpp){
         List<String> list = DiscoveryUtils.scanCommandLine(line);
         boolean hasQuotes = false;
@@ -285,7 +285,7 @@ public class DiscoveryUtils {
     /**
      * parse compile line
      */
-    public static List<String> gatherCompilerLine( Iterator<String> st, boolean isScriptOutput,
+    public static List<String> gatherCompilerLine( Iterator<String> st, LogOrigin isScriptOutput,
             List<String> userIncludes, Map<String, String> userMacros, Set<String> libraries, List<String> languageArtifacts, ProjectBridge bridge, boolean isCpp){
         boolean TRACE = false;
         String option; 
@@ -293,7 +293,7 @@ public class DiscoveryUtils {
         while(st.hasNext()){
             option = st.next();
             boolean isQuote = false;
-            if (isScriptOutput) {
+            if (isScriptOutput == LogOrigin.BuildLog) {
                 if (option.startsWith("'") && option.endsWith("'") || // NOI18N
                     option.startsWith("\"") && option.endsWith("\"")){ // NOI18N
                     option = option.substring(1,option.length()-1);
@@ -311,18 +311,40 @@ public class DiscoveryUtils {
                 int i = macro.indexOf('=');
                 if (i>0){
                     String value = macro.substring(i+1).trim();
-                    if (value.length() >= 2 && value.charAt(0) == '`' && value.charAt(value.length()-1) == '`'){ // NOI18N
-                        value = value.substring(1,value.length()-1);  // NOI18N
-                    } else {
-                        if (!isQuote && value.length() >= 6 &&
-                           (value.charAt(0) == '"' && value.charAt(1) == '\\' && value.charAt(2) == '"' &&  // NOI18N
-                            value.charAt(value.length()-3) == '\\' && value.charAt(value.length()-2) == '"' && value.charAt(value.length()-1) == '"')) { // NOI18N
-                            value = value.substring(2,value.length()-3)+"\"";  // NOI18N
-                        } else if (value.length() >= 4 &&
-                           (value.charAt(0) == '\\' && value.charAt(1) == '"' &&  // NOI18N
-                            value.charAt(value.length()-2) == '\\' && value.charAt(value.length()-1) == '"' )) { // NOI18N
-                            value = value.substring(1,value.length()-2)+"\"";  // NOI18N
-                        }
+                    switch (isScriptOutput) {
+                        case BuildLog:
+                            if (value.length() >= 2 && value.charAt(0) == '`' && value.charAt(value.length()-1) == '`'){ // NOI18N
+                                value = value.substring(1,value.length()-1);  // NOI18N
+                            }
+                            if (value.length() >= 6 &&
+                                (value.charAt(0) == '"' && value.charAt(1) == '\\' && value.charAt(2) == '"' &&  // NOI18N
+                                value.charAt(value.length()-3) == '\\' && value.charAt(value.length()-2) == '"' && value.charAt(value.length()-1) == '"')) { // NOI18N
+                                // What is it?
+                                value = value.substring(2,value.length()-3)+"\"";  // NOI18N
+                            } else if (value.length() >= 4 &&
+                                (value.charAt(0) == '\\' && value.charAt(1) == '"' &&  // NOI18N
+                                value.charAt(value.length()-2) == '\\' && value.charAt(value.length()-1) == '"' )) { // NOI18N
+                                value = value.substring(1,value.length()-2)+"\"";  // NOI18N
+                            } else if (value.length() >= 4 &&
+                                (value.charAt(0) == '\\' && value.charAt(1) == '\'' &&  // NOI18N
+                                value.charAt(value.length()-2) == '\\' && value.charAt(value.length()-1) == '\'' )) { // NOI18N
+                                value = value.substring(1,value.length()-2)+"'";  // NOI18N
+                            } else if (!isQuote && value.length() >= 2 &&
+                               (value.charAt(0) == '\'' && value.charAt(value.length()-1) == '\'' || // NOI18N
+                                value.charAt(0) == '"' && value.charAt(value.length()-1) == '"' )) { // NOI18N
+                                value = value.substring(1,value.length()-1);
+                            }
+                            break;
+                        case DwarfCompileLine:
+                            if (value.length() >= 2 &&
+                               (value.charAt(0) == '\'' && value.charAt(value.length()-1) == '\'' || // NOI18N
+                                value.charAt(0) == '"' && value.charAt(value.length()-1) == '"' )) { // NOI18N
+                                value = value.substring(1,value.length()-1);
+                            }
+                            break;
+                        case ExecLog:
+                            // do nothing
+                            break;
                     }
                     userMacros.put(macro.substring(0,i), value);
                 } else {
@@ -536,5 +558,10 @@ public class DiscoveryUtils {
         }
         return path;
     }
-
+    
+    public enum LogOrigin {
+        BuildLog,
+        DwarfCompileLine,
+        ExecLog
+    }
 }

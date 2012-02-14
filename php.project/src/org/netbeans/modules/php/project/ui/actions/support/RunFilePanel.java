@@ -47,7 +47,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
+import org.netbeans.modules.php.project.runconfigs.RunConfigScript;
+import org.netbeans.modules.php.project.runconfigs.validation.RunConfigScriptValidator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
@@ -109,25 +110,21 @@ final class RunFilePanel extends JPanel {
     }
 
     private RunFileActionProvider.RunFileArgs getArgs() {
-        return new RunFileActionProvider.RunFileArgs(getRunArgs(), getWorkDir(), getPhpOpts(), !displayDialog.isSelected());
+        RunConfigScript config = createRunConfig();
+        return new RunFileActionProvider.RunFileArgs(config.getArguments(), config.getWorkDir(), config.getOptions(), !displayDialog.isSelected());
     }
 
-    private String getRunArgs() {
-        return runArgsField.getText();
-    }
-
-    private String getWorkDir() {
-        return workDirField.getText();
-    }
-
-    private String getPhpOpts() {
-        return phpOptionsField.getText();
+    private RunConfigScript createRunConfig() {
+        return RunConfigScript.create()
+                .setOptions(phpOptionsField.getText())
+                .setArguments(runArgsField.getText())
+                .setWorkDir(workDirField.getText());
     }
 
     void validateWorkDir() {
         assert notificationLineSupport != null;
 
-        String error = RunAsValidator.validateWorkDir(getWorkDir(), false);
+        String error = RunConfigScriptValidator.validateRunFileWithoutProject(createRunConfig());
         if (error != null) {
             notificationLineSupport.setErrorMessage(error);
             dialogDescriptor.setValid(false);
@@ -226,7 +223,7 @@ final class RunFilePanel extends JPanel {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle(NbBundle.getMessage(RunFilePanel.class, "LBL_SelectWorkingDirectory"));
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setCurrentDirectory(new File(getWorkDir()));
+        chooser.setCurrentDirectory(new File(createRunConfig().getWorkDir()));
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File workDir = FileUtil.normalizeFile(chooser.getSelectedFile());
             workDirField.setText(workDir.getAbsolutePath());

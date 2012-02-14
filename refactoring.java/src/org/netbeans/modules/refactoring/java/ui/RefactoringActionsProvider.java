@@ -44,55 +44,25 @@
 
 package org.netbeans.modules.refactoring.java.ui;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.util.SourcePositions;
-import com.sun.source.util.TreePath;
-import com.sun.source.util.Trees;
 import java.awt.datatransfer.Transferable;
-import java.io.IOException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
-import javax.swing.JOptionPane;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.java.source.ClasspathInfo.PathKind;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.*;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ScanDialog;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
-import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
-import org.netbeans.modules.refactoring.spi.ui.UI;
-import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
-import org.openide.windows.TopComponent;
 
 
 /**
@@ -107,116 +77,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     }
     @Override
     public void doRename(final Lookup lookup) {
-        Runnable task;
-        EditorCookie ec = lookup.lookup(EditorCookie.class);
-        if (isFromEditor(ec)) {
-            task = new TextComponentTask(ec) {
-                @Override
-                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, final CompilationInfo info) {
-                    Element selected = selectedElement.resolveElement(info);
-                    if (selected==null) {
-                        logger().log(Level.INFO, "doRename: " + selectedElement, new NullPointerException("selected")); // NOI18N
-                        return null;
-                    }
-                    if (selected.getKind() == ElementKind.CONSTRUCTOR) {
-                        selected = selected.getEnclosingElement();
-                        TreePath path = info.getTrees().getPath(selected);
-                        if (path==null) {
-                            logger().log(Level.INFO, "doRename: " + selected, new NullPointerException("selected")); // NOI18N
-                            return null;
-                        }
-                        selectedElement = TreePathHandle.create(path, info);
-                    } 
-                    if (selected.getKind() == ElementKind.PACKAGE) {
-                        final FileObject pkg = info.getClasspathInfo().getClassPath(PathKind.SOURCE).findResource(selected.toString().replace('.','/'));
-                        if (pkg!=null) {
-                            NonRecursiveFolder folder = new NonRecursiveFolder() {
-
-                                @Override
-                                public FileObject getFolder() {
-                                    return pkg;
-                                }
-                            };
-                            return wrap(new RenameRefactoringUI(folder));
-                        } else {
-                            if (selected.getSimpleName().length() != 0)
-                                return wrap(new RenameRefactoringUI(selectedElement, info));
-                            else {
-                                TreePath path = selectedElement.resolve(info);
-                                if (path!=null && path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
-                                    return wrap(new RenameRefactoringUI(selectedElement.getFileObject(), null, info));
-                                } else {
-                                    return null;
-                                }
-                            }
-                        }
-                    } else if (selected instanceof TypeElement && !((TypeElement)selected).getNestingKind().isNested()) {
-                        ElementHandle<TypeElement> handle = ElementHandle.create((TypeElement)selected);
-                        FileObject f = SourceUtils.getFile(handle, info.getClasspathInfo());
-                        if (f!=null && selected.getSimpleName().toString().equals(f.getName())) {
-                            return wrap(new RenameRefactoringUI(f==null?info.getFileObject():f, selectedElement, info));
-                        } else {
-                            return wrap(new RenameRefactoringUI(selectedElement, info));
-                        }
-                    } else {
-                        return wrap(new RenameRefactoringUI(selectedElement, info));
-                    }
-                }
-            };
-        } else if (nodeHandle(lookup)) {
-            task = new TreePathHandleTask(new HashSet<Node>(lookup.lookupAll(Node.class)), true) {
-
-                RefactoringUI ui;
-
-                @Override
-                protected void treePathHandleResolved(TreePathHandle handle, CompilationInfo javac) {
-                    if (renameFile) {
-                        ui = new RenameRefactoringUI(handle.getFileObject(), handle, javac);
-                    } else {
-                        ui = new RenameRefactoringUI(handle, javac);
-                    }
-                }
-
-                @Override
-                protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
-                    return wrap(ui);
-                }
-                
-            };
-
-        } else {
-//            task = new NodeToFileObjectTask(new HashSet(lookup.lookupAll(Node.class))) {
-            // canRename is valid only for single node
-            task = new NodeToFileObjectTask(Collections.singleton(lookup.lookup(Node.class))) {
-
-                RefactoringUI ui;
-
-                @Override
-                protected void nodeTranslated(Node node, Collection<TreePathHandle> handles, CompilationInfo javac) {
-                    String newName = getName(lookup);
-                    ui = newName != null
-                            ? new RenameRefactoringUI(javac.getFileObject(), newName, handles==null||handles.isEmpty()?null:handles.iterator().next(), javac)
-                            : new RenameRefactoringUI(javac.getFileObject(), handles==null||handles.isEmpty()?null:handles.iterator().next(), javac);
-                }
-
-                @Override
-                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
-                    if (ui == null) {
-                        String newName = getName(lookup);
-                        if (newName != null) {
-                            ui = pkg[0] != null
-                                    ? new RenameRefactoringUI(pkg[0], newName)
-                                    : new RenameRefactoringUI(selectedElements[0], newName, null, null);
-                        } else {
-                            ui = pkg[0]!= null
-                                    ? new RenameRefactoringUI(pkg[0])
-                                    : new RenameRefactoringUI(selectedElements[0], null, null);
-                        }
-                    }
-                    return wrap(ui);
-                }
-            };
-        }
+        Runnable task = ContextAnalyzer.createTask(lookup, RenameRefactoringUI.factory(lookup));
         ScanDialog.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.renameAction()));
     }
     
@@ -259,81 +120,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     
     @Override
     public void doCopy(final Lookup lookup) {
-        Runnable task;
-////        EditorCookie ec = lookup.lookup(EditorCookie.class);
-////        if (isFromEditor(ec)) {
-////            return new TextComponentRunnable(ec) {
-////                @Override
-////                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
-////                    Element selected = selectedElement.resolveElement(info);
-////                    if (selected.getKind() == ElementKind.PACKAGE || selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
-////                        FileObject f = SourceUtils.getFile(selected, info.getClasspathInfo());
-////                        return new RenameRefactoringUI(f==null?info.getFileObject():f);
-////                    } else {
-////                        return new RenameRefactoringUI(selectedElement, info);
-////                    }
-////                }
-////            };
-////        } else {
-//            task = new NodeToFileObjectTask(new HashSet<Node>(lookup.lookupAll(Node.class))) {
-//                @Override
-//                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handle) {
-//                    return wrap(new CopyClassRefactoringUI(selectedElements[0], getTarget(lookup), getPaste(lookup)));
-//                }
-//            };
-////        }
-//        ScanDialog.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.copyAction()));
-
-        EditorCookie ec = lookup.lookup(EditorCookie.class);
-        if (isFromEditor(ec)) {
-            task = new TextComponentTask(ec) {
-                @Override
-                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
-                    Element e = selectedElement.resolveElement(info);
-                    if (e == null) {
-                        logger().log(Level.INFO, "doCopy: " + selectedElement, new NullPointerException("e")); // NOI18N
-                        return null;
-                    }
-                    if ((e.getKind().isClass() || e.getKind().isInterface()) &&
-                            SourceUtils.getOutermostEnclosingTypeElement(e)==e) {
-                        try {
-                            FileObject fo = SourceUtils.getFile(e, info.getClasspathInfo());
-                            if (fo!=null) {
-                                DataObject d = DataObject.find(SourceUtils.getFile(e, info.getClasspathInfo()));
-                                if (d.getName().equals(e.getSimpleName().toString())) {
-                                    return wrap(new CopyClassRefactoringUI(d.getPrimaryFile()));
-                                }
-                            }
-                        } catch (DataObjectNotFoundException ex) {
-                            throw new RuntimeException (ex);
-                        }
-                    }
-                    return wrap(new CopyClassRefactoringUI(info.getFileObject()));
-                }
-            };
-        } else {
-            task = new NodeToFileObjectTask(new HashSet<Node>(lookup.lookupAll(Node.class))) {
-                @Override
-                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
-                    PasteType paste = getPaste(lookup);
-                    FileObject tar=getTarget(lookup);
-                    if (selectedElements.length == 1) {
-                        if (!selectedElements[0].isFolder()) {
-                            return wrap(new CopyClassRefactoringUI(selectedElements[0], tar));
-                        } else {
-                            Set<FileObject> s = new HashSet<FileObject>();
-                            s.addAll(Arrays.asList(selectedElements));
-                            return wrap(new CopyClassesUI(s, tar, paste));
-                        }
-                    } else {
-                        Set<FileObject> s = new HashSet<FileObject>();
-                        s.addAll(Arrays.asList(selectedElements));
-                        return wrap(new CopyClassesUI(s, tar, paste));
-                    }
-                }
-                
-            };
-        }
+        Runnable task = ContextAnalyzer.createTask(lookup, CopyClassRefactoringUI.factory(lookup));
         ScanDialog.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.copyAction()));
     }
 
@@ -442,42 +229,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
     @Override
     public void doFindUsages(Lookup lookup) {
-        Runnable task;
-        EditorCookie ec = lookup.lookup(EditorCookie.class);
-        if (isFromEditor(ec)) {
-            task = new TextComponentTask(ec) {
-                @Override
-                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
-                    return wrap(new WhereUsedQueryUI(selectedElement, info));
-                }
-            };
-        } else if (nodeHandle(lookup)) {
-            task = new TreePathHandleTask(new HashSet<Node>(lookup.lookupAll(Node.class)), true) {
-
-                RefactoringUI ui;
-
-                @Override
-                protected void treePathHandleResolved(TreePathHandle handle, CompilationInfo javac) {
-                    ui = new WhereUsedQueryUI(handle, javac);
-                }
-
-                @Override
-                protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
-                    return wrap(ui);
-                }
-                
-            };
-        } else {
-            task = new NodeToElementTask(new HashSet<Node>(lookup.lookupAll(Node.class))) {
-                @Override
-                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement, CompilationInfo info) {
-                    if (selectedElement==null)
-                        return null;
-                    return wrap(new WhereUsedQueryUI(selectedElement, info));
-                }
-            };
-        }
-        ScanDialog.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.whereUsedAction()));
+        Runnable task = ContextAnalyzer.createTask(lookup, WhereUsedQueryUI.factory());
+        task.run();
     }
 
     /**
@@ -518,66 +271,11 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
     @Override
     public void doDelete(final Lookup lookup) {
-        Runnable task;
-        EditorCookie ec = lookup.lookup(EditorCookie.class);
-        final boolean b = lookup.lookup(ExplorerContext.class)!=null;
-        if (isFromEditor(ec)) {
-            task = new TextComponentTask(ec) {
-                @Override
-                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
-                    Element selected = selectedElement.resolveElement(info);
-                    if (selected == null) {
-                        logger().log(Level.INFO, "doDelete: " + selectedElement, new NullPointerException("selected")); // NOI18N
-                        return null;
-                    }
-                    if (selected.getKind() == ElementKind.PACKAGE || selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
-                        ElementHandle<Element> handle = ElementHandle.create(selected);
-                        FileObject file = SourceUtils.getFile(handle, info.getClasspathInfo());
-                        if (file==null) {
-                            return null;
-                        }
-                        if (file.getName().equals(selected.getSimpleName().toString())) {
-                            return wrap(new SafeDeleteUI(new FileObject[]{file}, Collections.singleton(selectedElement), b));
-                        }
-                    }
-                        return wrap(new SafeDeleteUI(new TreePathHandle[]{selectedElement}));
-                    }
-            };
-        } else if (nodeHandle(lookup)) {
-            task = new TreePathHandleTask(new HashSet<Node>(lookup.lookupAll(Node.class))) {
-
-                @Override
-                protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
-                    if (renameFile) {
-                        FileObject[] files = new FileObject[handles.size()];
-                        int i=0;
-                        for (TreePathHandle handle:handles) {
-                            files[i++] = handle.getFileObject();
-                        }
-                        return wrap(new SafeDeleteUI(files, handles, b));
-                    } else {
-                        return wrap(new SafeDeleteUI(handles.toArray(new TreePathHandle[handles.size()])));
-                    }
-                }
-                
-            };
-        } else {
-            task = new NodeToFileObjectTask(new HashSet<Node>(lookup.lookupAll(Node.class))) {
-                @Override
-                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
-                    if (pkg[0]!= null) {
-                        return wrap(new SafeDeleteUI(pkg[0],b));
-                    } else{                
-                        return wrap(new SafeDeleteUI(selectedElements, handles, b));
-                    }
-                }
-
-            };
-        }
+        Runnable task = ContextAnalyzer.createTask(lookup, SafeDeleteUI.factory(lookup));
         ScanDialog.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.safeDeleteAction()));
     }
     
-    private FileObject getTarget(Lookup look) {
+    public static FileObject getTarget(Lookup look) {
         ExplorerContext drop = look.lookup(ExplorerContext.class);
         if (drop==null)
             return null;
@@ -590,7 +288,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         return null;
     }
     
-    private PasteType getPaste(Lookup look) {
+    public static PasteType getPaste(Lookup look) {
         ExplorerContext drop = look.lookup(ExplorerContext.class);
         if (drop==null)
             return null;
@@ -606,7 +304,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         }
         return pt[1];
     }
-
+    
     static String getName(Lookup look) {
         ExplorerContext ren = look.lookup(ExplorerContext.class); 
         if (ren==null) 
@@ -704,524 +402,47 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
     @Override
     public void doMove(final Lookup lookup) {
-        Runnable task;
-        EditorCookie ec = lookup.lookup(EditorCookie.class);
-        if (isFromEditor(ec)) {
-            task = new TextComponentTask(ec) {
-                @Override
-                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement, int startOffset, int endOffset, CompilationInfo info) {
-                    TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(info, selectedElement.resolve(info), true, true, true, true, true);
-                    Element e = info.getTrees().getElement(enclosingClassPath);
-                    if (e == null) {
-                        logger().log(Level.INFO, "doMove: " + selectedElement, new NullPointerException("e")); // NOI18N
-                        return null;
-                    }
-                    if (startOffset == endOffset) {
-                        return doCursorPosition(info, selectedElement, startOffset);
-                    } else {
-                        if (!(e.getKind().isClass() || e.getKind().isInterface())) {
-                            e = info.getElementUtilities().enclosingTypeElement(e);
-                        }
-                        Collection<TreePathHandle> handles = new ArrayList<TreePathHandle>();
-                        SourcePositions sourcePositions = info.getTrees().getSourcePositions();
-                        for (Element ele : e.getEnclosedElements()) {
-                            Tree leaf = info.getTrees().getPath(ele).getLeaf();
-                            long start = sourcePositions.getStartPosition(info.getCompilationUnit(), leaf);
-                            long end = sourcePositions.getEndPosition(info.getCompilationUnit(), leaf);
-                            if ((start >= startOffset && start <= endOffset)
-                                    || (end >= startOffset && end <= endOffset)) {
-                                handles.add(TreePathHandle.create(ele, info));
-                            }
-                        }
-                        if (handles.isEmpty()) {
-                            return doCursorPosition(info, selectedElement, startOffset);
-                        }
-                        return wrap(new MoveMembersUI(handles.toArray(new TreePathHandle[handles.size()])));
-                    }
-                }
-
-                private RefactoringUI doCursorPosition(CompilationInfo info, TreePathHandle selectedElement, int position) throws RuntimeException {
-                    List<? extends TypeElement> topLevelElements = info.getTopLevelElements();
-                    Trees trees = info.getTrees();
-                    SourcePositions sourcePositions = trees.getSourcePositions();
-                    CompilationUnitTree compilationUnit = info.getCompilationUnit();
-                    
-                    for (TypeElement typeElement : topLevelElements) {
-                        ClassTree topLevelClass = trees.getTree(typeElement);
-                        long startPosition = sourcePositions.getStartPosition(compilationUnit, topLevelClass);
-                        long endPosition = sourcePositions.getEndPosition(compilationUnit, topLevelClass);
-                        if(position > startPosition && position < endPosition) {
-                            for (Element element : typeElement.getEnclosedElements()) {
-                                Tree member = trees.getTree(element);
-                                long startMember = sourcePositions.getStartPosition(compilationUnit, member);
-                                long endMember = sourcePositions.getEndPosition(compilationUnit, member);
-                                if(position > startMember && position < endMember) {
-                                    TreePathHandle tph = TreePathHandle.create(element, info);
-                                    return wrap(new MoveMembersUI(tph));
-                                }
-                            }
-                            try {
-                                // TODO: Support nested classes
-                                return wrap(new MoveClassUI(DataObject.find(info.getFileObject())));
-                            } catch (DataObjectNotFoundException ex) {
-                                throw new RuntimeException(ex);
-                            }
-                        }
-                    }
-//                    if (selectedElement.resolve(info).getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
-                        try {
-                            return wrap(new MoveClassUI(DataObject.find(info.getFileObject())));
-                        } catch (DataObjectNotFoundException ex) {
-                            throw new RuntimeException(ex);
-                        }
-//                    }
-                }
-            };
-        } else if (nodeHandle(lookup)) {
-            task = new TreePathHandleTask(new HashSet<Node>(lookup.lookupAll(Node.class))) {
-
-                @Override
-                protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
-                    if (renameFile) {
-                        Set<FileObject> files = new HashSet<FileObject>(handles.size());
-                        for (TreePathHandle handle:handles) {
-                            files.add(handle.getFileObject());
-                        }
-                        return wrap(new MoveClassesUI(files));
-                    } else {
-                        return wrap(new MoveMembersUI(handles.toArray(new TreePathHandle[handles.size()])));
-                    }
-                }
-                
-            };
-        } else {
-            task = new NodeToFileObjectTask(new HashSet<Node>(lookup.lookupAll(Node.class))) {
-                @Override
-                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
-                    PasteType paste = getPaste(lookup);
-                    FileObject tar=getTarget(lookup);
-                    if (selectedElements.length == 1) {
-                        if (!selectedElements[0].isFolder()) {
-                            try {
-                                return wrap(new MoveClassUI(DataObject.find(selectedElements[0]), tar, paste, handles));
-                            } catch (DataObjectNotFoundException ex) {
-                                throw new RuntimeException (ex);
-                            }
-                        } else {
-                            Set<FileObject> s = new HashSet<FileObject>();
-                            s.addAll(Arrays.asList(selectedElements));
-                            return wrap(new MoveClassesUI(s, tar, paste));
-                        }
-                    } else {
-                        Set<FileObject> s = new HashSet<FileObject>();
-                        s.addAll(Arrays.asList(selectedElements));
-                        return wrap(new MoveClassesUI(s, tar, paste));
-                    }
-                }
-                
-            };
-        }
+        Runnable task = ContextAnalyzer.createTask(lookup, MoveClassUI.factory(lookup));
         ScanDialog.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.moveAction()));
     }
-
-    protected RefactoringUI wrap(RefactoringUI orig) {
-        return orig;
-    }
-
-    public static abstract class TreePathHandleTask implements Runnable, CancellableTask<CompilationController> {
-        private Collection<TreePathHandle> handles = new ArrayList<TreePathHandle>();
-        private TreePathHandle current;
-        boolean renameFile;
-     
-        public TreePathHandleTask(Collection<? extends Node> nodes) {
-            this(nodes, false);
-        }
-        
-        public TreePathHandleTask(Collection<? extends Node> nodes, boolean useFirstHandle) {
-            for (Node n:nodes) {
-                TreePathHandle temp = n.getLookup().lookup(TreePathHandle.class);
-                if (temp!=null) {
-                    handles.add(temp);
-                    if (useFirstHandle) {
-                        break;
-                    }
-                }
-            }
-        }
-        
-        public TreePathHandleTask(TreePathHandle tph) {
-            handles.add(tph);
-        }
-        
-        @Override
-        public void cancel() {
-        }
-        
-        @Override
-        public void run(CompilationController info) throws Exception {
-            info.toPhase(Phase.ELEMENTS_RESOLVED);
-            Element el = current.resolveElement(info);
-            if (el!=null && el instanceof TypeElement && !((TypeElement)el).getNestingKind().isNested()) {
-                if (info.getFileObject().getName().equals(el.getSimpleName().toString())) {
-                    renameFile = true;
-                }
-            }
-            treePathHandleResolved(current, info);
-        }
-        
-        @Override
-        public void run() {
-            for (TreePathHandle handle:handles) {
-                FileObject f = handle.getFileObject();
-                if (f==null) {
-                    //ugly workaround for #205142
-                    TopComponent top = (TopComponent) EditorRegistry.lastFocusedComponent().getParent().getParent().getParent().getParent();
-                    f = top.getLookup().lookup(FileObject.class);
-                }
-                current = handle;
-                JavaSource source = JavaSource.forFileObject(f);
-                assert source != null;
-                try {
-                    source.runUserActionTask(this, true);
-                } catch (IllegalArgumentException ex) {
-                    ex.printStackTrace();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-            }
-
-            TopComponent activetc = TopComponent.getRegistry().getActivated();
-
-            RefactoringUI ui = createRefactoringUI(handles);
-            if (ui!=null) {
-                UI.openRefactoringUI(ui, activetc);
-            } else {
-                JOptionPane.showMessageDialog(null,NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotRenameKeyword"));
-            }
-        }
-
-        /**
-         * This is the place where subclasses may collect info about handles.
-         * @param handle handle
-         * @param javac context of running transaction
-         */
-        protected void treePathHandleResolved(TreePathHandle handle, CompilationInfo javac) {
-        }
-
-        protected abstract RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles);
-    }    
-    
-    public static abstract class TextComponentTask implements Runnable, CancellableTask<CompilationController> {
-        private JTextComponent textC;
-        private int caret;
-        private int start;
-        private int end;
-        private RefactoringUI ui;
-        private boolean selection;
-        
-        public TextComponentTask(EditorCookie ec) {
-            this(ec,false);
-        }
-        
-        public TextComponentTask(EditorCookie ec, boolean selection) {
-            this.selection = selection;
-            this.textC = ec.getOpenedPanes()[0];
-            this.caret = textC.getCaretPosition();
-            this.start = textC.getSelectionStart();
-            this.end = textC.getSelectionEnd();
-            assert caret != -1;
-            assert start != -1;
-            assert end != -1;
-        }
-        
-        @Override
-        public void cancel() {
-        }
-        
-        @Override
-        public void run(final CompilationController cc) throws Exception {
-            TreePath selectedElement = null;
-            cc.toPhase(Phase.RESOLVED);
-            
-            final int c = selection?start:this.caret;
-
-            final int[] adjustedCaret = new int[] {c};
-//            final boolean[] insideJavadoc = {false};
-            final Document doc = cc.getDocument();
-            doc.render(new Runnable() {
-                @Override
-                public void run() {
-                    TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(cc.getTokenHierarchy(), c);
-
-                    ts.move(c);
-
-                    if (ts.moveNext() && ts.token()!=null) {
-                        if (ts.token().id() == JavaTokenId.IDENTIFIER) {
-                            adjustedCaret[0] = ts.offset() + ts.token().length() / 2 + 1;
-                        } /*else if (ts.token().id() == JavaTokenId.JAVADOC_COMMENT) {
-                            TokenSequence<JavadocTokenId> jdts = ts.embedded(JavadocTokenId.language());
-                            if (jdts != null && JavadocImports.isInsideReference(jdts, caret)) {
-                                jdts.move(caret);
-                                if (jdts.moveNext() && jdts.token().id() == JavadocTokenId.IDENT) {
-                                    adjustedCaret[0] = jdts.offset();
-                                    insideJavadoc[0] = true;
-                                }
-                            } else if (jdts != null && JavadocImports.isInsideParamName(jdts, caret)) {
-                                jdts.move(caret);
-                                if (jdts.moveNext()) {
-                                    adjustedCaret[0] = jdts.offset();
-                                    insideJavadoc[0] = true;
-                                }
-                            }
-                        }*/
-                    }
-                }
-            });
-            selectedElement = cc.getTreeUtilities().pathFor(adjustedCaret[0]);
-            //workaround for issue 89064
-            if (selectedElement.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
-                List<? extends Tree> decls = cc.getCompilationUnit().getTypeDecls();
-                if (!decls.isEmpty()) {
-                    TreePath path = TreePath.getPath(cc.getCompilationUnit(), decls.get(0));
-                    if (path!=null && cc.getTrees().getElement(path)!=null) {
-                        selectedElement = path;
-                    }
-                }
-            }
-            ui = createRefactoringUI(TreePathHandle.create(selectedElement, cc), start, end, cc);
-        }
-        
-        @Override
-        public final void run() {
-            try {
-                JavaSource source = JavaSource.forDocument(textC.getDocument());
-                source.runUserActionTask(this, true);
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
-                return ;
-            }
-            TopComponent activetc = TopComponent.getRegistry().getActivated();
-
-            SHOW.show(ui, activetc);
-        }
-        
-        protected abstract RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info);
-    }
-    
-    public static abstract class NodeToElementTask implements Runnable, CancellableTask<CompilationController>  {
-        private Node node;
-        private RefactoringUI ui;
-        
-        public NodeToElementTask(Collection<? extends Node> nodes) {
-            assert nodes.size() == 1;
-            this.node = nodes.iterator().next();
-        }
-        
-        @Override
-        public void cancel() {
-        }
-        
-        @Override
-        public void run(CompilationController info) throws Exception {
-            info.toPhase(Phase.ELEMENTS_RESOLVED);
-            CompilationUnitTree unit = info.getCompilationUnit();
-            if (unit.getTypeDecls().isEmpty()) {
-                ui = createRefactoringUI(null, info);
-            } else {
-                TreePathHandle representedObject = TreePathHandle.create(TreePath.getPath(unit, unit.getTypeDecls().get(0)),info);
-                ui = createRefactoringUI(representedObject, info);
-            }
-        }
-        
-        @Override
-        public final void run() {
-            DataObject o = node.getCookie(DataObject.class);
-            JavaSource source = JavaSource.forFileObject(o.getPrimaryFile());
-            assert source != null;
-            try {
-                source.runUserActionTask(this, true);
-            } catch (IllegalArgumentException ex) {
-                ex.printStackTrace();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-            if (ui!=null) {
-                UI.openRefactoringUI(ui);
-            } else {
-                JOptionPane.showMessageDialog(null,NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_NoTypeDecls"));
-            }
-        }
-        protected abstract RefactoringUI createRefactoringUI(TreePathHandle selectedElement, CompilationInfo info);
-    }
-    
-    public static abstract class NodeToFileObjectTask implements Runnable, CancellableTask<CompilationController> {
-        private Collection<? extends Node> nodes;
-        public NonRecursiveFolder pkg[];
-        Collection<TreePathHandle> handles = new ArrayList<TreePathHandle>();
-        private Node currentNode;
-     
-        public NodeToFileObjectTask(Collection<? extends Node> nodes) {
-            this.nodes = nodes;
-        }
-        
-        @Override
-        public void cancel() {
-        }
-        
-        @Override
-        public void run(CompilationController info) throws Exception {
-            info.toPhase(Phase.ELEMENTS_RESOLVED);
-            Collection<TreePathHandle> handlesPerNode = new ArrayList<TreePathHandle>();
-            CompilationUnitTree unit = info.getCompilationUnit();
-            Collection<TreePathHandle> publicHandles = new ArrayList<TreePathHandle>();
-            Collection<TreePathHandle> sameNameHandles = new ArrayList<TreePathHandle>();
-            for (Tree t: unit.getTypeDecls()) {
-                Element e = info.getTrees().getElement(TreePath.getPath(unit, t));
-                if (e == null || !(e.getKind().isClass() || e.getKind().isInterface())) {
-                    // syntax errors #111195
-                    continue;
-                }
-                if (e.getSimpleName().toString().equals(info.getFileObject().getName())) {
-                    TreePathHandle representedObject = TreePathHandle.create(TreePath.getPath(unit,t),info);
-                    sameNameHandles.add(representedObject);
-                }
-                if (e.getModifiers().contains(Modifier.PUBLIC)) {
-                    TreePathHandle representedObject = TreePathHandle.create(TreePath.getPath(unit,t),info);
-                    publicHandles.add(representedObject);
-                }
-            }
-            if (!publicHandles.isEmpty()) {
-                handlesPerNode.addAll(publicHandles);
-            } else {
-                handlesPerNode.addAll(sameNameHandles);
-            }
-
-            if (!handlesPerNode.isEmpty()) {
-                handles.addAll(handlesPerNode);
-                nodeTranslated(currentNode, handlesPerNode, info);
-            }
-        }
-        
-        @Override
-        public void run() {
-            FileObject[] fobs = new FileObject[nodes.size()];
-            pkg = new NonRecursiveFolder[fobs.length];
-            int i = 0;
-            for (Node node:nodes) {
-                DataObject dob = node.getCookie(DataObject.class);
-                if (dob!=null) {
-                    fobs[i] = dob.getPrimaryFile();
-                    if (RefactoringUtils.isJavaFile(fobs[i])) {
-                        JavaSource source = JavaSource.forFileObject(fobs[i]);
-                        assert source != null;
-                        try {
-                            currentNode = node;
-                            // XXX this could be optimize by ClasspasthInfo in case of more than one file
-                            source.runUserActionTask(this, true);
-                        } catch (IllegalArgumentException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } finally {
-                            currentNode = null;
-                        }
-                    }
-                    
-                    pkg[i++] = node.getLookup().lookup(NonRecursiveFolder.class);
-                }
-            }
-            RefactoringUI ui = createRefactoringUI(fobs, handles);
-            if (ui!=null) {
-                UI.openRefactoringUI(ui);
-            } else {
-                JOptionPane.showMessageDialog(null,NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_NoTypeDecls"));
-            }
-        }
-
-        /**
-         * Notifies subclasses about the translation.
-         * This is the place where subclasses may collect info about handles.
-         * @param node node that is translated
-         * @param handles handles translated from the node
-         * @param javac context of running translation
-         */
-        protected void nodeTranslated(Node node, Collection<TreePathHandle> handles, CompilationInfo javac) {
-        }
-
-        protected abstract RefactoringUI createRefactoringUI(FileObject[] selectedElement, Collection<TreePathHandle> handles);
-    }    
-
-    private static boolean isSelectionHeterogeneous(Collection<? extends Node> nodes){
+    private static boolean isSelectionHeterogeneous(Collection<? extends Node> nodes) {
         boolean folderSelected = false;
         boolean nonFolderNodeSelected = false;
         for (Node node : nodes) {
             DataObject dataObject = node.getCookie(DataObject.class);
-            if (dataObject == null){
+            if (dataObject == null) {
                 continue;
             }
-            if (isRefactorableFolder(dataObject)){
+            if (isRefactorableFolder(dataObject)) {
                 if (folderSelected || nonFolderNodeSelected) {
                     return true;
-                }else{
+                } else {
                     folderSelected = true;
                 }
-            }else{
+            } else {
                 nonFolderNodeSelected = true;
             }
         }
 
         return false;
     }
-    
-    static boolean isFromEditor(EditorCookie ec) {
-        if (ec != null && ec.getOpenedPanes() != null) {
-            TopComponent activetc = TopComponent.getRegistry().getActivated();
-            if (activetc instanceof CloneableEditorSupport.Pane) {
-                return ec.getDocument()!=null;
-            }
-        }
-        return false;
-    }
-
-    static boolean nodeHandle(Lookup lookup) {
-        Node n = lookup.lookup(Node.class);
-        if (n!=null) {
-            if (n.getLookup().lookup(TreePathHandle.class)!=null)
-                return true;
-        }
-        return false;
-    }
 
     private static boolean isRefactorableFolder(DataObject dataObject) {
         FileObject fileObject = dataObject.getPrimaryFile();
-        if (/* #159628 */!Boolean.TRUE.equals(fileObject.getAttribute("isRemoteAndSlow"))) { // NOI18N
+        if (/*
+                 * #159628
+                 */!Boolean.TRUE.equals(fileObject.getAttribute("isRemoteAndSlow"))) { // NOI18N
             FileObject[] children = fileObject.getChildren();
             if (children == null || children.length <= 0) {
                 return false;
             }
         }
-        
-        return (dataObject instanceof DataFolder) && 
-                RefactoringUtils.isFileInOpenProject(fileObject) && 
-                JavaRefactoringUtils.isOnSourceClasspath(fileObject) && 
-                !RefactoringUtils.isClasspathRoot(fileObject);
+
+        return (dataObject instanceof DataFolder)
+                && RefactoringUtils.isFileInOpenProject(fileObject)
+                && JavaRefactoringUtils.isOnSourceClasspath(fileObject)
+                && !RefactoringUtils.isClasspathRoot(fileObject);
     }
 
-    private static Logger logger() {
-        return Logger.getLogger(RefactoringActionsProvider.class.getName());
-    }
 
-    public static ShowUI SHOW = new ShowUI() {
-        @Override
-        public void show(RefactoringUI ui, TopComponent activetc) {
-            if (ui!=null) {
-                UI.openRefactoringUI(ui, activetc);
-            } else {
-                JOptionPane.showMessageDialog(null,NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotRenameKeyword"));
-            }
-        }
-    };
-    public interface ShowUI {
-        public void show(RefactoringUI ui, TopComponent activetc);
-    }
 }

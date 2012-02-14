@@ -127,6 +127,10 @@ public class NeonLexerTest extends NeonTestBase {
         performTest("notAndSelfKeyword");
     }
 
+    public void testMultilineValues() throws Exception {
+        performTest("multilineValues");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = NeonLexerUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/" + filename + ".neon"));

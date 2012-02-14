@@ -48,6 +48,7 @@ import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.modules.csl.api.CslActions;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -68,7 +69,7 @@ public class ToggleBlockCommentAction extends BaseAction{
     public ToggleBlockCommentAction() {
         super(ExtKit.toggleCommentAction);
     }
-    
+
     public ToggleBlockCommentAction (Map<String,?> attrs) {
         super(null);
         if (attrs != null) {
@@ -79,7 +80,7 @@ public class ToggleBlockCommentAction extends BaseAction{
             putValue(Action.NAME, actionName);
         }
     }
-    
+
     @Override
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
         boolean processedHere = false;
@@ -97,7 +98,7 @@ public class ToggleBlockCommentAction extends BaseAction{
                 if (ts.token().id() != PHPTokenId.T_INLINE_HTML) {
                     boolean newLine = false;
                     while (ts.movePrevious() && ts.token().id() != PHPTokenId.PHP_OPENTAG && !newLine) {
-                        if(ts.token().id() == PHPTokenId.WHITESPACE 
+                        if(ts.token().id() == PHPTokenId.WHITESPACE
                                 && ts.token().text().toString().contains("\n")) {
                             newLine = true;
                         }
@@ -107,7 +108,7 @@ public class ToggleBlockCommentAction extends BaseAction{
                         final int changeOffset = ts.offset() + ts.token().length();
                         final boolean lineComment = (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT)
                                 || (ts.token().id() == PHPTokenId.WHITESPACE && ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT);
-                       
+
                         final int length = lineComment ? ts.offset() + ts.token().length() - changeOffset : 0;
                         doc.runAtomic(new Runnable() {
 
@@ -123,7 +124,7 @@ public class ToggleBlockCommentAction extends BaseAction{
                                             doc.remove(changeOffset, length);
                                         }
                                     }
-                                    
+
                                 } catch (BadLocationException ex) {
                                     Exceptions.printStackTrace(ex);
                                 }
@@ -134,9 +135,9 @@ public class ToggleBlockCommentAction extends BaseAction{
             }
         }
         if(!processedHere) {
-            BaseAction action = new org.netbeans.modules.csl.api.ToggleBlockCommentAction();
-            if (getValue(FORCE_COMMENT) != null) {   
-                action.putValue(FORCE_COMMENT, getValue(FORCE_COMMENT)); 
+            BaseAction action = (BaseAction) CslActions.createToggleBlockCommentAction();
+            if (getValue(FORCE_COMMENT) != null) {
+                action.putValue(FORCE_COMMENT, getValue(FORCE_COMMENT));
             }
             if (getValue(FORCE_UNCOMMENT) != null) {
                 action.putValue(FORCE_UNCOMMENT, getValue(FORCE_UNCOMMENT));
@@ -144,11 +145,11 @@ public class ToggleBlockCommentAction extends BaseAction{
             action.actionPerformed(evt, target);
         }
     }
-    
+
     private boolean forceDirection(boolean comment) {
         Object fComment = getValue(FORCE_COMMENT);
         Object fUncomment = getValue(FORCE_UNCOMMENT);
-        
+
         Object force = comment ? fComment : fUncomment;
         if (force instanceof Boolean) {
             return ((Boolean)force).booleanValue();

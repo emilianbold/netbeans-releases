@@ -50,14 +50,14 @@ import org.netbeans.lib.editor.util.ArrayUtilities;
  */
 public class IndentUtils {
     private static final int MAX_CACHED_INDENT = 80;
-    
+
     private static final String[] cachedSpacesStrings = new String[MAX_CACHED_INDENT + 1];
     static {
         cachedSpacesStrings[0] = ""; //NOI18N
     }
-    
+
     private static final int MAX_CACHED_TAB_SIZE = 8; // Should mostly be <= 8
-    
+
     /**
      * Cached indentation string containing tabs.
      * <br/>
@@ -65,7 +65,7 @@ public class IndentUtils {
      * since they are only spaces contained in cachedSpacesStrings.
      */
     private static final String[][] cachedTabIndents = new String[MAX_CACHED_TAB_SIZE + 1][];
-    
+
     static String cachedOrCreatedIndentString(int indent, boolean expandTabs, int tabSize) {
         String indentString;
         if (expandTabs || (indent < tabSize)) {
@@ -108,13 +108,13 @@ public class IndentUtils {
         }
         return indentString;
     }
-    
+
     private static String createSpacesString(int spaceCount) {
         StringBuilder sb = new StringBuilder(spaceCount);
         ArrayUtilities.appendSpaces(sb, spaceCount);
         return sb.toString();
     }
-    
+
     private static String createTabIndentString(int indent, int tabSize) {
         StringBuilder sb = new StringBuilder();
         while (indent >= tabSize) {

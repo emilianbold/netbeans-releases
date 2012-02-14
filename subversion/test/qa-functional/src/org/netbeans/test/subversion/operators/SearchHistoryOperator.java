@@ -50,6 +50,7 @@ import javax.swing.JTextField;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JListOperator;
@@ -76,6 +77,7 @@ public class SearchHistoryOperator extends TopComponentOperator {
      */
     public static SearchHistoryOperator invoke(Node[] nodes) {
         new SearchHistoryAction().perform(nodes);
+        new EventTool().waitNoEvent(3000);
         return new SearchHistoryOperator();
     }
     

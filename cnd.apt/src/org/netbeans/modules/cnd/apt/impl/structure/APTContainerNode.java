@@ -68,14 +68,17 @@ public abstract class APTContainerNode extends APTBaseNode implements Serializab
     protected APTContainerNode() {
     }
     
+    @Override
     public APT getFirstChild() {
         return child;
     }     
 
+    @Override
     public boolean accept(APTFile curFile,APTToken t) {
         return false;
     }    
     
+    @Override
     public APTToken getToken() {
         return null;
     } 
@@ -83,6 +86,7 @@ public abstract class APTContainerNode extends APTBaseNode implements Serializab
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
     
+    @Override
     public final void setFirstChild(APT child) {
         assert (child != null) : "why added null child?"; // NOI18N
         assert (this.child == null) : "why do you change immutable APT?"; // NOI18N

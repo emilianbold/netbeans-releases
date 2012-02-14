@@ -97,25 +97,29 @@ public class ScanSeveralProjectsPerfTest extends NbTestCase {
             throws IOException, ExecutionException, InterruptedException
     {
         String[][] files = {
-                { "http://spbweb.russia.sun.com/~ok153203/jEdit41.zip",
+                { "http://hg.netbeans.org/binaries/BBD005CDF8785223376257BD3E211C7C51A821E7-jEdit41.zip",
                             "jEdit41.zip",
-                            "jEdit41"
+                            "jEdit"
                 },
-                { "http://beetle.czech.sun.com/~pf124312/nigel.zip",
-                            "Clean.zip",
-                            "clean/projects/ST"
-                },
-                { "http://wiki.netbeans.org/attach/FitnessViaSamples/mediawiki-1.14.0-nbproject.zip",
-                        "mediawiki.zip",
+//                { "http://beetle.czech.sun.com/~pf124312/nigel.zip",
+//                            "Clean.zip",
+//                            "clean/projects/ST"
+//                },
+                { "http://netbeans.org/projects/performance/downloads/download/Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
+                        "Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
                         "mediawiki-1.14.0"
                 },
                 { "http://hg.netbeans.org/binaries/70CE8459CA39C3A49A2722C449117CE5DCFBA56A-tomcat6.zip",
                             "tomcat6.zip",
                             "tomcat6"
                 },
-                { "http://beetle.czech.sun.com/~pf124312/openjdk-7-ea-src-b63-02_jul_2009.zip",
-                        "openjdk.zip",
-                        "openjdk/jdk/make/netbeans/world" }
+                { "http://jupiter.cz.oracle.com/wiki/pub/NbQE/TestingProjects/BigWebProject.zip",
+                            "BigWebProject.zip",
+                            "FrankioskiProject"
+                }
+//                { "http://beetle.czech.sun.com/~pf124312/openjdk-7-ea-src-b63-02_jul_2009.zip",
+//                        "openjdk.zip",
+//                        "openjdk/jdk/make/netbeans/world" }
             };
         for (String[] row : files) {
             final String networkFileLoc = row[0];
@@ -136,8 +140,11 @@ public class ScanSeveralProjectsPerfTest extends NbTestCase {
             final String projectName = row[2];
 
             File projectsDir = FileUtil.normalizeFile(getWorkDir());
+            System.out.println("projectsDir= "+projectsDir.toString());
             FileObject projectsDirFO = FileUtil.toFileObject(projectsDir);
+            System.out.println("projectsDirFO= "+projectsDirFO.toString());
             FileObject projdir = projectsDirFO.getFileObject(projectName);
+            System.out.println("projectName= "+projectName.toString());
             FileObject nbproject = projdir.getFileObject("nbproject");
             if (nbproject.getFileObject("private") != null) {
                 for (FileObject ch : nbproject.getFileObject("private").getChildren()) {

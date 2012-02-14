@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.36
+#Version 1.40
 
 CLSS public java.lang.Object
 cons public init()
@@ -296,10 +296,10 @@ hcls GenericOnlySources,Group
 
 CLSS public final org.netbeans.spi.project.support.LookupProviderSupport
 meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.api.project.Sources> createSourcesMerger()
+meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.spi.project.ActionProvider> createActionProviderMerger()
 meth public static org.openide.util.Lookup createCompositeLookup(org.openide.util.Lookup,java.lang.String)
 supr java.lang.Object
-hfds LOG
-hcls DelegatingLookupImpl,SourcesImpl,SourcesMerger
+hcls ActionProviderMerger,MergedActionProvider,SourcesImpl,SourcesMerger
 
 CLSS public final org.netbeans.spi.project.support.ProjectOperations
 meth public static boolean isCopyOperationSupported(org.netbeans.api.project.Project)

@@ -119,7 +119,7 @@ public final class PhpModifiers extends Modifier {
             retval.add(org.netbeans.modules.csl.api.Modifier.ABSTRACT);
         }
         return retval;
-    }    
+    }
     public int toFlags() {
         return mod;
     }

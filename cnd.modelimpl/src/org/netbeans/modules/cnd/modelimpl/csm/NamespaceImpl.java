@@ -462,6 +462,11 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
 
     @Override
+    public CsmOffsetableDeclaration findExistingDeclaration(int start, CharSequence name, CsmDeclaration.Kind kind) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
     public void addDeclaration(CsmOffsetableDeclaration declaration) {
         boolean unnamed = !Utils.canRegisterDeclaration(declaration);
         // allow to register any enum

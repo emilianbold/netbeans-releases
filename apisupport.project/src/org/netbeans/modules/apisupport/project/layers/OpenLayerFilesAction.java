@@ -68,7 +68,6 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
@@ -96,17 +95,13 @@ public class OpenLayerFilesAction extends CookieAction {
     protected @Override void performAction(final Node[] activatedNodes) {
         RequestProcessor.getDefault().post(new Runnable() {
             public @Override void run() {
-                try {
                     FileObject f = activatedNodes[0].getCookie(DataObject.class).getPrimaryFile();
                     openLayersForFile(f);
-                } catch (FileStateInvalidException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
             }
         });
     }
 
-    private void openLayersForFile(FileObject f) throws FileStateInvalidException {
+    private void openLayersForFile(FileObject f) {
         URL[] location = (URL[]) f.getAttribute("layers"); // NOI18N
         if (location != null) {
             for (URL u : location) {
@@ -124,7 +119,7 @@ public class OpenLayerFilesAction extends CookieAction {
 
     private static void openLayerFileAndFind(DataObject layerDataObject, final FileObject originalF) {
         try {
-            InputSource in = new InputSource(layerDataObject.getPrimaryFile().getURL().toExternalForm());
+            InputSource in = new InputSource(layerDataObject.getPrimaryFile().toURL().toExternalForm());
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser parser = factory.newSAXParser();
             final AtomicInteger line = new AtomicInteger();

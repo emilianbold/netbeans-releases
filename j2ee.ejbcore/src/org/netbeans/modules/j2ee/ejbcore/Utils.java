@@ -316,7 +316,7 @@ public class Utils {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement(className);
                 TypeElement junitTestCase = controller.getElements().getTypeElement("junit.framework.TestCase");
-                if (junitTestCase != null) {
+                if (junitTestCase != null && typeElement != null) {
                     result[0] = controller.getTypes().isSubtype(typeElement.asType(), junitTestCase.asType());
                 }
             }
@@ -444,7 +444,10 @@ public class Utils {
                 public void run(CompilationController cc) throws Exception {
                     cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = cc.getElements().getTypeElement(className);
-                    result[0] =  cc.getTypes().isSubtype(typeElement.asType(), cc.getElements().getTypeElement("javax.servlet.Servlet").asType());
+                    TypeElement servletTypeElement = cc.getElements().getTypeElement("javax.servlet.Servlet"); //NOI18N
+                    if (typeElement != null && servletTypeElement != null) {
+                        result[0] =  cc.getTypes().isSubtype(typeElement.asType(), servletTypeElement.asType());
+                    }
                 }
             }, true);
         } catch (IOException ex) {

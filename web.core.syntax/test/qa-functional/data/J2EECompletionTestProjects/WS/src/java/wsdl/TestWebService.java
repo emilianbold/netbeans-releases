@@ -53,7 +53,7 @@ true
 /**CC
 @WebParam(mode=|)
 Mode Mode.OUT
-@WebParam(mode=WebParam.Mode.OUT)
+@WebParam(mode= WebParam.Mode.OUT)
 */
 
 //file sections

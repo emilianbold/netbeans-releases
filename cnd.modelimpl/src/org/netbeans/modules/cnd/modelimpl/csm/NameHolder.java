@@ -246,7 +246,7 @@ public class NameHolder {
                 isMacroExpanded = isMacroExpandedToken(token);
                 end = OffsetableBase.getEndOffset(token);
                 token = token.getNextSibling();
-                if (token != null && token.getType() == CPPTokenTypes.ID) {
+                if (token != null && token.getType() == CPPTokenTypes.IDENT) {
                     end = OffsetableBase.getEndOffset(token);
                     return "~" + token.getText(); // NOI18N
                 }
@@ -334,7 +334,7 @@ public class NameHolder {
 
     private CharSequence extractName(AST token){
         int type = token.getType();
-        if( type == CPPTokenTypes.ID ) {
+        if( type == CPPTokenTypes.IDENT ) {
             start = OffsetableBase.getStartOffset(token);
             isMacroExpanded = isMacroExpandedToken(token);
             end = OffsetableBase.getEndOffset(token);
@@ -348,7 +348,7 @@ public class NameHolder {
                     for (AST token2 = token.getFirstChild(); token2 != null; token2 = token2.getNextSibling()) {
                         int type2 = token2.getType();
                         switch (type2) {
-                            case CPPTokenTypes.ID:
+                            case CPPTokenTypes.IDENT:
                                 lastId = token2;
                                 break;
                             case CPPTokenTypes.GREATERTHAN:
@@ -367,7 +367,7 @@ public class NameHolder {
                         last = lastId;
                     }
                 }
-                if( last.getType() == CPPTokenTypes.ID ) {
+                if( last.getType() == CPPTokenTypes.IDENT ) {
                     start = OffsetableBase.getStartOffset(last);
                     isMacroExpanded = isMacroExpandedToken(last);
                     end = OffsetableBase.getEndOffset(last);
@@ -390,7 +390,7 @@ public class NameHolder {
                         return sb.toString();
                     } else {
                         AST first = token.getFirstChild();
-                        if (first.getType() == CPPTokenTypes.ID) {
+                        if (first.getType() == CPPTokenTypes.IDENT) {
                             start = OffsetableBase.getStartOffset(first);
                             isMacroExpanded = isMacroExpandedToken(first);
                             end = OffsetableBase.getEndOffset(first);
@@ -412,7 +412,7 @@ public class NameHolder {
         if (aName == null || aName.length()==0){
             AST token = ast.getNextSibling();
             if( token != null) {
-                if (token.getType() == CPPTokenTypes.ID) {
+                if (token.getType() == CPPTokenTypes.IDENT) {
                     //typedef enum C { a2, b2, c2 } D;
                     start = OffsetableBase.getStartOffset(token);
                     isMacroExpanded = isMacroExpandedToken(token);
@@ -442,7 +442,7 @@ public class NameHolder {
             if( type == limitingTokenType && limitingTokenType >= 0 ) {
                 return null;
             }
-            else if( type == CPPTokenTypes.ID ) {
+            else if( type == CPPTokenTypes.IDENT ) {
                 start = OffsetableBase.getStartOffset(token);
                 isMacroExpanded = isMacroExpandedToken(token);
                 end = OffsetableBase.getEndOffset(token);
@@ -460,7 +460,7 @@ public class NameHolder {
 		}
                 AST last = AstUtil.getLastChild(token);
                 if( last != null) {
-                    if( last.getType() == CPPTokenTypes.ID ) {
+                    if( last.getType() == CPPTokenTypes.IDENT ) {
                         start = OffsetableBase.getStartOffset(last);
                         isMacroExpanded = isMacroExpandedToken(last);
                         end = OffsetableBase.getEndOffset(last);
@@ -480,7 +480,7 @@ public class NameHolder {
                                 sb.append(next.getText());
                             }
                             return sb.toString();
-                        } else if (first.getType() == CPPTokenTypes.ID){
+                        } else if (first.getType() == CPPTokenTypes.IDENT){
                             start = OffsetableBase.getStartOffset(first);
                             end = OffsetableBase.getEndOffset(first);
                             isMacroExpanded = isMacroExpandedToken(first);

@@ -29,11 +29,10 @@ Other names may be trademarks of their respective owners.
 <mapID target="files.search" url="files/files_search.html" />
 <mapID target="files.template" url="files/files_template.html" />
 <mapID target="files.unknown" url="files/files_unknown.html" />
-<mapID target="files.runtime" url="files/files_runtime.html" />
 <mapID target="files.about-encoding" url="files/file_encoding.html" />
 <mapID target="find_regexp" url="files/find_regexp.html" />
 <mapID target="files.tasklist" url="files/files_tasklist.html" />
-<mapID target="org.netbeans.modules.localhistory.ui.view.LHHistoryTab" url="local-history/csh/about_hist_editor.html" />
+
 
 
 
@@ -120,12 +119,6 @@ Other names may be trademarks of their respective owners.
 <mapID target="managing_a_module" url="configure/modules/managing_a_module.html" />
 <mapID target="managing_updatecenters" url="configure/modules/updatecenters.html" />
 
-<!-- Plugin manager csh topics -->
-<mapID target="org.netbeans.modules.autoupdate.ui.SettingsTab" url="configure/modules/csh_plug_settings.html" />
-<mapID target="org.netbeans.modules.autoupdate.ui.UnitTab.UPDATE" url="configure/modules/csh_plug_updates.html" />
-<mapID target="org.netbeans.modules.autoupdate.ui.UnitTab.AVAILABLE" url="configure/modules/csh_plug_newplugs.html" />
-<mapID target="org.netbeans.modules.autoupdate.ui.UnitTab.INSTALLED" url="configure/modules/csh_plug_installed.html" />
-<mapID target="org.netbeans.modules.autoupdate.ui.UnitTab.LOCAL" url="configure/modules/csh_plug_downloaded.html" />
 
 <mapID target="shortcuts.kybd" url="shortcuts/kybdshortcuts.html" />
 <mapID target="shortcuts.menus" url="shortcuts/menucuts.html" />
@@ -155,6 +148,13 @@ Other names may be trademarks of their respective owners.
 
 <!-- ================================ begin CSH IDs ================================ -->
 
+<!-- Plugin manager csh topics -->
+<mapID target="org.netbeans.modules.autoupdate.ui.SettingsTab" url="configure/modules/csh_plug_settings.html" />
+<mapID target="org.netbeans.modules.autoupdate.ui.UnitTab.UPDATE" url="configure/modules/csh_plug_updates.html" />
+<mapID target="org.netbeans.modules.autoupdate.ui.UnitTab.AVAILABLE" url="configure/modules/csh_plug_newplugs.html" />
+<mapID target="org.netbeans.modules.autoupdate.ui.UnitTab.INSTALLED" url="configure/modules/csh_plug_installed.html" />
+<mapID target="org.netbeans.modules.autoupdate.ui.UnitTab.LOCAL" url="configure/modules/csh_plug_downloaded.html" />
+
 <!-- Projects window :-->
 <mapID target="ProjectTab_Projects" url="project/csh/proj_project_window.html" />
 
@@ -162,8 +162,8 @@ Other names may be trademarks of their respective owners.
 <mapID target="ProjectTab_Files" url="project/csh/proj_files_window.html" />
 
 <!-- Services window -->
-<mapID target="org.netbeans.core.actions.ViewRuntimeTabAction" url="files/files_runtime.html" />
-<mapID target="projrave_ui_elements_server_nav_add_websvcdb" url="files/AddWebServiceDlg.html" />
+<mapID target="org.netbeans.core.actions.ViewRuntimeTabAction" url="files/csh/files_runtime.html" />
+<mapID target="projrave_ui_elements_server_nav_add_websvcdb" url="files/csh/AddWebServiceDlg.html" />
 
 <!-- Favorites window :-->
 <mapID target="org.netbeans.modules.favorites.Tab" url="project/csh/proj_fav_window.html" />
@@ -176,7 +176,7 @@ Other names may be trademarks of their respective owners.
 
 <!--Task List window -->
 <mapID target="org.netbeans.modules.tasklist.docscan.SourceTasksView" url="files/tasklist-csh.html" />
-<mapID target="org.netbeans.modules.tasklist.ui.TaskListTopComponent" url="files/tasklist-csh.html" />
+<mapID target="org.netbeans.modules.tasklist.ui.TaskListTopComponent" url="files/csh/tasklist-csh.html" />
 
 <!--Java and PHP shared Project Properties: Formatting panel -->
 <mapID target="org.netbeans.modules.editor.indent.project.FormattingCustomizerPanel" url="editing/csh/project_props_editor_format.html" />
@@ -226,19 +226,18 @@ Other names may be trademarks of their respective owners.
 	<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="project/csh/csh_library_manager.html"/>
 
 
-<!--CSH - Keymaps Options window page:-->
-<mapID target="netbeans.optionsDialog.keymaps" url="configure/options-shortcuts.html" />
-<mapID target="netbeans.optionsDialog.advanced.todo" url="configure/options_todo_settings.html" />
-
-
 <!--CSH for plain text editor-->
-<mapID target="text.plain" url="editing/editor_quickref.html" />
+<mapID target="text.plain" url="editing/csh/plain_editor.html" />
 
 <!--CSH for css text editor-->
 <mapID target="text.x-css" url="xml/css/csh/about_source_editor.html" />
 
-<!-- CSH for HTML text editor -->
+<!-- CSH for HTML and JSP text editor -->
 <mapID target="org.netbeans.modules.html.editor.api.HtmlKit" url="html/csh/about_source_editor.html" />
+<mapID target="org.netbeans.modules.web.core.syntax.JSPKit" url="html/csh/about_source_editor.html"/>
+
+<!-- CSH for Local History tab -->
+<mapID target="org.netbeans.modules.localhistory.ui.view.LHHistoryTab" url="local-history/csh/about_hist_editor.html" />
 
 <!--Add New Class dialog box-->
 <mapID target="org.netbeans.modules.java.ui.nodes.elements.SourceEditSupport$AddNewClass" url="pending.html"/>
@@ -275,15 +274,12 @@ Other names may be trademarks of their respective owners.
 <!--ID for Waiting For Tasks to Finish dialog box:-->
     <mapID target="org.netbeans.core.execution.Install.pending" url="misc-general/waiting.html" />
 
-    <!--ID for Find dialog-->
-<mapID target="org.netbeans.modules.search.SearchPanel" url="files/files_search.html" />    
+    <!--ID for Find and Replace in Projects dialog. "search" module is in utilities package-->
+<mapID target="org.netbeans.modules.search.SearchPanel.false" url="files/csh/search_projects.html" />    
+<mapID target="org.netbeans.modules.search.SearchPanel.true" url="files/csh/replace_in_projects.html" /> 
 
-    <!--ID for Replace dialog-->
-<mapID target="editing.find" url="files/files_search.html" />    
+        
     
-<!--remove ID issue 54601:-->
-    <mapID target="org.netbeans.core.output.OutputTab" url="pending.html" />
-
     
   <!--Remove ID; issue 54895:-->
    <mapID target="org.netbeans.modules.image.ImageViewer" url="pending.html" /> 
@@ -299,36 +295,43 @@ Other names may be trademarks of their respective owners.
 
    <!-- remove id; Issue 54894-->
       <mapID target="org.netbeans.modules.form.editors2.CustomTableModelEditor" url="pending.html" /> 
-   
-   
-<!--OptionsAction is Options window:--> 
-   <mapID target="org.netbeans.core.actions.OptionsAction" url="configure/configure_options.html" /> 
-<!--root Options node + category nodes:-->
+      
+      <!-- Not used in NetBeans but target preserved for possible platform use 
    <mapID target="org.netbeans.core.ControlPanelNode" url="configure/configure_options.html" />
-   <mapID target="org.netbeans.core.actions.OptionsAction$OptionsPanel$OptionsFilterNode" url="configure/configure_options.html" />
-   <mapID target="org.netbeans.core.EnvironmentNode" url="files/files_runtime.html" />
+   -->
+  <!-- ALMOST CERTAINLY OBSOLETE-->  
+<!--OptionsAction is Options window, or may have been many many releases ago:
 
-<!--nodes in Options | System | Object Types:-->
-   <mapID target="org.netbeans.core.LoaderPoolNode$LoaderPoolItemNode" url="files/files_unknown.html" /> 
-   <mapID target="objects.object-types" url="files/files_unknown.html" /> 
-     
-   <mapID target="org.netbeans.core.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> 
+   <mapID target="org.netbeans.core.actions.OptionsAction" url="configure/configure_options.html" /> 
+-->
+   <!--root Options node + category nodes:
+   TARGETS NOT FOUND IN IDE AS OF DEV BUILD 12 JAN 2012 -->
+<!--   <mapID target="org.netbeans.core.actions.OptionsAction$OptionsPanel$OptionsFilterNode" url="configure/configure_options.html" />
+   <mapID target="org.netbeans.core.EnvironmentNode" url="files/csh/files_runtime.html" />-->
+
+
+    <!-- TARGET NOT FOUND AND NO HELP BUTTON FOR CUSTOMIZE TOOLBARS DIALOG, 12 JAN 2012 
+   <mapID target="org.netbeans.core.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> -->
 <!--possibly remap the following target to configure_options.html :-->
 
    <!-- Diff: options window help ids -->
-   <mapID target="org.netbeans.modules.diff.options.DiffOptionsController" url="configure/options_diffengine.html" />
-   <mapID target="org.netbeans.modules.versioning.util.VcsAdvancedOptions" url="configure/options_versioning.html" />
+   <mapID target="org.netbeans.modules.diff.options.DiffOptionsController" url="configure/csh/misc/options_diffengine.html" />
+   <mapID target="org.netbeans.modules.versioning.util.VcsAdvancedOptions" url="configure/csh/misc/options_versioning.html" />
+   <!-- No such target found in core.execution package -->
+<!--   <mapID target="org.netbeans.core.execution.ProcessNode" url="files/csh/files_runtime.html" /> 
+   <mapID target="org.netbeans.core.execution.ProcessNodeItem" url="files/csh/files_runtime.html" /> 
+   <mapID target="org.netbeans.core.execution.ProcessNodeItem$TerminateProcessAction" url="files/csh/files_runtime.html" /> -->
    
-   <mapID target="org.netbeans.core.execution.ProcessNode" url="files/files_runtime.html" /> 
-   <mapID target="org.netbeans.core.execution.ProcessNodeItem" url="files/files_runtime.html" /> 
-   <mapID target="org.netbeans.core.execution.ProcessNodeItem$TerminateProcessAction" url="files/files_runtime.html" /> 
-   <mapID target="org.netbeans.core.windows.toolbars.ToolbarConfiguration" url="configure/workspace/toolbar_customize.html" /> 
+   <!-- TARGET NOT FOUND IN core.windows AND NO HELP BUTTON FOR TOOLBAR CONFIG DIALOG -->
+<!--   <mapID target="org.netbeans.core.windows.toolbars.ToolbarConfiguration" url="configure/workspace/toolbar_customize.html" /> -->
 
 <!-- Database Explorer node; both general container and instance node for databases -->
-<mapID target="dbexpovew" url="files/files_runtime.html" />
+<!-- SUSPECT DATABASE EXPLORER NODE OBSOLETE, NO DIALOG FOR 
+<mapID target="dbexpovew" url="files/csh/files_runtime.html" /> -->
 
- <!--TODO: add a CSH topic for these nodes; Look & Feel / Menu Bar; Toobars:-->  
-   <mapID target="org.netbeans.core.windows.services.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> 
+ <!--TODO: add a CSH topic for these nodes; Look & Feel / Menu Bar; Toobars:--> 
+ <!-- NO SUCH CLASS, NO SUCH TARGET IN PACKAGE core.windows 
+   <mapID target="org.netbeans.core.windows.services.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> -->
 
 
 
@@ -359,23 +362,27 @@ Other names may be trademarks of their respective owners.
    <mapID target="org.openide.options.SystemOption" url="pending.html" /> 
 
 <!-- IDs for Options window - Basic Options -->
-  <!--ID for CSH in Options | Basic Options - Advanced: for now just maps to Options window help topic. No CSH. --> 
-  <mapID target="netbeans.optionsDialog.advanced" url="configure/configure_options.html" />
+  <!--ID for CSH in Options | Basic Options - Advanced: for now just maps to Options window help topic. No CSH. 
+  Also no Advanced button or tab in Options, so likely obsolete target --> 
+<!--  <mapID target="netbeans.optionsDialog.advanced" url="configure/configure_options.html" />-->
   <!--ID for CSH in Options | Basic Options - General Category: --> 
-  <mapID target="netbeans.optionsDialog.general" url="configure/options_general.html" />
+  <mapID target="netbeans.optionsDialog.general" url="configure/csh/options_general.html" />
   <!--ID for CSH in Options | Basic Options - Editor Category: --> 
-  <mapID target="netbeans.optionsDialog.editor.general" url="configure/options-editor/general.html" />
-  <mapID target="netbeans.optionsDialog.editor.formatting" url="configure/options-editor/formatting.html" />
-  <mapID target="netbeans.optionsDialog.editor.codeTemplates" url="configure/options-editor/code-templates.html" />
-  <mapID target="netbeans.optionsDialog.editor.macros" url="configure/options-editor/macros.html" />
-  <mapID target="netbeans.optionsDialog.editor.hints" url="configure/options-editor/hints.html" />
-  <mapID target="netbeans.optionsDialog.editor.markOccurences" url="configure/options-editor/mark-occurrences.html" />
-  <mapID target="netbeans.optionsDialog.editor.identation" url="configure/options-editor/formatting.html" />
-  <mapID target="netbeans.optionsDialog.editor.codeCompletion" url="configure/options-editor/code-completion.html" />
+  <mapID target="netbeans.optionsDialog.editor.general" url="configure/csh/editor/general.html" />
+  <mapID target="netbeans.optionsDialog.editor.formatting" url="configure/csh/editor/formatting.html" />
+  <mapID target="netbeans.optionsDialog.editor.codeTemplates" url="configure/csh/editor/code-templates.html" />
+  <mapID target="netbeans.optionsDialog.editor.macros" url="configure/csh/editor/macros.html" />
+  <mapID target="netbeans.optionsDialog.editor.hints" url="configure/csh/editor/hints.html" />
+  <mapID target="netbeans.optionsDialog.editor.markOccurences" url="configure/csh/editor/mark-occurrences.html" />
+  <mapID target="netbeans.optionsDialog.editor.identation" url="configure/csh/editor/formatting.html" />
+  <mapID target="netbeans.optionsDialog.editor.codeCompletion" url="configure/csh/editor/code-completion.html" />
 
   <!--ID for CSH in Options | Basic Options - Fonts and Colors Category: --> 
-  <mapID target="netbeans.optionsDialog.fontAndColorsPanel" url="configure/options_fontscolors.html" />
-  
+  <mapID target="netbeans.optionsDialog.fontAndColorsPanel" url="configure/csh/options_fontscolors.html" />
+  <!--CSH - Keymaps Options window page:-->
+<mapID target="netbeans.optionsDialog.keymaps" url="configure/csh/options-shortcuts.html" />
+<!-- CSH Options window | miscellaneous | tasks -->
+<mapID target="netbeans.optionsDialog.advanced.todo" url="configure/csh/misc/options_todo_settings.html" />
 
   <!--ID for action as listed in Options | IDE Configuration | Look and Feel | Actions:--> 
   <mapID target="org.netbeans.modules.j2ee.impl.DeployAction" url="pending.html" />
@@ -387,7 +394,7 @@ Other names may be trademarks of their respective owners.
   <mapID target="org.netbeans.core.actions.OptionsAction$Templates" url="pending.html" />
 
  <!-- Options | Misc | Files -->
-    <mapID target="netbeans.optionsDialog.advanced.files" url="configure/options_file_types.html" />
+    <mapID target="netbeans.optionsDialog.advanced.files" url="configure/csh/misc/options_file_types.html" />
   
   <mapID target="org.netbeans.core.ui.UINodes$TemplatesNode" url="pending.html" />
   <!--folder subnodes of Templates category; can be overridden in layer:-->
@@ -404,22 +411,25 @@ Other names may be trademarks of their respective owners.
 
 <!-- XML Module CSH :-->
 <!--XML source editor -->
-<mapID target="org.netbeans.modules.xml.text.syntax.XMLKit" url="xml/xml_edit.html" />
+<mapID target="org.netbeans.modules.xml.text.syntax.XMLKit" url="xml/csh/about_source_editor.html" />
 
+<!-- The following targets are valid but refer to context menu/toolbar actions, so I do not see how the target is ever called. 12 Jan 2012-->
 <mapID target="org.netbeans.modules.xml.tools.actions.ValidateAction" url="xml/xml_validate.html" />
 <mapID target="org.netbeans.modules.xml.tools.doclet.DocletAction" url="xml/dtd/dtd_document.html" />
-
 <mapID target="org.netbeans.modules.xsl.actions.TransformAction" url="xml/xsl/xsl_transform.html" />
 
-<mapID target="org.netbeans.modules.xml.core.settings.CoreSettings"     url="xml/xml_settings.html" />    
-<mapID target="org.netbeans.modules.xml.core.settings"     url="xml/xml_settings.html" />    
-<mapID target="org.netbeans.modules.xml.catalog.CatalogRootNode" url="xml/catalog/xmlcatalog_mount.html" />
+<!-- Target cannot be found in any xml package, 12Jan 2012 -->
+<!--<mapID target="org.netbeans.modules.xml.core.settings.CoreSettings"     url="xml/xml_settings.html" />    
+<mapID target="org.netbeans.modules.xml.core.settings"     url="xml/xml_settings.html" />    -->
+
+<!-- Actual UI target is org.netbeans.modules.xml.catalog.CatalogMounterPanel 12 Jan 2012 -->
+<!--<mapID target="org.netbeans.modules.xml.catalog.CatalogRootNode" url="xml/catalog/xmlcatalog_mount.html" />
 <mapID target="org.netbeans.modules.xml.catalog.CatalogNode"     url="xml/catalog/xmlcatalog_mount.html" />    
-<mapID target="org.netbeans.modules.xml.catalog.CatalogEntryNode"     url="xml/catalog/xmlcatalog_mount.html" />
+<mapID target="org.netbeans.modules.xml.catalog.CatalogEntryNode"     url="xml/catalog/xmlcatalog_mount.html" />-->
+
 <mapID target="org.netbeans.modules.xml.catalog.CatalogMounterPanel" url="xml/catalog/csh/add-catalog.html" />
-<mapID target="org.netbeans.modules.xml.text.syntax.XMLOptions"     url="xml/xml_editor-props.html" />
-<mapID target="org.netbeans.modules.css.text.syntax.CSSEditorOptions"     url="xml/xml_editor-props.html" />
-<mapID target="org.netbeans.modules.xml.text.syntax.DTDOptions"     url="xml/xml_editor-props.html" />
+
+
 
 
 
@@ -433,7 +443,7 @@ Other names may be trademarks of their respective owners.
 
 <!-- Local History CSH -->
 <mapID target="org.netbeans.modules.localhistory.ui.revert.RevertFileChanges" url="local-history/csh/hist_revert_dialog.html" />
-<mapID target="org.netbeans.modules.localhistory.options.LocalHistoryOptionsController" url="local-history/hist_settings.html" />
+<mapID target="org.netbeans.modules.localhistory.options.LocalHistoryOptionsController" url="local-history/csh/local_hist_options.html" />
 
 <!-- TODO:  Find out what these are for: -->
 <mapID target="org.netbeans.modules.localhistory.ui.view.ShowLocalHistoryAction" url="pending.html" />
@@ -449,7 +459,7 @@ Other names may be trademarks of their respective owners.
 <mapID target="org.netbeans.core.windows.view.ui.MainWindow" url="pending.html" />
 
 <!--CSH - Whenever F1 is clicked on property sheet and there is no help button activated:-->
-<mapID target="org.netbeans.core.NbSheet" url="files/files_properties.html" />
+<mapID target="org.netbeans.core.windows.view.ui.NbSheet" url="files/csh/files_properties.html" />
 
 
 <!--IDs that are used for basic menu items-->
@@ -480,9 +490,11 @@ Other names may be trademarks of their respective owners.
 <mapID target="org.netbeans.core.actions.JumpPrevAction" url="pending.html" />
 
 <!--debugging, add watch-->
+<!-- Appears to be superceded by target debug.add.watch, which points correctly to CSH file for New Watch dialog. Probably in java.helpset -->
 <mapID target="org.netbeans.modules.debugger.ui.actions.AddWatchAction" url="pending.html" />
 
 <!--Output window menu item-->
+<!-- Superceded by org.netbeans.core.io.ui.IOWindow, which is mapped to output window CSH but in java.helpset.Consider moving help here, also writing up more detail-->
 <mapID target="org.netbeans.core.output2.OutputWindowAction" url="pending.html" />
 <!--Task list menu item-->
 <mapID target="org.netbeans.modules.tasklist.ui.TaskListAction" url="pending.html" />

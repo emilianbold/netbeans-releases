@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.api;
@@ -52,15 +52,15 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathV
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
- * This is AST Utils class. 
+ * This is AST Utils class.
  * @author Petr Pisl
  */
 public class Utils {
 
     /**
-     * 
+     *
      * @param root a Program node, where to look for the comment
-     * @param node  a Node for which a commen you want to find. 
+     * @param node  a Node for which a commen you want to find.
      * @return appropriate comment or null, if the comment doesn't exists.
      */
     public static Comment getCommentForNode(Program root, ASTNode node) {
@@ -122,7 +122,7 @@ public class Utils {
     }
 
     /**
-     * Return an ASTNode at the given offset. It doesn't count comments. 
+     * Return an ASTNode at the given offset. It doesn't count comments.
      * @param node
      * @param astOffset
      * @return null if there is not a node on this possition or an ASTNode except comments
@@ -135,6 +135,10 @@ public class Utils {
 
     }
 
+    public static ASTNode getNodeAfterOffset(ParserResult info, int offset) {
+        return (new AfterOffsetLocator()).locate(getRoot(info), offset);
+    }
+
     public static ASTNode[] getNodeHierarchyAtOffset(ASTNode node, int offset) {
         if (node.getStartOffset() > offset || node.getEndOffset() < offset) {
             return null;
@@ -144,11 +148,11 @@ public class Utils {
     }
 
     /**
-     * Return an ASTNode of given type at the given offset. It doesn't count comments. 
-     * 
+     * Return an ASTNode of given type at the given offset. It doesn't count comments.
+     *
      * @param node
      * @param astOffset
-     * @param terminus 
+     * @param terminus
      * @return null if there is not a node on this possition or an ASTNode except comments
      */
     public static ASTNode getNodeAtOffset(ASTNode node, int offset, Class<? extends ASTNode> terminus) {
@@ -159,6 +163,31 @@ public class Utils {
         return (new SpecificClassNodeLocator(terminus)).locate(node, offset);
     }
 
+    private static class AfterOffsetLocator extends DefaultVisitor {
+        private int offset;
+        private ASTNode resultNode = null;
+        private int lastStartOffset = -1;
+
+        public ASTNode locate(ASTNode beginNode, int offset) {
+            this.offset = offset;
+            scan(beginNode);
+            return resultNode;
+        }
+
+        @Override
+        public void scan(final ASTNode node) {
+            if (node != null) {
+                int startOffset = node.getStartOffset();
+                if (startOffset >= offset && (lastStartOffset == -1 || startOffset < lastStartOffset)) {
+                    lastStartOffset = startOffset;
+                    resultNode = node;
+                }
+                node.accept(this);
+            }
+        }
+
+    }
+
     private static class NodeLocator extends DefaultVisitor {
 
         protected int offset = 0;
@@ -167,7 +196,7 @@ public class Utils {
         public ASTNode locate(ASTNode beginNode, int astOffset) {
             offset = astOffset;            scan(beginNode);
             if (node instanceof Program) {
-                // probably no node was found except whole file. 
+                // probably no node was found except whole file.
                 // try to look for a documentation node
                 List<Comment> comments = ((Program)node).getComments();
                 for (Comment comment : comments) {
@@ -188,7 +217,7 @@ public class Utils {
                 }
             }
         }
-        
+
         @Override
         public void visit(PHPDocTypeTag node) {
         }
@@ -196,7 +225,7 @@ public class Utils {
         @Override
         public void visit(PHPDocVarTypeTag node) {
         }
-        
+
         @Override
         public void visit(PHPDocMethodTag node) {
         }

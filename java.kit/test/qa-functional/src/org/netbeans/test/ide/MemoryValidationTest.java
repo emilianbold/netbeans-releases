@@ -55,16 +55,16 @@ public class MemoryValidationTest extends IDEValidation {
         super(name);
     }
 
-    @Override
-    public void run(TestResult result) {
-        if (!getName().startsWith("testGC")) {
-            result = new TestResult();
-        }
-        super.run(result);
-    }
+//    @Override
+//    public void run(TestResult result) {
+//        if (!getName().startsWith("testGC")) {
+//            result = new TestResult();
+//        }
+//        super.run(result);
+//    }
 
     protected @Override int timeOut() {
-        return 500000;
+        return 110000;
     }
     
     public static Test suite() {
@@ -73,11 +73,10 @@ public class MemoryValidationTest extends IDEValidation {
 
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             MemoryValidationTest.class
-        ).clusters("ide[0-9]*|java[0-9]*").enableModules(".*").
+        ).clusters(".*").enableModules(".*").
         honorAutoloadEager(true).
         failOnException(Level.OFF)
-        .failOnMessage(Level.OFF)
-        ;
+        .failOnMessage(Level.OFF);
 
         conf = conf.addTest("testInitGC");
         conf = conf.addTest("testMainMenu");
@@ -93,7 +92,7 @@ public class MemoryValidationTest extends IDEValidation {
         conf = conf.addTest("testEditor");
         conf = conf.addTest("testBuildAndRun");
 
-        conf = conf.addTest("testDebugging");
+//        conf = conf.addTest("testDebugging");
 //        conf = conf.addTest("testJUnit");
 //        conf = conf.addTest("testXML");
 //        conf = conf.addTest("testDb");

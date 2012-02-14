@@ -82,6 +82,7 @@ import org.netbeans.modules.xml.text.syntax.XMLKit;
 public class XmlFoldManager implements FoldManager {
 
     private FoldOperation operation;
+    // synchronized (this)
     private long dirtyTimeMillis = 0;
     private Timer timer;
     private TimerTask timerTask;
@@ -104,8 +105,10 @@ public class XmlFoldManager implements FoldManager {
      * Ideally release should get called, but god knows why it doesn't.
      */
     public void release() {
-        releaseTimerTask();
-        timer = null;
+        synchronized (this) {
+            releaseTimerTask();
+            timer = null;
+        }
     }
 
     protected FoldOperation getOperation() {
@@ -158,18 +161,25 @@ public class XmlFoldManager implements FoldManager {
     public void expandNotify(Fold expandedFold) {
     }
    
-    private void scheduleFoldUpdate() {
+    private synchronized void scheduleFoldUpdate() {
         if (timer == null) {
             timer = new Timer();
         }
         dirtyTimeMillis = System.currentTimeMillis();
-        
+
         //dump the old timerTask
         releaseTimerTask();
-        
+
         timerTask = new TimerTask() {
             public void run() {
-                if (dirtyIntervalMillis() > DELAY_DIRTY) {
+                long delay;
+                synchronized (XmlFoldManager.this) {
+                    if (timerTask != this) {
+                        return;
+                    }
+                    delay = dirtyIntervalMillis();
+                }
+                if (delay > DELAY_DIRTY) {
                     updateFolds();
                     unsetDirty();
                 }
@@ -178,20 +188,22 @@ public class XmlFoldManager implements FoldManager {
         timer.schedule(timerTask, DELAY_SYNCER);
     }
     
-    private void releaseTimerTask() {
+    private synchronized void releaseTimerTask() {
         if(timerTask == null)
-            return;
-        
+                return;
         timerTask.cancel();
         timerTask = null;
     }
    
     public void unsetDirty() {
-        dirtyTimeMillis = 0;
-        timer.cancel();
-        timer = null;
+        synchronized (this) {
+            dirtyTimeMillis = 0;
+            timer.cancel();
+            timer = null;
+        }
     }
    
+    // always called from synchronized block
     private long dirtyIntervalMillis() {
         if (dirtyTimeMillis == 0) return 0;
         return System.currentTimeMillis() - dirtyTimeMillis;
@@ -201,7 +213,7 @@ public class XmlFoldManager implements FoldManager {
      * This method parses the XML document using Lexer and creates/recreates
      * the fold hierarchy.
      */
-    private synchronized void updateFolds() {
+    private void updateFolds() {
         FoldHierarchy foldHierarchy = getOperation().getHierarchy();
         //lock the document for changes
         getDocument().readLock();

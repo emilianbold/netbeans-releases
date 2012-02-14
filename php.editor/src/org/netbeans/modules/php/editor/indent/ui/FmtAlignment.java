@@ -58,7 +58,7 @@ import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
  * @author  phrebejk
  */
 public class FmtAlignment extends javax.swing.JPanel {
-    
+
     /** Creates new form FmtAlignment */
     public FmtAlignment() {
         initComponents();
@@ -69,7 +69,7 @@ public class FmtAlignment extends javax.swing.JPanel {
         amMethodParamsCheckBox.putClientProperty(OPTION_ID, alignMultilineMethodParams);
         amCallArgsCheckBox.putClientProperty(OPTION_ID, alignMultilineCallArgs);
         amImplementsCheckBox1.putClientProperty(OPTION_ID, alignMultilineImplements);
-        
+
         amArrayInitCheckBox1.putClientProperty(OPTION_ID, alignMultilineArrayInit);
         amArrayInitCheckBox1.setVisible(false);
         amAssignCheckBox1.putClientProperty(OPTION_ID, alignMultilineAssignment);
@@ -82,11 +82,11 @@ public class FmtAlignment extends javax.swing.JPanel {
         amParenthesizedCheckBox1.setVisible(false);
         amTernaryOpCheckBox1.putClientProperty(OPTION_ID, alignMultilineTernaryOp);
         amTernaryOpCheckBox1.setVisible(false);
-        
+
         gmlAssignmentCheckBox.putClientProperty(OPTION_ID, groupAlignmentAssignment);
         gmlArrayInitializerCheckBox.putClientProperty(OPTION_ID, groupAlignmentArrayInit);
     }
-    
+
     public static PreferencesCustomizer.Factory getController() {
 	String preview = "";
         try {
@@ -119,7 +119,7 @@ public class FmtAlignment extends javax.swing.JPanel {
 //                new String[] { FmtOptions.wrapThrowsList, WrapStyle.WRAP_ALWAYS.name() },
 //                new String[] { FmtOptions.wrapWhileStatement, WrapStyle.WRAP_ALWAYS.name() }  );
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -347,8 +347,8 @@ public class FmtAlignment extends javax.swing.JPanel {
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-    
-    
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox amArrayInitCheckBox1;
     private javax.swing.JCheckBox amAssignCheckBox1;
@@ -372,5 +372,5 @@ public class FmtAlignment extends javax.swing.JPanel {
     private javax.swing.JCheckBox nlModifiersCheckBox;
     private javax.swing.JCheckBox nlWhileCheckBox;
     // End of variables declaration//GEN-END:variables
-    
+
 }

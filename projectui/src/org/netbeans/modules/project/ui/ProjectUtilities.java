@@ -71,7 +71,6 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
@@ -179,16 +178,7 @@ public class ProjectUtilities {
                             // add project
                             wr.urls4project.put(owner, new LinkedHashSet<String>());
                         }
-                        URL url = null;
-
-                        try {
-                            url = dobj.getPrimaryFile().getURL();
-                            wr.urls4project.get(owner).add(url.toExternalForm());
-                        }
-                        catch (FileStateInvalidException fsie) {
-                            assert false : "FileStateInvalidException in " +
-                                           dobj.getPrimaryFile();
-                        }
+                        wr.urls4project.get(owner).add(dobj.getPrimaryFile().toURL().toExternalForm());
                     }
                 } else {
                     ERR.log(Level.FINE, "#194243: no DataObject in lookup of {0} of {1}", new Object[] {tc.getName(), tc.getClass()});

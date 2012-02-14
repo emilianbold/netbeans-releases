@@ -137,11 +137,19 @@ public class FetchAction extends ContextAction {
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_TITLE")); // NOI18N
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_TITLE_SEP")); // NOI18N
             
-            final String pullSourceString = new HgConfigFiles(root).getDefaultPull(true);
+            HgConfigFiles config = new HgConfigFiles(root);
+            final String pullSourceString = config.getDefaultPull(true);
             // If the repository has no default pull path then inform user
             if (HgUtils.isNullOrEmpty(pullSourceString)) {
                 notifyDefaultPullUrlNotSpecified(logger);
                 return;
+            }
+            
+            boolean enableFetch = !config.containsProperty(HgConfigFiles.HG_EXTENSIONS, HgConfigFiles.HG_EXTENSIONS_FETCH);
+            if (enableFetch) {
+                HgConfigFiles sysConfig = HgConfigFiles.getSysInstance();
+                sysConfig.doReload();
+                enableFetch = !sysConfig.containsProperty(HgConfigFiles.HG_EXTENSIONS, HgConfigFiles.HG_EXTENSIONS_FETCH);
             }
 
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, 
@@ -161,7 +169,7 @@ public class FetchAction extends ContextAction {
             }
 
             List<String> list;
-            list = HgCommand.doFetch(root, pullSource, logger);
+            list = HgCommand.doFetch(root, pullSource, enableFetch, logger);
 
             if (list != null && !list.isEmpty()) {
                 logger.output(HgUtils.replaceHttpPassword(list));

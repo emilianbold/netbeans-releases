@@ -143,9 +143,9 @@ public class FileOwnerQueryTest extends NbTestCase {
     
     public void testJarOwners() throws Exception {
         assertEquals("correct owner of a ZIPped file", p, FileOwnerQuery.getOwner(zippedfile));
-        assertEquals("correct owner of a ZIPped file URL", p, FileOwnerQuery.getOwner(URI.create(zippedfile.getURL().toExternalForm())));
+        assertEquals("correct owner of a ZIPped file URL", p, FileOwnerQuery.getOwner(URI.create(zippedfile.toURL().toExternalForm())));
         assertEquals("correct owner of a ZIPped file", p, FileOwnerQuery.getOwner(hashedFile));
-        assertEquals("correct owner of a ZIPped file URL", p, FileOwnerQuery.getOwner(URI.create(hashedFile.getURL().toExternalForm())));
+        assertEquals("correct owner of a ZIPped file URL", p, FileOwnerQuery.getOwner(URI.create(hashedFile.toURL().toExternalForm())));
     }
     
     public void testExternalOwner() throws Exception {
@@ -203,68 +203,68 @@ public class FileOwnerQueryTest extends NbTestCase {
         FileObject extfile1 = ext1.getFileObject("subdir/file");
         assertEquals("no owner yet through FileObjects", null, FileOwnerQuery.getOwner(extfile1));
         assertEquals("no owner yet through URI", null, FileOwnerQuery.getOwner(extfile1));
-        FileOwnerQuery.markExternalOwner(fileObject2URI(ext1), p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        FileOwnerQuery.markExternalOwner(ext1.toURI(), p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         assertEquals("now have an owner through FileObjects", p, FileOwnerQuery.getOwner(extfile1));
-        assertEquals("now have an owner through URI", p, FileOwnerQuery.getOwner(fileObject2URI(extfile1)));
+        assertEquals("now have an owner through URI", p, FileOwnerQuery.getOwner(extfile1.toURI()));
         assertEquals("even for the projdir throught FileObjects", p, FileOwnerQuery.getOwner(ext1));
-        assertEquals("even for the projdir throught URI", p, FileOwnerQuery.getOwner(fileObject2URI(ext1)));
+        assertEquals("even for the projdir throught URI", p, FileOwnerQuery.getOwner(ext1.toURI()));
         assertEquals("but not for something else throught FileObjects", null, FileOwnerQuery.getOwner(scratch));
-        assertEquals("but not for something else throught URI", null, FileOwnerQuery.getOwner(fileObject2URI(scratch)));
+        assertEquals("but not for something else throught URI", null, FileOwnerQuery.getOwner(scratch.toURI()));
         FileObject ext2 = scratch.getFileObject("external2");
         FileObject extfile2 = ext2.getFileObject("subdir/file");
         assertEquals("no owner yet through FileObjects", null, FileOwnerQuery.getOwner(extfile2));
-        assertEquals("no owner yet through URI", null, FileOwnerQuery.getOwner(fileObject2URI(extfile2)));
+        assertEquals("no owner yet through URI", null, FileOwnerQuery.getOwner(extfile2.toURI()));
         Project p2 = ProjectManager.getDefault().findProject(subprojdir);
-        FileOwnerQuery.markExternalOwner(fileObject2URI(ext2), p2, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        FileOwnerQuery.markExternalOwner(ext2.toURI(), p2, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         assertEquals("now have an owner through FileObjects", p2, FileOwnerQuery.getOwner(extfile2));
-        assertEquals("now have an owner through URI", p2, FileOwnerQuery.getOwner(fileObject2URI(extfile2)));
+        assertEquals("now have an owner through URI", p2, FileOwnerQuery.getOwner(extfile2.toURI()));
         assertEquals("even for the projdir through FileObjects", p2, FileOwnerQuery.getOwner(ext2));
         assertEquals("even for the projdir through URI", p2, FileOwnerQuery.getOwner(ext2));
         assertEquals("but not for something else through FileObjects", null, FileOwnerQuery.getOwner(scratch));
-        assertEquals("but not for something else through URI", null, FileOwnerQuery.getOwner(fileObject2URI(scratch)));
+        assertEquals("but not for something else through URI", null, FileOwnerQuery.getOwner(scratch.toURI()));
         assertEquals("still correct for first proj through FileObjects", p, FileOwnerQuery.getOwner(extfile1));
-        assertEquals("still correct for first proj through URI", p, FileOwnerQuery.getOwner(fileObject2URI(extfile1)));
+        assertEquals("still correct for first proj through URI", p, FileOwnerQuery.getOwner(extfile1.toURI()));
         FileObject ext3 = scratch.getFileObject("external3");
         assertEquals("no owner yet through FileObjects", null, FileOwnerQuery.getOwner(ext3));
-        assertEquals("no owner yet through URI", null, FileOwnerQuery.getOwner(fileObject2URI(ext3)));
-        FileOwnerQuery.markExternalOwner(fileObject2URI(ext3), p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        assertEquals("no owner yet through URI", null, FileOwnerQuery.getOwner(ext3.toURI()));
+        FileOwnerQuery.markExternalOwner(ext3.toURI(), p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         assertEquals("now have an owner through FileObjects", p, FileOwnerQuery.getOwner(ext3));
-        assertEquals("now have an owner through URI", p, FileOwnerQuery.getOwner(fileObject2URI(ext3)));
+        assertEquals("now have an owner through URI", p, FileOwnerQuery.getOwner(ext3.toURI()));
         FileObject ext3subproj = ext3.getFileObject("subproject");
         Project p3 = FileOwnerQuery.getOwner(ext3subproj);
         assertNotSame("different project", p, p3);
         assertEquals("but subprojects are not part of it", ProjectManager.getDefault().findProject(ext3subproj), p3);
-        FileOwnerQuery.markExternalOwner(fileObject2URI(ext3), null, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        FileOwnerQuery.markExternalOwner(ext3.toURI(), null, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         assertEquals("unmarking an owner works through FileObjects", null, FileOwnerQuery.getOwner(ext3));
-        assertEquals("unmarking an owner works through URI", null, FileOwnerQuery.getOwner(fileObject2URI(ext3)));
+        assertEquals("unmarking an owner works through URI", null, FileOwnerQuery.getOwner(ext3.toURI()));
     }
     
     public void testExternalOwnerFileURI() throws Exception {
         FileObject ext1 = scratch.getFileObject("external1");
         FileObject extfile1 = ext1.getFileObject("subdir/file");
         assertEquals("no owner yet through FileObjects", null, FileOwnerQuery.getOwner(extfile1));
-        assertEquals("no owner yet through URI", null, FileOwnerQuery.getOwner(fileObject2URI(extfile1)));
-        FileOwnerQuery.markExternalOwner(fileObject2URI(extfile1), p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        assertEquals("no owner yet through URI", null, FileOwnerQuery.getOwner(extfile1.toURI()));
+        FileOwnerQuery.markExternalOwner(extfile1.toURI(), p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         assertEquals("now have an owner through FileObjects", p, FileOwnerQuery.getOwner(extfile1));
-        assertEquals("now have an owner through URI", p, FileOwnerQuery.getOwner(fileObject2URI(extfile1)));
+        assertEquals("now have an owner through URI", p, FileOwnerQuery.getOwner(extfile1.toURI()));
         assertEquals("not for the projdir through FileObjects", null, FileOwnerQuery.getOwner(ext1));
-        assertEquals("not for the projdir through URI", null, FileOwnerQuery.getOwner(fileObject2URI(ext1)));
+        assertEquals("not for the projdir through URI", null, FileOwnerQuery.getOwner(ext1.toURI()));
         assertEquals("and not for something else through FileObjects", null, FileOwnerQuery.getOwner(scratch));
-        assertEquals("and not for something else through URI", null, FileOwnerQuery.getOwner(fileObject2URI(scratch)));
+        assertEquals("and not for something else through URI", null, FileOwnerQuery.getOwner(scratch.toURI()));
         FileObject ext2 = scratch.getFileObject("external2");
         FileObject extfile2 = ext2.getFileObject("subdir/file");
         assertEquals("no owner yet through FileObjects", null, FileOwnerQuery.getOwner(extfile2));
-        assertEquals("no owner yet through URI", null, FileOwnerQuery.getOwner(fileObject2URI(extfile2)));
+        assertEquals("no owner yet through URI", null, FileOwnerQuery.getOwner(extfile2.toURI()));
         Project p2 = ProjectManager.getDefault().findProject(subprojdir);
-        FileOwnerQuery.markExternalOwner(fileObject2URI(extfile2), p2, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        FileOwnerQuery.markExternalOwner(extfile2.toURI(), p2, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         assertEquals("now have an owner through FileObjects", p2, FileOwnerQuery.getOwner(extfile2));
-        assertEquals("now have an owner through URI", p2, FileOwnerQuery.getOwner(fileObject2URI(extfile2)));
+        assertEquals("now have an owner through URI", p2, FileOwnerQuery.getOwner(extfile2.toURI()));
         assertEquals("not for the projdir through FileObjects", null, FileOwnerQuery.getOwner(ext2));
-        assertEquals("not for the projdir through URI", null, FileOwnerQuery.getOwner(fileObject2URI(ext2)));
+        assertEquals("not for the projdir through URI", null, FileOwnerQuery.getOwner(ext2.toURI()));
         assertEquals("and not for something else through FileObjects", null, FileOwnerQuery.getOwner(scratch));
-        assertEquals("and not for something else through URI", null, FileOwnerQuery.getOwner(fileObject2URI(scratch)));
+        assertEquals("and not for something else through URI", null, FileOwnerQuery.getOwner(scratch.toURI()));
         assertEquals("still correct for first proj through FileObjects", p, FileOwnerQuery.getOwner(extfile1));
-        assertEquals("still correct for first proj through URI", p, FileOwnerQuery.getOwner(fileObject2URI(extfile1)));
+        assertEquals("still correct for first proj through URI", p, FileOwnerQuery.getOwner(extfile1.toURI()));
         
         //XXX: unmarking files.
     }
@@ -275,7 +275,7 @@ public class FileOwnerQueryTest extends NbTestCase {
         FileObject tempPrjDir = tempPrjMarker.getParent();
         Project tempPrj = ProjectManager.getDefault().findProject(tempPrjDir);
         assertNotNull(tempPrj);
-        FileOwnerQuery.markExternalOwner(fileObject2URI(ext1), tempPrj, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        FileOwnerQuery.markExternalOwner(ext1.toURI(), tempPrj, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         assertEquals("now have an owner", tempPrj, FileOwnerQuery.getOwner(ext1));
         Reference<FileObject> r = new WeakReference<FileObject>(tempPrjDir);
         tempPrjMarker = tempPrjDir = null;
@@ -290,7 +290,7 @@ public class FileOwnerQueryTest extends NbTestCase {
         FileObject ext2 = scratch.getFileObject("external2");
         FileObject extfile2 = ext2.getFileObject("subdir/file");
         
-        FileOwnerQuery.markExternalOwner(fileObject2URI(extfile2), p2, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        FileOwnerQuery.markExternalOwner(extfile2.toURI(), p2, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         
         Reference<?> p2WR = new WeakReference<Object>(p2);
         Reference<?> rootWR = new WeakReference<Object>(root);
@@ -325,15 +325,11 @@ public class FileOwnerQueryTest extends NbTestCase {
         assertEquals("still correct for the first external root", p, FileOwnerQuery.getOwner(ext1));
     }
     
-    private static URI fileObject2URI(FileObject f) throws Exception {
-        return URI.create(f.getURL().toString());
-    }
-    
     // XXX test URI usage of external owner
     // XXX test GC of roots and projects used in external ownership:
     // - the owning Project is not held strongly (just PM's soft cache)
     // - the root is not held strongly (note - FOQ won't be accurate after it is collected)
     // XXX test IAE from illegal calls to FOQ.markExternalOwner
     // XXX test an owner which is above the project directory
-    
+
 }

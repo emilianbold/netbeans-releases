@@ -49,6 +49,7 @@ import java.io.OutputStream;
 import java.util.Collection;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 /** Interface to environment that the Module system needs around itself.
  *
@@ -136,8 +137,9 @@ public abstract class CoreBridge {
         protected void incrementSplashProgressBar () {
         }
 
+        @Override
         public Lookup lookupCacheLoad () {
-            return Lookup.EMPTY;
+            return Lookups.forPath("Services");
         }
         public void lookupCacheStore (Lookup l) throws java.io.IOException {
         }

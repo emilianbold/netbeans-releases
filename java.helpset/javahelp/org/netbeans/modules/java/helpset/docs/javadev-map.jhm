@@ -58,15 +58,9 @@
 <mapID target="debug.remote" url="debug/debug_remote.html" /> 
 <mapID target="debug.expression" url="debug/debug_expression.html" /> 
 <mapID target="debug_expressionstep" url="debug/debug_expressionstep.html" />
+<!-- Debugger window TOC topic -->
 <mapID target="debug.window" url="debug/CSH/debug_window.html" />
-<!-- Debugging window id -->
-<mapID target="DebuggingView" url="debug/debug_debuggingwindow.html" /> 
-<!-- Options window Java Debugger tab -->
-<mapID target="JavaDebuggerOptions" url="debug/CSH/debug_options.html" /> 
-<!-- Topic for Debugger Instances view -->
-<mapID target="NetbeansDebuggerInstancesNode" url="debug/CSH/instances_view.html" />
-<!-- Topic for Debugger Events view -->
-<mapID target="NetbeansDebuggerEventNode" url="debug/CSH/events_view.html" />
+
 
 <!-- Java FX topics -->
 <mapID target="jfx_apps" url="javafx/jfx-applications.html" />
@@ -272,6 +266,10 @@
     <mapID target="persist_mapping" url="persistence/general/persistence_mapping.html" />
 
 
+<!-- Profiling topic : additional topics in profiling.kit module -->
+    <mapID target="profiling_javaapp" url="profiling/profile_about.html" />
+
+
 
 <!-- Start of "CSH" section -->
 
@@ -453,7 +451,8 @@
     <mapID target="org.netbeans.modules.java.j2seplatform.wizard.DetectPanel" url="project/csh/proj_platform_manager.html" />
 
 
-<!--CSH for Debugger windows-->
+<!-- ++++++++++++ Debugger CSH ++++++++++++ -->
+<!-- CSH for Debugger windows -->
 <mapID target="NetbeansDebuggerSourcesNode" url="debug/CSH/sources_view.html" />
 <mapID target="NetbeansDebuggerClassNode" url="debug/CSH/classes_view.html" />
 <mapID target="NetbeansDebuggerWatchNode" url="debug/CSH/watches_view.html" />
@@ -462,6 +461,15 @@
 <mapID target="NetbeansDebuggerSessionNode" url="debug/CSH/sessions_view.html" />
 <mapID target="NetbeansDebuggerThreadNode" url="debug/CSH/threads_view.html" />
 <mapID target="NetbeansDebuggerBreakpointNode" url="debug/CSH/breakpoint_view.html" />
+
+<!-- Options window Java Debugger tab -->
+<mapID target="JavaDebuggerOptions" url="debug/CSH/debug_options.html" /> 
+<!-- Topic for Debugger Instances view -->
+<mapID target="NetbeansDebuggerInstancesNode" url="debug/CSH/instances_view.html" />
+<!-- Topic for Debugger Events view -->
+<mapID target="NetbeansDebuggerEventNode" url="debug/CSH/events_view.html" />
+<!-- Main Debugging window id -->
+<mapID target="DebuggingView" url="debug/debug_debuggingwindow.html" /> 
 
 <!--nodes in the Classes window-->
 <mapID target="NetbeansDebuggerConstructorNode" url="debug/CSH/classes_view.html"/>
@@ -506,7 +514,10 @@
     <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel" url="persistence/csh/persist_new_entityclass_db1.html" />
     <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel" url="persistence/csh/persist_new_entityclass_db2.html" />
     <mapID target="org.netbeans.modules.j2ee.persistence.unit.AddEntityPanel" url="persistence/csh/db_persist_addentityclass.html" />
-    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.jpacontroller" url="persistence/general/persist_jpa_fromentity.html" />
+    <!-- JPA controllers from entity classes wizard -->
+    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.jpacontroller" url="persistence/csh/persist_jpacontrollerfromentity_panel1.html" />
+    <!-- need new id here for 2nd panel in wizard #208130 -->
+    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.jpacontroller" url="persistence/csh/persist_jpacontrollerfromentity_panel2.html" />
 
    
    
@@ -514,8 +525,6 @@
     <mapID target="persistence_multiview_design_persistenceUnitNode" url="persistence/csh/persist_editor_persistenceunit.html" />
     <mapID target="org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardDescriptor" url="persistence/csh/persist_new_persistenceunit.html" />
 
-<!-- Profiling topic -->
-    <mapID target="profiling_javaapp" url="profiling/profile_about.html" />
 
 <!--CSH for the Javadoc Index Search window:-->
       <mapID target="javadoc.search.window" url="javadoc/search_window.html" />

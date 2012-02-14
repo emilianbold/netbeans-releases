@@ -46,11 +46,12 @@ package org.netbeans.modules.project.uiapi;
 
 import javax.swing.Action;
 import javax.swing.Icon;
+import org.netbeans.spi.project.ui.support.FileActionPerformer;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.util.ContextAwareAction;
 
 /**
- * Factory to be implemented bu the ui implementation
+ * Factory to be implemented by the ui implementation
  * @author Petr Hrebejk
  */
 public interface ActionsFactory {
@@ -90,6 +91,8 @@ public interface ActionsFactory {
     // Actions sensitive to file
     
     public Action fileCommandAction( String command, String name, Icon icon );
+    
+    public Action fileSensitiveAction( FileActionPerformer performer, String name, Icon icon);
 
     public Action renameProjectAction();
 

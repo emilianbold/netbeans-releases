@@ -198,30 +198,37 @@ public final class APTMacroMapSnapshot {
             return "Macro undefined"; // NOI18N
         }
 
+        @Override
         public CharSequence getFile() {
             return CharSequences.empty();
         }
         
+        @Override
         public Kind getKind() {
             return Kind.USER_SPECIFIED;
         }
 
+        @Override
         public boolean isFunctionLike() {
             throw new UnsupportedOperationException("Not supported in fake impl"); // NOI18N
         }
 
+        @Override
         public APTToken getName() {
             throw new UnsupportedOperationException("Not supported in fake impl"); // NOI18N
         }
 
+        @Override
         public Collection<APTToken> getParams() {
             throw new UnsupportedOperationException("Not supported in fake impl"); // NOI18N
         }
 
+        @Override
         public TokenStream getBody() {
             throw new UnsupportedOperationException("Not supported in fake impl"); // NOI18N
         }
 
+        @Override
         public APTDefine getDefineNode() {
             throw new UnsupportedOperationException("Not supported in fake impl."); // NOI18N
         }

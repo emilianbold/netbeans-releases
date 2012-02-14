@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.20.0
+#Version 1.29.0
 
 CLSS public abstract interface com.sun.source.tree.TreeVisitor<%0 extends java.lang.Object, %1 extends java.lang.Object>
 meth public abstract {com.sun.source.tree.TreeVisitor%0} visitAnnotation(com.sun.source.tree.AnnotationTree,{com.sun.source.tree.TreeVisitor%1})
@@ -219,12 +219,22 @@ hcls ProgressL
 CLSS public final org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring
 cons public init(org.netbeans.api.java.source.TreePathHandle)
 innr public final static ParameterInfo
+meth public boolean isOverloadMethod()
+meth public java.lang.String getMethodName()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+meth public java.lang.String getReturnType()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
 meth public java.util.Set<javax.lang.model.element.Modifier> getModifiers()
 meth public org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring$ParameterInfo[] getParameterInfo()
+meth public void setMethodName(java.lang.String)
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
 meth public void setModifiers(java.util.Set<javax.lang.model.element.Modifier>)
+meth public void setOverloadMethod(boolean)
 meth public void setParameterInfo(org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring$ParameterInfo[])
+meth public void setReturnType(java.lang.String)
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
 supr org.netbeans.modules.refactoring.api.AbstractRefactoring
-hfds modifiers,paramTable,selectedObject
+hfds methodName,modifiers,overloadMethod,paramTable,returnType,selectedObject
 
 CLSS public final static org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring$ParameterInfo
  outer org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring
@@ -277,6 +287,24 @@ meth public void setSuperClassName(java.lang.String)
 supr org.netbeans.modules.refactoring.api.AbstractRefactoring
 hfds EMPTY_MEMBERS,members,scName
 
+CLSS public org.netbeans.modules.refactoring.java.api.InlineRefactoring
+cons public init(org.netbeans.api.java.source.TreePathHandle,org.netbeans.modules.refactoring.java.api.InlineRefactoring$Type)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+innr public final static !enum Type
+meth public org.netbeans.modules.refactoring.java.api.InlineRefactoring$Type getType()
+supr org.netbeans.modules.refactoring.api.AbstractRefactoring
+hfds type
+
+CLSS public final static !enum org.netbeans.modules.refactoring.java.api.InlineRefactoring$Type
+ outer org.netbeans.modules.refactoring.java.api.InlineRefactoring
+fld public final static org.netbeans.modules.refactoring.java.api.InlineRefactoring$Type CONSTANT
+fld public final static org.netbeans.modules.refactoring.java.api.InlineRefactoring$Type METHOD
+fld public final static org.netbeans.modules.refactoring.java.api.InlineRefactoring$Type TEMP
+fld public final static org.netbeans.modules.refactoring.java.api.InlineRefactoring$Type UNSUPPORTED
+meth public static org.netbeans.modules.refactoring.java.api.InlineRefactoring$Type valueOf(java.lang.String)
+meth public static org.netbeans.modules.refactoring.java.api.InlineRefactoring$Type[] values()
+supr java.lang.Enum<org.netbeans.modules.refactoring.java.api.InlineRefactoring$Type>
+
 CLSS public final org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring
 cons public init(org.netbeans.api.java.source.TreePathHandle)
 meth public java.lang.String getClassName()
@@ -286,6 +314,22 @@ meth public void setClassName(java.lang.String)
 meth public void setReferenceName(java.lang.String)
 supr org.netbeans.modules.refactoring.api.AbstractRefactoring
 hfds className,referenceName
+
+CLSS public final org.netbeans.modules.refactoring.java.api.IntroduceParameterRefactoring
+cons public init(org.netbeans.api.java.source.TreePathHandle)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public boolean isFinal()
+meth public boolean isOverloadMethod()
+meth public boolean isReplaceAll()
+meth public java.lang.String getParameterName()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public void setFinal(boolean)
+meth public void setOverloadMethod(boolean)
+meth public void setParameterName(java.lang.String)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public void setReplaceAll(boolean)
+supr org.netbeans.modules.refactoring.api.AbstractRefactoring
+hfds isFinal,isReplaceAll,overloadMethod,parameterName
 
 CLSS public final org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils
 meth public !varargs static org.netbeans.api.java.source.ClasspathInfo getClasspathInfoFor(org.openide.filesystems.FileObject[])
@@ -382,10 +426,17 @@ meth public static org.openide.util.ContextAwareAction changeParametersAction()
 meth public static org.openide.util.ContextAwareAction encapsulateFieldsAction()
 meth public static org.openide.util.ContextAwareAction extractInterfaceAction()
 meth public static org.openide.util.ContextAwareAction extractSuperclassAction()
+meth public static org.openide.util.ContextAwareAction inlineAction()
 meth public static org.openide.util.ContextAwareAction innerToOuterAction()
+meth public static org.openide.util.ContextAwareAction introduceParameterAction()
 meth public static org.openide.util.ContextAwareAction pullUpAction()
 meth public static org.openide.util.ContextAwareAction pushDownAction()
 meth public static org.openide.util.ContextAwareAction useSuperTypeAction()
+supr java.lang.Object
+
+CLSS public final org.netbeans.modules.refactoring.java.api.ui.JavaScopeBuilder
+cons public init()
+meth public static org.netbeans.modules.refactoring.api.Scope open(java.lang.String,org.netbeans.modules.refactoring.api.Scope)
 supr java.lang.Object
 
 CLSS public final org.netbeans.modules.refactoring.java.spi.DiffElement
@@ -422,6 +473,8 @@ meth protected static org.netbeans.modules.refactoring.api.Problem isElementAvai
 meth public org.netbeans.modules.refactoring.api.Problem checkParameters()
 meth public org.netbeans.modules.refactoring.api.Problem fastCheckParameters()
 meth public org.netbeans.modules.refactoring.api.Problem preCheck()
+meth public static org.netbeans.modules.refactoring.spi.Transaction createTransaction(java.util.Collection<org.netbeans.api.java.source.ModificationResult>)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public void cancelRequest()
 supr org.netbeans.modules.refactoring.spi.ProgressProviderAdapter
 hfds currentTask,workingTask
@@ -464,7 +517,9 @@ meth public boolean canChangeParameters(org.openide.util.Lookup)
 meth public boolean canEncapsulateFields(org.openide.util.Lookup)
 meth public boolean canExtractInterface(org.openide.util.Lookup)
 meth public boolean canExtractSuperclass(org.openide.util.Lookup)
+meth public boolean canInline(org.openide.util.Lookup)
 meth public boolean canInnerToOuter(org.openide.util.Lookup)
+meth public boolean canIntroduceParameter(org.openide.util.Lookup)
 meth public boolean canPullUp(org.openide.util.Lookup)
 meth public boolean canPushDown(org.openide.util.Lookup)
 meth public boolean canUseSuperType(org.openide.util.Lookup)
@@ -472,7 +527,9 @@ meth public void doChangeParameters(org.openide.util.Lookup)
 meth public void doEncapsulateFields(org.openide.util.Lookup)
 meth public void doExtractInterface(org.openide.util.Lookup)
 meth public void doExtractSuperclass(org.openide.util.Lookup)
+meth public void doInline(org.openide.util.Lookup)
 meth public void doInnerToOuter(org.openide.util.Lookup)
+meth public void doIntroduceParameter(org.openide.util.Lookup)
 meth public void doPullUp(org.openide.util.Lookup)
 meth public void doPushDown(org.openide.util.Lookup)
 meth public void doUseSuperType(org.openide.util.Lookup)

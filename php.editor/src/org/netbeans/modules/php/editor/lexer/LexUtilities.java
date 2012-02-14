@@ -119,8 +119,8 @@ public class LexUtilities {
 
     private LexUtilities() {
     }
-    
-//    /** 
+
+//    /**
 //     * Return the comment sequence (if any) for the comment prior to the given offset.
 //     */
 //    public static TokenSequence<? extends JsCommentTokenId> getCommentFor(BaseDocument doc, int offset) {
@@ -129,7 +129,7 @@ public class LexUtilities {
 //            return null;
 //        }
 //        jts.move(offset);
-//        
+//
 //        while (jts.movePrevious()) {
 //            TokenId id = jts.token().id();
 //            if (id == JsTokenId.BLOCK_COMMENT) {
@@ -138,7 +138,7 @@ public class LexUtilities {
 //                return null;
 //            }
 //        }
-//        
+//
 //        return null;
 //    }
 //
@@ -151,10 +151,10 @@ public class LexUtilities {
 //                return ts.getLexicalOffset(astOffset);
 //            }
 //        }
-//        
+//
 //        return astOffset;
 //    }
-//    
+//
 //    public static OffsetRange getLexerOffsets(CompilationInfo info, OffsetRange astRange) {
 //        ParserResult result = info.getEmbeddedResult(JsMimeResolver.JAVASCRIPT_MIME_TYPE, 0);
 //        if (result != null) {
@@ -175,7 +175,7 @@ public class LexUtilities {
 //
 //        return astRange;
 //    }
-//    
+//
 //    /** Find the ruby token sequence (in case it's embedded in something else at the top level */
 //    @SuppressWarnings("unchecked")
 //    public static TokenSequence<?extends JsTokenId> getJsTokenSequence(BaseDocument doc, int offset) {
@@ -185,7 +185,7 @@ public class LexUtilities {
 //
 
     /**
-     * 
+     *
      *
      * @param doc
      * @param offset
@@ -214,7 +214,7 @@ public class LexUtilities {
         } else {
             r.run();
         }
-        
+
         return ref.get();
     }
 
@@ -270,17 +270,17 @@ public class LexUtilities {
             if (!ts.moveNext() && !ts.movePrevious()) {
                 return null;
             }
-            
+
             return ts;
         }
 
         return null;
     }
 
-    
+
     public static Token<?extends PHPTokenId> getToken(BaseDocument doc, int offset) {
         TokenSequence<?extends PHPTokenId> ts = getPositionedSequence(doc, offset);
-        
+
         if (ts != null) {
             return ts.token();
         }
@@ -301,7 +301,7 @@ public class LexUtilities {
     }
 //
 //    /**
-//     * Tries to skip parenthesis 
+//     * Tries to skip parenthesis
 //     */
 //    static boolean skipParenthesis(TokenSequence<?extends JsTokenId> ts) {
 //        int balance = 0;
@@ -312,7 +312,7 @@ public class LexUtilities {
 //        }
 //
 //        TokenId id = token.id();
-//            
+//
 ////        // skip whitespaces
 ////        if (id == JsTokenId.WHITESPACE) {
 ////            while (ts.moveNext() && ts.token().id() == JsTokenId.WHITESPACE) {}
@@ -347,14 +347,14 @@ public class LexUtilities {
 //
 //        return false;
 //    }
-    
+
     /** Search forwards in the token sequence until a token of type <code>down</code> is found */
     public static OffsetRange findFwd(BaseDocument doc, TokenSequence<?extends PHPTokenId> ts, PHPTokenId tokenUpId, char up, PHPTokenId tokenDownId, char down) {
         int balance = 0;
 
         while (ts.moveNext()) {
             Token<?extends PHPTokenId> token = ts.token();
-            
+
             if ((token.id() == tokenUpId && textEquals(token.text(), up))
                     || (tokenUpId == PHPTokenId.PHP_CURLY_OPEN && token.id() == PHPTokenId.PHP_TOKEN && token.text().charAt(token.text().length() - 1) == '{')) {
                 balance++;
@@ -392,20 +392,20 @@ public class LexUtilities {
 
         return OffsetRange.NONE;
     }
-    
+
     public static OffsetRange findFwdAlternativeSyntax(BaseDocument doc, TokenSequence<?extends PHPTokenId> ts, Token<?extends PHPTokenId> upToken) {
         int balance = 0;
-        Token<?extends PHPTokenId> beginToken = LexUtilities.findPreviousToken(ts, 
+        Token<?extends PHPTokenId> beginToken = LexUtilities.findPreviousToken(ts,
                 Arrays.asList(PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF,
-                PHPTokenId.PHP_WHILE, PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH, 
+                PHPTokenId.PHP_WHILE, PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH,
                 PHPTokenId.PHP_SWITCH, PHPTokenId.PHP_CASE));
-        
+
         PHPTokenId beginTokenId = beginToken.id();
-        
+
         if (beginTokenId == PHPTokenId.PHP_ELSE || beginTokenId == PHPTokenId.PHP_ELSEIF) {
             beginTokenId = PHPTokenId.PHP_IF;
         }
-        
+
         List<PHPTokenId> possibleEnd;
         if (beginTokenId == PHPTokenId.PHP_IF) {
             possibleEnd = Arrays.asList(PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF, PHPTokenId.PHP_ENDIF);
@@ -422,10 +422,10 @@ public class LexUtilities {
         } else {
             return OffsetRange.NONE;
         }
-        
+
         while (ts.moveNext()) {
             Token<?extends PHPTokenId> token = LexUtilities.findNextToken(ts, possibleEnd);
-            
+
             if (token.id() == beginTokenId) {
                 balance++;
             } else if (possibleEnd.contains(token.id())) {
@@ -440,18 +440,18 @@ public class LexUtilities {
 
         return OffsetRange.NONE;
     }
-    
-    
+
+
     public static OffsetRange findBwdAlternativeSyntax(BaseDocument doc, TokenSequence<?extends PHPTokenId> ts, Token<?extends PHPTokenId> downToken) {
-        
+
         int balance = 0;
 
         PHPTokenId endTokenId = downToken.id();
-        
+
         if (endTokenId == PHPTokenId.PHP_ELSE || endTokenId == PHPTokenId.PHP_ELSEIF) {
             endTokenId = PHPTokenId.PHP_ENDIF;
         }
-        
+
         List<PHPTokenId> possibleBegin;
         if (endTokenId == PHPTokenId.PHP_ENDIF) {
             possibleBegin = Arrays.asList(PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF, PHPTokenId.PHP_ENDIF);
@@ -470,12 +470,12 @@ public class LexUtilities {
         } else {
             return OffsetRange.NONE;
         }
-        
-        
+
+
         int columnOffset = 0;
         while (ts.movePrevious()) {
             Token<?extends PHPTokenId> token = LexUtilities.findPreviousToken(ts, possibleBegin);
-            
+
             if (token.id() == PHPTokenId.PHP_TOKEN) {
                 if (":".equals(token.text().toString())) { //NOI18N
                     columnOffset = ts.offset();
@@ -542,13 +542,13 @@ public class LexUtilities {
 //
 //        return OffsetRange.NONE;
 //    }
-//    
+//
 ////    /** Determine whether "do" is an indent-token (e.g. matches an end) or if
 ////     * it's simply a separator in while,until,for expressions)
 ////     */
 ////    public static boolean isEndmatchingDo(BaseDocument doc, int offset) {
 ////        // In the following case, do is dominant:
-////        //     expression.do 
+////        //     expression.do
 ////        //        whatever
 ////        //     end
 ////        //
@@ -559,7 +559,7 @@ public class LexUtilities {
 ////        //
 ////        // In the second case, the end matches the while, but in the first case
 ////        // the end matches the do
-////        
+////
 ////        // Look at the first token of the current line
 ////        try {
 ////            int first = Utilities.getRowFirstNonWhite(doc, offset);
@@ -575,7 +575,7 @@ public class LexUtilities {
 ////        } catch (BadLocationException ble) {
 ////            Exceptions.printStackTrace(ble);
 ////        }
-////        
+////
 ////        return true;
 ////    }
 
@@ -617,10 +617,10 @@ public class LexUtilities {
 //            default:
 //                return OffsetRange.NONE;
 //        }
-//        
+//
 //        boolean eolFound = false;
 //        int lastEolOffset = ts.offset();
-//        
+//
 //        // skip whitespaces and comments
 //        if (id == JsTokenId.WHITESPACE || id == JsTokenId.LINE_COMMENT || id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.EOL) {
 //            if (ts.token().id() == JsTokenId.EOL) {
@@ -644,12 +644,12 @@ public class LexUtilities {
 //        }
 //        return  OffsetRange.NONE;
 //    }
-//    
+//
 //    public static OffsetRange getMultilineRange(BaseDocument doc, int offset) {
 //        TokenSequence<? extends JsTokenId> ts = getPositionedSequence(doc, offset);
 //        return findMultilineRange(ts);
 //    }
-//    
+//
 //    /**
 //     * Return true iff the given token is a token that should be matched
 //     * with a corresponding "end" token, such as "begin", "def", "module",
@@ -662,7 +662,7 @@ public class LexUtilities {
 //    public static boolean isEndToken(PHPTokenId id, BaseDocument doc, TokenSequence<?extends PHPTokenId> ts) {
 //        return false;
 //    }
-//    
+//
 //    /**
 //     * Return true iff the given token is a token that indents its content,
 //     * such as the various begin tokens as well as "else", "when", etc.
@@ -814,7 +814,7 @@ public class LexUtilities {
         if (token != null) {
             return token.id() == PHPTokenId.PHP_LINE_COMMENT;
         }
-        
+
         return false;
     }
 

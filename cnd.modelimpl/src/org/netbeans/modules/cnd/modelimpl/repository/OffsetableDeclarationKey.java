@@ -64,25 +64,33 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 /*package*/ final class OffsetableDeclarationKey extends OffsetableKey {
     
     OffsetableDeclarationKey(OffsetableDeclarationBase<?> obj) {
-	super((FileImpl) obj.getContainingFile(), obj.getStartOffset(), getSmartEndOffset(obj), Utils.getCsmDeclarationKindkey(obj.getKind()), obj.getName());
+	super((FileImpl) obj.getContainingFile(), getSmartStartOffset(obj), getSmartEndOffset(obj), Utils.getCsmDeclarationKindkey(obj.getKind()), obj.getName());
 	// we use name, because all other (FQN and UniqueName) could change
 	// and name is fixed value
     }
     
      OffsetableDeclarationKey(OffsetableDeclarationBase<?> obj, int index) {
-	super((FileImpl) obj.getContainingFile(), obj.getStartOffset(), getSmartEndOffset(obj), Utils.getCsmDeclarationKindkey(obj.getKind()), Integer.toString(index));
+	super((FileImpl) obj.getContainingFile(), getSmartStartOffset(obj), getSmartEndOffset(obj), Utils.getCsmDeclarationKindkey(obj.getKind()), Integer.toString(index));
 	// we use index for unnamed objects
     }
 
+     OffsetableDeclarationKey(FileImpl containingFile, int startOffset, String kind, CharSequence name) {
+         super(containingFile, startOffset, kind, name);
+     }
+     
      OffsetableDeclarationKey(KeyDataPresentation presentation) {
         super(presentation);
     }
     
     private static int getSmartEndOffset(OffsetableDeclarationBase<?> obj) {
+         return obj.getEndOffset();
+    }
+    
+    private static int getSmartStartOffset(OffsetableDeclarationBase<?> obj) {
         // #132865 ClassCastException in Go To Type -
         // ensure that members and non-members has different keys
         // also make sure that function and fake function has different keys
-        int result = obj.getEndOffset();
+        int result = obj.getStartOffset();
         if (obj instanceof ForwardClass) {
             result |= 0x80000000;
         } else if( obj instanceof CsmMember) {
@@ -96,8 +104,8 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
     }
 
     @Override
-    int getEndOffset() {
-        return super.getEndOffset() & 0x3FFFFFFF;
+    int getStartOffset() {
+        return super.getStartOffset() & 0x3FFFFFFF;
     }
     
     /*package*/ OffsetableDeclarationKey(RepositoryDataInput aStream) throws IOException {

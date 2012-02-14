@@ -206,16 +206,13 @@ public abstract class FrameworkCommandSupport {
      * @return {@link ExecutionDescriptor descriptor} with factory for standard output processor.
      */
     public ExecutionDescriptor getDescriptor(InputProcessorFactory outFactory) {
-        ExecutionDescriptor descriptor = PhpProgram.getExecutionDescriptor().postExecution(new RefreshPhpModuleRunnable(phpModule))
-                .errProcessorFactory(PhpProgram.ANSI_STRIPPING_FACTORY);
+        ExecutionDescriptor descriptor = PhpProgram.getExecutionDescriptor().postExecution(new RefreshPhpModuleRunnable(phpModule));
         String optionsPath = getOptionsPath();
         if (optionsPath != null) {
             descriptor = descriptor.optionsPath(optionsPath);
         }
         if (outFactory != null) {
-            descriptor = descriptor.outProcessorFactory(new ProxyInputProcessorFactory(PhpProgram.ANSI_STRIPPING_FACTORY, outFactory));
-        } else {
-            descriptor = descriptor.outProcessorFactory(PhpProgram.ANSI_STRIPPING_FACTORY);
+            descriptor = descriptor.outProcessorFactory(outFactory);
         }
         return descriptor;
     }

@@ -116,12 +116,13 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+    
 		<change id="deployOnSaveListeners">
     	    <api name="devmodules"/>
             <summary>
                 Allows listening for deploy on save operations.
             </summary>
-            <version major="1" minor="88"/>
+            <version major="1" minor="89"/>
             <date day="1" month="2" year="2012"/>
             <author login="phejl"/>
             <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
@@ -133,6 +134,24 @@ is the proper place.
             </description>
             <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="J2eeModuleProvider"/>
             <issue number="207724"/>
+       </change>
+       <change id="commonServerBridge">
+    	    <api name="j2eeserver"/>
+            <summary>
+                Added CommonServerBridge utility class to provide mapping of
+                instance url to common api server instance.
+            </summary>
+            <version major="1" minor="88"/>
+            <date day="13" month="1" year="2012"/>
+            <author login="phejl"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Added CommonServerBridge utility class to provide mapping of
+                    instance url to common api server instance.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="CommonServerBridge"/>
         </change>
        <change id="nonPersistentServer">
     	    <api name="j2eeserver"/>

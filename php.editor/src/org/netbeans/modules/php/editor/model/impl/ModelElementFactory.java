@@ -55,6 +55,7 @@ import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.TraitDeclarationInfo;
 
 /**
  *
@@ -91,6 +92,10 @@ class ModelElementFactory {
         return iface;
     }
 
+    static TraitScopeImpl create(TraitDeclarationInfo nodeInfo, ModelBuilder context) {
+        return new TraitScopeImpl(context.getCurrentScope(), nodeInfo);
+    }
+
     static MethodScopeImpl create(MethodDeclarationInfo nodeInfo, ModelBuilder context, ModelVisitor visitor) {
         String returnType = VariousUtils.getReturnTypeFromPHPDoc(context.getProgram(),
                 nodeInfo.getOriginalNode().getFunction());
@@ -101,7 +106,8 @@ class ModelElementFactory {
 
     static FieldElementImpl create(SingleFieldDeclarationInfo nodeInfo, ModelBuilder context) {
         String returnType = VariousUtils.getFieldTypeFromPHPDoc(context.getProgram(),nodeInfo.getOriginalNode());
-        FieldElementImpl fei = new FieldElementImpl(context.getCurrentScope(), returnType, nodeInfo);
+        String returnFQType = VariousUtils.qualifyTypeNames(returnType, nodeInfo.getRange().getStart(), context.getCurrentScope());
+        FieldElementImpl fei = new FieldElementImpl(context.getCurrentScope(), returnType, returnFQType, nodeInfo);
         return fei;
     }
 

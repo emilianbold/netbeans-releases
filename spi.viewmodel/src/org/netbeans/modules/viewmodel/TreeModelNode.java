@@ -1415,7 +1415,7 @@ public class TreeModelNode extends AbstractNode {
             int i, k = ch.length; 
             for (i = 0; i < k; i++) {
                 if (ch [i] == null) {
-                    throw new NullPointerException("Null child at index "+i+", parent: "+object+", model: "+model);
+                    throw new NullPointerException("Null child at index "+i+", parent: "+object+", model: "+model+"\nAll children are: "+Arrays.toString(ch));
                 }
                 if (doSetObject) {
                     WeakReference<TreeModelNode> wr;

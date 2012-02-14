@@ -122,6 +122,7 @@
                 <friend>com.sun.tools.ide.analysis.tha</friend>
                 <friend>com.sun.tools.ide.remote</friend>
                 <friend>com.sun.tools.ide.remote.projectui</friend>
+                <friend>com.sun.tools.devplatform.management</friend>
                 <friend>com.sun.tools.odb</friend>
                 <friend>com.sun.tools.sendto</friend>
                 <friend>com.sun.tools.tuxedo.codemodel.bridge</friend>

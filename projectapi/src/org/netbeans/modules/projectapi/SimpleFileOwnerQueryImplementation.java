@@ -51,13 +51,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -66,7 +63,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -146,7 +142,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
             }
             
             if (!externalOwners.isEmpty() && (folder || externalRootsIncludeNonFolders)) {
-                URI externalOwnersURI = externalOwners.get(fileObject2URI(f));
+                URI externalOwnersURI = externalOwners.get(f.toURI());
 
                 if (externalOwnersURI != null) {
                     FileObject externalOwner = uri2FileObject(externalOwnersURI);
@@ -169,7 +165,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                 }
             }
             if (!deserializedExternalOwners.isEmpty() && (folder || externalRootsIncludeNonFolders)) {
-                FileObject externalOwner = deserializedExternalOwners.get(fileObject2URI(f));
+                FileObject externalOwner = deserializedExternalOwners.get(f.toURI());
                 if (externalOwner != null && externalOwner.isValid()) {
                     try {
                         // Note: will be null if there is no such project.
@@ -241,17 +237,9 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
         externalOwners.clear();
     }
     
-    private static URI fileObject2URI(FileObject f) {
-        try {
-            return URI.create(f.getURL().toString());
-        } catch (FileStateInvalidException e) {
-            throw (IllegalArgumentException) new IllegalArgumentException(e.toString()).initCause(e);
-        }
-    }
-    
     /** @see FileOwnerQuery#markExternalOwner */
     public static void markExternalOwnerTransient(FileObject root, Project owner) {
-        markExternalOwnerTransient(fileObject2URI(root), owner);
+        markExternalOwnerTransient(root.toURI(), owner);
     }
     
     /** @see FileOwnerQuery#markExternalOwner */
@@ -259,7 +247,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
         externalRootsIncludeNonFolders |= !root.getPath().endsWith("/");
         if (owner != null) {
             FileObject fo = owner.getProjectDirectory();
-            externalOwners.put(root, fileObject2URI(fo));
+            externalOwners.put(root, fo.toURI());
             deserializedExternalOwners.remove(root);
         } else {
             externalOwners.remove(root);

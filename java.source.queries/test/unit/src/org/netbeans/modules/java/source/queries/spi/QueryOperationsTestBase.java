@@ -611,7 +611,7 @@ public abstract class QueryOperationsTestBase extends TestCase {
                 }
             });
         assertContentEquals(Collections.singleton(newFieldName), res);
-        assertFalse(file.getContent().toString().contains(oldFieldName));
+        assertFalse(readFile(file).contains(oldFieldName));
     }
 
     public void testFixImports() throws Exception {

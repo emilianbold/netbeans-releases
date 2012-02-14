@@ -412,7 +412,7 @@ public class ProjectsRootNodeTest extends NbTestCase {
             public @Override void addChangeListener(ChangeListener listener) {}
             public @Override void removeChangeListener(ChangeListener listener) {}
         }));
-        final LazyProject lp = new LazyProject(d.getURL(), "p", new ExtIcon());
+        final LazyProject lp = new LazyProject(d.toURL(), "p", new ExtIcon());
         Children ch = new ProjectsRootNode.ProjectChildren(ProjectsRootNode.PHYSICAL_VIEW) {
             public @Override void addNotify() {
                 setKeys(Collections.singleton(new ProjectsRootNode.ProjectChildren.Pair(lp)));

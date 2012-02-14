@@ -237,7 +237,7 @@ public class PHPTypeSearcher implements IndexSearcher {
                     projectIcon = pi.getIcon();
                 }
             }
-            
+
             if (projectName == null) {
                 projectName = "";
             }
@@ -340,7 +340,7 @@ public class PHPTypeSearcher implements IndexSearcher {
             return hash;
         }
     }
-    
+
     private static Pattern queryToPattern(String query, boolean caseInsensitive) {
         StringBuilder sb = new StringBuilder();
         char[] chars = query.toCharArray();
@@ -393,7 +393,7 @@ public class PHPTypeSearcher implements IndexSearcher {
         }
         return query;
     }
-    
+
     private static boolean isCamelCasePattern(String query) {
         char[] chars = query.toCharArray();
         for (char c : chars) {

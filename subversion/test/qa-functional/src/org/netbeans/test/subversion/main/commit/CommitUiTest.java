@@ -18,6 +18,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.subversion.operators.SourcePackagesNode;
@@ -72,13 +73,15 @@ public class CommitUiTest extends JellyTestCase {
      }
 
     public void testInvokeCloseCommit() throws Exception {
-        try {
+//        try {
             MessageHandler mh = new MessageHandler("Committing");
             log.addHandler(mh);
 
             TestKit.closeProject(PROJECT_NAME);
             if (TestKit.getOsName().indexOf("Mac") > -1)
                 new NewProjectWizardOperator().invoke().close();
+            
+            new EventTool().waitNoEvent(3000);
 
             new File(TMP_PATH).mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
@@ -87,22 +90,26 @@ public class CommitUiTest extends JellyTestCase {
 
 
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
-            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
+            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getAbsolutePath() + File.separator + "repo_dump");
             projectPath = TestKit.prepareProject("Java", "Java Application", PROJECT_NAME);
 
             ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
+            new EventTool().waitNoEvent(3000);
             RepositoryStepOperator rso = new RepositoryStepOperator();
+            new EventTool().waitNoEvent(3000);
             //rso.verify();
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
+            new EventTool().waitNoEvent(3000);
             rso.next();
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(3000);
 
             FolderToImportStepOperator ftiso = new FolderToImportStepOperator();
             ftiso.setRepositoryFolder("trunk/Import_" + PROJECT_NAME);
-            
+            new EventTool().waitNoEvent(1000);
             ftiso.setImportMessage("initial import");
+            new EventTool().waitNoEvent(1000);
             ftiso.next();
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(3000);
             CommitStepOperator cso = new CommitStepOperator();
             cso.finish();
 
@@ -112,8 +119,9 @@ public class CommitUiTest extends JellyTestCase {
             TestKit.createNewElement(PROJECT_NAME, "xx", "NewClass2");
             TestKit.createNewElement(PROJECT_NAME, "xx", "NewClass3");
             Node packNode = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
+            new EventTool().waitNoEvent(2000);
             CommitOperator co = CommitOperator.invoke(packNode);
-
+            new EventTool().waitNoEvent(1000);
             co.selectCommitAction("NewClass.java", "Add As Text");
             co.selectCommitAction("NewClass.java", "Add As Binary");
             co.selectCommitAction("NewClass.java", "Exclude from Commit");
@@ -133,10 +141,10 @@ public class CommitUiTest extends JellyTestCase {
 
             co.verify();
             co.cancel();
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
-        } finally {
+       // } catch (Exception e) {
+         //   throw new Exception("Test failed: " + e);
+       // } finally {
             TestKit.closeProject(PROJECT_NAME);
-        }
+       // }
     }
 }

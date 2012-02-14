@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes.visitors;
@@ -66,7 +66,7 @@ public class DefaultVisitor implements Visitor {
     @Override
     public void visit(ArrayAccess node) {
         scan(node.getName());
-        scan(node.getIndex());
+        scan(node.getDimension());
     }
 
     @Override
@@ -434,7 +434,7 @@ public class DefaultVisitor implements Visitor {
     @Override
     public void visit(PHPDocTag node) {
     }
-    
+
     @Override
     public void visit(PHPDocTypeNode node) {
     }
@@ -443,7 +443,7 @@ public class DefaultVisitor implements Visitor {
     public void visit(PHPDocTypeTag node) {
         scan(node.getTypes());
     }
-    
+
     @Override
     public void visit(PHPDocMethodTag node) {
         scan(node.getMethodName());
@@ -506,4 +506,52 @@ public class DefaultVisitor implements Visitor {
         scan(statementPart.getName());
         scan(statementPart.getAlias());
     }
+
+    @Override
+    public void visit(TraitDeclaration traitDeclaration) {
+        scan(traitDeclaration.getName());
+        scan(traitDeclaration.getBody());
+    }
+
+    @Override
+    public void visit(TraitMethodAliasDeclaration traitsAliasStatement) {
+        scan(traitsAliasStatement.getTraitName());
+        scan(traitsAliasStatement.getOldMethodName());
+        scan(traitsAliasStatement.getNewMethodName());
+    }
+
+    @Override
+    public void visit(TraitConflictResolutionDeclaration traitsInsteadofStatement) {
+        scan(traitsInsteadofStatement.getPreferredTraitName());
+        scan(traitsInsteadofStatement.getMethodName());
+        scan(traitsInsteadofStatement.getSuppressedTraitName());
+    }
+
+    @Override
+    public void visit(UseTraitStatement useTraitsStatement) {
+        scan(useTraitsStatement.getParts());
+        scan(useTraitsStatement.getBody());
+    }
+
+    @Override
+    public void visit(UseTraitStatementPart useTraitStatementPart) {
+        scan(useTraitStatementPart.getName());
+    }
+
+    @Override
+    public void visit(AnonymousObjectVariable node) {
+        scan(node.getName());
+    }
+
+    @Override
+    public void visit(DereferencedArrayAccess node) {
+        scan(node.getDispatcher());
+        scan(node.getDimension());
+    }
+
+    @Override
+    public void visit(ArrayDimension node) {
+        scan(node.getIndex());
+    }
+
 }

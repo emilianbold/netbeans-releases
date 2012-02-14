@@ -261,7 +261,7 @@ public class SwitchOperator extends NbDialogOperator {
         cboRepositoryFolder();
         btBrowseRepositoryFolder();
         lblRepositoryRevision();
-        lblEmptyMeansRepositoryHEAD();
+      // lblEmptyMeansRepositoryHEAD();
         txtRepositoryRevision();
         btSearch();
         btSwitch();

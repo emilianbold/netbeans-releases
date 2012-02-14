@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.spring.beans.hyperlink;
 
-import java.io.IOException;
 import java.util.StringTokenizer;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -52,15 +51,16 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
+import org.netbeans.modules.spring.beans.utils.ElementSeekerTask;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
 import org.netbeans.modules.spring.java.JavaUtils;
 import org.netbeans.modules.spring.java.MatchType;
 import org.netbeans.modules.spring.java.Property;
 import org.netbeans.modules.spring.java.PropertyFinder;
-import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -68,82 +68,96 @@ import org.openide.util.Exceptions;
  */
 public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
 
-    public PropertyHyperlinkProcessor() {
+    @NbBundle.Messages("title.property.searching=Property Searching")
+    @Override
+    public void process(HyperlinkEnv env) {
+        String className = new BeanClassFinder(env.getBeanAttributes(),
+                env.getFileObject()).findImplementationClass(false);
+        if (className == null) {
+            return;
+        }
+
+        String propChain = getPropertyChainUptoPosition(env);
+        if (propChain == null || propChain.equals("")) { //NOI18N
+            return;
+        }
+
+        JavaSource js = JavaUtils.getJavaSource(env.getFileObject());
+        if (js == null) {
+            return;
+        }
+
+        boolean jumpToGetter = StringUtils.occurs(env.getValueString(), ".", propChain.length()); //NOI18N
+        PropertySeekerTask propertySeeker = new PropertySeekerTask(js, className, propChain, jumpToGetter);
+        propertySeeker.runAsUserTask();
+        if (!propertySeeker.wasElementFound()) {
+            ScanDialog.runWhenScanFinished(propertySeeker, Bundle.title_property_searching());
+        }
     }
 
-    public void process(HyperlinkEnv env) {
-        try {
-            final String className = new BeanClassFinder(env.getBeanAttributes(),
-                    env.getFileObject()).findImplementationClass();
+    private class PropertySeekerTask extends ElementSeekerTask {
+
+        private final String className;
+        private final String propChain;
+        private final boolean jumpToGetter;
+
+        public PropertySeekerTask(JavaSource javaSource, String className, String propChain, boolean jumpToGetter) {
+            super(javaSource);
+            this.className = className;
+            this.propChain = propChain;
+            this.jumpToGetter = jumpToGetter;
+        }
+
+        @Override
+        public void run(CompilationController cc) throws Exception {
+            cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            int dotIndex = propChain.lastIndexOf("."); //NOI18N
             if (className == null) {
                 return;
             }
-
-            final String propChain = getPropertyChainUptoPosition(env);
-            if (propChain == null || propChain.equals("")) { // NOI18N
+            TypeElement te = JavaUtils.findClassElementByBinaryName(className, cc);
+            if (te == null) {
                 return;
             }
+            TypeMirror startType = te.asType();
+            ElementUtilities eu = cc.getElementUtilities();
 
-            final boolean jumpToGetter = StringUtils.occurs(env.getValueString(), ".", propChain.length()); // NOI18N
+            // property chain
+            if (dotIndex != -1) {
+                String getterChain = propChain.substring(0, dotIndex);
+                StringTokenizer tokenizer = new StringTokenizer(getterChain, "."); //NOI18N
+                while (tokenizer.hasMoreTokens() && startType != null) {
+                    String propertyName = tokenizer.nextToken();
+                    Property[] props = new PropertyFinder(startType, propertyName, eu, MatchType.PREFIX).findProperties();
 
-            JavaSource js = JavaUtils.getJavaSource(env.getFileObject());
-            if (js == null) {
-                return;
-            }
-
-            final int dotIndex = propChain.lastIndexOf(".");
-            js.runUserActionTask(new Task<CompilationController>() {
-
-                public void run(CompilationController cc) throws Exception {
-                    if (className == null) {
-                        return;
-                    }
-                    TypeElement te = JavaUtils.findClassElementByBinaryName(className, cc);
-                    if (te == null) {
-                        return;
-                    }
-                    TypeMirror startType = te.asType();
-                    ElementUtilities eu = cc.getElementUtilities();
-
-                    // property chain
-                    if (dotIndex != -1) {
-                        String getterChain = propChain.substring(0, dotIndex);
-                        StringTokenizer tokenizer = new StringTokenizer(getterChain, "."); // NOI18N
-                        while (tokenizer.hasMoreTokens() && startType != null) {
-                            String propertyName = tokenizer.nextToken();
-                            Property[] props = new PropertyFinder(startType, propertyName, eu, MatchType.PREFIX).findProperties();
-
-                            // no matching element found
-                            if (props.length == 0 || props[0].getGetter() == null) {
-                                startType = null;
-                                break;
-                            }
-
-                            TypeMirror retType = props[0].getGetter().getReturnType();
-                            if (retType.getKind() == TypeKind.DECLARED) {
-                                startType = retType;
-                            } else {
-                                startType = null;
-                            }
-                        }
+                    // no matching element found
+                    if (props.length == 0 || props[0].getGetter() == null) {
+                        startType = null;
+                        break;
                     }
 
-                    if (startType == null) {
-                        return;
-                    }
-
-                    String setterProp = propChain.substring(dotIndex + 1);
-                    Property[] sProps = new PropertyFinder(startType, setterProp, eu, MatchType.PREFIX).findProperties();
-                    if(sProps.length > 0) {
-                        ExecutableElement element = jumpToGetter ? sProps[0].getGetter() : sProps[0].getSetter();
-                        if(element != null) {
-                            ElementOpen.open(cc.getClasspathInfo(), element);
-                        }
+                    TypeMirror retType = props[0].getGetter().getReturnType();
+                    if (retType.getKind() == TypeKind.DECLARED) {
+                        startType = retType;
+                    } else {
+                        startType = null;
                     }
                 }
-            }, true);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            }
+
+            if (startType == null) {
+                return;
+            }
+
+            elementFound.set(true);
+            String setterProp = propChain.substring(dotIndex + 1);
+            Property[] sProps = new PropertyFinder(startType, setterProp, eu, MatchType.PREFIX).findProperties();
+            if (sProps.length > 0) {
+                ExecutableElement element = jumpToGetter ? sProps[0].getGetter() : sProps[0].getSetter();
+                if (element != null) {
+                    ElementOpen.open(cc.getClasspathInfo(), element);
+                }
+            }
         }
     }
 

@@ -42,12 +42,12 @@
 
 package org.netbeans.modules.java.api.common.queries;
 
+import java.io.File;
 import javax.swing.Icon;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.SourceRoots;
-import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.java.api.common.Roots;
@@ -58,13 +58,13 @@ import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
-import org.netbeans.spi.project.SourceGroupModifierImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
+import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
@@ -180,9 +180,10 @@ public final class QuerySupport {
      * @param testRoots a list of test roots to treat as sharable, may be null if the project does not support tests
      * @param additionalSourceRoots additional paths to treat as sharable (just pure property names, do not
      *          use <i>${</i> and <i>}</i> characters). Can be <code>null</code>.
-     * @return a {@link SharabilityQueryImplementation} to provide information about files sharability.
+     * @return a query to provide information about files sharability.
+     * @since 1.35
      */
-    public static SharabilityQueryImplementation createSharabilityQuery(
+    public static SharabilityQueryImplementation2 createSharabilityQuery2(
             final @NonNull AntProjectHelper helper,
             final @NonNull PropertyEvaluator evaluator,
             final @NonNull SourceRoots srcRoots,
@@ -194,13 +195,27 @@ public final class QuerySupport {
 
         return new SharabilityQueryImpl(helper, evaluator, srcRoots, testRoots, additionalSourceRoots);
     }
-
     /**
-     * Create a new query to provide information about files sharability without any additional source roots. See
-     * {@link #createSharabilityQuery(AntProjectHelper, PropertyEvaluator, SourceRoots, SourceRoots, String...)
-     * createSharabilityQuery()}
-     * for more information.
+     * @deprecated since 1.35 use {@link #createSharabilityQuery2} instead
      */
+    @Deprecated
+    public static SharabilityQueryImplementation createSharabilityQuery(
+            final @NonNull AntProjectHelper helper,
+            final @NonNull PropertyEvaluator evaluator,
+            final @NonNull SourceRoots srcRoots,
+            final @NullAllowed SourceRoots testRoots,
+            final @NullAllowed String... additionalSourceRoots) {
+        final SharabilityQueryImplementation2 sq2 = createSharabilityQuery2(helper, evaluator, srcRoots, testRoots, additionalSourceRoots);
+        return new SharabilityQueryImplementation() {
+            @Override public int getSharability(File file) {
+                return sq2.getSharability(file.toURI()).ordinal();
+            }
+        };
+    }
+    /**
+     * @deprecated since 1.35 use {@link #createSharabilityQuery2} instead
+     */
+    @Deprecated
     public static SharabilityQueryImplementation createSharabilityQuery(AntProjectHelper helper,
             PropertyEvaluator evaluator, SourceRoots srcRoots, SourceRoots testRoots) {
 

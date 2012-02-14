@@ -30,6 +30,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Zezula
  */
+@NavigatorPanel.Registration(mimeType="text/x-java", position=500, displayName="#LBL_BeanPatterns")
 public class BeanPanel implements NavigatorPanel {
 
     private BeanPanelUI component;

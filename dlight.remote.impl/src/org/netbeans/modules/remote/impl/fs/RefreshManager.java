@@ -56,8 +56,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.remote.impl.RemoteLogger;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -78,6 +78,10 @@ public class RefreshManager {
     private static final boolean REFRESH_ON_CONNECT = getBoolean("cnd.remote.refresh.on.connect", true); //NOI18N
 
     private final class RefreshWorker implements Runnable {
+        private final boolean expected;
+        private RefreshWorker(boolean expected) {
+            this.expected = expected;
+        }
         public void run() {
             long time = System.currentTimeMillis();
             int cnt = 0;
@@ -92,7 +96,7 @@ public class RefreshManager {
                    set.remove(fo);
                 }
                 try {
-                    fo.refreshImpl(false, null);
+                    fo.refreshImpl(false, null, expected);
                 } catch (ConnectException ex) {
                     clear();
                     break;
@@ -105,13 +109,32 @@ public class RefreshManager {
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
                 } catch (ExecutionException ex) {
-                    ex.printStackTrace(System.err);
+                    if (!permissionDenied(ex)) {
+                        System.err.println("Exception on file "+fo.getPath());
+                        ex.printStackTrace(System.err);
+                    }
                 }
             }
             time = System.currentTimeMillis() - time;
             RemoteLogger.getInstance().log(Level.FINE, "RefreshManager: refreshing {0} directories took {1} ms on {2}", new Object[] {cnt, time, env});
         }
     }
+    
+    private boolean permissionDenied(ExecutionException e) {
+        Throwable ex = e;
+        while (ex != null) {
+            if (ex instanceof FileInfoProvider.SftpIOException) {
+                switch(((FileInfoProvider.SftpIOException)ex).getId()) {
+                    case FileInfoProvider.SftpIOException.SSH_FX_PERMISSION_DENIED:
+                        return true;
+                }
+                break;
+            }
+            ex = ex.getCause();
+        }
+        return false;
+    }
+
 
     private void clear() {
         synchronized (queueLock) {
@@ -123,7 +146,7 @@ public class RefreshManager {
     public RefreshManager(ExecutionEnvironment env, RemoteFileObjectFactory factory) {
         this.env = env;
         this.factory = factory;
-        updateTask = new RequestProcessor("Remote File System RefreshManager " + env.getDisplayName(), 1).create(new RefreshWorker()); //NOI18N
+        updateTask = new RequestProcessor("Remote File System RefreshManager " + env.getDisplayName(), 1).create(new RefreshWorker(false)); //NOI18N
     }        
     
     public void scheduleRefreshOnFocusGained(Collection<RemoteFileObjectBase> fileObjects) {

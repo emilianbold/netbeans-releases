@@ -148,12 +148,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         JavadocContext jdctx = new JavadocContext();
         items = new  ArrayList<CompletionItem>();
         this.caretOffset = caretOffset;
-        Future<Void> f = runInJavac(JavaSource.forDocument(doc), jdctx);
-        if (f != null && !f.isDone()) {
-            setCompletionHack(false);
-            resultSet.setWaitText(NbBundle.getMessage(JavadocCompletionProvider.class, "scanning-in-progress")); 
-            f.get();
-        }
+        runInJavac(JavaSource.forDocument(doc), jdctx);
         
         if (isTaskCancelled()) {
             return;
@@ -181,13 +176,13 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         }
     }
     
-    private Future<Void> runInJavac(JavaSource js, final JavadocContext jdctx) {
+    private void runInJavac(JavaSource js, final JavadocContext jdctx) {
         try {
             if (js == null) {
-                return null;
+                return;
             }
 
-            return js.runWhenScanFinished(new Task<CompilationController>() {
+            js.runUserActionTask(new Task<CompilationController>() {
 
                 public void run(CompilationController javac) throws Exception {
                     if (isTaskCancelled()) {
@@ -216,7 +211,6 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
             }, true);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-            return null;
         }
     }
     

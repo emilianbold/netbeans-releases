@@ -72,25 +72,29 @@ import org.openide.util.Union2;
  */
 class FieldElementImpl extends ScopeImpl implements FieldElement {
     String defaultType;
+    private String defaultFQType;
     private String className;
 
-    FieldElementImpl(Scope inScope, String defaultType, ASTNodeInfo<FieldAccess> nodeInfo) {
+    FieldElementImpl(Scope inScope, String defaultType, String defaultFQType, ASTNodeInfo<FieldAccess> nodeInfo) {
         super(inScope, nodeInfo, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), null);
         this.defaultType = defaultType;
+        this.defaultFQType = defaultFQType;
         assert inScope instanceof TypeScope;
         className = inScope.getName();
     }
 
-    FieldElementImpl(Scope inScope, String defaultType, SingleFieldDeclarationInfo nodeInfo) {
+    FieldElementImpl(Scope inScope, String defaultType, String defaultFQType, SingleFieldDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), null);
         this.defaultType = defaultType;
+        this.defaultFQType = defaultFQType;
         assert inScope instanceof TypeScope;
         className = inScope.getName();
     }
 
-    FieldElementImpl(Scope inScope, String defaultType, PhpDocTypeTagInfo nodeInfo) {
+    FieldElementImpl(Scope inScope, String defaultType, String defaultFQType, PhpDocTypeTagInfo nodeInfo) {
         super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), null);
         this.defaultType = defaultType;
+        this.defaultFQType = defaultFQType;
         assert inScope instanceof TypeScope;
         className = inScope.getName();
     }
@@ -115,6 +119,18 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
                 }
             }
         }
+        Set<TypeResolver> instanceFQTypes = indexedConstant.getInstanceFQTypes();
+        for (TypeResolver typeResolver : instanceFQTypes) {
+            if (typeResolver.isResolved()) {
+                QualifiedName typeName = typeResolver.getTypeName(false);
+                String type = typeName.toNamespaceName() + "\\" + typeName.getName(); // NOI18N
+                if (this.defaultFQType != null) {
+                    this.defaultFQType += String.format("|%s", type); //NOI18N
+                } else {
+                    this.defaultFQType = type;
+                }
+            }
+        }
     }
 
     private FieldElementImpl(Scope inScope, String name,
@@ -122,6 +138,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
             PhpModifiers modifiers, String defaultType) {
         super(inScope, name, file, offsetRange, PhpElementKind.FIELD, modifiers);
         this.defaultType = defaultType;
+        this.defaultFQType = defaultType;
     }
 
     @Override
@@ -144,10 +161,14 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
 
     public Collection<? extends TypeScope> getDefaultTypes() {
         Collection<TypeScope> typeScopes = new HashSet<TypeScope>();
-        if (defaultType != null && defaultType.length() > 0) {
-            String[] allTypeNames = defaultType.split("\\|");
+        if (defaultFQType != null && defaultFQType.length() > 0) {
+            String[] allTypeNames = defaultFQType.split("\\|");
             for (String typeName : allTypeNames) {
-                typeScopes.addAll(IndexScopeImpl.getTypes(QualifiedName.create(typeName), this));
+                String modifiedTypeName = typeName;
+                if (typeName.indexOf("[") != -1) {
+                    modifiedTypeName = typeName.replaceAll("\\[.*\\]", ""); //NOI18N
+                }
+                typeScopes.addAll(IndexScopeImpl.getTypes(QualifiedName.create(modifiedTypeName), this));
             }
         }
         return typeScopes;
@@ -254,6 +275,10 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         sb.append(getPhpModifiers().toFlags()).append(";");
         if (defaultType != null) {
             sb.append(defaultType);
+        }
+        sb.append(";");//NOI18N
+        if (defaultFQType != null) {
+            sb.append(defaultFQType);
         }
         sb.append(";");//NOI18N
         return sb.toString();

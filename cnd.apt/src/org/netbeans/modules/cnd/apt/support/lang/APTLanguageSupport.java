@@ -63,6 +63,9 @@ public final class APTLanguageSupport {
     public static final String STD_CPP  = "Std C++ Language"; // NOI18N
     public static final String FORTRAN  = "Fortran Language"; // NOI18N
     public static final String UNKNOWN  = "Unknown Language"; // NOI18N
+
+    public static final String FLAVOR_CPP11  = "C++11"; // NOI18N
+    public static final String FLAVOR_UNKNOWN  = ""; // NOI18N
     
     private APTLanguageSupport() {
     }
@@ -72,12 +75,19 @@ public final class APTLanguageSupport {
     }
     
     public APTLanguageFilter getFilter(String lang) {
+        return getFilter(lang, null);
+    }
+
+    public APTLanguageFilter getFilter(String lang, String flavor) {
+        if(flavor == null) {
+            flavor = "";
+        }
         // no sync is needed here
-        APTLanguageFilter filter = langFilters.get(lang);
+        APTLanguageFilter filter = langFilters.get(lang + flavor);
         if (filter == null) {
-            filter = createFilter(lang);
+            filter = createFilter(lang, flavor);
             if (filter != null) {
-                addFilter(lang, filter);
+                addFilter(lang + flavor, filter);
             }
         }
         return filter;
@@ -89,7 +99,7 @@ public final class APTLanguageSupport {
     
     private Map<String, APTLanguageFilter> langFilters = new HashMap<String, APTLanguageFilter>();
 
-    private static APTLanguageFilter createFilter(String lang) {
+    private static APTLanguageFilter createFilter(String lang, String flavor) {
         APTLanguageFilter filter = null;
         // Now support only few filters
         if (lang.equalsIgnoreCase(APTLanguageSupport.STD_C)) {
@@ -99,7 +109,11 @@ public final class APTLanguageSupport {
         } else if (lang.equalsIgnoreCase(APTLanguageSupport.GNU_C)) {
             filter = new APTGnuCFilter();
         } else if (lang.equalsIgnoreCase(APTLanguageSupport.GNU_CPP)) {
-            filter = new APTGnuCppFilter();
+            if(flavor.equalsIgnoreCase(FLAVOR_CPP11)) {
+                filter = new APTGnuCpp11Filter();
+            } else {
+                filter = new APTGnuCppFilter();
+            }
         } else if (lang.equalsIgnoreCase(APTLanguageSupport.FORTRAN)) {
             filter = new APTFortranFilter();
         } else {

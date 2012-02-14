@@ -51,7 +51,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
-import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider.FileOperations;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileSystem;
 
@@ -59,7 +58,7 @@ import org.openide.filesystems.FileSystem;
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service = FilesystemInterceptorProvider.class, position = 100)
+//@org.openide.util.lookup.ServiceProvider(service = FilesystemInterceptorProvider.class, position = 100)
 public class MockupFilesystemInterceptorProvider extends FilesystemInterceptorProvider {
     private Map<FileSystem, FilesystemInterceptor> map = new HashMap<FileSystem, FilesystemInterceptor>();
 
@@ -107,13 +106,8 @@ public class MockupFilesystemInterceptorProvider extends FilesystemInterceptorPr
 
         @Override
         public boolean canWriteReadonlyFile(FileProxyI file) {
-            FileOperations fileOperations = FileOperationsProvider.getDefault().getFileOperations(fs);
-            boolean canWrite = fileOperations.canWrite(FileOperationsProvider.toFileProxy(file.getPath()));
-            if (canWrite) {
-                return canWrite;
-            }
             isMutableFiles.add(file);
-            return canWrite;
+            return false;
         }
 
         @Override

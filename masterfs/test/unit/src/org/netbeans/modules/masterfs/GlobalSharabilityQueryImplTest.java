@@ -47,7 +47,7 @@ package org.netbeans.modules.masterfs;
 import java.io.File;
 import junit.framework.*;
 import org.netbeans.api.queries.SharabilityQuery;
-import org.netbeans.spi.queries.SharabilityQueryImplementation;
+import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -58,7 +58,7 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Radek Matous
  */
 public class GlobalSharabilityQueryImplTest extends TestCase {
-    private static SharabilityQueryImplementation sq = new GlobalSharabilityQueryImpl();
+    private static SharabilityQueryImplementation2 sq = new GlobalSharabilityQueryImpl();
     private static GlobalVisibilityQueryImpl vq = new GlobalVisibilityQueryImpl() {
         protected String getIgnoredFiles() {
             return "^(CVS|SCCS|vssver.?\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store)|_svn)$|~$|^\\..*$";//NOI18N
@@ -89,7 +89,7 @@ public class GlobalSharabilityQueryImplTest extends TestCase {
         };
         
         for (int i = 0; i < all.length; i++) {
-            boolean isNotSharable = sq.getSharability(all[i]) == SharabilityQuery.NOT_SHARABLE;
+            boolean isNotSharable = sq.getSharability(all[i].toURI()) == SharabilityQuery.Sharability.NOT_SHARABLE;
             boolean isNotVisible = !vq.isVisible(all[i].getName());
             assertEquals(isNotSharable, isNotVisible);
         }

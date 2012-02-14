@@ -8,7 +8,7 @@ MIDlet-1: Bluetooth Demo, /icons/demo.png, example.bluetooth.demo.DemoMIDlet
 MIDlet-Description: This MIDlet demonstrates Bluetooth API.
 MIDlet-Name: BluetoothDemo
 MIDlet-Permissions: javax.microedition.io.Connector.bluetooth.client,javax.microedition.io.Connector.bluetooth.server
-MIDlet-Vendor: Sun Microsystems, Inc.
+MIDlet-Vendor: Oracle
 MIDlet-Version: 1.0
 MicroEdition-Configuration: CLDC-1.0
 MicroEdition-Profile: MIDP-2.0

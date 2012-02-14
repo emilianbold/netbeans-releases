@@ -43,32 +43,119 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
+import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
 /**
  *
- * @author Tomas Zezula, Anton Chechel
+ * @author Tomas Zezula
+ * @author Petr Somol
+ * @author Anton Chechel
  */
 @ProjectServiceProvider(service=ProjectOpenedHook.class, projectType={"org-netbeans-modules-java-j2seproject"}) // NOI18N
 public final class JFXProjectOpenedHook extends ProjectOpenedHook {
 
     private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
-    
+    private final Project prj;
+    private final J2SEPropertyEvaluator eval;
+
+    public JFXProjectOpenedHook(final Lookup lkp) {
+        Parameters.notNull("lkp", lkp); //NOI18N
+        this.prj = lkp.lookup(Project.class);
+        Parameters.notNull("prj", prj); //NOI18N
+        this.eval = lkp.lookup(J2SEPropertyEvaluator.class);
+        Parameters.notNull("eval", eval);   //NOI18N
+    }
+
     @Override
     protected synchronized void projectOpened() {
-        logUsage(JFXProjectGenerator.PROJECT_OPEN);
-        
-        // create Default JavaFX platform if necessary
-        // #205341
-        checkPlatforms();
+        if(JFXProjectProperties.isTrue(this.eval.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED))) {
+            logUsage(JFXProjectGenerator.PROJECT_OPEN);
+
+            // create Default JavaFX platform if necessary
+            // #205341
+            final Runnable runCreateJFXPlatform = missingJFXPlatform() ? new Runnable() {
+                @Override
+                public void run() {
+                    createJFXPlatform();
+                }
+            } : null;
+
+            // and update FX build script file jfx-impl.xml if it is not in expected state
+            // #204765
+            final Runnable runUpdateJFXImpl = isEnabledJFXUpdate() ? new Runnable() {
+                @Override
+                public void run() {
+                    FileObject readmeFO = updateJfxImpl();
+                    if(readmeFO != null && isEnabledJFXUpdateNotification()) {
+                        DataObject dobj;
+                        try {
+                            dobj = DataObject.find (readmeFO);
+                            EditCookie ec = dobj.getLookup().lookup(EditCookie.class);
+                            OpenCookie oc = dobj.getLookup().lookup(OpenCookie.class);
+                            if (ec != null) {
+                                ec.edit();
+                            } else if (oc != null) {
+                                oc.open();
+                            } else {
+                                LOGGER.log(Level.INFO, "No EditCookie nor OpenCookie for {0}", dobj);
+                            }
+                        } catch (DataObjectNotFoundException donf) {
+                            assert false : "DataObject must exist for " + readmeFO;
+                        }
+                    }
+                }
+            } : null;
+
+            if(runCreateJFXPlatform != null && runUpdateJFXImpl != null) {
+                switchBusy();
+                final ProjectInformation info = ProjectUtils.getInformation(prj);
+                final String projName = info != null ? info.getName() : null;
+                final RequestProcessor RP = new RequestProcessor(JFXProjectOpenedHook.class.getName() + projName, 2);
+                final RequestProcessor.Task taskPlatforms = RP.post(runCreateJFXPlatform);
+                final RequestProcessor.Task taskJfxImpl = RP.post(runUpdateJFXImpl);
+                if(taskPlatforms != null) {
+                    taskPlatforms.waitFinished();
+                }
+                if(taskJfxImpl != null) {
+                    taskJfxImpl.waitFinished();
+                }
+                switchDefault();
+            } else {
+                if(runCreateJFXPlatform != null) {
+                    switchBusy();
+                    runCreateJFXPlatform.run();
+                    switchDefault();
+                }
+                if(runUpdateJFXImpl != null) {
+                    switchBusy();
+                    runUpdateJFXImpl.run();
+                    switchDefault();
+                }
+            }
+        }
     }
 
     @Override
     protected void projectClosed() {
-        logUsage(JFXProjectGenerator.PROJECT_CLOSE);
+        if(JFXProjectProperties.isTrue(this.eval.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED))) {
+            logUsage(JFXProjectGenerator.PROJECT_CLOSE);
+        }
     }
 
     private static void logUsage(@NonNull final String msg) {
@@ -77,21 +164,52 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
         Logger.getLogger(JFXProjectGenerator.METRICS_LOGGER).log(logRecord);
     }
 
-    private void checkPlatforms() {
-        if (!JavaFXPlatformUtils.isThereAnyJavaFXPlatform()) {
-            // I do it in the same thread because otherwise we have problem with "resolve reference" modal dialog.
-            // Creation of Deafult JavaFX platform must be finished before J2SEProject checks for broken links after opening.
-            switchBusy();
-            try {
-                JavaFXPlatformUtils.createDefaultJavaFXPlatform();
-            } catch (Exception ex) {
-                LOGGER.log(Level.WARNING, "Can't create Java Platform instance: {0}", ex); // NOI18N
-            } finally {
-                switchDefault();
-            }
+    private boolean missingJFXPlatform() {
+        return !JavaFXPlatformUtils.isThereAnyJavaFXPlatform();
+    }
+
+    private void createJFXPlatform() {
+        // I do it in the same thread because otherwise we have problem with "resolve reference" modal dialog.
+        // Creation of Deafult JavaFX platform must be finished before J2SEProject checks for broken links after opening.
+        try {
+            JavaFXPlatformUtils.createDefaultJavaFXPlatform();
+        } catch (Exception ex) {
+            LOGGER.log(Level.WARNING, "Can't create Java Platform instance: {0}", ex); // NOI18N
         }
     }
 
+    private boolean isEnabledJFXUpdate() {
+        final PropertyEvaluator evaluator = eval.evaluator();
+        if(evaluator != null) {
+            return !JFXProjectProperties.isTrue(evaluator.getProperty(JFXProjectProperties.JAVAFX_DISABLE_AUTOUPDATE));
+        } else {
+            LOGGER.log(Level.WARNING, "PropertyEvaluator instantiation failed, disabling jfx-impl.xml auto-update."); // NOI18N
+        }
+        return false;
+    }
+
+    private boolean isEnabledJFXUpdateNotification() {
+        final PropertyEvaluator evaluator = eval.evaluator();
+        if(evaluator != null) {
+            return !JFXProjectProperties.isTrue(evaluator.getProperty(JFXProjectProperties.JAVAFX_DISABLE_AUTOUPDATE_NOTIFICATION));
+        } else {
+            LOGGER.log(Level.WARNING, "PropertyEvaluator instantiation failed, disabling jfx-impl.xml auto-update notification."); // NOI18N
+        }
+        return false;
+    }
+
+    private FileObject updateJfxImpl() {
+        // this operation must be finished before any user
+        // action on this project involving Run, Build, Debug, etc.
+        FileObject readmeFO = null;
+        try {
+            readmeFO = JFXProjectUtils.updateJfxImpl(prj);
+        } catch (Exception ex) {
+            LOGGER.log(Level.WARNING, "Can't update JavaFX specific build script jfx-impl.xml: {0}", ex); // NOI18N
+        }
+        return readmeFO;
+    }
+    
     private void switchBusy() {
         SwingUtilities.invokeLater(new Runnable() {
 

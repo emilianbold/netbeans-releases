@@ -77,10 +77,12 @@ public abstract class APTTokenBasedNode extends APTBaseNode
         this.token = token;
     }
     
+    @Override
     public APTToken getToken() {
         return token;
     }   
                 
+    @Override
     public int getOffset() {
         if (token != null && token != APTUtils.EOF_TOKEN) {
             return token.getOffset();
@@ -88,6 +90,7 @@ public abstract class APTTokenBasedNode extends APTBaseNode
         return 0;
     }
     
+    @Override
     public int getEndOffset() {
         if (token != null && token != APTUtils.EOF_TOKEN) {
             return token.getEndOffset();
@@ -95,12 +98,15 @@ public abstract class APTTokenBasedNode extends APTBaseNode
         return 0;        
     }
     
+    @Override
     public abstract APT getFirstChild();
     
+    @Override
     public APT getNextSibling() {
         return next;
     }       
         
+    @Override
     public String getText() {
         return "TOKEN{" + (getToken()!= null ? getToken().toString() : "") + "}"; // NOI18N
     }
@@ -110,6 +116,7 @@ public abstract class APTTokenBasedNode extends APTBaseNode
     /** 
      * sets next sibling element
      */
+    @Override
     public final void setNextSibling(APT next) {
         assert (next != null) : "null sibling, what for?"; // NOI18N
         assert (this.next == null) : "why do you change immutable APT?"; // NOI18N
@@ -144,5 +151,6 @@ public abstract class APTTokenBasedNode extends APTBaseNode
     
 
     
+    @Override
     public abstract void setFirstChild(APT child);
 }

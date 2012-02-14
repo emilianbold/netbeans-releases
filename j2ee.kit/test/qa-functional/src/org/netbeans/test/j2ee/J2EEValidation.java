@@ -213,9 +213,7 @@ public class J2EEValidation extends J2eeTestCase {
 
         // Run project
         try {
-            // "Run Project"
-            String runProjectItem = Bundle.getString("org.netbeans.modules.apisupport.project.ui.Bundle", "ACTION_run");
-            new Action(null, runProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
+            new Action(null, "Run").perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
             waitText(SAMPLE_WEB_PROJECT_NAME, 240000, "JSP Page");
         } catch (Exception ex) {
             LOG.log(Level.INFO, "=== Run Project failed:", ex);

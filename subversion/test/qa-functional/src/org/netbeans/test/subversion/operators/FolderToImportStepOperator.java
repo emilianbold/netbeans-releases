@@ -34,7 +34,7 @@ public class FolderToImportStepOperator extends ImportWizardOperator {
     private JButtonOperator _btBrowse;
     private JLabelOperator _lblSpecifyTheRepositoryFolderYouWantToImportIn;
     private JLabelOperator _lblSpecifyTheMessage;
-    private JLabelOperator _lblImportMessageRequired;
+    private JTextPaneOperator _txtPaneImportMessageRequired;
     private JButtonOperator _btStop;
     private JButtonOperator _btBack;
     private JButtonOperator _btNext;
@@ -154,11 +154,11 @@ public class FolderToImportStepOperator extends ImportWizardOperator {
      * 
      * @return JLabelOperator
      */
-    public JLabelOperator lblImportMessageRequired() {
-        if (_lblImportMessageRequired==null) {
-            _lblImportMessageRequired = new JLabelOperator(this, 6);    
+    public JTextPaneOperator lblImportMessageRequired() {
+        if (_txtPaneImportMessageRequired==null) {
+            _txtPaneImportMessageRequired = new JTextPaneOperator(this);    
         }
-        return _lblImportMessageRequired;
+        return _txtPaneImportMessageRequired;
     }
 
     /** Tries to find "< Back" JButton in this dialog.

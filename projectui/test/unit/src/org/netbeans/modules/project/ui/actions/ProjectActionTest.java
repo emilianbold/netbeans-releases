@@ -163,49 +163,11 @@ public class ProjectActionTest extends NbTestCase {
     }
     
     public void testAcceleratorsPropagated() {
-        doTestAcceleratorsPropagated(new ActionCreator() {
-            public ProjectAction create(Lookup l) {
+        TestSupport.doTestAcceleratorsPropagated(new TestSupport.ActionCreator() {
+            public LookupSensitiveAction create(Lookup l) {
                 return new ProjectAction("command", "TestProjectAction", null, l);
             }
         }, true);
-    }
-    
-    public static void doTestAcceleratorsPropagated(ActionCreator creator, boolean testMenus) {
-        Lookup l1 = Lookups.fixed(new Object[] {"1"});
-        Lookup l2 = Lookups.fixed(new Object[] {"2"});
-        
-        ProjectAction a1 = creator.create(l1);
-        
-        KeyStroke k1 = KeyStroke.getKeyStroke("shift pressed A");
-        KeyStroke k2 = KeyStroke.getKeyStroke("shift pressed A");
-        
-        assertNotNull(k1);
-        assertNotNull(k2);
-        
-        a1.putValue(Action.ACCELERATOR_KEY, k1);
-        
-        ProjectAction a2 = creator.create(l2);
-        
-        assertEquals(k1, a2.getValue(Action.ACCELERATOR_KEY));
-        
-        a2.putValue(Action.ACCELERATOR_KEY, k2);
-        
-        assertEquals(k2, a1.getValue(Action.ACCELERATOR_KEY));
-        
-        if (testMenus) {
-            assertEquals(k2, a2.getMenuPresenter().getAccelerator());
-        }
-
-        a1.putValue(Action.ACCELERATOR_KEY, k1);
-        assertEquals(k1, a2.getValue(Action.ACCELERATOR_KEY));
-        
-        if (testMenus) {
-            assertEquals(k1, a2.getMenuPresenter().getAccelerator());
-        }
-    }
-    
-    public static interface ActionCreator {
-        public ProjectAction create(Lookup l);
     }
     
     private static class TestActionProvider implements ActionProvider {

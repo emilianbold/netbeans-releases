@@ -50,10 +50,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -138,13 +136,9 @@ public final class BinaryForSourceQuery {
             for (ClassPath.Entry e : exec.entries()) {
                 FileObject[] roots = SourceForBinaryQuery.findSourceRoots(e.getURL()).getRoots();
                 for (FileObject root : roots) {
-                    try {
-                        if (sourceRoot.equals (root.getURL())) {
+                        if (sourceRoot.equals (root.toURL())) {
                             result.add (e.getURL());
                         }
-                    } catch (FileStateInvalidException fsie) {
-                        Exceptions.printStackTrace(fsie);
-                    }
                 }
             }
             return result.toArray(new URL[result.size()]);

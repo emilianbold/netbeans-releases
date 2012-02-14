@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
@@ -46,7 +46,7 @@ package org.netbeans.modules.php.editor.parser.astnodes;
  * <pre>e.g.<pre> $a[],
  * $a[1],
  * $a[$b],
- * $a{'name'} 
+ * $a{'name'}
  */
 public class ArrayAccess extends Variable {
 
@@ -54,24 +54,24 @@ public class ArrayAccess extends Variable {
         VARIABLE_ARRAY,
         VARIABLE_HASHTABLE
     }
-    
+
     /**
      * In case of array / hashtable variable, the index expression is added
      */
-    private Expression index;
+    private ArrayDimension dimension;
     private ArrayAccess.Type arrayType;
 
-    public ArrayAccess(int start, int end, VariableBase variableName, Expression index, ArrayAccess.Type arrayType) {
+    public ArrayAccess(int start, int end, VariableBase variableName, ArrayDimension dimension, ArrayAccess.Type arrayType) {
         super(start, end, variableName);
 
         //if (variableName != null) variableName.setParent(this);
         //if (index != null) index.setParent(index);
-        this.index = index;
+        this.dimension = dimension;
         this.arrayType = arrayType;
     }
 
-    public Expression getIndex() {
-        return index;
+    public ArrayDimension getDimension() {
+        return dimension;
     }
 
     public ArrayAccess.Type getArrayType() {
@@ -80,7 +80,7 @@ public class ArrayAccess extends Variable {
 
     /**
      * Returns the name (expression) of this variable
-     * 
+     *
      * @return the expression name node
      */
     @Override

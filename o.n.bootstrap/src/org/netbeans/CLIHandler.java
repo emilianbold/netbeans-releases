@@ -50,7 +50,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -74,7 +73,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.modules.Places;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 
@@ -650,19 +648,21 @@ public abstract class CLIHandler extends Object {
                             // if this turns to be slow due to lookup of getLocalHost
                             // address, it can be done asynchronously as nobody needs
                             // the address in the stream if the server is listening
-                            byte[] host = InetAddress.getLocalHost().getAddress();
-                            if (block != null && block.intValue() == 667) {
-                                // this is here to emulate #64004
-                                throw new UnknownHostException("dhcppc0"); // NOI18N
+                            byte[] host;
+                            try {
+                                if (block != null && block.intValue() == 667) {
+                                    // this is here to emulate #64004
+                                    throw new UnknownHostException("dhcppc0"); // NOI18N
+                                }
+                                host = InetAddress.getLocalHost().getAddress();
+                            } catch (UnknownHostException unknownHost) {
+                                if (!"dhcppc0".equals(unknownHost.getMessage())) { // NOI18N, see above
+                                    // if we just cannot get the address, we can go on
+                                    unknownHost.printStackTrace();
+                                }
+                                host = new byte[] {127, 0, 0, 1};
                             }
-                            for (int all = 0; all < host.length; all++) {
-                                os.write(host[all]);
-                            }
-                        } catch (UnknownHostException unknownHost) {
-                            if (!"dhcppc0".equals(unknownHost.getMessage())) { // NOI18N, see above
-                                // if we just cannot get the address, we can go on
-                                unknownHost.printStackTrace();
-                            }
+                            os.write(host);
                         } catch (IOException ex) {
                             ex.printStackTrace();
                         }

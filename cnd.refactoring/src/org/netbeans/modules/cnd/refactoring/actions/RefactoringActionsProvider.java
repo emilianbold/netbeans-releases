@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.refactoring.ui.*;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
@@ -207,10 +208,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
                 return;
             }
             ui = createRefactoringUI(ctx, editorContext);
-            TopComponent activetc = TopComponent.getRegistry().getActivated();
-
             if (ui != null) {
-                UI.openRefactoringUI(ui, activetc);
+                openRefactoringUI(ui);
             } else {
                 JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotRefactorLoc"));
             }
@@ -242,10 +241,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
             for (CheckModificationHook hook : hooks) {
                 ui.getRefactoring().getContext().add(hook);
             }
-            TopComponent activetc = TopComponent.getRegistry().getActivated();
 
             if (ui != null) {
-                UI.openRefactoringUI(ui, activetc);
+                openRefactoringUI(ui);
             } else {
                 JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotRefactorLoc"));
             }
@@ -254,6 +252,17 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         protected abstract RefactoringUI createRefactoringUI(CsmObject selectedElement);
     }
 
+    static void openRefactoringUI(final RefactoringUI ui) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                TopComponent activetc = TopComponent.getRegistry().getActivated();
+                UI.openRefactoringUI(ui, activetc);
+            }
+        });
+    }
+    
     static boolean isFromEditor(Lookup lookup) {
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         return ec != null && CsmUtilities.findRecentEditorPaneInEQ(ec) != null;

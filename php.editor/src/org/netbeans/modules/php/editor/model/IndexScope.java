@@ -54,6 +54,7 @@ public interface IndexScope extends Scope {
     ElementQuery.Index getIndex();
     //globally visible
     List<? extends InterfaceScope> findInterfaces(final QualifiedName ifaceName);
+    List<? extends TraitScope> findTraits(final QualifiedName traitName);
     List<? extends TypeScope> findTypes(final QualifiedName typeName);
     List<? extends ClassScope> findClasses(final QualifiedName className);
     List<? extends FunctionScope> findFunctions(final QualifiedName fncName);
@@ -67,6 +68,8 @@ public interface IndexScope extends Scope {
     List<? extends ClassConstantElement> findClassConstants(TypeScope type, String clsConstName);
     List<? extends ClassConstantElement> findInheritedClassConstants(ClassScope clsScope, String constName);
     List<? extends FieldElement> findFields(ClassScope cls, String field, int... modifiers);
+    List<? extends FieldElement> findFields(TraitScope cls, String field, int... modifiers);
     List<? extends FieldElement>findFields(ClassScope cls, int... modifiers);
+    List<? extends FieldElement>findFields(TraitScope cls, int... modifiers);
     List<? extends FieldElement> findInheritedFields(ClassScope clsScope, String fieldName);
 }

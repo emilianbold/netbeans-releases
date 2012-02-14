@@ -47,16 +47,20 @@ package org.netbeans.modules.websvc.jaxrpc.actions;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
-import org.netbeans.modules.websvc.core._RetoucheUtil;
 import org.netbeans.modules.websvc.core.AddWsOperationHelper;
 import org.netbeans.modules.websvc.api.support.AddOperationCookie;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.lang.model.element.TypeElement;
+
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -71,6 +75,7 @@ import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
 import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
+import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.openide.util.Lookup;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import org.openide.ErrorManager;
@@ -111,7 +116,7 @@ public class JaxRpcAddOperation implements AddOperationCookie {
         }
         AddWsOperationHelper strategy = new AddWsOperationHelper(NbBundle.getMessage(JaxRpcAddOperation.class, "LBL_AddOperationAction"), false);
         try {
-            String className = _RetoucheUtil.getMainClassName(implBeanClass);
+            String className = getMainClassName(implBeanClass);
             if (className != null) {
                 MethodModel methodModel = strategy.getMethodModel(implBeanClass, className);
                 if (methodModel!=null && seiClass != null) {
@@ -126,6 +131,22 @@ public class JaxRpcAddOperation implements AddOperationCookie {
     @Override
     public boolean isEnabledInEditor(Lookup nodeLookup) {
         return isWsImplBeanOrInterface(implementationClass);
+    }
+    
+    public static String getMainClassName(final FileObject classFO) throws IOException {
+        JavaSource javaSource = JavaSource.forFileObject(classFO);
+        final String[] result = new String[1];
+        javaSource.runUserActionTask(new Task<CompilationController>() {
+            @Override
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                TypeElement classEl = SourceUtils.getPublicTopLevelElement(controller);
+                if (classEl != null) {
+                    result[0] = classEl.getQualifiedName().toString();
+                }
+            }
+        }, true);
+        return result[0];
     }
 
     private boolean hasRemoteException(final List<String> exceptions) {

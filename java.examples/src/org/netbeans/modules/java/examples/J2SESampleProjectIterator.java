@@ -46,18 +46,20 @@ package org.netbeans.modules.java.examples;
 
 import java.io.File;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import javax.swing.JComponent;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.TemplateWizard;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 
 /**
  * @author Martin Grebac
  */
-public class J2SESampleProjectIterator implements TemplateWizard.Iterator {
+public class J2SESampleProjectIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
 
     private static final long serialVersionUID = 4L;
 
@@ -90,29 +92,35 @@ public class J2SESampleProjectIterator implements TemplateWizard.Iterator {
         return false;
     }
     
-    public void initialize (org.openide.loaders.TemplateWizard templateWizard) {
+    @Override public void initialize(WizardDescriptor templateWizard) {
         this.wiz = templateWizard;
-        String name = templateWizard.getTemplate().getNodeDelegate().getDisplayName();
+        String displayName;
+        try {
+            displayName = DataObject.find(Templates.getTemplate(wiz)).getNodeDelegate().getDisplayName();
+        } catch (DataObjectNotFoundException ex) {
+            displayName = "unknown";
+        }
+        String name = displayName;
         if (name != null) {
             name = name.replaceAll(" ", ""); //NOI18N
         }
         templateWizard.putProperty (WizardProperties.NAME, name);        
-        basicPanel = new PanelConfigureProject(templateWizard.getTemplate().getNodeDelegate().getDisplayName());
+        basicPanel = new PanelConfigureProject(displayName);
         currentIndex = 0;
         updateStepsList ();
     }
     
-    public void uninitialize (org.openide.loaders.TemplateWizard templateWizard) {
+    @Override public void uninitialize(WizardDescriptor templateWizard) {
         basicPanel = null;
         currentIndex = -1;
         this.wiz.putProperty("projdir",null);           //NOI18N
         this.wiz.putProperty("name",null);          //NOI18N
     }
     
-    public java.util.Set instantiate (org.openide.loaders.TemplateWizard templateWizard) throws java.io.IOException {
+    @Override public Set instantiate() throws java.io.IOException {
         File projectLocation = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         String name = (String) wiz.getProperty(WizardProperties.NAME);
-        FileObject templateFO = templateWizard.getTemplate().getPrimaryFile();
+        FileObject templateFO = Templates.getTemplate(wiz);
         FileObject prjLoc = J2SESampleProjectGenerator.createProjectFromTemplate(
                               templateFO, projectLocation, name);
 

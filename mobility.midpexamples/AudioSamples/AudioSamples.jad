@@ -6,7 +6,7 @@ MIDlet-3: Mix Demo, /icons/App.png, example.audiodemo.MixTest
 MIDlet-Description: Sample suite for the Audio Building Block in MIDP 2.0.
 MIDlet-Name: AudioSamples
 MIDlet-Permissions: javax.microedition.io.Connector.http
-MIDlet-Vendor: Sun Microsystems, Inc.
+MIDlet-Vendor: Oracle
 MIDlet-Version: 2.0
 MicroEdition-Configuration: CLDC-1.0
 MicroEdition-Profile: MIDP-2.0

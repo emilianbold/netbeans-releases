@@ -193,6 +193,10 @@ public class ProjectBridge {
         for(Item item : getAllSources()) {
             old.add(item);
         }
+        if (extensions.contains("xml")) { //NOI18N
+            assert false : "Extension '.xml' cannot be a header extension"; //NOI18N
+            extensions.remove("xml"); //NOI18N
+        }
         if (makeConfigurationDescriptor.addAdditionalHeaderExtensions(extensions)) {
             for(Item item : getAllSources()) {
                 if (!old.contains(item)) {
@@ -591,6 +595,8 @@ public class ProjectBridge {
                 }
                 if (languageStandard == ItemProperties.LanguageStandard.CPP) {
                     itemConfiguration.setLanguageFlavor(LanguageFlavor.CPP);
+                } if (languageStandard == ItemProperties.LanguageStandard.CPP11) {
+                    itemConfiguration.setLanguageFlavor(LanguageFlavor.CPP11);
                 }
                 break;
             case Fortran:

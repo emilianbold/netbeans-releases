@@ -68,8 +68,9 @@ import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor.VCSAnnotationEvent;
 import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor.VCSAnnotationListener;
+import org.netbeans.modules.versioning.core.spi.*;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
-import org.netbeans.spi.queries.CollocationQueryImplementation;
+import org.netbeans.spi.queries.CollocationQueryImplementation2;
 import org.openide.util.*;
 import org.openide.util.Lookup.Result;
 
@@ -189,18 +190,19 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
     private final VersioningSystem NULL_OWNER = new VersioningSystem() {
         @Override public boolean isLocalHistory() {  throw new IllegalStateException(); }
         @Override public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file) { throw new IllegalStateException(); }
-        @Override public VCSInterceptor getInterceptor() { throw new IllegalStateException(); }
+        @Override public VCSInterceptor getVCSInterceptor() { throw new IllegalStateException(); }
         @Override public void getOriginalFile(VCSFileProxy workingCopy, VCSFileProxy originalFile) { throw new IllegalStateException(); }
-        @Override public CollocationQueryImplementation getCollocationQueryImplementation() { throw new IllegalStateException(); }
+        @Override public CollocationQueryImplementation2 getCollocationQueryImplementation() { throw new IllegalStateException(); }
         @Override public void addPropertyCL(PropertyChangeListener listener) { throw new IllegalStateException(); }
         @Override public void removePropertyCL(PropertyChangeListener listener) { throw new IllegalStateException(); }
         @Override public boolean isExcluded(VCSFileProxy file) { throw new IllegalStateException(); }
-        @Override public VCSAnnotator getAnnotator() { throw new IllegalStateException(); }
-        @Override public VCSVisibilityQuery getVisibility() { throw new IllegalStateException(); }
+        @Override public VCSAnnotator getVCSAnnotator() { throw new IllegalStateException(); }
+        @Override public VCSVisibilityQuery getVisibilityQuery() { throw new IllegalStateException(); }
         @Override public Object getDelegate() { throw new IllegalStateException(); }
         @Override public String getDisplayName() { throw new IllegalStateException(); }
         @Override public String getMenuLabel() { throw new IllegalStateException(); }
         @Override public boolean accept(VCSContext ctx) { throw new IllegalStateException(); }
+        @Override public VCSHistoryProvider getVCSHistoryProvider() {throw new IllegalStateException(); }
     };
     
     
@@ -556,6 +558,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
             } else {
                 versionedRootsChanged(null);
             }
+            propertyChangeSupport.firePropertyChange(EVENT_VERSIONED_ROOTS, null, null);
         }
     }
 
@@ -590,7 +593,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
                 Set<String> s = interceptedMethods.get(localHistory.getClass().getName());
                 if(s == null) {
                     s = new HashSet<String>();
-                    Method[] m = localHistory.getInterceptor().getClass().getDeclaredMethods();
+                    Method[] m = localHistory.getVCSInterceptor().getClass().getDeclaredMethods();
                     for (Method method : m) {
                         if((method.getModifiers() & Modifier.PUBLIC) != 0) {
                             s.add(method.getName());
@@ -627,5 +630,9 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
     
     public void removePropertyChangeListener(PropertyChangeListener l) {
         propertyChangeSupport.removePropertyChangeListener(l);
+    }
+
+    boolean isLocalHistory(VersioningSystem system) {
+        return system == localHistory;
     }
 }

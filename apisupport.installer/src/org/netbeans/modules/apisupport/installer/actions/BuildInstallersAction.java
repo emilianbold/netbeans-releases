@@ -87,7 +87,7 @@ import org.openide.util.Utilities;
 
 @ActionID(id = "org.netbeans.modules.apisupport.installer.actions.BuildInstallersAction", category = "Project")
 @ActionRegistration(displayName = "#CTL_BuildInstallers", /* XXX might work to be context action on List<Project> */ lazy=false)
-@ActionReference(position = 1, path = "Projects/org-netbeans-modules-apisupport-project-suite/Actions")
+@ActionReference(position = 400, path = "Projects/org-netbeans-modules-apisupport-project-suite-package/Actions")
 public final class BuildInstallersAction extends AbstractAction implements ContextAwareAction {
 
     public BuildInstallersAction() {

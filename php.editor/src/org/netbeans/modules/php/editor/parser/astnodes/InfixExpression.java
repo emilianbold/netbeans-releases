@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
@@ -76,7 +76,7 @@ public class InfixExpression extends Expression {
         SL, // '<<'
     	SR // '>>'
     }
-    
+
     private Expression left;
     private InfixExpression.OperatorType operator;
     private Expression right;
@@ -93,11 +93,11 @@ public class InfixExpression extends Expression {
         this.operator = operator;
     }
 
-    
+
 
     /**
      * Returns the operator of this infix expression.
-     * 
+     *
      * @return the infix operator
      */
     public InfixExpression.OperatorType getOperator() {
@@ -106,7 +106,7 @@ public class InfixExpression extends Expression {
 
     /**
      * Returns the left operand of this infix expression.
-     * 
+     *
      * @return the left operand node
      */
     public Expression getLeft() {
@@ -115,13 +115,13 @@ public class InfixExpression extends Expression {
 
     /**
      * Returns the right operand of this infix expression.
-     * 
+     *
      * @return the right operand node
      */
     public Expression getRight() {
         return this.right;
     }
-    
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);

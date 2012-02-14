@@ -44,11 +44,8 @@ package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.util.logging.Logger;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
-import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.util.Lookup;
 
 /**
@@ -62,6 +59,7 @@ public abstract class ConfigAction {
         LOCAL,
         REMOTE,
         SCRIPT,
+        INTERNAL,
         TEST,
         SELENIUM,
     }
@@ -86,6 +84,9 @@ public abstract class ConfigAction {
             case SCRIPT:
                 type = Type.SCRIPT;
                 break;
+            case INTERNAL:
+                type = Type.INTERNAL;
+                break;
             default:
                 throw new IllegalArgumentException("Unknown type: " + runAsType);
         }
@@ -104,6 +105,9 @@ public abstract class ConfigAction {
                 break;
             case SCRIPT:
                 action = new ConfigActionScript(project);
+                break;
+            case INTERNAL:
+                action = new ConfigActionInternal(project);
                 break;
             case TEST:
                 action = new ConfigActionTest(project);
@@ -126,7 +130,8 @@ public abstract class ConfigAction {
         return XDebugStarterFactory.getInstance() != null;
     }
 
-    public abstract boolean isValid(boolean indexFileNeeded);
+    public abstract boolean isProjectValid();
+    public abstract boolean isFileValid();
 
     public abstract boolean isRunFileEnabled(Lookup context);
     public abstract boolean isDebugFileEnabled(Lookup context);
@@ -138,15 +143,7 @@ public abstract class ConfigAction {
     public abstract void debugFile(Lookup context);
 
     protected void showCustomizer() {
-        project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.RUN);
+        PhpProjectUtils.openCustomizerRun(project);
     }
 
-    protected boolean isIndexFileValid(FileObject baseDirectory) {
-        assert baseDirectory != null;
-        String indexFile = ProjectPropertiesSupport.getIndexFile(project);
-        if (indexFile == null || indexFile.trim().length() == 0 || baseDirectory.getFileObject(indexFile) == null) {
-            return false;
-        }
-        return true;
-    }
 }

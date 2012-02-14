@@ -11,7 +11,7 @@ MIDlet-Permissions: javax.microedition.io.PushRegistry, javax.microedition.io.Co
 MIDlet-Push-1: sms://:50000, example.sms.SMSReceive, *
 MIDlet-Push-2: cbs://:50001, example.cbs.CBSReceive, *
 MIDlet-Push-3: mms://:example.mms.MMSDemo, example.mms.MMSReceive, *
-MIDlet-Vendor: Sun Microsystems, Inc.
+MIDlet-Vendor: Oracle
 MIDlet-Version: 2.0
 MMS-ApplicationID: example.mms.MMSDemo
 MicroEdition-Configuration: CLDC-1.0

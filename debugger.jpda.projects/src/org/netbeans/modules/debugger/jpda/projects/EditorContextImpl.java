@@ -1586,6 +1586,9 @@ public class EditorContextImpl extends EditorContext {
                 return null;
             }
         }
+        //t2 = System.nanoTime();
+        //System.err.println("PARSE TIME: "+(t2-t1)/1000000000+" s "+((t2-t1) % 1000000000)+" ns.");
+        //System.err.printf("PARSE TIME: %d.%09d s.\n", (t2-t1)/1000000000, ((t2-t1) % 1000000000));
         return (Operation[])result[0];
     }
 
@@ -2482,10 +2485,7 @@ public class EditorContextImpl extends EditorContext {
             @Override
             public void run(Future<Void>[] resultPtr, IOException[] excPtr) {
                 try {
-                    Future<Void> result = js.runWhenScanFinished(task, shared);
-                    synchronized (resultPtr) {
-                        resultPtr[0] = result;
-                    }
+                    js.runUserActionTask(task, shared);
                 } catch (IOException ex) {
                     synchronized (resultPtr) {
                         excPtr[0] = ex;
@@ -2501,10 +2501,7 @@ public class EditorContextImpl extends EditorContext {
             @Override
             public void run(Future<Void>[] resultPtr, ParseException[] excPtr) {
                 try {
-                    Future<Void> result = ParserManager.parseWhenScanFinished(sources, userTask);
-                    synchronized (resultPtr) {
-                        resultPtr[0] = result;
-                    }
+                    ParserManager.parse(sources, userTask);
                 } catch (ParseException ex) {
                     synchronized (resultPtr) {
                         excPtr[0] = ex;
@@ -2532,7 +2529,8 @@ public class EditorContextImpl extends EditorContext {
             }
         }
         return new Future<Void>() {
-
+            boolean cancelled = false;
+            
             private Future<Void> getDelegate() {
                 synchronized (resultPtr) {
                     return resultPtr[0];
@@ -2541,46 +2539,26 @@ public class EditorContextImpl extends EditorContext {
 
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
-                Future<Void> d = getDelegate();
-                if (d != null) {
-                    return d.cancel(mayInterruptIfRunning);
-                } else {
-                    return false;
-                }
+                return cancelled = scanning.cancel();
             }
 
             @Override
             public boolean isCancelled() {
-                Future<Void> d = getDelegate();
-                if (d != null) {
-                    return d.isCancelled();
-                } else {
-                    return false;
-                }
+                return false;
             }
 
             @Override
             public boolean isDone() {
-                Future<Void> d = getDelegate();
-                if (d != null) {
-                    return d.isDone();
-                } else {
-                    return false;
-                }
+                return scanning.isFinished();
             }
 
             @Override
             public Void get() throws InterruptedException, ExecutionException {
                 scanning.waitFinished();
-                Future<Void> d = getDelegate();
-                if (d != null) {
-                    return d.get();
-                } else {
-                    if (excPtr[0] != null) {
-                        throw new ExecutionException(excPtr[0]);
-                    }
-                    throw new ExecutionException("Task failed", new RuntimeException("Task Failed"));
+                if (excPtr[0] != null) {
+                    throw new ExecutionException(excPtr[0]);
                 }
+                return null;
             }
 
             @Override
@@ -2600,15 +2578,10 @@ public class EditorContextImpl extends EditorContext {
                     timeout -= unit.convert(s2 - s1, TimeUnit.NANOSECONDS);
                     if (timeout < 0) timeout = 1;
                 }
-                Future<Void> d = getDelegate();
-                if (d != null) {
-                    return d.get(timeout, unit);
-                } else {
-                    if (excPtr[0] != null) {
-                        throw new ExecutionException(excPtr[0]);
-                    }
-                    throw new ExecutionException("Task failed", new RuntimeException("Task Failed"));
+                if (excPtr[0] != null) {
+                    throw new ExecutionException(excPtr[0]);
                 }
+                return null;
             }
         };
     }

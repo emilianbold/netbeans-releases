@@ -113,6 +113,7 @@ import org.netbeans.modules.editor.lib2.document.ReadWriteBuffer;
 import org.netbeans.modules.editor.lib2.document.ReadWriteUtils;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.netbeans.spi.lexer.TokenHierarchyControl;
+import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
@@ -1386,7 +1387,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             if (!inited) { // Fill line-separator properties
                 String lineSeparator = ReadWriteUtils.findFirstLineSeparator(buffer);
                 if (lineSeparator == null) {
-                    lineSeparator = ReadWriteUtils.getSystemLineSeparator();
+                    lineSeparator = (String) getProperty(FileObject.DEFAULT_LINE_SEPARATOR_ATTR);
+                    if (lineSeparator == null) {
+                        lineSeparator = ReadWriteUtils.getSystemLineSeparator();
+                    }
                 }
                 putProperty(BaseDocument.READ_LINE_SEPARATOR_PROP, lineSeparator);
             }
@@ -1430,7 +1434,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             if (lineSeparator == null) {
                 lineSeparator = (String) getProperty(BaseDocument.READ_LINE_SEPARATOR_PROP);
                 if (lineSeparator == null) {
-                    lineSeparator = ReadWriteUtils.getSystemLineSeparator();
+                    lineSeparator = (String) getProperty(FileObject.DEFAULT_LINE_SEPARATOR_ATTR);
+                    if (lineSeparator == null) {
+                        lineSeparator = ReadWriteUtils.getSystemLineSeparator();
+                    }
                 }
             }
             CharSequence docText = (CharSequence) getProperty(CharSequence.class);

@@ -49,18 +49,18 @@ import org.openide.util.NbBundle;
  * @author Vladimir Kvashin
  */
 /* package-local */
-class CppTypeDescriptor extends TypeDescriptor {
+final class CppTypeDescriptor extends TypeDescriptor {
 
-    CsmUID<CsmClassifier> uid;
+    private final CsmUID<CsmClassifier> uid;
 
-    private String simpleName;
-    private String typeName;
-    private CsmDeclaration.Kind kind;
-    private int modifiers;
-    private CsmProject project; 
-    private String contextName;
-    private String filePath; // we need this to eliminate duplication
-
+    private final String simpleName;
+    private final String typeName;
+    private final CsmDeclaration.Kind kind;
+    private final int modifiers;
+    private final CsmProject project; 
+    private final String outerName; 
+    private final String contextName; 
+    private final String filePath; // we need this to eliminate duplication
     @SuppressWarnings("unchecked")
     public CppTypeDescriptor(CsmClassifier classifier) {
 	uid = UIDs.get(classifier);
@@ -71,24 +71,34 @@ class CppTypeDescriptor extends TypeDescriptor {
 	    if( file != null ) {
                 project = file.getProject();
                 filePath = file.getAbsolutePath().toString();
-	    }
-	}
+	    } else {
+                project = null;
+                filePath = "";
+            }
+	} else {
+            project = null;
+            filePath = "";
+        }
         if (CsmKindUtilities.isClass(classifier) && CsmKindUtilities.isTemplate(classifier)) {
             simpleName = ((CsmTemplate)classifier).getDisplayName().toString();
         } else {
             simpleName = classifier.getName().toString();
         }
-	typeName = simpleName;
+	String aTypeName = simpleName;
 	
-	contextName = ContextUtil.getContextName(classifier);
+	String anOuterName = ContextUtil.getContextName(classifier);
 	CsmScope scope = classifier.getScope();
 	if( CsmKindUtilities.isClass(scope) ) {
 	    CsmClass cls = ((CsmClass) scope);
-	    typeName = NbBundle.getMessage(CppTypeDescriptor.class, "TYPE_NAME_FORMAT", simpleName, ContextUtil.getClassFullName(cls));
+	    aTypeName = NbBundle.getMessage(CppTypeDescriptor.class, "TYPE_NAME_FORMAT", simpleName, ContextUtil.getClassFullName(cls));
 	}	
-	if( contextName != null && contextName.length() > 0 ) {
-            contextName = NbBundle.getMessage(CppTypeDescriptor.class, "CONTEXT_NAME_FORMAT", contextName);
-	}
+        this.outerName = anOuterName;
+        this.typeName = aTypeName;
+        if (outerName != null && !outerName.isEmpty()) {
+            contextName = NbBundle.getMessage(CppTypeDescriptor.class, "CONTEXT_NAME_FORMAT", outerName);
+        } else {
+            contextName = "";
+        }
     }
     
     @Override
@@ -98,7 +108,7 @@ class CppTypeDescriptor extends TypeDescriptor {
 
     @Override
     public String getOuterName() {
-	return contextName;
+	return outerName;
     }
 
     @Override
@@ -118,12 +128,12 @@ class CppTypeDescriptor extends TypeDescriptor {
 
     @Override
     public String getProjectName() {
-        return project.getName().toString();
+        return project == null ? "" : project.getName().toString();
     }
 
     @Override
     public Icon getProjectIcon() {
-	return CsmImageLoader.getIcon(project);
+	return project == null ? null : CsmImageLoader.getIcon(project);
     }
 
     @Override
@@ -161,7 +171,7 @@ class CppTypeDescriptor extends TypeDescriptor {
         if (this.kind != other.kind) {
             return false;
         }
-        if (this.contextName != other.contextName && (this.contextName == null || !this.contextName.equals(other.contextName))) {
+        if (this.outerName != other.outerName && (this.outerName == null || !this.outerName.equals(other.outerName))) {
             return false;
         }
         if (this.filePath != other.filePath && (this.filePath == null || !this.filePath.equals(other.filePath))) {
@@ -175,7 +185,7 @@ class CppTypeDescriptor extends TypeDescriptor {
         int hash = 5;
         hash = 19 * hash + (this.simpleName != null ? this.simpleName.hashCode() : 0);
         hash = 19 * hash + (this.kind != null ? this.kind.hashCode() : 0);
-        hash = 19 * hash + (this.contextName != null ? this.contextName.hashCode() : 0);
+        hash = 19 * hash + (this.outerName != null ? this.outerName.hashCode() : 0);
         hash = 19 * hash + (this.filePath != null ? this.filePath.hashCode() : 0);
         return hash;
     }  

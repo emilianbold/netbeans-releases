@@ -90,7 +90,6 @@ abstract class TestBase extends NbTestCase {
 
     protected final File extractString(String res) throws Exception {
         File f = File.createTempFile("res", ".xml", getWorkDir());
-        f.deleteOnExit();
 
         FileOutputStream os = new FileOutputStream(f);
         InputStream is = new ByteArrayInputStream(res.getBytes("UTF-8"));
@@ -108,7 +107,6 @@ abstract class TestBase extends NbTestCase {
 
     protected final File extractResource(String res) throws Exception {
         File f = File.createTempFile("res", ".xml", getWorkDir());
-        f.deleteOnExit();
         extractResource(f, res);
         return f;
     }

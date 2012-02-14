@@ -144,7 +144,7 @@ public abstract class AbstractMethodGenerator {
      * Returns map of EJB interface class names, where keys are appropriate constants from {@link EntityAndSession}
      */
     protected Map<String, String> getInterfaces() throws IOException {
-        Future futureResult = ejbModule.getMetadataModel().runReadActionWhenReady(new MetadataModelAction<EjbJarMetadata, Map<String, String>>() {
+        Future<Map<String, String>> futureResult = ejbModule.getMetadataModel().runReadActionWhenReady(new MetadataModelAction<EjbJarMetadata, Map<String, String>>() {
             public Map<String, String> run(EjbJarMetadata metadata) throws Exception {
                 EntityAndSession ejb = (EntityAndSession) metadata.findByEjbClass(ejbClass);
                 Map<String, String> result = new HashMap<String, String>();
@@ -158,7 +158,7 @@ public abstract class AbstractMethodGenerator {
             }
         });
         try {
-            return (Map<String, String>) futureResult.get();
+            return futureResult.get();
         } catch (Exception ex) {
             Logger.getLogger(AbstractMethodGenerator.class.getName()).log(Level.WARNING, null, ex);
             return Collections.<String, String>emptyMap();

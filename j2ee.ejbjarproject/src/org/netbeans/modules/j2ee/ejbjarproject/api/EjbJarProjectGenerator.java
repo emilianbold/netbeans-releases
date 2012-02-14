@@ -533,7 +533,6 @@ public class EjbJarProjectGenerator {
         JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
         SpecificationVersion v = defaultPlatform.getSpecification().getVersion();
         String sourceLevel = v.toString();
-        // #89131: these levels are not actually distinct from 1.5.
         // #181215: JDK 6 should be the default source/binary format for Java EE 6 projects
         if (sourceLevel.equals("1.7")) {
             sourceLevel = "1.6";

@@ -143,13 +143,10 @@ public class ZendScript extends PhpProgram {
         return lineProcessor.getHelp();
     }
 
+    @NbBundle.Messages("ZendScript.script.label=Zend script")
     @Override
     public String validate() {
-        String error = FileUtils.validateFile(getProgram(), false);
-        if (error == null) {
-            return null;
-        }
-        return NbBundle.getMessage(ZendScript.class, "LBL_ZendScriptPrefix", error);
+        return FileUtils.validateFile(Bundle.ZendScript_script_label(), getProgram(), false);
     }
 
     public static String validate(String command) {
@@ -166,8 +163,6 @@ public class ZendScript extends PhpProgram {
             ZendScript zendScript = command != null ? getCustom(command) : getDefault();
 
             ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
-                    .outProcessorFactory(ANSI_STRIPPING_FACTORY)
-                    .errProcessorFactory(ANSI_STRIPPING_FACTORY)
                     .optionsPath(getOptionsPath());
 
             // create config

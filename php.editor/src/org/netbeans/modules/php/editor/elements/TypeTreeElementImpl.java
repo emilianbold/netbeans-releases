@@ -70,7 +70,7 @@ final class TypeTreeElementImpl  implements TreeElement<TypeElement> {
         this.delegate = delegate;
         this.preferredTypes = preferredTypes;
         this.superTypesAsChildren = superTypesAsChildren;
-    }    
+    }
 
     @Override
     public Set<TreeElement<TypeElement>> children() {

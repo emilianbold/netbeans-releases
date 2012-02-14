@@ -47,8 +47,6 @@ package org.netbeans.modules.editor.java;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.JMenu;
@@ -60,16 +58,12 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.java.*;
 import org.netbeans.api.java.queries.SourceLevelQuery;
-import org.netbeans.api.lexer.PartType;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.editor.MainMenuAction;
@@ -83,10 +77,12 @@ import org.netbeans.modules.java.editor.imports.JavaFixAllImports;
 import org.netbeans.modules.java.editor.overridden.GoToSuperTypeAction;
 import org.netbeans.modules.java.editor.rename.InstantRenameAction;
 import org.netbeans.modules.java.editor.semantic.GoToMarkOccurrencesAction;
+import org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor;
+import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
+import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -103,8 +99,6 @@ public class JavaKit extends NbEditorKit {
     public static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
 
     static final long serialVersionUID =-5445829962533684922L;
-
-    private static final Logger LOGGER = Logger.getLogger(JavaKit.class.getName());
 
 //    private static final Object sourceLevelKey = new Object();
 
@@ -263,14 +257,10 @@ public class JavaKit extends NbEditorKit {
         Action[] superActions = super.createActions();
 
         Action[] actions = new BaseAction[] {
-            new JavaDefaultKeyTypedAction(),
             new PrefixMakerAction(makeGetterAction, "get", getSetIsPrefixes), // NOI18N
             new PrefixMakerAction(makeSetterAction, "set", getSetIsPrefixes), // NOI18N
             new PrefixMakerAction(makeIsAction, "is", getSetIsPrefixes), // NOI18N
             new ToggleCommentAction("//"), // NOI18N
-            new JavaInsertBreakAction(),
-            new JavaDeleteCharAction(deletePrevCharAction, false),
-            new JavaDeleteCharAction(deleteNextCharAction, true),
             new JavaGenerateFoldPopupAction(), // NO_KEYBINDING in super
             new JavaGoToDeclarationAction(),
             new InstantRenameAction(),
@@ -312,9 +302,14 @@ public class JavaKit extends NbEditorKit {
         super.install(c);
         ClipboardHandler.install(c);
     }
-
+    
+    /**
+     * @Deprecated This action is no longer used. It is reimplemented as JavaDefaultKeyTypedInterceptor.
+     */
+    @Deprecated
     public static class JavaDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
 
+        @Override
         protected void insertString(BaseDocument doc, int dotPos,
                                     Caret caret, String str,
                                     boolean overwrite) throws BadLocationException {
@@ -515,11 +510,212 @@ public class JavaKit extends NbEditorKit {
 
     }
 
+    
+    public static class JavaTypedBreakInterceptor implements TypedBreakInterceptor {
 
+        private boolean isJavadocTouched = false;
+
+        @Override
+        public boolean beforeInsert(Context context) throws BadLocationException {
+            return false;
+        }
+
+        @Override
+        public void insert(MutableContext context) throws BadLocationException {
+            int dotPos = context.getCaretOffset();
+            BaseDocument doc = (BaseDocument) context.getDocument();
+            final Caret caret = context.getComponent().getCaret();
+            if (BraceCompletion.posWithinString(doc, dotPos)) {
+                if (CodeStyle.getDefault(doc).wrapAfterBinaryOps()) {
+                    context.setText("\" +\n \"", 3, 6); // NOI18N
+                } else {
+                    context.setText("\"\n + \"", 1, 6); // NOI18N
+                }
+                return;
+            } else {
+                try {
+                    if (BraceCompletion.isAddRightBrace(doc, dotPos)) {
+                        boolean insert[] = {true};
+                        int end = BraceCompletion.getRowOrBlockEnd(doc, dotPos, insert);
+                        if (insert[0]) {
+                            doc.insertString(end, "}", null); // NOI18N
+                            Indent.get(doc).indentNewLine(end);
+                        }
+                        caret.setDot(dotPos);
+                        return;
+                    }
+                } catch (BadLocationException ex) {
+                }
+            }
+            BraceCompletion.blockCommentCompletion(context.getComponent(), (BaseDocument) context.getDocument(), context.getCaretOffset());
+            isJavadocTouched = BraceCompletion.javadocBlockCompletion(context.getComponent(), (BaseDocument) context.getDocument(), context.getCaretOffset());
+        }
+
+        @Override
+        public void afterInsert(Context context) throws BadLocationException {
+            if (isJavadocTouched) {
+                Lookup.Result<TextAction> res = MimeLookup.getLookup(MimePath.parse("text/x-javadoc")).lookupResult(TextAction.class); // NOI18N
+                ActionEvent newevt = new ActionEvent(context.getComponent(), ActionEvent.ACTION_PERFORMED, "fix-javadoc"); // NOI18N
+                for (TextAction action : res.allInstances()) {
+                    action.actionPerformed(newevt);
+                }
+                isJavadocTouched = false;
+            }
+        }
+
+        @Override
+        public void cancelled(Context context) {
+        }
+
+        @MimeRegistration(mimeType = JAVA_MIME_TYPE, service = TypedBreakInterceptor.Factory.class)
+        public static class JavaFactory implements TypedBreakInterceptor.Factory {
+
+            @Override
+            public TypedBreakInterceptor createTypedBreakInterceptor(MimePath mimePath) {
+                return new JavaTypedBreakInterceptor();
+            }
+        }
+        
+        @MimeRegistration(mimeType = "text/x-java-string", service = TypedBreakInterceptor.Factory.class) //NOI18N
+        public static class JavaStringFactory implements TypedBreakInterceptor.Factory {
+
+            @Override
+            public TypedBreakInterceptor createTypedBreakInterceptor(MimePath mimePath) {
+                return new JavaTypedBreakInterceptor();
+            }
+        }
+    }
+    
+    
+    public static class JavaDeletedTextInterceptor implements DeletedTextInterceptor {
+
+        @Override
+        public boolean beforeRemove(Context context) throws BadLocationException {
+            return false;
+        }
+
+        @Override
+        public void remove(Context context) throws BadLocationException {            
+            if (context.getText().length() == 1) {
+                if (context.isBackwardDelete())
+                    BraceCompletion.charBackspaced((BaseDocument) context.getDocument(), context.getOffset() - 1, context.getComponent().getCaret(), context.getText().charAt(0));
+                else
+                    BraceCompletion.charBackspaced((BaseDocument) context.getDocument(), context.getOffset(), context.getComponent().getCaret(), context.getText().charAt(0));
+            }
+        }
+
+        @Override
+        public void afterRemove(Context context) throws BadLocationException {
+        }
+
+        @Override
+        public void cancelled(Context context) {
+        }
+
+        @MimeRegistration(mimeType = JAVA_MIME_TYPE, service = DeletedTextInterceptor.Factory.class)
+        public static class Factory implements DeletedTextInterceptor.Factory {
+
+            @Override
+            public DeletedTextInterceptor createDeletedTextInterceptor(MimePath mimePath) {
+                return new JavaDeletedTextInterceptor();
+            }
+        }
+        
+        @MimeRegistration(mimeType = "text/x-java-string", service = DeletedTextInterceptor.Factory.class) //NOI18N
+        public static class JavaStringFactory implements DeletedTextInterceptor.Factory {
+
+            @Override
+            public DeletedTextInterceptor createDeletedTextInterceptor(MimePath mimePath) {
+                return new JavaDeletedTextInterceptor();
+            }
+        }
+    }
+    
+    public static class JavaTypedTextInterceptor implements TypedTextInterceptor {
+
+        private boolean inserted = false;
+
+        @Override
+        public boolean beforeInsert(Context context) throws BadLocationException {
+            return false;
+        }
+
+        @Override
+        public void insert(MutableContext context) throws BadLocationException {
+            char insertedChar = context.getText().charAt(0);
+            if (Utilities.isSelectionShowing(context.getComponent().getCaret())) {
+                Document doc = context.getDocument();
+                Caret caret = context.getComponent().getCaret();
+                if (insertedChar == '\"' || insertedChar == '\'') {
+                    if (doc != null) {
+                        try {
+                            int p0 = Math.min(caret.getDot(), caret.getMark());
+                            int p1 = Math.max(caret.getDot(), caret.getMark());
+                            if (p0 != p1) {
+                                doc.remove(p0, p1 - p0);
+                            }
+                            int caretPosition = caret.getDot();
+                            if (doc instanceof BaseDocument) {
+                                inserted = BraceCompletion.completeQuote(
+                                        (BaseDocument) doc,
+                                        caretPosition,
+                                        caret, insertedChar);
+                            }
+                        } catch (BadLocationException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+            else {
+                if (insertedChar == '\"' || insertedChar == '\'') {
+                    inserted = BraceCompletion.completeQuote((BaseDocument) context.getDocument(), context.getOffset(), context.getComponent().getCaret(), insertedChar);
+                }
+            }
+        }
+
+        @Override
+        public void afterInsert(Context context) throws BadLocationException {
+            if (inserted) {
+                context.getDocument().remove(context.getOffset(), 1);
+                context.getComponent().getCaret().setDot(context.getOffset() + 1);
+                inserted = false;
+            } else {
+                char insertedChar = context.getText().charAt(0);
+                BraceCompletion.charInserted((BaseDocument) context.getDocument(), context.getOffset(), context.getComponent().getCaret(), insertedChar);
+            }
+        }
+
+        @Override
+        public void cancelled(Context context) {
+        }
+
+        @MimeRegistration(mimeType = JAVA_MIME_TYPE, service = TypedTextInterceptor.Factory.class)
+        public static class Factory implements TypedTextInterceptor.Factory {
+
+            @Override
+            public TypedTextInterceptor createTypedTextInterceptor(MimePath mimePath) {
+                return new JavaTypedTextInterceptor();
+            }
+        }
+        
+        @MimeRegistration(mimeType = "text/x-java-string", service = TypedTextInterceptor.Factory.class) //NOI18N
+        public static class JavaStringFactory implements TypedTextInterceptor.Factory {
+
+            @Override
+            public TypedTextInterceptor createTypedTextInterceptor(MimePath mimePath) {
+                return new JavaTypedTextInterceptor();
+            }
+        }
+    }
+    
+    /**
+     * @Deprecated This action is no longer used. It is reimplemented as JavaTypedBreakInterceptor.
+     */
+    @Deprecated
     public static class JavaInsertBreakAction extends InsertBreakAction {
 
         static final long serialVersionUID = -1506173310438326380L;
-
         private boolean isJavadocTouched = false;
 
         @Override
@@ -535,66 +731,13 @@ public class JavaKit extends NbEditorKit {
                     for (TextAction action : res.allInstances()) {
                         action.actionPerformed(newevt);
                     }
-                } else {
-                    //Complete block comment
-                    int start = ((AbstractDocument) doc).getParagraphElement(target.getCaretPosition()).getStartOffset();
-                    int end = ((AbstractDocument) doc).getParagraphElement(target.getCaretPosition()).getEndOffset();
-                    //Check if line with just one * surrounded by spaces is already entered
-                    //If not do not complete block comment
-                    try {
-                        if (doc.getText(start, end - start - 1).matches("\\s+\\*\\s+")) { // NOI18N
-                            TokenHierarchy<Document> th = TokenHierarchy.get(doc);
-                            TokenSequence ts = th.tokenSequence();
-                            ts.move(target.getCaretPosition());
-                            ts.moveNext();
-                            Token t = ts.token();
-                            if (t.id() == JavaTokenId.BLOCK_COMMENT) {
-                                if (t.partType() == PartType.START) {
-                                    //Case when first "/*" in entered to document and there is no closing "*/"
-                                    //Insert block comment end
-                                    String s = doc.getText(start, end - start - 1);
-                                    s = s.replaceFirst(" \\* ", " */"); // NOI18N
-                                    s = "\n" + s; // NOI18N
-                                    int cursorPos = target.getCaretPosition();
-                                    doc.insertString(end - 1, s, null);
-                                    target.setCaretPosition(cursorPos);
-                                } else if (t.partType() == PartType.COMPLETE) {
-                                    //If there is already closing "*/" in document after entered "/*".
-                                    //Search for first closing "*/" and reparse substring from current
-                                    //position to first closing "*/".
-                                    //Look at last token if it is INVALID_COMMENT_END it matches just entered "/*"
-                                    //so there is no need to enter closing "*/"
-                                    String part = doc.getText(end, doc.getLength() - end);
-                                    int pos = part.indexOf("*/"); // NOI18N
-                                    if (pos != -1) {
-                                        part = part.substring(0, pos + 2);
-                                        TokenHierarchy<String> thp = TokenHierarchy.create(part, JavaTokenId.language());
-                                        TokenSequence tsp = thp.tokenSequence();
-                                        tsp.moveEnd();
-                                        tsp.movePrevious();
-                                        Token tp = tsp.token();
-                                        if (tp.id() != JavaTokenId.INVALID_COMMENT_END) {
-                                            //Insert block comment end
-                                            String s = doc.getText(start, end - start - 1);
-                                            s = s.replaceFirst(" \\* ", " */"); // NOI18N
-                                            s = "\n" + s; // NOI18N
-                                            int cursorPos = target.getCaretPosition();
-                                            doc.insertString(end - 1, s, null);
-                                            target.setCaretPosition(cursorPos);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } catch (BadLocationException ex) {
-                        LOGGER.log(Level.WARNING, "Cannot complete block comment", ex); // NOI18N
-                    }
                 }
             } finally {
                 isJavadocTouched = false;
             }
         }
 
+        @Override
         protected Object beforeBreak(JTextComponent target, BaseDocument doc, Caret caret) {
             int dotPos = caret.getDot();
             if (BraceCompletion.posWithinString(doc, dotPos)) {
@@ -627,10 +770,12 @@ public class JavaKit extends NbEditorKit {
                 } catch (BadLocationException ex) {
                 }
             }
-
-            return javadocBlockCompletion(target, doc, dotPos);
+            BraceCompletion.blockCommentCompletion(target, doc, dotPos);
+            isJavadocTouched = BraceCompletion.javadocBlockCompletion(target, doc, dotPos);
+            return null;
         }
 
+        @Override
         protected void afterBreak(JTextComponent target, BaseDocument doc, Caret caret, Object cookie) {
             if (cookie != null) {
                 if (cookie instanceof Integer) {
@@ -640,115 +785,19 @@ public class JavaKit extends NbEditorKit {
                 }
             }
         }
-
-        private Object javadocBlockCompletion(JTextComponent target, BaseDocument doc, final int dotPosition) {
-            try {
-                TokenHierarchy<BaseDocument> tokens = TokenHierarchy.get(doc);
-                TokenSequence ts = tokens.tokenSequence();
-                if (ts == null) {
-                    return null;
-                }
-                ts.move(dotPosition);
-                if (! ((ts.moveNext() || ts.movePrevious()) && ts.token().id() == JavaTokenId.JAVADOC_COMMENT)) {
-                    return null;
-                }
-
-                int jdoffset = dotPosition - 3;
-                if (jdoffset >= 0) {
-                    CharSequence content = org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(doc);
-                    if (isOpenJavadoc(content, dotPosition - 1) && !isClosedJavadoc(content, dotPosition) && isAtRowEnd(content, dotPosition)) {
-                        // complete open javadoc
-                        // note that the formater will add one line of javadoc
-                        doc.insertString(dotPosition, "*/", null); // NOI18N
-                        Indent.get(doc).indentNewLine(dotPosition);
-                        target.setCaretPosition(dotPosition);
-
-                        isJavadocTouched = true;
-                        return Boolean.TRUE;
-                    }
-                }
-            } catch (BadLocationException ex) {
-                // ignore
-                Exceptions.printStackTrace(ex);
-            }
-            return null;
-        }
-
-        private static boolean isOpenJavadoc(CharSequence content, int pos) {
-            for (int i = pos; i >= 0; i--) {
-                char c = content.charAt(i);
-                if (c == '*' && i - 2 >= 0 && content.charAt(i - 1) == '*' && content.charAt(i - 2) == '/') {
-                    // matched /**
-                    return true;
-                } else if (c == '\n') {
-                    // no javadoc, matched start of line
-                    return false;
-                } else if (c == '/' && i - 1 >= 0 && content.charAt(i - 1) == '*') {
-                    // matched javadoc enclosing tag
-                    return false;
-                }
-            }
-
-            return false;
-        }
-
-        private static boolean isClosedJavadoc(CharSequence txt, int pos) {
-            int length = txt.length();
-            int quotation = 0;
-            for (int i = pos; i < length; i++) {
-                char c = txt.charAt(i);
-                if (c == '*' && i < length - 1 && txt.charAt(i + 1) == '/') {
-                    if (quotation == 0 || i < length - 2) {
-                        return true;
-                    }
-                    // guess it is not just part of some text constant
-                    boolean isClosed = true;
-                    for (int j = i + 2; j < length; j++) {
-                        char cc = txt.charAt(j);
-                        if (cc == '\n') {
-                            break;
-                        } else if (cc == '"' && j < length - 1 && txt.charAt(j + 1) != '\'') {
-                            isClosed = false;
-                            break;
-                        }
-                    }
-
-                    if (isClosed) {
-                        return true;
-                    }
-                } else if (c == '/' && i < length - 1 && txt.charAt(i + 1) == '*') {
-                    // start of another comment block
-                    return false;
-                } else if (c == '\n') {
-                    quotation = 0;
-                } else if (c == '"' && i < length - 1 && txt.charAt(i + 1) != '\'') {
-                    quotation = ++quotation % 2;
-                }
-            }
-
-            return false;
-        }
-
-        private static boolean isAtRowEnd(CharSequence txt, int pos) {
-            int length = txt.length();
-            for (int i = pos; i < length; i++) {
-                char c = txt.charAt(i);
-                if (c == '\n')
-                    return true;
-                if (!Character.isWhitespace(c))
-                    return false;                
-            }
-            return true;
-        }
-  }
-
-
+    }
+    
+    /**
+     * @Deprecated This action is no longer used. It is reimplemented as JavaDeleteCharInterceptor.
+     */
+    @Deprecated
     public static class JavaDeleteCharAction extends ExtDeleteCharAction {
 
         public JavaDeleteCharAction(String nm, boolean nextChar) {
             super(nm, nextChar);
         }
 
+        @Override
         protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch)
         throws BadLocationException {
             BraceCompletion.charBackspaced(doc, dotPos, caret, ch);

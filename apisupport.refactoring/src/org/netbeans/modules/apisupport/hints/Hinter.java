@@ -281,7 +281,10 @@ public interface Hinter {
          * @param task a task to run (may modify Java sources and layer objects; all will be saved for you)
          * @throws IOException in case of problem (will instead show a message and return early if the type could not be found)
          */
-        @Messages({"# {0} - layer attribute", "Hinter.missing_instance_class=Could not find Java source corresponding to {0}."})
+        @Messages({
+            "# {0} - layer attribute", "Hinter.missing_instance_class=Could not find Java source corresponding to {0}.",
+            "Hinter.do_not_edit_layer=Do not edit layer.xml until the hint has had a chance to run."
+        })
         public void findAndModifyDeclaration(@NullAllowed final Object instanceAttribute, final ModifyDeclarationTask task) throws IOException {
             FileObject java = findDeclaringSource(instanceAttribute);
             if (java == null) {
@@ -295,6 +298,10 @@ public interface Hinter {
             js.runModificationTask(new Task<WorkingCopy>() {
                 public @Override void run(WorkingCopy wc) throws Exception {
                     wc.toPhase(JavaSource.Phase.RESOLVED);
+                    if (DataObject.find(layer.getLayerFile()).isModified()) { // #207077
+                        DialogDisplayer.getDefault().notify(new Message(Hinter_do_not_edit_layer(), NotifyDescriptor.WARNING_MESSAGE));
+                        return;
+                    }
                     Element decl = findDeclaration(wc, instanceAttribute);
                     if (decl == null) {
                         DialogDisplayer.getDefault().notify(new Message(Hinter_missing_instance_class(instanceAttribute), NotifyDescriptor.WARNING_MESSAGE));

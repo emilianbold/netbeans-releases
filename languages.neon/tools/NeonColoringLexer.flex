@@ -324,6 +324,9 @@ REFERENCE="@"({IDENTIFIER} | "\\")+
     {ARRAY_ITEM_DELIM} {
         return NeonTokenId.NEON_INTERPUNCTION;
     }
+    {NEWLINE} {
+        return NeonTokenId.NEON_WHITESPACE;
+    }
 }
 
 <ST_IN_SQ_ARRAY> {
@@ -364,12 +367,18 @@ REFERENCE="@"({IDENTIFIER} | "\\")+
         popState();
         return NeonTokenId.NEON_INTERPUNCTION;
     }
+    {NEWLINE} {
+        return NeonTokenId.NEON_WHITESPACE;
+    }
 }
 
 <ST_IN_ARRAY_VALUE> {
     {ARRAY_CLOSE_DELIM} | {ARRAY_ITEM_DELIM} {
         popState();
         yypushback(yylength());
+    }
+    {NEWLINE} {
+        return NeonTokenId.NEON_WHITESPACE;
     }
 }
 

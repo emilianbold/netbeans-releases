@@ -60,7 +60,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.MessageFormat;
 import java.util.List;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -97,16 +96,13 @@ import org.openide.util.RequestProcessor;
  * @author Jiri Sedlacek
  */
 @NbBundle.Messages({
-    "CPUSettingsBasicPanel_NoRootsString=<font color=\"{0}\">No profiling roots, </font><a href=\"#\" {1}>define...</a>",
-    "CPUSettingsBasicPanel_OneRootString=<font color=\"{0}\">1 root method, </font><a href=\"#\" {1}>edit...</a>",
-    "CPUSettingsBasicPanel_MoreRootsString=<font color=\"{0}\">{1} profiling root, </font><a href=\"#\" {2}>edit...</a>",
     "CPUSettingsBasicPanel_DefaultRootsString=<font color=\"{0}\">default profiling roots, </font><a href=\"#\" {1}>customize...</a>",
     "CPUSettingsBasicPanel_CustomRootsString=<font color=\"{0}\">custom profiling roots, </font><a href=\"#\" {1}>edit...</a>",
     "CPUSettingsBasicPanel_QuickFilterDialogCaption=Set Quick Filter",
     "CPUSettingsBasicPanel_FilterSetsDialogCaption=Customize Filter Sets",
     "CPUSettingsBasicPanel_GlobalFiltersDialogCaption=Edit Global Filters",
-    "CPUSettingsBasicPanel_SampleAppRadioText=&Sample application",
-    "CPUSettingsBasicPanel_ProfileAppRadioText=&Profile application",
+    "CPUSettingsBasicPanel_SampleAppRadioText=&Quick (sampled)",
+    "CPUSettingsBasicPanel_ProfileAppRadioText=&Advanced (instrumented)",
     "CPUSettingsBasicPanel_StopwatchRadioText=Stopwatch",
     "CPUSettingsBasicPanel_FilterLabelText=&Filter:",
     "CPUSettingsBasicPanel_ShowFilterString=Show filter value",
@@ -166,7 +162,6 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
         this.project = project;
         this.profilingPointsDisplayer = profilingPointsDisplayer;
         this.preferredInstrFilters = preferredInstrFilters;
-        profilingPointsCheckbox.setEnabled(project != null);
     }
 
     public HelpCtx getHelpCtx() {
@@ -189,6 +184,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
         profileAppRadio.setSelected(profilingType == ProfilingSettings.PROFILE_CPU_ENTIRE ||
                                        profilingType == ProfilingSettings.PROFILE_CPU_PART);
         stopwatchRadio.setSelected(profilingType == ProfilingSettings.PROFILE_CPU_STOPWATCH);
+        profilingPointsCheckbox.setEnabled(project != null && profileAppRadio.isSelected());
     }
 
     public int getProfilingType() {
@@ -219,7 +215,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
     }
 
     public void setUseProfilingPoints(boolean use) {
-        profilingPointsCheckbox.setSelected(use);
+        profilingPointsCheckbox.setSelected(use && profilingPointsCheckbox.isEnabled());
         updateEnabling();
     }
 
@@ -346,17 +342,17 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
         Color linkColor = Color.RED;
         String colorText = "rgb(" + linkColor.getRed() + "," + linkColor.getGreen() + "," + linkColor.getBlue() + ")"; //NOI18N
         String textColorText = "rgb(" + Color.GRAY.getRed() + "," + Color.GRAY.getGreen() + "," + Color.GRAY.getBlue() + ")"; //NOI18N
-        String labelText = "<nobr>" + Bundle.CPUSettingsBasicPanel_OneRootString(textColorText, "" ) + "</nobr>"; //NOI18N
-        String labelFocusedText = "<nobr>"
-                                  + Bundle.CPUSettingsBasicPanel_OneRootString(textColorText, "color=\"" + colorText + "\"" )
-                                  + "</nobr>"; //NOI18N
+        String labelText = "<nobr>" + Bundle.CPUSettingsBasicPanel_DefaultRootsString(textColorText, "") + "</nobr>"; //NOI18N
+        String labelFocusedText = "<nobr>" //NOI18N
+                                   + Bundle.CPUSettingsBasicPanel_DefaultRootsString(textColorText, "color=\"" + colorText + "\"") //NOI18N
+                                   + "</nobr>"; //NOI18N
         partOfAppHintLink = new HyperlinkLabel(labelText, labelFocusedText,
                                                new Runnable() {
                 public void run() {
                     performRootMethodsAction();
                 }
             });
-        partOfAppHintLink.setVisible(false);
+//        partOfAppHintLink.setVisible(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
         constraints.gridy = 0;
@@ -364,7 +360,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
         constraints.gridwidth = 1;
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(0, 10, 0, 0);
+        constraints.insets = new Insets(0, 0, 0, 0);
         partOfAppContainer.add(partOfAppHintLink, constraints);
 
         // partOfAppContainer - customization
@@ -838,45 +834,21 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
             Color linkColor = Color.RED;
             String colorText = "rgb(" + linkColor.getRed() + "," + linkColor.getGreen() + "," + linkColor.getBlue() + ")"; //NOI18N
             String textColorText = "rgb(" + Color.GRAY.getRed() + "," + Color.GRAY.getGreen() + "," + Color.GRAY.getBlue() + ")"; //NOI18N
-            String labelText = ""; // NOI18N
-            String labelFocusedText = ""; // NOI18N
+            
+            String labelText;
+            String labelFocusedText;
 
-////            if (rootMethods.length == 0) {
-////                labelText = "<nobr>" + MessageFormat.format(NO_ROOTS_STRING, new Object[] { textColorText, "" }) + "</nobr>"; //NOI18N
-////                labelFocusedText = "<nobr>"
-////                                   + MessageFormat.format(NO_ROOTS_STRING,
-////                                                          new Object[] { textColorText, "color=\"" + colorText + "\"" })
-////                                   + "</nobr>"; //NOI18N
-////                rootMethodsSubmitOK = false;
-//            } else if (rootMethods.length == 1) {
-//                labelText = "<nobr>" + MessageFormat.format(ONE_ROOT_STRING, new Object[] { textColorText, "" }) + "</nobr>"; //NOI18N
-//                labelFocusedText = "<nobr>"
-//                                   + MessageFormat.format(ONE_ROOT_STRING,
-//                                                          new Object[] { textColorText, "color=\"" + colorText + "\"" })
-//                                   + "</nobr>"; //NOI18N
-//                rootMethodsSubmitOK = true;
-//            } else {
-//                labelText = "<nobr>"
-//                            + MessageFormat.format(MORE_ROOTS_STRING, new Object[] { textColorText, rootMethods.length, "" })
-//                            + "</nobr>"; //NOI18N
-//                labelFocusedText = "<nobr>"
-//                                   + MessageFormat.format(MORE_ROOTS_STRING,
-//                                                          new Object[] {
-//                                                              textColorText, rootMethods.length, "color=\"" + colorText + "\""
-//                                                          }) + "</nobr>"; //NOI18N
-//                rootMethodsSubmitOK = true;
-//            }
-            /*} else*/ if (rootMethods.length == 0) {
+            if (rootMethods.length == 0) {
                 labelText = "<nobr>" + Bundle.CPUSettingsBasicPanel_DefaultRootsString(textColorText, "") + "</nobr>"; //NOI18N
-                labelFocusedText = "<nobr>"
-                                   + Bundle.CPUSettingsBasicPanel_DefaultRootsString(textColorText, "color=\"" + colorText + "\"")
+                labelFocusedText = "<nobr>" //NOI18N
+                                   + Bundle.CPUSettingsBasicPanel_DefaultRootsString(textColorText, "color=\"" + colorText + "\"") //NOI18N
                                    + "</nobr>"; //NOI18N
                 rootMethodsSubmitOK = true;
             } else {
-                labelText = "<nobr>"
-                            + Bundle.CPUSettingsBasicPanel_CustomRootsString(textColorText, "")
+                labelText = "<nobr>" //NOI18N
+                            + Bundle.CPUSettingsBasicPanel_CustomRootsString(textColorText, "") //NOI18N
                             + "</nobr>"; //NOI18N
-                labelFocusedText = "<nobr>"
+                labelFocusedText = "<nobr>" //NOI18N
                                    + Bundle.CPUSettingsBasicPanel_CustomRootsString(textColorText, "color=\"" + colorText + "\"") + "</nobr>"; //NOI18N
                 rootMethodsSubmitOK = true;
             }

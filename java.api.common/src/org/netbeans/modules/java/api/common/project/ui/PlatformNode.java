@@ -65,7 +65,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
@@ -84,7 +83,6 @@ import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.actions.SystemAction;
@@ -240,11 +238,10 @@ class PlatformNode extends AbstractNode implements ChangeListener {
             FileObject[] roots = platform.getBootstrapLibraries().getRoots();
             List<SourceGroup> result = new ArrayList<SourceGroup>(roots.length);
             for (int i = 0; i < roots.length; i++) {
-                try {
                     FileObject file;
                     Icon icon;
                     Icon openedIcon;
-                    if ("jar".equals(roots[i].getURL().getProtocol())) { //NOI18N
+                    if ("jar".equals(roots[i].toURL().getProtocol())) { //NOI18N
                         file = FileUtil.getArchiveFile (roots[i]);
                         icon = openedIcon = ImageUtilities.loadImageIcon(ARCHIVE_ICON, false);
                     }
@@ -257,9 +254,6 @@ class PlatformNode extends AbstractNode implements ChangeListener {
                     if (file.isValid()) {
                         result.add (new LibrariesSourceGroup(roots[i],file.getNameExt(),icon, openedIcon));
                     }
-                } catch (FileStateInvalidException e) {
-                    Exceptions.printStackTrace(e);
-                }
             }
             return result;
         }

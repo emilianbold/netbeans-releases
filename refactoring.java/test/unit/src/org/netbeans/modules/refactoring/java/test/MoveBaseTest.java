@@ -72,8 +72,9 @@ public class MoveBaseTest extends RefactoringTestBase {
         super(name);
     }
 
-    void performMove(FileObject source, final int[] position, FileObject target, final Visibility visibility, boolean delegate, Problem... expectedProblems) throws IOException, IllegalArgumentException {
+    void performMove(FileObject source, final int[] position, FileObject target, final Visibility visibility, boolean delegate, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final MoveRefactoring[] r = new MoveRefactoring[1];
+        final JavaMoveMembersProperties[] properties = new JavaMoveMembersProperties[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
 
             @Override
@@ -89,6 +90,7 @@ public class MoveBaseTest extends RefactoringTestBase {
                     handles[i] = TreePathHandle.create(allMembers.get(position[i]), info);
                 }
                 r[0] = new MoveRefactoring(Lookups.fixed((Object[]) handles));
+                properties[0] = new JavaMoveMembersProperties(handles);
             }
         }, true);
         JavaSource.forFileObject(target).runUserActionTask(new Task<CompilationController>() {
@@ -103,10 +105,9 @@ public class MoveBaseTest extends RefactoringTestBase {
                 r[0].setTarget(Lookups.singleton(TreePathHandle.create(classEl, info)));
             }
         }, true);
-        JavaMoveMembersProperties properties = new JavaMoveMembersProperties();
-        properties.setVisibility(visibility);
-        properties.setDelegate(delegate);
-        r[0].getContext().add(properties);
+        properties[0].setVisibility(visibility);
+        properties[0].setDelegate(delegate);
+        r[0].getContext().add(properties[0]);
         RefactoringSession rs = RefactoringSession.create("Session");
         List<Problem> problems = new LinkedList<Problem>();
         addAllProblems(problems, r[0].preCheck());
@@ -119,8 +120,9 @@ public class MoveBaseTest extends RefactoringTestBase {
         assertProblems(Arrays.asList(expectedProblems), problems);
     }
     
-    void performMove(FileObject source, final int[] position, final String target, final Visibility visibility, Problem... expectedProblems) throws IOException, IllegalArgumentException {
+    void performMove(FileObject source, final int[] position, final String target, final Visibility visibility, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final MoveRefactoring[] r = new MoveRefactoring[1];
+        final JavaMoveMembersProperties[] properties = new JavaMoveMembersProperties[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
 
             @Override
@@ -138,12 +140,11 @@ public class MoveBaseTest extends RefactoringTestBase {
                 r[0] = new MoveRefactoring(Lookups.fixed((Object[]) handles));
                 TypeElement typeElement = info.getElements().getTypeElement(target);
                 r[0].setTarget(Lookups.singleton(TreePathHandle.create(typeElement, info)));
+                properties[0] = new JavaMoveMembersProperties(TreePathHandle.create(typeElement, info));
             }
         }, true);
-        
-        JavaMoveMembersProperties properties = new JavaMoveMembersProperties();
-        properties.setVisibility(visibility);
-        r[0].getContext().add(properties);
+        properties[0].setVisibility(visibility);
+        r[0].getContext().add(properties[0]);
 
         RefactoringSession rs = RefactoringSession.create("Session");
         List<Problem> problems = new LinkedList<Problem>();
@@ -157,8 +158,9 @@ public class MoveBaseTest extends RefactoringTestBase {
         assertProblems(Arrays.asList(expectedProblems), problems);
     }
     
-    void performMove(final String source, final int[] position, FileObject target, final Visibility visibility, Problem... expectedProblems) throws IOException, IllegalArgumentException {
+    void performMove(final String source, final int[] position, FileObject target, final Visibility visibility, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final MoveRefactoring[] r = new MoveRefactoring[1];
+        final JavaMoveMembersProperties[] properties = new JavaMoveMembersProperties[1];
         JavaSource.forFileObject(target).runUserActionTask(new Task<CompilationController>() {
 
             @Override
@@ -171,6 +173,7 @@ public class MoveBaseTest extends RefactoringTestBase {
                     handles[i] = TreePathHandle.create(allMembers.get(position[i]), info);
                 }
                 r[0] = new MoveRefactoring(Lookups.fixed((Object[]) handles));
+                properties[0] = new JavaMoveMembersProperties(handles);
             }
         }, true);
         JavaSource.forFileObject(target).runUserActionTask(new Task<CompilationController>() {
@@ -185,10 +188,8 @@ public class MoveBaseTest extends RefactoringTestBase {
                 r[0].setTarget(Lookups.singleton(TreePathHandle.create(classEl, info)));
             }
         }, true);
-        
-        JavaMoveMembersProperties properties = new JavaMoveMembersProperties();
-        properties.setVisibility(visibility);
-        r[0].getContext().add(properties);
+        properties[0].setVisibility(visibility);
+        r[0].getContext().add(properties[0]);
         
         RefactoringSession rs = RefactoringSession.create("Session");
         List<Problem> problems = new LinkedList<Problem>();

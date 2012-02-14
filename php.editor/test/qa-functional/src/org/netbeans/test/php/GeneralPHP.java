@@ -84,8 +84,9 @@ public class GeneralPHP extends JellyTestCase {
     static final String PHP_CATEGORY_NAME = "PHP";
     static final String PHP_PROJECT_NAME = "PHP Application";
     static final String SAMPLES = "Samples";
-    static final String PROJECT_JOBEET = "Jobeet";
-    static final String PROJECT_AirAliance = "Air Alliance Sample Application";
+    static final String PROJECT_RentSymfony = "Rent a Flat - Symfony Framework Sample Application";
+    static final String PROJECT_RentZend = "Rent a Flat - Zend Framework Sample Application";
+    static final String PROJECT_TodoList = "TodoList - PHP Sample Application";
     static protected final int COMPLETION_LIST_THRESHOLD = 5000;
     protected static final String PHP_EXTENSION = ".php";
 
@@ -149,10 +150,12 @@ public class GeneralPHP extends JellyTestCase {
 
         String typeName = "";
 
-        if (type == "Jobeet") {
-            opNewProjectWizard.selectProject(PROJECT_JOBEET);
-        } else if (type == "AirAlliance") {
-            opNewProjectWizard.selectProject(PROJECT_AirAliance);
+        if (type == "RentZend") {
+            opNewProjectWizard.selectProject(PROJECT_RentZend);
+        } else if (type == "TodoList") {
+            opNewProjectWizard.selectProject(PROJECT_TodoList);
+        } else if (type == "RentSymfony") {
+            opNewProjectWizard.selectProject(PROJECT_RentSymfony);
         }
 
         opNewProjectWizard.next();
@@ -191,17 +194,17 @@ public class GeneralPHP extends JellyTestCase {
         String sProjectPath = GetWorkDir() + File.separator + sResult;
 
         /*
-        JComboBoxOperator jcPath = new JComboBoxOperator( jdNew, 0 );
-
-        Timeouts t =  jcPath.getTimeouts( );
-        long lBack = t.getTimeout( "JTextComponentOperator.TypeTextTimeout" );
-        t.setTimeout( "JTextComponentOperator.TypeTextTimeout", 30000 );
-        jcPath.setTimeouts( t );
-
-        jcPath.enterText( sProjectPath );
-
-        t.setTimeout( "JTextComponentOperator.TypeTextTimeout", lBack );
-        jcPath.setTimeouts( t );
+         * JComboBoxOperator jcPath = new JComboBoxOperator( jdNew, 0 );
+         *
+         * Timeouts t = jcPath.getTimeouts( ); long lBack = t.getTimeout(
+         * "JTextComponentOperator.TypeTextTimeout" ); t.setTimeout(
+         * "JTextComponentOperator.TypeTextTimeout", 30000 );
+         * jcPath.setTimeouts( t );
+         *
+         * jcPath.enterText( sProjectPath );
+         *
+         * t.setTimeout( "JTextComponentOperator.TypeTextTimeout", lBack );
+         * jcPath.setTimeouts( t );
          */
 
         //NewProjectNameLocationStepOperator opNewProjectNameLocationStep = new NewProjectNameLocationStepOperator( );
@@ -276,6 +279,9 @@ public class GeneralPHP extends JellyTestCase {
         }
 
         String sProjectPath = GetWorkDir() + File.separator + jtName.getText();
+        if (sProjectPath.contains(File.separator + File.separator)) {
+            sProjectPath = GetWorkDir() + jtName.getText();
+        }
 
         JComboBoxOperator jcPath = new JComboBoxOperator(jdNew, 1);
 
@@ -542,8 +548,8 @@ public class GeneralPHP extends JellyTestCase {
                 try {
                     List list = jlist.getCompletionItems();
                     for (int i = 0; i < list.size(); i++) {
-                        
-                        completionList += list.get(i)+"\n";
+
+                        completionList += list.get(i) + "\n";
                     }
                 } catch (java.lang.Exception ex) {
                     System.out.println("#" + ex.getMessage());
@@ -636,39 +642,38 @@ public class GeneralPHP extends JellyTestCase {
         }
         return true;
     }
-    
+
     public JDialogOperator selectPHPFromEditorOptions(int mode, int platform) {
-    
-        if (platform != 4096) 
+
+        if (platform != 4096) {
             new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Tools|Options");
-        else 
+        } else {
             new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner|Preferences...");
+        }
         Sleep(1000);
         JDialogOperator window = new JDialogOperator("Options");
         if (mode == 0) {
-        window.pressKey(KeyEvent.VK_RIGHT);
-        Sleep(1000);
-
-        for (int i = 0; i <= 4; i++) {
-            window.pressKey(KeyEvent.VK_TAB);
+            window.pressKey(KeyEvent.VK_RIGHT);
             Sleep(1000);
-        }
-        window.pressKey(KeyEvent.VK_RIGHT);
-        Sleep(1000);
-        window.pressKey(KeyEvent.VK_SPACE);
-        Sleep(1000);
+
+            for (int i = 0; i <= 4; i++) {
+                window.pressKey(KeyEvent.VK_TAB);
+                Sleep(1000);
+            }
+            window.pressKey(KeyEvent.VK_RIGHT);
+            Sleep(1000);
+            window.pressKey(KeyEvent.VK_SPACE);
+            Sleep(1000);
         }
         window.pressKey(KeyEvent.VK_TAB);
         Sleep(1000);
-        window.pressKey(KeyEvent.VK_DOWN);
-        Sleep(1000);
-        window.pressKey(KeyEvent.VK_DOWN);
-        Sleep(1000);
-        window.pressKey(KeyEvent.VK_DOWN);
-        Sleep(1000);
+        for (int i = 0; i <= 6; i++) { // in all bundle, PHP is 7th in the list
+            window.pressKey(KeyEvent.VK_DOWN);
+            Sleep(1000);
+        }
         window.pressKey(KeyEvent.VK_ENTER);
         Sleep(1000);
-        
+
         return window;
     }
 
@@ -721,8 +726,8 @@ public class GeneralPHP extends JellyTestCase {
 
 
     }
-    
+
     protected int getPlatform() {
-       return Utilities.getOperatingSystem();
+        return Utilities.getOperatingSystem();
     }
 }

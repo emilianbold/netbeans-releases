@@ -47,17 +47,18 @@ import java.awt.event.ActionListener;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
-import javax.swing.event.DocumentEvent;
-import org.netbeans.modules.php.project.connections.ConfigManager;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.api.PhpOptions;
+import org.netbeans.modules.php.project.connections.ConfigManager;
+import org.netbeans.modules.php.project.runconfigs.RunConfigScript;
 import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -71,21 +72,18 @@ import org.openide.util.NbBundle;
  * @author  Radek Matous, Tomas Mysik
  */
 public class RunAsScript extends RunAsPanel.InsidePanel {
-    private static final long serialVersionUID = -5593481225914071L;
-    private final String displayName;
+
+    private static final long serialVersionUID = 8423354564321210L;
+
     final ChangeSupport changeSupport = new ChangeSupport(this);
     private final JLabel[] labels;
     private final JTextField[] textFields;
     private final String[] propertyNames;
     private final SourcesFolderProvider sourcesFolderProvider;
 
-    public RunAsScript(ConfigManager manager, SourcesFolderProvider sourcesFolderProvider) {
-        this(manager, sourcesFolderProvider, NbBundle.getMessage(RunAsScript.class, "LBL_ConfigScript"));
-    }
 
-    private RunAsScript(ConfigManager manager, SourcesFolderProvider sourcesFolderProvider, String displayName) {
+    public RunAsScript(ConfigManager manager, SourcesFolderProvider sourcesFolderProvider) {
         super(manager);
-        this.displayName = displayName;
         this.sourcesFolderProvider = sourcesFolderProvider;
 
         initComponents();
@@ -140,12 +138,12 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
 
     @Override
     protected RunAsType getRunAsType() {
-        return PhpProjectProperties.RunAsType.SCRIPT;
+        return RunConfigScript.getRunAsType();
     }
 
     @Override
     public String getDisplayName() {
-        return displayName;
+        return RunConfigScript.getDisplayName();
     }
 
     @Override
@@ -189,8 +187,12 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         }
     }
 
-    public String getIndexFile() {
-        return indexFileTextField.getText().trim();
+    public RunConfigScript createRunConfig() {
+        return RunConfigScript.create()
+                .setUseDefaultInterpreter(false)
+                .setInterpreter(interpreterTextField.getText().trim())
+                .setIndexParentDir(sourcesFolderProvider.getSourcesFolder())
+                .setIndexRelativePath(indexFileTextField.getText().trim());
     }
 
     public void setIndexFile(String indexFile) {
@@ -331,7 +333,4 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
     private JLabel runAsLabel;
     // End of variables declaration//GEN-END:variables
 
-    public String getPhpInterpreter() {
-        return interpreterTextField.getText().trim();
-    }
 }

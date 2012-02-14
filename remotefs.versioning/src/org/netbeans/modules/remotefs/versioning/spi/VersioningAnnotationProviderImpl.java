@@ -46,8 +46,10 @@ import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.modules.remote.impl.fileoperations.spi.AnnotationProvider;
 import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor;
+import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor.VCSAnnotationEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStatusListener;
+import org.openide.filesystems.FileStatusEvent;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -60,13 +62,8 @@ public class VersioningAnnotationProviderImpl extends AnnotationProvider {
     }
 
     @Override
-    public void registerFileStatusListener(FileStatusListener listener) {
-        VCSFilesystemInterceptor.registerFileStatusListener(listener);
-    }
-
-    @Override
     public String annotateName(String name, Set<? extends FileObject> files) {
-        return null;
+        return name;    // do not support 'plain' annotations
     }
 
     @Override
@@ -84,4 +81,7 @@ public class VersioningAnnotationProviderImpl extends AnnotationProvider {
         return VCSFilesystemInterceptor.actions(files);
     }
 
+    final void deliverStatusEvent(FileSystem fs, VCSAnnotationEvent ev) {
+        fireFileStatusChanged(new FileStatusEvent(fs, ev.getFiles(), ev.isIconChange(), ev.isNameChange()));
+    }
 }

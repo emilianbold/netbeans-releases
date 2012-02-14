@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
@@ -48,11 +48,11 @@ import java.util.List;
  * Represents a function declaration
  * <pre>e.g.<pre>
  * function foo() {}
- * 
+ *
  * function &foo() {}
- * 
+ *
  * function foo($a, int $b, $c = 5, int $d = 6) {}
- * 
+ *
  * function foo(); -abstract function in class declaration
  */
 public class FunctionDeclaration extends Statement {
@@ -78,7 +78,7 @@ public class FunctionDeclaration extends Statement {
 
     /**
      * Body of this function declaration
-     * 
+     *
      * @return Body of this function declaration
      */
     public Block getBody() {
@@ -87,8 +87,8 @@ public class FunctionDeclaration extends Statement {
 
     /**
      * List of the formal parameters of this function declaration
-     * 
-     * @return the parameters of this declaration   
+     *
+     * @return the parameters of this declaration
      */
     public List<FormalParameter> getFormalParameters() {
         return this.formalParameters;
@@ -96,7 +96,7 @@ public class FunctionDeclaration extends Statement {
 
     /**
      * Function name of this declaration
-     *   
+     *
      * @return Function name of this declaration
      */
     public Identifier getFunctionName() {
@@ -104,13 +104,13 @@ public class FunctionDeclaration extends Statement {
     }
 
     /**
-     * True if this function's return variable will be referenced 
+     * True if this function's return variable will be referenced
      * @return True if this function's return variable will be referenced
      */
     public boolean isReference() {
         return isReference;
     }
-    
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);

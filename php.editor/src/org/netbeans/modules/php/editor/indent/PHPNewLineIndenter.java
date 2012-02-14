@@ -186,7 +186,7 @@ public class PHPNewLineIndenter {
                     }
 
                     int bracketBalance = 0;
-
+                    int squaredBalance = 0;
                     while (!insideString && ts.movePrevious()) {
                         Token token = ts.token();
                         ScopeDelimiter delimiter = getScopeDelimiter(token);
@@ -238,6 +238,14 @@ public class PHPNewLineIndenter {
                                             continualIndent = true;
                                         }
                                         bracketBalance--;
+                                        break;
+                                    case ']' :
+                                        squaredBalance++; break;
+                                    case '[':
+                                        if (squaredBalance == 0) {
+                                            continualIndent = true;
+                                        }
+                                        squaredBalance--;
                                         break;
                                     case ',':
                                         continualIndent = true;
@@ -375,7 +383,7 @@ public class PHPNewLineIndenter {
         int origOffset = ts.offset();
         Token token;
         int balance = 0;
-
+        int squaredBalance = 0;
         do {
             token = ts.token();
             if (token.id() == PHPTokenId.PHP_TOKEN) {
@@ -386,13 +394,21 @@ public class PHPNewLineIndenter {
                     case '(':
                         balance ++;
                         break;
+                    case ']' :
+                        squaredBalance--;
+                        break;
+                    case '[':
+                        squaredBalance++;
+                        break;
                 }
             }
         } while (ts.offset() > startExpression
                 && !(token.id() == PHPTokenId.PHP_ARRAY && balance ==1)
+                && !(token.id() == PHPTokenId.PHP_TOKEN && squaredBalance == 1)
                 && ts.movePrevious());
 
-        if (token.id() == PHPTokenId.PHP_ARRAY && balance == 1) {
+        if ((token.id() == PHPTokenId.PHP_ARRAY && balance == 1)
+                || (token.id() == PHPTokenId.PHP_TOKEN && squaredBalance == 1)) {
             result = ts.offset();
         }
         ts.move(origOffset);

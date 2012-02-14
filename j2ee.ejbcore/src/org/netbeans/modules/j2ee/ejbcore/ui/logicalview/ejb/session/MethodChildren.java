@@ -90,7 +90,7 @@ public class MethodChildren extends ComponentMethodModel {
     @Override
     protected Collection<String> getInterfaces() {
         Collection<String> intfs = super.getInterfaces();
-        return intfs != null ? intfs : Collections.EMPTY_LIST;
+        return intfs != null ? intfs : Collections.<String>emptyList();
     }
     
     @Override

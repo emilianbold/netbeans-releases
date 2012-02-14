@@ -107,7 +107,7 @@ public class CCParser {
                 id = titk.id();
                 //ignore whitespaces
                 if(id == JavaTokenId.WHITESPACE || id==JavaTokenId.LINE_COMMENT || id==JavaTokenId.BLOCK_COMMENT || id==JavaTokenId.JAVADOC_COMMENT) {
-                    ts.moveNext();
+                    if(!ts.moveNext())break;
                     titk = ts.token();
                     continue;
                 }

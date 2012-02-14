@@ -454,7 +454,7 @@ public final class Utilities {
     
     public static List<String> varNamesSuggestions(TypeMirror type, String suggestedName, String prefix, Types types, Elements elements, Iterable<? extends Element> locals, boolean isConst) {
         List<String> result = new ArrayList<String>();
-        if (type == null)
+        if (type == null && suggestedName == null)
             return result;
         List<String> vnct = suggestedName != null ? Collections.singletonList(suggestedName) : varNamesForType(type, types, elements, prefix);
         if (isConst) {
@@ -478,7 +478,7 @@ public final class Utilities {
             }
         }
         for (String name : vnct) {
-            boolean isPrimitive = type.getKind().isPrimitive();
+            boolean isPrimitive = type != null && type.getKind().isPrimitive();
             if (prefix != null && prefix.length() > 0) {
                 if (isConst) {
                     name = prefix.toUpperCase(Locale.ENGLISH) + '_' + name;
@@ -488,7 +488,7 @@ public final class Utilities {
             }
             int cnt = 1;
             String baseName = name;
-            while (isClashing(name, locals)) {
+            while (isClashing(name, type, locals)) {
                 if (isPrimitive) {
                     char c = name.charAt(0);
                     name = Character.toString(++c);
@@ -597,7 +597,7 @@ public final class Utilities {
     
     private static String getConstName(String s) {
         StringBuilder sb = new StringBuilder();
-        boolean prevUpper = false;
+        boolean prevUpper = true;
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
             if (Character.isUpperCase(c)) {
@@ -627,8 +627,10 @@ public final class Utilities {
         return sb.toString();
     }
     
-    private static boolean isClashing(String varName, Iterable<? extends Element> locals) {
+    private static boolean isClashing(String varName, TypeMirror type, Iterable<? extends Element> locals) {
         if (JavaTokenContext.getKeyword(varName) != null)
+            return true;
+        if (type != null && type.getKind() == TypeKind.DECLARED && ((DeclaredType)type).asElement().getSimpleName().contentEquals(varName))
             return true;
         for (Element e : locals) {
             if ((e.getKind().isField() || e.getKind() == ElementKind.LOCAL_VARIABLE || e.getKind() == ElementKind.RESOURCE_VARIABLE

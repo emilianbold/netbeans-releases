@@ -46,26 +46,29 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import org.openide.util.NbBundle;
 
 /**
- * Class which is holding information for creation of {@code @Schedule} annotation
- * 
+ * Class which is holding information for creation of {@code @Schedule} annotation.
+ *
  * @author Martin Fousek
  */
 public final class TimerOptions {
 
     private Map<String, String> timerOptions = new HashMap<String, String>();
     private static Set<String> scheduleAttributes = new HashSet<String>(
-            Arrays.asList("second", "minute", "hour", "dayOfMonth", "month", 
+            Arrays.asList("second", "minute", "hour", "dayOfMonth", "month", //NOI18N
             "dayOfWeek", "year", "info", "persistent", "timezone") //NOI18N
         );
 
     /**
-     * Get {@code Map} with entries of {@code @Schedule} annotation
+     * Gets {@code Map} with entries of {@code @Schedule} annotation.
+     *
      * @return {@code Map} of entries
      */
     public Map<String, String> getTimerOptionsAsMap() {
@@ -73,7 +76,8 @@ public final class TimerOptions {
     }
 
     /**
-     * Set values into {@code Map} of {@code @Schedule} annotation entries, if valid
+     * Set values into {@code Map} of {@code @Schedule} annotation entries, if valid.
+     *
      * @param scheduleString {@code String} which will be parsed for all attributes,
      * the value of {@code TimerOption} change just in case of valid scheduleString
      */
@@ -83,44 +87,43 @@ public final class TimerOptions {
             parseSectionsIntoMap(sections, timerOptions);
         }
     }
-    
+
     /**
-     * Check if given scheduleString can be successfully parsed for annotation attributes
+     * Check if given scheduleString can be successfully parsed for annotation attributes.
+     *
      * @param scheduleString input string for parsing
      * @return {@code String} with error message, {@code null} otherwise
      */
     public static String validate(String scheduleString) {
         String[] sections = splitScheduleSections(omitNewLines(scheduleString));
-        
+
         Map<String, String> actualSchedule = new HashMap<String, String>();
         if (!parseSectionsIntoMap(sections, actualSchedule)) {
             return NbBundle.getMessage(TimerOptions.class, "ERR_TO_UnparsableSchedule"); //NOI18N
         }
-        
+
         if (actualSchedule.isEmpty()) {
             return NbBundle.getMessage(TimerOptions.class, "ERR_TO_NotEnoughAttributes"); //NOI18N
-        }
-        else if (actualSchedule.size() > 10) {
+        } else if (actualSchedule.size() > 10) {
             return NbBundle.getMessage(TimerOptions.class, "ERR_TO_ToMuchAttributes"); //NOI18N
-        }
-        else {
+        } else {
             String invalidAttributesString = invalidAttributes(actualSchedule.keySet());
             if (invalidAttributesString != null) {
                 return NbBundle.getMessage(TimerOptions.class, "ERR_TO_InvalidAtributes", invalidAttributesString); //NOI18N
-            } 
+            }
         }
-        return null;       
+        return null;
     }
-    
+
     private static String omitNewLines(String string) {
         return string.replaceAll("\n", ""); //NOI18N
     }
-    
+
     private static String[] splitScheduleSections(String scheduleValue) {
         String[] sections = scheduleValue.split(","); //NOI18N
         List<String> finalSections = new ArrayList<String>();
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < sections.length; i++) {            
+        for (int i = 0; i < sections.length; i++) {
             sb.append(sections[i]);
             if (getCountOfQuotes(sb.toString()) < 2) {
                 sb.append(","); //NOI18N
@@ -129,21 +132,21 @@ public final class TimerOptions {
             finalSections.add(sb.toString());
             sb = new StringBuilder();
         }
-        
+
         if (!"".equals(sb.toString())) {
             finalSections.add(sb.toString());
         }
         return finalSections.toArray(new String[finalSections.size()]);
     }
-    
+
     private static int getCountOfQuotes(String string) {
         int count = string.split("\"").length - 1; //NOI18N
         if (string.endsWith("\"") || string.startsWith("\"")) //NOI18N
             return count + 1;
-        else 
+        else
             return count;
     }
-    
+
     private static boolean parseSectionsIntoMap(String[] sections, Map<String, String> map) {
         for (String section : sections) {
             String[] row = section.split("="); //NOI18N
@@ -155,11 +158,11 @@ public final class TimerOptions {
         }
         return true;
     }
-    
+
     private static String invalidAttributes(Set<String> actualAttributes) {
         Set<String> copy = new HashSet<String>(actualAttributes);
         copy.removeAll(scheduleAttributes);
-        
+
         if (copy.isEmpty()) {
             return null;
         } else {
@@ -170,6 +173,19 @@ public final class TimerOptions {
             return invalidAttributes.substring(0, invalidAttributes.length() - 2);
         }
     }
-    
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        Iterator<Entry<String, String>> iterator = timerOptions.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Entry<String, String> entry = iterator.next();
+            sb.append(entry.getKey()).append(" = ").append("\"").append(entry.getValue()).append("\""); //NOI18N
+            if (iterator.hasNext()) {
+                sb.append(", "); //NOI18N
+            }
+        }
+        return sb.toString();
+    }
 
 }

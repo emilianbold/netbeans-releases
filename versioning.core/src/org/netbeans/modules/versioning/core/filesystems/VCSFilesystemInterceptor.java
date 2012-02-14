@@ -47,6 +47,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import org.netbeans.modules.versioning.core.APIAccessor;
 import org.netbeans.modules.versioning.core.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -265,13 +266,13 @@ public final class VCSFilesystemInterceptor {
     }
 
     public static void deleteSuccess(VCSFileProxy file) {
-        LOG.log(Level.FINE, "fileDeleted {0}", file);
+        LOG.log(Level.FINE, "deleteSuccess {0}", file);
         removeFromDeletedFiles(file);
         getInterceptor(file, "afterDelete").afterDelete(); // NOI18N
     }
 
     public static void deletedExternally(VCSFileProxy file) {
-        LOG.log(Level.FINE, "fileDeleted {0}", file);
+        LOG.log(Level.FINE, "deletedExternally {0}", file);
         removeFromDeletedFiles(file);
         getInterceptor(file, "afterDelete").afterDelete(); // NOI18N
     }
@@ -283,7 +284,7 @@ public final class VCSFilesystemInterceptor {
     public static void beforeCreate(VCSFileProxy parent, String name, boolean isFolder) {
         LOG.log(Level.FINE, "beforeCreate {0}, {1}, {2} ", new Object[] {parent, name, isFolder});
         if (parent == null) return;
-        VCSFileProxy file = VCSFileProxy.createFileProxy(parent, name);
+        VCSFileProxy file = APIAccessor.IMPL.createFileProxy(parent, name, isFolder);
         DelegatingInterceptor dic = getInterceptor(file, isFolder, "beforeCreate"); // NOI18N
         if (dic.beforeCreate()) {
             filesBeingCreated.put(new FileEx(parent, name, isFolder), dic);
@@ -296,6 +297,16 @@ public final class VCSFilesystemInterceptor {
     }
 
     public static void createSuccess(VCSFileProxy file) {
+        LOG.log(Level.FINE, "createSuccess {0}", new Object[] {file});
+        createSuccessImpl(file);
+    }
+
+    public static void createdExternally(VCSFileProxy file) {
+        LOG.log(Level.FINE, "createdExternally {0}", new Object[] {file});
+        createSuccessImpl(file);
+    }
+
+    private static void createSuccessImpl (VCSFileProxy file) {
         FileEx fileEx = new FileEx(file.getParentFile(), file.getName(), file.isDirectory());
         DelegatingInterceptor interceptor = filesBeingCreated.remove(fileEx);
         if (interceptor != null) {
@@ -311,11 +322,7 @@ public final class VCSFilesystemInterceptor {
         }
         interceptor.afterCreate();
     }
-
-    public static void createdExternally(VCSFileProxy file) {
-        createSuccess(file);
-    }
-
+    
     // ==================================================================================================
     // MOVE
     // ==================================================================================================
@@ -336,6 +343,7 @@ public final class VCSFilesystemInterceptor {
     }
 
     public static void afterMove(VCSFileProxy from, VCSFileProxy to) {
+        LOG.log(Level.FINE, "afterMove {0}, {1}", new Object[] {from, to});
         removeFromDeletedFiles(from);
         getInterceptor(from, to, "afterMove").afterMove();
     }
@@ -351,9 +359,11 @@ public final class VCSFilesystemInterceptor {
     }
 
     public static void beforeCopy(VCSFileProxy from, VCSFileProxy to) {
+        // XXX and what is getCopyHandler good for?
     }
     
     public static void copySuccess(VCSFileProxy from, VCSFileProxy to) {
+        LOG.log(Level.FINE, "copySuccess {0}, {1}", new Object[] {from, to});
         getInterceptor(from, to, "afterCopy").afterCopy();
     }
 
@@ -373,10 +383,10 @@ public final class VCSFilesystemInterceptor {
     }
 
     public static long listFiles(VCSFileProxy dir, long lastTimeStamp, List<? super VCSFileProxy> children) {
-        LOG.log(Level.FINE, "refreshRecursively {0}, {1}", new Object[]{dir, lastTimeStamp});
+        LOG.log(Level.FINE, "listFiles {0}, {1}", new Object[]{dir, lastTimeStamp});
         if(LOG.isLoggable(Level.FINER)) {
             for (Object f : children) {
-                LOG.log(Level.FINE, "  refreshRecursively child {1}", f);
+                LOG.log(Level.FINE, "  listFiles child {1}", f);
             }
         }
         DelegatingInterceptor interceptor = getRefreshInterceptor(dir);
@@ -456,10 +466,10 @@ public final class VCSFilesystemInterceptor {
         isDirectory = isDirectory != null ? isDirectory : false;
         
         VersioningSystem vs = master.getOwner(file, isFile);
-        VCSInterceptor vsInterceptor = vs != null ? vs.getInterceptor() : nullInterceptor;
+        VCSInterceptor vsInterceptor = vs != null ? vs.getVCSInterceptor() : nullInterceptor;
 
         VersioningSystem lhvs = needsLH(forMethods) ? master.getLocalHistory(file, isFile) : null;
-        VCSInterceptor localHistoryInterceptor = lhvs != null ? lhvs.getInterceptor() : nullInterceptor;
+        VCSInterceptor localHistoryInterceptor = lhvs != null ? lhvs.getVCSInterceptor() : nullInterceptor;
 
         return new DelegatingInterceptor(vsInterceptor, localHistoryInterceptor, file, null, isDirectory);
     }
@@ -468,10 +478,10 @@ public final class VCSFilesystemInterceptor {
         if (from == null || to == null) return nullDelegatingInterceptor;
 
         VersioningSystem vs = master.getOwner(from);
-        VCSInterceptor vsInterceptor = vs != null ? vs.getInterceptor() : nullInterceptor;
+        VCSInterceptor vsInterceptor = vs != null ? vs.getVCSInterceptor() : nullInterceptor;
 
         VersioningSystem lhvs = needsLH(forMethods) ? master.getLocalHistory(from) : null;
-        VCSInterceptor localHistoryInterceptor = lhvs != null ? lhvs.getInterceptor() : nullInterceptor;
+        VCSInterceptor localHistoryInterceptor = lhvs != null ? lhvs.getVCSInterceptor() : nullInterceptor;
 
         return new DelegatingInterceptor(vsInterceptor, localHistoryInterceptor, from, to, false);
     }
@@ -479,7 +489,7 @@ public final class VCSFilesystemInterceptor {
     private static DelegatingInterceptor getRefreshInterceptor (VCSFileProxy dir) {
         if (dir == null) return nullDelegatingInterceptor;
         VersioningSystem vs = master.getOwner(dir);
-        VCSInterceptor Interceptor = vs != null ? vs.getInterceptor() : nullInterceptor;
+        VCSInterceptor Interceptor = vs != null ? vs.getVCSInterceptor() : nullInterceptor;
         return new DelegatingInterceptor(Interceptor, nullInterceptor, dir, null, true);
     }
 
@@ -502,7 +512,7 @@ public final class VCSFilesystemInterceptor {
 
         @Override
         public boolean isMutable(VCSFileProxy file) {
-            return true;
+            return false;
         }
 
         @Override
@@ -691,6 +701,7 @@ public final class VCSFilesystemInterceptor {
 
                     @Override
                     public void handle() throws IOException {
+                        LOG.log(Level.FINE, "move handle {0}", new Object[]{file, to});
                         doMove();
                     }
                 };
@@ -704,6 +715,7 @@ public final class VCSFilesystemInterceptor {
 
                     @Override
                     public void handle() throws IOException {
+                        LOG.log(Level.FINE, "copy handle {0}", new Object[]{file, to});
                         doCopy();
                     }
                 };
@@ -733,6 +745,7 @@ public final class VCSFilesystemInterceptor {
          */
         @Override
         public void handle() throws IOException {
+            LOG.log(Level.FINE, "delete handle {0}", new Object[]{file});
             lhInterceptor.doDelete(file);
             interceptor.doDelete(file);
             synchronized (deletedFiles) {

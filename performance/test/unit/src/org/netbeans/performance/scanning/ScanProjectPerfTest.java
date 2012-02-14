@@ -92,21 +92,28 @@ public class ScanProjectPerfTest extends NbTestCase {
     }
 
     public void testScanJEdit() throws IOException, ExecutionException, InterruptedException {
-        scanProject("http://spbweb.russia.sun.com/~ok153203/jEdit41.zip", 
+        scanProject("http://hg.netbeans.org/binaries/BBD005CDF8785223376257BD3E211C7C51A821E7-jEdit41.zip", 
                     "jEdit41.zip",
-                    "jEdit41");
+                    "jEdit");
     }
 
-    public void testScanNigelsFreeForm() throws IOException, ExecutionException, InterruptedException {
-        scanProject("http://beetle.czech.sun.com/~pf124312/nigel.zip",
-                    "Clean.zip",
-                    "clean/projects/ST");
-    }
+//    public void testScanNigelsFreeForm() throws IOException, ExecutionException, InterruptedException {
+//        scanProject("http://beetle.czech.sun.com/~pf124312/nigel.zip",
+//                    "Clean.zip",
+//                    "clean/projects/ST");
+//    }
 
     public void testPhpProject() throws IOException, ExecutionException, InterruptedException {
-        scanProject("http://wiki.netbeans.org/attach/FitnessViaSamples/mediawiki-1.14.0-nbproject.zip",
-                    "mediawiki.zip",
+        scanProject("http://netbeans.org/projects/performance/downloads/download/Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
+                    "Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
                     "mediawiki-1.14.0"
+                );
+    }
+    
+    public void testWebProject() throws IOException, ExecutionException, InterruptedException {
+        scanProject("http://jupiter.cz.oracle.com/wiki/pub/NbQE/TestingProjects/BigWebProject.zip",
+                    "BigWebProject.zip",
+                    "FrankioskiProject"
                 );
     }
     
@@ -116,11 +123,11 @@ public class ScanProjectPerfTest extends NbTestCase {
                     "tomcat6");
     }
 
-    public void testOpenJdk7() throws IOException, ExecutionException, InterruptedException {
-        scanProject("http://beetle.czech.sun.com/~pf124312/openjdk-7-ea-src-b63-02_jul_2009.zip",
-                    "openjdk.zip",
-                    "openjdk/jdk/make/netbeans/world");
-    }
+//    public void testOpenJdk7() throws IOException, ExecutionException, InterruptedException {
+//        scanProject("http://beetle.czech.sun.com/~pf124312/openjdk-7-ea-src-b63-02_jul_2009.zip",
+//                    "openjdk.zip",
+//                    "openjdk/jdk/make/netbeans/world");
+//    }
 
     private void scanProject(
             final String networkFileLoc,
@@ -187,7 +194,7 @@ public class ScanProjectPerfTest extends NbTestCase {
         return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().
                 addTest(ScanProjectPerfTest.class).
                 clusters(".*").gui(false).
-                enableModules("php.*", ".*"));
+                enableModules(".*", ".*"));
     }
 
     public PerformanceData[] getPerformanceData() {

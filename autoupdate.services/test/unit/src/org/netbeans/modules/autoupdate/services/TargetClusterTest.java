@@ -45,7 +45,7 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.io.IOException;
-import org.netbeans.junit.RandomlyFails;
+import java.util.logging.Level;
 import org.netbeans.updater.UpdateTracking;
 
 /** Issue http://www.netbeans.org/issues/show_bug.cgi?id=111701
@@ -57,13 +57,20 @@ public class TargetClusterTest extends TargetClusterTestCase {
     public TargetClusterTest (String testName) {
         super (testName);
     }
+
+    @Override protected Level logLevel() {
+        return Level.FINE;
+    }
+
+    @Override protected String logRoot() {
+        return "org.netbeans.modules.autoupdate";
+    }
     
     public void testInstallGloballyNewIntoDeclaredPlatform () throws IOException {
         // Otherwise (new module), if a cluster name is specified in NBM, put it there
         assertEquals ("Goes into " + platformDir.getName (), platformDir.getName (), getTargetCluster (platformDir.getName (), true).getName ());
     }
 
-    @RandomlyFails // NB-Core-Build #7716: "org.yourorghere.platform.null - UpdateUnit found." @TargetClusterTestCase.getTargetCluster
     public void testInstallNewIntoDeclaredPlatform () throws IOException {
         // Otherwise (new module), if a cluster name is specified in NBM, put it there
         assertEquals ("Goes into " + platformDir.getName (), platformDir.getName (), getTargetCluster (platformDir.getName (), null).getName ());

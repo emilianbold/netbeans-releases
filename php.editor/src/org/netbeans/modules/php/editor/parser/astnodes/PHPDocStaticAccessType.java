@@ -51,7 +51,7 @@ package org.netbeans.modules.php.editor.parser.astnodes;
 public class PHPDocStaticAccessType extends PHPDocTypeNode {
     private final PHPDocNode className;
     private final PHPDocNode constant;
-    
+
     public PHPDocStaticAccessType (int start, int end, String value, PHPDocNode className, PHPDocNode constant) {
         super(start, end, value, false);
         this.className = className;

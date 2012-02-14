@@ -349,8 +349,9 @@ public class FileInformation implements Serializable {
         } else if (match(status, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
             if (entry != null && entry.isCopied()) {
                 retval = loc.getString("CTL_FileInfoStatus_AddedLocallyCopied");
+            } else {
+                retval = loc.getString("CTL_FileInfoStatus_AddedLocally");
             }
-            retval = loc.getString("CTL_FileInfoStatus_AddedLocally");
         } else if (match(status, FileInformation.STATUS_VERSIONED_UPTODATE)) {
             retval = loc.getString("CTL_FileInfoStatus_UpToDate");
         } else if (match(status, FileInformation.STATUS_VERSIONED_CONFLICT_TREE)) {

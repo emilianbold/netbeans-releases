@@ -54,6 +54,7 @@ import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.TraitElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
@@ -99,7 +100,7 @@ public interface ElementQuery {
 
     Set<TypeElement> getTypes(NameKind query);
 
-    
+
     Set<FunctionElement> getFunctions();
 
     Set<FunctionElement> getFunctions(NameKind query);
@@ -121,7 +122,7 @@ public interface ElementQuery {
     Set<MethodElement> getMethods(NameKind methodQuery);
 
     Set<FieldElement> getFields(NameKind fieldQuery);
-        
+
     Set<TypeConstantElement> getTypeConstants(NameKind constantQuery);
 
     Set<VariableElement> getTopLevelVariables(NameKind query);
@@ -132,7 +133,7 @@ public interface ElementQuery {
 
     public interface File extends ElementQuery {
         FileObject getFileObject();
-        
+
         URL getURL();
 
         PHPParseResult getResult();
@@ -149,7 +150,7 @@ public interface ElementQuery {
 
         Set<VariableElement> getFunctionVariables(FunctionElement function);
     }
-    
+
     public interface Index extends ElementQuery {
         Set<PhpElement> getTopLevelElements(NameKind query);
 
@@ -161,6 +162,8 @@ public interface ElementQuery {
 
         Set<InterfaceElement> getInterfaces(NameKind query, Set<AliasedName> aliases, AliasedElement.Trait trait);
 
+        Set<TraitElement> getTraits(final NameKind query);
+
         Set<TypeElement> getTypes(NameKind query, Set<AliasedName> aliases, AliasedElement.Trait trait);
 
         Set<MethodElement> getConstructors(NameKind typeQuery, Set<AliasedName> aliases, AliasedElement.Trait trait);
@@ -168,7 +171,7 @@ public interface ElementQuery {
         Set<NamespaceElement> getNamespaces(NameKind query, Set<AliasedName> aliasedNames, AliasedElement.Trait trait);
 
         Set<PhpElement> getTopLevelElements(NameKind query, Set<AliasedName> aliases, AliasedElement.Trait trait);
-        
+
 
         Set<MethodElement> getDeclaredConstructors(ClassElement typeElement);
 
@@ -266,7 +269,7 @@ public interface ElementQuery {
         Set<FieldElement> getAccessibleStaticFields(TypeElement classElement, TypeElement calledFromEnclosingType);
 
         Set<TypeMemberElement> getInheritedTypeMembers(final TypeElement typeElement);
-        
+
         Set<TypeMemberElement> getAllTypeMembers(TypeElement typeElement);
 
         /**

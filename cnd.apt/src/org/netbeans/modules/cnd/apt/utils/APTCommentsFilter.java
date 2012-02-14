@@ -62,6 +62,7 @@ public class APTCommentsFilter implements TokenStream, APTTokenStream {
         this.orig = orig;
     }
 
+    @Override
     public APTToken nextToken() {
         try {
             APTToken next = (APTToken) orig.nextToken();

@@ -445,6 +445,50 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "$fr = new Edit^Form();", true);
     }
 
+    public void testArrayDereferencing_01() throws Exception {
+        checkOccurrences(getTestPath(), "$myCl^ass->field[0]->getArray()[][]->foo();", true);
+    }
+
+    public void testArrayDereferencing_02() throws Exception {
+        checkOccurrences(getTestPath(), "$myClass->fie^ld[0]->getArray()[][]->foo();", true);
+    }
+
+    public void testArrayDereferencing_03() throws Exception {
+        checkOccurrences(getTestPath(), "$myClass->field[0]->getA^rray()[][]->foo();", true);
+    }
+
+    public void testArrayDereferencing_04() throws Exception {
+        checkOccurrences(getTestPath(), "$myClass->field[0]->getArray()[][]->fo^o();", true);
+    }
+
+    public void testArrayDereferencing_05() throws Exception {
+        checkOccurrences(getTestPath(), "$myC^lass->getArray()[0][]->foo();", true);
+    }
+
+    public void testArrayDereferencing_06() throws Exception {
+        checkOccurrences(getTestPath(), "$myClass->getA^rray()[0][]->foo();", true);
+    }
+
+    public void testArrayDereferencing_07() throws Exception {
+        checkOccurrences(getTestPath(), "$myClass->getArray()[0][]->fo^o();", true);
+    }
+
+    public void testArrayDereferencing_08() throws Exception {
+        checkOccurrences(getTestPath(), "function^Name()[0]->foo();", true);
+    }
+
+    public void testArrayDereferencing_09() throws Exception {
+        checkOccurrences(getTestPath(), "functionName()[0]->fo^o();", true);
+    }
+
+    public void testVariableAsAClassName() throws Exception {
+        checkOccurrences(getTestPath(), "$static_clas^sname::$static_property;", true);
+    }
+
+    public void testStaticMethodCall() throws Exception {
+        checkOccurrences(getTestPath(), "Presenter::staticFun^ctionName($param);", true);
+    }
+
     //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated
     // and maybe fixed (NOT URGENT)
     //caused by got to declaration, mark occurences rewrite

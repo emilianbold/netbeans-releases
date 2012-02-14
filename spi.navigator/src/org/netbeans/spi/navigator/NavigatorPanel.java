@@ -44,14 +44,17 @@
 
 package org.netbeans.spi.navigator;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import javax.swing.JComponent;
 import org.openide.util.Lookup;
 
 /** Navigation related view description.
  *
- * Implementors of this interface, also registered in layer,
- * will be plugged into Navigator UI.
- *
+ * Implementors of this interface will be plugged into Navigator UI.
+ * @see Registration
  * @author Dafe Simonek
  */
 public interface NavigatorPanel {
@@ -63,7 +66,7 @@ public interface NavigatorPanel {
     public String getDisplayName ();
 
     /** Description of the view, explaining main purpose of the view.
-     * Will be shown in Navigator UI.
+     * <em>Currently unused.</em>
      * 
      * @return String description of the view.
      */
@@ -120,6 +123,44 @@ public interface NavigatorPanel {
      * @return Lookup instance or null
      */
     public Lookup getLookup ();
+
+    /**
+     * Registers a navigator panel.
+     * @since 1.22
+     */
+    @Target({ElementType.TYPE, ElementType.METHOD})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface Registration {
+
+        /**
+         * MIME type to register under.
+         * For example: {@code text/javascript}
+         */
+        String mimeType();
+
+        /**
+         * Optional position for this panel among others of the same type.
+         */
+        int position() default Integer.MAX_VALUE;
+
+        /**
+         * Label for this view to be used in a switcher UI.
+         * Will be replaced with {@link NavigatorPanel#getDisplayName}
+         * if and when the panel is actually shown.
+         * May use {@code pkg.Bundle#key} or {@code #key} syntax.
+         */
+        String displayName();
+
+    }
     
-    
+    /**
+     * Used in case multiple registrations are needed in one place.
+     * @since 1.22
+     */
+    @Target({ElementType.TYPE, ElementType.METHOD})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface Registrations {
+        Registration[] value();
+    }
+
 }

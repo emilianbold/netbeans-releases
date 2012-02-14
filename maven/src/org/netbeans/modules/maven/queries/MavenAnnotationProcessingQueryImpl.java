@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.queries;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -85,7 +86,8 @@ public class MavenAnnotationProcessingQueryImpl implements AnnotationProcessingQ
                 return EnumSet.allOf(Trigger.class);
             }
             public @Override Iterable<? extends String> annotationProcessorsToRun() {
-                return null;
+                String[] procs = PluginPropertyUtils.getPluginPropertyList(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "annotationProcessors", "annotationProcessor", null);
+                return procs != null ? Arrays.asList(procs) : null;
             }
             public @Override URL sourceOutputDirectory() {
                 String generatedSourcesDirectory = PluginPropertyUtils.getPluginProperty(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, "generatedSourcesDirectory", null);

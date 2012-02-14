@@ -234,6 +234,7 @@ final class APTFortranFilter extends APTBaseLanguageFilter {
         filter(APTTokenTypes.PLUS, APTTokenTypes.T_PLUS);
         filter(APTTokenTypes.MINUS, APTTokenTypes.T_MINUS);
         filter(APTTokenTypes.DIVIDE, APTTokenTypes.T_SLASH);
+        filter(APTTokenTypes.COLON, APTTokenTypes.T_COLON);
 
         filter(APTTokenTypes.OCTALINT, APTTokenTypes.T_DIGIT_STRING);
         filter(APTTokenTypes.DECIMALINT, APTTokenTypes.T_DIGIT_STRING);
@@ -252,7 +253,7 @@ final class APTFortranFilter extends APTBaseLanguageFilter {
     @Override
     protected Token onID(Token token) {
         Token ret = super.onID(token);
-        if(ret.getType() == APTTokenTypes.ID) {
+        if(ret.getType() == APTTokenTypes.IDENT) {
             ret = new FilterToken((APTToken)ret, APTTokenTypes.T_IDENT);
         }
         return ret;

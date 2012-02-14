@@ -48,42 +48,43 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.util.TreePath;
 import java.awt.Dialog;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.*;
+import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.codegen.ui.ElementNode;
 import org.netbeans.modules.java.editor.codegen.ui.GetterSetterPanel;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.RefactoringSession;
+import org.netbeans.modules.refactoring.java.api.EncapsulateFieldRefactoring;
+import org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Dusan Balek
  */
 public class GetterSetterGenerator implements CodeGenerator {
-    
+
     public static class Factory implements CodeGenerator.Factory {
         
         private static final String ERROR = "<error>"; //NOI18N
@@ -206,39 +207,120 @@ public class GetterSetterGenerator implements CodeGenerator {
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.setVisible(true);
         if (dialogDescriptor.getValue() == dialogDescriptor.getDefaultValue()) {
-            JavaSource js = JavaSource.forDocument(component.getDocument());
-            if (js != null) {
-                try {
-                    ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
-                        public void run(WorkingCopy copy) throws IOException {
-                            copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                            Element e = description.getElementHandle().resolve(copy);
-                            TreePath path = e != null ? copy.getTrees().getPath(e) : copy.getTreeUtilities().pathFor(caretOffset);
-                            path = Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
-                            if (path == null) {
-                                String message = NbBundle.getMessage(GetterSetterGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N
-                                org.netbeans.editor.Utilities.setStatusBoldText(component, message);
-                            } else {
-                                int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
-                                ArrayList<VariableElement> variableElements = new ArrayList<VariableElement>();
-                                for (ElementHandle<? extends Element> elementHandle : panel.getVariables()) {
-                                    VariableElement elem = (VariableElement)elementHandle.resolve(copy);
-                                    if (elem == null) {
-                                        String message = NbBundle.getMessage(GetterSetterGenerator.class, "ERR_CannotFindOriginalMember"); //NOI18N
-                                        org.netbeans.editor.Utilities.setStatusBoldText(component, message);
-                                        return;
+            if (panel.isPerformEnsapsulate()) {
+                performEncapsulate(panel.getVariables());
+            } else {
+                JavaSource js = JavaSource.forDocument(component.getDocument());
+                if (js != null) {
+                    try {
+                        ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
+
+                            public void run(WorkingCopy copy) throws IOException {
+                                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                                Element e = description.getElementHandle().resolve(copy);
+                                TreePath path = e != null ? copy.getTrees().getPath(e) : copy.getTreeUtilities().pathFor(caretOffset);
+                                path = Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
+                                if (path == null) {
+                                    String message = NbBundle.getMessage(GetterSetterGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N
+                                    org.netbeans.editor.Utilities.setStatusBoldText(component, message);
+                                } else {
+                                    int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree) path.getLeaf(), caretOffset);
+                                    ArrayList<VariableElement> variableElements = new ArrayList<VariableElement>();
+                                    for (ElementHandle<? extends Element> elementHandle : panel.getVariables()) {
+                                        VariableElement elem = (VariableElement) elementHandle.resolve(copy);
+                                        if (elem == null) {
+                                            String message = NbBundle.getMessage(GetterSetterGenerator.class, "ERR_CannotFindOriginalMember"); //NOI18N
+                                            org.netbeans.editor.Utilities.setStatusBoldText(component, message);
+                                            return;
+                                        }
+                                        variableElements.add(elem);
                                     }
-                                    variableElements.add(elem);
+                                    GeneratorUtils.generateGettersAndSetters(copy, path, variableElements, type, idx);
                                 }
-                                GeneratorUtils.generateGettersAndSetters(copy, path, variableElements, type, idx);
                             }
-                        }
-                    });
-                    GeneratorUtils.guardedCommit(component, mr);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                        });
+                        GeneratorUtils.guardedCommit(component, mr);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
         }
     }
+    
+    private void performEncapsulate(final List<ElementHandle<? extends Element>> variables) {
+        try {
+            JavaSource js = JavaSource.forDocument(component.getDocument());
+            final List<String> getters = new ArrayList();
+            final List<String> setters = new ArrayList();
+            js.runUserActionTask(new Task<CompilationController>() {
+
+                @Override
+                public void run(CompilationController parameter) throws Exception {
+                    createGetterSetterLists(parameter, variables, getters, setters);
+                }
+            }, true);
+            
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    doDefaultEncapsulate(variables, getters, setters);
+                }
+            },
+                    NbBundle.getMessage(GetterSetterGenerator.class, "LBL_EncapsulateFields"),
+                    new AtomicBoolean(),
+                    false);
+
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+    }
+        
+    private void createGetterSetterLists(CompilationController cc, List<ElementHandle<? extends Element>> variables, List<String> getters, List<String> setters) {
+        for (ElementHandle handle:variables) {
+            final Element el = handle.resolve(cc);
+            if (type!=GeneratorUtils.GETTERS_ONLY)
+                setters.add("set" + GeneratorUtils.getCapitalizedName(el.getSimpleName()));//NOI18N
+            else 
+                setters.add(null);
+            if (type!=GeneratorUtils.SETTERS_ONLY)
+                getters.add((el.asType().getKind() == TypeKind.BOOLEAN ? "is" : "get") + GeneratorUtils.getCapitalizedName(el.getSimpleName()));//NOI18N
+            else
+                getters.add(null);
+        }
+    }
+
+    private void doDefaultEncapsulate(List<ElementHandle<? extends Element>> variables, List<String> getters, List<String> setters) {
+        RefactoringSession encapsulate = RefactoringSession.create(NbBundle.getMessage(GetterSetterGenerator.class, "LBL_EncapsulateFields"));
+        final Iterator<String> setIterator = setters.iterator();
+        final Iterator<String> getIterator = getters.iterator();
+        for (Iterator<ElementHandle<? extends Element>> it = variables.iterator(); it.hasNext();) {
+            EncapsulateFieldRefactoring refactoring = new EncapsulateFieldRefactoring(TreePathHandle.from(it.next(), ClasspathInfo.create(component.getDocument())));
+            refactoring.setSetterName(setIterator.next());
+            refactoring.setGetterName(getIterator.next());
+            refactoring.setFieldModifiers(EnumSet.of(Modifier.PRIVATE));
+            refactoring.setMethodModifiers(EnumSet.of(Modifier.PUBLIC));
+            Problem p = refactoring.prepare(encapsulate);
+            if (p!=null) {
+                doFullEncapsulate();
+                return;
+            }
+        }
+        encapsulate.doRefactoring(true);
+    }
+    
+    private void doFullEncapsulate() {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                Action encapsulateAction = JavaRefactoringActionsFactory.encapsulateFieldsAction().createContextAwareInstance(Lookups.fixed(((DataObject)component.getDocument().getProperty(BaseDocument.StreamDescriptionProperty)).getNodeDelegate()));
+                encapsulateAction.actionPerformed(null);
+            }
+            
+        });
+    }
+    
 }

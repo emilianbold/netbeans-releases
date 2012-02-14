@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.42.0
+#Version 1.48.0
 
 CLSS public abstract interface java.io.Serializable
 
@@ -318,6 +318,30 @@ meth public boolean scanStarted(org.netbeans.modules.parsing.spi.indexing.Contex
 meth public void scanFinished(org.netbeans.modules.parsing.spi.indexing.Context)
 supr java.lang.Object
 
+CLSS public abstract org.netbeans.modules.parsing.spi.indexing.ConstrainedBinaryIndexer
+cons public init()
+innr public abstract interface static !annotation Registration
+meth protected abstract void index(java.util.Map<java.lang.String,? extends java.lang.Iterable<? extends org.openide.filesystems.FileObject>>,org.netbeans.modules.parsing.spi.indexing.Context)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+meth protected boolean scanStarted(org.netbeans.modules.parsing.spi.indexing.Context)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth protected void rootsRemoved(java.lang.Iterable<? extends java.net.URL>)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth protected void scanFinished(org.netbeans.modules.parsing.spi.indexing.Context)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
+
+CLSS public abstract interface static !annotation org.netbeans.modules.parsing.spi.indexing.ConstrainedBinaryIndexer$Registration
+ outer org.netbeans.modules.parsing.spi.indexing.ConstrainedBinaryIndexer
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String[] mimeType()
+meth public abstract !hasdefault java.lang.String[] requiredResource()
+meth public abstract int indexVersion()
+meth public abstract java.lang.String indexerName()
+
 CLSS public final org.netbeans.modules.parsing.spi.indexing.Context
 meth public boolean checkForEditorModifications()
 meth public boolean isAllFilesIndexing()
@@ -329,7 +353,7 @@ meth public org.openide.filesystems.FileObject getIndexFolder()
 meth public org.openide.filesystems.FileObject getRoot()
 meth public void addSupplementaryFiles(java.net.URL,java.util.Collection<? extends java.net.URL>)
 supr java.lang.Object
-hfds allFilesJob,cancelRequest,checkForEditorModifications,factory,followUpJob,indexBaseFolder,indexFolder,indexerName,indexerVersion,indexingSupport,root,rootURL,sourceForBinaryRoot
+hfds allFilesJob,cancelRequest,checkForEditorModifications,factory,followUpJob,indexBaseFolder,indexFolder,indexerName,indexerVersion,indexingSupport,logContext,props,root,rootURL,sourceForBinaryRoot
 
 CLSS public abstract org.netbeans.modules.parsing.spi.indexing.CustomIndexer
 cons public init()

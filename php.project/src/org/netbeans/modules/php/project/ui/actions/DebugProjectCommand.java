@@ -43,9 +43,9 @@
  */
 package org.netbeans.modules.php.project.ui.actions;
 
-import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
+import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -65,7 +65,7 @@ public class DebugProjectCommand extends Command implements Displayable {
     @Override
     public void invokeAction(final Lookup context) {
         ConfigAction configAction = getConfigAction();
-        if (!configAction.isValid(isScriptSelected())) {
+        if (!configAction.isProjectValid()) {
             // property not set yet
             return;
         }

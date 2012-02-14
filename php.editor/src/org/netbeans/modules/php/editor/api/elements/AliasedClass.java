@@ -79,4 +79,9 @@ public final class AliasedClass extends AliasedType implements ClassElement {
     public Collection<QualifiedName> getPossibleFQSuperClassNames() {
         return Collections.emptyList();
     }
+
+    @Override
+    public Collection<QualifiedName> getUsedTraits() {
+        return getClassElement().getUsedTraits();
+    }
 }

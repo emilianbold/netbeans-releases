@@ -45,16 +45,13 @@
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
 import com.sun.jdi.AbsentInformationException;
-import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
-import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
-import com.sun.jdi.event.WatchpointEvent;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.StepRequest;
@@ -92,7 +89,6 @@ import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.PrimitiveValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
@@ -115,7 +111,7 @@ import org.openide.util.Exceptions;
  */
 abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeListener {
     
-    private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.breakpoints"); // NOI18N
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.breakpoints"); // NOI18N
 
     private JPDADebuggerImpl    debugger;
     private JPDABreakpoint      breakpoint;
@@ -180,6 +176,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         }
     }
 
+    @Override
     public void propertyChange (PropertyChangeEvent evt) {
         String propertyName = evt.getPropertyName();
         if (Breakpoint.PROP_DISPOSED.equals(propertyName)) {
@@ -191,6 +188,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
                 reader.storeCachedClassName(breakpoint, null);
             }
             debugger.getRequestProcessor().post(new Runnable() {
+                @Override
                 public void run() {
                     // Update lazily in RP. We'll access java source parsing and JDI.
                     update();
@@ -205,6 +203,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         if (SwingUtilities.isEventDispatchThread()) {
             // One can not want to access the requests in AWT EQ
             debugger.getRequestProcessor().post(new Runnable() {
+                @Override
                 public void run() {
                     removeAllEventRequests ();
                 }
@@ -296,7 +295,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
     }
 
     synchronized private void removeAllEventRequests () {
-        if (requests.size () == 0) return;
+        if (requests.isEmpty()) return;
         VirtualMachine vm = getDebugger().getVirtualMachine();
         if (vm == null) return; 
         int i, k = requests.size ();
@@ -685,8 +684,13 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
                 JPDAThreadImpl jtr = debugger.getThread(thread);
                 jtr.accessLock.writeLock().lock();
                 try {
-                    CallStackFrame csf = jtr.getCallStack(0, 1)[0];
-                    success = evaluateConditionIn (condition, csf, contextVar);
+                    CallStackFrame[] csfs = jtr.getCallStack(0, 1);
+                    if (csfs.length > 0) {
+                        success = evaluateConditionIn (condition, csfs[0], contextVar);
+                    } else {
+                        // Can not evaluate any condition without the top stack frame.
+                        success = true;
+                    }
                 } finally {
                     jtr.accessLock.writeLock().unlock();
                 }
@@ -861,6 +865,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             this.reason = reason;
         }
         
+        @Override
         public String toString() {
             return reason;
         }

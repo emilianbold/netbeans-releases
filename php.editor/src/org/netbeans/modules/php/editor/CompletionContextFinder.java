@@ -413,6 +413,9 @@ class CompletionContextFinder {
         }
         Token<PHPTokenId> token = tokenSequence.token();
         PHPTokenId tokenId =token.id();
+        if (tokenId.equals(PHPTokenId.PHP_CLOSETAG) && (tokenSequence.offset() < caretOffset)) {
+            return CompletionContext.NONE;
+        }
         int tokenIdOffset = tokenSequence.token().offset(th);
 
         CompletionContext clsIfaceDeclContext = getClsIfaceDeclContext(token,(caretOffset-tokenIdOffset), tokenSequence);
@@ -481,8 +484,6 @@ class CompletionContextFinder {
                         return CompletionContext.SERVER_ENTRY_CONSTANTS;
                     }
                 }
-                return CompletionContext.NONE;
-            case PHP_CLOSETAG:
                 return CompletionContext.NONE;
             default:
         }
@@ -989,8 +990,12 @@ class CompletionContextFinder {
             } else if (aSTNode instanceof MethodDeclaration) {
                 methDecl = true;
             } else if (aSTNode instanceof ClassDeclaration) {
-                clsDecl = true;
-                if (funcDecl) isClassInsideFunc = true;
+                if (aSTNode.getEndOffset() != caretOffset) {
+                    clsDecl = true;
+                    if (funcDecl) isClassInsideFunc = true;
+                } else {
+                    return false;
+                }
             }
         }
         if (funcDecl && !methDecl && !clsDecl) {

@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -95,13 +95,13 @@ public class PHPLanguage extends DefaultLanguageConfig {
         preferredID="php.source",
         mimeType="text/x-php5",
         position=1
-    )    
+    )
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
         return new MultiViewEditorElement(context);
     }
-    
+
     public static String LINE_COMMENT_PREFIX = "//"; // NOI18N
-   
+
     @Override
     public String getLineCommentPrefix() {
         return LINE_COMMENT_PREFIX;
@@ -126,7 +126,7 @@ public class PHPLanguage extends DefaultLanguageConfig {
     public String getPreferredExtension() {
         return "php"; // NOI18N
     }
-    
+
     // Service Registrations
 
     @Override

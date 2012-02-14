@@ -51,6 +51,12 @@ import javax.swing.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
+@OptionsPanelController.SubRegistration(
+    location="Java",
+    id="JavaCard",
+    displayName="#JavaCardOptionsCategory_Title",
+    keywords="#KW_JavaCardOptions",
+    keywordsCategory="Java/JavaCard")
 public final class JavacardOptionsPanelController extends OptionsPanelController {
 
     private JavacardOptions panel;

@@ -537,7 +537,7 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
             if (value instanceof TypeNode) {
                 TypeNode n = (TypeNode) value;
                 stringValue = n.toStringAsHtml();
-                label.setIcon(new ImageIcon(n.getIcon())); 
+                label.setIcon(new ImageIcon(n.getIcon()));
             }
             if (isSelected) {
                 label.setForeground(LIST_FOR_COLORS.getSelectionForeground());

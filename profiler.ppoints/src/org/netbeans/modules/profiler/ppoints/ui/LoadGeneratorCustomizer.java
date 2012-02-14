@@ -97,8 +97,8 @@ import org.netbeans.modules.profiler.api.ProjectUtilities;
     "LoadGeneratorCustomizer_StopLabelText=Stop:",
     "LoadGeneratorCustomizer_DefineRadioText=&Define",
     "LoadGeneratorCustomizer_StopRadioText=W&hen profiling stops",
-    "LoadGeneratorCustomizer_LocationBeginLabelText=Location (begin)",
-    "LoadGeneratorCustomizer_LocationEndLabelText=Location (end)",
+    "LoadGeneratorCustomizer_LocationBeginLabelText=Location (start)",
+    "LoadGeneratorCustomizer_LocationEndLabelText=Location (stop)",
     "LoadGeneratorCustomizer_ChooseScriptDialogCaption=Choose Load Generator Script",
     "LoadGeneratorCustomizer_ScriptFieldAccessDescr=Script to be executed in Load Generator",
     "LoadGeneratorCustomizer_SupportedFiles=Load Generator Scripts"

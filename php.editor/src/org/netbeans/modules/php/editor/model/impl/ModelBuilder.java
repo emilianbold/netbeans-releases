@@ -51,6 +51,7 @@ import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
@@ -59,6 +60,7 @@ import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.TraitDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
@@ -67,6 +69,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitConflictResolutionDeclaration;
 
 /**
  *
@@ -105,6 +109,13 @@ class ModelBuilder {
         setCurrentScope(classScope);
         occurencesBuilder.prepare(node,classScope);
         return classScope;
+    }
+
+    TraitScope build(TraitDeclaration node, OccurenceBuilder occurencesBuilder) {
+        TraitScopeImpl traitScope = ModelElementFactory.create(TraitDeclarationInfo.create(node), this);
+        setCurrentScope(traitScope);
+        occurencesBuilder.prepare(node, traitScope);
+        return traitScope;
     }
 
     void build(FieldsDeclaration node, OccurenceBuilder occurencesBuilder) {

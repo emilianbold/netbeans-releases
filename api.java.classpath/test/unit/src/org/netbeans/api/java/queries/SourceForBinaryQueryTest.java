@@ -97,19 +97,19 @@ public class SourceForBinaryQueryTest extends NbTestCase {
         zos.closeEntry();
         zos.close();
         sr2 = FileUtil.getArchiveRoot(FileUtil.toFileObject(zf));
-        map.put(br1.getURL(), Collections.singletonList(sr1));
-        map.put(br2.getURL(), Collections.singletonList(sr2));
+        map.put(br1.toURL(), Collections.singletonList(sr1));
+        map.put(br2.toURL(), Collections.singletonList(sr2));
     }
     
     public void testSFBQImpl () throws Exception {
         MockServices.setServices(LegacySFBQImpl.class);
-        SourceForBinaryQuery.Result2 res = SourceForBinaryQuery.findSourceRoots2(br1.getURL());
+        SourceForBinaryQuery.Result2 res = SourceForBinaryQuery.findSourceRoots2(br1.toURL());
         assertNotNull(res);
         assertEquals(1, res.getRoots().length);
         assertEquals(Collections.singletonList(sr1), Arrays.asList(res.getRoots()));
         assertTrue(res.preferSources());
         
-        res = SourceForBinaryQuery.findSourceRoots2(br2.getURL());
+        res = SourceForBinaryQuery.findSourceRoots2(br2.toURL());
         assertNotNull(res);
         assertEquals(1, res.getRoots().length);
         assertEquals(Collections.singletonList(sr2), Arrays.asList(res.getRoots()));
@@ -123,13 +123,13 @@ public class SourceForBinaryQueryTest extends NbTestCase {
     
     public void testSFBQImpl2 () throws Exception {
         MockServices.setServices(LeafSFBQImpl.class);
-        SourceForBinaryQuery.Result2 res = SourceForBinaryQuery.findSourceRoots2(br1.getURL());
+        SourceForBinaryQuery.Result2 res = SourceForBinaryQuery.findSourceRoots2(br1.toURL());
         assertNotNull(res);
         assertEquals(1, res.getRoots().length);
         assertEquals(Collections.singletonList(sr1), Arrays.asList(res.getRoots()));
         assertFalse(res.preferSources());
         
-        res = SourceForBinaryQuery.findSourceRoots2(br2.getURL());
+        res = SourceForBinaryQuery.findSourceRoots2(br2.toURL());
         assertNotNull(res);
         assertEquals(1, res.getRoots().length);
         assertEquals(Collections.singletonList(sr2), Arrays.asList(res.getRoots()));
@@ -146,13 +146,13 @@ public class SourceForBinaryQueryTest extends NbTestCase {
     public void testSFBQDelegatingImpl () throws Exception {
         DelegatingSFBImpl.impl = new LegacySFBQImpl();
         MockServices.setServices(DelegatingSFBImpl.class);
-        SourceForBinaryQuery.Result2 res = SourceForBinaryQuery.findSourceRoots2(br1.getURL());
+        SourceForBinaryQuery.Result2 res = SourceForBinaryQuery.findSourceRoots2(br1.toURL());
         assertNotNull(res);
         assertEquals(1, res.getRoots().length);
         assertEquals(Collections.singletonList(sr1), Arrays.asList(res.getRoots()));
         assertTrue(res.preferSources());
         
-        res = SourceForBinaryQuery.findSourceRoots2(br2.getURL());
+        res = SourceForBinaryQuery.findSourceRoots2(br2.toURL());
         assertNotNull(res);
         assertEquals(1, res.getRoots().length);
         assertEquals(Collections.singletonList(sr2), Arrays.asList(res.getRoots()));
@@ -169,13 +169,13 @@ public class SourceForBinaryQueryTest extends NbTestCase {
     public void testSFBQDelegatingImpl2 () throws Exception {
         DelegatingSFBImpl.impl = new LeafSFBQImpl();
         MockServices.setServices(DelegatingSFBImpl.class);
-        SourceForBinaryQuery.Result2 res = SourceForBinaryQuery.findSourceRoots2(br1.getURL());
+        SourceForBinaryQuery.Result2 res = SourceForBinaryQuery.findSourceRoots2(br1.toURL());
         assertNotNull(res);
         assertEquals(1, res.getRoots().length);
         assertEquals(Collections.singletonList(sr1), Arrays.asList(res.getRoots()));
         assertFalse(res.preferSources());
         
-        res = SourceForBinaryQuery.findSourceRoots2(br2.getURL());
+        res = SourceForBinaryQuery.findSourceRoots2(br2.toURL());
         assertNotNull(res);
         assertEquals(1, res.getRoots().length);
         assertEquals(Collections.singletonList(sr2), Arrays.asList(res.getRoots()));
@@ -191,7 +191,7 @@ public class SourceForBinaryQueryTest extends NbTestCase {
     public void testListening () throws Exception {
         DelegatingSFBImpl.impl = new LeafSFBQImpl();
         MockServices.setServices(DelegatingSFBImpl.class);
-        SourceForBinaryQuery.Result2 res = SourceForBinaryQuery.findSourceRoots2(br1.getURL());
+        SourceForBinaryQuery.Result2 res = SourceForBinaryQuery.findSourceRoots2(br1.toURL());
         final AtomicBoolean fired = new AtomicBoolean ();
         ChangeListener l;
         res.addChangeListener( l = new ChangeListener() {

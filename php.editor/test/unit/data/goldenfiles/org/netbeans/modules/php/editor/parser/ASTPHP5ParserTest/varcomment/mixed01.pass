@@ -57,15 +57,9 @@
         <Statements>
             <ExpressionStatement start='36' end='54'>
                 <MethodInvocation start='36' end='53'>
-                    <FunctionInvocation start='44' end='53'>
-                        <FucntionName start='44' end='51'>
-                            <Variable start='44' end='51' isDollared='false'>
-                                <Identifier start='44' end='51' name='getCity'/>
-                            </Variable>
-                        </FucntionName>
-                        <Parameters>
-                        </Parameters>
-                    </FunctionInvocation>
+                    <Variable start='36' end='42' isDollared='true'>
+                        <Identifier start='37' end='42' name='hello'/>
+                    </Variable>
                     <FunctionInvocation start='44' end='53'>
                         <FucntionName start='44' end='51'>
                             <Variable start='44' end='51' isDollared='false'>

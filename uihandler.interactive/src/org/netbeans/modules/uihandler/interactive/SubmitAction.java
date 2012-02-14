@@ -67,6 +67,7 @@ import org.openide.awt.Actions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.CallableSystemAction;
@@ -106,6 +107,7 @@ public final class SubmitAction extends CallableSystemAction {
         private ImageIcon tacho;
         private ImageIcon tachoOk;
         private Timer timer;
+        private RequestProcessor logRecordsCountRP = new RequestProcessor("Log Records Count", 1);
         
         public NrButton(Action action) {
             Actions.connect(this, action);
@@ -151,7 +153,22 @@ public final class SubmitAction extends CallableSystemAction {
         
         
         @Override
-        public void setIcon(Icon original) {
+        public void setIcon(final Icon original) {
+            logRecordsCountRP.post(new Runnable() {
+                @Override
+                public void run() {
+                    final int logRecordsCount = Controller.getDefault().getLogRecordsCount();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            setIcon(original, logRecordsCount);
+                        }
+                    });
+                }
+            });
+        }
+            
+        private void setIcon(Icon original, int logRecordsCount) {
             int size = 16;
             Object prop = getClientProperty("PreferredIconSize"); //NOI18N
             
@@ -170,11 +187,11 @@ public final class SubmitAction extends CallableSystemAction {
             
             int half = size / 2;
             final Arc2D bigger = new Arc2D.Double();
-            bigger.setArcByCenter(half, half, half, 90, -(360.0 / 1000.0) * Controller.getDefault().getLogRecordsCount(), Arc2D.PIE);
+            bigger.setArcByCenter(half, half, half, 90, -(360.0 / 1000.0) * logRecordsCount, Arc2D.PIE);
             final Arc2D smaller = new Arc2D.Double();
             smaller.setArcByCenter(half, half, size == 24 ? 5.0 : 3.0, 0, 360, Arc2D.PIE);
               
-            int s = Controller.getDefault().getLogRecordsCount();
+            int s = logRecordsCount;
             if (s < 800) {
                 imgG.setColor(Color.RED.darker().darker());
             } else if (s < 990) {

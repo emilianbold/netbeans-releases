@@ -74,7 +74,7 @@ public class RunFileCommand extends Command implements Displayable {
         } else {
             // source
             ConfigAction configAction = getConfigAction();
-            if (!configAction.isValid(false)) {
+            if (!configAction.isFileValid()) {
                 // property not set yet
                 return;
             }

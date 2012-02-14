@@ -401,7 +401,7 @@ public final class SearchPanel extends JPanel
             new Object[] {okButton, cancelButton}, 
             okButton,
             DialogDescriptor.BOTTOM_ALIGN, 
-            new HelpCtx(getClass()),
+            new HelpCtx(getClass().getCanonicalName() + "." + new Boolean(searchAndReplace).toString()),
             this);
         dialogDescriptor.setTitle(NbBundle.getMessage(getClass(), titleMsgKey));
 

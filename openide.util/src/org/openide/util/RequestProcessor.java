@@ -1447,7 +1447,7 @@ outer:  do {
 
         void schedule(long delay) {
             if (stopped) {
-                throw new IllegalStateException("RequestProcessor already stopped!"); // NOI18N
+                return;
             }
 
             time = System.currentTimeMillis() + delay;
@@ -2115,7 +2115,9 @@ outer:  do {
             return nuova;
         }
 
-        private static final Set<Class<? extends Runnable>> warnedClasses = Collections.synchronizedSet(new WeakSet<Class<? extends Runnable>>());
+        private static final Map<Class<? extends Runnable>,Object> warnedClasses = Collections.synchronizedMap(
+            new WeakHashMap<Class<? extends Runnable>,Object>()
+        );
         private void registerParallel(Task todo, RequestProcessor rp) {
             if (rp.warnParallel == 0 || todo.run == null) {
                 return;
@@ -2133,7 +2135,7 @@ outer:  do {
                     number.incrementAndGet();
                 }
             }
-            if (number.get() >= rp.warnParallel && warnedClasses.add(c)) {
+            if (number.get() >= rp.warnParallel && warnedClasses.put(c, "") == null) {
                 final String msg = "Too many " + c.getName() + " (" + number + ") in shared RequestProcessor; create your own"; // NOI18N
                 Exception ex = null;
                 Item itm = todo.item;

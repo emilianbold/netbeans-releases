@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,10 +56,11 @@ import org.netbeans.modules.versioning.core.util.Utils;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.core.spi.VCSContext;
-import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
+import org.netbeans.modules.versioning.core.spi.*;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
+import org.netbeans.spi.queries.CollocationQueryImplementation2;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -87,6 +89,8 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
     private VCSAnnotator annotator;
     private VCSVisibilityQuery visibilityQuery;
     private VCSInterceptor interceptor;
+    private CollocationQueryImplementation2 collocationQuery;
+    private VCSHistoryProvider historyProvider;
     
     private DelegatingVCS(Map<?, ?> map) {
         this.map = map;
@@ -126,28 +130,27 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
     }
     
     @Override
-    public org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery getVisibilityQuery() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public org.netbeans.modules.versioning.core.spi.VCSInterceptor getVCSInterceptor() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public org.netbeans.modules.versioning.core.spi.VCSAnnotator getVCSAnnotator() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public void getOriginalFile(VCSFileProxy workingCopy, VCSFileProxy originalFile) {
         getDelegate().getOriginalFile(workingCopy.toFile(), originalFile.toFile());
     }
 
     @Override
-    public CollocationQueryImplementation getCollocationQueryImplementation() {
-        return getDelegate().getCollocationQueryImplementation();
+    public CollocationQueryImplementation2 getCollocationQueryImplementation() {
+        if(collocationQuery == null) {
+            collocationQuery = new CollocationQueryImplementation2() {
+                private CollocationQueryImplementation cqi = getDelegate().getCollocationQueryImplementation();
+                @Override
+                public boolean areCollocated(URI uri1, URI uri2) {
+                    return cqi != null && cqi.areCollocated(new File(uri1), new File(uri2));
+                }
+                @Override
+                public URI findRoot(URI uri) {
+                    File file = cqi != null ? cqi.findRoot(new File(uri)) : null;
+                    return file != null ? file.toURI() : null;
+                }
+            };
+        } 
+        return collocationQuery;        
     }
 
     @Override
@@ -219,7 +222,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
     }
 
     @Override
-    public VCSAnnotator getAnnotator() {
+    public VCSAnnotator getVCSAnnotator() {
         if(annotator == null && getDelegate().getVCSAnnotator() != null) {
             annotator = new VCSAnnotator() {
                 @Override
@@ -256,7 +259,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
     }
     
     @Override
-    public VCSVisibilityQuery getVisibility() { 
+    public VCSVisibilityQuery getVisibilityQuery() { 
         if(visibilityQuery == null && getDelegate().getVisibilityQuery() != null) {
             visibilityQuery = new VCSVisibilityQuery() {
                 @Override
@@ -269,7 +272,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
     }
     
     @Override
-    public VCSInterceptor getInterceptor() {
+    public VCSInterceptor getVCSInterceptor() {
         if(interceptor == null && getDelegate().getVCSInterceptor() != null) {
             interceptor = new VCSInterceptor() {
 
@@ -371,6 +374,14 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
         }
         return interceptor;
     }
+
+    @Override
+    public VCSHistoryProvider getVCSHistoryProvider() {
+        if(historyProvider == null && getDelegate().getVCSHistoryProvider() != null) {
+            historyProvider = new DelegatingHistoryProvider();
+        }
+        return historyProvider;
+    }
     
     @Override
     public boolean accept(VCSContext ctx) {
@@ -413,7 +424,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
     
     private Action[] getActions(org.netbeans.modules.versioning.core.spi.VCSContext ctx, VCSAnnotator.ActionDestination actionDestination) {       
         if(map == null || isAlive()) {
-            VCSAnnotator tmp = getAnnotator();
+            VCSAnnotator tmp = getVCSAnnotator();
             return tmp != null ? tmp.getActions(ctx, actionDestination) : new Action[0];
         } else {
             Action[] ia = getInitActions(ctx);
@@ -546,6 +557,105 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
             return VCSFileProxy.createFileProxy(f);
         }
         return null;
+    }
+    
+    private class DelegatingHistoryProvider implements VCSHistoryProvider {
+        @Override
+        public void addHistoryChangeListener(final HistoryChangeListener l) {
+            getDelegate().getVCSHistoryProvider().addHistoryChangeListener(new DelegateChangeListener(l));
+        }
+
+        @Override
+        public void removeHistoryChangeListener(final org.netbeans.modules.versioning.core.spi.VCSHistoryProvider.HistoryChangeListener l) {
+            getDelegate().getVCSHistoryProvider().removeHistoryChangeListener(new DelegateChangeListener(l));
+        }
+
+        @Override
+        public HistoryEntry[] getHistory(VCSFileProxy[] proxies, Date fromDate) {
+            File[] files = toFiles(proxies);
+            final org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry[] history = getDelegate().getVCSHistoryProvider().getHistory(files, fromDate);
+            HistoryEntry[] proxyHistory = new HistoryEntry[history.length];
+            for (int i = 0; i < proxyHistory.length; i++) {
+                final org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry he = history[i];
+                RevisionProvider rp = new RevisionProvider() {
+                    @Override
+                    public void getRevisionFile(VCSFileProxy originalFile, VCSFileProxy revisionFile) {
+                        org.netbeans.modules.versioning.spi.VCSHistoryProvider.RevisionProvider provider = Accessor.IMPL.getRevisionProvider(he);
+                        if(provider != null) {
+                            File of = originalFile.toFile();
+                            File rf = revisionFile.toFile();
+                            if(of != null && rf != null) {
+                                provider.getRevisionFile(of, rf);
+                            }
+                        }
+                    }
+                };
+                proxyHistory[i] = 
+                    new HistoryEntry(
+                        proxies, 
+                        he.getDateTime(), 
+                        he.getMessage(), 
+                        he.getUsername(), 
+                        he.getUsernameShort(), 
+                        he.getRevision(), 
+                        he.getRevisionShort(), 
+                        he.getActions(), 
+                        rp);
+            }
+            return proxyHistory;
+        }
+
+        @Override
+        public Action createShowHistoryAction(VCSFileProxy[] proxies) {
+            File[] files = toFiles(proxies);
+            return getDelegate().getVCSHistoryProvider().createShowHistoryAction(files);
+        }
+
+        private class DelegateChangeListener implements org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryChangeListener {
+            private final VCSHistoryProvider.HistoryChangeListener delegate;
+            public DelegateChangeListener(HistoryChangeListener delegate) {
+                this.delegate = delegate;
+            }
+            @Override
+            public void fireHistoryChanged(org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEvent evt) {
+                delegate.fireHistoryChanged(new VCSHistoryProvider.HistoryEvent(DelegatingHistoryProvider.this, toProxies(evt.getFiles())));
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if(!(obj instanceof DelegateChangeListener)) {
+                    return false;
+                }
+                DelegateChangeListener d = (DelegateChangeListener) obj;
+                return d.delegate.equals(delegate);
+            }
+
+            @Override
+            public int hashCode() {
+                int hash = 3;
+                hash = 89 * hash + (this.delegate != null ? this.delegate.hashCode() : 0);
+                return hash;
+            }
+            
+        }
+    }
+    private File[] toFiles(VCSFileProxy[] proxies) {
+        File[] files = new File[proxies.length];
+        for (int i = 0; i < files.length; i++) {
+            files[i] = proxies[i].toFile();
+            assert files[i] != null;
+        }
+        return files;
+    }
+    private VCSFileProxy[] toProxies(File[] files) {
+        VCSFileProxy[] proxies = new VCSFileProxy[files.length];
+        for (int i = 0; i < files.length; i++) {
+            assert files[i] != null;
+            if(files[i] != null) {
+                proxies[i] = VCSFileProxy.createFileProxy(files[i]);
+            }
+        }
+        return proxies;
     }
     
 }

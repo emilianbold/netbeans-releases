@@ -56,6 +56,10 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Zezula
  */
+@NavigatorPanel.Registrations({
+    @NavigatorPanel.Registration(mimeType="text/x-java", position=100, displayName="#LBL_members"),
+    @NavigatorPanel.Registration(mimeType="application/x-class-file", displayName="#LBL_members")
+})
 public class ClassMemberPanel implements NavigatorPanel {
 
     private ClassMemberPanelUI component;

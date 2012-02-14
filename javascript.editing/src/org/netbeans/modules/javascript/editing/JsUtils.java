@@ -31,17 +31,18 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.io.IOException;
-import java.io.Writer;
 import javax.swing.text.Document;
 import org.mozilla.nb.javascript.Node;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tor Norbye
  */
+@MIMEResolver.Registration(displayName="#JavascriptResolver", position=190, resource="jsresolver.xml")
 public class JsUtils {
 
     private JsUtils() {

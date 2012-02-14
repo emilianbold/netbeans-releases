@@ -45,8 +45,8 @@ package org.netbeans.libs.git;
 import org.eclipse.jgit.lib.ObjectId;
 
 /**
- *
- * @author ondra
+ * 
+ * @author Ondra Vrabec
  */
 public final class GitBranch {
 

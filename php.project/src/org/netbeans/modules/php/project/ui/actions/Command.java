@@ -46,7 +46,6 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -82,11 +81,6 @@ public abstract class Command {
 
     public final PhpProject getProject() {
         return project;
-    }
-
-    protected boolean isScriptSelected() {
-        PhpProjectProperties.RunAsType runAs = ProjectPropertiesSupport.getRunAs(project);
-        return PhpProjectProperties.RunAsType.SCRIPT.equals(runAs);
     }
 
     protected ConfigAction getConfigAction() {

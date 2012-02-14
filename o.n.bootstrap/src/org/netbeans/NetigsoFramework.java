@@ -44,13 +44,10 @@ package org.netbeans;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.net.URL;
+import java.util.*;
 import org.openide.modules.ModuleInfo;
+import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -60,7 +57,8 @@ import org.openide.util.lookup.Lookups;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public abstract class NetigsoFramework {
-
+    private ModuleManager mgr;
+    
     protected NetigsoFramework() {
         if (!getClass().getName().equals("org.netbeans.core.netigso.Netigso")) { // NOI18N
             throw new IllegalStateException();
@@ -99,6 +97,19 @@ public abstract class NetigsoFramework {
         ModuleInfo m, ProxyClassLoader pcl, File jar
     ) throws IOException;
 
+    /**
+     * Find given resource inside provide module representing an OSGi bundle.
+     * The search should happen without resolving the bundle, if possible. E.g.
+     * by using <code>Bundle.getEntry</code>.
+     * @param resName  name of the resource to seek for
+     * @return empty enumeration or enumeration with one element.
+     * @since 2.49
+     */
+    protected Enumeration<URL> findResources(Module module, String resName) {
+        return Enumerations.empty();
+    }
+
+    
     /** Reloads one module
      * @since 2.27
      */
@@ -143,6 +154,26 @@ public abstract class NetigsoFramework {
         return JarClassLoader.archive.getData(resources, name);
     }
 
+    /** Creates a delegating loader for given module. The loader is suitable
+     * for use as a delegating loader for a fake OSGi bundle.
+     * @param cnb name of the bundle/module
+     * @return classloader or null if the module does not exist
+     * @since 2.50
+     */
+    protected final ClassLoader createClassLoader(String cnb) {
+        Module m = findModule(cnb);
+        return m == null ? null : new NetigsoLoader(m);
+    }
+    
+    /** Finds module for given name.
+     * @param cnb code name base of the module
+     * @return the module or null
+     * @since 2.50
+     */
+    protected final Module findModule(String cnb) {
+        return mgr.get(cnb);
+    }
+
     //
     // Implementation
     //
@@ -159,7 +190,7 @@ public abstract class NetigsoFramework {
         toEnable.addAll(newlyEnabling);
     }
 
-    static Set<Module> turnOn(ClassLoader findNetigsoFrameworkIn, Collection<Module> allModules) throws InvalidException {
+    static Set<Module> turnOn(ModuleManager mgr, ClassLoader findNetigsoFrameworkIn, Collection<Module> allModules) throws InvalidException {
         boolean found = false;
         if (framework == null) {
             for (Module m : toEnable) {
@@ -179,6 +210,7 @@ public abstract class NetigsoFramework {
         if (framework == null) {
             throw new IllegalStateException("No NetigsoFramework found, is org.netbeans.core.netigso module enabled?"); // NOI18N
         }
+        framework.mgr = mgr;
         getDefault().prepare(lkp, allModules);
         toEnable.clear();
         toEnable.trimToSize();

@@ -57,6 +57,7 @@ import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -179,15 +180,31 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 helper.isGenerateJAXBAnnotations(),
                 helper.isGenerateValidationConstraints(),
                 helper.isFullyQualifiedTableNames(), helper.isRegenTablesAttrs(),
+                helper.isUseDefaults(),
                 helper.getFetchType(), helper.getCollectionType(),
                 handle, progressPanel, helper.getProject());
     }
 
-    // package private for tests
+             // package private for tests
     void generateBeans(EntityClass[] entityClasses, boolean generateNamedQueries,
             boolean generateJAXBAnnotations,
             boolean generateValidationConstraints,
             boolean fullyQualifiedTableNames, boolean regenTablesAttrs,
+            FetchType fetchType, CollectionType collectionType,
+            ProgressContributor progressContributor, ProgressPanel panel, Project prj) throws IOException {
+        
+        generateBeans(entityClasses, generateNamedQueries, generateJAXBAnnotations, 
+                generateValidationConstraints, fullyQualifiedTableNames, regenTablesAttrs, 
+                false, fetchType, collectionType, progressContributor, panel, prj);
+        
+    }
+            
+
+    private void generateBeans(EntityClass[] entityClasses, boolean generateNamedQueries,
+            boolean generateJAXBAnnotations,
+            boolean generateValidationConstraints,
+            boolean fullyQualifiedTableNames, boolean regenTablesAttrs,
+            boolean useDefaults,
             FetchType fetchType, CollectionType collectionType,
             ProgressContributor progressContributor, ProgressPanel panel, Project prj) throws IOException {
 
@@ -211,6 +228,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 generateJAXBAnnotations,
                 generateValidationConstraints,
                 fullyQualifiedTableNames, regenTablesAttrs,
+                useDefaults,
                 fetchType, collectionType,
                 progressContributor, panel, this).run();
         addToPersistenceUnit(result);
@@ -348,11 +366,13 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         private final Set<FileObject> generatedEntityFOs;
         private final Set<FileObject> generatedFOs;
         private final PersistenceGenerator persistenceGen;
+        private final boolean useDefaults;
 
         public Generator(EntityClass[] entityClasses, boolean generateNamedQueries,
                 boolean generateJAXBAnnotations,
                 boolean generateValidationConstraints,
                 boolean fullyQualifiedTableNames, boolean regenTablesAttrs,
+                boolean useDefaults,
                 FetchType fetchType, CollectionType collectionType,
                 ProgressContributor progressContributor, ProgressPanel progressPanel,
                 PersistenceGenerator persistenceGen) {
@@ -361,6 +381,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             this.generateJAXBAnnotations = generateJAXBAnnotations;
             this.generateValidationConstraints = generateValidationConstraints;
             this.fullyQualifiedTableNames = fullyQualifiedTableNames;
+            this.useDefaults = useDefaults;
             this.regenTablesAttrs = regenTablesAttrs;
             this.fetchType = fetchType;
             this.collectionType = collectionType;
@@ -375,6 +396,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             try {
                 runImpl();
             } catch (IOException e) {
+                Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.INFO, "IOException, remove generated."); //NOI18N 
                 for (FileObject generatedFO : generatedFOs) {
                     generatedFO.delete();
                 }
@@ -652,7 +674,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 String memberType = getMemberType(m);
 
                 String columnName = (String) dbMappings.getCMPFieldMapping().get(memberName);
-                columnAnnArguments.add(genUtils.createAnnotationArgument("name", columnName)); //NOI18N
+                if(!useDefaults || !memberName.equalsIgnoreCase(columnName)){
+                    columnAnnArguments.add(genUtils.createAnnotationArgument("name", columnName)); //NOI18N
+                }
 
                 if (regenTablesAttrs && !m.isNullable()) {
                     columnAnnArguments.add(genUtils.createAnnotationArgument("nullable", false)); //NOI18N
@@ -705,7 +729,11 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     }
                 }
 
-                annotations.add(genUtils.createAnnotation("javax.persistence.Column", columnAnnArguments)); //NOI18N
+                if(useDefaults && (columnAnnArguments == null || columnAnnArguments.isEmpty())){
+                    //skip default
+                } else {
+                    annotations.add(genUtils.createAnnotation("javax.persistence.Column", columnAnnArguments)); //NOI18N
+                }
 
                 String temporalType = getMemberTemporalType(m);
                 if (temporalType != null) {
@@ -875,9 +903,23 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                         make.addComment(field, comment, true);
                     }
                     if (xmlTransient) {
-                        AnnotationTree xmlTransientAn = genUtils.createAnnotation("javax.xml.bind.annotation.XmlTransient"); //NOI18N
+                        AnnotationTree xmlTransientAn = genUtils.createAnnotation(
+                                "javax.xml.bind.annotation.XmlTransient"); //NOI18N
+                        TypeElement jsonIgnore = copy.getElements().getTypeElement(
+                            "org.codehaus.jackson.annotate.JsonIgnore");    // NOI18N
+                        List<AnnotationTree> annotationTrees = null;
+                        if ( jsonIgnore == null ){
+                            annotationTrees = Collections.singletonList(xmlTransientAn);
+                        }
+                        else {
+                            AnnotationTree jsonIgnoreAn = genUtils.createAnnotation(
+                                jsonIgnore.getQualifiedName().toString());
+                            annotationTrees = new ArrayList<AnnotationTree>(2);
+                            annotationTrees.add( xmlTransientAn);
+                            annotationTrees.add(jsonIgnoreAn);
+                        }
                         getter = genUtils.createPropertyGetterMethod(
-                                make.Modifiers(EnumSet.of(Modifier.PUBLIC), Collections.<AnnotationTree>singletonList(xmlTransientAn)),
+                                make.Modifiers(EnumSet.of(Modifier.PUBLIC), annotationTrees ),
                                 name,
                                 typeTree);
                     } else {
@@ -956,12 +998,14 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             private HashMap<TypeMirror, ArrayList<String>> existingJoinColumnss = new HashMap<TypeMirror, ArrayList<String>>();
             private HashMap<String, ArrayList<String>> existingJoinTables = new HashMap<String, ArrayList<String>>();
             private HashMap<String, Tree> existingMappings = new HashMap<String, Tree>();
+            private final boolean useDefaults;
 
             public EntityClassGenerator(WorkingCopy copy, EntityClass entityClass) throws IOException {
                 super(copy, entityClass);
                 entityClassName = entityClass.getClassName();
                 assert typeElement.getSimpleName().contentEquals(entityClassName);
                 entityFQClassName = entityClass.getPackage() + "." + entityClassName;
+                this.useDefaults = entityClass.getUseDefaults();
             }
 
             @Override
@@ -986,7 +1030,11 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 } else {
                     newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Entity")); // NOI18N
                     List<ExpressionTree> tableAnnArgs = new ArrayList<ExpressionTree>();
-                    tableAnnArgs.add(genUtils.createAnnotationArgument("name", dbMappings.getTableName())); // NOI18N
+                    if(useDefaults && entityClassName.equalsIgnoreCase(dbMappings.getTableName())){
+                        //skip
+                    } else {
+                        tableAnnArgs.add(genUtils.createAnnotationArgument("name", dbMappings.getTableName())); // NOI18N
+                    }
                     if (fullyQualifiedTableNames) {
                         String schemaName = entityClass.getSchemaName();
                         String catalogName = entityClass.getCatalogName();
@@ -1016,7 +1064,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                         tableAnnArgs.add(genUtils.createAnnotationArgument("uniqueConstraints", uniqueConstraintAnnotations)); // NOI18N
                     }
 
-                    newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Table", tableAnnArgs));
+                    if(!useDefaults || !tableAnnArgs.isEmpty()) newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Table", tableAnnArgs));
 
                     if (generateJAXBAnnotations) {
                         newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.xml.bind.annotation.XmlRootElement"));

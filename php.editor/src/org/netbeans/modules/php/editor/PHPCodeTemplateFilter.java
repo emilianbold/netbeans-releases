@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.editor;
 
+import javax.swing.text.Document;
 import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -74,13 +75,13 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
     private static final RequestProcessor requestProcessor = new RequestProcessor("PHPCodeTemplateFilter");//NOI18N
     private final Future<Future<Void>> future;
 
-    public PHPCodeTemplateFilter(final JTextComponent component, final int offset) {
+    public PHPCodeTemplateFilter(final Document document, final int offset) {
         this.caretOffset = offset;
         future = requestProcessor.submit(new Callable<Future<Void>>() {
             @Override
             public Future<Void> call() {
                 try {
-                    return parseDocument(component);
+                    return parseDocument(document);
                 } catch (ParseException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -93,12 +94,12 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
     public boolean accept(CodeTemplate template) {
         try {
             future.get(300, TimeUnit.MILLISECONDS).get(300, TimeUnit.MILLISECONDS);
-            if (context == CompletionContext.CLASS_CONTEXT_KEYWORDS) {
+            if (template.getContexts() != null && !template.getContexts().isEmpty() && context == CompletionContext.CLASS_CONTEXT_KEYWORDS) {
                 String abbrev = template.getAbbreviation();
                 return "fnc".equals(abbrev) || "fcom".equals(abbrev); //NOI18N
             }
             return accept;
-            
+
         } catch (TimeoutException ex) {
         } catch (InterruptedException ex) {
         } catch (ExecutionException ee) {
@@ -139,11 +140,11 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
 
         @Override
         public CodeTemplateFilter createFilter(JTextComponent component, int offset) {
-            return new PHPCodeTemplateFilter(component, offset);
+            return new PHPCodeTemplateFilter(component.getDocument(), offset);
         }
     }
 
-    private Future<Void> parseDocument(final JTextComponent component) throws ParseException {
-        return ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(component.getDocument())), this);
+    private Future<Void> parseDocument(final Document document) throws ParseException {
+        return ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(document)), this);
     }
 }

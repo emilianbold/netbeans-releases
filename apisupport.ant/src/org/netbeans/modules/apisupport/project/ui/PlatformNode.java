@@ -58,13 +58,11 @@ import java.util.ArrayList;
 import java.util.Set;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
@@ -72,7 +70,6 @@ import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.ErrorManager;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -205,10 +202,9 @@ final class PlatformNode extends AbstractNode implements ChangeListener {
             FileObject[] roots = platform.getBootstrapLibraries().getRoots();
             List<SourceGroup> result = new ArrayList<SourceGroup>(roots.length);
             for (int i=0; i<roots.length; i++) {
-                try {
                     FileObject file;
                     Icon icon;
-                    if ("jar".equals(roots[i].getURL().getProtocol())) { //NOI18N
+                    if ("jar".equals(roots[i].toURL().getProtocol())) { //NOI18N
                         file = FileUtil.getArchiveFile(roots[i]);
                         icon = ImageUtilities.loadImageIcon(ARCHIVE_ICON, false);
                     } else {
@@ -218,9 +214,6 @@ final class PlatformNode extends AbstractNode implements ChangeListener {
                     if (file.isValid()) {
                         result.add(new LibrariesSourceGroup(roots[i], file.getNameExt(), icon, icon));
                     }
-                } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(e);
-                }
             }
             return result;
         }

@@ -54,7 +54,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.*;
-import org.netbeans.api.java.source.*;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.openide.filesystems.FileObject;
@@ -141,21 +144,25 @@ public final class JavaPluginUtils {
         return true;
     }
     
-    public static Problem chainProblems(Problem p, Problem p1) {
-        Problem problem;
-
-        if (p == null) {
-            return p1;
+    public static Problem chainProblems(Problem result, Problem problem) {
+        if (result == null) {
+            return problem;
         }
-        if (p1 == null) {
-            return p;
+        if (problem == null) {
+            return result;
         }
-        problem = p;
-        while (problem.getNext() != null) {
-            problem = problem.getNext();
+        Problem value;
+        if(problem.isFatal()) {
+            problem.setNext(result);
+            value = problem;
+        } else {
+            Problem next = value = result;
+            while (next.getNext() != null) {
+                next = next.getNext();
+            }
+            next.setNext(problem);
         }
-        problem.setNext(p1);
-        return p;
+        return value;
     }
     
     /**

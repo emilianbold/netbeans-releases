@@ -274,7 +274,7 @@ public class HgConfigFiles {
         return inisection.containsKey(name);
     }
 
-    private void doReload () {
+    public void doReload () {
         if (dir == null) {
             if(!bIsProjectConfig && Utilities.isWindows()) {
                 // on windows both Mercurial.ini and .hgrc are allowed

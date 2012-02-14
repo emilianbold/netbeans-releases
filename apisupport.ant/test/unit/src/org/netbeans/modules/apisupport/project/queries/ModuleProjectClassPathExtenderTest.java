@@ -106,7 +106,7 @@ public class ModuleProjectClassPathExtenderTest extends NbTestCase {
         FileObject testsrc = clientprj.getTestSourceDirectory("unit");
         assertTrue(ProjectClassPathModifier.addLibraries(new Library[] {testlib}, testsrc, ClassPath.COMPILE));
         assertFalse(ProjectClassPathModifier.addLibraries(new Library[] {testlib}, testsrc, ClassPath.COMPILE));
-        InputSource input = new InputSource(clientprj.getProjectDirectory().getFileObject("nbproject/project.xml").getURL().toString());
+        InputSource input = new InputSource(clientprj.getProjectDirectory().getFileObject("nbproject/project.xml").toURL().toString());
         XPath xpath = XPathFactory.newInstance().newXPath();
         xpath.setNamespaceContext(nbmNamespaceContext());
         assertEquals("org.example.client", xpath.evaluate("//nbm:data/nbm:code-name-base", input)); // control
@@ -118,18 +118,18 @@ public class ModuleProjectClassPathExtenderTest extends NbTestCase {
         NbModuleProject prj = TestBase.generateStandaloneModule(getWorkDir(), "module");
         FileObject src = prj.getSourceDirectory();
         FileObject jar = TestFileUtils.writeZipFile(FileUtil.toFileObject(getWorkDir()), "a.jar", "entry:contents");
-        URL root = FileUtil.getArchiveRoot(jar.getURL());
+        URL root = FileUtil.getArchiveRoot(jar.toURL());
         assertTrue(ProjectClassPathModifier.addRoots(new URL[] {root}, src, ClassPath.COMPILE));
         assertFalse(ProjectClassPathModifier.addRoots(new URL[] {root}, src, ClassPath.COMPILE));
         FileObject releaseModulesExt = prj.getProjectDirectory().getFileObject("release/modules/ext");
         assertNotNull(releaseModulesExt);
         assertNotNull(releaseModulesExt.getFileObject("a.jar"));
         jar = TestFileUtils.writeZipFile(releaseModulesExt, "b.jar", "entry2:contents");
-        root = FileUtil.getArchiveRoot(jar.getURL());
+        root = FileUtil.getArchiveRoot(jar.toURL());
         assertTrue(ProjectClassPathModifier.addRoots(new URL[] {root}, src, ClassPath.COMPILE));
         assertFalse(ProjectClassPathModifier.addRoots(new URL[] {root}, src, ClassPath.COMPILE));
         assertEquals(2, releaseModulesExt.getChildren().length);
-        String projectXml = prj.getProjectDirectory().getFileObject("nbproject/project.xml").getURL().toString();
+        String projectXml = prj.getProjectDirectory().getFileObject("nbproject/project.xml").toURL().toString();
         InputSource input = new InputSource(projectXml);
         XPath xpath = XPathFactory.newInstance().newXPath();
         xpath.setNamespaceContext(nbmNamespaceContext());

@@ -183,6 +183,7 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
     
     private boolean isSubtype(final String className1, final String className2) throws IOException {
         FileObject ejbClassFO = model.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
+            @Override
             public FileObject run(EjbJarMetadata metadata) throws Exception {
                 return metadata.findResource(Utils.toResourceName(ejbClass));
             }
@@ -190,11 +191,14 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
         JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
         final boolean[] result = new boolean[] {false};
         javaSource.runUserActionTask(new Task<CompilationController>() {
+            @Override
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement1 = controller.getElements().getTypeElement(className1);
                 TypeElement typeElement2 = controller.getElements().getTypeElement(className2);
-                result[0] = controller.getTypes().isSubtype(typeElement1.asType(), typeElement2.asType());
+                if (typeElement1 != null && typeElement2 != null) {
+                    result[0] = controller.getTypes().isSubtype(typeElement1.asType(), typeElement2.asType());
+                }
             }
         }, true);
         return result[0];

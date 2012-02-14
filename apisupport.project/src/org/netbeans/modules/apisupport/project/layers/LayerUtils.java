@@ -64,7 +64,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
@@ -74,13 +73,11 @@ import org.netbeans.tax.TreeDocumentRoot;
 import org.netbeans.tax.TreeException;
 import org.netbeans.tax.TreeObject;
 import org.netbeans.tax.io.TreeStreamResult;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
@@ -125,13 +122,12 @@ public class LayerUtils {
         if (cp == null) {
             return new URL[] {u};
         }
-        try {
             if (u.getProtocol().equals("nbres")) { // NOI18N
                 String path = u.getFile();
                 if (path.startsWith("/")) path = path.substring(1); // NOI18N
                 FileObject fo = cp.findResource(path);
                 if (fo != null) {
-                    return new URL[] {fo.getURL()};
+                    return new URL[] {fo.toURL()};
                 }
             } else if (u.getProtocol().equals("nbresloc")) { // NOI18N
                 List<URL> urls = new ArrayList<URL>();
@@ -164,16 +160,13 @@ public class LayerUtils {
                     String trypath = folder + name + trysuffix + ext;
                     FileObject fo = cp.findResource(trypath);
                     if (fo != null) {
-                        urls.add(fo.getURL());
+                        urls.add(fo.toURL());
                     }
                 }
                 if (!urls.isEmpty()) {
                     return urls.toArray(new URL[urls.size()]);
                 }
             }
-        } catch (FileStateInvalidException fsie) {
-            Util.err.notify(ErrorManager.WARNING, fsie);
-        }
         return new URL[] {u};
     }
 
@@ -259,7 +252,7 @@ public class LayerUtils {
                     //System.err.println("openDocumentRoot: really opening");
                     boolean oldDirty = dirty;
                     int oldStatus = getStatus();
-                    root = new XMLParsingSupport().parse(new InputSource(f.getURL().toExternalForm()));
+                    root = new XMLParsingSupport().parse(new InputSource(f.toURL().toExternalForm()));
                     problem = null;
                     dirty = false;
                     pcs.firePropertyChange(PROP_DIRTY, oldDirty, false);

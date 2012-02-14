@@ -87,6 +87,7 @@ public final class PhpUnitTestGroupsFetcher {
     private static final Logger LOGGER = Logger.getLogger(PhpUnitTestGroupsFetcher.class.getName());
     private static final String TEST_GROUPS_DELIMITER = ","; // NOI18N
 
+    private final PhpProject project;
     // @GuardedBy(phpPropertiesLock)
     private final PhpProjectProperties phpProperties;
     private final Lock phpPropertiesLock = new ReentrantLock();
@@ -98,6 +99,7 @@ public final class PhpUnitTestGroupsFetcher {
     private volatile boolean wasInterrupted = false;
 
     public PhpUnitTestGroupsFetcher(PhpProject project) {
+        this.project = project;
         phpProperties = new PhpProjectProperties(project);
     }
 
@@ -116,7 +118,7 @@ public final class PhpUnitTestGroupsFetcher {
 
     @NbBundle.Messages("LBL_FetchingTestGroups=Fetching Test Groups...")
     private Collection<String> fetchAllTestGroups(File workingDirectory) {
-        final PhpUnit phpUnit = CommandUtils.getPhpUnit(true);
+        final PhpUnit phpUnit = CommandUtils.getPhpUnit(project, true);
         if (phpUnit == null) {
             // in fact, should not happen
             assert false : "Valid PhpUnit should already be found";

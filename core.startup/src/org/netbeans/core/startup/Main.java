@@ -58,7 +58,6 @@ import org.netbeans.ProxyURLStreamHandlerFactory;
 import org.netbeans.Stamps;
 import org.netbeans.Util;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.modules.InstalledFileLocator;
@@ -133,11 +132,7 @@ public final class Main extends Object {
                         themeURL = null;
                     }
                } else {
-                    try {
-                        themeURL = fo.getURL();
-                    } catch (FileStateInvalidException fsie) {
-                        //do nothing
-                    }
+                   themeURL = fo.toURL();
                }
           }
       } finally {

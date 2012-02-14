@@ -44,12 +44,13 @@
 
 package org.netbeans.modules.masterfs;
 
-import java.io.File;
+import java.net.URI;
 import java.util.Collection;
 import org.netbeans.api.queries.SharabilityQuery;
-import org.netbeans.spi.queries.SharabilityQueryImplementation;
+import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Provides implementation of <code>SharabilityQueryImplementation</code> that
@@ -61,21 +62,16 @@ import org.openide.util.Lookup;
  *
  * @author Radek Matous
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.SharabilityQueryImplementation.class, position=0)
-public class GlobalSharabilityQueryImpl implements SharabilityQueryImplementation {
+@ServiceProvider(service=SharabilityQueryImplementation2.class, position=0)
+public class GlobalSharabilityQueryImpl implements SharabilityQueryImplementation2 {
     private GlobalVisibilityQueryImpl visibilityQuery;
-    /** Creates a new instance of GlobalSharabilityQueryImpl */
-    public GlobalSharabilityQueryImpl() {
-    }
 
-    @Override
-    public int getSharability(final File file) {
+    @Override public SharabilityQuery.Sharability getSharability(URI uri) {
         if (visibilityQuery == null) {
-            Lookup.Result result = Lookup.getDefault().lookup(new Lookup.Template(VisibilityQueryImplementation.class));
-            Collection allInstance = result.allInstances();
+            Collection<? extends VisibilityQueryImplementation> allInstance = Lookup.getDefault().lookupAll(VisibilityQueryImplementation.class);
             assert allInstance.contains(GlobalVisibilityQueryImpl.INSTANCE) : "Missing GVQI: " + allInstance;
             visibilityQuery = GlobalVisibilityQueryImpl.INSTANCE;
         }
-        return (visibilityQuery.isVisible(file.getName())) ? SharabilityQuery.UNKNOWN : SharabilityQuery.NOT_SHARABLE;
+        return (visibilityQuery.isVisible(uri.toString().replaceFirst(".+/", ""))) ? SharabilityQuery.Sharability.UNKNOWN : SharabilityQuery.Sharability.NOT_SHARABLE;
     }    
 }

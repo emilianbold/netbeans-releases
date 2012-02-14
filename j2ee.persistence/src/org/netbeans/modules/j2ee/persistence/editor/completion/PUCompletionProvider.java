@@ -172,16 +172,16 @@ public class PUCompletionProvider implements CompletionProvider {
 
             switch (context.getCompletionType()) {
                 case ATTRIBUTE_VALUE:
-                    //anchorOffset = HibernateCfgCompletionManager.getDefault().completeAttributeValues(context, completionItems);
+                    anchorOffset = PUCompletionManager.getDefault().completeAttributeValues(context, completionItems);
                     break;
                 case ATTRIBUTE:
-                    //anchorOffset = HibernateCfgCompletionManager.getDefault().completeAttributes(context, completionItems);
+                    anchorOffset = PUCompletionManager.getDefault().completeAttributes(context, completionItems);
                     break;
                 case TAG:
-                    //anchorOffset = HibernateCfgCompletionManager.getDefault().completeElements(context, completionItems);
+                    anchorOffset = PUCompletionManager.getDefault().completeElements(context, completionItems);
                     break;
                 case VALUE:
-                    //anchorOffset = HibernateCfgCompletionManager.getDefault().completeValues(context, completionItems);
+                    anchorOffset = PUCompletionManager.getDefault().completeValues(context, completionItems);
                     break;
             }
 

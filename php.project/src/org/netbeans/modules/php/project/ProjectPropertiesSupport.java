@@ -52,10 +52,11 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions;
+import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.netbeans.modules.php.project.ui.BrowseTestSources;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.api.util.Pair;
+import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -99,15 +100,15 @@ public final class ProjectPropertiesSupport {
         project.addWeakIgnoredFilesListener(listener);
     }
 
-    public static boolean addWeakPropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
+    public static boolean addWeakProjectPropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
         return project.addWeakPropertyChangeListener(listener);
     }
 
-    public static void addPropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
+    public static void addProjectPropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
         project.addPropertyChangeListener(listener);
     }
 
-    public static void removePropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
+    public static void removeProjectPropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
         project.removePropertyChangeListener(listener);
     }
 
@@ -161,6 +162,10 @@ public final class ProjectPropertiesSupport {
         return seleniumDirectory;
     }
 
+    public static String getWebRoot(PhpProject project) {
+        return project.getEvaluator().getProperty(PhpProjectProperties.WEB_ROOT);
+    }
+
     public static FileObject getWebRootDirectory(PhpProject project) {
         return project.getWebRootDirectory();
     }
@@ -178,12 +183,20 @@ public final class ProjectPropertiesSupport {
         return sources;
     }
 
-    public static PhpInterpreter getPhpInterpreter(PhpProject project) throws InvalidPhpProgramException {
+    public static PhpInterpreter getValidPhpInterpreter(PhpProject project) throws InvalidPhpProgramException {
         String interpreter = project.getEvaluator().getProperty(PhpProjectProperties.INTERPRETER);
         if (StringUtils.hasText(interpreter)) {
             return PhpInterpreter.getCustom(interpreter);
         }
         return PhpInterpreter.getDefault();
+    }
+
+    public static String getPhpInterpreter(PhpProject project) {
+        String interpreter = project.getEvaluator().getProperty(PhpProjectProperties.INTERPRETER);
+        if (StringUtils.hasText(interpreter)) {
+            return interpreter;
+        }
+        return PhpOptions.getInstance().getPhpInterpreter();
     }
 
     public static boolean isCopySourcesEnabled(PhpProject project) {
@@ -206,26 +219,26 @@ public final class ProjectPropertiesSupport {
     }
 
     public static boolean areShortTagsEnabled(PhpProject project) {
-        return getBoolean(project, PhpProjectProperties.SHORT_TAGS, PhpLanguageOptions.SHORT_TAGS_ENABLED);
+        return getBoolean(project, PhpProjectProperties.SHORT_TAGS, PhpLanguageProperties.SHORT_TAGS_ENABLED);
     }
 
     public static boolean areAspTagsEnabled(PhpProject project) {
-        return getBoolean(project, PhpProjectProperties.ASP_TAGS, PhpLanguageOptions.ASP_TAGS_ENABLED);
+        return getBoolean(project, PhpProjectProperties.ASP_TAGS, PhpLanguageProperties.ASP_TAGS_ENABLED);
     }
 
-    public static PhpLanguageOptions.PhpVersion getPhpVersion(PhpProject project) {
+    public static PhpLanguageProperties.PhpVersion getPhpVersion(PhpProject project) {
         return getPhpVersion(project.getEvaluator().getProperty(PhpProjectProperties.PHP_VERSION));
     }
 
-    public static PhpLanguageOptions.PhpVersion getPhpVersion(String value) {
+    public static PhpLanguageProperties.PhpVersion getPhpVersion(String value) {
         if (value != null) {
             try {
-                return PhpLanguageOptions.PhpVersion.valueOf(value);
+                return PhpLanguageProperties.PhpVersion.valueOf(value);
             } catch (IllegalArgumentException iae) {
                 // ignored
             }
         }
-        return PhpLanguageOptions.PhpVersion.getDefault();
+        return PhpLanguageProperties.PhpVersion.getDefault();
     }
 
     /**
@@ -419,6 +432,13 @@ public final class ProjectPropertiesSupport {
     }
 
     /**
+     * @return file (which can be invalid!) or <code>null</code>
+     */
+    public static File getPhpUnitScript(PhpProject project) {
+        return getFile(project, PhpProjectProperties.PHP_UNIT_SCRIPT);
+    }
+
+    /**
      * @return {@code true} if all *Test files should be run via PhpUnit (default is {@code false})
      */
     public static boolean runAllTestFilesUsingPhpUnit(PhpProject project) {
@@ -431,6 +451,18 @@ public final class ProjectPropertiesSupport {
 
     public static String getPhpUnitLastUsedTestGroups(PhpProject project) {
         return getString(project, PhpProjectProperties.PHP_UNIT_LAST_USED_TEST_GROUPS, null);
+    }
+
+    public static String getHostname(PhpProject project) {
+        return getString(project, PhpProjectProperties.HOSTNAME, null);
+    }
+
+    public static String getPort(PhpProject project) {
+        return getString(project, PhpProjectProperties.PORT, null);
+    }
+
+    public static String getInternalRouter(PhpProject project) {
+        return getString(project, PhpProjectProperties.ROUTER, null);
     }
 
     /**

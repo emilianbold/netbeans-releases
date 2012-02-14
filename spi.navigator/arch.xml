@@ -78,8 +78,6 @@ made subject to such option by the copyright holder.
    <p>
    API allows its clients to plug in their Swing based views easily, which 
    then will be automatically shown in specialized Navigator UI.</p>
-   <p>
-   Client's views are registered through declarative xml layers approach.</p>
    
    <api group="java" name="org.netbeans.spi.navigator.NavigatorPanel" category="stable" type="export" />
    <api group="java" name="org.netbeans.spi.navigator.NavigatorHandler" category="devel" type="export" />
@@ -146,13 +144,8 @@ made subject to such option by the copyright holder.
     
    <usecase id="basicUsage" name="Basic Usage Steps" >
       In order to plug in a view into Navigator UI for certain document (data) type,
-      module writers need to complete following steps:
-
-      <ul>
-        <li><b>Write <a href="@TOP@/org/netbeans/spi/navigator/NavigatorPanel.html">NavigatorPanel</a>
-         implementation</b></li>
-        <li><b>Register implementation class in xml layer</b></li>
-      </ul>
+      module writers need to write a <a href="@TOP@/org/netbeans/spi/navigator/NavigatorPanel.html">NavigatorPanel</a>
+      implementation marked with <code>@Registration</code>.
 
       <h4>Writing NavigatorPanel implementation</h4>
         <p>Implementing <a href="@TOP@/org/netbeans/spi/navigator/NavigatorPanel.html">NavigatorPanel</a>
@@ -163,10 +156,7 @@ made subject to such option by the copyright holder.
 
         <ul>
             <li><b>Instantiation:</b> Your implementation of NavigatorPanel
-            is instantied automatically by the system if you register it in a layer
-            (described in next step). See detailed 
-            <a href="@org-openide-util@/org/openide/util/doc-files/api.html#instances">Instantiation rules</a>
-            to understand which kind of instantiation possibilities are on the plate.<p></p></li>
+            is instantied automatically by the system if you register it using <code>@Registration</code>.</li>
 
             <li><b>getComponent</b> method: Simply create and return your UI
             representation of your data in Swing's JComponent envelope. Just be sure
@@ -209,7 +199,7 @@ made subject to such option by the copyright holder.
             should show some please wait message.<p></p></li>
         </ul>
 
-      <h4>Registering NavigatorPanel impl in a layer</h4>
+      <h4>Registering NavigatorPanel impl</h4>
        <p>Declarative registration of your NavigatorPanel impl connects this
         implementation with specific content type, which is type of 
         the document, expressed in mime-type syntax, for example 'text/x-java'
@@ -217,26 +207,7 @@ made subject to such option by the copyright holder.
         your NavigatorPanel impl in UI, when <b>currently activated Node
         is backed by primary FileObject whose 
         <a href="@org-openide-filesystems@/org/openide/filesystems/FileObject.html#getMIMEType()">FileObject.getMimeType()</a>
-        equals to content type specified in your layer.</b></p>
-        <p>  
-        Writing layer registration itself is easy, you can again copy from template layer
-         <a href="@TOP@/org/netbeans/spi/navigator/doc-files/basicNavLayer.xml">
-        Basic Navigator Registration Layer</a>.</p>
-
-        Additional important info:
-
-        <ul>
-            <li>System looks up for navigator providers only in
-            <b>Navigator/Panels</b> folder, nowhere else.<p></p></li>
-
-            <li>Content type is specified as cascade of subdirectories under
-                Navigator/Panels directory. Mime-type syntax is recommended and
-                handy for specifying content type.<br></br>
-                It is not compulsory though, so if you need to make up a name
-                for your content type, just go for it. (more below)<p></p></li>
- 
-        </ul>
-        
+        equals to content type specified in your registering annotation</b> (see more options below).</p>
    </usecase> 
 
    <usecase id="lookupHint" name="Advanced Content Registration - Linking to Node's Lookup" >
@@ -1372,8 +1343,7 @@ made subject to such option by the copyright holder.
  <answer id="resources-read">
   <p>
    Yes Navigator module reads registered view providers from specific folder
-   /navigator/panels.
-   
+   Navigator/Panels.
   </p>
  </answer>
 

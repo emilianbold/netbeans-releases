@@ -12,11 +12,15 @@ PACKAGE    Data                            [PUBLIC]   null
 PACKAGE    Extra                           [PUBLIC]   null
 PACKAGE    ExtraThrow                      [PUBLIC]   null
 PACKAGE    Foo                             [PUBLIC]   null
+PACKAGE    MC                              [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
 PACKAGE    MySpaceThrow                    [PUBLIC]   null
+PACKAGE    Nette                           [PUBLIC]   null
 PACKAGE    Package1                        [PUBLIC]   null
 PACKAGE    Package2                        [PUBLIC]   null
 PACKAGE    Shit                            [PUBLIC]   null
+PACKAGE    ShowMe                          [PUBLIC]   null
+PACKAGE    TC                              [PUBLIC]   null
 PACKAGE    Test204925_01_C                 [PUBLIC]   null
 PACKAGE    Test204925_01_P                 [PUBLIC]   null
 PACKAGE    Test204925_02_C                 [PUBLIC]   null
@@ -33,15 +37,20 @@ PACKAGE    Test204925_07_C                 [PUBLIC]   null
 PACKAGE    Test204925_07_P                 [PUBLIC]   null
 PACKAGE    Test204925_08_C                 [PUBLIC]   null
 PACKAGE    Test204925_08_P                 [PUBLIC]   null
+PACKAGE    Testing                         [PUBLIC]   null
 PACKAGE    XUser                           [PUBLIC]   null
 ------------------------------------
+PACKAGE    Application                     [PUBLIC]   Nette
 PACKAGE    BNS                             [PUBLIC]   ANS
 PACKAGE    Base                            [PUBLIC]   Brite
 PACKAGE    Controller                      [PUBLIC]   Brite
 PACKAGE    Data                            [PUBLIC]   Shit
 PACKAGE    NNS                             [PUBLIC]   CNS
+PACKAGE    Ns                              [PUBLIC]   Testing
 PACKAGE    Test                            [PUBLIC]   App
+PACKAGE    UI                              [PUBLIC]   Nette\Application
 PACKAGE    User                            [PUBLIC]   Package2
+PACKAGE    Utils                           [PUBLIC]   Nette
 PACKAGE    a                               [PUBLIC]   Test204925_06_P
 PACKAGE    a                               [PUBLIC]   Test204925_07_P
 PACKAGE    a                               [PUBLIC]   Test204925_08_P

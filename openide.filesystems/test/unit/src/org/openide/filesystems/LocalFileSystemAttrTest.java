@@ -43,7 +43,6 @@ package org.openide.filesystems;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -59,10 +58,10 @@ public class LocalFileSystemAttrTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        clearWorkDir();
         testedFS = new LFS();
+        testedFS.setRootDirectory(getWorkDir());
     }
-    
-    
     
     public void testRenameWhenTargetFileExists() throws Exception {
         FileObject fo = FileUtil.createData(testedFS.getRoot(), "A/B/C.java");

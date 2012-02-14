@@ -138,6 +138,12 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
     public boolean isUseColumnNamesInRelationships() {
         return relationshipColumnNamesCheckBox.isSelected();
     }
+    public boolean isUseDefaults() {
+        return defaultsCheckBox.isSelected();
+    }
+    public boolean isGenerateUnresolved() {
+        return relationshipsUnresolvedCheckBox.isSelected();
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -158,6 +164,8 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         collectionTypeLabel = new javax.swing.JLabel();
         collectionTypeComboBox = new javax.swing.JComboBox();
         relationshipColumnNamesCheckBox = new javax.swing.JCheckBox();
+        defaultsCheckBox = new javax.swing.JCheckBox();
+        relationshipsUnresolvedCheckBox = new javax.swing.JCheckBox();
 
         setName(org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "LBL_MappingOptions")); // NOI18N
         setLayout(new java.awt.GridBagLayout());
@@ -198,7 +206,7 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         add(regenTablesCheckBox, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
@@ -237,18 +245,38 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(relationshipColumnNamesCheckBox, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(defaultsCheckBox, org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "MappingOptionsPanel.defaultsCheckBox.text_1")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        add(defaultsCheckBox, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(relationshipsUnresolvedCheckBox, org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "MappingOptionsPanel.relationshipsUnresolvedCheckBox.text_1")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        add(relationshipsUnresolvedCheckBox, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox collectionTypeComboBox;
     private javax.swing.JLabel collectionTypeLabel;
+    private javax.swing.JCheckBox defaultsCheckBox;
     private javax.swing.JLabel descLabel;
     private javax.swing.JComboBox fetchComboBox;
     private javax.swing.JLabel fetchLabel;
     private javax.swing.JPanel paddingPanel;
     private javax.swing.JCheckBox regenTablesCheckBox;
     private javax.swing.JCheckBox relationshipColumnNamesCheckBox;
+    private javax.swing.JCheckBox relationshipsUnresolvedCheckBox;
     private javax.swing.JCheckBox tableNameCheckBox;
     // End of variables declaration//GEN-END:variables
 
@@ -304,6 +332,8 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
             helper.setRegenTablesAttrs(mPanel.isRegenSchemaAttributes());
             helper.setUseColumnNamesInRelationships(mPanel.isUseColumnNamesInRelationships());
             helper.setCollectionType(mPanel.getCollectionType());
+            helper.setUseDefaults(mPanel.isUseDefaults());
+            helper.setGenerateUnresolvedRelationships(mPanel.isGenerateUnresolved());
         }
 
         public void addChangeListener(ChangeListener l) {

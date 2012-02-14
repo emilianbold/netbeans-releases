@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.33
+#Version 1.36
 
 CLSS public abstract interface java.io.Serializable
 
@@ -173,6 +173,8 @@ supr java.lang.Object
 
 CLSS public org.netbeans.api.java.queries.AccessibilityQuery
 meth public static java.lang.Boolean isPubliclyAccessible(org.openide.filesystems.FileObject)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
 hfds implementations
 
@@ -258,6 +260,21 @@ meth public void removeChangeListener(javax.swing.event.ChangeListener)
 supr java.lang.Object
 hfds changeSupport,delegate,spiListener
 
+CLSS public final org.netbeans.api.java.queries.SourceJavadocAttacher
+innr public abstract interface static AttachmentListener
+meth public static void attachJavadoc(java.net.URL,org.netbeans.api.java.queries.SourceJavadocAttacher$AttachmentListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
+meth public static void attachSources(java.net.URL,org.netbeans.api.java.queries.SourceJavadocAttacher$AttachmentListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
+supr java.lang.Object
+
+CLSS public abstract interface static org.netbeans.api.java.queries.SourceJavadocAttacher$AttachmentListener
+ outer org.netbeans.api.java.queries.SourceJavadocAttacher
+meth public abstract void attachmentFailed()
+meth public abstract void attachmentSucceeded()
+
 CLSS public org.netbeans.api.java.queries.SourceLevelQuery
 innr public final static Result
 meth public static java.lang.String getSourceLevel(org.openide.filesystems.FileObject)
@@ -265,7 +282,7 @@ meth public static org.netbeans.api.java.queries.SourceLevelQuery$Result getSour
  anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
-hfds EMPTY_RESULT,LOGGER,SOURCE_LEVEL,implementations,implementations2
+hfds LOGGER,SOURCE_LEVEL,implementations,implementations2
 
 CLSS public final static org.netbeans.api.java.queries.SourceLevelQuery$Result
  outer org.netbeans.api.java.queries.SourceLevelQuery
@@ -346,6 +363,8 @@ hfds pListeners
 
 CLSS public abstract interface org.netbeans.spi.java.queries.AccessibilityQueryImplementation
 meth public abstract java.lang.Boolean isPubliclyAccessible(org.openide.filesystems.FileObject)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 
 CLSS public abstract interface org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation
 meth public abstract org.netbeans.api.java.queries.AnnotationProcessingQuery$Result getAnnotationProcessingOptions(org.openide.filesystems.FileObject)
@@ -372,6 +391,14 @@ CLSS public abstract interface static org.netbeans.spi.java.queries.SourceForBin
  outer org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2
 intf org.netbeans.api.java.queries.SourceForBinaryQuery$Result
 meth public abstract boolean preferSources()
+
+CLSS public abstract interface org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation
+meth public abstract boolean attachJavadoc(java.net.URL,org.netbeans.api.java.queries.SourceJavadocAttacher$AttachmentListener) throws java.io.IOException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+meth public abstract boolean attachSources(java.net.URL,org.netbeans.api.java.queries.SourceJavadocAttacher$AttachmentListener) throws java.io.IOException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
 
 CLSS public abstract interface org.netbeans.spi.java.queries.SourceLevelQueryImplementation
  anno 0 java.lang.Deprecated()

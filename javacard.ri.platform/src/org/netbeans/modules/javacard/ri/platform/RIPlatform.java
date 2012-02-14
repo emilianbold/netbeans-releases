@@ -42,23 +42,12 @@
 
 package org.netbeans.modules.javacard.ri.platform;
 
-import org.netbeans.modules.javacard.spi.Cards;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.Profile;
 import org.netbeans.api.java.platform.Specification;
@@ -68,34 +57,21 @@ import org.netbeans.modules.javacard.common.ListenerProxy;
 import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.ri.platform.installer.PlatformInfo;
 import org.netbeans.modules.javacard.ri.spi.CardsFactory;
-import org.netbeans.modules.javacard.spi.JavacardDeviceKeyNames;
-import org.netbeans.modules.javacard.spi.JavacardPlatform;
-import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
-import org.netbeans.modules.javacard.spi.ProjectKind;
+import org.netbeans.modules.javacard.spi.*;
 import org.netbeans.modules.propdos.ObservableProperties;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.*;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.Lookup.Provider;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
-import org.openide.util.NbBundle;
-import org.openide.util.Parameters;
-import org.openide.util.Utilities;
+import org.openide.util.*;
 /**
  * Implementation of JavacardPlatform for the Java Card Reference Implementation
  * @author Tim Boudreau
@@ -160,6 +136,7 @@ public class RIPlatform extends JavacardPlatform {
         return p;
     }
 
+    @Override
     public Set<ProjectKind> supportedProjectKinds() {
         if (suppKinds.isEmpty()) {
             String prop = props.getProperty(
@@ -222,7 +199,7 @@ public class RIPlatform extends JavacardPlatform {
         File riProps = null;
         try {
             riProps = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<File>() {
-
+                @Override
                 public File run() throws Exception {
                     EditableProperties globals = PropertyUtils.getGlobalProperties();
                     String path = globals.getProperty(JCConstants.GLOBAL_BUILD_PROPERTIES_RI_PROPERTIES_PATH_KEY);
@@ -357,12 +334,16 @@ public class RIPlatform extends JavacardPlatform {
         synchronized (cpLock) {
             ClassPath result = processorCps.get(kind.isClassic());
             if (result == null) {
-                result = createClasspathFromProperty(kind.isClassic() ?
-                    JavacardPlatformKeyNames.PLATFORM_PROCESSOR_CLASSIC_CLASSPATH :
-                    JavacardPlatformKeyNames.PLATFORM_PROCESSOR_EXT_CLASSPATH, props);
+                if (kind.isClassic()) {
+                    result = ClassPathSupport.createProxyClassPath(
+                            createClasspathFromProperty(JavacardPlatformKeyNames.PLATFORM_PROCESSOR_CLASSIC_CLASSPATH, props),
+                            createClasspathFromProperty(JavacardPlatformKeyNames.PLATFORM_TOOLS_CLASSPATH, props));
+                } else {
+                    result = createClasspathFromProperty(JavacardPlatformKeyNames.PLATFORM_PROCESSOR_EXT_CLASSPATH, props);
+                }
                 processorCps.put(kind.isClassic(), result);
             }
-        return result;
+            return result;
         }
     }
 
@@ -545,26 +526,32 @@ public class RIPlatform extends JavacardPlatform {
             return getCardProviders();
         }
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             //do nothing
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             fireChange();
         }
 
+        @Override
         public void fileChanged(FileEvent fe) {
             fireChange();
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             fireChange();
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             fireChange();
         }
 
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
             //do nothing
         }

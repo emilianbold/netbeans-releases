@@ -127,6 +127,16 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
         });
     }
 
+    @Override
+    public Collection<? extends TraitScope> getDeclaredTraits() {
+        return filter(getElements(), new ElementFilter() {
+            @Override
+            public boolean isAccepted(ModelElement element) {
+                return element.getPhpElementKind().equals(PhpElementKind.TRAIT);
+            }
+        });
+    }
+
     public Collection<? extends ConstantElement> getDeclaredConstants() {
         return filter(getElements(), new ElementFilter() {
             public boolean isAccepted(ModelElement element) {
@@ -156,7 +166,8 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     public Collection<? extends TypeScope> getDeclaredTypes() {
         Collection<? extends ClassScope> classes = getDeclaredClasses();
         Collection<? extends InterfaceScope> interfaces = getDeclaredInterfaces();
-        return ModelUtils.merge(classes, interfaces);
+        Collection<? extends TraitScope> traits = getDeclaredTraits();
+        return ModelUtils.merge(classes, interfaces, traits);
     }
 
 

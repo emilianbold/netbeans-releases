@@ -11,15 +11,15 @@ ant bootstrap
 # performance project
 cd "$performance"
 
-rm -rf build/test/unit/results
-rm -rf build/test/qa-functional/results
+rm -rf build/test/unit
+rm -rf build/test/qa-functional
 
 ant clean -Dnetbeans.dest.dir=$netbeans_dest
 ant -Dnetbeans.dest.dir=$netbeans_dest
 
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -Dcom.sun.management.jmxremote.port=3333 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Dorg.netbeans.editor.linewrap=true
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -Dcom.sun.management.jmxremote.port=3333 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Dorg.netbeans.editor.linewrap=true
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -Dcom.sun.management.jmxremote.port=3333 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Dorg.netbeans.editor.linewrap=true
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Dorg.netbeans.editor.linewrap=true
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Dorg.netbeans.editor.linewrap=true
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Dorg.netbeans.editor.linewrap=true
 
 buildnum=`cat "$reposdir"/build.number`
 str1="<property name=\"perftestrun.buildnumber\" value=\"$buildnum\"/>"
@@ -46,5 +46,22 @@ cp -R build/test/unit/work/ "$WORKSPACE"/fod
 cp -R build/test/unit/results/ "$WORKSPACE"/fod
 rm -rf "$WORKSPACE"/fod/userdir0
 rm -rf "$WORKSPACE"/fod/tmpdir
+
+
+cd "$performance"
+
+rm -rf build/test/unit
+rm -rf build/test/qa-functional
+
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/MeasureScanningTest* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -J-DSuspendSupport.disabled=true -Drepeat=1 -Dorg.netbeans.editor.linewrap=true
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/MeasureScanningTest* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -J-DSuspendSupport.disabled=true -Drepeat=1 -Dorg.netbeans.editor.linewrap=true
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/MeasureScanningTest* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -J-DSuspendSupport.disabled=true-Drepeat=3 -Dorg.netbeans.editor.linewrap=true
+
+
+cp -R build/test/unit/work/ "$WORKSPACE"/scanning
+cp -R build/test/unit/results/ "$WORKSPACE"/scanning
+rm -rf "$WORKSPACE"/scanning/userdir0
+rm -rf "$WORKSPACE"/scanning/tmpdir
+
 
 fi

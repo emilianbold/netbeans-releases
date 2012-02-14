@@ -48,6 +48,7 @@ import org.apache.maven.artifact.Artifact;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.repository.dependency.ui.AddDependencyUI;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.ImageUtilities;
@@ -63,7 +64,7 @@ public class AddAsDependencyAction extends AbstractAction {
 
     public AddAsDependencyAction(Artifact record) {
         putValue(NAME, NbBundle.getMessage(AddAsDependencyAction.class, "LBL_Add_As_Dependency"));
-        putValue(SMALL_ICON, ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/repository/DependencyJar.gif", true)));
+        putValue(SMALL_ICON, ImageUtilities.image2Icon(ImageUtilities.loadImage(NodeUtils.ICON_DEPENDENCY_JAR, true)));
         this.record = record;
     }
 

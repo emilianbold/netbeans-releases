@@ -49,15 +49,17 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.test.subversion.main.archeology.AnnotationsTest;
 import org.netbeans.test.subversion.main.archeology.SearchHistoryUITest;
 import org.netbeans.test.subversion.main.archeology.SearchRevisionsTest;
-import org.netbeans.test.subversion.main.branches.CopyTest;
-import org.netbeans.test.subversion.main.branches.MergeUiTest;
-import org.netbeans.test.subversion.main.branches.RevertUiTest;
-import org.netbeans.test.subversion.main.branches.SwitchUiTest;
-import org.netbeans.test.subversion.main.checkout.CheckoutContentTest;
+import org.netbeans.test.subversion.main.branches.*;
+import org.netbeans.test.subversion.main.checkout.*;
 import org.netbeans.test.subversion.main.commit.CommitDataTest;
+import org.netbeans.test.subversion.main.commit.CommitUiTest;
 import org.netbeans.test.subversion.main.commit.IgnoreTest;
 import org.netbeans.test.subversion.main.delete.DeleteTest;
+import org.netbeans.test.subversion.main.delete.FilesViewDoubleRefTest;
+import org.netbeans.test.subversion.main.delete.FilesViewRefTest;
 import org.netbeans.test.subversion.main.delete.RefactoringTest;
+import org.netbeans.test.subversion.main.diff.DiffTest;
+import org.netbeans.test.subversion.main.diff.ExportDiffPatchTest;
 import org.netbeans.test.subversion.main.properties.SvnPropertiesTest;
 import org.netbeans.test.subversion.main.relocate.RelocateTest;
 
@@ -78,28 +80,40 @@ public class SubversionStableTest extends JellyTestCase {
             
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                     .addTest(CheckoutContentTest.class,"testCheckoutProject", "testCheckoutContent")
-                    .addTest(RelocateTest.class, "relocate")
-                    .addTest(CommitDataTest.class, "testCommitFile")
-
-                    .addTest(CommitDataTest.class, "testCommitFile")                                       //no for win
-                    .addTest(IgnoreTest.class, "testIgnoreUnignoreFile", "testFinalRemove")                //no for win
-
-//                    .addTest(CommitDataTest.class, "testCommitFile")                                       //only for win
-//                    .addTest(CommitUiTest.class, "testInvokeCloseCommit")                                  //only for win
+                    .addTest(CheckoutUITest.class,"testChangeAccessTypes")
+                    .addTest(CreateProjectVersionedDirTest.class,"testCreateNewProject")
+                    .addTest(ImportUITest.class, "testCommitStep")
+                    .addTest(ProxySettingsUITest.class,"testProxySettings","testProxyBeforeUrl")
+                    
+                    
+                   
+                    
+                    .addTest(CommitDataTest.class, "testCommitFile","testCommitPackage","testRecognizeMimeType")
+                    .addTest(CommitUiTest.class, "testInvokeCloseCommit")
+                    .addTest(IgnoreTest.class, "testIgnoreUnignoreFile","testIgnoreUnignorePackage","testIgnoreUnignoreFilePackage","testFinalRemove")    
+                    
 
                     .addTest(DeleteTest.class, "testDeleteRevert", "testDeleteCommit")
+                    .addTest(FilesViewDoubleRefTest.class, "testFilesViewDoubleRefactoring")
+                    .addTest(FilesViewRefTest.class, "testFilesViewRefactoring")
                     .addTest(RefactoringTest.class, "testRefactoring")
+                    
+                    .addTest(DiffTest.class, "testDiffFile")
+                    .addTest(ExportDiffPatchTest.class, "invokeExportDiffPatch")
 
-                    .addTest(SearchHistoryUITest.class, "testInvokeSearch")
+                    
                     .addTest(AnnotationsTest.class, "testShowAnnotations")
                     .addTest(SearchRevisionsTest.class, "testSearchRevisionsTest")
+                    .addTest(SearchHistoryUITest.class, "testInvokeSearch")
 
                     .addTest(CopyTest.class, "testCreateNewCopySwitch")
+                    .addTest(CopyUiTest.class, "testInvokeCloseCopy")
                     .addTest(MergeUiTest.class, "testInvokeCloseMerge")
                     .addTest(RevertUiTest.class, "testInvokeCloseRevert")
                     .addTest(SwitchUiTest.class, "testInvokeCloseSwitch")
 
                     .addTest(SvnPropertiesTest.class, "propTest")
+                    .addTest(RelocateTest.class, "relocate")
 
                     .enableModules(".*")
                     .clusters(".*"));

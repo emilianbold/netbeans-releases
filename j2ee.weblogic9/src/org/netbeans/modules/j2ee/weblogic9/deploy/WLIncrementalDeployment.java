@@ -199,15 +199,15 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
                             NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeploying", module.getModuleID())));
-
-                    if (deployFastSwap(module)) {
-                        LOGGER.log(Level.FINE, "Fast swap sucessfull");
-                        progress.fireProgressEvent(null, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.REDEPLOY, StateType.COMPLETED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Completed")));
-                        return;
-                    }
-                    LOGGER.log(Level.FINE, "Fast swap failed doing incremental deploy");
+// DISABLED SINCE 7.1.1 see #206798
+//                    if (deployFastSwap(module)) {
+//                        LOGGER.log(Level.FINE, "Fast swap sucessfull");
+//                        progress.fireProgressEvent(null, new WLDeploymentStatus(
+//                                ActionType.EXECUTE, CommandType.REDEPLOY, StateType.COMPLETED,
+//                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Completed")));
+//                        return;
+//                    }
+//                    LOGGER.log(Level.FINE, "Fast swap failed doing incremental deploy");
                     progress.startListening(module, incrementalDeploy(module, desc));
                 }
             });

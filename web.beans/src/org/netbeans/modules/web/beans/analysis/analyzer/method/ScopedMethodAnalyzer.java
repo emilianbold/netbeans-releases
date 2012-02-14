@@ -46,6 +46,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
@@ -104,6 +105,39 @@ public class ScopedMethodAnalyzer extends AbstractScopedAnalyzer implements
                                     "ERR_WrongScopeParameterizedProducerReturn",    // NOI18N
                                     scopeElement.getQualifiedName().toString()));
             }
+        }
+        if ( cancel.get() ){
+            return;
+        }
+        checkPassivationCapable( scopeElement , element , model , result );
+    }
+
+    private void checkPassivationCapable( TypeElement scopeElement,
+            Element element, WebBeansModel model, Result result )
+    {
+        if ( !isPassivatingScope(scopeElement, model) ){
+            return;
+        }
+        TypeMirror returnType = ((ExecutableElement)element).getReturnType();
+        if ( returnType == null ){
+            return;
+        }
+        if ( returnType.getKind().isPrimitive() ){
+            return;
+        }
+        if ( isSerializable(returnType, model)){
+            return;
+        }
+        Element returnTypeElement = model.getCompilationController().getTypes().
+            asElement( returnType );
+        if ( returnTypeElement == null ){
+            return;
+        }
+        if ( returnTypeElement.getModifiers().contains( Modifier.FINAL )){
+            result.addError( element, model,   
+                    NbBundle.getMessage(ScopedMethodAnalyzer.class, 
+                            "ERR_NotPassivationProducerReturn",    // NOI18N
+                            scopeElement.getQualifiedName().toString()));
         }
     }
     

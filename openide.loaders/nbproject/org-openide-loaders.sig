@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.21
+#Version 7.32
 
 CLSS public java.awt.Canvas
 cons public init()
@@ -1622,6 +1622,26 @@ meth public abstract void open()
 CLSS public abstract interface org.netbeans.api.actions.Printable
 meth public abstract void print()
 
+CLSS public abstract interface !annotation org.netbeans.api.templates.TemplateRegistration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD, PACKAGE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault int position()
+meth public abstract !hasdefault java.lang.String description()
+meth public abstract !hasdefault java.lang.String displayName()
+meth public abstract !hasdefault java.lang.String iconBase()
+meth public abstract !hasdefault java.lang.String id()
+meth public abstract !hasdefault java.lang.String scriptEngine()
+meth public abstract !hasdefault java.lang.String[] category()
+meth public abstract !hasdefault java.lang.String[] content()
+meth public abstract java.lang.String folder()
+
+CLSS public abstract interface !annotation org.netbeans.api.templates.TemplateRegistrations
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD, PACKAGE])
+intf java.lang.annotation.Annotation
+meth public abstract org.netbeans.api.templates.TemplateRegistration[] value()
+
 CLSS public org.openide.DialogDescriptor
 cons public init(java.lang.Object,java.lang.String)
 cons public init(java.lang.Object,java.lang.String,boolean,int,java.lang.Object,int,org.openide.util.HelpCtx,java.awt.event.ActionListener)
@@ -1760,6 +1780,7 @@ fld public final static java.lang.String PROP_LEFT_DIMENSION = "WizardPanel_left
 fld public final static java.lang.String PROP_WARNING_MESSAGE = "WizardPanel_warningMessage"
 innr public abstract interface static AsynchronousInstantiatingIterator
 innr public abstract interface static AsynchronousValidatingPanel
+innr public abstract interface static BackgroundInstantiatingIterator
 innr public abstract interface static FinishPanel
 innr public abstract interface static FinishablePanel
 innr public abstract interface static InstantiatingIterator
@@ -1790,7 +1811,7 @@ meth public void setOptions(java.lang.Object[])
 meth public void setTitleFormat(java.text.MessageFormat)
 meth public void setValue(java.lang.Object)
 supr org.openide.DialogDescriptor
-hfds ASYNCHRONOUS_JOBS_RP,CLOSE_PREVENTER,PROGRESS_BAR_DISPLAY_NAME,autoWizardStyle,backgroundValidationTask,baseListener,bundle,cancelButton,changeStateInProgress,contentBackColor,contentData,contentForegroundColor,contentSelectedIndex,currentPanelWasChangedWhileStoreSettings,data,err,escapeActionListener,finishButton,finishOption,handle,helpURL,image,imageAlignment,init,logged,newObjects,nextButton,previousButton,propListener,properties,titleFormat,validationRuns,waitingComponent,weakCancelButtonListener,weakChangeListener,weakFinishButtonListener,weakNextButtonListener,weakPreviousButtonListener,weakPropertyChangeListener,wizardPanel
+hfds ASYNCHRONOUS_JOBS_RP,CLOSE_PREVENTER,PROGRESS_BAR_DISPLAY_NAME,addedWindowListener,autoWizardStyle,backgroundValidationTask,baseListener,bundle,cancelButton,changeStateInProgress,contentBackColor,contentData,contentForegroundColor,contentSelectedIndex,currentPanelWasChangedWhileStoreSettings,data,err,escapeActionListener,finishButton,finishOption,handle,helpURL,image,imageAlignment,init,isWizardWideHelpSet,logged,newObjects,nextButton,previousButton,propListener,properties,titleFormat,validationRuns,waitingComponent,weakCancelButtonListener,weakChangeListener,weakFinishButtonListener,weakNextButtonListener,weakPreviousButtonListener,weakPropertyChangeListener,wizardPanel
 hcls BoundedHtmlBrowser,EmptyPanel,FinishAction,FixedHeightLabel,FixedHeightPane,ImagedPanel,Listener,PropL,SettingsAndIterator,WizardPanel,WrappedCellRenderer
 
 CLSS public abstract interface static org.openide.WizardDescriptor$Iterator<%0 extends java.lang.Object>
@@ -2293,6 +2314,8 @@ meth public abstract !hasdefault boolean iconInMenu()
 meth public abstract !hasdefault boolean surviveFocusChange()
 meth public abstract !hasdefault java.lang.String iconBase()
 meth public abstract !hasdefault java.lang.String key()
+meth public abstract !hasdefault java.lang.String menuText()
+meth public abstract !hasdefault java.lang.String popupText()
 meth public abstract java.lang.String displayName()
 
 CLSS public org.openide.awt.Actions
@@ -2386,6 +2409,12 @@ meth public java.awt.Dimension getMaximumSize()
 meth public java.awt.Dimension getMinimumSize()
 supr org.openide.awt.ToolbarToggleButton
 hfds serialVersionUID
+
+CLSS public final org.openide.awt.CloseButtonFactory
+meth public static javax.swing.JButton createBigCloseButton()
+meth public static javax.swing.JButton createCloseButton()
+supr java.lang.Object
+hfds bigCloseTabImage,bigCloseTabMouseOverImage,bigCloseTabPressedImage,closeTabImage,closeTabMouseOverImage,closeTabPressedImage
 
 CLSS public final org.openide.awt.DropDownButtonFactory
 fld public final static java.lang.String PROP_DROP_DOWN_MENU = "dropDownMenu"
@@ -2576,6 +2605,7 @@ cons public init()
 cons public init(org.openide.loaders.DataFolder)
 intf java.io.Externalizable
 meth protected boolean processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
+meth public boolean isOpaque()
 meth public void addImpl(java.awt.Component,java.lang.Object,int)
 meth public void readExternal(java.io.ObjectInput) throws java.io.IOException,java.lang.ClassNotFoundException
 meth public void updateUI()
@@ -2628,6 +2658,7 @@ meth public abstract org.openide.awt.Notification notify(java.lang.String,javax.
 meth public org.openide.awt.Notification notify(java.lang.String,javax.swing.Icon,java.lang.String,java.awt.event.ActionListener)
 meth public static org.openide.awt.NotificationDisplayer getDefault()
 supr java.lang.Object
+hfds LOG,ndID
 hcls NotificationImpl,SimpleNotificationDisplayer
 
 CLSS public final static !enum org.openide.awt.NotificationDisplayer$Priority
@@ -2849,6 +2880,7 @@ meth protected void fireDragToolbar(int,int,int)
  anno 0 java.lang.Deprecated()
 meth protected void fireDropToolbar(int,int,int)
  anno 0 java.lang.Deprecated()
+meth public boolean isOpaque()
 meth public java.awt.Component[] getComponents()
 meth public java.lang.String getDisplayName()
 meth public java.lang.String getUIClassID()
@@ -2900,6 +2932,7 @@ cons public init(org.openide.loaders.DataFolder)
 fld public final static java.lang.String DEFAULT_CONFIGURATION = "Standard"
 innr public abstract interface static Configuration
 intf javax.accessibility.Accessible
+meth public final boolean isFinished()
 meth public final java.lang.String getConfiguration()
 meth public final java.lang.String[] getConfigurations()
 meth public final org.openide.awt.Toolbar findToolbar(java.lang.String)
@@ -2974,7 +3007,7 @@ meth public void undo()
 meth public void undoOrRedo()
 meth public void undoableEditHappened(javax.swing.event.UndoableEditEvent)
 supr javax.swing.undo.UndoManager
-hfds cs,runus,serialVersionUID
+hfds cs,serialVersionUID
 
 CLSS public abstract interface static org.openide.awt.UndoRedo$Provider
  outer org.openide.awt.UndoRedo
@@ -3132,6 +3165,7 @@ meth protected void createPasteTypes(java.awt.datatransfer.Transferable,java.uti
 meth public <%0 extends org.openide.nodes.Node$Cookie> {%%0} getCookie(java.lang.Class<{%%0}>)
 meth public java.awt.Image getIcon(int)
 meth public java.awt.Image getOpenedIcon(int)
+meth public java.lang.Object getValue(java.lang.String)
 meth public javax.swing.Action getPreferredAction()
 meth public org.openide.util.datatransfer.NewType[] getNewTypes()
 meth public void setName(java.lang.String)
@@ -3250,7 +3284,7 @@ meth public void destroy() throws java.io.IOException
 meth public void setName(java.lang.String)
 meth public void setName(java.lang.String,boolean)
 supr org.openide.nodes.AbstractNode
-hfds PROP_EXTENSION,RP,defaultLookup,obj,propL,refreshIconNodes,refreshNameIconLock,refreshNameNodes,refreshNamesIconsRunning,refreshNamesIconsTask,serialVersionUID,showFileExtensions
+hfds PROP_EXTENSION,defaultLookup,obj,propL,refreshIconNodes,refreshNameIconLock,refreshNameNodes,refreshNamesIconsRunning,refreshNamesIconsTask,serialVersionUID,showFileExtensions
 hcls AllFilesProperty,ExtensionProperty,LastModifiedProperty,LazyFilesSet,NamesUpdater,ObjectHandle,PropL,SizeProperty
 
 CLSS public abstract org.openide.loaders.DataObject
@@ -3322,7 +3356,7 @@ meth public void setModified(boolean)
 meth public void setValid(boolean) throws java.beans.PropertyVetoException
 supr java.lang.Object
 hfds EA_ASSIGNED_LOADER,EA_ASSIGNED_LOADER_MODULE,LOG,OBJ_LOG,REGISTRY_INSTANCE,changeSupport,item,listenersMethodLock,loader,modif,modified,nodeCreationLock,nodeDelegate,serialVersionUID,syncModified,synchObject,vetoableChangeSupport,warnedClasses
-hcls CreateAction,ModifiedRegistry,Replace
+hcls CreateAction,DOSavable,ModifiedRegistry,Replace
 
 CLSS public abstract interface static org.openide.loaders.DataObject$Container
  outer org.openide.loaders.DataObject
@@ -3382,7 +3416,7 @@ meth public static org.openide.loaders.DataShadow create(org.openide.loaders.Dat
 meth public static org.openide.loaders.DataShadow create(org.openide.loaders.DataFolder,org.openide.loaders.DataObject) throws java.io.IOException
 meth public void refresh()
 supr org.openide.loaders.MultiDataObject
-hfds MUTEX,RP,SHADOW_EXTENSION,allDataShadows,lastTask,lookup,nodes,origL,original,serialVersionUID
+hfds MUTEX,RP,SFS_NAME,SHADOW_EXTENSION,allDataShadows,lastTask,lookup,nodes,origL,original,serialVersionUID
 hcls DSLookup,DSWeakReference,OrigL
 
 CLSS protected static org.openide.loaders.DataShadow$ShadowNode
@@ -3619,9 +3653,11 @@ innr public abstract Entry
 meth protected final org.openide.loaders.MultiDataObject$Entry registerEntry(org.openide.filesystems.FileObject)
 meth protected final org.openide.nodes.CookieSet getCookieSet()
 meth protected final void addSecondaryEntry(org.openide.loaders.MultiDataObject$Entry)
+meth protected final void registerEditor(java.lang.String,boolean)
 meth protected final void removeSecondaryEntry(org.openide.loaders.MultiDataObject$Entry)
 meth protected final void setCookieSet(org.openide.nodes.CookieSet)
  anno 0 java.lang.Deprecated()
+meth protected int associateLookup()
 meth protected org.openide.filesystems.FileLock takePrimaryFileLock() throws java.io.IOException
 meth protected org.openide.filesystems.FileObject handleMove(org.openide.loaders.DataFolder) throws java.io.IOException
 meth protected org.openide.filesystems.FileObject handleRename(java.lang.String) throws java.io.IOException
@@ -3641,6 +3677,7 @@ meth public final org.openide.loaders.MultiDataObject$Entry getPrimaryEntry()
 meth public final org.openide.loaders.MultiFileLoader getMultiFileLoader()
 meth public java.util.Set<org.openide.filesystems.FileObject> files()
 meth public org.openide.util.HelpCtx getHelpCtx()
+meth public org.openide.util.Lookup getLookup()
 supr org.openide.loaders.DataObject
 hfds ERR,RECOGNIZER,TEMPLATE_ATTRIBUTES,chLis,checked,cookieSet,cookieSetLock,delayProcessor,delayedPropFilesLock,delayedPropFilesTask,firingProcessor,later,primary,secondary,secondaryCreationLock,serialVersionUID
 hcls ChangeAndBefore,EmptyRecognizer,EntryReplace,Pair
@@ -3700,6 +3737,7 @@ meth protected void firePropertyChange(java.lang.String,java.lang.Object,java.la
 meth protected void fireVetoableChange(java.lang.String,java.lang.Object,java.lang.Object) throws java.beans.PropertyVetoException
 meth public boolean isModified()
 meth public boolean isValid()
+meth public java.lang.String toString()
 meth public org.openide.windows.CloneableOpenSupport findCloneableOpenSupport()
 meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void addVetoableChangeListener(java.beans.VetoableChangeListener)
@@ -4255,9 +4293,12 @@ supr java.lang.Object
 CLSS public org.openide.text.CloneableEditor
 cons public init()
 cons public init(org.openide.text.CloneableEditorSupport)
+cons public init(org.openide.text.CloneableEditorSupport,boolean)
 fld protected javax.swing.JEditorPane pane
 intf org.openide.text.CloneableEditorSupport$Pane
 meth protected boolean closeLast()
+meth protected final boolean closeLast(boolean)
+meth protected final void initializeBySupport()
 meth protected java.lang.Object readResolve() throws java.io.ObjectStreamException
 meth protected java.lang.Object writeReplace() throws java.io.ObjectStreamException
 meth protected java.lang.String preferredID()
@@ -4296,6 +4337,7 @@ cons public init(org.openide.text.CloneableEditorSupport$Env,org.openide.util.Lo
 fld public final static java.lang.String EDITOR_MODE = "editor"
 fld public final static javax.swing.undo.UndoableEdit BEGIN_COMMIT_GROUP
 fld public final static javax.swing.undo.UndoableEdit END_COMMIT_GROUP
+fld public final static javax.swing.undo.UndoableEdit MARK_COMMIT_GROUP
 innr public abstract interface static Env
 innr public abstract interface static Pane
 meth protected abstract java.lang.String messageName()
@@ -4346,8 +4388,8 @@ meth public void removeChangeListener(javax.swing.event.ChangeListener)
 meth public void saveDocument() throws java.io.IOException
 meth public void setMIMEType(java.lang.String)
 supr org.openide.windows.CloneableOpenSupport
-hfds DOCUMENT_LOADING,DOCUMENT_NO,DOCUMENT_READY,DOCUMENT_RELOADING,ERR,LOCAL_CLOSE_DOCUMENT,LOCAL_LOAD_TASK,LOCK_PRINTING,LOCK_STRONG_REF,PROP_PANE,RP,alreadyModified,annotationsLoaded,counterGetDocument,counterOpenAtImpl,counterOpenDocument,counterPrepareDocument,doc,documentStatus,inUserQuestionExceptionHandler,isStrongSet,justRevertedToNotModified,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetWHM,listener,listeners,lookup,mimeType,positionManager,prepareDocumentRuntimeException,prepareTask,printing,propertyChangeSupport,reloadDialogOpened,reloadDocumentFireDocumentChangeClose,reloadDocumentFireDocumentChangeOpen,revertingUndoOrReloading,undoRedo,warnedClasses
-hcls BeforeModificationEdit,BeforeSaveEdit,CESUndoRedoManager,DelegateIOExc,FilterUndoableEdit,Listener,PlainEditorKit,SearchBeforeModificationEdit,StrongRef,UndoGroupManager
+hfds DOCUMENT_LOADING,DOCUMENT_NO,DOCUMENT_READY,DOCUMENT_RELOADING,ERR,LOCAL_CLOSE_DOCUMENT,LOCAL_LOAD_TASK,LOCK_PRINTING,LOCK_STRONG_REF,PROP_PANE,RP,alreadyModified,annotationsLoaded,counterGetDocument,counterOpenAtImpl,counterOpenDocument,counterPrepareDocument,doc,docFilter,documentReloading,documentStatus,inUserQuestionExceptionHandler,isStrongSet,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetWHM,listener,listeners,lookup,mimeType,positionManager,prepareDocumentRuntimeException,prepareTask,printing,propertyChangeSupport,reloadDialogOpened,reloadDocumentFireDocumentChangeClose,reloadDocumentFireDocumentChangeOpen,undoRedo,warnedClasses
+hcls DelegateIOExc,DocFilter,Listener,PlainEditorKit,StrongRef
 
 CLSS public abstract interface static org.openide.text.CloneableEditorSupport$Env
  outer org.openide.text.CloneableEditorSupport
@@ -4372,6 +4414,8 @@ supr java.lang.Object
 
 CLSS public org.openide.text.DataEditorSupport
 cons public init(org.openide.loaders.DataObject,org.openide.text.CloneableEditorSupport$Env)
+cons public init(org.openide.loaders.DataObject,org.openide.util.Lookup,org.openide.text.CloneableEditorSupport$Env)
+ anno 2 org.netbeans.api.annotations.common.NullAllowed()
 innr public abstract static Env
 meth protected boolean canClose()
 meth protected java.lang.String documentID()
@@ -4393,6 +4437,8 @@ meth public static java.lang.String annotateName(java.lang.String,boolean,boolea
 meth public static java.lang.String toolTip(org.openide.filesystems.FileObject,boolean,boolean)
 meth public static org.openide.loaders.DataObject findDataObject(org.openide.text.Line)
 meth public static org.openide.text.CloneableEditorSupport create(org.openide.loaders.DataObject,org.openide.loaders.MultiDataObject$Entry,org.openide.nodes.CookieSet)
+meth public static org.openide.text.CloneableEditorSupport create(org.openide.loaders.DataObject,org.openide.loaders.MultiDataObject$Entry,org.openide.nodes.CookieSet,java.util.concurrent.Callable<org.openide.text.CloneableEditorSupport$Pane>)
+ anno 4 org.netbeans.api.annotations.common.NullAllowed()
 meth public void saveAs(org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
 meth public void saveDocument() throws java.io.IOException
 supr org.openide.text.CloneableEditorSupport
@@ -5087,6 +5133,7 @@ fld public final static int PERSISTENCE_ALWAYS = 0
 fld public final static int PERSISTENCE_NEVER = 2
 fld public final static int PERSISTENCE_ONLY_OPENED = 1
 fld public final static java.lang.String PROP_CLOSING_DISABLED = "netbeans.winsys.tc.closing_disabled"
+fld public final static java.lang.String PROP_DND_COPY_DISABLED = "netbeans.winsys.tc.draganddrop_copy_disabled"
 fld public final static java.lang.String PROP_DRAGGING_DISABLED = "netbeans.winsys.tc.dragging_disabled"
 fld public final static java.lang.String PROP_KEEP_PREFERRED_SIZE_WHEN_SLIDED_IN = "netbeans.winsys.tc.keep_preferred_size_when_slided_in"
 fld public final static java.lang.String PROP_MAXIMIZATION_DISABLED = "netbeans.winsys.tc.maximization_disabled"
@@ -5120,7 +5167,6 @@ meth public boolean canClose()
 meth public boolean canClose(org.openide.windows.Workspace,boolean)
  anno 0 java.lang.Deprecated()
 meth public boolean requestFocusInWindow()
- anno 0 java.lang.Deprecated()
 meth public final boolean close()
 meth public final boolean close(org.openide.windows.Workspace)
  anno 0 java.lang.Deprecated()
@@ -5158,7 +5204,6 @@ meth public void open(org.openide.windows.Workspace)
 meth public void readExternal(java.io.ObjectInput) throws java.io.IOException,java.lang.ClassNotFoundException
 meth public void requestActive()
 meth public void requestFocus()
- anno 0 java.lang.Deprecated()
 meth public void requestVisible()
 meth public void setDisplayName(java.lang.String)
 meth public void setHtmlDisplayName(java.lang.String)

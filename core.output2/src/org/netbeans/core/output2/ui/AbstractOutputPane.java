@@ -345,7 +345,9 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         getCaret().setDot(pos);
         try {
             Rectangle rect = textView.modelToView(pos);
-            textView.scrollRectToVisible(rect);
+            if (rect != null) {
+                textView.scrollRectToVisible(rect);
+            }
             locked = false;
         } catch (BadLocationException ex) {
         }

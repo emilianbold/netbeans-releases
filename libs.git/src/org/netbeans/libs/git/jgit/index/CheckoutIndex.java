@@ -105,7 +105,8 @@ public class CheckoutIndex {
             }
             DirCacheIterator dit = treeWalk.getTree(0, DirCacheIterator.class);
             FileTreeIterator fit = treeWalk.getTree(1, FileTreeIterator.class);
-            if (dit != null && (recursively || directChild(roots, repository.getWorkTree(), path)) && (fit == null || fit.isModified(dit.getDirCacheEntry(), checkContent))) {
+            if (dit != null && !Utils.isFromNested(dit.getEntryFileMode().getBits())
+                    && (recursively || directChild(roots, repository.getWorkTree(), path)) && (fit == null || fit.isModified(dit.getDirCacheEntry(), checkContent))) {
                 // update entry
                 listener.notifyFile(path, treeWalk.getPathString());
                 checkoutEntry(repository, path, dit.getDirCacheEntry());

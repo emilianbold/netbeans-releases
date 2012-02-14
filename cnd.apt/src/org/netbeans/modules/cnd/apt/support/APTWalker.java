@@ -44,15 +44,21 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import java.util.HashMap;
+import java.util.IdentityHashMap;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.apt.impl.support.APTPreprocessorToken;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTStream;
 import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.apt.utils.TokenBasedTokenStream;
+import org.netbeans.modules.cnd.utils.cache.TinySingletonMap;
 
 /**
  * base Tree walker for APT
@@ -61,7 +67,8 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 public abstract class APTWalker {
     private final APTMacroMap macros;
     private final APTFile root;
-    private boolean walkerInUse = false;
+    // walker can be used only in one of modes: produce TokenStream or visit nodes
+    private Boolean walkerUsedForTokenStreamGeneration = null; 
     private boolean stopped = false;
     
     /**
@@ -75,9 +82,6 @@ public abstract class APTWalker {
     
     /** fast visit APT without generating token stream */
     public void visit() {
-        if (walkerInUse) {
-            throw new IllegalStateException("walker could be used only once"); // NOI18N
-        }  
         // non Recurse Visit
         init(false);
         while (!finished()) {
@@ -86,10 +90,11 @@ public abstract class APTWalker {
     }
     
     public TokenStream getTokenStream() {
-        if (walkerInUse) {
-            throw new IllegalStateException("walker could be used only once"); // NOI18N
-        }
         return new WalkerTokenStream();
+    }
+
+    protected boolean needPPTokens() {
+        return false;
     }
     
     private final class WalkerTokenStream implements TokenStream, APTTokenStream {
@@ -226,7 +231,7 @@ public abstract class APTWalker {
                 onIncludeNext(node);
                 break;
             case APT.Type.TOKEN_STREAM:
-//                onStreamNode(node);
+                onStreamNode(node);
                 break;
             case APT.Type.ERROR:
 		onErrorNode(node);
@@ -251,6 +256,7 @@ public abstract class APTWalker {
                                     }
                             );
         }
+        fillTokensIfNeeded(node);
         return visitChild;
     }
     
@@ -271,14 +277,14 @@ public abstract class APTWalker {
     }
     
     private void init(boolean needStream) {
+        if (walkerUsedForTokenStreamGeneration != null) {
+            throw new IllegalStateException("walker could be used only once"); // NOI18N
+        }
+        walkerUsedForTokenStreamGeneration = Boolean.valueOf(needStream);
         preInit();
         curAPT = root.getFirstChild();
-        if (needStream) {
-            fillTokens();        
-        }
         curWasInChild = false;
         pushState();
-        walkerInUse = true;
     }    
     
     private APTToken nextTokenImpl() throws TokenStreamException {
@@ -299,7 +305,6 @@ public abstract class APTWalker {
                 return APTUtils.EOF_TOKEN;
             } else {        
                 toNextNode();
-                fillTokens();                 
             }
         }
     }
@@ -367,12 +372,39 @@ public abstract class APTWalker {
         }
     }
     
-    private void fillTokens() {
-        // only token stream nodes contain tokens as TokenStream
-        if (curAPT != null && (curAPT.getType() == APT.Type.TOKEN_STREAM)) {
-            onStreamNode(curAPT);
-            TokenStream ts = ((APTStream)curAPT).getTokenStream();
-            tokens.addFirst(ts);
+    private final Map<APT, Map<Object, Object>> nodeProperties = new IdentityHashMap<APT, Map<Object, Object>>();
+    protected final void putNodeProperty(APT node, Object key, Object value) {
+        Map<Object, Object> props = nodeProperties.get(node);
+        if (props == null) {
+            nodeProperties.put(node, new TinySingletonMap<Object, Object>(key, value));
+            return;
+        } else if (props instanceof TinySingletonMap) {
+            nodeProperties.put(node, props = new HashMap<Object, Object>(props));
+        }
+        props.put(key, value);
+    }
+    
+    private void fillTokensIfNeeded(APT node) {
+        if (walkerUsedForTokenStreamGeneration == Boolean.TRUE) {
+            // only token stream nodes contain tokens as TokenStream
+            if (node != null) {
+                switch (node.getType()) {
+                    case APT.Type.TOKEN_STREAM:
+                    {
+                        TokenStream ts = ((APTStream)node).getTokenStream();
+                        tokens.addFirst(ts);
+                        break;
+                    }
+                    case APT.Type.INCLUDE:
+                    case APT.Type.INCLUDE_NEXT:
+                    {
+                        if (needPPTokens()) {
+                            tokens.addFirst(new TokenBasedTokenStream(new APTPreprocessorToken(node, nodeProperties.get(node))));
+                        }
+                        break;
+                    }
+                }
+            }
         }
     }
     

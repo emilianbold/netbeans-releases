@@ -625,6 +625,18 @@ public class FlowTest extends NbTestCase {
                     "ii++");
     }
 
+    public void testDeadBranch207514() throws Exception {
+        performDeadBranchTest("package test;\n" +
+                              "public class Test {\n" +
+                              "    public void i() {\n" +
+                              "        if (false) |{\n" +
+                              "            System.err.println(\"\");\n" +
+                              "        }|\n" +
+                              "    }\n" +
+                              "    private final java.util.concurrent.atomic.AtomicBoolean i = new java.util.concurrent.atomic.AtomicBoolean();\n" +
+                              "}\n");
+    }
+    
     private void prepareTest(String code, boolean allowErrors) throws Exception {
         clearWorkDir();
 

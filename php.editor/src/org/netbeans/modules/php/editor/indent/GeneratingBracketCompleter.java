@@ -166,8 +166,8 @@ public class GeneratingBracketCompleter {
                                         if (variable.isDollared()
                                                 && variable.getName() instanceof Identifier
                                                 && "GLOBALS".equals(((Identifier)variable.getName()).getName())
-                                                && arrayAccess.getIndex() instanceof Scalar) {
-                                            String index = ((Scalar)arrayAccess.getIndex()).getStringValue().trim();
+                                                && arrayAccess.getDimension().getIndex() instanceof Scalar) {
+                                            String index = ((Scalar)arrayAccess.getDimension().getIndex()).getStringValue().trim();
                                             if(index.length() > 0
                                                     && (index.charAt(0) == '\'' || index.charAt(0) == '"')) {
                                                 index = index.substring(1, index.length() - 1);
@@ -223,7 +223,7 @@ public class GeneratingBracketCompleter {
 
         addVariables(doc, toAdd, "@throws", indent, i.throwsExceptions);
 
-        doc.insertString(offset - 1, toAdd.toString(), null);
+        doc.insertString(offset, toAdd.toString(), null);
     }
 
     private static void addVariables(BaseDocument doc, StringBuilder toAdd, String text, int indent, List<Pair<String, String>> vars) {

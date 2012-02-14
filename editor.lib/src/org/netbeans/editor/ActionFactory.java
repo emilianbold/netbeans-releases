@@ -1568,10 +1568,10 @@ public class ActionFactory {
                         try {
                             boolean right = BaseKit.shiftLineRightAction.equals(getValue(Action.NAME));
                             if (Utilities.isSelectionShowing(caret)) {
-                                BaseKit.changeBlockIndent(
+                                BaseKit.shiftBlock(
                                     doc,
                                     target.getSelectionStart(), target.getSelectionEnd(),
-                                    right ? +1 : -1);
+                                    right);
                             } else {
                                 BaseKit.shiftLine(doc, caret.getDot(), right);
                             }
@@ -2350,29 +2350,35 @@ public class ActionFactory {
             }
 
         
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            FoldHierarchy hierarchy = FoldHierarchy.get(target);
-            int dot = target.getCaret().getDot();
-            hierarchy.lock();
-            try{
-                try{
-                    int rowStart = javax.swing.text.Utilities.getRowStart(target, dot);
-                    int rowEnd = javax.swing.text.Utilities.getRowEnd(target, dot);
-                    Fold fold = FoldUtilities.findNearestFold(hierarchy, rowStart);
-                    fold = getLineFold(hierarchy, dot, rowStart, rowEnd);
-                    if (fold==null){
-                        return; // no success
+        public void actionPerformed(ActionEvent evt, final JTextComponent target) {
+            Document doc = target.getDocument();
+            doc.render(new Runnable() {
+                @Override
+                public void run() {
+                    FoldHierarchy hierarchy = FoldHierarchy.get(target);
+                    int dot = target.getCaret().getDot();
+                    hierarchy.lock();
+                    try{
+                        try{
+                            int rowStart = javax.swing.text.Utilities.getRowStart(target, dot);
+                            int rowEnd = javax.swing.text.Utilities.getRowEnd(target, dot);
+                            Fold fold = FoldUtilities.findNearestFold(hierarchy, rowStart);
+                            fold = getLineFold(hierarchy, dot, rowStart, rowEnd);
+                            if (fold==null){
+                                return; // no success
+                            }
+                            // ensure we' got the right fold
+                            if (dotInFoldArea(target, fold, dot)){
+                                hierarchy.collapse(fold);
+                            }
+                        }catch(BadLocationException ble){
+                            ble.printStackTrace();
+                        }
+                    }finally {
+                        hierarchy.unlock();
                     }
-                    // ensure we' got the right fold
-                    if (dotInFoldArea(target, fold, dot)){
-                        hierarchy.collapse(fold);
-                    }
-                }catch(BadLocationException ble){
-                    ble.printStackTrace();
                 }
-            }finally {
-                hierarchy.unlock();
-            }
+            });
         }
     }
     
@@ -2382,24 +2388,30 @@ public class ActionFactory {
         public ExpandFold(){
         }
         
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            FoldHierarchy hierarchy = FoldHierarchy.get(target);
-            int dot = target.getCaret().getDot();
-            hierarchy.lock();
-            try{
-                try{
-                    int rowStart = javax.swing.text.Utilities.getRowStart(target, dot);
-                    int rowEnd = javax.swing.text.Utilities.getRowEnd(target, dot);
-                    Fold fold = getLineFold(hierarchy, dot, rowStart, rowEnd);
-                    if (fold!=null){
-                        hierarchy.expand(fold);
+        public void actionPerformed(ActionEvent evt, final JTextComponent target) {
+            Document doc = target.getDocument();
+            doc.render(new Runnable() {
+                @Override
+                public void run() {
+                    FoldHierarchy hierarchy = FoldHierarchy.get(target);
+                    int dot = target.getCaret().getDot();
+                    hierarchy.lock();
+                    try {
+                        try {
+                            int rowStart = javax.swing.text.Utilities.getRowStart(target, dot);
+                            int rowEnd = javax.swing.text.Utilities.getRowEnd(target, dot);
+                            Fold fold = getLineFold(hierarchy, dot, rowStart, rowEnd);
+                            if (fold != null) {
+                                hierarchy.expand(fold);
+                            }
+                        } catch (BadLocationException ble) {
+                            ble.printStackTrace();
+                        }
+                    } finally {
+                        hierarchy.unlock();
                     }
-                }catch(BadLocationException ble){
-                    ble.printStackTrace();
                 }
-            }finally {
-                hierarchy.unlock();
-            }
+            });
         }
     }
     

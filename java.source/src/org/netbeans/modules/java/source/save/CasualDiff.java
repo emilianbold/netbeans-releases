@@ -1321,8 +1321,54 @@ public class CasualDiff {
         if (oldT.typeargs.nonEmpty() && newT.typeargs.nonEmpty() && Kind.MEMBER_SELECT == oldT.meth.getKind()) {
             localPointer = diffSelect((JCFieldAccess) oldT.meth, (JCFieldAccess) newT.meth, methBounds, oldT.typeargs, newT.typeargs);
         } else {
-            localPointer = diffParameterList(oldT.typeargs, newT.typeargs, null, localPointer, Measure.ARGUMENT);
-            localPointer = diffTree(oldT.meth, newT.meth, methBounds);
+            JCExpression oldExp = oldT.meth.getKind() == Kind.MEMBER_SELECT ? ((JCFieldAccess)oldT.meth).getExpression() : null;
+            JCExpression newExp = newT.meth.getKind() == Kind.MEMBER_SELECT ? ((JCFieldAccess)newT.meth).getExpression() : null;
+            if(oldExp != newExp) {
+                if(oldExp == null) {
+                    printer.print(newExp);
+                    printer.print("."); //NOI18N
+                } else if(newExp == null) {
+                    int[] expBounds = getBounds(oldExp);
+                    tokenSequence.move(expBounds[1]);
+                    moveToSrcRelevant(tokenSequence, Direction.FORWARD); // go to dot (.)
+                    moveToSrcRelevant(tokenSequence, Direction.FORWARD); // go to oldT.name token
+                    localPointer = tokenSequence.offset();
+                } else {
+                    int[] expBounds = getBounds(oldExp);
+                    localPointer = diffTree(oldExp, newExp, expBounds);
+                    tokenSequence.move(localPointer);
+                    copyTo(localPointer, localPointer = expBounds[1]);
+                    moveToSrcRelevant(tokenSequence, Direction.FORWARD); // go to dot (.)
+                    moveToSrcRelevant(tokenSequence, Direction.FORWARD); // go to oldT.name token
+                    localPointer = tokenSequence.offset();
+                    printer.print("."); //NOI18N
+                }
+            } else if(oldExp != null) {
+                int endpos = getBounds(oldExp)[1];
+                copyTo(localPointer, localPointer = endpos+1);
+            }
+
+            boolean parens = newT.typeargs.nonEmpty();
+            localPointer = diffParameterList(oldT.typeargs,
+                    newT.typeargs,
+                    parens ? new JavaTokenId[] { JavaTokenId.LT, JavaTokenId.GT } : null,
+                    localPointer,
+                    Measure.ARGUMENT);
+            tokenSequence.move(localPointer);
+            moveToDifferentThan(tokenSequence, Direction.FORWARD, EnumSet.of(JavaTokenId.GT));
+            localPointer = tokenSequence.offset();
+            
+            Name oldName = oldT.meth.getKind() == Kind.MEMBER_SELECT ? ((JCFieldAccess)oldT.meth).name : ((JCIdent)oldT.meth).name;
+            Name newName = newT.meth.getKind() == Kind.MEMBER_SELECT ? ((JCFieldAccess)newT.meth).name : ((JCIdent)newT.meth).name;
+            
+            if (nameChanged(oldName, newName)) {
+                if(newT.meth.getKind() == Kind.MEMBER_SELECT) {
+                    printer.print(((JCFieldAccess)newT.meth).name);
+                } else {
+                    printer.print(newT.meth);
+                }
+                localPointer += oldName.length();
+            }
         }
         if (!listsMatch(oldT.args, newT.args)) {
             if (oldT.args.nonEmpty()) {
@@ -2737,6 +2783,7 @@ public class CasualDiff {
             }
             switch (item.operation) {
                 case MODIFY: {
+                    lastGroup = group;
                     int[] bounds = estimator.getPositions(i);
                     bounds[0] = Math.min(bounds[0], getCommentCorrectedOldPos(oldList.get(i)));
                     copyTo(localPointer, bounds[0], printer);
@@ -2746,6 +2793,7 @@ public class CasualDiff {
                 }
                 case INSERT: {
                     boolean insetBlankLine = lastGroup >= 0 && lastGroup != group;
+                    lastGroup = group;
                     int pos = importGroups != null ? i == 0 || insetBlankLine && i < oldList.size() ? estimator.getPositions(i)[0] : estimator.getPositions(i-1)[2]
                             : estimator.getInsertPos(i);
                     if (pos > localPointer) {
@@ -2811,6 +2859,7 @@ public class CasualDiff {
                     break;
                 }
                 case NOCHANGE: {
+                    lastGroup = group;
                     int[] pos = estimator.getPositions(i);
                     if (pos[0] > localPointer && i != 0) {
                         // print fill-in
@@ -2829,7 +2878,6 @@ public class CasualDiff {
                     break;
                 }
             }
-            lastGroup = group;
         }
         return localPointer;
     }

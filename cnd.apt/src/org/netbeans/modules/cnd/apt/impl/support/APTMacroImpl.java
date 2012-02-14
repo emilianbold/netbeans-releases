@@ -75,30 +75,37 @@ public final class APTMacroImpl implements APTMacro {
         this.macroType = macroType;
     }
 
+    @Override
     public CharSequence getFile() {
         return file;
     }
     
+    @Override
     public Kind getKind() {
         return macroType;
     }
 
+    @Override
     public boolean isFunctionLike() {
         return defineNode.isFunctionLike();
     }
 
+    @Override
     public APTToken getName() {
         return defineNode.getName();
     }
 
+    @Override
     public Collection<APTToken> getParams() {
         return defineNode.getParams();
     }
 
+    @Override
     public TokenStream getBody() {
         return new ListBasedTokenStream(defineNode.getBody());
     }
 
+    @Override
     public APTDefine getDefineNode() {
         return defineNode;
     }

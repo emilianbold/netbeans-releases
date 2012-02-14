@@ -75,10 +75,12 @@ public final class APTUnknownNode extends APTStreamBaseNode
         super(token);
     }
     
+    @Override
     public final int getType() {
         return APT.Type.PREPROC_UNKNOWN;
     }
     
+    @Override
     protected boolean validToken(APTToken t) {
         assert (t != null);
         int ttype = t.getType();

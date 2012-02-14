@@ -47,9 +47,7 @@ package org.netbeans.modules.apisupport.project.ui;
 import java.beans.PropertyChangeListener;
 import javax.swing.Icon;
 import org.netbeans.api.project.SourceGroup;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 
 // XXX this class is more or less copy-pasted from j2seproject.
@@ -88,12 +86,7 @@ final class LibrariesSourceGroup implements SourceGroup {
     }
     
     public String getName() {
-        try {
-            return root.getURL().toExternalForm();
-        } catch (FileStateInvalidException fsi) {
-            ErrorManager.getDefault().notify(fsi);
-            return root.toString();
-        }
+        return root.toURL().toExternalForm();
     }
     
     public String getDisplayName() {

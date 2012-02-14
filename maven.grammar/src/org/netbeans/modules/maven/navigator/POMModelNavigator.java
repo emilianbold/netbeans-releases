@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.navigator;
 
 import java.util.Collection;
 import javax.swing.JComponent;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
@@ -55,6 +56,7 @@ import org.openide.util.NbBundle;
  *
  * @author mkleint
  */
+@NavigatorPanel.Registration(mimeType=Constants.POM_MIME_TYPE, position=100, displayName="#POM_MODEL_NAME")
 public class POMModelNavigator implements NavigatorPanel {
     private POMModelPanel component;
     

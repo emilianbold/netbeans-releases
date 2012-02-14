@@ -122,7 +122,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         assertEquals(5L, x.getSize());
         assertEquals("stuff", x.asText("UTF-8"));
         assertEquals("x.txt", x.getAttribute("WritableXMLFileSystem.url"));
-        assertEquals("[" + l.f.getURL() + "]", Arrays.toString((URL[]) x.getAttribute("layers")));
+        assertEquals("[" + l.f.toURL() + "]", Arrays.toString((URL[]) x.getAttribute("layers")));
         fs = new Layer("<file name='x' url='subdir/x.txt'/>", Collections.singletonMap("subdir/x.txt", "more stuff")).read();
         x = fs.findResource("x");
         assertNotNull(x);
@@ -138,7 +138,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         FileObject orgTest = FileUtil.createFolder(new File(orig.folder, "org/test"));
         FileObject lf = orig.f.copy(orgTest, "layer", "xml");
         SavableTreeEditorCookie cookie = LayerUtils.cookieForFile(lf);
-        FileSystem fs = new WritableXMLFileSystem(lf.getURL(), cookie, 
+        FileSystem fs = new WritableXMLFileSystem(lf.toURL(), cookie,
                 ClassPathSupport.createClassPath(new FileObject[] { FileUtil.toFileObject(orig.folder) } ));
         FileObject x = fs.findResource("x");
         assertNotNull(x);
@@ -779,7 +779,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
          */
         public WritableXMLFileSystem read() throws Exception {
             cookie = LayerUtils.cookieForFile(f);
-            return new WritableXMLFileSystem(f.getURL(), cookie, ClassPathSupport.createClassPath(System.getProperty("java.class.path")));
+            return new WritableXMLFileSystem(f.toURL(), cookie, ClassPathSupport.createClassPath(System.getProperty("java.class.path")));
         }
         /**
          * Write the filesystem to the layer and retrieve the new contents.

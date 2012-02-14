@@ -2,32 +2,42 @@
 <project basedir="." default="netbeans" name="php.editor">
     <description>Builds, tests, and runs the project org.netbeans.modules.php.editor</description>
     <import file="../nbbuild/templates/projectized.xml"/>
-    
+
     <!-- for generationg lexer and parser, uncomment the tasks and set up the right classpath -->
-    
+
+    <!--<target name="-prepare-jflex" depends="build-init">
+        <mkdir dir="${build.dir}/tools"/>
+        <get src="http://repo1.maven.org/maven2/de/jflex/jflex/1.4.3/jflex-1.4.3.jar" dest="${build.dir}/tools/jflex.jar" verbose="true"/>
+        <taskdef name="jflex" classname="JFlex.anttask.JFlexTask" classpath="${build.dir}/tools/jflex.jar" />
+    </target>
+
+    <target name="-gen-lexer" depends="-prepare-jflex">
+        <jflex file="tools/Php5ColoringScanner.flex" destdir="src" skel="tools/skeleton.netbeans" />
+    </target>-->
+
     <!--<taskdef name="jflex"
-        classname="JFlex.anttask.JFlexTask"  
-        classpath="/space/jflex/lib/JFlex.jar" />-->
-        
+        classname="JFlex.anttask.JFlexTask"
+        classpath="/usr/share/ant/lib/jflex.jar" />-->
+
     <!--<target name="gen-lexer" >
-        <jflex file="tools/Php5ColoringScanner.flex" 
-        destdir="src" 
+        <jflex file="tools/Php5ColoringScanner.flex"
+        destdir="src"
         skel="tools/skeleton.netbeans"/>
     </target>-->
-    
+
     <!--<target name="gen-astscanner" >
-        <jflex file="tools/ASTPHP5Scanner.flex" 
+        <jflex file="tools/ASTPHP5Scanner.flex"
         destdir="src"
         skel="tools/skeletonParser.netbeans"/>
     </target>-->
-        
+
     <!--<target name="gen-docscanner" >
-        <jflex file="tools/DocumentorColoringScanner.flex" 
+        <jflex file="tools/DocumentorColoringScanner.flex"
         destdir="src"
         skel="tools/skeleton.netbeans"/>
     </target>-->
-    
-        
+
+
     <target name="gen-astparser">
     <taskdef name="javacup"
         classname="java_cup.anttask.CUPTask"

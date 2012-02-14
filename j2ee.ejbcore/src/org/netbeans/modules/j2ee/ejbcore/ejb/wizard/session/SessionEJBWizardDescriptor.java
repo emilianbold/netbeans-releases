@@ -204,6 +204,10 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
     public TimerOptions getTimerOptions() {
         return wizardPanel.getTimerOptions();
     }
+
+    public boolean exposeTimerMethod() {
+        return wizardPanel.exposeTimerMethod();
+    }
     
     public boolean isFinishPanel() {
         return isValid();

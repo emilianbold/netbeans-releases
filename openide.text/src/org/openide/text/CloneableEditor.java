@@ -908,6 +908,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         if (ces != null) {
             ces.firePropertyChange(EditorCookie.Observable.PROP_OPENED_PANES, null, null);
         }
+        if (ces.getAnyEditor() == null) {
+            ces.close(false);
+        }
     }
 
     /** When closing last view, also close the document. 

@@ -44,10 +44,10 @@ package org.netbeans.modules.php.project.ui.actions.support;
 
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.connections.RemoteConnections;
+import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
+import org.netbeans.modules.php.project.runconfigs.validation.RunConfigRemoteValidator;
 import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -63,21 +63,13 @@ class ConfigActionRemote extends ConfigActionLocal {
     }
 
     @Override
-    public boolean isValid(boolean indexFileNeeded) {
-        boolean valid = super.isValid(indexFileNeeded);
-        if (!valid) {
-            return false;
-        }
-        String remoteConnection = ProjectPropertiesSupport.getRemoteConnection(project);
-        if (remoteConnection == null || RemoteConnections.get().remoteConfigurationForName(remoteConnection) == null) {
-            valid = false;
-        } else if (RunAsValidator.validateUploadDirectory(ProjectPropertiesSupport.getRemoteDirectory(project), true) != null) {
-            valid = false;
-        }
-        if (!valid) {
-            showCustomizer();
-        }
-        return valid;
+    public boolean isProjectValid() {
+        return isValid(RunConfigRemoteValidator.validateConfigAction(RunConfigRemote.forProject(project), true) == null);
+    }
+
+    @Override
+    public boolean isFileValid() {
+        return isValid(RunConfigRemoteValidator.validateConfigAction(RunConfigRemote.forProject(project), false) == null);
     }
 
     @Override
@@ -107,11 +99,12 @@ class ConfigActionRemote extends ConfigActionLocal {
             return;
         }
 
-        PhpProjectProperties.UploadFiles uploadFiles = ProjectPropertiesSupport.getRemoteUpload(project);
+        PhpProjectProperties.UploadFiles uploadFiles = RunConfigRemote.forProject(project).getUploadFilesType();
         assert uploadFiles != null;
 
         if (PhpProjectProperties.UploadFiles.ON_RUN.equals(uploadFiles)) {
             uploadCommand.uploadFiles(new FileObject[] {ProjectPropertiesSupport.getSourcesDirectory(project)}, preselectedFiles);
         }
     }
+
 }

@@ -79,7 +79,7 @@ public class testBrowserAndIDE extends project {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(testBrowserAndIDE.class).addTest(
-                "CreateJobeetSampleApplication",
+                "CreateSimpleApplication",
                 "SetCustomBrowserPath",
                 "ExecuteInBrowser",
                 "ExecuteInConsole" // Execute different ways

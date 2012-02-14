@@ -13,6 +13,23 @@
             <!DOCTYPE root3 PUBLIC "test" "empty.dtd">
             <root3/>]]>
         </file>
+        <file name="namespace.axml"><![CDATA[<?xml version="1.0"?>
+            <!DOCTYPE root3 PUBLIC "-//My/Type/EN" "empty.dtd">
+            <root3/>]]>
+        </file>
+        <file name="nodtd.axml"><![CDATA[<?xml version="1.0"?>
+            <root3333/>]]>
+        </file>
+        <file name="namespace.bxml"><![CDATA[<?xml version="1.0"?>
+            <!DOCTYPE root3 PUBLIC "-//Your/Type/EN" "empty.dtd">
+            <root3/>]]>
+        </file>
+        <file name="noelem.bxml"><![CDATA[<?xml version="1.0"?>
+            <myandyour/>]]>
+        </file>
+        <file name="namespace.cxml"><![CDATA[<?xml version="1.0"?>
+            <myandyour xmlns="http://some.org/ns/123"/>]]>
+        </file>
         <file name="test.exe"><![CDATA[aaa]]></file>
         <file name="test.elf"><![CDATA[CCC]]></file>
         <file name="test.txt2"/>        

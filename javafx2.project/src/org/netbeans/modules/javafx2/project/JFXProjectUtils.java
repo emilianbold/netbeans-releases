@@ -41,11 +41,15 @@
  */
 package org.netbeans.modules.javafx2.project;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.annotations.common.NonNull;
@@ -54,13 +58,16 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.*;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.*;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
+import org.openide.cookies.CloseCookie;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
 
 /**
  * Utility class for JavaFX 2.0 Project
@@ -71,6 +78,11 @@ public final class JFXProjectUtils {
 
     private static Set<SearchKind> kinds = new HashSet<SearchKind>(Arrays.asList(SearchKind.IMPLEMENTORS));
     private static Set<SearchScope> scopes = new HashSet<SearchScope>(Arrays.asList(SearchScope.SOURCE));
+    
+    private static final String JFX_BUILD_TEMPLATE = "Templates/JFX/jfx-impl.xml"; //NOI18N
+    private static volatile String currentJfxImplCRCCache;
+
+    private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
     
     /**
      * Returns list of JavaFX 2.0 JavaScript callback entries.
@@ -357,4 +369,152 @@ public final class JFXProjectUtils {
         return null;
     }
 
+    /**
+     * Checks whether file nbproject/jfx-impl.xml equals current template. 
+     * If not, the file is backed up and regenerated to the current state
+     * and textual commentary is generated to UPDATED.TXT.
+     * 
+     * @param prj the project to check
+     * @return FileObject pointing at generated UPDATED.TXT or null
+     */
+    static FileObject updateJfxImpl(final @NonNull Project proj) throws IOException {
+        FileObject returnFO = null;
+        boolean isJfxCurrent = true;
+        FileObject projDir = proj.getProjectDirectory();
+        FileObject jfxBuildFile = projDir.getFileObject("nbproject/jfx-impl.xml"); // NOI18N
+        if (jfxBuildFile != null) {
+            final InputStream in = jfxBuildFile.getInputStream();
+            if(in != null) {
+                try {
+                    isJfxCurrent = isJfxImplCurrentVer(computeCrc32( in ));
+                } finally {
+                    in.close();
+                }
+            }
+        }
+        if (!isJfxCurrent) {
+            // try to close the file just in case the file is already opened in editor
+            DataObject dobj = DataObject.find(jfxBuildFile);
+            CloseCookie closeCookie = dobj.getLookup().lookup(CloseCookie.class);
+            if (closeCookie != null) {
+                closeCookie.close();
+            }
+            final FileObject nbproject = projDir.getFileObject("nbproject"); //NOI18N
+            final String backupName = FileUtil.findFreeFileName(nbproject, "jfx-impl_backup", "xml"); //NOI18N
+            FileUtil.moveFile(jfxBuildFile, nbproject, backupName);
+            LOGGER.log(Level.INFO, "Old build script file jfx-impl.xml has been renamed to: {0}.xml", backupName); // NOI18N
+            jfxBuildFile = null;
+
+            try {
+                final File readme = new File (FileUtil.toFile(nbproject), NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_README_FILE_NAME")); //NOI18N
+                if (!readme.exists()) {
+                    readme.createNewFile();
+                }
+                final FileObject readmeFO = FileUtil.toFileObject(readme);
+                returnFO = readmeFO;
+                try {
+                    ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                        @Override
+                        public Void run() throws Exception {
+                            OutputStream os = null;
+                            FileLock lock = null;
+                            try {
+                                lock = readmeFO.lock();
+                                os = readmeFO.getOutputStream(lock);
+                                final PrintWriter out = new PrintWriter ( os );
+                                try {
+                                    final String headerTemplate = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_README_FILE_CONTENT_HEADER"); //NOI18N
+                                    final String header = MessageFormat.format(headerTemplate, new Object[] {ProjectUtils.getInformation(proj).getDisplayName()});
+                                    char[] underline = new char[header.length()];
+                                    Arrays.fill(underline, '='); // NOI18N
+                                    final String content = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_README_FILE_CONTENT"); //NOI18N
+                                    out.println(underline);
+                                    out.println(header);
+                                    out.println(underline);
+                                    out.println (MessageFormat.format(content, new Object[] {backupName + ".xml"})); //NOI18N
+                                } finally {
+                                    if(out != null) {
+                                        out.close ();
+                                    }
+                                }
+                            } finally {
+                                if (lock != null) {
+                                    lock.releaseLock();
+                                }
+                                if (os != null) {
+                                    os.close();
+                                }
+                            }
+                            return null;
+                        }
+                    });
+                } catch (MutexException mux) {
+                    throw (IOException) mux.getException();
+                }
+                
+            } catch (IOException ioe) {
+                LOGGER.log(Level.INFO, "Cannot create file readme file. ", ioe); // NOI18N
+            }        
+        }
+        if (jfxBuildFile == null) {
+            FileObject templateFO = FileUtil.getConfigFile(JFX_BUILD_TEMPLATE);
+            if (templateFO != null) {
+                FileUtil.copyFile(templateFO, projDir.getFileObject("nbproject"), "jfx-impl"); // NOI18N
+                LOGGER.log(Level.INFO, "Build script jfx-impl.xml has been updated to the latest version supported by this NetBeans installation."); // NOI18N
+            }
+        }
+        return returnFO;
+    }
+
+    /**
+     * Computes CRC code of data from InputStream
+     * 
+     * @param is InputStream to read data from
+     * @return CRC code
+     */
+    static String computeCrc32(InputStream is) throws IOException {
+        Checksum crc = new CRC32();
+        int last = -1;
+        int curr;
+        while ((curr = is.read()) != -1) {
+            if (curr != '\n' && last == '\r') {
+                crc.update('\n');
+            }
+            if (curr != '\r') {
+                crc.update(curr);
+            }
+            last = curr;
+        }
+        if (last == '\r') {
+            crc.update('\n');
+        }
+        int val = (int)crc.getValue();
+        String hex = Integer.toHexString(val);
+        while (hex.length() < 8) {
+            hex = "0" + hex; // NOI18N
+        }
+        return hex;
+    }
+
+    /**
+     * Checks whether crc is the CRC code of current jfx-impl.xml template.
+     * 
+     * @param crc code to be compared against
+     * @return true if crc is the CRC code of current jfx-impl.xml template.
+     */
+    static boolean isJfxImplCurrentVer(String crc) throws IOException {
+        String _currentJfxImplCRC = currentJfxImplCRCCache;
+        if (_currentJfxImplCRC == null) {
+            final FileObject template = FileUtil.getConfigFile(JFX_BUILD_TEMPLATE);
+            final InputStream in = template.getInputStream();
+            if(in != null) {
+                try {
+                    currentJfxImplCRCCache = _currentJfxImplCRC = computeCrc32(in);
+                } finally {
+                    in.close();
+                }
+            }
+        }
+        return _currentJfxImplCRC.equals(crc);
+    }
 }

@@ -43,7 +43,9 @@ package org.netbeans.modules.php.editor.verification;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.QualifiedNameKind;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -58,8 +60,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 
@@ -76,15 +76,7 @@ public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
     }
 
     public static  boolean appliesTo(FileObject fobj) {
-        if (fobj != null){
-            Properties props = PhpLanguageOptions.getDefault().getProperties(fobj);
-
-            if (props.getPhpVersion() == PhpLanguageOptions.PhpVersion.PHP_5) {
-                return true;
-            }
-        }
-
-        return false;
+        return CodeUtils.isPhp_52(fobj);
     }
 
     @Override
@@ -145,13 +137,13 @@ public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
         }
     }
 
-    public Collection<? extends org.netbeans.modules.csl.api.Error> getErrors(){
-        return errors;
+    public Collection<PHPVersionError> getErrors(){
+        return Collections.unmodifiableCollection(errors);
     }
 
     private  void createError(int startOffset, int endOffset){
 
-        PHPVersionError error = new PHPVersionError(startOffset, endOffset);
+        PHPVersionError error = new PHP53VersionError(fobj, startOffset, endOffset);
         errors.add(error);
     }
 
@@ -160,14 +152,12 @@ public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
         super.visit(node);
     }
 
-    class PHPVersionError implements org.netbeans.modules.csl.api.Error{
+    private class PHP53VersionError extends PHPVersionError {
 
-        private int startPosition;
-        private int endPosition;
+        private static final String KEY = "php.ver"; //NOI18N
 
-        public PHPVersionError(int startPosition, int endPosition) {
-            this.startPosition = startPosition;
-            this.endPosition = endPosition;
+        public PHP53VersionError(FileObject fileObject, int startOffset, int endOffset) {
+            super(fileObject, startOffset, endOffset);
         }
 
         @Override
@@ -184,37 +174,7 @@ public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
 
         @Override
         public String getKey() {
-            return "php.ver"; //NOI18N
-        }
-
-        @Override
-        public FileObject getFile() {
-            return fobj;
-        }
-
-        @Override
-        public int getStartPosition() {
-            return startPosition;
-        }
-
-        @Override
-        public int getEndPosition() {
-            return endPosition;
-        }
-
-        @Override
-        public boolean isLineError() {
-            return true;
-        }
-
-        @Override
-        public Severity getSeverity() {
-            return Severity.ERROR;
-        }
-
-        @Override
-        public Object[] getParameters() {
-            return new Object[]{};
+            return KEY;
         }
 
     }

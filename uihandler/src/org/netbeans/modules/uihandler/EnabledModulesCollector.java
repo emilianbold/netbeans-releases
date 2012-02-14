@@ -70,6 +70,7 @@ public class EnabledModulesCollector implements Deactivated {
     public EnabledModulesCollector() {
     }
 
+    @Override
     public void deactivated(Logger uiLogger) {
         List<ModuleInfo> enabled = new ArrayList<ModuleInfo>();
         List<ModuleInfo> disabled = new ArrayList<ModuleInfo>();

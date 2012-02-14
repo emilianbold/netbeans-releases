@@ -76,10 +76,12 @@ import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.UseElement;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -89,6 +91,7 @@ import org.openide.util.ImageUtilities;
 public class PhpStructureScanner implements StructureScanner {
 
     private static ImageIcon INTERFACE_ICON = null;
+    private static ImageIcon TRAIT_ICON = null;
 
     private static final String FOLD_CODE_BLOCKS = "codeblocks"; //NOI18N
 
@@ -105,7 +108,7 @@ public class PhpStructureScanner implements StructureScanner {
     private static final String LAST_CORRECT_FOLDING_PROPERTY = "LAST_CORRECT_FOLDING_PROPERY";
 
     public List<? extends StructureItem> scan(final ParserResult info) {
-        final List<StructureItem> items = new ArrayList<StructureItem>();        
+        final List<StructureItem> items = new ArrayList<StructureItem>();
         PHPParseResult result = (PHPParseResult) info;
         final Model model = result.getModel();
         FileScope fileScope = model.getFileScope();
@@ -142,11 +145,13 @@ public class PhpStructureScanner implements StructureScanner {
                     namespaceChildren.add(new PHPClassStructureItem((ClassScope) type, children));
                 } else if (type instanceof InterfaceScope) {
                     namespaceChildren.add(new PHPInterfaceStructureItem((InterfaceScope) type, children));
+                } else if (type instanceof TraitScope) {
+                    namespaceChildren.add(new PHPTraitStructureItem((TraitScope) type, children));
                 }
                 Collection<? extends MethodScope> declaredMethods = type.getDeclaredMethods();
                 for (MethodScope method : declaredMethods) {
-                    // The method name doesn't have to be always defined during parsing. 
-                    // For example when user writes in  a php doc @method and parsing is 
+                    // The method name doesn't have to be always defined during parsing.
+                    // For example when user writes in  a php doc @method and parsing is
                     // started when there is no name yet.
                     if (method.getName() != null && !method.getName().isEmpty()) {
                         List<StructureItem> variables = new ArrayList<StructureItem>();
@@ -175,11 +180,18 @@ public class PhpStructureScanner implements StructureScanner {
                         children.add(new PHPFieldStructureItem(field));//NOI18N
                     }
                 }
+                if (type instanceof TraitScope) {
+                    TraitScope trait = (TraitScope) type;
+                    Collection<? extends FieldElement> declaredFields = trait.getDeclaredFields();
+                    for (FieldElement field : declaredFields) {
+                        children.add(new PHPFieldStructureItem(field));//NOI18N
+                    }
+                }
             }
         }
 
 
-        
+
         return items;
     }
 
@@ -192,7 +204,7 @@ public class PhpStructureScanner implements StructureScanner {
                 if (program.getStatements().get(0) instanceof ASTError) {
                     final Document document = info.getSnapshot().getSource().getDocument(false);
                     @SuppressWarnings("unchecked")
-                    Map<String, List<OffsetRange>> lastCorrect = document != null ? 
+                    Map<String, List<OffsetRange>> lastCorrect = document != null ?
                         ((Map<String, List<OffsetRange>>) document.getProperty(LAST_CORRECT_FOLDING_PROPERTY)) : null;
                     if (lastCorrect != null){
                         return lastCorrect;
@@ -227,13 +239,14 @@ public class PhpStructureScanner implements StructureScanner {
                     //NamespaceScope excluded until getBlockRange() return proper vaalues
                     if (scope instanceof FunctionScope || scope instanceof MethodScope /*|| scope instanceof NamespaceScope*/) {
                         getRanges(folds, FOLD_CODE_BLOCKS).add(offsetRange);
-                    } 
+                    }
                 }
             }
+            program.accept(new FoldingVisitor(folds));
             Source source = info.getSnapshot().getSource();
             assert source != null : "source was null";
             Document doc = source.getDocument(false);
-            
+
             if (doc != null){
                 doc.putProperty(LAST_CORRECT_FOLDING_PROPERTY, folds);
             }
@@ -271,6 +284,83 @@ public class PhpStructureScanner implements StructureScanner {
             }
         }
         return collectedScopes;
+    }
+
+    private class FoldingVisitor extends DefaultVisitor {
+        private final Map<String, List<OffsetRange>> folds;
+
+        public FoldingVisitor(final Map<String, List<OffsetRange>> folds) {
+            this.folds = folds;
+        }
+
+        @Override
+        public void visit(IfStatement node) {
+            super.visit(node);
+            int endOffset = node.getEndOffset();
+            Statement falseStatement = node.getFalseStatement();
+            if (falseStatement != null) {
+                endOffset = falseStatement.getEndOffset();
+                addFold(falseStatement);
+            }
+            addFold(new OffsetRange(node.getStartOffset(), endOffset));
+        }
+
+        @Override
+        public void visit(ForEachStatement node) {
+            super.visit(node);
+            addFold(node);
+        }
+
+        @Override
+        public void visit(ForStatement node) {
+            super.visit(node);
+            addFold(node);
+        }
+
+        @Override
+        public void visit(WhileStatement node) {
+            super.visit(node);
+            addFold(node);
+        }
+
+        @Override
+        public void visit(DoStatement node) {
+            super.visit(node);
+            addFold(node);
+        }
+
+        @Override
+        public void visit(SwitchStatement node) {
+            super.visit(node);
+            addFold(node);
+        }
+
+        @Override
+        public void visit(SwitchCase node) {
+            super.visit(node);
+            addFold(node);
+        }
+
+        @Override
+        public void visit(TryStatement node) {
+            super.visit(node);
+            addFold(node);
+        }
+
+        @Override
+        public void visit(CatchClause node) {
+            super.visit(node);
+            addFold(node);
+        }
+
+        private void addFold(final ASTNode node) {
+            addFold(createOffsetRange(node));
+        }
+
+        private void addFold(final OffsetRange offsetRange) {
+            getRanges(folds, FOLD_CODE_BLOCKS).add(offsetRange);
+        }
+
     }
 
     private abstract class PHPStructureItem implements StructureItem {
@@ -375,6 +465,18 @@ public class PhpStructureScanner implements StructureScanner {
                     formatter.appendText(identifier);
                 }
 
+            }
+        }
+
+        protected void appendUsedTraits(Collection<QualifiedName> usedTraits, HtmlFormatter formatter) {
+            boolean first = true;
+            for (QualifiedName qualifiedName : usedTraits) {
+                if (!first) {
+                    formatter.appendText(", ");  //NOI18N
+                } else {
+                    first = false;
+                }
+                formatter.appendText(qualifiedName.toString());
             }
         }
 
@@ -558,6 +660,12 @@ public class PhpStructureScanner implements StructureScanner {
                 appendInterfeas(interfaes, formatter);
                 formatter.appendHtml(CLOSE_FONT);
             }
+            Collection<QualifiedName> usedTraits = getClassScope().getUsedTraits();
+            if (usedTraits != null && usedTraits.size() > 0) {
+                formatter.appendHtml(FONT_GRAY_COLOR + "#"); //NOI18N
+                appendUsedTraits(usedTraits, formatter);
+                formatter.appendHtml(CLOSE_FONT);
+            }
             return formatter.getText();
         }
 
@@ -583,7 +691,7 @@ public class PhpStructureScanner implements StructureScanner {
                 formatter.appendHtml(FONT_GRAY_COLOR); //NOI18N
                 formatter.appendText(value);
                 formatter.appendHtml(CLOSE_FONT);
-            }            
+            }
             return formatter.getText();
         }
 
@@ -659,6 +767,40 @@ public class PhpStructureScanner implements StructureScanner {
         }
     }
 
+    private class PHPTraitStructureItem extends PHPStructureItem {
+        private static final String PHP_TRAIT_ICON = "org/netbeans/modules/php/editor/resources/trait.png"; //NOI18N
+
+        public PHPTraitStructureItem(ModelElement elementHandle, List<? extends StructureItem> children) {
+            super(elementHandle, children, "cl");
+        }
+
+        @Override
+        public ImageIcon getCustomIcon() {
+            if (TRAIT_ICON == null) {
+                TRAIT_ICON = new ImageIcon(ImageUtilities.loadImage(PHP_TRAIT_ICON));
+            }
+            return TRAIT_ICON;
+        }
+
+        public TraitScope getTraitScope() {
+            return (TraitScope) getModelElement();
+        }
+
+        @Override
+        public String getHtml(HtmlFormatter formatter) {
+            formatter.reset();
+            formatter.appendText(getElementHandle().getName());
+            Collection<QualifiedName> usedTraits = getTraitScope().getUsedTraits();
+            if (usedTraits != null && usedTraits.size() > 0) {
+                formatter.appendHtml(FONT_GRAY_COLOR + "#"); //NOI18N
+                appendUsedTraits(usedTraits, formatter);
+                formatter.appendHtml(CLOSE_FONT);
+            }
+            return formatter.getText();
+        }
+
+    }
+
     private class PHPConstructorStructureItem extends PHPStructureItem {
 
         public PHPConstructorStructureItem(MethodScope elementHandle, List<? extends StructureItem> children) {
@@ -680,5 +822,5 @@ public class PhpStructureScanner implements StructureScanner {
                 return formatter.getText();
         }
 
-    }    
+    }
 }

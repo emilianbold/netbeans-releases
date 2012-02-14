@@ -54,13 +54,12 @@ import java.security.Permission;
 import java.security.PermissionCollection;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileSystemCapability;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -115,11 +114,10 @@ public class NbClassLoader extends URLClassLoader {
      * @param roots a set of package roots
      * @param parent a parent loader
      * @param io an I/O tab in the Output Window, or null
-     * @throws FileStateInvalidException if some of the roots are not valid
      * @since XXX
      */
     static ThreadLocal<Boolean> f = new ThreadLocal<Boolean>();
-    public NbClassLoader(FileObject[] roots, ClassLoader parent, InputOutput io) throws FileStateInvalidException {
+    public NbClassLoader(FileObject[] roots, ClassLoader parent, InputOutput io) {
         super(createRootURLs(roots), parent);
         fast = canOptimize(getURLs());
         inout = io;
@@ -286,10 +284,10 @@ public class NbClassLoader extends URLClassLoader {
      * @param roots file roots
      * @return array of URLs
      */
-    private static URL[] createRootURLs(FileObject[] roots) throws FileStateInvalidException {
+    private static URL[] createRootURLs(FileObject[] roots) {
         URL[] urls = new URL[roots.length];
         for (int i = 0; i < roots.length; i++) {
-            urls[i] = roots[i].getURL();
+            urls[i] = roots[i].toURL();
             }
         return urls;
     }

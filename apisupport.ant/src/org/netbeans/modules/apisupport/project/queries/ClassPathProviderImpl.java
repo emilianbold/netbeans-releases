@@ -59,6 +59,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.modules.apisupport.project.Evaluator;
@@ -72,9 +73,7 @@ import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
 import org.openide.xml.XMLUtil;
@@ -117,24 +116,18 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         FileObject srcDir = project.getSourceDirectory();
         FileObject testSrcDir = project.getTestSourceDirectory("unit");
         FileObject funcTestSrcDir = project.getTestSourceDirectory("qa-functional");
-        File dir = project.getClassesDirectory();
+        @NonNull File dir = project.getClassesDirectory();
         // #164282: workaround for not refreshed FS cache
-        dir = dir == null ? null : FileUtil.normalizeFile(dir);
-        FileObject classesDir = (dir == null || ! dir.exists()) ? null : FileUtil.toFileObject(dir);
+        dir = FileUtil.normalizeFile(dir);
+        FileObject classesDir = dir.exists() ? FileUtil.toFileObject(dir) : null;
         dir = project.getTestClassesDirectory("unit");
-        dir = dir == null ? null : FileUtil.normalizeFile(dir);
-        FileObject testClassesDir = (dir == null || ! dir.exists()) ? null : FileUtil.toFileObject(dir);
+        dir = FileUtil.normalizeFile(dir);
+        FileObject testClassesDir = dir.exists() ? FileUtil.toFileObject(dir) : null;
         File moduleJar;
         URL generatedClasses = FileUtil.urlForArchiveOrDir(project.getGeneratedClassesDirectory());
         URL generatedUnitTestClasses = FileUtil.urlForArchiveOrDir(project.getTestGeneratedClassesDirectory("unit"));
         URL generatedFunctionalTestClasses = FileUtil.urlForArchiveOrDir(project.getTestGeneratedClassesDirectory("qa-functional"));
-        String fileU;
-        try {
-            fileU = file.getURL().toString();
-        } catch (FileStateInvalidException x) {
-            LOG.log(Level.INFO, null, x);
-            return null;
-        }
+        String fileU = file.toURL().toString();
         if (srcDir != null &&
                 (FileUtil.isParentOf(srcDir, file) || file == srcDir || fileU.startsWith(generatedClasses.toString()))) {
             // Regular sources.
@@ -151,11 +144,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 return execute;
             } else if (type.equals(ClassPath.SOURCE)) {
                 if (source == null) {
-                    try {
-                        source = ClassPathSupport.createClassPath(srcDir.getURL(), generatedClasses);
-                    } catch (FileStateInvalidException x) {
-                        LOG.log(Level.INFO, null, x);
-                    }
+                    source = ClassPathSupport.createClassPath(srcDir.toURL(), generatedClasses);
                 }
                 return source;
             }
@@ -177,11 +166,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 return testExecute;
             } else if (type.equals(ClassPath.SOURCE)) {
                 if (testSource == null) {
-                    try {
-                        testSource = ClassPathSupport.createClassPath(testSrcDir.getURL(), generatedUnitTestClasses);
-                    } catch (FileStateInvalidException x) {
-                        LOG.log(Level.INFO, null, x);
-                    }
+                    testSource = ClassPathSupport.createClassPath(testSrcDir.toURL(), generatedUnitTestClasses);
                 }
                 return testSource;
             }
@@ -190,11 +175,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             // Functional tests.
             if (type.equals(ClassPath.SOURCE)) {
                 if (funcTestSource == null) {
-                    try {
-                        funcTestSource = ClassPathSupport.createClassPath(funcTestSrcDir.getURL(), generatedFunctionalTestClasses);
-                    } catch (FileStateInvalidException x) {
-                        LOG.log(Level.INFO, null, x);
-                    }
+                    funcTestSource = ClassPathSupport.createClassPath(funcTestSrcDir.toURL(), generatedFunctionalTestClasses);
                 }
                 return funcTestSource;
             } else if (type.equals(ClassPath.COMPILE)) {
@@ -212,15 +193,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             }
         } else if (classesDir != null && (classesDir.equals(file) || FileUtil.isParentOf(classesDir,file))) {
             if (ClassPath.EXECUTE.equals(type)) {
-                try {
-                    List<PathResourceImplementation> roots = new ArrayList<PathResourceImplementation>();
-                    roots.add ( ClassPathSupport.createResource(classesDir.getURL()));
-                    roots.addAll(createCompileClasspath().getResources());
-                    return ClassPathSupport.createClassPath (roots);
-                } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify (e);
-                    return null;
-                }
+                List<PathResourceImplementation> roots = new ArrayList<PathResourceImplementation>();
+                roots.add ( ClassPathSupport.createResource(classesDir.toURL()));
+                roots.addAll(createCompileClasspath().getResources());
+                return ClassPathSupport.createClassPath (roots);
             }
         } else if (testClassesDir != null && (testClassesDir.equals(file) || FileUtil.isParentOf(testClassesDir,file))) {
             if (ClassPath.EXECUTE.equals(type)) {

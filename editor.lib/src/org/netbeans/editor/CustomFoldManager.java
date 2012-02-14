@@ -92,6 +92,9 @@ final class CustomFoldManager implements FoldManager, Runnable {
 
     public void init(FoldOperation operation) {
         this.operation = operation;
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Initialized: {0}", System.identityHashCode(this));
+        }
     }
     
     private FoldOperation getOperation() {
@@ -130,10 +133,18 @@ final class CustomFoldManager implements FoldManager, Runnable {
     }
 
     public void release() {
-
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Released: {0}", System.identityHashCode(this));
+        }
     }
 
     public void run() {
+        if (operation.isReleased()) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Update skipped, already relaesed: {0}", System.identityHashCode(this));
+            }
+            return;
+        }
         ((BaseDocument) doc).readLock();
         try {
             TokenHierarchy th = TokenHierarchy.get(doc);
@@ -141,6 +152,15 @@ final class CustomFoldManager implements FoldManager, Runnable {
                 FoldHierarchy hierarchy = getOperation().getHierarchy();
                 hierarchy.lock();
                 try {
+                    if (operation.isReleased()) {
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.log(Level.FINE, "Update skipped, already relaesed: {0}", System.identityHashCode(this));
+                        }
+                        return;
+                    }
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "Updating: {0}", System.identityHashCode(this));
+                    }
                     FoldHierarchyTransaction transaction = getOperation().openTransaction();
                     try {
                         updateFolds(th.tokenSequence(), transaction);

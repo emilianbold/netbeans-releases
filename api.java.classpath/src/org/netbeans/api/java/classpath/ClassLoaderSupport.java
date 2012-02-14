@@ -68,12 +68,7 @@ class ClassLoaderSupport extends NbClassLoader
     }
     
     static ClassLoader create (final ClassPath cp, final ClassLoader parentClassLoader) {
-        try {
-            return new ClassLoaderSupport(cp, parentClassLoader);
-        } catch (FileStateInvalidException e) {
-            // Should not happen, we already trimmed unused roots:
-            throw new AssertionError(e);
-        }
+        return new ClassLoaderSupport(cp, parentClassLoader);
     }
 
     /** change listener */
@@ -97,7 +92,7 @@ class ClassLoaderSupport extends NbClassLoader
     /** Constructor that attaches itself to the filesystem pool.
     */
     @SuppressWarnings("LeakingThisInConstructor")
-    private ClassLoaderSupport (final ClassPath cp, final ClassLoader parentClassLoader) throws FileStateInvalidException {
+    private ClassLoaderSupport (final ClassPath cp, final ClassLoader parentClassLoader) {
         super(cp.getRoots(), parentClassLoader, null);
         this.classPath = cp;
 

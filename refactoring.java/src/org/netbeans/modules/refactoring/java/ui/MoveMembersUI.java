@@ -42,9 +42,7 @@
 package org.netbeans.modules.refactoring.java.ui;
 
 import java.util.List;
-import javax.lang.model.element.TypeElement;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
@@ -74,7 +72,7 @@ public class MoveMembersUI implements RefactoringUI {
         this.selectedElements = selectedElement;
         this.ic = new InstanceContent();
         this.refactoring = new MoveRefactoring(new AbstractLookup(ic));
-        refactoring.getContext().add(new JavaMoveMembersProperties());
+        refactoring.getContext().add(new JavaMoveMembersProperties(selectedElement));
     }
 
     @Override
@@ -105,12 +103,14 @@ public class MoveMembersUI implements RefactoringUI {
         ic.set(handles, null);
         TreePathHandle target = panel.getTarget();
         refactoring.setTarget(target == null? Lookup.EMPTY:Lookups.fixed(target));
-        JavaMoveMembersProperties properties = new JavaMoveMembersProperties();
+        JavaMoveMembersProperties properties = refactoring.getContext().lookup(JavaMoveMembersProperties.class);
+        if(properties == null) {
+            refactoring.getContext().add(properties = new JavaMoveMembersProperties(selectedElements));
+        }
         properties.setVisibility(panel.getVisibility());
         properties.setDelegate(panel.getDelegate());
         properties.setUpdateJavaDoc(panel.getUpdateJavaDoc());
         properties.setAddDeprecated(panel.getDeprecated());
-        refactoring.getContext().add(properties);
         return checkOnly? refactoring.fastCheckParameters() : refactoring.checkParameters();
     }
 

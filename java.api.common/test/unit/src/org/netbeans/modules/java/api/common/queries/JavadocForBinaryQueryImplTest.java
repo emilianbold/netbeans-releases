@@ -55,7 +55,6 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.test.MockLookup;
@@ -107,7 +106,7 @@ public class JavadocForBinaryQueryImplTest extends NbTestCase {
                 QuerySupport.createJavadocForBinaryQuery(helper, eval);
 
         setProjectDirectory(JAVADOC_DIR, projdir.createFolder(JAVADOC_1));
-        Result javadoc = javadocForBinaryQuery.findJavadoc(builddir.getURL());
+        Result javadoc = javadocForBinaryQuery.findJavadoc(builddir.toURL());
         assertNotNull(javadoc);
 
         URL[] roots = javadoc.getRoots();
@@ -121,8 +120,8 @@ public class JavadocForBinaryQueryImplTest extends NbTestCase {
         assertEquals(getJavadocUrl(JAVADOC_2), roots[0]);
     }
 
-    private URL getJavadocUrl(String javadoc) throws FileStateInvalidException {
-        return projdir.getFileObject(javadoc).getURL();
+    private URL getJavadocUrl(String javadoc) {
+        return projdir.getFileObject(javadoc).toURL();
     }
 
     private void setProjectDirectory(final String property, final FileObject directory) throws Exception {

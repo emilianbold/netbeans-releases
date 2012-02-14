@@ -48,7 +48,6 @@ import com.sun.jdi.Field;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
-import com.sun.jdi.Value;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.ModificationWatchpointEvent;
 import com.sun.jdi.event.WatchpointEvent;
@@ -68,7 +67,6 @@ import org.netbeans.api.debugger.jpda.FieldBreakpoint;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
-import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
@@ -85,8 +83,6 @@ import org.netbeans.modules.debugger.jpda.jdi.event.ModificationWatchpointEventW
 import org.netbeans.modules.debugger.jpda.jdi.event.WatchpointEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.WatchpointRequestWrapper;
-import org.netbeans.modules.debugger.jpda.models.AbstractObjectVariable;
-import org.netbeans.modules.debugger.jpda.models.AbstractVariable;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.util.Exceptions;
 
@@ -109,6 +105,7 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
         set ();
     }
     
+    @Override
     protected void setRequests () {
         boolean access = (breakpoint.getBreakpointType () & 
                           FieldBreakpoint.TYPE_ACCESS) != 0;
@@ -189,6 +186,7 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
         }
     }
     
+    @Override
     protected EventRequest createEventRequest(EventRequest oldRequest) throws VMDisconnectedExceptionWrapper, InternalExceptionWrapper {
         if (oldRequest instanceof AccessWatchpointRequest) {
             Field field = WatchpointRequestWrapper.field((AccessWatchpointRequest) oldRequest);
@@ -228,6 +226,7 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
         }
     }
     
+    @Override
     public boolean processCondition(Event event) {
         ThreadReference thread;
         try {

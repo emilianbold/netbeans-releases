@@ -210,7 +210,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
 
     AssignmentImpl findAssignment(int offset, boolean varAssignment,FieldElement expectedField) {
         AssignmentImpl retval = null;
-        Collection<? extends AssignmentImpl> assignments = varAssignment ? 
+        Collection<? extends AssignmentImpl> assignments = varAssignment ?
             getVarAssignments() : getFieldAssignments();
         if (assignments.size() == 1) {
             AssignmentImpl assign = assignments.iterator().next();
@@ -238,7 +238,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
                         }
                     }
                 }
-            }            
+            }
             if (!assignments.isEmpty()) {
                 for (AssignmentImpl assign : assignments) {
                     if (retval == null || retval.getOffset() <= assign.getOffset()) {
@@ -427,6 +427,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         }*/
         sb.append(";");//NOI18N
         sb.append(getOffset()).append(";");//NOI18N
+        sb.append(";");//NOI18N
         return sb.toString();
     }
 

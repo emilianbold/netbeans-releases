@@ -112,35 +112,42 @@ public class NetigsoLayerTest extends SetupHid {
         return createTestJAR(data, jars, name, srcdir, classpath);
     }
     public void testOSGiCanProvideLayer() throws Exception {
-        mgr.mutexPrivileged().enterWriteAccess();
         FileObject fo;
+        Module m2;
         try {
+            mgr.mutexPrivileged().enterWriteAccess();
             String mfBar = "Bundle-SymbolicName: org.bar\n" +
                 "Bundle-Version: 1.1.0\n" +
                 "Bundle-ManifestVersion: 2\n" +
                 "Import-Package: org.foo\n" +
+                "Export-Package: org.bar\n" +
                 "OpenIDE-Module-Layer: org/bar/layer.xml\n" +
                 "\n\n";
 
             File j2 = changeManifest(new File(jars, "depends-on-simple-module.jar"), mfBar);
-            Module m2 = mgr.create(j2, null, false, false, false);
+            m2 = mgr.create(j2, null, false, false, false);
             mgr.enable(m2);
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
-        fo = FileUtil.getConfigFile("TestFolder");
-        assertNotNull("Folder found", fo);
-
-        URL u = mgr.getClassLoader().getResource("org/bar/layer.xml");
-        assertNotNull("System ClassLoader can load resources", u);
-    }
-/* Looks like non-exported packages do not work, as the URLHandlersBundleStreamHandler gets
- * somehow confused.
- * 
-    public void testOSGiCanProvideImpl() throws Exception {
-        mgr.mutexPrivileged().enterWriteAccess();
-        FileObject fo;
         try {
+            mgr.mutexPrivileged().enterWriteAccess();
+            fo = FileUtil.getConfigFile("TestFolder");
+            assertNotNull("Folder found", fo);
+
+            URL u = mgr.getClassLoader().getResource("org/bar/layer.xml");
+            assertNotNull("System ClassLoader can load resources", u);
+        } finally {
+            mgr.disable(m2);
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+
+    public void testOSGiCanProvideImpl() throws Exception {
+        FileObject fo;
+        Module m2;
+        try {
+            mgr.mutexPrivileged().enterWriteAccess();
             String mfBar = "Bundle-SymbolicName: org.kuk\n" +
                 "Bundle-Version: 1.1.0\n" +
                 "Bundle-ManifestVersion: 2\n" +
@@ -149,15 +156,24 @@ public class NetigsoLayerTest extends SetupHid {
                 "\n\n";
 
             File j2 = changeManifest(new File(jars, "depends-on-simple-module.jar"), mfBar);
-            Module m2 = mgr.create(j2, null, false, false, false);
+            m2 = mgr.create(j2, null, false, false, false);
             mgr.enable(m2);
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
-        fo = Repository.getDefault().getDefaultFileSystem().findResource("TestImplFolder");
-        assertNotNull("Folder found", fo);
+        try {
+            mgr.mutexPrivileged().enterWriteAccess();
+            fo = FileUtil.getConfigFile("TestImplFolder");
+            assertNotNull("Folder found", fo);
+
+            URL u = mgr.getClassLoader().getResource("org/bar/impl/layer.xml");
+            assertNotNull("System ClassLoader can load resources", u);
+        } finally {
+            mgr.disable(m2);
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
     }
-*/
+    
     private File changeManifest(File orig, String manifest) throws IOException {
         File f = new File(getWorkDir(), orig.getName());
         Manifest mf = new Manifest(new ByteArrayInputStream(manifest.getBytes("utf-8")));

@@ -651,6 +651,14 @@ made subject to such option by the copyright holder.
    <code>org/netbeans/core/netigso/Bundle.properties</code>. NetBeans IDE 
    brands it to 4.
    </api>
+   <api category="devel" group="branding" name="org.netbeans.core.netigso.FIND_COVERED_PKGS"
+   type="export">
+   The <b>FIND_COVERED_PKGS</b> branding key defines method to find list of covered packages
+   for an OSGi bundle. Currently it can be empty or <code>findEntries</code>, which
+   means Netigso will use <code>bundle.findEntries("", null, true)</code>. As that method
+   resolves the bundle, it may not always be appropriate. In such case brand
+   this token to empty string and only "Export-Package" values will be used.
+   </api>
   </p>
  </answer>
 

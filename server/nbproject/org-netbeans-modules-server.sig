@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.13
+#Version 1.16
 
 CLSS public java.lang.Object
 cons public init()
@@ -16,6 +16,7 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public final org.netbeans.api.server.CommonServerUIs
+meth public static void showCloudCustomizer(org.netbeans.api.server.ServerInstance)
 meth public static void showCustomizer(org.netbeans.api.server.ServerInstance)
 supr java.lang.Object
 

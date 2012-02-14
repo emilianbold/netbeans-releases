@@ -47,18 +47,19 @@ package org.netbeans.spi.project.support.ant;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider;
-import org.netbeans.spi.queries.SharabilityQueryImplementation;
+import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.util.WeakListeners;
 
 /**
- * Standard impl of {@link SharabilityQueryImplementation}.
+ * Standard impl of {@link SharabilityQueryImplementation2}.
  * @author Jesse Glick
  */
-final class SharabilityQueryImpl implements SharabilityQueryImplementation, PropertyChangeListener, AntProjectListener {
+final class SharabilityQueryImpl implements SharabilityQueryImplementation2, PropertyChangeListener, AntProjectListener {
 
     private final AntProjectHelper h;
     private final PropertyEvaluator eval;
@@ -105,15 +106,16 @@ final class SharabilityQueryImpl implements SharabilityQueryImplementation, Prop
         // XXX should remove overlaps somehow
         return result.toArray(new String[result.size()]);
     }
-    
-    public synchronized int getSharability(File file) {
-        String path = file.getAbsolutePath();
+
+    @Override public SharabilityQuery.Sharability getSharability(URI uri) {
+        // XXX might be more efficient to precompute URIs for includePaths and excludePaths
+        String path = new File(uri).getAbsolutePath();
         if (contains(path, excludePaths, false)) {
-            return SharabilityQuery.NOT_SHARABLE;
+            return SharabilityQuery.Sharability.NOT_SHARABLE;
         }
         return contains(path, includePaths, false) ?
-            (contains(path, excludePaths, true) ? SharabilityQuery.MIXED : SharabilityQuery.SHARABLE) :
-            SharabilityQuery.UNKNOWN;
+            (contains(path, excludePaths, true) ? SharabilityQuery.Sharability.MIXED : SharabilityQuery.Sharability.SHARABLE) :
+            SharabilityQuery.Sharability.UNKNOWN;
     }
     
     /**

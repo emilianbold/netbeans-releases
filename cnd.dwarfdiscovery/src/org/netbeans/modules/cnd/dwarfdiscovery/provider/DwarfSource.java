@@ -435,7 +435,7 @@ public class DwarfSource implements SourceFileProperties{
         List<String> aUserIncludes = new ArrayList<String>();
         Map<String, String> aUserMacros = new HashMap<String, String>();
         List<String> languageArtifacts = new ArrayList<String>();
-        DiscoveryUtils.gatherCompilerLine(line, false, aUserIncludes, aUserMacros, null, languageArtifacts, compilerSettings.getProjectBridge(), this.language == LanguageKind.CPP);
+        DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.DwarfCompileLine, aUserIncludes, aUserMacros, null, languageArtifacts, compilerSettings.getProjectBridge(), this.language == LanguageKind.CPP);
         for(String s : aUserIncludes) {
             String include = PathCache.getString(s);
             addUserIncludePath(include);

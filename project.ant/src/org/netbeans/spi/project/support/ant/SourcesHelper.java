@@ -79,7 +79,6 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Parameters;
@@ -219,10 +218,9 @@ public final class SourcesHelper {
                     if (owner != null && owner != p) {
                         return false;
                     }
-                    File f = FileUtil.toFile(file);
-                    if (f != null && SharabilityQuery.getSharability(f) == SharabilityQuery.NOT_SHARABLE) {
+                    if (SharabilityQuery.getSharability(file) == SharabilityQuery.Sharability.NOT_SHARABLE) {
                         return false;
-                    } // else MIXED, UNKNOWN, or SHARABLE; or not a disk file
+                    } // else MIXED, UNKNOWN, or SHARABLE
                 }
                 return true;
             }
@@ -1021,11 +1019,7 @@ public final class SourcesHelper {
             // Remember what we computed here so we know whether to fire changes later.
             List<URL> rootURLs = new ArrayList<URL>(groups.size());
             for (SourceGroup g : groups) {
-                try {
-                    rootURLs.add(g.getRootFolder().getURL());
-                } catch (FileStateInvalidException e) {
-                    assert false : e; // should be a valid file object!
-                }
+                rootURLs.add(g.getRootFolder().toURL());
             }
             lastComputedRoots.put(type, rootURLs);
             return groups.toArray(new SourceGroup[groups.size()]);

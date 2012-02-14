@@ -22,9 +22,6 @@
                         </Variable>
                     </VariableNames>
                     <InitialValues>
-                        <Variable start='63' end='68' isDollared='true'>
-                            <Identifier start='64' end='68' name='name'/>
-                        </Variable>
                     </InitialValues>
                 </FieldsDeclaration>
                 <MethodDeclaration start='77' end='100' modifiers='public'>

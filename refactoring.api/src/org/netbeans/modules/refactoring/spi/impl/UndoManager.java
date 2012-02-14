@@ -335,7 +335,7 @@ public final class UndoManager extends FileChangeAdapter implements DocumentList
         for (final CloneableEditorSupport ces : ceSupports) {
             final Document d = ces.getDocument();
             if (d!=null) {
-                runAtomic(d, new Runnable() {
+                d.render(new Runnable() {
                     @Override
                     public void run() {
                         synchronized(allCES) {
@@ -377,20 +377,6 @@ public final class UndoManager extends FileChangeAdapter implements DocumentList
                 clearIfPossible();
             }
         //}
-    }
-    
-    private static void runAtomic(Document doc, Runnable runnable) {
-        // FiXME: workaround for #206134 - [regression] Use of FindUsages modifies all documents with references
-        if (doc instanceof AbstractDocument) {
-            ((AbstractDocument) doc).readLock();
-            try {
-                runnable.run();
-            } finally {
-                ((AbstractDocument) doc).readUnlock();
-            }
-        } else {
-            NbDocument.runAtomic((StyledDocument) doc, runnable);
-        }
     }
     
     private static java.lang.reflect.Field undoRedo;

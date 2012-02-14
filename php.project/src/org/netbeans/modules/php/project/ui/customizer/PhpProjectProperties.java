@@ -44,15 +44,11 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.io.File;
-import java.util.EnumSet;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.project.connections.ConfigManager;
-import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
-import org.netbeans.modules.php.project.ui.PathUiSupport;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -62,13 +58,15 @@ import javax.swing.DefaultListModel;
 import javax.swing.ListCellRenderer;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.project.PhpLanguageOptionsAccessor;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ProjectSettings;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
+import org.netbeans.modules.php.project.connections.ConfigManager;
+import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
+import org.netbeans.modules.php.project.ui.PathUiSupport;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -104,6 +102,9 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     public static final String PHP_ARGS = "php.arguments"; // NOI18N
     public static final String WORK_DIR = "work.dir"; // NOI18N
     public static final String INTERPRETER = "interpreter"; // NOI18N
+    public static final String HOSTNAME = "hostname"; // NOI18N
+    public static final String PORT = "port"; // NOI18N
+    public static final String ROUTER = "router"; // NOI18N
     public static final String RUN_AS = "run.as"; // NOI18N
     public static final String REMOTE_CONNECTION = "remote.connection"; // NOI18N
     public static final String REMOTE_DIRECTORY = "remote.directory"; // NOI18N
@@ -123,6 +124,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     public static final String PHP_UNIT_BOOTSTRAP_FOR_CREATE_TESTS = "phpunit.bootstrap.create.tests"; // NOI18N
     public static final String PHP_UNIT_CONFIGURATION = "phpunit.configuration"; // NOI18N
     public static final String PHP_UNIT_SUITE = "phpunit.suite"; // NOI18N
+    public static final String PHP_UNIT_SCRIPT = "phpunit.script"; // NOI18N
     public static final String PHP_UNIT_RUN_TEST_FILES = "phpunit.run.test.files"; // NOI18N
     public static final String PHP_UNIT_ASK_FOR_TEST_GROUPS = "phpunit.test.groups.ask"; // NOI18N
     public static final String PHP_UNIT_LAST_USED_TEST_GROUPS = "phpunit.test.groups.last.used"; // NOI18N
@@ -136,6 +138,9 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         PHP_ARGS,
         WORK_DIR,
         INTERPRETER,
+        HOSTNAME,
+        PORT,
+        ROUTER,
         RUN_AS,
         REMOTE_CONNECTION,
         REMOTE_DIRECTORY,
@@ -149,10 +154,28 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         DEBUG_PROXY_PORT,
     };
 
+    @NbBundle.Messages({
+        "RunAsType.local.label=Local Web Site (running on local web server)",
+        "RunAsType.script.label=Script (run in command line)",
+        "RunAsType.remote.label=Remote Web Site (FTP, SFTP)",
+        "RunAsType.internal.label=PHP Built-in Web Server (running on built-in web server)"
+    })
     public static enum RunAsType {
-        LOCAL,
-        SCRIPT,
-        REMOTE
+        LOCAL(Bundle.RunAsType_local_label()),
+        SCRIPT(Bundle.RunAsType_script_label()),
+        REMOTE(Bundle.RunAsType_remote_label()),
+        INTERNAL(Bundle.RunAsType_internal_label());
+
+        private final String label;
+
+        private RunAsType(String label) {
+            this.label = label;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
     }
 
     public static enum UploadFiles {
@@ -213,6 +236,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     private Boolean phpUnitBootstrapForCreateTests;
     private String phpUnitConfiguration;
     private String phpUnitSuite;
+    private String phpUnitScript;
     private Boolean phpUnitRunTestFiles;
     private Boolean phpUnitAskForTestGroups;
     private String phpUnitLastUsedTestGroups;
@@ -452,6 +476,20 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         this.phpUnitSuite = phpUnitSuite;
     }
 
+    public String getPhpUnitScript() {
+        if (phpUnitScript == null) {
+            File script = ProjectPropertiesSupport.getPhpUnitScript(project);
+            if (script != null) {
+                phpUnitScript = script.getAbsolutePath();
+            }
+        }
+        return phpUnitScript;
+    }
+
+    public void setPhpUnitScript(String phpUnitScript) {
+        this.phpUnitScript = phpUnitScript;
+    }
+
     public Boolean getPhpUnitRunTestFiles() {
         if (phpUnitRunTestFiles == null) {
             phpUnitRunTestFiles = ProjectPropertiesSupport.runAllTestFilesUsingPhpUnit(project);
@@ -546,15 +584,12 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         if (webRoot != null) {
             projectProperties.setProperty(WEB_ROOT, webRoot);
         }
-        String oldPhpVersion = projectProperties.getProperty(PHP_VERSION);
         if (phpVersion != null) {
             projectProperties.setProperty(PHP_VERSION, phpVersion);
         }
-        String oldShortTags = projectProperties.getProperty(SHORT_TAGS);
         if (shortTags != null) {
             projectProperties.setProperty(SHORT_TAGS, shortTags);
         }
-        String oldAspTags = projectProperties.getProperty(ASP_TAGS);
         if (aspTags != null) {
             projectProperties.setProperty(ASP_TAGS, aspTags);
         }
@@ -581,6 +616,9 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         }
         if (phpUnitSuite != null) {
             projectProperties.setProperty(PHP_UNIT_SUITE, relativizeFile(phpUnitSuite));
+        }
+        if (phpUnitScript != null) {
+            projectProperties.setProperty(PHP_UNIT_SCRIPT, relativizeFile(phpUnitScript));
         }
         if (phpUnitRunTestFiles != null) {
             projectProperties.setProperty(PHP_UNIT_RUN_TEST_FILES, phpUnitRunTestFiles.toString());
@@ -624,20 +662,6 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         // UI log
         logUsage(helper.getProjectDirectory(), ProjectPropertiesSupport.getSourcesDirectory(project),
                 getActiveRunAsType(), getNumOfRunConfigs(), Boolean.valueOf(getCopySrcFiles()));
-
-        if (shortTags != null && !shortTags.equals(oldShortTags)) {
-            PhpLanguageOptionsAccessor.getDefault().firePropertyChange(PhpLanguageOptions.PROP_SHORT_TAGS,
-                    getBoolean(oldShortTags), getBoolean(shortTags));
-        }
-        if (aspTags != null && !aspTags.equals(oldAspTags)) {
-            PhpLanguageOptionsAccessor.getDefault().firePropertyChange(PhpLanguageOptions.PROP_ASP_TAGS,
-                    getBoolean(oldAspTags), getBoolean(aspTags));
-        }
-        if (phpVersion != null && !phpVersion.equals(oldPhpVersion)) {
-            // actual file needs to be reparsed (because of php 5.3 hint)
-            PhpLanguageOptionsAccessor.getDefault().firePropertyChange(PhpLanguageOptions.PROP_PHP_VERSION,
-                    ProjectPropertiesSupport.getPhpVersion(oldPhpVersion), ProjectPropertiesSupport.getPhpVersion(phpVersion));
-        }
     }
 
     void saveCustomizerExtenders() {

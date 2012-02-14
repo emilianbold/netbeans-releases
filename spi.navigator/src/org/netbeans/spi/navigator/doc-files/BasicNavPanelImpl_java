@@ -53,6 +53,7 @@ import org.openide.util.LookupListener;
 /**
  * Basic dummy implementation of NavigatorPanel interface.
  */
+@NavigatorPanel.Registration(mimeType="text/plain", displayName="Dummy View")
 public class BasicNavPanelImpl implements NavigatorPanel {
 
     /** holds UI of this panel */

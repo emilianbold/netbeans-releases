@@ -9,5 +9,6 @@
         <mkdir dir="${build.test.unit.data.dir}/SvnWcParser"/>
         <unzip src="${test.unit.data.dir}/SvnWcParserData.zip"
                dest="${build.test.unit.data.dir}/SvnWcParser"/>
-    </target>
+        <zip destfile="${test.qa-functional.out.folder}/data.zip" basedir="${test.qa-functional.data.dir}"/>
+    </target> 
 </project>

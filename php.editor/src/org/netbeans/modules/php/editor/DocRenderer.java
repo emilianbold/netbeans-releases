@@ -62,6 +62,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
@@ -216,10 +217,9 @@ class DocRenderer {
         // http://manual.phpdoc.org/HTMLSmartyConverter/HandS/phpDocumentor/tutorial_phpDocumentor.howto.pkg.html#basics.desc
         // + table (table, tr, th, td)
         private static final Pattern KEEP_TAGS_PATTERN = Pattern.compile("<(?!(/|b|code|br|i|kbd|li|ol|p|pre|samp|ul|var|table|tr|th|td)(\\b|\\s))", Pattern.CASE_INSENSITIVE); // NOI18N
-        private static final Pattern REPLACE_CODE_PATTERN = Pattern.compile("(?<=(</|<))code>", Pattern.CASE_INSENSITIVE); // NOI18N
         private static final Pattern REPLACE_NEWLINE_PATTERN = Pattern.compile("(\r?\n){2,}"); // NOI18N
         // #183594
-        private static final Pattern KEEP_NEWLINE_PATTERN = Pattern.compile("(\r?\n)(?=(\\s\\S|[-+#o]\\s|\\d\\.?\\s))"); // NOI18N
+        private static final Pattern LIST_PATTERN = Pattern.compile("(\r?\n)(?=([-+#o]\\s|\\d\\.?\\s))"); // NOI18N
 
         private static final ArrayList<String> LINK_TAGS = new ArrayList<String>();
 
@@ -328,6 +328,11 @@ class DocRenderer {
                     case RETURN:
                         PHPDocTypeTag returnTag = (PHPDocTypeTag) tag;
                         returnValue.append(composeReturnValue(returnTag.getTypes(), returnTag.getDocumentation()));
+                        break;
+                    case VAR:
+                        PHPDocTypeTag typeTag = (PHPDocTypeTag) tag;
+                        String type = composeType(typeTag.getTypes());
+                        others.append(processPhpDoc(String.format("<tr><th align=\"left\">Type:</th><td>%s</td></tr>", type))); //NOI18N
                         break;
                     default:
                         String oline = String.format("<tr><th>%s</th><td>%s</td></tr>\n", //NOI18N
@@ -453,10 +458,13 @@ class DocRenderer {
 
         // because of unit tests
         static String processPhpDoc(String phpDoc) {
-            String notags = KEEP_TAGS_PATTERN.matcher(phpDoc).replaceAll("&lt;"); // NOI18N
-            notags = REPLACE_CODE_PATTERN.matcher(notags).replaceAll("pre>"); // NOI18N
-            notags = REPLACE_NEWLINE_PATTERN.matcher(notags).replaceAll("<br><br>"); // NOI18N
-            return KEEP_NEWLINE_PATTERN.matcher(notags).replaceAll("<br>&nbsp;&nbsp;&nbsp;&nbsp;"); // NOI18N
+            String result = NbBundle.getMessage(DocRenderer.class, "PHPDocNotFound");
+            if (StringUtils.hasText(phpDoc)) {
+                String notags = KEEP_TAGS_PATTERN.matcher(phpDoc).replaceAll("&lt;"); // NOI18N
+                notags = REPLACE_NEWLINE_PATTERN.matcher(notags).replaceAll("<br><br>"); // NOI18N
+                result = LIST_PATTERN.matcher(notags).replaceAll("<br>&nbsp;&nbsp;&nbsp;&nbsp;"); // NOI18N
+            }
+            return result;
         }
 
          @Override
@@ -500,7 +508,13 @@ class DocRenderer {
                         if (node instanceof PHPDocMethodTag) {
                             extractPHPDoc((PHPDocMethodTag)node);
                         } else {
-                            phpDoc.append(processPhpDoc(((PHPDocTag)node).getDocumentation()));
+                            if (node instanceof PHPDocVarTypeTag) {
+                                PHPDocVarTypeTag varTypeTag = (PHPDocVarTypeTag) node;
+                                String type = composeType(varTypeTag.getTypes());
+                                phpDoc.append(processPhpDoc(String.format("%s<br /><table><tr><th align=\"left\">Type:</th><td>%s</td></tr></table>", varTypeTag.getDocumentation(), type))); //NOI18N
+                            } else {
+                                phpDoc.append(processPhpDoc(((PHPDocTag)node).getDocumentation()));
+                            }
                         }
                     } else {
                         Comment comment = Utils.getCommentForNode(program, node);

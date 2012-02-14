@@ -43,6 +43,8 @@ package org.netbeans.modules.j2ee.persistence.spi.jpql;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -64,73 +66,142 @@ public class Type implements IType{
     private final Element element;
     private final ITypeRepository repository;
     private ITypeDeclaration tDeclaration;
+    private final Class<?> type;
+    private Collection<IConstructor> constructors;
+    private String[] enumConstants;
+    private  String typeName;
 
     public Type(ITypeRepository typeRepository, Element element){
-        if(element == null){
-            System.out.println("ATT");
-        }
         this.element = element;
         this.repository = typeRepository;
+        type = null;
     }
+    
+    public Type(ITypeRepository typeRepository, Class<?> type) {
+        this.type = type;
+        this.repository = typeRepository;
+        element = null;
+    }
+    
+    Type(ITypeRepository typeRepository, String typeName){
+        this.repository = typeRepository;
+        this.typeName = typeName;
+        element = null;
+        //
+        enumConstants = new String[]{};
+        constructors = Collections.emptyList();
+        type = null;
+    } 
     
     @Override
     public Iterable<IConstructor> constructors() {
-        ArrayList<IConstructor> ret = new ArrayList<IConstructor>();
-        collectConstructors(ret, element);
-        return ret;
+        if(constructors == null){
+            constructors = new ArrayList<IConstructor>();
+            if(element != null){
+                collectConstructors(constructors, element);
+            } else if (type != null) {
+                collectConstructors(constructors, type);
+            }
+        }
+        return constructors;
     }
 
     @Override
     public boolean equals(IType itype) {
         return this==itype || getName().equals(itype.getName());
     }
+    
+    @Override
+    public boolean equals(Object itype) {
+        return (this == itype) || equals((IType) itype);
+    }
+    
+    @Override
+    public int hashCode() {
+        return getName().hashCode();
+    }
 
     @Override
     public String[] getEnumConstants() {
-        ArrayList<String> constants = new ArrayList<String>();
-        for( Element el:element.getEnclosedElements() ){
-            if(el.getKind() == ElementKind.ENUM_CONSTANT){
-                constants.add(el.getSimpleName().toString());
+        if(enumConstants == null){
+            if(element != null){
+                ArrayList<String> constants = new ArrayList<String>();
+                for( Element el:element.getEnclosedElements() ){
+                    if(el.getKind() == ElementKind.ENUM_CONSTANT){
+                        constants.add(el.getSimpleName().toString());
+                    }
+                }
+                enumConstants = constants.toArray(new String[]{});
+            } else if (type != null) {
+                if (!type.isEnum()) {
+                    enumConstants = new String[]{};
+                } else {
+                    Object[] enumC = type.getEnumConstants();
+                    enumConstants = new String[enumC.length];
+
+                    for (int index = enumC.length; --index >= 0;) {
+                        enumConstants[index] = ((Enum<?>) enumC[index]).name();
+                    }
+
+                }
+            } else {
+                enumConstants = new String[]{};
             }
         }
-        return constants.toArray(new String[]{});
+        return enumConstants;
     }
 
     @Override
     public String getName() {
-        if(element instanceof TypeElement) return ((TypeElement) element).getQualifiedName().toString();
-        else return element.asType().toString();
+        if(typeName == null){
+            if(element != null){
+                if(element instanceof TypeElement) typeName = ((TypeElement) element).getQualifiedName().toString();
+                else typeName = element.asType().toString();
+            } else if (type != null) {
+                typeName = type.getName();
+            }
+        }
+        return typeName;
     }
 
     @Override
     public ITypeDeclaration getTypeDeclaration() {
         if(tDeclaration == null){
-            tDeclaration = new TypeDeclaration(this, new ITypeDeclaration[0], 0);
+            tDeclaration = type != null ? new TypeDeclaration(repository, this, null, type.isArray()) : new TypeDeclaration(this, new ITypeDeclaration[0], 0);
         }
         return tDeclaration;
     }
 
     @Override
     public boolean hasAnnotation(Class<? extends Annotation> type) {
-        return element.getAnnotation(type) != null;
+        return element != null ? (element.getAnnotation(type) != null) : (type!=null && type.isAnnotationPresent(type));
     }
 
     @Override
     public boolean isAssignableTo(IType itype) {
         if(this == itype) return true;
-        String rootName = itype.getName();
-        TypeElement tEl = (TypeElement) (element instanceof TypeElement ? element : null);
-        return haveInHierarchy(tEl, rootName);
+        Type tp = (Type) itype;
+        if(element != null && tp.element !=null){
+            //interbal nb type
+            String rootName = itype.getName();
+            TypeElement tEl = (TypeElement) (element instanceof TypeElement ? element : null);
+            return haveInHierarchy(tEl, rootName);
+        } else if (type !=null && tp.type!=null) {
+            //java type
+            return tp.type.isAssignableFrom(type);
+        } else {
+            return false;
+        }
     }
 
     @Override
     public boolean isEnum() {
-        return  (element instanceof TypeElement ? ((TypeElement)element).getKind() == ElementKind.ENUM : false);
+        return  (element instanceof TypeElement ? ((TypeElement)element).getKind() == ElementKind.ENUM : (type != null) && type.isEnum());
     }
 
     @Override
     public boolean isResolvable() {
-        return true;//is it always true?
+        return type!=null || element!=null;
     }
 
     @Override
@@ -138,7 +209,7 @@ public class Type implements IType{
         return super.toString() + ", name = " + getName();
     }
     
-    private void collectConstructors(ArrayList<IConstructor> constructors, Element element){
+    private void collectConstructors(Collection<IConstructor> constructors, Element element){
         if(element == null || element.getKind()!=ElementKind.CLASS)return;
         TypeElement el = (TypeElement) element;
         for(Element sub: el.getEnclosedElements()){
@@ -152,6 +223,14 @@ public class Type implements IType{
                     collectConstructors(constructors, superclassElement);
                 }
             }
+        }
+    }
+    
+    private void collectConstructors(Collection<IConstructor> constructors, Class<?> type){
+        java.lang.reflect.Constructor<?>[] javaConstructors = type.getDeclaredConstructors();
+
+        for (java.lang.reflect.Constructor<?> javaConstructor : javaConstructors) {
+            constructors.add(new Constructor(this,javaConstructor));
         }
     }
     
@@ -181,5 +260,9 @@ public class Type implements IType{
             }
         }
         return false;
+    }
+    
+    ITypeRepository getTypeRepository() {
+        return repository;
     }
 }

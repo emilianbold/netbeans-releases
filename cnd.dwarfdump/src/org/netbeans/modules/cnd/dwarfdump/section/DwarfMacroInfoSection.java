@@ -139,6 +139,10 @@ public class DwarfMacroInfoSection extends ElfSection {
                 // Just skip...
                 reader.readUnsignedLEB128();
                 reader.readString();
+            } else if (type.equals(MACINFO.DW_MACRO_define_indirect) || type.equals(MACINFO.DW_MACRO_undef_indirect)){
+                //System.err.println("");
+            } else if (type.equals(MACINFO.DW_MACRO_transparent_include)){
+                //System.err.println("");
             }
             
             table.addEntry(entry);
@@ -187,6 +191,11 @@ public class DwarfMacroInfoSection extends ElfSection {
                 case DW_MACINFO_undef:
                     lineNum = reader.readUnsignedLEB128();
                     reader.readString();
+                    break;
+                case DW_MACRO_define_indirect:
+                case DW_MACRO_undef_indirect:
+                case DW_MACRO_transparent_include:
+                    break;
             }
         }
         return res;

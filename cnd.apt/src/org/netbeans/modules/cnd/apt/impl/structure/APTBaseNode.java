@@ -89,10 +89,12 @@ public abstract class APTBaseNode implements APT, Serializable {
     /** 
      * sets next sibling element
      */
+    @Override
     public abstract void setNextSibling(APT next);
     
     /** 
      * sets first child element
      */
+    @Override
     public abstract void setFirstChild(APT child);        
 }

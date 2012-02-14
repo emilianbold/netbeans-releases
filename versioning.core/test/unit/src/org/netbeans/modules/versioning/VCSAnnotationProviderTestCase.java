@@ -71,7 +71,7 @@ public class VCSAnnotationProviderTestCase extends NbTestCase {
 
     private static VCSAnnotator annotator;
     private StatusListener statusListener;
-    private File workDir;
+    private String workDirPath;
     private static final BufferedImage IMAGE = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
     private static final BufferedImage IMAGE_ANNOTATION = new BufferedImage(6, 6, BufferedImage.TYPE_INT_ARGB);
 
@@ -82,19 +82,18 @@ public class VCSAnnotationProviderTestCase extends NbTestCase {
     @Override
     protected void setUp () throws IOException {
         MockLookup.setLayersAndInstances();
+        
         File userdir = new File(getWorkDir() + "/userdir");
         userdir.mkdirs();
         System.setProperty("netbeans.user", userdir.getAbsolutePath());
-        System.setProperty("versioning.asyncAnnotator", "true");
-        workDir = new File(getWorkDir(), String.valueOf(System.currentTimeMillis()));
-        workDir.mkdirs();
         
-        VCSFilesystemTestFactory.getInstance(this).createFileObject(getWorkDir().getAbsolutePath()).refresh();
+        System.setProperty("versioning.asyncAnnotator", "true");
+        workDirPath = getWorkDir().getParentFile().getName() + "/" + getWorkDir().getName();
     }
 
     public void testAnnotationChanged () throws Exception {
-        FileObject workDirFO = VCSFilesystemTestFactory.getInstance(this).createFileObject(workDir.getAbsolutePath());
-        DummyVCS.topmostFile = VCSFileProxy.createFileProxy(workDir);
+        FileObject workDirFO = VCSFilesystemTestFactory.getInstance(this).createFolder(workDirPath);
+        DummyVCS.topmostFile = VCSFileProxy.createFileProxy(workDirFO);
         
         HashMap<FileObject, String> expectedLabelAnnotations = new HashMap<FileObject, String>();
         HashMap<FileObject, String> expectedIconToolTips = new HashMap<FileObject, String>();

@@ -105,7 +105,7 @@ public class TypeRepository implements ITypeRepository {
         IType ret = types.get(fqn);
         if(ret == null){
             if(IType.UNRESOLVABLE_TYPE.equals(fqn)){
-                types.put(fqn, new DefaultType(this, fqn));
+                types.put(fqn, new Type(this, fqn));
             } else {
                 fillTypeElement(fqn);
             }
@@ -139,7 +139,7 @@ public class TypeRepository implements ITypeRepository {
         }
     }
     private void fillTypeElement(Class<?> type){
-        types.put(type.getName(), new JavaType(TypeRepository.this, type));
+        types.put(type.getName(), new Type(TypeRepository.this, type));
     }
     
 }

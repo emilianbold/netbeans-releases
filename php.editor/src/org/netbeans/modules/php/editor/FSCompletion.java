@@ -94,7 +94,7 @@ import org.openide.util.Exceptions;
  * @author Jan Lahoda
  */
 public class FSCompletion implements CompletionProvider {
-    
+
     public FSCompletion() {
     }
 
@@ -111,10 +111,10 @@ public class FSCompletion implements CompletionProvider {
                     final List<FileObject> includePath = PhpSourcePath.getIncludePath(file);
                     try {
                         Source source = Source.create(file);
-                        
+
                         if (source == null) {
                             // the create source checks, whether the file is valid and whether is not a folder
-                            // in such case returns null. 
+                            // in such case returns null.
                             return;
                         }
                         ParserManager.parse(Collections.singleton(source), new UserTask() {
@@ -176,13 +176,13 @@ public class FSCompletion implements CompletionProvider {
     private static List<? extends CompletionItem> computeRelativeItems(Collection<? extends FileObject> relativeTo, final String prefix, int anchor, FileObjectFilter filter) throws IOException {
         final String GO_UP = "../";
         assert relativeTo != null;
-        
+
         List<CompletionItem> result = new LinkedList<CompletionItem>();
-                
+
         int lastSlash = prefix.lastIndexOf('/');
         String pathPrefix;
         String filePrefix;
-        
+
         if (lastSlash != (-1)) {
             pathPrefix = prefix.substring(0, lastSlash);
             filePrefix = prefix.substring(lastSlash + 1);
@@ -190,7 +190,7 @@ public class FSCompletion implements CompletionProvider {
             pathPrefix = null;
             filePrefix = prefix;
         }
-        
+
         Set<FileObject> directories = new HashSet<FileObject>();
         File prefixFile = null;
         if (pathPrefix != null && !pathPrefix.startsWith(".")) {//NOI18N
@@ -214,7 +214,8 @@ public class FSCompletion implements CompletionProvider {
                     File toFile = FileUtil.toFile(f);
                     if (toFile != null) {
                         URI resolve = toFile.toURI().resolve(pathPrefix).normalize();
-                        f = FileUtil.toFileObject(new File(resolve));
+                        File normalizedFile = FileUtil.normalizeFile(new File(resolve));
+                        f = FileUtil.toFileObject(normalizedFile);
                     } else {
                         f = f.getFileObject(pathPrefix);
                     }
@@ -225,7 +226,7 @@ public class FSCompletion implements CompletionProvider {
                 }
             }
         }
-        
+
         for (FileObject dir : directories) {
             FileObject[] children = dir.getChildren();
 
@@ -253,10 +254,10 @@ public class FSCompletion implements CompletionProvider {
                 });
             }
         }
-        
+
         return result;
     }
-    
+
     private static class PHPIncludesFilter implements FileObjectFilter {
         private FileObject currentFile;
 
@@ -272,9 +273,9 @@ public class FSCompletion implements CompletionProvider {
             if (file.isFolder()) {
                 return true;
             }
-            
+
             String mimeType = FileUtil.getMIMEType(file);
-            
+
             return mimeType != null && mimeType.startsWith("text/");
         }
 
@@ -314,29 +315,24 @@ public class FSCompletion implements CompletionProvider {
             this.prefix = prefix;
         }
 
-        private void doSubstitute(JTextComponent component, String toAdd, int backOffset) {
-            BaseDocument doc = (BaseDocument) component.getDocument();
-            int caretOffset = component.getCaretPosition();
-            String value = getText();
-
-            if (toAdd != null) {
-                value += toAdd;
-            }
-
+        private void doSubstitute(final JTextComponent component, String toAdd, final int backOffset) {
+            final BaseDocument doc = (BaseDocument) component.getDocument();
+            final int caretOffset = component.getCaretPosition();
+            final String value = getText() + (toAdd != null ? toAdd : ""); //NOI18N
             // Update the text
-            doc.atomicLock();
-            try {
-                String pfx = doc.getText(anchor, caretOffset - anchor);
-
-                doc.remove(caretOffset - pfx.length(), pfx.length());
-                doc.insertString(caretOffset - pfx.length(), value, null);
-
-                component.setCaretPosition(component.getCaretPosition() - backOffset);
-            } catch (BadLocationException e) {
-                Exceptions.printStackTrace(e);
-            } finally {
-                doc.atomicUnlock();
-            }
+            doc.runAtomic(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        String pfx = doc.getText(anchor, caretOffset - anchor);
+                        doc.remove(caretOffset - pfx.length(), pfx.length());
+                        doc.insertString(caretOffset - pfx.length(), value, null);
+                        component.setCaretPosition(component.getCaretPosition() - backOffset);
+                    } catch (BadLocationException e) {
+                        Exceptions.printStackTrace(e);
+                    }
+                }
+            });
         }
 
         public void defaultAction(JTextComponent component) {
@@ -402,7 +398,7 @@ public class FSCompletion implements CompletionProvider {
 
         @Override
         public boolean equals(Object o) {
-            if (!(o instanceof FSCompletionItem)) 
+            if (!(o instanceof FSCompletionItem))
                 return false;
 
             FSCompletionItem remote = (FSCompletionItem) o;

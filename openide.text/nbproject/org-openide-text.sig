@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 6.37
+#Version 6.43
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -719,6 +719,11 @@ meth public abstract void open()
 CLSS public abstract interface org.netbeans.api.actions.Printable
 meth public abstract void print()
 
+CLSS public abstract interface org.netbeans.api.actions.Savable
+fld public final static org.openide.util.Lookup REGISTRY
+meth public abstract java.lang.String toString()
+meth public abstract void save() throws java.io.IOException
+
 CLSS public abstract interface org.netbeans.api.actions.Viewable
 meth public abstract void view()
 
@@ -836,8 +841,8 @@ intf org.netbeans.api.actions.Printable
 intf org.openide.nodes.Node$Cookie
 
 CLSS public abstract interface org.openide.cookies.SaveCookie
+intf org.netbeans.api.actions.Savable
 intf org.openide.nodes.Node$Cookie
-meth public abstract void save() throws java.io.IOException
 
 CLSS public abstract interface org.openide.cookies.ViewCookie
 intf org.netbeans.api.actions.Viewable
@@ -1019,9 +1024,12 @@ supr java.lang.Object
 CLSS public org.openide.text.CloneableEditor
 cons public init()
 cons public init(org.openide.text.CloneableEditorSupport)
+cons public init(org.openide.text.CloneableEditorSupport,boolean)
 fld protected javax.swing.JEditorPane pane
 intf org.openide.text.CloneableEditorSupport$Pane
 meth protected boolean closeLast()
+meth protected final boolean closeLast(boolean)
+meth protected final void initializeBySupport()
 meth protected java.lang.Object readResolve() throws java.io.ObjectStreamException
 meth protected java.lang.Object writeReplace() throws java.io.ObjectStreamException
 meth protected java.lang.String preferredID()
@@ -1060,6 +1068,7 @@ cons public init(org.openide.text.CloneableEditorSupport$Env,org.openide.util.Lo
 fld public final static java.lang.String EDITOR_MODE = "editor"
 fld public final static javax.swing.undo.UndoableEdit BEGIN_COMMIT_GROUP
 fld public final static javax.swing.undo.UndoableEdit END_COMMIT_GROUP
+fld public final static javax.swing.undo.UndoableEdit MARK_COMMIT_GROUP
 innr public abstract interface static Env
 innr public abstract interface static Pane
 meth protected abstract java.lang.String messageName()
@@ -1110,8 +1119,8 @@ meth public void removeChangeListener(javax.swing.event.ChangeListener)
 meth public void saveDocument() throws java.io.IOException
 meth public void setMIMEType(java.lang.String)
 supr org.openide.windows.CloneableOpenSupport
-hfds DOCUMENT_LOADING,DOCUMENT_NO,DOCUMENT_READY,DOCUMENT_RELOADING,ERR,LOCAL_CLOSE_DOCUMENT,LOCAL_LOAD_TASK,LOCK_PRINTING,LOCK_STRONG_REF,PROP_PANE,RP,alreadyModified,annotationsLoaded,counterGetDocument,counterOpenAtImpl,counterOpenDocument,counterPrepareDocument,doc,documentStatus,inUserQuestionExceptionHandler,isStrongSet,justRevertedToNotModified,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetWHM,listener,listeners,lookup,mimeType,positionManager,prepareDocumentRuntimeException,prepareTask,printing,propertyChangeSupport,reloadDialogOpened,reloadDocumentFireDocumentChangeClose,reloadDocumentFireDocumentChangeOpen,revertingUndoOrReloading,undoRedo,warnedClasses
-hcls BeforeModificationEdit,BeforeSaveEdit,CESUndoRedoManager,DelegateIOExc,FilterUndoableEdit,Listener,PlainEditorKit,SearchBeforeModificationEdit,StrongRef,UndoGroupManager
+hfds DOCUMENT_LOADING,DOCUMENT_NO,DOCUMENT_READY,DOCUMENT_RELOADING,ERR,LOCAL_CLOSE_DOCUMENT,LOCAL_LOAD_TASK,LOCK_PRINTING,LOCK_STRONG_REF,PROP_PANE,RP,alreadyModified,annotationsLoaded,counterGetDocument,counterOpenAtImpl,counterOpenDocument,counterPrepareDocument,doc,docFilter,documentReloading,documentStatus,inUserQuestionExceptionHandler,isStrongSet,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetWHM,listener,listeners,lookup,mimeType,positionManager,prepareDocumentRuntimeException,prepareTask,printing,propertyChangeSupport,reloadDialogOpened,reloadDocumentFireDocumentChangeClose,reloadDocumentFireDocumentChangeOpen,undoRedo,warnedClasses
+hcls DelegateIOExc,DocFilter,Listener,PlainEditorKit,StrongRef
 
 CLSS public abstract interface static org.openide.text.CloneableEditorSupport$Env
  outer org.openide.text.CloneableEditorSupport
@@ -1574,6 +1583,7 @@ fld public final static int PERSISTENCE_ALWAYS = 0
 fld public final static int PERSISTENCE_NEVER = 2
 fld public final static int PERSISTENCE_ONLY_OPENED = 1
 fld public final static java.lang.String PROP_CLOSING_DISABLED = "netbeans.winsys.tc.closing_disabled"
+fld public final static java.lang.String PROP_DND_COPY_DISABLED = "netbeans.winsys.tc.draganddrop_copy_disabled"
 fld public final static java.lang.String PROP_DRAGGING_DISABLED = "netbeans.winsys.tc.dragging_disabled"
 fld public final static java.lang.String PROP_KEEP_PREFERRED_SIZE_WHEN_SLIDED_IN = "netbeans.winsys.tc.keep_preferred_size_when_slided_in"
 fld public final static java.lang.String PROP_MAXIMIZATION_DISABLED = "netbeans.winsys.tc.maximization_disabled"
@@ -1607,7 +1617,6 @@ meth public boolean canClose()
 meth public boolean canClose(org.openide.windows.Workspace,boolean)
  anno 0 java.lang.Deprecated()
 meth public boolean requestFocusInWindow()
- anno 0 java.lang.Deprecated()
 meth public final boolean close()
 meth public final boolean close(org.openide.windows.Workspace)
  anno 0 java.lang.Deprecated()
@@ -1645,7 +1654,6 @@ meth public void open(org.openide.windows.Workspace)
 meth public void readExternal(java.io.ObjectInput) throws java.io.IOException,java.lang.ClassNotFoundException
 meth public void requestActive()
 meth public void requestFocus()
- anno 0 java.lang.Deprecated()
 meth public void requestVisible()
 meth public void setDisplayName(java.lang.String)
 meth public void setHtmlDisplayName(java.lang.String)

@@ -44,9 +44,9 @@ package org.netbeans.modules.php.editor;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.editor.nav.TestBase;
 
-public class DocRendererTest extends NbTestCase {
+public class DocRendererTest extends TestBase {
 
     public DocRendererTest(String name) {
         super(name);
@@ -71,9 +71,6 @@ public class DocRendererTest extends NbTestCase {
                 "<b1>test5</ b>",
                 "&lt;b1>test5</ b>");
         testCases.put(
-                "<code>test6</code>",
-                "<pre>test6</pre>");
-        testCases.put(
                 "<input>",
                 "&lt;input>");
         // #183594
@@ -83,17 +80,20 @@ public class DocRendererTest extends NbTestCase {
         testCases.put(
                 "NoList:\n-minus\n+plus\n#hash\nocircle\n3-number\n3.number with dot",
                 "NoList:\n-minus\n+plus\n#hash\nocircle\n3-number\n3.number with dot");
+        testCases.put(
+                "NoList:\n/**\n * @assert (0, 0) == 0\n */\n",
+                "NoList:\n/**\n * @assert (0, 0) == 0\n */\n");
 
         for (Map.Entry<String, String> entry : testCases.entrySet()) {
             String expected = entry.getValue();
             String processed = DocRenderer.PHPDocExtractor.processPhpDoc(entry.getKey());
             if (!expected.equals(processed)) {
-                System.err.println("[" + processed + "] => [" + expected + "]");
+                System.err.println("[" + expected + "] => [" + processed + "]");
             }
             assertEquals(expected, processed);
         }
     }
-    
+
     public void testLinksInDescription01() {
 
         String tested = "Sort the given array of {@link MyObject}s by ORDER field.";
@@ -108,8 +108,5 @@ public class DocRendererTest extends NbTestCase {
         }
         assertEquals(expected, result);
     }
-    
-    
-    
-    
+
 }

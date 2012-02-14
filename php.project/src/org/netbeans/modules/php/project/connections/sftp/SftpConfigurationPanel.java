@@ -62,11 +62,11 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
+import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.common.RemoteValidator;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfigurationPanel;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.Utils;
-import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -214,7 +214,7 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
     }
 
     private boolean validateInitialDirectory() {
-        String err = RunAsValidator.validateUploadDirectory(getInitialDirectory(), false);
+        String err = RemoteValidator.validateUploadDirectory(getInitialDirectory());
         if (err != null) {
             setError(err);
             return false;
@@ -574,7 +574,7 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         cfg.putValue(SftpConnectionProvider.PASSWORD, getPassword(), true);
         cfg.putValue(SftpConnectionProvider.KNOWN_HOSTS_FILE, getKnownHostsFile());
         cfg.putValue(SftpConnectionProvider.IDENTITY_FILE, getIdentityFile());
-        cfg.putValue(SftpConnectionProvider.INITIAL_DIRECTORY, RunAsValidator.sanitizeUploadDirectory(getInitialDirectory(), false));
+        cfg.putValue(SftpConnectionProvider.INITIAL_DIRECTORY, RemoteUtils.sanitizeUploadDirectory(getInitialDirectory(), false));
         cfg.putValue(SftpConnectionProvider.TIMEOUT, getTimeout());
         cfg.putValue(SftpConnectionProvider.KEEP_ALIVE_INTERVAL, getKeepAliveInterval());
     }

@@ -163,6 +163,7 @@ class SlownessReporter {
             if (CLEAR > 0) {
                 Installer.RP.post(new Runnable() {
 
+                    @Override
                     public void run() {
                         clear();
                     }
@@ -170,6 +171,7 @@ class SlownessReporter {
             }
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             Installer.RP.post(NotifySnapshot.this);
         }
@@ -202,6 +204,7 @@ class SlownessReporter {
             return btn;
         }
 
+        @Override
         public void run() {
             Installer.displaySummary("ERROR_URL", true, false, true, data); // NOI18N
         }

@@ -55,7 +55,7 @@ import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.spi.testvcs.TestAnnotatedVCS;
+import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.core.spi.VersioningSystem;
 import org.openide.nodes.Node;
@@ -108,32 +108,32 @@ public class DelegatingVCSTest extends NbTestCase {
         DelegatingVCS delegate = getDelegatingVCS();
         final VCSContext ctx = VCSContext.forNodes(new Node[0]);
         
-        assertNull(TestAnnotatedVCS.INSTANCE);
+        assertNull(TestVCS.getInstance());
         
         assertEquals("TestVCSDisplay", delegate.getDisplayName());
-        assertNull(TestAnnotatedVCS.INSTANCE);
+        assertNull(TestVCS.getInstance());
         
         assertEquals("TestVCSMenu", delegate.getMenuLabel());
-        assertNull(TestAnnotatedVCS.INSTANCE);
+        assertNull(TestVCS.getInstance());
         
         Action[] actions = delegate.getGlobalActions(ctx);
         assertNotNull(actions);
         assertEquals(1, actions.length); 
-        assertNull(TestAnnotatedVCS.INSTANCE);
+        assertNull(TestVCS.getInstance());
         
         actions = delegate.getInitActions(ctx);
         assertNotNull(actions);
         assertEquals(1, actions.length); 
-        assertNull(TestAnnotatedVCS.INSTANCE);
+        assertNull(TestVCS.getInstance());
         
         delegate.getDelegate(); // awake
-        assertNotNull(TestAnnotatedVCS.INSTANCE);
+        assertNotNull(TestVCS.getInstance());
         
     }
     
     public void testListeners() {
         DelegatingVCS delegate = getDelegatingVCS();
-        assertNull(TestAnnotatedVCS.INSTANCE);
+        assertNull(TestVCS.getInstance());
         
         final List<PropertyChangeEvent> events1 = new LinkedList<PropertyChangeEvent>();
         final PropertyChangeListener l1 = new PropertyChangeListener() {
@@ -154,11 +154,11 @@ public class DelegatingVCSTest extends NbTestCase {
         delegate.addPropertyCL(l2);
         
         delegate.getDelegate(); // forces delegate creation
-        assertNotNull(TestAnnotatedVCS.INSTANCE);        
+        assertNotNull(TestVCS.getInstance());        
         
         events1.clear();
         events2.clear();
-        TestAnnotatedVCS.INSTANCE.fire();
+        TestVCS.getInstance().fire();
         assertEquals(1, events1.size());
         assertEquals(1, events2.size());        
         
@@ -168,7 +168,7 @@ public class DelegatingVCSTest extends NbTestCase {
 
     private void assertEventSource(final List<PropertyChangeEvent> events1) {
         for (PropertyChangeEvent e : events1) {
-            assertEquals(TestAnnotatedVCS.INSTANCE, e.getSource());
+            assertEquals(TestVCS.getInstance(), e.getSource());
         }
     }
     
@@ -202,7 +202,7 @@ public class DelegatingVCSTest extends NbTestCase {
         DelegatingVCS delegate = getDelegatingVCS();
         assertNotNull(delegate);
         
-        assertTrue(delegate.isMetadataFile(VCSFileProxy.createFileProxy(new File(TestAnnotatedVCS.TEST_VCS_METADATA))));
+        assertTrue(delegate.isMetadataFile(VCSFileProxy.createFileProxy(new File(TestVCS.TEST_VCS_METADATA))));
         assertTrue(delegate.isMetadataFile(VCSFileProxy.createFileProxy(new File("null"))));
         assertTrue(delegate.isMetadataFile(VCSFileProxy.createFileProxy(new File("set"))));
         assertFalse(delegate.isMetadataFile(VCSFileProxy.createFileProxy(new File("notset"))));
@@ -220,6 +220,6 @@ public class DelegatingVCSTest extends NbTestCase {
     
     private void resetDelegate() {
         getDelegatingVCS().reset();
-        TestAnnotatedVCS.INSTANCE = null;
+        TestVCS.resetInstance();
     }
 }

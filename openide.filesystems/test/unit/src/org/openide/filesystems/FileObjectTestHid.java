@@ -1575,7 +1575,7 @@ public class FileObjectTestHid extends TestBaseHid {
         checkSetUp();
         FileObject fo;
         try {
-            fo = FileUtil.createData(root, "file.jarda"); // file with completely strange extension
+            fo = FileUtil.createData(root, "file.jess"); // file with completely strange extension
         } catch (IOException iex) {
             fsAssert(
             "Does not seem to be writeable. So there was expected.",
@@ -1585,7 +1585,7 @@ public class FileObjectTestHid extends TestBaseHid {
         }
         FileLock lock = fo.lock();
         
-        InputStream is = getClass ().getResourceAsStream("FileObjectTestHid.class");
+        InputStream is = getClass ().getResourceAsStream(getClass().getName().substring(getClass().getName().lastIndexOf('.')+1)+".class");
         OutputStream os = fo.getOutputStream (lock);
         FileUtil.copy (is, os);
         is.close ();
@@ -1697,7 +1697,7 @@ public class FileObjectTestHid extends TestBaseHid {
     }
 
 
-    public void testNbfsTransformation () throws FileStateInvalidException{
+    public void testNbfsTransformation () {
         checkSetUp();
         // additional check
         String sysName = fs.getSystemName();
@@ -1716,7 +1716,7 @@ public class FileObjectTestHid extends TestBaseHid {
         }
     }
 
-    public void testNbfsTransformation2() throws FileStateInvalidException, IOException, SAXException, ParserConfigurationException {
+    public void testNbfsTransformation2() throws IOException, SAXException, ParserConfigurationException {
         checkSetUp();
         // additional check
         if (fs.isReadOnly() || root.isReadOnly()) return;
@@ -1736,7 +1736,7 @@ public class FileObjectTestHid extends TestBaseHid {
             pFactory.setValidating (false);
             Parser p = pFactory.newSAXParser().getParser();
             p.setDocumentHandler(new HandlerBase());
-            URL u = f.getURL();
+            URL u = f.toURL();
             p.parse(u.toExternalForm());
             //
             byte[] b = new byte[10];
@@ -3086,15 +3086,15 @@ public class FileObjectTestHid extends TestBaseHid {
         }
     }
     
-    /** Test of getURL method, of class org.openide.filesystems.FileObject. */
-    public void  testGetURL() throws Exception {
+    public void testToURL() throws Exception {
         checkSetUp();
         
         FileObject fo1 = getTestFile1 (root);
         URL url = null;
-        url  = fo1.getURL();
+        url  = fo1.toURL();
         /** Only invalid files may fire FileStateInvalidException*/
-        fsAssert ("Expected valid url",url != null);                
+        fsAssert ("Expected valid url",url != null);
+        fsAssert("same URI", url.toURI().equals(fo1.toURI()));
         
         // #39613: check that it actually works!
         // Note that since getURL now produces a file: URL for files with File's,
@@ -3102,7 +3102,7 @@ public class FileObjectTestHid extends TestBaseHid {
         FileObject f2 = getTestFile1(root);
         FileObject f1 = f2.getParent();
         assertNotNull("had a parent of " + f2, f1);
-        URL u1 = f1.getURL();
+        URL u1 = f1.toURL();
         assertNotNull("had a URL for " + f1, u1);
         URI uri1 = new URI(u1.toExternalForm());
         String path1 = uri1.getPath();
@@ -3111,7 +3111,7 @@ public class FileObjectTestHid extends TestBaseHid {
             String path2 = path1 + f2.getNameExt();
             assertNull("No query for " + uri1, uri1.getQuery());
             assertNull("No fragment for " + uri1, uri1.getFragment());
-            URI uri2 = new URI(uri1.getScheme(), uri1.getHost(), path2, null);
+            URI uri2 = new URI(uri1.getScheme(), uri1.getUserInfo(), uri1.getHost(), uri1.getPort(), path2, null, null);
             Repository.getDefault().addFileSystem(fs); // so that fFO will work
             FileObject[] fos;
             try {

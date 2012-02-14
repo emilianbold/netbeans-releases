@@ -51,10 +51,10 @@ import org.netbeans.spi.editor.bracesmatching.MatcherContext;
  * @author Marek Slama
  */
 public final class PHPBracesMatcherFactory implements BracesMatcherFactory {
-    
+
     @Override
     public BracesMatcher createMatcher(MatcherContext context) {
         return new PHPBracesMatcher(context);
     }
-    
+
 }

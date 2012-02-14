@@ -282,7 +282,7 @@ public class OutlineOperator extends JTableOperator {
         if (irTreePath.getParentPath() == null)
             return getVisibleRootModifier();
 
-        if (!getOutline().isExpanded(irTreePath.getParentPath()))
+        if (!isExpanded(irTreePath.getParentPath()))
             expandPath(irTreePath.getParentPath());
 
         int lnRow = -1;
@@ -335,7 +335,7 @@ public class OutlineOperator extends JTableOperator {
     {
         OutlineModel lrModel = getOutline().getOutlineModel();
 
-        if (!lrModel.getTreePathSupport().isExpanded(irTreePath))
+        if (!isExpanded(irTreePath))
             return 1;
 
         Object lrLast = irTreePath.getLastPathComponent();

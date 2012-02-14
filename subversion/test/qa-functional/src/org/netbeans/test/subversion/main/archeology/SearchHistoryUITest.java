@@ -22,6 +22,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.subversion.operators.SourcePackagesNode;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
@@ -80,14 +81,14 @@ public class SearchHistoryUITest extends JellyTestCase{
      }
     
     public void testInvokeSearch() throws Exception {
-        try {
+        
             MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
             TestKit.closeProject(PROJECT_NAME);
             if (TestKit.getOsName().indexOf("Mac") > -1)
                 NewProjectWizardOperator.invoke().close();
 
-            TestKit.showStatusLabels();
+            
             
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             comOperator = new Operator.DefaultStringComparator(true, true);
@@ -108,6 +109,7 @@ public class SearchHistoryUITest extends JellyTestCase{
 
             rso.next();
             WorkDirStepOperator wdso = new WorkDirStepOperator();
+            new EventTool().waitNoEvent(3000);
             wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
             wdso.setLocalFolder(work.getCanonicalPath());
             wdso.checkCheckoutContentOnly(false);
@@ -119,7 +121,9 @@ public class SearchHistoryUITest extends JellyTestCase{
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
             TestKit.waitForScanFinishedSimple();
-
+            new EventTool().waitNoEvent(2000);
+            TestKit.showStatusLabels();
+            new EventTool().waitNoEvent(2000);
             mh = new MessageHandler("Searching History");
             TestKit.removeHandlers(log);
             log.addHandler(mh);
@@ -130,7 +134,11 @@ public class SearchHistoryUITest extends JellyTestCase{
             mh = new MessageHandler("Retrieving files");
             TestKit.removeHandlers(log);
             log.addHandler(mh);
-            sh.performPopup(1, "Diff");
+            new EventTool().waitNoEvent(2000);
+            sh.clickForPopup(200, 72);
+            new EventTool().waitNoEvent(2000);
+            JPopupMenuOperator jpmo=new JPopupMenuOperator();
+            jpmo.pushMenu("Diff to Previous Revision");
             TestKit.waitText(mh);
            
             stream.flush();
@@ -144,12 +152,10 @@ public class SearchHistoryUITest extends JellyTestCase{
             try {
                 TestKit.closeProject(PROJECT_NAME);
             } catch (TimeoutExpiredException e) {/* OK */}
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
-        } finally {
+        
 //            try {
 //                TestKit.closeProject(PROJECT_NAME);
 //            } catch (TimeoutExpiredException e) {/* OK */}
-        }    
+           
     }
 }

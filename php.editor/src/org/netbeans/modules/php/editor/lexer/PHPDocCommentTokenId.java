@@ -60,42 +60,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public enum PHPDocCommentTokenId implements TokenId {
     PHPDOC_COMMENT(null, "comment"), //NOI18N
-    PHPDOC_NAME("@name", "phpdockeyword"), //NOI18N
-    PHPDOC_DESC("@desc", "phpdockeyword"), //NOI18N
-    PHPDOC_TODO("@todo", "phpdockeyword"), //NOI18N
-    PHPDOC_LINK("@link", "phpdockeyword"), //NOI18N
-    PHPDOC_EXAMPLE("@example", "phpdockeyword"), //NOI18N
-    PHPDOC_LICENSE("@license", "phpdockeyword"), //NOI18N
-    PHPDOC_PACKAGE("@package", "phpdockeyword"), //NOI18N
-    PHPDOC_VERSION("@version", "phpdockeyword"), //NOI18N
-    PHPDOC_ABSTRACT("@abstract", "phpdockeyword"), //NOI18N
-    PHPDOC_INTERNAL("@internal", "phpdockeyword"), //NOI18N
-    PHPDOC_TUTORIAL("@tutorial", "phpdockeyword"), //NOI18N
-    PHPDOC_METHOD("@method", "phpdockeyword"), //NOI18N
-    PHPDOC_PROPERTY("@property", "phpdockeyword"), //NOI18N
-    PHPDOC_PROPERTY_READ("@property-write", "phpdockeyword"), //NOI18N
-    PHPDOC_PROPERTY_WRITE("@property-read", "phpdockeyword"), //NOI18N
-    PHPDOC_USES("@uses", "phpdockeyword"), //NOI18N
-    PHPDOC_CATEGORY("@category", "phpdockeyword"), //NOI18N
-    PHPDOC_FINAL("@final", "phpdockeyword"), //NOI18N
-    PHPDOC_SINCE("@since", "phpdockeyword"), //NOI18N
-    PHPDOC_PARAM("@param", "phpdockeyword"), //NOI18N
-    PHPDOC_MAGIC("@magic", "phpdockeyword"), //NOI18N
-    PHPDOC_RETURN("@return", "phpdockeyword"), //NOI18N
-    PHPDOC_AUTHOR("@author", "phpdockeyword"), //NOI18N
-    PHPDOC_ACCESS("@access", "phpdockeyword"), //NOI18N
-    PHPDOC_IGNORE("@ingnore", "phpdockeyword"), //NOI18N
-    PHPDOC_THROWS("@throws", "phpdockeyword"), //NOI18N
-    PHPDOC_STATIC("@static", "phpdockeyword"), //NOI18N
-    PHPDOC_GLOBAL("@global", "phpdockeyword"), //NOI18N
-    PHPDOC_SUBPACKAGE("@subpackage", "phpdockeyword"), //NOI18N
-    PHPDOC_FILESOURCE("@filesource", "phpdockeyword"), //NOI18N
-    PHPDOC_EXCEPTION("@exception", "phpdockeyword"), //NOI18N
-    PHPDOC_COPYRIGHT("@copyright", "phpdockeyword"), //NOI18N
-    PHPDOC_STATICVAR("@static", "phpdockeyword"), //NOI18N
-    PHPDOC_VAR("@var", "phpdockeyword"), //NOI18N
-    PHPDOC_SEE("@see", "phpdockeyword"), //NOI18N
-    PHPDOC_DEPRECATED("@deprecated", "phpdockeyword"); //NOI18N
+    PHPDOC_HTML_TAG(null, "htmltag"), //NOI18N
+    PHPDOC_ANNOTATION(null, "phpdockeyword"); //NOI18N
 
     private final String fixedText;
     private final String primaryCategory;
@@ -104,11 +70,12 @@ public enum PHPDocCommentTokenId implements TokenId {
         this.fixedText = fixedText;
         this.primaryCategory = primaryCategory;
     }
-    
+
+    @Override
     public String primaryCategory() {
         return primaryCategory;
     }
-    
+
     public String fixedText() {
         return fixedText;
     }

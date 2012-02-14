@@ -533,6 +533,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     try {
                         initIndexer();
                         //need to delete the index and recreate? the scan(update) parameter doesn't work?
+                        assert indexer != null;
+                        assert indexer.getIndexingContexts() != null;
                         IndexingContext cntx = indexer.getIndexingContexts().get(repo.getId());
                         if (cntx != null) {
                             indexer.removeIndexingContext(cntx, true);

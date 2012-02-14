@@ -101,7 +101,7 @@ public final class BeanIdCompletor extends Completor {
 
             public void run(CompilationController cc) throws Exception {
                 Map<String, String> tagAttributes = SpringXMLConfigEditorUtils.getTagAttributes(context.getTag());
-                String beanClassName = new BeanClassFinder(tagAttributes, fileObject).findImplementationClass();
+                String beanClassName = new BeanClassFinder(tagAttributes, fileObject).findImplementationClass(true);
                 if (beanClassName == null) {
                     return;
                 }

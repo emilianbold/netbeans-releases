@@ -61,6 +61,7 @@ import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.editor.Utilities;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.filesystems.FileObject;
+import org.openide.util.RequestProcessor;
 
 /**
  * A GUI panel for customizing a Watch.
@@ -91,7 +92,7 @@ public class WatchPanel {
         panel.setBorder (new EmptyBorder (11, 12, 1, 11));
         panel.add (BorderLayout.NORTH, textLabel);
 
-        FileObject file = EditorContextDispatcher.getDefault().getMostRecentFile();
+        final FileObject file = EditorContextDispatcher.getDefault().getMostRecentFile();
         int line = EditorContextDispatcher.getDefault().getMostRecentLineNumber();
         String mimeType = file != null ? file.getMIMEType() : "text/plain"; // NOI18N
         if (!mimeType.startsWith("text/")) { // NOI18N
@@ -111,6 +112,21 @@ public class WatchPanel {
         if (file != null && line >= 0) {
             DialogBinding.bindComponentToFile(file, line, 0, 0, editorPane);
         }
+        final int theLine = line;
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                final int adjustedLine = adjustLine(file, theLine);
+                if (adjustedLine != theLine) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            DialogBinding.bindComponentToFile(file, adjustedLine, 0, 0, editorPane);
+                        }
+                    });
+                }
+            }
+        });
         panel.add (BorderLayout.CENTER, sp);
         editorPane.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_CTL_Watch_Name")); // NOI18N
         String t = Utils.getIdentifier ();
@@ -201,8 +217,9 @@ public class WatchPanel {
                     }
                     slash = true;
                 }
-                if (c == 'c' && line.length() > (i+"class".length()) && "lass".equals(line.substring(i+1, i+5))) {
+                if (c == 'c' && line.length() >= (i+"class".length()) && "lass".equals(line.substring(i+1, i+5))) {
                     // class declaration
+                    classDecl = true;
                     if (line.indexOf('{', i+5) > 0) {
                         return l + 1;
                     }

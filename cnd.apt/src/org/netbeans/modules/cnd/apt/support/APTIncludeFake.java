@@ -69,54 +69,67 @@ public final class APTIncludeFake implements APTInclude {
         this.token.setText("-include"); // NOI18N
     }
 
+    @Override
     public TokenStream getInclude() {
         return new ListBasedTokenStream(Arrays.asList(token, token));
     }
 
+    @Override
     public String getFileName(APTMacroCallback callback) {
         return filePath;
     }
 
+    @Override
     public boolean isSystem(APTMacroCallback callback) {
         return false;
     }
 
+    @Override
     public boolean accept(APTFile curFile, APTToken token) {
         throw new UnsupportedOperationException("Not supposed to be used."); // NOI18N
     }
 
+    @Override
     public APTToken getToken() {
         return this.token;
     }
 
+    @Override
     public APT getFirstChild() {
         return null;
     }
 
+    @Override
     public APT getNextSibling() {
         return null;
     }
 
+    @Override
     public String getText() {
         return filePath;
     }
 
+    @Override
     public int getType() {
         return APT.Type.INCLUDE;
     }
 
+    @Override
     public int getOffset() {
         return this.token.getOffset();
     }
 
+    @Override
     public int getEndOffset() {
         return this.token.getEndOffset();
     }
 
+    @Override
     public void setFirstChild(APT child) {
         throw new UnsupportedOperationException("Not supposed to be used."); // NOI18N
     }
 
+    @Override
     public void setNextSibling(APT next) {
         throw new UnsupportedOperationException("Not supposed to be used."); // NOI18N
     }

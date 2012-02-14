@@ -44,43 +44,47 @@
 
 package org.netbeans.modules.apisupport.project.ui;
 
-import java.awt.event.ActionEvent;
+import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.extexecution.startup.StartupExtender;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleType;
 import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.spi.ExecProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import static org.netbeans.modules.apisupport.project.ui.Bundle.*;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.apisupport.project.ui.customizer.ModuleProperties;
+import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
-import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -88,30 +92,36 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
+import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.actions.FindAction;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
-import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 public final class ModuleActions implements ActionProvider, ExecProject {
-    static final String TEST_USERDIR_LOCK_PROP_NAME = "run.args.ide";    // NOI18N
-    static final String TEST_USERDIR_LOCK_PROP_VALUE = "--test-userdir-lock-with-invalid-arg";    // NOI18N
+    private static final String RUN_ARGS_IDE = "run.args.ide";    // NOI18N
+    private static final String TEST_USERDIR_LOCK_PROP_VALUE = "--test-userdir-lock-with-invalid-arg";    // NOI18N
 
     static final Set<String> bkgActions = new HashSet<String>(Arrays.asList(
         COMMAND_RUN_SINGLE,
         COMMAND_DEBUG_SINGLE
     ));
+
+    private static final String COMMAND_NBM = "nbm";
+    private static final String MODULE_ACTIONS_TYPE = "org-netbeans-modules-apisupport-project";
+    private static final String MODULE_ACTIONS_PATH = "Projects/" + MODULE_ACTIONS_TYPE + "/Actions";
 
     private static final RequestProcessor RP = new RequestProcessor(ModuleActions.class);
 
@@ -128,48 +138,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
     }
     
     static Action[] getProjectActions(NbModuleProject project) {
-        List<Action> actions = new ArrayList<Action>();
-        actions.add(CommonProjectActions.newFileAction());
-        actions.add(null);
-        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, NbBundle.getMessage(ModuleActions.class, "ACTION_build"), null));
-        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, NbBundle.getMessage(ModuleActions.class, "ACTION_rebuild"), null));
-        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, NbBundle.getMessage(ModuleActions.class, "ACTION_clean"), null));
-        actions.add(null);
-        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, NbBundle.getMessage(ModuleActions.class, "ACTION_run"), null));
-        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, NbBundle.getMessage(ModuleActions.class, "ACTION_debug"), null));
-        actions.addAll(Utilities.actionsForPath("Projects/Profiler_Actions_temporary")); //NOI18N
-        if (project.supportedTestTypes().contains("unit")) { // NOI18N
-            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, NbBundle.getMessage(ModuleActions.class, "ACTION_test"), null));
-        }
-        actions.add(null);
-        boolean isNetBeansOrg = project.getModuleType() == NbModuleType.NETBEANS_ORG;
-        if (isNetBeansOrg) {
-            actions.add(createCheckBundleAction(project, NbBundle.getMessage(ModuleActions.class, "ACTION_unused_bundle_keys")));
-            actions.add(null);
-        }
-        actions.add(createReloadAction(project, new String[] {"reload"}, NbBundle.getMessage(ModuleActions.class, "ACTION_reload"), false));
-        actions.add(createReloadAction(project, new String[] {"reload-in-ide"}, NbBundle.getMessage(ModuleActions.class, "ACTION_reload_in_ide"), true));
-        actions.add(createSimpleAction(project, new String[] {"nbm"}, NbBundle.getMessage(ModuleActions.class, "ACTION_nbm")));
-        actions.add(null);
-        actions.add(ProjectSensitiveActions.projectCommandAction(JavaProjectConstants.COMMAND_JAVADOC, NbBundle.getMessage(ModuleActions.class, "ACTION_javadoc"), null));
-        actions.add(createArchAction(project));
-        actions.add(null);
-        actions.add(CommonProjectActions.setAsMainProjectAction());
-        actions.add(CommonProjectActions.openSubprojectsAction());
-        actions.add(CommonProjectActions.closeProjectAction());
-        actions.add(null);
-        actions.add(CommonProjectActions.renameProjectAction());
-        actions.add(CommonProjectActions.moveProjectAction());
-        actions.add(CommonProjectActions.copyProjectAction());
-        actions.add(CommonProjectActions.deleteProjectAction());
-        
-        actions.add(null);
-        actions.add(SystemAction.get(FindAction.class));
-        // Honor #57874 contract:
-        actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
-        actions.add(null);
-        actions.add(CommonProjectActions.customizeProjectAction());
-        return actions.toArray(new Action[actions.size()]);
+        return CommonProjectActions.forType(MODULE_ACTIONS_TYPE);
     }
     
     private final NbModuleProject project;
@@ -195,9 +164,8 @@ public final class ModuleActions implements ActionProvider, ExecProject {
         globalCommands.put(ActionProvider.COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
         globalCommands.put("profile", new String[] {"profile"}); // NOI18N
         globalCommands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc-nb"}); // NOI18N
-        if (project.supportedTestTypes().contains("unit")) { // NOI18N
-            globalCommands.put(ActionProvider.COMMAND_TEST, new String[] {"test-unit"}); // NOI18N
-        }
+        globalCommands.put(ActionProvider.COMMAND_TEST, new String[] {"test-unit"}); // NOI18N
+        globalCommands.put(COMMAND_NBM, new String[] {COMMAND_NBM});
         supportedActionsSet.addAll(globalCommands.keySet());
         supportedActionsSet.add(ActionProvider.COMMAND_COMPILE_SINGLE);
         supportedActionsSet.add(JavaProjectConstants.COMMAND_DEBUG_FIX); // #47012
@@ -235,6 +203,8 @@ public final class ModuleActions implements ActionProvider, ExecProject {
             return false;
         } else if (command.equals(COMMAND_COMPILE_SINGLE)) {
             return findSources(context) != null || findTestSources(context, true) != null;
+        } else if (command.equals(COMMAND_TEST)) {
+            return project.supportedTestTypes().contains("unit");
         } else if (command.equals(COMMAND_TEST_SINGLE)) {
             return findTestSourcesForSources(context) != null || findTestSources(context, true) != null;
         } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
@@ -370,6 +340,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
         }
     }
     
+    @Messages("MSG_no_source=No source to operate on.")
     public void invokeAction(final String command, final Lookup context) throws IllegalArgumentException {
         if (ActionProvider.COMMAND_DELETE.equals(command)) {
             if (ModuleOperations.canRun(project)) {
@@ -474,7 +445,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                     } else {
                         TestSources testSources = findTestSources(context, false);
                         if (testSources == null) {  // #174147
-                            NotifyDescriptor.Message msg = new NotifyDescriptor.Message(NbBundle.getMessage(ModuleActions.class, "MSG_no_source"));
+                            NotifyDescriptor.Message msg = new NotifyDescriptor.Message(MSG_no_source());
                             DialogDisplayer.getDefault().notify(msg);
                             return;
                         }
@@ -489,11 +460,8 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                     promptForPublicPackagesToDocument();
                     return;
                 } else {
-                    if ((command.equals(ActionProvider.COMMAND_RUN) || command.equals(ActionProvider.COMMAND_DEBUG)) // #63652
-                            && project.getTestUserDirLockFile().isFile()) {
-                        // #141069: lock file exists, run with bogus option
-                        p.setProperty(TEST_USERDIR_LOCK_PROP_NAME, TEST_USERDIR_LOCK_PROP_VALUE);
-                    }
+                    // XXX consider passing PM.fP(FU.toFO(SuiteUtils.suiteDirectory(project))) instead for a suite component project:
+                    setRunArgsIde(project, SingleModuleProperties.getInstance(project), command, p, project.getTestUserDirLockFile());
                     if (command.equals(ActionProvider.COMMAND_REBUILD)) {
                         p.setProperty("do.not.clean.module.config.xml", "true"); // #196192
                     }
@@ -516,12 +484,54 @@ public final class ModuleActions implements ActionProvider, ExecProject {
             runnable.run();
     }
 
+    static void setRunArgsIde(Project project, ModuleProperties modprops, String command, Properties p, File testUserDirLockFile) {
+        StringBuilder runArgsIde = new StringBuilder();
+        StartupExtender.StartMode mode;
+        if (command.equals(COMMAND_RUN) || command.equals(COMMAND_RUN_SINGLE)) {
+            mode = StartupExtender.StartMode.NORMAL;
+        } else if (command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE) || command.equals(COMMAND_DEBUG_STEP_INTO)) {
+            mode = StartupExtender.StartMode.DEBUG;
+        } else if (command.equals("profile")) {
+            mode = StartupExtender.StartMode.PROFILE;
+        } else if (command.equals(COMMAND_TEST) || command.equals(COMMAND_TEST_SINGLE)) {
+            mode = StartupExtender.StartMode.TEST_NORMAL;
+        } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
+            mode = StartupExtender.StartMode.TEST_DEBUG;
+        } else if (command.equals("profile-test-single-nb")) {
+            mode = StartupExtender.StartMode.TEST_PROFILE;
+        } else {
+            mode = null;
+        }
+        if (mode != null) {
+            JavaPlatform plaf = modprops.getJavaPlatform();
+            Lookup context = Lookups.fixed(project, plaf != null ? plaf : JavaPlatformManager.getDefault().getDefaultPlatform());
+            for (StartupExtender group : StartupExtender.getExtenders(context, mode)) {
+                for (String arg : group.getArguments()) {
+                    runArgsIde.append("-J").append(arg).append(' ');
+                }
+            }
+        }
+        if ((command.equals(ActionProvider.COMMAND_RUN) || command.equals(ActionProvider.COMMAND_DEBUG)) // #63652
+                && testUserDirLockFile.isFile()) {
+            // #141069: lock file exists, run with bogus option
+            runArgsIde.append(TEST_USERDIR_LOCK_PROP_VALUE);
+        }
+        if (runArgsIde.length() > 0) {
+            p.setProperty(RUN_ARGS_IDE, runArgsIde.toString());
+        }
+    }
+
+    @Messages({
+        "TITLE_javadoc_disabled=No Public Packages",
+        "ERR_javadoc_disabled=<html>Javadoc cannot be produced for this module.<br>It is not yet configured to export any packages to other modules.",
+        "LBL_configure_pubpkg=Configure Public Packages..."
+    })
     private void promptForPublicPackagesToDocument() {
         // #61372: warn the user, rather than disabling the action.
         if (ApisupportAntUIUtils.showAcceptCancelDialog(
-                NbBundle.getMessage(ModuleActions.class, "TITLE_javadoc_disabled"),
-                NbBundle.getMessage(ModuleActions.class, "ERR_javadoc_disabled"),
-                NbBundle.getMessage(ModuleActions.class, "LBL_configure_pubpkg"),
+                TITLE_javadoc_disabled(),
+                ERR_javadoc_disabled(),
+                LBL_configure_pubpkg(),
                 null,
                 NotifyDescriptor.WARNING_MESSAGE)) {
             CustomizerProviderImpl cpi = project.getLookup().lookup(CustomizerProviderImpl.class);
@@ -567,10 +577,14 @@ public final class ModuleActions implements ActionProvider, ExecProject {
             return true;
         }
     }
+    @Messages({
+        "ERR_harness_too_old=You are attempting to build a module or suite project which uses a new metadata format with an old version of the module build harness which does not understand this format. You may either choose a newer NetBeans platform, or switch the harness used by the selected platform to use a newer harness (try using the harness supplied with the IDE).",
+        "TITLE_harness_too_old=Harness Too Old"
+    })
     static void promptForNewerHarness() {
         // #82388: warn the user that the harness version is too low.
-        NotifyDescriptor d = new NotifyDescriptor.Message(NbBundle.getMessage(ModuleActions.class, "ERR_harness_too_old"), NotifyDescriptor.ERROR_MESSAGE);
-        d.setTitle(NbBundle.getMessage(ModuleActions.class, "TITLE_harness_too_old"));
+        NotifyDescriptor d = new NotifyDescriptor.Message(ERR_harness_too_old(), NotifyDescriptor.ERROR_MESSAGE);
+        d.setTitle(TITLE_harness_too_old());
         DialogDisplayer.getDefault().notify(d);
     }
     
@@ -634,49 +648,34 @@ public final class ModuleActions implements ActionProvider, ExecProject {
 
         return false;
     }
-    
-    private static Action createSimpleAction(final NbModuleProject project, final String[] targetNames, String displayName) {
-        return new AbstractAction(displayName) {
-            public @Override boolean isEnabled() {
-                return findBuildXml(project) != null;
-            }
-            public void actionPerformed(ActionEvent ignore) {
-                if (!verifySufficientlyNewHarness(project)) {
-                    return;
-                }
-                try {
-                    ActionUtils.runTarget(findBuildXml(project), targetNames, null);
-                } catch (IOException e) {
-                    Util.err.notify(e);
-                }
-            }
-        };
+
+    @ActionID(category="Project", id="org.netbeans.modules.apisupport.project.reload")
+    @ActionRegistration(displayName="#ACTION_reload", lazy=false)
+    @ActionReference(path=MODULE_ACTIONS_PATH, position=1400)
+    @Messages("ACTION_reload=Reload in Target Platform")
+    public static Action reload() {
+        return reload(false);
     }
-    
-    private static Action createCheckBundleAction(final NbModuleProject project, String displayName) {
-        return new AbstractAction(displayName) {
-            public @Override boolean isEnabled() {
-                return findMonitorXml() != null && project.getPathWithinNetBeansOrg() != null;
-            }
-            public void actionPerformed(ActionEvent ignore) {
-                Properties props = new Properties();
-                props.put("modules", project.getPathWithinNetBeansOrg()); // NOI18N
-                props.put("fixedmodules", ""); // NOI18N
-                try {
-                    ActionUtils.runTarget(findMonitorXml(), new String[] {"check-bundle-usage"}, props); // NOI18N
-                } catch (IOException e) {
-                    Util.err.notify(e);
-                }
-            }
-            private FileObject findMonitorXml() {
-                return project.getNbrootFileObject("nbbuild/monitor.xml"); // NOI18N
-            }
-        };
+
+    @ActionID(category="Project", id="org.netbeans.modules.apisupport.project.reloadInIde")
+    @ActionRegistration(displayName="#ACTION_reload_in_ide", lazy=false)
+    @ActionReference(path=MODULE_ACTIONS_PATH, position=1500)
+    @Messages("ACTION_reload_in_ide=Install/Reload in Development IDE")
+    public static Action reloadInIde() {
+        return reload(true);
     }
-    
-    private static Action createReloadAction(final NbModuleProject project, final String[] targetNames, String displayName, final boolean inIDE) {
-        return new AbstractAction(displayName) {
-            public @Override boolean isEnabled() {
+
+    @Messages({
+        "LBL_reload_in_ide_confirm=<html>Reloading a module in the running development IDE can be dangerous.<br>Errors in the module could corrupt your environment and force you to use a new user directory.<br>(In most cases it is wiser to use <b>Run</b> or <b>Reload in Target Platform</b>.)<br>Do you really want to reload this module in your own IDE?",
+        "LBL_reload_in_ide_confirm_title=Confirm Install/Reload in Development IDE"
+    })
+    private static Action reload(final boolean inIDE) {
+        return ProjectSensitiveActions.projectSensitiveAction(new ProjectActionPerformer() {
+            @Override public boolean enable(Project _project) {
+                if (!(_project instanceof NbModuleProject)) {
+                    return false;
+                }
+                NbModuleProject project = (NbModuleProject) _project;
                 if (findBuildXml(project) == null) {
                     return false;
                 }
@@ -712,14 +711,15 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                     }
                 }
             }
-            public void actionPerformed(ActionEvent ignore) {
+            @Override public void perform(Project p) {
+                NbModuleProject project = (NbModuleProject) p;
                 if (!verifySufficientlyNewHarness(project)) {
                     return;
                 }
                 if (inIDE && ModuleUISettings.getDefault().getConfirmReloadInIDE()) {
                     NotifyDescriptor d = new NotifyDescriptor.Confirmation(
-                            NbBundle.getMessage(ModuleActions.class, "LBL_reload_in_ide_confirm"),
-                            NbBundle.getMessage(ModuleActions.class, "LBL_reload_in_ide_confirm_title"),
+                            LBL_reload_in_ide_confirm(),
+                            LBL_reload_in_ide_confirm_title(),
                             NotifyDescriptor.OK_CANCEL_OPTION);
                     if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
                         return;
@@ -727,20 +727,37 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                     ModuleUISettings.getDefault().setConfirmReloadInIDE(false); // do not ask again
                 }
                 try {
-                    ActionUtils.runTarget(findBuildXml(project), targetNames, null);
+                    ActionUtils.runTarget(findBuildXml(project), new String[] {inIDE ? "reload-in-ide" : "reload"}, null);
                 } catch (IOException e) {
                     Util.err.notify(e);
                 }
             }
-        };
+        }, inIDE ? ACTION_reload_in_ide() : ACTION_reload(), null);
     }
-    
-    private static Action createArchAction(final NbModuleProject project) {
-        return new AbstractAction(NbBundle.getMessage(ModuleActions.class, "ACTION_arch")) {
-            public @Override boolean isEnabled() {
+
+    @ActionID(category="Project", id="org.netbeans.modules.apisupport.project.createNbm")
+    @ActionRegistration(displayName="#ACTION_nbm", lazy=false)
+    @ActionReference(path=MODULE_ACTIONS_PATH, position=1600)
+    @Messages("ACTION_nbm=Create NBM")
+    public static Action createNbm() {
+        return ProjectSensitiveActions.projectCommandAction(COMMAND_NBM, ACTION_nbm(), null);
+    }
+
+    @ActionID(category="Project", id="org.netbeans.modules.apisupport.project.arch")
+    @ActionRegistration(displayName="#ACTION_arch", lazy=false)
+    @ActionReference(path=MODULE_ACTIONS_PATH, position=1900)
+    @Messages("ACTION_arch=Generate Architecture Description")
+    public static Action arch() {
+        return ProjectSensitiveActions.projectSensitiveAction(new ProjectActionPerformer() {
+            @Override public boolean enable(Project p) {
+                if (!(p instanceof NbModuleProject)) {
+                    return false;
+                }
+                NbModuleProject project = (NbModuleProject) p;
                 return findBuildXml(project) != null;
             }
-            public void actionPerformed(ActionEvent ignore) {
+            @Override public void perform(Project p) {
+                final NbModuleProject project = (NbModuleProject) p;
                 if (!verifySufficientlyNewHarness(project)) {
                     return;
                 }
@@ -767,7 +784,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                     Util.err.notify(e);
                 }
             }
-        };
+        }, ACTION_arch(), null);
     }
-    
+
 }

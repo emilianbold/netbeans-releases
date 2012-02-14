@@ -791,6 +791,10 @@ public class Flow {
             return null;
         }
 
+        public Boolean visitParenthesized(ParenthesizedTree node, Void p) {
+            return super.visitParenthesized(node, p);
+        }
+
         private void resumeAfter(Tree target, Map<VariableElement, State> state) {
             for (TreePath tp : pendingFinally) {
                 boolean shouldBeRun = false;
@@ -854,11 +858,6 @@ public class Flow {
 
         public Boolean visitPrimitiveType(PrimitiveTypeTree node, Void p) {
             super.visitPrimitiveType(node, p);
-            return null;
-        }
-
-        public Boolean visitParenthesized(ParenthesizedTree node, Void p) {
-            super.visitParenthesized(node, p);
             return null;
         }
 

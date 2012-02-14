@@ -71,7 +71,7 @@ public class ScanClasspath extends PerformanceTestCase {
         
     static {
         reportCPR.add("rt.jar");        // JDK/jre/lib/rt.jar
-        reportCPR.add("jEdit41/src");   // jEdit41/src
+        reportCPR.add("jEdit/src");   // jEdit41/src
     }
     
     /**
@@ -98,13 +98,13 @@ public class ScanClasspath extends PerformanceTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         
-        suite.addTest(new ScanClasspath("openJEditProject"));
+        suite.addTest(new ScanClasspath("testOpenJEditProject"));
 
         return suite;
     }
     
     public void testOpenJEditProject() {
-        CommonUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+"/jEdit41");
+        CommonUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+"/jEdit");
         measureClassPathScan();
         reportPerformance("Scanning Java Project Classpath", wholeClasspathScan, "ms", 1);
     }

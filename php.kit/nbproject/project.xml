@@ -12,6 +12,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.languages.apacheconf</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.languages.ini</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
@@ -38,7 +44,7 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.php.editor</code-name-base>
                     <run-dependency>
-                        <specification-version>1.13.0</specification-version>
+                        <specification-version>1.21.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -48,15 +54,9 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.php.phpdoc</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.php.project</code-name-base>
                     <run-dependency>
-                        <specification-version>2.43</specification-version>
+                        <specification-version>2.46</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

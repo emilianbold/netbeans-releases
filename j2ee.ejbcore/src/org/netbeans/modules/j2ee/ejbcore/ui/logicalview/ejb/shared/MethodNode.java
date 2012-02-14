@@ -182,7 +182,9 @@ public class MethodNode extends AbstractNode implements /*MDRChangeListener,*/ O
                 Elements elements = controller.getElements();
                 TypeElement entityBean = elements.getTypeElement("javax.ejb.EntityBean"); // NOI18N
                 TypeElement implBeanElement = elements.getTypeElement(implBean);
-                result[0] = controller.getTypes().isSubtype(implBeanElement.asType(), entityBean.asType());
+                if (implBeanElement != null && entityBean != null) {
+                    result[0] = controller.getTypes().isSubtype(implBeanElement.asType(), entityBean.asType());
+                }
             }
         }, true);
         return result[0];

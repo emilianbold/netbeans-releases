@@ -47,13 +47,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.remote.impl.fileoperations.spi.AnnotationProvider;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider.FileOperations;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
+import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor.VCSAnnotationEvent;
+import org.openide.filesystems.*;
 
 /**
  *
@@ -76,11 +77,18 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
         return interceptor;
     }
 
-    private static final class FilesystemInterceptorImpl implements FilesystemInterceptor {
+    private static final class FilesystemInterceptorImpl implements FilesystemInterceptor, FileChangeListener, VCSFilesystemInterceptor.VCSAnnotationListener {
         private final FileSystem fs;
         
         public FilesystemInterceptorImpl(FileSystem fs) {
             this.fs = fs;
+            VCSFilesystemInterceptor.registerFileStatusListener(this);
+            fs.addFileChangeListener(this);
+        }
+        
+        @Override
+        public void annotationChanged(VCSAnnotationEvent ev) {
+            ((VersioningAnnotationProviderImpl)AnnotationProvider.getDefault()).deliverStatusEvent(fs, ev);
         }
 
         @Override
@@ -102,6 +110,11 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
         public void fileChanged(FileProxyI file) {
             VCSFilesystemInterceptor.fileChanged(toVCSFileProxy(file));
         }
+        
+        @Override
+        public void fileChanged(FileEvent fe) {
+            VCSFilesystemInterceptor.fileChanged(toVCSFileProxy(fe.getFile()));
+       }
 
         @Override
         public IOHandler getDeleteHandler(FileProxyI file) {
@@ -129,6 +142,10 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
         }
 
         @Override
+        public void fileDeleted(FileEvent fe) {
+        }
+
+        @Override
         public void beforeCreate(FileProxyI parent, String name, boolean isFolder) {
             VCSFilesystemInterceptor.beforeCreate(toVCSFileProxy(parent), name, isFolder);
         }
@@ -146,6 +163,14 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
         @Override
         public void createdExternally(FileProxyI fo) {
             VCSFilesystemInterceptor.createdExternally(toVCSFileProxy(fo));
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
         }
 
         @Override
@@ -177,10 +202,23 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
             }
             return null;
         }
+        
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            String name = fe.getName();
+            String ext = fe.getExt();
+            if(ext != null && !ext.isEmpty()) {
+                name += "." + ext; // NOI18N
+            }
+            VCSFilesystemInterceptor.afterMove(
+                VCSFileProxy.createFileProxy(VCSFileProxy.createFileProxy(fe.getFile()).getParentFile(), name),
+                toVCSFileProxy(fe.getFile())
+            );
+        }
 
         @Override
         public void afterMove(FileProxyI from, FileProxyI to) {
-            VCSFilesystemInterceptor.afterMove(toVCSFileProxy(from), toVCSFileProxy(from));
+            VCSFilesystemInterceptor.afterMove(toVCSFileProxy(from), toVCSFileProxy(to));
         }
 
         @Override
@@ -225,6 +263,10 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
         @Override
         public String toString() {
             return fs.getDisplayName();
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
         }
     }
 

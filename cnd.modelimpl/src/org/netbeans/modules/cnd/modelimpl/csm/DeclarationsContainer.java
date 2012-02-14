@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 
 /**
@@ -52,4 +53,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
  */
 public interface DeclarationsContainer {
     CsmOffsetableDeclaration findExistingDeclaration(int startOffset, int endOffset, CharSequence name);
+
+    CsmOffsetableDeclaration findExistingDeclaration(int startOffset, CharSequence name, CsmDeclaration.Kind kind);
 }

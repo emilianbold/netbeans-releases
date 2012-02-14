@@ -249,14 +249,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
                     if (fields == null || refreshFields) {
                         initFields ();
                     }
-                    if (to != 0) {
-                        to = Math.min(fields.length, to);
-                        from = Math.min(fields.length, from);
-                        Field[] fv = new Field [to - from];
-                        System.arraycopy (fields, from, fv, 0, to - from);
-                        return fv;
-                    }
-                    return fields;
+                    return getSubFields(fields, from, to);
                 }
             }
         } catch (InternalExceptionWrapper e) {
@@ -282,14 +275,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
             if (fields == null || refreshFields) {
                 initFields ();
             }
-            if (to != 0) {
-                to = Math.min(staticFields.length, to);
-                from = Math.min(staticFields.length, from);
-                Field[] fv = new Field[to - from];
-                System.arraycopy (staticFields, from, fv, 0, to - from);
-                return fv;
-            }
-            return staticFields;
+            return getSubFields(staticFields, from, to);
         }
     }
 
@@ -307,15 +293,23 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
             if (fields == null || refreshFields) {
                 initFields ();
             }
-            if (to != 0) {
-                to = Math.min(inheritedFields.length, to);
-                from = Math.min(inheritedFields.length, from);
-                Field[] fv = new Field[to - from];
-                System.arraycopy (inheritedFields, from, fv, 0, to - from);
-                return fv;
-            }
-            return inheritedFields;
+            return getSubFields(inheritedFields, from, to);
         }
+    }
+    
+    private static Field[] getSubFields (Field[] fields, int from, int to) {
+        if (fields == null) {
+            return new Field[] {};
+        }
+        if (to != 0) {
+            to = Math.min(fields.length, to);
+            from = Math.min(fields.length, from);
+            Field[] fv = new Field [to - from];
+            System.arraycopy (fields, from, fv, 0, to - from);
+            fields = fv;
+        }
+        return fields;
+        
     }
 
     public Super getSuper () {

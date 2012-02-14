@@ -47,9 +47,10 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
-import org.netbeans.spi.queries.CollocationQueryImplementation;
+import org.netbeans.spi.queries.CollocationQueryImplementation2;
 
 /**
  * Warning: VCS internal use only. Not to be implemented by clients.
@@ -97,15 +98,17 @@ public abstract class VCSSystemProvider {
         
         public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file);
 
-        public VCSAnnotator getAnnotator();
+        public VCSAnnotator getVCSAnnotator();
 
-        public VCSInterceptor getInterceptor();
+        public VCSInterceptor getVCSInterceptor();
 
+        public VCSHistoryProvider getVCSHistoryProvider();
+        
         public void getOriginalFile(VCSFileProxy workingCopy, VCSFileProxy originalFile);
 
-        public CollocationQueryImplementation getCollocationQueryImplementation();
+        public CollocationQueryImplementation2 getCollocationQueryImplementation();
 
-        public VCSVisibilityQuery getVisibility();
+        public VCSVisibilityQuery getVisibilityQuery();
 
         public void addPropertyCL(PropertyChangeListener listener);
 

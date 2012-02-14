@@ -194,6 +194,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         "return" // NOI18N
     };
 
+    private static final String[] PHP_LANGUAGE_CONSTRUCTS_FOR_TYPE_HINTS = {
+        "callable" //NOI18N
+    };
+
     final static String PHP_CLASS_KEYWORD_THIS = "$this->"; //NOI18N
 
     final static String[] PHP_CLASS_KEYWORDS = {
@@ -294,11 +298,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             request.prefix = prefix;
             request.index = ElementQueryFactory.getIndexQuery(info);
 
-            try {
-                request.currentlyEditedFileURL = fileObject.getURL().toString();
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            request.currentlyEditedFileURL = fileObject.toURL().toString();
             switch (context) {
                 case DEFAULT_PARAMETER_VALUE:
                     final Prefix nameKindPrefix = NameKind.prefix(prefix);
@@ -381,10 +381,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                    autoCompleteClassMembers(completionResult, request, true);
                     break;
                 case PHPDOC:
+                    PHPDOCCodeCompletion.complete(completionResult, request);
                     if (PHPDOCCodeCompletion.isTypeCtx(request)) {
                         autoCompleteTypeNames(completionResult, request);
-                    } else {
-                        PHPDOCCodeCompletion.complete(completionResult, request);
                     }
                     break;
                 case CLASS_CONTEXT_KEYWORDS:
@@ -660,6 +659,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 }
             }
         }
+        for (String construct : PHP_LANGUAGE_CONSTRUCTS_FOR_TYPE_HINTS) {
+            if (startsWith(construct, request.prefix)) {
+                completionResult.add(new PHPCompletionItem.LanguageConstructForTypeHint(construct, request));
+            }
+        }
     }
 
     private void autoCompleteKeywords(final PHPCompletionResult completionResult,
@@ -913,7 +917,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private static ClassDeclaration findEnclosingClass(ParserResult info, int offset) {
         List<ASTNode> nodes = NavUtils.underCaret(info, offset);
         for(ASTNode node : nodes) {
-            if (node instanceof ClassDeclaration) {
+            if (node instanceof ClassDeclaration && node.getEndOffset() != offset) {
                 return (ClassDeclaration) node;
             }
         }

@@ -90,7 +90,7 @@ public class Mapping implements IMapping {
             if(attribute.getType() != null) {
                 type = new Type(parent.getProvider().getTypeRepository(), attribute.getType());
             } else {
-                type = new DefaultType(parent.getProvider().getTypeRepository(), attribute.getTypeName());
+                type = new Type(parent.getProvider().getTypeRepository(), attribute.getTypeName());
             }
         }
         return type;

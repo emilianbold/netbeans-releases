@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.31
+#Version 7.39
 
 CLSS public java.awt.Canvas
 cons public init()
@@ -1385,8 +1385,26 @@ meth public abstract void open()
 CLSS public abstract interface org.netbeans.api.actions.Printable
 meth public abstract void print()
 
+CLSS public abstract interface org.netbeans.api.actions.Savable
+fld public final static org.openide.util.Lookup REGISTRY
+meth public abstract java.lang.String toString()
+meth public abstract void save() throws java.io.IOException
+
 CLSS public abstract interface org.netbeans.api.actions.Viewable
 meth public abstract void view()
+
+CLSS public abstract org.netbeans.spi.actions.AbstractSavable
+cons protected init()
+intf org.netbeans.api.actions.Savable
+meth protected abstract java.lang.String findDisplayName()
+meth protected abstract void handleSave() throws java.io.IOException
+meth protected final void register()
+meth protected final void unregister()
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public final java.lang.String toString()
+meth public final void save() throws java.io.IOException
+supr java.lang.Object
 
 CLSS public abstract interface !annotation org.openide.awt.ActionID
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
@@ -1421,6 +1439,8 @@ meth public abstract !hasdefault boolean iconInMenu()
 meth public abstract !hasdefault boolean surviveFocusChange()
 meth public abstract !hasdefault java.lang.String iconBase()
 meth public abstract !hasdefault java.lang.String key()
+meth public abstract !hasdefault java.lang.String menuText()
+meth public abstract !hasdefault java.lang.String popupText()
 meth public abstract java.lang.String displayName()
 
 CLSS public org.openide.awt.Actions
@@ -1514,6 +1534,12 @@ meth public java.awt.Dimension getMaximumSize()
 meth public java.awt.Dimension getMinimumSize()
 supr org.openide.awt.ToolbarToggleButton
 hfds serialVersionUID
+
+CLSS public final org.openide.awt.CloseButtonFactory
+meth public static javax.swing.JButton createBigCloseButton()
+meth public static javax.swing.JButton createCloseButton()
+supr java.lang.Object
+hfds bigCloseTabImage,bigCloseTabMouseOverImage,bigCloseTabPressedImage,closeTabImage,closeTabMouseOverImage,closeTabPressedImage
 
 CLSS public final org.openide.awt.DropDownButtonFactory
 fld public final static java.lang.String PROP_DROP_DOWN_MENU = "dropDownMenu"
@@ -1742,6 +1768,7 @@ meth public abstract org.openide.awt.Notification notify(java.lang.String,javax.
 meth public org.openide.awt.Notification notify(java.lang.String,javax.swing.Icon,java.lang.String,java.awt.event.ActionListener)
 meth public static org.openide.awt.NotificationDisplayer getDefault()
 supr java.lang.Object
+hfds LOG,ndID
 hcls NotificationImpl,SimpleNotificationDisplayer
 
 CLSS public final static !enum org.openide.awt.NotificationDisplayer$Priority
@@ -2007,7 +2034,7 @@ meth public void undo()
 meth public void undoOrRedo()
 meth public void undoableEditHappened(javax.swing.event.UndoableEditEvent)
 supr javax.swing.undo.UndoManager
-hfds cs,runus,serialVersionUID
+hfds cs,serialVersionUID
 
 CLSS public abstract interface static org.openide.awt.UndoRedo$Provider
  outer org.openide.awt.UndoRedo

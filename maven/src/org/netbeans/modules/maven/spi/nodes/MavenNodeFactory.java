@@ -110,7 +110,7 @@ public final class MavenNodeFactory {
 
             setDisplayName(sb.toString());
 
-            setIconBaseWithExtension("org/netbeans/modules/maven/resources/DependencyJar.gif"); //NOI18N
+            setIconBaseWithExtension(NodeUtils.ICON_DEPENDENCY_JAR);
 
         }
 

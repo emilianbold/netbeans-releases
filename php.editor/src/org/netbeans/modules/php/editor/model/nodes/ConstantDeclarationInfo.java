@@ -54,7 +54,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation;
 /**
  * @author Radek Matous
  */
-public class ConstantDeclarationInfo extends ClassConstantDeclarationInfo {    
+public class ConstantDeclarationInfo extends ClassConstantDeclarationInfo {
     ConstantDeclarationInfo(final Identifier node, final String value) {
         super(node, value);
     }

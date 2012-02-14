@@ -61,11 +61,12 @@ import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteClient.Operation;
-import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
-import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.connections.transfer.TransferInfo;
+import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
+import org.netbeans.modules.php.project.runconfigs.validation.RunConfigRemoteValidator;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -114,8 +115,9 @@ public abstract class RemoteCommand extends Command {
 
     @Override
     public final void invokeAction(Lookup context) {
-        if (!getConfigAction().isValid(false)) {
-            // property not set yet
+        assert getConfigAction().getClass().getSimpleName().equals("ConfigActionRemote") : "Remote config action expected but found: " + getConfigAction().getClass().getSimpleName();
+        if (RunConfigRemoteValidator.validateRemoteTransfer(RunConfigRemote.forProject(getProject())) != null) {
+            PhpProjectUtils.openCustomizerRun(getProject());
             return;
         }
         RUNNABLES.add(getContextRunnable(context));
@@ -153,32 +155,18 @@ public abstract class RemoteCommand extends Command {
     }
 
     protected RemoteClient getRemoteClient(InputOutput io) {
-        return new RemoteClient(getRemoteConfiguration(), new RemoteClient.AdvancedProperties()
+        RunConfigRemote runConfig = RunConfigRemote.forProject(getProject());
+        return new RemoteClient(runConfig.getRemoteConfiguration(), new RemoteClient.AdvancedProperties()
                 .setInputOutput(io)
-                .setAdditionalInitialSubdirectory(getRemoteDirectory())
-                .setPreservePermissions(ProjectPropertiesSupport.areRemotePermissionsPreserved(getProject()))
-                .setUploadDirectly(ProjectPropertiesSupport.isRemoteUploadDirectly(getProject()))
+                .setAdditionalInitialSubdirectory(runConfig.getUploadDirectory())
+                .setPreservePermissions(runConfig.arePermissionsPreserved())
+                .setUploadDirectly(runConfig.getUploadDirectly())
                 .setPhpVisibilityQuery(PhpVisibilityQuery.forProject(getProject())));
-    }
-
-    protected RemoteConfiguration getRemoteConfiguration() {
-        String configName = getRemoteConfigurationName();
-        assert configName != null && configName.length() > 0 : "Remote configuration name must be selected";
-
-        return RemoteConnections.get().remoteConfigurationForName(configName);
     }
 
     protected boolean isRemoteConfigSelected() {
         PhpProjectProperties.RunAsType runAs = ProjectPropertiesSupport.getRunAs(getProject());
         return PhpProjectProperties.RunAsType.REMOTE.equals(runAs);
-    }
-
-    protected String getRemoteConfigurationName() {
-        return ProjectPropertiesSupport.getRemoteConnection(getProject());
-    }
-
-    protected String getRemoteDirectory() {
-        return ProjectPropertiesSupport.getRemoteDirectory(getProject());
     }
 
     protected static void processTransferInfo(TransferInfo transferInfo, InputOutput io) {
@@ -356,6 +344,7 @@ public abstract class RemoteCommand extends Command {
         return true;
     }
 
+    //~ Inner classes
 
     /**
      * Default operation monitor for file upload and download.

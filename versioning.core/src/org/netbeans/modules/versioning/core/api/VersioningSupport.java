@@ -43,12 +43,17 @@
  */
 package org.netbeans.modules.versioning.core.api;
 
-import org.netbeans.modules.versioning.core.VersioningManager;
-
+import java.io.File;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.versioning.core.*;
+import org.netbeans.modules.versioning.core.filesystems.VCSFileProxyOperations;
 import org.netbeans.modules.versioning.core.spi.VersioningSystem;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Collection of utility methods for Versioning systems implementors. 
@@ -86,7 +91,15 @@ public final class VersioningSupport {
      */
     public static VersioningSystem getOwner(VCSFileProxy file) {
         VCSSystemProvider.VersioningSystem owner = VersioningManager.getInstance().getOwner(file);
-        return owner != null ? ((DelegatingVCS)owner).getDelegate() : null;
+        if(owner != null) {
+            Object delegate = owner.getDelegate();
+            if(delegate instanceof DelegatingVCS) {
+                return ((DelegatingVCS) delegate).getDelegate();
+            } else if(delegate instanceof VersioningSystem) {
+                return (VersioningSystem) delegate;
+            }
+        }
+        return null;
     }
 
     /**
@@ -125,7 +138,7 @@ public final class VersioningSupport {
     public static boolean isExcluded (VCSFileProxy folder) {
         // forbid scanning for UNC paths \\ or \\computerName
         if (folder.getPath().startsWith("\\\\")) { //NOI18N
-            return folder.getParentFile() == null || folder.getParentFile().equals("\\\\"); //NOI18N
+            return folder.getParentFile() == null || folder.getParentFile().getPath().equals("\\\\"); //NOI18N
         }
         for (VCSFileProxy unversionedFolder : Utils.getUnversionedFolders()) {
             if (Utils.isAncestorOrEqual(unversionedFolder, folder, true)) {
@@ -146,4 +159,37 @@ public final class VersioningSupport {
         return file.createProcessBuilder();
     }
     
+    /**
+     * Refreshes all necessary filesystems. Not all instances of <code>FileObject</code> are refreshed
+     * but just those that represent passed <code>files</code> and their children recursively.
+     * 
+     * @param files 
+     */
+    public static void refreshFor(VCSFileProxy[] files) {
+        Set<File> fileList = new HashSet<File>();
+        Map<VCSFileProxyOperations, Set<VCSFileProxy>> proxyMap = new HashMap<VCSFileProxyOperations, Set<VCSFileProxy>>();
+        for(VCSFileProxy file : files) {
+            File javaFile = file.toFile();
+            if (javaFile != null) {
+                fileList.add(javaFile);
+            } else {
+                VCSFileProxyOperations fileProxyOperations = file.getFileProxyOperations();
+                if (fileProxyOperations != null) {
+                    Set<VCSFileProxy> set = proxyMap.get(fileProxyOperations);
+                    if (set == null) {
+                        set = new HashSet<VCSFileProxy>();
+                        proxyMap.put(fileProxyOperations, set);
+                    }
+                    set.add(file);
+                }
+            }
+        }
+        if (fileList.size() > 0) {
+            FileUtil.refreshFor(fileList.toArray(new File[fileList.size()])); 
+        }
+        for (Map.Entry<VCSFileProxyOperations, Set<VCSFileProxy>> e : proxyMap.entrySet()) {
+            VCSFileProxyOperations fileProxyOperations = e.getKey();
+            fileProxyOperations.refreshFor(e.getValue().toArray(new VCSFileProxy[fileList.size()]));
+        }
+    }
 }

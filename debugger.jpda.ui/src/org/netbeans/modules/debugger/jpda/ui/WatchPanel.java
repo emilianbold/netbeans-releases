@@ -224,7 +224,9 @@ public class WatchPanel {
                 }
             }
         }
-        if (adjustContext) {
+        if (adjustContext && !EventQueue.isDispatchThread()) {
+            // Do the adjustment only outside of AWT.
+            // When in AWT, the context update in RP is spawned.
             adjustLine(c);
         }
         return c;
@@ -307,8 +309,9 @@ public class WatchPanel {
                     }
                     slash = true;
                 }
-                if (c == 'c' && line.length() > (i+"class".length()) && "lass".equals(line.substring(i+1, i+5))) {
+                if (c == 'c' && line.length() >= (i+"class".length()) && "lass".equals(line.substring(i+1, i+5))) {
                     // class declaration
+                    classDecl = true;
                     if (line.indexOf('{', i+5) > 0) {
                         return l + 1;
                     }
@@ -557,9 +560,8 @@ public class WatchPanel {
             if (javaSource == null) return null;
             final CompilationController[] result = new CompilationController[1];
             result[0] = null;
-            final Future<Void> parsingTask;
             try {
-                parsingTask = javaSource.runWhenScanFinished(new CancellableTask<CompilationController>() {
+                javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
                     @Override
                     public void cancel() {
                     }
@@ -575,10 +577,6 @@ public class WatchPanel {
                         result[0] = ci;
                     }
                 }, true);
-                if (!parsingTask.isDone()) {
-                    parsingTask.cancel(true);
-                    return null;
-                }
             } catch (IOException ioex) {
                 ErrorManager.getDefault().notify(ioex);
                 return null;

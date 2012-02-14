@@ -56,11 +56,12 @@ import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.transfer.TransferInfo;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
+import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
+import org.netbeans.modules.php.project.runconfigs.validation.RunConfigRemoteValidator;
 import org.netbeans.modules.php.project.ui.actions.RemoteCommand;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
-import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
@@ -186,6 +187,11 @@ final class RemoteOperationFactory extends FileOperationFactory {
         return true;
     }
 
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "# {1} - reason",
+        "RemoteOperationFactory.error=Upload Files On Save cannot continue for project {0}: {1}\nDo you want to open Project Properties dialog now?"
+    })
     protected boolean isRemoteConfigValid() {
         if (!isEnabled(false)) {
             LOGGER.log(Level.FINE, "REMOTE copying not enabled for project {0}", project.getName());
@@ -199,16 +205,10 @@ final class RemoteOperationFactory extends FileOperationFactory {
             LOGGER.log(Level.WARNING, "REMOTE copying disabled for project {0}. Reason: source root is null", project.getName());
             return false;
         }
-        String error = null;
-        if (getRemoteConfiguration() == null) {
-            LOGGER.log(Level.INFO, "REMOTE copying disabled for project {0}. Reason: remote config not found", project.getName());
-            error = NbBundle.getMessage(RemoteOperationFactory.class, "MSG_RemoteConfigNotFound", project.getName());
-        } else if (RunAsValidator.validateUploadDirectory(ProjectPropertiesSupport.getRemoteDirectory(project), true) != null) {
-            LOGGER.log(Level.INFO, "REMOTE copying disabled for project {0}. Reason: invalid upload directory", project.getName());
-            error = NbBundle.getMessage(RemoteOperationFactory.class, "MSG_InvalidUploadDirectory", project.getName());
-        }
+        String error = RunConfigRemoteValidator.validateRemoteTransfer(RunConfigRemote.forProject(project));
         if (error != null) {
-            if (askUser(error)) {
+            LOGGER.log(Level.INFO, "REMOTE copying disabled for project {0}. Reason: {1}", new Object[] {project.getName(), error});
+            if (askUser(Bundle.RemoteOperationFactory_error(project.getName(), error))) {
                 showCustomizer(CompositePanelProviderImpl.RUN);
             }
             invalidate();
@@ -251,7 +251,7 @@ final class RemoteOperationFactory extends FileOperationFactory {
         FileObject sourceRoot = getSources();
         Set<TransferFile> transferFiles = client.prepareUpload(sourceRoot, source);
         if (transferFiles.size() > 0) {
-            TransferInfo transferInfo = client.upload(sourceRoot, transferFiles);
+            TransferInfo transferInfo = client.upload(transferFiles);
             if (!transferInfo.hasAnyFailed()
                     && !transferInfo.hasAnyPartiallyFailed()
                     && !transferInfo.hasAnyIgnored()) {
@@ -270,8 +270,8 @@ final class RemoteOperationFactory extends FileOperationFactory {
         FileObject sourceRoot = getSources();
         String baseDirectory = FileUtil.toFile(sourceRoot).getAbsolutePath();
         File sourceFile = FileUtil.toFile(source);
-        TransferFile toTransferFile = TransferFile.fromFileObject(null, source, baseDirectory);
-        TransferFile fromTransferFile = TransferFile.fromFile(null, new File(sourceFile.getParentFile(), oldName), baseDirectory);
+        TransferFile toTransferFile = TransferFile.fromFileObject(null, source, baseDirectory, client.getBaseRemoteDirectory());
+        TransferFile fromTransferFile = TransferFile.fromFile(null, new File(sourceFile.getParentFile(), oldName), baseDirectory, client.getBaseRemoteDirectory());
         LOGGER.log(Level.FINE, "Renaming file {0} -> {1} for project {2}", new Object[] {fromTransferFile.getRemotePath(), toTransferFile.getRemotePath(), project.getName()});
         if (client.exists(fromTransferFile)) {
             if (client.rename(fromTransferFile, toTransferFile)) {

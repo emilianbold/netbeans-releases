@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor;
@@ -81,11 +81,11 @@ public class PhpEmbeddingProvider extends EmbeddingProvider {
             return Collections.emptyList();
         }
         //<<< end of the logging
-        
+
         sequence.moveStart();
         List<Embedding> embeddings = new ArrayList<Embedding>();
 
-        //marek (workaround): there seems to be a bug in parsing api - if I create 
+        //marek (workaround): there seems to be a bug in parsing api - if I create
         //the embedding for each PHPTokenId.T_INLINE_HTML token separatelly then the offsets
         //translation is broken
         int from = -1;
@@ -96,7 +96,7 @@ public class PhpEmbeddingProvider extends EmbeddingProvider {
                 if(from < 0) {
                     from = sequence.offset();
                 }
-                len += t.length();                
+                len += t.length();
             } else {
                 if(from >= 0) {
                     //lets suppose the text is always html :-(
@@ -109,7 +109,7 @@ public class PhpEmbeddingProvider extends EmbeddingProvider {
                 len = 0;
             }
         }
-        
+
         if(from >= 0) {
             embeddings.add(snapshot.create(from, len, "text/html")); //NOI18N
         }

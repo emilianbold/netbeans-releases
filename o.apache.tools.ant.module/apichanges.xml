@@ -110,9 +110,25 @@ is the proper place.
 
     <changes>
 
+        <change id="originatingScript">
+            <api name="general"/>
+            <summary>Added <code>TargetLister.Target.getOriginatingScript</code></summary>
+            <version major="3" minor="53"/>
+            <date year="2012" month="1" day="18"/>
+            <author login="jglick"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added ability to get originating script for a <code>Target</code>.
+                </p>
+            </description>
+            <class package="org.apache.tools.ant.module.api.support" name="TargetLister"/>
+            <issue number="207192"/>
+        </change>
+
         <change id="AntSession.getProperties">
             <api name="general"/>
-            <summary>Added <code>AntSession.getPropertes</code></summary>
+            <summary>Added <code>AntSession.getProperties</code></summary>
             <version major="3" minor="52"/>
             <date year="2011" month="12" day="15"/>
             <author login="jglick"/>

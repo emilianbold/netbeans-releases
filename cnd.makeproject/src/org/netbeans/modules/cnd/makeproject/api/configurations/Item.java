@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.ConfigurationRequirementProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.IncludePathExpansionProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -534,19 +535,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     public boolean canHaveConfiguration() {
-        String mimeType = getMIMEType();
-        if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
-            return true;
-        } else if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
-            return true;
-        } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType)) {
-            return true;
-        } else if (MIMENames.FORTRAN_MIME_TYPE.equals(mimeType)) {
-            return true;
-        } else if (MIMENames.ASM_MIME_TYPE.equals(mimeType)) {
-            return true;
-        }
-        return false;
+        return ConfigurationRequirementProvider.askAllProviders(this);
     }
 
     private MakeConfigurationDescriptor getMakeConfigurationDescriptor() {

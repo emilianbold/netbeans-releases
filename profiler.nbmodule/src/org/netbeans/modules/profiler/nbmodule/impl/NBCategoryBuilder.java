@@ -57,7 +57,11 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 public class NBCategoryBuilder extends CategoryBuilder {
 
     public NBCategoryBuilder(Project proj) {
-        super(proj, "org-netbeans-modules-apisupport-project");
+        super(proj);
     }
 
+    @Override
+    protected String getProjectTypeId() {
+        return "org-netbeans-modules-apisupport-project"; // NOI18N
+    }
 }

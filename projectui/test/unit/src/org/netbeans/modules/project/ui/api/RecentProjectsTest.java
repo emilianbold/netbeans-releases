@@ -89,7 +89,7 @@ public class RecentProjectsTest extends NbTestCase {
             tp.setLookup(Lookups.fixed(new TestProjectInfo(prjName)));
             testProjects[i] = tp;
             tpDisplayNames[i] = ProjectUtils.getInformation(tp).getDisplayName();
-            tpURLs[i] = tp.getProjectDirectory().getURL();
+            tpURLs[i] = tp.getProjectDirectory().toURL();
         }
     }
 

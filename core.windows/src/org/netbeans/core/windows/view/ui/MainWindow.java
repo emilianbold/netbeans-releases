@@ -54,6 +54,7 @@ import java.awt.Graphics;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.*;
 import java.io.File;
@@ -431,6 +432,9 @@ public final class MainWindow {
    private static final String ICON_32 = "org/netbeans/core/startup/frame32.gif"; // NOI18N
    private static final String ICON_48 = "org/netbeans/core/startup/frame48.gif"; // NOI18N
    static void initFrameIcons(Frame f) {
+       List<Image> currentIcons = f.getIconImages();
+       if( !currentIcons.isEmpty() )
+           return; //do not override icons if they have been already provided elsewhere (JDev)
        f.setIconImages(Arrays.asList(
                ImageUtilities.loadImage(ICON_16, true),
                ImageUtilities.loadImage(ICON_32, true),
@@ -652,6 +656,9 @@ public final class MainWindow {
        if( isFullScreenMode == fullScreenMode || isSwitchingFullScreenMode ) {
            return;
        }
+       if( fullScreenMode && !MacFullScreenSupport.check() ) {
+           return;
+       }
        isSwitchingFullScreenMode = true;
        if( !isFullScreenMode ) {
            restoreExtendedState = frame.getExtendedState();
@@ -742,7 +749,7 @@ public final class MainWindow {
                    isSwitchingFullScreenMode = false;
                    if( null != activeTc )
                        activeTc.requestFocusInWindow();
-               }
+                }
            });
        }
    }

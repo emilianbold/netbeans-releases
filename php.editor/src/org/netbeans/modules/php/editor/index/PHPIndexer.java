@@ -80,6 +80,7 @@ import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.impl.LazyBuild;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
@@ -89,7 +90,9 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Index Ruby structure into the persistent store for retrieval by
@@ -110,9 +113,17 @@ import org.openide.util.Exceptions;
 public final class PHPIndexer extends EmbeddingIndexer {
     private static final Logger LOG = Logger.getLogger(PHPIndexer.class.getName());
     static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
+    @MIMEResolver.ExtensionRegistration(
+        extension={ "php", "php3", "php4", "php5", "phtml", "inc", "phpt" },
+        displayName="#PHPResolver",
+        mimeType="text/x-php5",
+        position=282
+    )
+    @NbBundle.Messages("PHPResolver=PHP Files")
     // a workaround for issue #132388
     private static final Collection<String>INDEXABLE_EXTENSIONS = Arrays.asList(
-            "php", "php3", "php4", "php5", "phtml", "inc"); //NOI18N
+        "php", "php3", "php4", "php5", "phtml", "inc", "phpt"
+    );
 
     // I need to be able to search several things:
     // (1) by function root name, e.g. quickly all functions that start
@@ -147,6 +158,10 @@ public final class PHPIndexer extends EmbeddingIndexer {
     public static final String FIELD_IDENTIFIER = "identifier_used"; //NOI18N
     public static final String FIELD_IDENTIFIER_DECLARATION = "identifier_declaration"; //NOI18N
     public static final String FIELD_NAMESPACE = "ns"; //NOI18N
+    public static final String FIELD_TRAIT = "trait"; //NOI18N
+    public static final String FIELD_USED_TRAIT = "usedtrait"; //NOI18N
+    public static final String FIELD_TRAIT_CONFLICT_RESOLUTION = "traitconf"; //NOI18N
+    public static final String FIELD_TRAIT_METHOD_ALIAS = "traitmeth"; //NOI18N
 
     public static final String FIELD_VAR = "var"; //NOI18N
     /** This field is for fast access top level elemnts */
@@ -166,7 +181,11 @@ public final class PHPIndexer extends EmbeddingIndexer {
         FIELD_IDENTIFIER,
         FIELD_VAR,
         FIELD_TOP_LEVEL,
-        FIELD_NAMESPACE
+        FIELD_NAMESPACE,
+        FIELD_TRAIT,
+        FIELD_USED_TRAIT,
+        FIELD_TRAIT_CONFLICT_RESOLUTION,
+        FIELD_TRAIT_METHOD_ALIAS
     };
 
     public String getPersistentUrl(File file) {
@@ -188,14 +207,9 @@ public final class PHPIndexer extends EmbeddingIndexer {
             if (r.getProgram() == null) {
                 return;
             }
-            String processedFileURL = null;
-            try {
-                final FileObject fileObject = r.getSnapshot().getSource().getFileObject();
-                assert r.getDiagnostics().isEmpty() || !PhpSourcePath.FileType.INTERNAL.equals(PhpSourcePath.getFileType(fileObject)) : fileObject.getPath();
-                processedFileURL = fileObject.getURL().toExternalForm();
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            final FileObject fileObject = r.getSnapshot().getSource().getFileObject();
+            assert r.getDiagnostics().isEmpty() || !PhpSourcePath.FileType.INTERNAL.equals(PhpSourcePath.getFileType(fileObject)) : fileObject.getPath();
+            String processedFileURL = fileObject.toURL().toExternalForm();
 
             if (processedFileURL == null) {
                 return;
@@ -237,6 +251,11 @@ public final class PHPIndexer extends EmbeddingIndexer {
                     final String namespaceName = VariousUtils.getFullyQualifiedName(superIfaceName, classScope.getOffset(), (NamespaceScope)classScope.getInScope()).getNamespaceName();
                     classDocument.addPair(FIELD_SUPER_IFACE, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true);//NOI18N
                 }
+                for (QualifiedName qualifiedName : classScope.getUsedTraits()) {
+                    final String name = qualifiedName.getName();
+                    final String namespaceName = VariousUtils.getFullyQualifiedName(qualifiedName, classScope.getOffset(), (NamespaceScope) classScope.getInScope()).getNamespaceName();
+                    classDocument.addPair(FIELD_USED_TRAIT, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
+                }
                 classDocument.addPair(FIELD_TOP_LEVEL, classScope.getName().toLowerCase(), true, true);
 
                 for (MethodScope methodScope : classScope.getDeclaredMethods()) {
@@ -275,6 +294,23 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 }
                 for (ClassConstantElement constantElement : ifaceSCope.getDeclaredConstants()) {
                     classDocument.addPair(FIELD_CLASS_CONST, constantElement.getIndexSignature(), true, true);
+                }
+            }
+            for (TraitScope traitScope : ModelUtils.getDeclaredTraits(fileScope)) {
+                IndexDocument traitDocument = support.createDocument(indexable);
+                documents.add(traitDocument);
+                traitDocument.addPair(FIELD_TRAIT, traitScope.getIndexSignature(), true, true);
+                traitDocument.addPair(FIELD_TOP_LEVEL, traitScope.getName().toLowerCase(), true, true);
+                for (QualifiedName qualifiedName : traitScope.getUsedTraits()) {
+                    final String name = qualifiedName.getName();
+                    final String namespaceName = VariousUtils.getFullyQualifiedName(qualifiedName, traitScope.getOffset(), (NamespaceScope) traitScope.getInScope()).getNamespaceName();
+                    traitDocument.addPair(FIELD_USED_TRAIT, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
+                }
+                for (MethodScope methodScope : traitScope.getDeclaredMethods()) {
+                    traitDocument.addPair(FIELD_METHOD, methodScope.getIndexSignature(), true, true);
+                }
+                for (FieldElement fieldElement : traitScope.getDeclaredFields()) {
+                    traitDocument.addPair(FIELD_FIELD, fieldElement.getIndexSignature(), true, true);
                 }
             }
 

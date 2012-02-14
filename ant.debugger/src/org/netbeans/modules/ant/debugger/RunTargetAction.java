@@ -63,7 +63,7 @@ public final class RunTargetAction implements ActionListener {
     }
 
     @Override public void actionPerformed(ActionEvent e) {
-        new RunTargetsAction.TargetMenuItemHandler(target.getScript(), target.getName()).run();
+        new RunTargetsAction.TargetMenuItemHandler(target.getOriginatingScript(), target.getName()).run();
     }
 
 }

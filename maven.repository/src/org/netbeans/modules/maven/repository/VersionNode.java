@@ -97,7 +97,6 @@ import org.openide.util.datatransfer.ExTransferable;
  */
 public class VersionNode extends AbstractNode {
 
-    private static final @StaticResource String DEPENDENCY_JAR = "org/netbeans/modules/maven/repository/DependencyJar.gif";
     private static final @StaticResource String JAVADOC_BADGE_ICON = "org/netbeans/modules/maven/repository/DependencyJavadocIncluded.png";
     private static final @StaticResource String SOURCE_BADGE_ICON = "org/netbeans/modules/maven/repository/DependencySrcIncluded.png";
 
@@ -149,7 +148,7 @@ public class VersionNode extends AbstractNode {
         } else {
             setDisplayName(versionInfo.getGroupId() + ":" + versionInfo.getArtifactId() + ":" + versionInfo.getVersion()); //NOI18N
         }
-        setIconBaseWithExtension(DEPENDENCY_JAR);
+        setIconBaseWithExtension(NodeUtils.ICON_DEPENDENCY_JAR);
         setLocalArtifact(localArtifact);
     }
 

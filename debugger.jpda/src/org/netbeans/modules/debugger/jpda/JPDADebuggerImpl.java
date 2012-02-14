@@ -1453,12 +1453,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
         List<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>(threads.size());
         for (Iterator it = threads.iterator(); it.hasNext(); ) {
             Object threadOrGroup = it.next();
-            if (threadOrGroup instanceof JPDAThreadImpl) {
+            if (threadOrGroup instanceof JPDAThreadImpl &&
+                    (ignoredThreads == null || !ignoredThreads.contains(((JPDAThreadImpl) threadOrGroup).getThreadReference()))) {
                 int status = ((JPDAThreadImpl) threadOrGroup).getState();
                 boolean invalid = (status == JPDAThread.STATE_NOT_STARTED ||
                                    status == JPDAThread.STATE_UNKNOWN ||
                                    status == JPDAThread.STATE_ZOMBIE);
-                if (!invalid && (ignoredThreads == null || !ignoredThreads.contains(((JPDAThreadImpl) threadOrGroup).getThreadReference()))) {
+                if (!invalid) {
                     try {
                         PropertyChangeEvent event = ((JPDAThreadImpl) threadOrGroup).notifySuspended(doFire, explicitelyPaused);
                         if (event != null) {
@@ -1476,10 +1477,15 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     public void notifySuspendAllNoFire() {
+        notifySuspendAllNoFire(null);
+    }
+
+    public void notifySuspendAllNoFire(Set<ThreadReference> ignoredThreads) {
         Collection threads = threadsTranslation.getTranslated();
         for (Iterator it = threads.iterator(); it.hasNext(); ) {
             Object threadOrGroup = it.next();
-            if (threadOrGroup instanceof JPDAThreadImpl) {
+            if (threadOrGroup instanceof JPDAThreadImpl &&
+                    (ignoredThreads == null || !ignoredThreads.contains(((JPDAThreadImpl) threadOrGroup).getThreadReference()))) {
                 int status = ((JPDAThreadImpl) threadOrGroup).getState();
                 boolean invalid = (status == JPDAThread.STATE_NOT_STARTED ||
                                    status == JPDAThread.STATE_UNKNOWN ||
@@ -1501,6 +1507,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * Used by ContinueActionProvider & StepActionProvider.
      */
     public void resume () {
+        try {
+            getOperator().waitForParallelEventsToProcess();
+        } catch (InterruptedException iex) {
+            return;
+        }
         accessLock.readLock().lock();
         try {
             if (!doContinue) {
@@ -1519,7 +1530,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
         if (vm != null) {
             logger.fine("VM resume");
-            List<JPDAThread> allThreads = getAllThreads();
+            List<JPDAThread> allThreads = getAllThreads(true);
             accessLock.writeLock().lock();
             logger.finer("Debugger WRITE lock taken.");
             stateChangeEvent = setStateNoFire(STATE_RUNNING);
@@ -1538,6 +1549,25 @@ public class JPDADebuggerImpl extends JPDADebugger {
             // if the first one hits an event which suspends all, other resumes will resume the
             // suspended threads.
             // But this looks like a reasonable trade-off considering the available functionality.
+            
+            // Deal only with threads that are living
+            {
+                boolean modifiableAllThreads = false;
+                int n = allThreads.size();
+                for (int i = 0; i < n; i++) {
+                    JPDAThread t = allThreads.get(i);
+                    int status = t.getState();
+                    if (status == JPDAThread.STATE_ZOMBIE || status == JPDAThread.STATE_UNKNOWN) {
+                        if (!modifiableAllThreads) {
+                            allThreads = new ArrayList<JPDAThread>(allThreads);
+                            modifiableAllThreads = true;
+                        }
+                        allThreads.remove(i);
+                        n--;
+                        i--;
+                    }
+                }
+            }
 
             List<JPDAThreadImpl> threadsToResume = new ArrayList<JPDAThreadImpl>();
             for (JPDAThread t : allThreads) {
@@ -1556,15 +1586,24 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 }
                 if (allThreads.size() == threadsToResume.size()) {
                     // Resuming all
-                    VirtualMachineWrapper.resume(vm);
                     for (JPDAThreadImpl t : threadsToResume) {
-                        t.setAsResumed();
+                        t.setAsResumed(false);
+                        t.reduceThreadSuspendCount();
                     }
+                    // We also need to check for newly-born threads,
+                    // that we do not know about yet,
+                    // and that might be suspended multiple-times.
+                    reduceThreadSuspendCountOfAllBut(vm, threadsToResume);
+                    //logger.severe("Before VM.resume():");
+                    //Operator.dumpThreadsStatus(vm, Level.SEVERE);
+                    VirtualMachineWrapper.resume(vm);
                     logger.finer("All threads resumed.");
+                    //logger.severe("After VM.resume():");
+                    //Operator.dumpThreadsStatus(vm, Level.SEVERE);
                 } else {
                     for (JPDAThreadImpl t : threadsToResume) {
+                        t.setAsResumed(false);
                         t.resumeAfterClean();
-                        t.setAsResumed();
                     }
                 }
             } catch (VMDisconnectedExceptionWrapper e) {
@@ -1584,6 +1623,34 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         Exceptions.printStackTrace(th);
                     }
                 }
+            }
+        }
+    }
+    
+    private void reduceThreadSuspendCountOfAllBut(VirtualMachine vm, List<JPDAThreadImpl> threadsToIgnore) {
+        List<ThreadReference> allThreads = VirtualMachineWrapper.allThreads0(vm);
+        if (allThreads.size() == threadsToIgnore.size()) {
+            return; // Everything is under control.
+        }
+        Set<Long> ignoredIDs = new HashSet<Long>(threadsToIgnore.size());
+        for (JPDAThreadImpl t : threadsToIgnore) {
+            ignoredIDs.add(t.getThreadReference().uniqueID());
+        }
+        for (ThreadReference t : allThreads) {
+            if (ignoredIDs.contains(t.uniqueID())) {
+                continue;
+            }
+            try {
+                int count = ThreadReferenceWrapper.suspendCount (t);
+                //logger.severe("Reducing suspend count of "+JPDAThreadImpl.getThreadStateLog(t));
+                while (count > 1) {
+                    ThreadReferenceWrapper.resume (t); count--;
+                }
+            } catch (IllegalThreadStateExceptionWrapper ex) {
+                // Thrown when thread has exited
+            } catch (ObjectCollectedExceptionWrapper ex) {
+            } catch (InternalExceptionWrapper iex) {
+            } catch (VMDisconnectedExceptionWrapper vmdex) {
             }
         }
     }
@@ -1638,10 +1705,15 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     public void notifyToBeResumedAllNoFire() {
+        notifyToBeResumedAllNoFire(null);
+    }
+    
+    public void notifyToBeResumedAllNoFire(Set<ThreadReference> ignoredThreads) {
         Collection threads = threadsTranslation.getTranslated();
         for (Iterator it = threads.iterator(); it.hasNext(); ) {
             Object threadOrGroup = it.next();
-            if (threadOrGroup instanceof JPDAThreadImpl) {
+            if (threadOrGroup instanceof JPDAThreadImpl &&
+                    (ignoredThreads == null || !ignoredThreads.contains(threadOrGroup))) {
                 int status = ((JPDAThreadImpl) threadOrGroup).getState();
                 boolean invalid = (status == JPDAThread.STATE_NOT_STARTED ||
                                    status == JPDAThread.STATE_UNKNOWN ||
@@ -1691,11 +1763,32 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     List<JPDAThread> getAllThreads() {
+        return getAllThreads(false);
+    }
+    
+    List<JPDAThread> getAllThreads(boolean findNewBornThreads) {
         ThreadsCache tc = getThreadsCache();
         if (tc == null) {
             return Collections.emptyList();
         }
         List<ThreadReference> threadList = tc.getAllThreads();
+        if (findNewBornThreads) {
+            Set<Long> threadIDs = new HashSet<Long>(threadList.size());
+            for (ThreadReference t : threadList) {
+                threadIDs.add(t.uniqueID());
+            }
+            List<ThreadReference> allThreads = VirtualMachineWrapper.allThreads0(virtualMachine);
+            boolean added = false;
+            for (ThreadReference t : allThreads) {
+                if (!threadIDs.contains(t.uniqueID())) {
+                    if (!added) {
+                        threadList = new ArrayList<ThreadReference>(threadList);
+                        added = true;
+                    }
+                    threadList.add(t);
+                }
+            }
+        }
         int n = threadList.size();
         List<JPDAThread> threads = new ArrayList<JPDAThread>(n);
         for (int i = 0; i < n; i++) {

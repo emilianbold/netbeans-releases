@@ -161,7 +161,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
     // assembly level stuff
     private boolean disActive = false;
-    private boolean disRequested = false;
+    protected boolean disRequested = false;
     private StateModelAdaptor disStateModel = new StateModelAdaptor();
     private InstBreakpointModel breakpointModel = new InstBreakpointModel();
 
@@ -905,6 +905,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	       getVisitedLocation().hasSource();
     }
 
+    @Override
     public void requestDisassembly() {
         disRequested = true;
         showCurrentDis();
@@ -924,6 +925,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         updateLocation(true, ShowMode.DIS, false);
     }
 
+    @Override
     public final void setVisitedLocation(Location loc) {
 	this.visitedLocation = loc;
 	requestAutos();

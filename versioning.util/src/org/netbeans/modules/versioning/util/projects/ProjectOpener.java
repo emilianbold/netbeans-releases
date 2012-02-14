@@ -176,7 +176,9 @@ public class ProjectOpener implements ActionListener, PropertyChangeListener {
                 openProject(checkedOutProjects.get(null).iterator().next());
             }
         } else if (panel.createButton.equals(src)) {
-            ProjectUtilities.newProjectWizard(workingFolder);
+            if (workingFolder.isDirectory()) {
+                ProjectUtilities.newProjectWizard(workingFolder);
+            }
         }
     }
 

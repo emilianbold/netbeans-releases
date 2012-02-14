@@ -926,6 +926,7 @@ public class ChildrenKeysTest extends NbTestCase {
     }
 
     private static Object holder;
+    @RandomlyFails // NB-Core-Build #7743 timeout in ChildrenFilterAsKeysTest in await()
     public void testGCKeys () throws Exception {
         class K extends Children.Keys {
             int counterAdd = 0;

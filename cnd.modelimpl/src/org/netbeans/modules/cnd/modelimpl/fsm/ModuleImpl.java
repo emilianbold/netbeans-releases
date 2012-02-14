@@ -113,6 +113,15 @@ public final class ModuleImpl extends OffsetableDeclarationBase<CsmNamespaceDefi
     }
 
     @Override
+    public CsmOffsetableDeclaration findExistingDeclaration(int start, CharSequence name, CsmDeclaration.Kind kind) {
+        CsmUID<CsmOffsetableDeclaration> out = null;
+        synchronized (declarations) {
+            out = UIDUtilities.findExistingUIDInList(declarations, start, name, kind);
+        }
+        return UIDCsmConverter.UIDtoDeclaration(out);
+    }
+    
+    @Override
     public void addDeclaration(CsmOffsetableDeclaration decl) {
         CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
         assert uid != null;

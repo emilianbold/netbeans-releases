@@ -50,6 +50,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.JDialog;
 import junit.framework.TestCase;
+import org.netbeans.core.startup.TopLogging;
 import org.netbeans.junit.MockServices;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -70,6 +71,8 @@ public class WritablePreferences131128Test extends TestCase {
     protected void setUp() throws Exception {
         MockServices.setServices(Displayer.class, MockPreferencesProviderImpl.class);
         Lookup.getDefault().lookupAll(NbPreferences.Provider.class);
+        // initialize the logging
+        new TopLogging();
     }
 
     public void testPreferencies() throws Exception {
@@ -99,6 +102,9 @@ public class WritablePreferences131128Test extends TestCase {
 
                 @Override
                 public void setVisible(boolean v) {
+                    if (v) {
+                        notifyCalled = true;
+                    }
                 }
             };
         }

@@ -55,7 +55,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 
 /**
@@ -74,8 +73,8 @@ public class SubprojectsGroup extends Group {
      * but this could be changed later.
      * The display name is by default that of the superproject.
      */
-    public static SubprojectsGroup create(String name, Project project) throws FileStateInvalidException {
-        String path = project.getProjectDirectory().getURL().toExternalForm();
+    public static SubprojectsGroup create(String name, Project project) {
+        String path = project.getProjectDirectory().toURL().toExternalForm();
         String id = sanitizeNameAndUniquifyForId(name);
         LOG.log(Level.FINE, "Creating: {0}", id);
         Preferences p = NODE.node(id);

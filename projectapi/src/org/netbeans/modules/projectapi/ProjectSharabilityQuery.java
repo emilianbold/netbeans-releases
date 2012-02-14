@@ -48,21 +48,21 @@ import java.io.File;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.SharabilityQuery;
-import org.netbeans.spi.queries.SharabilityQueryImplementation;
 
 /**
  * Delegates {@link SharabilityQuery} to implementations in project lookup.
  * @author Jesse Glick
  */
+@SuppressWarnings("deprecation")
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.SharabilityQueryImplementation.class)
-public class ProjectSharabilityQuery implements SharabilityQueryImplementation {
+public class ProjectSharabilityQuery implements org.netbeans.spi.queries.SharabilityQueryImplementation {
 
     public ProjectSharabilityQuery() {}
     
     public @Override int getSharability(File file) {
         Project p = FileOwnerQuery.getOwner(file.toURI());
         if (p != null) {
-            SharabilityQueryImplementation sqi = p.getLookup().lookup(SharabilityQueryImplementation.class);
+            org.netbeans.spi.queries.SharabilityQueryImplementation sqi = p.getLookup().lookup(org.netbeans.spi.queries.SharabilityQueryImplementation.class);
             if (sqi != null) {
                 return sqi.getSharability(file);
             }

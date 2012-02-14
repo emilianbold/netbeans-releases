@@ -50,6 +50,7 @@ import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -60,6 +61,8 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.indent.api.Indent;
+import org.openide.util.Exceptions;
 
 /**
  * This static class groups the whole aspect of bracket
@@ -877,4 +880,111 @@ class BraceCompletion {
         return false;
     }
 
+    static boolean blockCommentCompletion(JTextComponent target, BaseDocument doc, final int dotPosition) {
+        return blockCommentCompletionImpl(target, doc, dotPosition, false);
+    }
+
+    static boolean javadocBlockCompletion(JTextComponent target, BaseDocument doc, final int dotPosition) {
+        return blockCommentCompletionImpl(target, doc, dotPosition, true);
+    }
+
+    private static boolean blockCommentCompletionImpl(JTextComponent target, BaseDocument doc, final int dotPosition, boolean javadoc) {
+        try {
+            TokenHierarchy<BaseDocument> tokens = TokenHierarchy.get(doc);
+            TokenSequence ts = tokens.tokenSequence();
+            if (ts == null) {
+                return false;
+            }
+            ts.move(dotPosition);
+            if (!((ts.moveNext() || ts.movePrevious()) && ts.token().id() == (javadoc ? JavaTokenId.JAVADOC_COMMENT : JavaTokenId.BLOCK_COMMENT))) {
+                return false;
+            }
+
+            int jdoffset = dotPosition - (javadoc ? 3 : 2);
+            if (jdoffset >= 0) {
+                CharSequence content = org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(doc);
+                if (isOpenBlockComment(content, dotPosition - 1, javadoc) && !isClosedBlockComment(content, dotPosition) && isAtRowEnd(content, dotPosition)) {
+                    // note that the formater will add one line of javadoc
+                    doc.insertString(dotPosition, "*/", null); // NOI18N
+                    Indent.get(doc).indentNewLine(dotPosition);
+                    target.setCaretPosition(dotPosition);
+
+                    return true;
+                }
+            }
+        } catch (BadLocationException ex) {
+            // ignore
+            Exceptions.printStackTrace(ex);
+        }
+        return false;
+    }
+
+    private static boolean isOpenBlockComment(CharSequence content, int pos, boolean javadoc) {
+        for (int i = pos; i >= 0; i--) {
+            char c = content.charAt(i);
+            if (c == '*' && (javadoc ? i - 2 >= 0 && content.charAt(i - 1) == '*' && content.charAt(i - 2) == '/' : i - 1 >= 0 && content.charAt(i - 1) == '/')) {
+                // matched /*
+                return true;
+            } else if (c == '\n') {
+                // no javadoc, matched start of line
+                return false;
+            } else if (c == '/' && i - 1 >= 0 && content.charAt(i - 1) == '*') {
+                // matched javadoc enclosing tag
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean isClosedBlockComment(CharSequence txt, int pos) {
+        int length = txt.length();
+        int quotation = 0;
+        for (int i = pos; i < length; i++) {
+            char c = txt.charAt(i);
+            if (c == '*' && i < length - 1 && txt.charAt(i + 1) == '/') {
+                if (quotation == 0 || i < length - 2) {
+                    return true;
+                }
+                // guess it is not just part of some text constant
+                boolean isClosed = true;
+                for (int j = i + 2; j < length; j++) {
+                    char cc = txt.charAt(j);
+                    if (cc == '\n') {
+                        break;
+                    } else if (cc == '"' && j < length - 1 && txt.charAt(j + 1) != '\'') {
+                        isClosed = false;
+                        break;
+                    }
+                }
+
+                if (isClosed) {
+                    return true;
+                }
+            } else if (c == '/' && i < length - 1 && txt.charAt(i + 1) == '*') {
+                // start of another comment block
+                return false;
+            } else if (c == '\n') {
+                quotation = 0;
+            } else if (c == '"' && i < length - 1 && txt.charAt(i + 1) != '\'') {
+                quotation = ++quotation % 2;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean isAtRowEnd(CharSequence txt, int pos) {
+        int length = txt.length();
+        for (int i = pos; i < length; i++) {
+            char c = txt.charAt(i);
+            if (c == '\n') {
+                return true;
+            }
+            if (!Character.isWhitespace(c)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

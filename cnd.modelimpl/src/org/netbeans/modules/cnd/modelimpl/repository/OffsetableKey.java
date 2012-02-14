@@ -59,7 +59,7 @@ import org.openide.util.CharSequences;
 /*package*/ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparable<OffsetableKey> {
 
     private final int startOffset;
-    private final int endOffset;
+    private int endOffset = KeyUtilities.NON_INITIALIZED;
     private final int hashCode;
     private final CharSequence name;
 
@@ -67,6 +67,10 @@ import org.openide.util.CharSequences;
         this((FileImpl) obj.getContainingFile(), obj.getStartOffset(), obj.getEndOffset(), kind, name);
     }
 
+    protected OffsetableKey(FileImpl containingFile, int startOffset, String kind, CharSequence name) {
+        this(containingFile, startOffset, KeyUtilities.NON_INITIALIZED, kind, name);
+    }
+    
     protected OffsetableKey(FileImpl containingFile, int startOffset, int endOffset, String kind, CharSequence name) {
         super(containingFile);
         this.startOffset = startOffset;
@@ -117,8 +121,13 @@ import org.openide.util.CharSequences;
         return startOffset;
     }
 
-    /*package-local*/ int getEndOffset() {
+    /*package-local*/ final int getEndOffset() {
         return endOffset;
+    }
+
+    /*package-local*/ final void cacheEndOffset(int endOffset) {
+        assert (this.endOffset == KeyUtilities.NON_INITIALIZED || this.endOffset == endOffset) : "end offset is set already to " + this.endOffset;
+        this.endOffset = endOffset;
     }
 
     @Override
@@ -142,7 +151,7 @@ import org.openide.util.CharSequences;
 
     @Override
     public String toString() {
-        return name + "[" + getKind() + " " + getStartOffset() + "-" + getEndOffset() + "] {" + getFileNameSafe() + "; " + getProjectName() + "}"; // NOI18N
+        return name + "[" + getKind() + " " + getStartOffset() + "-" + (getEndOffset() == KeyUtilities.NON_INITIALIZED ? "U" : getEndOffset()) + "] {" + getFileNameSafe() + "; " + getProjectName() + "}"; // NOI18N
     }
 
     @Override
@@ -154,7 +163,8 @@ import org.openide.util.CharSequences;
         assert CharSequences.isCompact(name);
         assert CharSequences.isCompact(other.name);
         return this.startOffset == other.startOffset &&
-                this.endOffset == other.endOffset &&
+                ((this.endOffset == other.endOffset) || 
+                 (this.endOffset == KeyUtilities.NON_INITIALIZED || other.endOffset == KeyUtilities.NON_INITIALIZED)) &&
                 this.getKind() == other.getKind() &&
                 this.name.equals(other.name);
     }
@@ -169,7 +179,7 @@ import org.openide.util.CharSequences;
 
         retValue = 19 * super.hashCode() + name.hashCode();
         retValue = 19 * retValue + startOffset;
-        retValue = 19 * retValue + endOffset - startOffset;
+//        retValue = 19 * retValue + endOffset - startOffset;
         return retValue;
     }
 
@@ -185,8 +195,8 @@ import org.openide.util.CharSequences;
         //assert (this.getProjectName().equals(other.getProjectName()));
         assert (this.getUnitId() == other.getUnitId());
         assert (this.fileNameIndex == other.fileNameIndex);
-        int ofs1 = this.startOffset;
-        int ofs2 = other.startOffset;
+        int ofs1 = this.getStartOffset();
+        int ofs2 = other.getStartOffset();
         if (ofs1 == ofs2) {
             return 0;
         } else {

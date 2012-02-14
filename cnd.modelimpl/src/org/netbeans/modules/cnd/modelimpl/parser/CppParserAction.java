@@ -41,13 +41,18 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
+import java.util.Map;
 import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 
 /**
  *
  * @author nick
  */
-public interface CppParserAction {
+public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
     
     void enum_declaration(Token token);
     void enum_name(Token token);
@@ -56,18 +61,30 @@ public interface CppParserAction {
     void end_enum_body(Token token);
     void end_enum_declaration(Token token);
 
+    void class_declaration(Token token);
+    void class_kind(Token token);
     void class_name(Token token);
     void class_body(Token token);
     void end_class_body(Token token);
+    void end_class_declaration(Token token);
     
-    void namespace_body(Token token);
+    void namespace_declaration(Token token);
+    void namespace_name(Token token);
+    void namespace_body(Token token);    
     void end_namespace_body(Token token);
+    void end_namespace_declaration(Token token);
 
     void compound_statement(Token token);
     void end_compound_statement(Token token);
     
     void id(Token token);
     
+    void simple_type_id(Token token);
+    
     boolean isType(String name);
 
+    void onInclude(CsmFile inclFile, APTPreprocHandler.State stateBefore);
+    void pushFile(CsmFile file);
+    CsmFile popFile();
+    Map<Integer, CsmObject> getObjectsMap();
 }

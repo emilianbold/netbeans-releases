@@ -375,22 +375,22 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
                 gen.initialize(model, project, targetFolder, targetPackage, 
                         resourcePackage, controllerPackage, pu);
 
-                RequestProcessor.Task transformTask = RequestProcessor.getDefault().create(new Runnable() {
+                /*RequestProcessor.Task transformTask = RequestProcessor.getDefault().create(new Runnable() {
 
-                    public void run() {
+                    public void run() {*/
                         try {
                             RestUtils.disableRestServicesChangeListner(project);
                             gen.generate(null);
 
-                        } catch (Exception iox) {
+                       } catch (Exception iox) {
                             Exceptions.printStackTrace(iox);
                         } finally {
                             RestUtils.enableRestServicesChangeListner(project);
 
                         }
-                    }
+                    /*}
                 });
-                transformTask.schedule(50);
+                transformTask.schedule(50);*/
             }
 
         } finally {

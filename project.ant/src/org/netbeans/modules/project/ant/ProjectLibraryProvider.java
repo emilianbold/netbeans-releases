@@ -100,7 +100,8 @@ import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.netbeans.spi.queries.SharabilityQueryImplementation;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -1130,17 +1131,14 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         return paths;
     }
 
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.SharabilityQueryImplementation.class, position=50)
-    public static final class SharabilityQueryImpl implements SharabilityQueryImplementation {
+    @ServiceProvider(service=SharabilityQueryImplementation2.class, position=50)
+    public static final class SharabilityQueryImpl implements SharabilityQueryImplementation2 {
 
-        /** Default constructor for lookup. */
-        public SharabilityQueryImpl() {}
-
-        public int getSharability(File file) {
-            if (file.getName().endsWith("-private.properties")) { // NOI18N
-                return SharabilityQuery.NOT_SHARABLE;
+        @Override public SharabilityQuery.Sharability getSharability(URI uri) {
+            if (uri.toString().endsWith("-private.properties")) { // NOI18N
+                return SharabilityQuery.Sharability.NOT_SHARABLE;
             } else {
-                return SharabilityQuery.UNKNOWN;
+                return SharabilityQuery.Sharability.UNKNOWN;
             }
         }
 
@@ -1180,7 +1178,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 URI u;
                 FileObject newFO;
                 String name;
-                if (CollocationQuery.areCollocated(libBaseFolder, FileUtil.toFile(libEntryFO))) {
+                if (CollocationQuery.areCollocated(libBaseFolder.toURI(), libEntryFO.toURI())) {
                     // if the jar/folder is in relation to the library folder (parent+child/same vcs)
                     // don't replicate it but reference the original file.
                     newFO = libEntryFO;

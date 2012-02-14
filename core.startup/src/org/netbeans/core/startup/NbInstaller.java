@@ -48,7 +48,6 @@ import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -78,12 +77,10 @@ import org.netbeans.InvalidException;
 import org.netbeans.Module;
 import org.netbeans.ModuleInstaller;
 import org.netbeans.ModuleManager;
-import org.netbeans.ProxyClassLoader;
 import org.netbeans.Stamps;
 import org.netbeans.Util;
 import org.netbeans.core.startup.layers.ModuleLayeredFileSystem;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInstall;
@@ -92,7 +89,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbCollections;
 import org.openide.util.SharedClassObject;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.InstanceContent;
 import org.xml.sax.SAXException;
 
@@ -547,7 +543,6 @@ final class NbInstaller extends ModuleInstaller {
                 theseurls = new LinkedHashSet<URL>(1000);
                 urls.put(host, theseurls);
             }
-            ClassLoader cl = m.getClassLoader();
             String s = layers.get(m);
             if (s != null) {
                 Util.err.log(Level.FINE, "loadLayer: {0} load={1}", new Object[] { s, load });
@@ -564,13 +559,10 @@ final class NbInstaller extends ModuleInstaller {
                 boolean foundSomething = false;
                 for (String suffix : NbCollections.iterable(NbBundle.getLocalizingSuffixes())) {
                     String resource = base + suffix + ext;
-                    URL u;
-                    if (cl instanceof ProxyClassLoader) {
-                        u = ((ProxyClassLoader)cl).findResource(resource);
-                    } else {
-                        u = cl.getResource(resource);
-                    }
-                    if (u != null) {
+                    Enumeration<URL> en = m.findResources(resource);
+                    if (en.hasMoreElements()) {
+                        URL u = en.nextElement();
+                        assert !en.hasMoreElements() : "At most one resource per module: " + m;
                         theseurls.add(u);
                         foundSomething = true;
                     }
@@ -581,18 +573,10 @@ final class NbInstaller extends ModuleInstaller {
                     continue;
                 }
             }
-            try { // #149136
-                // Cannot use getResources because we do not wish to delegate to parents.
-                // In fact both URLClassLoader and ProxyClassLoader override this method to be public.
-                Method findResources = ClassLoader.class.getDeclaredMethod("findResources", String.class); // NOI18N
-                findResources.setAccessible(true);
-                Enumeration e = (Enumeration) findResources.invoke(cl, "META-INF/generated-layer.xml"); // NOI18N
-                while (e.hasMoreElements()) {
-                    URL u = (URL)e.nextElement();
-                    theseurls.add(u);
-                }
-            } catch (Exception x) {
-                Exceptions.printStackTrace(x);
+            Enumeration e = m.findResources("META-INF/generated-layer.xml"); // NOI18N
+            while (e.hasMoreElements()) {
+                URL u = (URL)e.nextElement();
+                theseurls.add(u);
             }
         }
         // Now actually do it.
@@ -746,11 +730,7 @@ final class NbInstaller extends ModuleInstaller {
                 List<URL> urls = new ArrayList<URL>(Math.max(kids.length, 1));
                 for (FileObject kid : kids) {
                     if (kid.hasExt("xml")) { // NOI18N
-                        try {
-                            urls.add(kid.getURL());
-                        } catch (FileStateInvalidException e) {
-                            Util.err.log(Level.WARNING, null, e);
-                        }
+                        urls.add(kid.toURL());
                     }
                 }
                 try {

@@ -66,7 +66,8 @@ public class DiffTest extends JellyTestCase {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(DiffTest.class).addTest(
-                "testDiffFile").enableModules(".*").clusters(".*"));
+                "testDiffFile"
+                ).enableModules(".*").clusters(".*"));
     }
 
     public void testDiffFile() throws Exception {

@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.index;
@@ -85,7 +85,7 @@ public class AstElement extends PHPElement {
 
         return signature;
     }
-    
+
 //    public Node getNode() {
 //        return node;
 //    }
@@ -99,7 +99,7 @@ public class AstElement extends PHPElement {
         this.name = name;
         this.in = in;
     }
-    
+
     public String getName() {
 //        if (name == null) {
 //            if (node.getType() == Token.VAR) {
@@ -129,7 +129,7 @@ public class AstElement extends PHPElement {
     void setKind(ElementKind kind) {
         this.kind = kind;
     }
-    
+
     public ElementKind getKind() {
         if (kind == null) {
 //            switch (node.getType()) {
@@ -141,14 +141,14 @@ public class AstElement extends PHPElement {
 //                return ElementKind.OTHER;
 //            }
         }
-        
+
         return kind;
     }
 
     public List<AstElement> getChildren() {
         return Collections.emptyList();
     }
-    
+
     @Override
     public String toString() {
         return "JsElement:" + getName() + "(" + getKind() + ")"; // NOI18N
@@ -157,16 +157,16 @@ public class AstElement extends PHPElement {
     public ParserResult getInfo() {
         return info;
     }
-    
+
     @Override
     public Set<Modifier> getModifiers() {
         return modifiers;
     }
-    
+
     void setModifiers(Set<Modifier> modifiers) {
         this.modifiers = modifiers;
     }
-    
+
 //    public static AstElement getElement(CompilationInfo info, Node node) {
 //        switch (node.getType()) {
 //            case Token.FUNCTION:

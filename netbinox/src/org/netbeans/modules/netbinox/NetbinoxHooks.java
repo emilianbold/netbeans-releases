@@ -130,113 +130,13 @@ BundleFileFactoryHook, FrameworkLog, AdaptorHook, LookupListener {
         final String pref = "netigso://"; // NOI18N
         ClassLoader ml = null;
         if (loc != null && loc.startsWith(pref)) {
-            String cnb = loc.substring(pref.length());
             ml = classLoaderForBundle(bd);
         }
         if (ml == null) {
             return new NetbinoxLoader(parent, delegate, bpd, bd, classpath);
+        } else {
+            return new NetigsoBaseLoader(ml, delegate, bpd, bd);
         }
-        class Del extends ClassLoader implements BaseClassLoader {
-            public Del(ClassLoader parent) {
-                super(parent);
-            }
-
-            @Override
-            public ProtectionDomain getDomain() {
-                return bpd;
-            }
-
-            @Override
-            public ClasspathEntry createClassPathEntry(BundleFile bf, ProtectionDomain pd) {
-                return null;
-            }
-
-            @Override
-            public Class defineClass(String string, byte[] bytes, ClasspathEntry ce, BundleEntry be) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public Class publicFindLoaded(String name) {
-                return super.findLoadedClass(name);
-            }
-
-            @Override
-            public Object publicGetPackage(String name) {
-                return super.getPackage(name);
-            }
-
-            @Override
-            public Object publicDefinePackage(String s1, String s2, String s3, String s4, String s5, String s6, String s7, URL url) {
-                return super.definePackage(s1, s2, s3, s4, s5, s6, s7, url);
-            }
-
-            @Override
-            public ClasspathManager getClasspathManager() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public void initialize() {
-            }
-
-            @Override
-            public URL findLocalResource(String name) {
-                return null;
-                /*
-                ProxyClassLoader pcl = (ProxyClassLoader)getParent();
-                return pcl.findResource(name);
-                 *
-                 */
-            }
-
-            @Override
-            public Enumeration<URL> findLocalResources(String name) {
-                return null;
-                /*
-                ProxyClassLoader pcl = (ProxyClassLoader)getParent();
-                try {
-                    return pcl.findResources(name);
-                } catch (IOException ex) {
-                    return Enumerations.empty();
-                }
-                 */
-            }
-
-            @Override
-            protected URL findResource(String name) {
-                return findLocalResource(name);
-            }
-
-            @Override
-            protected Enumeration<URL> findResources(String name) throws IOException {
-                return findLocalResources(name);
-            }
-
-            @Override
-            public Class findLocalClass(String name) throws ClassNotFoundException {
-                return getParent().loadClass(name);
-            }
-
-            @Override
-            public void close() {
-            }
-
-            @Override
-            public void attachFragment(BundleData bd, ProtectionDomain pd, String[] strings) {
-            }
-
-            @Override
-            public ClassLoaderDelegate getDelegate() {
-                return delegate;
-            }
-
-            @Override
-            public Bundle getBundle() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-        }
-        return new Del(ml);
     }
 
     @Override

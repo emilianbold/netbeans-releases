@@ -68,8 +68,9 @@ import java.io.File;
  * </p>
  * @see org.netbeans.api.queries.CollocationQuery
  * @author Jesse Glick
+ * @deprecated Use {@link org.netbeans.spi.queries.CollocationQueryImplementation2} instead.
  */
-public interface CollocationQueryImplementation {
+@Deprecated public interface CollocationQueryImplementation {
     
     /**
      * Check whether two files are logically part of one directory tree.

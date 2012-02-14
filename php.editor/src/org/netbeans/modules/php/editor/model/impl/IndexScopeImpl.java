@@ -77,9 +77,11 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
+import org.netbeans.modules.php.editor.api.elements.TraitElement;
 import org.netbeans.modules.php.editor.elements.IndexQueryImpl;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TraitScope;
 
 /**
  *
@@ -91,7 +93,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
     private final Model model;
 
     IndexScopeImpl(PHPParseResult info) {
-        this(info, "index", PhpElementKind.INDEX);//NOI18N        
+        this(info, "index", PhpElementKind.INDEX);//NOI18N
     }
 
     private IndexScopeImpl(PHPParseResult info, String name, PhpElementKind kind) {
@@ -143,6 +145,11 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
         return indexScope.findInterfaces(ifaceName);
     }
 
+    static List<? extends TraitScope> getTraits(final QualifiedName  traitName, ModelElement elem) {
+        final IndexScope indexScope = ModelUtils.getIndexScope(elem);
+        return indexScope.findTraits(traitName);
+    }
+
     static List<? extends ConstantElement> getConstants(final QualifiedName constantName, Scope scope) {
         final IndexScope indexScope = ModelUtils.getIndexScope(scope);
         return indexScope.findConstants(constantName);
@@ -178,6 +185,19 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
     }
 
     @Override
+    public List<? extends TraitScope> findTraits(final QualifiedName queryName) {
+        List<TraitScope> retval = new ArrayList<TraitScope>();
+        retval.addAll(ModelUtils.filter(ModelUtils.getDeclaredTraits(model.getFileScope()), queryName));
+        if (retval.isEmpty()) {
+            Set<TraitElement> traits = getIndex().getTraits(NameKind.exact(queryName));
+            for (TraitElement indexedTrait : forFiles(getFileObject()).prefer(traits)) {
+                retval.add(new TraitScopeImpl(this, indexedTrait));
+            }
+        }
+        return retval;
+    }
+
+    @Override
     public List<? extends ClassScope> findClasses(final QualifiedName queryName) {
         List<ClassScope> retval = new ArrayList<ClassScope>();
         retval.addAll(ModelUtils.filter(ModelUtils.getDeclaredClasses(model.getFileScope()), queryName));
@@ -202,6 +222,8 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
                         retval.add(new ClassScopeImpl(this, (ClassElement)typeElement));
                     } else if (typeElement instanceof InterfaceElement) {
                         retval.add(new InterfaceScopeImpl(this, (InterfaceElement)typeElement));
+                    } else if (typeElement instanceof TraitElement) {
+                        retval.add(new TraitScopeImpl(this, (TraitElement)typeElement));
                     } else {
                         assert false : typeElement.getClass();
                     }
@@ -327,12 +349,33 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
     }
 
     @Override
+    public List<? extends FieldElement> findFields(TraitScope traitScope, final int... modifiers) {
+        List<FieldElement> retval = new ArrayList<FieldElement>();
+        Set<org.netbeans.modules.php.editor.api.elements.FieldElement> fields = getIndex().getDeclaredFields(traitScope);
+        for (org.netbeans.modules.php.editor.api.elements.FieldElement fld : forFiles(getFileObject()).prefer(fields)) {
+            retval.add(new FieldElementImpl(traitScope, fld));
+        }
+        return retval;
+    }
+
+    @Override
     public List<? extends FieldElement> findFields(ClassScope clsScope, final String queryName, final int... modifiers) {
         List<FieldElement> retval = new ArrayList<FieldElement>();
         Set<org.netbeans.modules.php.editor.api.elements.FieldElement> fields = org.netbeans.modules.php.editor.api.elements.ElementFilter.
                     forName(NameKind.exact(queryName)).filter(getIndex().getDeclaredFields(clsScope));
         for (org.netbeans.modules.php.editor.api.elements.FieldElement fld : forFiles(getFileObject()).prefer(fields)) {
             retval.add(new FieldElementImpl(clsScope, fld));
+        }
+        return retval;
+    }
+
+    @Override
+    public List<? extends FieldElement> findFields(TraitScope traitScope, final String queryName, final int... modifiers) {
+        List<FieldElement> retval = new ArrayList<FieldElement>();
+        Set<org.netbeans.modules.php.editor.api.elements.FieldElement> fields = org.netbeans.modules.php.editor.api.elements.ElementFilter.
+                    forName(NameKind.exact(queryName)).filter(getIndex().getDeclaredFields(traitScope));
+        for (org.netbeans.modules.php.editor.api.elements.FieldElement fld : forFiles(getFileObject()).prefer(fields)) {
+            retval.add(new FieldElementImpl(traitScope, fld));
         }
         return retval;
     }

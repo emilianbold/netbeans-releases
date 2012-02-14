@@ -72,7 +72,6 @@ import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
@@ -144,8 +143,8 @@ public class OpenProjectListTest extends NbTestCase {
             fail("There should be TestProject\n" + log.toString());
         }
         
-        assertTrue ("Document f1_1_open is loaded.", handler.openFiles.contains (f1_1_open.getURL ().toExternalForm ()));
-        assertTrue ("Document f1_2_open is loaded.", handler.openFiles.contains (f1_2_open.getURL ().toExternalForm ()));
+        assertTrue ("Document f1_1_open is loaded.", handler.openFiles.contains (f1_1_open.toURL ().toExternalForm ()));
+        assertTrue ("Document f1_2_open is loaded.", handler.openFiles.contains (f1_2_open.toURL ().toExternalForm ()));
         /* XXX always fails; what was this testing?
         assertFalse ("Document f2_1_open isn't loaded.", handler.openFiles.contains (f2_1_open.getURL ().toExternalForm ()));
         */
@@ -186,8 +185,8 @@ public class OpenProjectListTest extends NbTestCase {
         if (!m.find()) {
             fail("There should be TestProject\n" + log);
         }
-        assertFalse ("Document f1_1_open isn't loaded.", handler.openFiles.contains (f1_1_open.getURL ().toExternalForm ()));
-        assertFalse ("Document f1_2_open isn't loaded.", handler.openFiles.contains (f1_2_open.getURL ().toExternalForm ()));
+        assertFalse ("Document f1_1_open isn't loaded.", handler.openFiles.contains (f1_1_open.toURL ().toExternalForm ()));
+        assertFalse ("Document f1_2_open isn't loaded.", handler.openFiles.contains (f1_2_open.toURL ().toExternalForm ()));
         /* XXX fails, see above
         assertFalse ("Document f2_1_open isn't loaded.", handler.openFiles.contains (f2_1_open.getURL ().toExternalForm ()));
         */
@@ -196,16 +195,16 @@ public class OpenProjectListTest extends NbTestCase {
         OpenProjectList.getDefault ().open (project2);
         
         // close all project1's documents
-        handler.openFiles.remove (f1_1_open.getURL ().toExternalForm ());
-        handler.openFiles.remove (f1_2_open.getURL ().toExternalForm ());
+        handler.openFiles.remove (f1_1_open.toURL ().toExternalForm ());
+        handler.openFiles.remove (f1_2_open.toURL ().toExternalForm ());
         
         ProjectUtilities.closeAllDocuments(new Project[] {project1}, false);
         OpenProjectList.getDefault().close(new Project[] {project1}, false);
 
         OpenProjectList.getDefault ().open (project1);
-        assertFalse ("Document f1_1_open isn't loaded.", handler.openFiles.contains (f1_1_open.getURL ().toExternalForm ()));
-        assertFalse ("Document f1_2_open isn't loaded.", handler.openFiles.contains (f1_2_open.getURL ().toExternalForm ()));
-        assertTrue ("Document f2_1_open is still loaded.", handler.openFiles.contains (f2_1_open.getURL ().toExternalForm ()));
+        assertFalse ("Document f1_1_open isn't loaded.", handler.openFiles.contains (f1_1_open.toURL ().toExternalForm ()));
+        assertFalse ("Document f1_2_open isn't loaded.", handler.openFiles.contains (f1_2_open.toURL ().toExternalForm ()));
+        assertTrue ("Document f2_1_open is still loaded.", handler.openFiles.contains (f2_1_open.toURL ().toExternalForm ()));
     }
 
     public void testSerialize() throws Exception {
@@ -242,9 +241,9 @@ public class OpenProjectListTest extends NbTestCase {
             fail("There should be TestProject\n" + log);
         }
         
-        assertTrue ("Document f1_1_open is loaded.", handler.openFiles.contains (f1_1_open.getURL ().toExternalForm ()));
-        assertTrue ("Document f1_2_open is loaded.", handler.openFiles.contains (f1_2_open.getURL ().toExternalForm ()));
-        assertTrue ("Document f2_1_open is loaded.", handler.openFiles.contains (f2_1_open.getURL ().toExternalForm ()));
+        assertTrue ("Document f1_1_open is loaded.", handler.openFiles.contains (f1_1_open.toURL ().toExternalForm ()));
+        assertTrue ("Document f1_2_open is loaded.", handler.openFiles.contains (f1_2_open.toURL ().toExternalForm ()));
+        assertTrue ("Document f2_1_open is loaded.", handler.openFiles.contains (f2_1_open.toURL ().toExternalForm ()));
     }
     
     public void testCloseProjectWithoutOpenDocuments () throws Exception {
@@ -253,9 +252,9 @@ public class OpenProjectListTest extends NbTestCase {
         assertFalse ("Project1 isn't opened.", OpenProjectList.getDefault ().isOpen (project1));
         assertTrue ("Project2 is opened.", OpenProjectList.getDefault ().isOpen (project2));
         
-        handler.openFiles.remove (f2_1_open.getURL ().toExternalForm ());
+        handler.openFiles.remove (f2_1_open.toURL ().toExternalForm ());
         
-        assertFalse ("Document f2_1_open isn't loaded.", handler.openFiles.contains (f2_1_open.getURL ().toExternalForm ()));
+        assertFalse ("Document f2_1_open isn't loaded.", handler.openFiles.contains (f2_1_open.toURL ().toExternalForm ()));
         
         ProjectUtilities.closeAllDocuments(new Project[] {project2}, false);
         OpenProjectList.getDefault().close(new Project[] {project2}, false);
@@ -398,11 +397,9 @@ public class OpenProjectListTest extends NbTestCase {
             DataObject dobj = null;
             try {
                 dobj = DataObject.find (fo);
-                url = dobj.getPrimaryFile ().getURL ();
+                url = dobj.getPrimaryFile ().toURL ();
                 urls4project.get(owner).add(url.toExternalForm());
-                openFiles.add (fo.getURL ().toExternalForm ());
-            } catch (FileStateInvalidException fsie) {
-                fail ("FileStateInvalidException in " + dobj.getPrimaryFile ());
+                openFiles.add (fo.toURL ().toExternalForm ());
             } catch (DataObjectNotFoundException donfe) {
                 fail ("DataObjectNotFoundException on " + fo);
             }
@@ -420,11 +417,9 @@ public class OpenProjectListTest extends NbTestCase {
                         FileObject fo = null;
                         try {
                             fo = URLMapper.findFileObject (new URL (url));
-                            openFiles.remove (fo.getURL ().toExternalForm ());
+                            openFiles.remove (fo.toURL ().toExternalForm ());
                         } catch (MalformedURLException mue) {
                             fail ("MalformedURLException in " + url);
-                        } catch (FileStateInvalidException fsie) {
-                            fail ("FileStateInvalidException in " + fo);
                         }
                     }
                 }

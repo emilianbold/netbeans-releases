@@ -44,29 +44,19 @@
 package org.netbeans.modules.javacard.common;
 
 import com.sun.javacard.AID;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Arrays;
-import org.openide.filesystems.FileSystem;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -78,8 +68,16 @@ import org.openide.util.Parameters;
  * @author Tim Boudreau
  */
 public final class Utils {
+    public static final String STRING_ANNOTATION_PREPROCESSOR_JAR_PATH = "lib/api_classic_annotations.jar"; // NOI18N
+
     private static final String RID_PREFERENCES_KEY = "RID"; //NOI18N
+    private static final SpecificationVersion VERSION_PREPROCESSOR_SUPPORTS_FROM = new SpecificationVersion("3.0.4"); // NOI18N
+
     private Utils() {
+    }
+
+    public static boolean useCompilationPreprocessor(SpecificationVersion javacardVersion) {
+        return javacardVersion.compareTo(VERSION_PREPROCESSOR_SUPPORTS_FROM) >= 0;
     }
 
     /**

@@ -65,7 +65,6 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -81,6 +80,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.lib.profiler.ui.UIUtils;
+import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.ProfilingSettingsManager;
 import org.netbeans.modules.profiler.api.icons.GeneralIcons;
 import org.netbeans.modules.profiler.api.icons.Icons;
@@ -95,7 +95,6 @@ import org.netbeans.modules.profiler.spi.TaskConfiguratorProvider;
 import org.netbeans.modules.profiler.stp.icons.STPIcons;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -420,15 +419,16 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                     String workDir = settings.getWorkingDir().trim();
                     if (workDir.length() != 0 && !new java.io.File(workDir).exists()) {
                         settings.setWorkingDir(""); // NOI18N
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    Bundle.SelectProfilingTask_WorkDirInvalidMsg(), NotifyDescriptor.WARNING_MESSAGE));
+                        ProfilerDialogs.displayWarning(
+                                Bundle.SelectProfilingTask_WorkDirInvalidMsg());
                     }
                 }
                 result = new Configuration(project, settings, null);
+                
             }
-
+            
             spt.cleanup(result != null);
-
+            
             return result;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -444,7 +444,8 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     }
 
     public void itemExpanded(TaskChooser.Item item) {
-        selectedTask.selectProfilingSettings(((TaskPresenter) item).getSelectedProfilingSettings());
+        if (selectedTask != null) // workaround to address failing tests
+            selectedTask.selectProfilingSettings(((TaskPresenter) item).getSelectedProfilingSettings());
     } // Workaround to focus selected settings after expanding the task
 
     public void itemWillCollapse(TaskChooser.Item item) {

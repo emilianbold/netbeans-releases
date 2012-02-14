@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,16 +34,15 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.editor.index;
 
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.php.editor.PHPDOCCodeCompletion;
 
 /**
  *
@@ -51,11 +50,13 @@ import org.netbeans.modules.php.editor.PHPDOCCodeCompletion;
  */
 public class PHPDOCTagElement extends PHPElement{
     private String tagName;
+    private final String documentation;
 
-    public PHPDOCTagElement(String tagName) {
+    public PHPDOCTagElement(String tagName, String documentation) {
         this.tagName = tagName;
+        this.documentation = documentation;
     }
-    
+
     @Override
     public String getName() {
         return tagName;
@@ -63,10 +64,10 @@ public class PHPDOCTagElement extends PHPElement{
 
     @Override
     public ElementKind getKind() {
-        return ElementKind.KEYWORD;
+        return ElementKind.OTHER;
     }
 
     public String getDoc(){
-        return PHPDOCCodeCompletion.getDoc(tagName);
+        return documentation;
     }
 }

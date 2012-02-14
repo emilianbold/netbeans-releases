@@ -214,7 +214,7 @@ public class NbWhereUsedRefactoringPlugin extends AbstractRefactoringPlugin {
                 String text = doc.getText(0, doc.getLength());
                 assert text.indexOf('\r') == -1; // should be in newline format only when a Document
                 InputSource in = new InputSource(new StringReader(text));
-                in.setSystemId(parentFile.getURL().toExternalForm());
+                in.setSystemId(parentFile.toURL().toExternalForm());
                 SAXParserFactory factory = SAXParserFactory.newInstance();
                 SAXParser parser = factory.newSAXParser();
                 final int[] lineAndColStartAndEnd = new int[4];

@@ -93,7 +93,7 @@ public class DeleteBranchAction extends SingleRepositoryAction {
                                 client.deleteBranch(branchName, forceDelete, getProgressMonitor());
                                 cont = false;
                             } catch (GitException.NotMergedException ex) {
-                                cont = handleException(ex);
+                                cont = forceDelete = handleException(ex);
                             }
                         } while (cont);
                     } catch (GitException ex) {

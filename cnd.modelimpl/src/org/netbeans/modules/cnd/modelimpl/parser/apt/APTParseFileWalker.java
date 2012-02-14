@@ -115,6 +115,11 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         return triggerParsingActivity;
     }
 
+    @Override
+    protected boolean needPPTokens() {
+        return true;
+    }
+
     public TokenStream getFilteredTokenStream(APTLanguageFilter lang) {
         return lang.getFilteredStream(getTokenStream());
     }

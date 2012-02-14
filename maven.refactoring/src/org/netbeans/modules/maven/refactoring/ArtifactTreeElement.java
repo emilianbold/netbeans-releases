@@ -88,9 +88,9 @@ class ArtifactTreeElement implements TreeElement {
             } catch (Exception x) {
                 LOG.log(Level.FINE, null, "could not check project icon for " + art);
             }
-            // XXX common icons like these should probably be moved into NodeUtils
-            return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/repository/DependencyJar.gif", true);
+            return ImageUtilities.loadImageIcon(NodeUtils.ICON_DEPENDENCY_JAR, true);
         } else if (!art.getArtifactId().isEmpty()) {
+            // XXX should probably be moved into NodeUtils
             return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/repository/ArtifactBadge.png", true);
         } else {
             return ImageUtilities.image2Icon(NodeUtils.getTreeFolderIcon(false));

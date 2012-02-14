@@ -111,12 +111,6 @@ class NbModuleProviderImpl implements NbModuleProvider {
     }
 
     @Override public SpecificationVersion getDependencyVersion(String codenamebase) throws IOException {
-        ProjectXMLManager pxm = new ProjectXMLManager(prj);
-        for (ModuleDependency d : pxm.getDirectDependencies()) {
-            if (d.getModuleEntry().getCodeNameBase().equals(codenamebase)) {
-                return new SpecificationVersion(d.getSpecificationVersion());
-            }
-        }
         ModuleEntry entry = prj.getModuleList().getEntry(codenamebase);
         return entry != null ? new SpecificationVersion(entry.getSpecificationVersion()) : null;
     }
@@ -194,7 +188,7 @@ class NbModuleProviderImpl implements NbModuleProvider {
                     if (src != null) {
                         FileObject layerXml = src.getFileObject(layer);
                         if (layerXml != null) {
-                            otherLayerURLs.add(layerXml.getURL());
+                            otherLayerURLs.add(layerXml.toURL());
                         }
                     }
                 }

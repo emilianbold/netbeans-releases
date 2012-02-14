@@ -74,6 +74,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
 
     private Union2<String, List<ClassScopeImpl>> superClass;
     private Collection<QualifiedName> possibleFQSuperClassNames;
+    private Collection<QualifiedName> usedTraits;
 
     @Override
     void addElement(ModelElementImpl element) {
@@ -102,7 +103,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
             this.possibleFQSuperClassNames = Collections.emptyList();
             this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(null);
         }
-
+        usedTraits = nodeInfo.getUsedTraits();
     }
 
     ClassScopeImpl(IndexScope inScope, ClassElement indexedClass) {
@@ -110,6 +111,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         final QualifiedName superClassName = indexedClass.getSuperClassName();
         this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(superClassName != null ? superClassName.toString() : null);
         this.possibleFQSuperClassNames = indexedClass.getPossibleFQSuperClassNames();
+        usedTraits = indexedClass.getUsedTraits();
     }
     //old contructors
 
@@ -372,6 +374,17 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         }
         sb.append(";");//NOI18N
         sb.append(getPhpModifiers().toFlags()).append(";");
+        if (!usedTraits.isEmpty()) {
+            StringBuilder traitSb = new StringBuilder();
+            for (QualifiedName usedTrait : usedTraits) {
+                if (traitSb.length() > 0) {
+                    traitSb.append(","); //NOI18N
+                }
+                traitSb.append(usedTrait.toString());
+            }
+            sb.append(traitSb);
+        }
+        sb.append(";"); //NOI18N
         //TODO: add ifaces
         return sb.toString();
     }
@@ -462,5 +475,10 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     @Override
     public boolean isAbstract() {
         return getPhpModifiers().isAbstract();
+    }
+
+    @Override
+    public Collection<QualifiedName> getUsedTraits() {
+        return usedTraits;
     }
 }

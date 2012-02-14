@@ -359,7 +359,7 @@ public class FileChooserAccessory extends javax.swing.JPanel
 
     private boolean areCollocated(File base, Collection<File> files){
         for(File file: files){
-            if (!CollocationQuery.areCollocated(base, file)){
+            if (!CollocationQuery.areCollocated(base.toURI(), file.toURI())) {
                 return false;
             }
         }

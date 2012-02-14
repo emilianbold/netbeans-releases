@@ -41,13 +41,13 @@
  */
 package org.netbeans.modules.versioning.core.api;
 
-import org.netbeans.modules.versioning.core.filesystems.VCSFileProxyOperations;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ProcessBuilder;
 import org.netbeans.modules.versioning.core.APIAccessor;
 import org.netbeans.modules.versioning.core.FlatFolder;
+import org.netbeans.modules.versioning.core.filesystems.VCSFileProxyOperations;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -108,6 +108,12 @@ public final class VCSFileProxy {
      */
     public static VCSFileProxy createFileProxy(VCSFileProxy parent, String child) {
         return new VCSFileProxy(parent.getPath() + "/" + child, parent.proxy);   // NOI18N
+    }
+    
+    static VCSFileProxy createFileProxy(VCSFileProxy parent, String child, boolean isDirectory) {
+        VCSFileProxy file = new VCSFileProxy(parent.getPath() + "/" + child, parent.proxy); // NOI18N
+        file.isDirectory = isDirectory;
+        return file;
     }
     
     /**
@@ -380,5 +386,9 @@ public final class VCSFileProxy {
         } else {
             return proxy.createProcessBuilder(this);
         }
+    }
+
+    VCSFileProxyOperations getFileProxyOperations() {
+         return proxy;
     }
 }

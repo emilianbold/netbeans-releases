@@ -41,20 +41,32 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import java.util.Map;
+import java.util.*;
 import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.ClassBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl.EnumBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl.EnumeratorBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl.NamespaceBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.parser.symtab.*;
 import org.openide.util.CharSequences;
 
@@ -62,59 +74,50 @@ import org.openide.util.CharSequences;
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class CppParserActionImpl implements CppParserAction {
+
     private enum CppAttributes implements SymTabEntryKey {
         SYM_TAB, DEFINITION, TYPE
     }
     
     private final SymTabStack globalSymTab;
-    
-    Map<Integer, CsmObject> objects;
-    FileImpl file;
+    private Pair currentContext;
+    private final Deque<Pair> contexts;
+    private static final class Pair {
+        final Map<Integer, CsmObject> objects = new HashMap<Integer, CsmObject>();
+        final FileImpl file;
 
-    EnumBuilder enumBuilder;
+        public Pair(CsmFile file) {
+            this.file = (FileImpl)file;
+        }
+        
+    }
+
+    CppParserBuilderContext builderContext;
     
-    
-    public CppParserActionImpl(CsmFile file, Map<Integer, CsmObject> objects) {
+    public CppParserActionImpl(FileImpl startFile) {
+        this.contexts = new ArrayDeque<Pair>();
+        currentContext = new Pair(startFile);
+        this.contexts.push(currentContext);
         this.globalSymTab = createGlobal();
-        this.objects = objects;
-        this.file = (FileImpl) file;
+        this.builderContext = new CppParserBuilderContext();
     }
     
     @Override
     public void enum_declaration(Token token) {        
         //System.out.println("enum_declaration " + ((APTToken)token).getOffset());
         
-        enumBuilder = new EnumBuilder();
-        enumBuilder.setFile(file);
+        EnumBuilder enumBuilder = new EnumBuilder();
+        enumBuilder.setFile(currentContext.file);
         if(token instanceof APTToken) {
             enumBuilder.setStartOffset(((APTToken)token).getOffset());
         }
-    }
-
-    @Override
-    public void end_enum_declaration(Token token) {
-        //System.out.println("end_enum_declaration " + ((APTToken)token).getOffset());
-
-        if(enumBuilder != null) {
-            EnumImpl e = enumBuilder.create(true);
-            if(e != null && objects != null) {
-                objects.put(e.getStartOffset(), e);
-                SymTabEntry enumEntry = globalSymTab.lookupLocal(e.getName());
-                enumEntry.setAttribute(CppAttributes.DEFINITION, e);
-                for (CsmEnumerator csmEnumerator : e.getEnumerators()) {
-                    SymTabEntry enumeratorEntry = globalSymTab.lookupLocal(csmEnumerator.getName());
-                    assert enumeratorEntry != null;
-                    enumeratorEntry.setAttribute(CppAttributes.DEFINITION, csmEnumerator);
-                }
-            }
-
-            enumBuilder = null;
-        }
+        builderContext.push(enumBuilder);
     }
 
     @Override
     public void enum_name(Token token) {
-        //System.out.println("enum_name " + ((APTToken)token).getOffset());      
+        EnumBuilder enumBuilder = builderContext.getEnumBuilder();
+        
         APTToken aToken = (APTToken) token;
         final CharSequence name = aToken.getTextID();
         SymTabEntry enumEntry = globalSymTab.lookupLocal(name);
@@ -124,10 +127,7 @@ public class CppParserActionImpl implements CppParserAction {
         } else {
             // error
         }
-        // add to index
-        if(enumBuilder != null) {
-            enumBuilder.setName(name);
-        }
+        enumBuilder.setName(name);
     }
 
     @Override
@@ -137,6 +137,8 @@ public class CppParserActionImpl implements CppParserAction {
     
     @Override
     public void enumerator(Token token) {
+        EnumBuilder enumBuilder = builderContext.getEnumBuilder();
+        
         APTToken aToken = (APTToken) token;
         final CharSequence name = aToken.getTextID();
         SymTabEntry enumeratorEntry = globalSymTab.lookupLocal(name);
@@ -147,36 +149,93 @@ public class CppParserActionImpl implements CppParserAction {
             // ERROR redifinition
         }
         if(enumBuilder != null) {
-            EnumeratorBuilder builder = new EnumeratorBuilder();
-            builder.setName(name);
-            builder.setFile(file);
-            builder.setStartOffset(aToken.getOffset());
-            builder.setEndOffset(aToken.getEndOffset());
-            enumBuilder.addEnumerator(builder);
+            EnumeratorBuilder builder2 = new EnumeratorBuilder();
+            builder2.setName(name);
+            builder2.setFile(currentContext.file);
+            builder2.setStartOffset(aToken.getOffset());
+            builder2.setEndOffset(aToken.getEndOffset());
+            enumBuilder.addEnumerator(builder2);
         }
     }
     
     @Override
     public void end_enum_body(Token token) {
-        if(enumBuilder != null) {
-            if(token instanceof APTToken) {
-                enumBuilder.setEndOffset(((APTToken)token).getEndOffset());
-            }
-        }    
+        EnumBuilder enumBuilder = builderContext.getEnumBuilder();
+        
+        if(token instanceof APTToken) {
+            enumBuilder.setEndOffset(((APTToken)token).getEndOffset());
+        }
         SymTab enumerators = globalSymTab.pop();
         globalSymTab.importToLocal(enumerators);
     }
 
     @Override
+    public void end_enum_declaration(Token token) {
+        EnumBuilder enumBuilder = builderContext.getEnumBuilder();
+        
+        EnumImpl e = enumBuilder.create(true);
+        if(e != null) {
+            currentContext.objects.put(e.getStartOffset(), e);
+            SymTabEntry enumEntry = globalSymTab.lookupLocal(e.getName());
+            enumEntry.setAttribute(CppAttributes.DEFINITION, e);
+            for (CsmEnumerator csmEnumerator : e.getEnumerators()) {
+                SymTabEntry enumeratorEntry = globalSymTab.lookupLocal(csmEnumerator.getName());
+                assert enumeratorEntry != null;
+                enumeratorEntry.setAttribute(CppAttributes.DEFINITION, csmEnumerator);
+            }
+        }
+
+        builderContext.pop();
+    }
+    
+    @Override
+    public void class_declaration(Token token) {
+        ClassBuilder classBuilder = new ClassBuilder();
+        classBuilder.setParent(builderContext.top());
+        classBuilder.setFile(currentContext.file);
+        if(token instanceof APTToken) {
+            classBuilder.setStartOffset(((APTToken)token).getOffset());
+        }
+        builderContext.push(classBuilder);
+    }
+
+    @Override
+    public void class_kind(Token token) {
+        CsmObjectBuilder top = builderContext.top();
+        if(top instanceof ClassBuilder) {
+            ClassBuilder classBuilder = (ClassBuilder) top;
+            Kind kind = Kind.CLASS;
+            switch (token.getType()) {
+                case CPPTokenTypes.LITERAL_class:
+                    kind = Kind.CLASS;
+                    break;
+                case CPPTokenTypes.LITERAL_union:
+                    kind = Kind.UNION;
+                    break;
+                case CPPTokenTypes.LITERAL_struct:
+                    kind = Kind.STRUCT;
+                    break;
+            }
+            classBuilder.setKind(kind);
+        }
+    }    
+    
+    @Override
     public void class_name(Token token) {
-        APTToken aToken = (APTToken) token;
-        final CharSequence name = aToken.getTextID();
-        SymTabEntry enumEntry = globalSymTab.lookupLocal(name);
-        if (enumEntry == null) {
-            enumEntry = globalSymTab.enterLocal(name);
-            enumEntry.setAttribute(CppAttributes.TYPE, true);
-        } else {
-            // error
+        CsmObjectBuilder top = builderContext.top();
+        if(top instanceof ClassBuilder) {
+            ClassBuilder classBuilder = (ClassBuilder) top;
+            APTToken aToken = (APTToken) token;
+            final CharSequence name = aToken.getTextID();
+            SymTabEntry classEntry = globalSymTab.lookupLocal(name);
+            if (classEntry == null) {
+                classEntry = globalSymTab.enterLocal(name);
+                classEntry.setAttribute(CppAttributes.TYPE, true);
+            } else {
+                // error
+            }
+
+            classBuilder.setName(name);
         }
     }
     
@@ -187,9 +246,63 @@ public class CppParserActionImpl implements CppParserAction {
 
     @Override
     public void end_class_body(Token token) {
+        CsmObjectBuilder top = builderContext.top();
+        if(top instanceof ClassBuilder) {
+            ClassBuilder classBuilder = (ClassBuilder) top;
+            if(token instanceof APTToken) {
+                classBuilder.setEndOffset(((APTToken)token).getEndOffset());
+            }
+        }
         globalSymTab.pop();
     }
+    
+    @Override
+    public void end_class_declaration(Token token) {
+        CsmObjectBuilder top = builderContext.top();
+        if(top instanceof ClassBuilder) {
+            ClassBuilder classBuilder = (ClassBuilder) top;
 
+            ClassImpl cls = classBuilder.create();
+            if(cls != null) {
+                currentContext.objects.put(cls.getStartOffset(), cls);
+                SymTabEntry classEntry = globalSymTab.lookupLocal(cls.getName());
+                if(classEntry != null) {
+                    classEntry.setAttribute(CppAttributes.DEFINITION, cls);
+                } else {
+//                    System.out.println("classEntry is empty " + cls);
+                }
+            }
+            builderContext.pop();
+        }
+    }    
+
+    @Override
+    public void namespace_declaration(Token token) {
+        NamespaceBuilder nsBuilder = new NamespaceBuilder();
+        nsBuilder.setParentNamespace(builderContext.getNamespaceBuilderIfExist());
+        nsBuilder.setFile(currentContext.file);
+        if(token instanceof APTToken) {
+            nsBuilder.setStartOffset(((APTToken)token).getOffset());
+        }
+        builderContext.push(nsBuilder);
+    }
+
+    @Override
+    public void namespace_name(Token token) {
+        NamespaceBuilder nsBuilder = builderContext.getNamespaceBuilder();
+        
+        APTToken aToken = (APTToken) token;
+        final CharSequence name = aToken.getTextID();
+        SymTabEntry enumEntry = globalSymTab.lookupLocal(name);
+        if (enumEntry == null) {
+            enumEntry = globalSymTab.enterLocal(name);
+            enumEntry.setAttribute(CppAttributes.TYPE, true);
+        } else {
+            // error
+        }
+        nsBuilder.setName(name);
+    }
+    
     @Override
     public void namespace_body(Token token) {
         globalSymTab.push();
@@ -200,6 +313,16 @@ public class CppParserActionImpl implements CppParserAction {
         globalSymTab.pop();
     }
 
+    @Override
+    public void end_namespace_declaration(Token token) {
+        NamespaceBuilder nsBuilder = builderContext.getNamespaceBuilder();
+        if(token instanceof APTToken) {
+            nsBuilder.setEndOffset(((APTToken)token).getEndOffset());
+        }
+        builderContext.pop();
+        nsBuilder.create();
+    }
+    
     @Override
     public void compound_statement(Token token) {
         globalSymTab.push();
@@ -219,6 +342,24 @@ public class CppParserActionImpl implements CppParserAction {
             addReference(token, (CsmObject) entry.getAttribute(CppAttributes.DEFINITION), CsmReferenceKind.DIRECT_USAGE);
         }
     }
+    
+    @Override
+    public void simple_type_id(Token token) {
+        APTToken aToken = (APTToken) token;
+        final CharSequence name = aToken.getTextID();
+        SymTabEntry entry = globalSymTab.lookup(name);
+        if (entry != null) {
+            CsmObject def = (CsmObject) entry.getAttribute(CppAttributes.DEFINITION);
+            addReference(token, def, CsmReferenceKind.DIRECT_USAGE);
+            
+            if(token instanceof APTToken && CsmKindUtilities.isClassifier(def)) {
+                CsmType type = TypeFactory.createSimpleType((CsmClassifier)def, currentContext.file, ((APTToken)token).getOffset(), ((APTToken)token).getEndOffset());
+                currentContext.objects.put(type.getStartOffset(), type);
+            }
+            
+        }
+        
+    }
 
     @Override
     public boolean isType(String name) {
@@ -227,6 +368,33 @@ public class CppParserActionImpl implements CppParserAction {
             return entry.getAttribute(CppAttributes.TYPE) != null;
         }
         return false;
+    }
+
+    @Override
+    public void onInclude(CsmFile inclFile, APTPreprocHandler.State stateBefore) {
+        if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+            assert inclFile instanceof FileImpl;
+            ((FileImpl)inclFile).parseOnInclude(stateBefore, this);
+        }
+    }
+     
+    @Override
+    public void pushFile(CsmFile file) {
+        this.contexts.push(currentContext);
+        currentContext = new Pair(file);
+    }
+
+    @Override
+    public CsmFile popFile() {
+        assert !contexts.isEmpty();
+        CsmFile out = currentContext.file;
+        currentContext = contexts.pop();
+        return out;
+    }
+
+    @Override
+    public Map<Integer, CsmObject> getObjectsMap() {
+        return currentContext.objects;
     }
     
     private SymTabStack createGlobal() {
@@ -242,12 +410,12 @@ public class CppParserActionImpl implements CppParserAction {
     private void addReference(Token token, final CsmObject definition, final CsmReferenceKind kind) {
         if (definition == null) {
 //            assert false;
-            if (TRACE) System.err.println("no definition for " + token + " in " + file);
+            if (TRACE) System.err.println("no definition for " + token + " in " + currentContext.file);
             return;
         }
         assert token instanceof APTToken : "token is incorrect " + token;
         if (APTUtils.isMacroExpandedToken(token)) {
-            if (TRACE) System.err.println("skip registering macro expanded " + token + " in " + file);
+            if (TRACE) System.err.println("skip registering macro expanded " + token + " in " + currentContext.file);
             return;
         }
         APTToken aToken = (APTToken) token;
@@ -273,7 +441,7 @@ public class CppParserActionImpl implements CppParserAction {
 
             @Override
             public CsmFile getContainingFile() {
-                return file;
+                return currentContext.file;
             }
 
             @Override
@@ -306,6 +474,6 @@ public class CppParserActionImpl implements CppParserAction {
                 return null;
             }
         };
-        file.addReference(ref, definition);
+        currentContext.file.addReference(ref, definition);
     }   
 }

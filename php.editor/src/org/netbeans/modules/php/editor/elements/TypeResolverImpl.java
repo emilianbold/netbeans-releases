@@ -84,7 +84,7 @@ public final class TypeResolverImpl implements TypeResolver {
         }
         return retval;
     }
-    
+
     public static Set<TypeResolver> forNames(final Collection<QualifiedName> names) {
         Set<TypeResolver> retval = new HashSet<TypeResolver>();
         for (QualifiedName qualifiedName : names) {
@@ -99,7 +99,7 @@ public final class TypeResolverImpl implements TypeResolver {
         }
         return retval;
     }
-        
+
     TypeResolverImpl(final String semiTypeName) {
         this.typeName = semiTypeName;
     }

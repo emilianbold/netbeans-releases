@@ -45,15 +45,6 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <filesystem>
-    <folder name="Services">
-        <folder name="MIMEResolver">
-            <file name="org-nb-mod-jaxb-binding-resolver.xml" url="nbres:/org/netbeans/modules/xml/jaxb/resources/jaxb-binding-resolver.xml">
-                <attr name="position" intvalue="490"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.jaxb.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/jaxb/resources/XML_file.png"/>
-            </file>
-        </folder>
-    </folder>
     <folder name="Templates">
         <folder name="XML">
              <file name="JavaXMLBinding">
@@ -85,4 +76,15 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
+    <folder name="Plugins">
+    <!-- Register XML module catalog plugin -->
+    	<folder name="XML">
+        	<folder name="UserCatalogs">
+            	<file name="org-netbeans-modules-xml-jaxb-catalog-MappingCatalog.instance">
+                	<attr name="instanceCreate" newvalue="org.netbeans.modules.xml.jaxb.catalog.MappingCatalog"/>
+                	<attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
+            	</file>
+        	</folder>
+    	</folder>
+	</folder>
 </filesystem>

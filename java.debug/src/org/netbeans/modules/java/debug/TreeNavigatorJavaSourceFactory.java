@@ -52,6 +52,7 @@ import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.JavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.LookupBasedJavaSourceTaskFactory;
+import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -75,7 +76,7 @@ public final class TreeNavigatorJavaSourceFactory extends LookupBasedJavaSourceT
     }
     
     public TreeNavigatorJavaSourceFactory() {
-        super(Phase.UP_TO_DATE, Priority.NORMAL);
+        super(Phase.UP_TO_DATE, Priority.NORMAL, TaskIndexingMode.ALLOWED_DURING_SCAN);
     }
 
     public synchronized CancellableTask<CompilationInfo> createTask(FileObject file) {
@@ -117,7 +118,7 @@ public final class TreeNavigatorJavaSourceFactory extends LookupBasedJavaSourceT
         private CancellableTask<CompilationInfo> task;
 
         public CaretAwareFactoryImpl() {
-            super(Phase.UP_TO_DATE, Priority.LOW);
+            super(Phase.UP_TO_DATE, Priority.LOW, TaskIndexingMode.ALLOWED_DURING_SCAN);
         }
 
         @Override

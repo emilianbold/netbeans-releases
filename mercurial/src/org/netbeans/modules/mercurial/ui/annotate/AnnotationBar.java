@@ -326,7 +326,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             }
         }
 
-        doc.runAtomic(new Runnable() {
+        doc.render(new Runnable() {
             @Override
             public void run() {
                 StyledDocument sd = (StyledDocument) doc;

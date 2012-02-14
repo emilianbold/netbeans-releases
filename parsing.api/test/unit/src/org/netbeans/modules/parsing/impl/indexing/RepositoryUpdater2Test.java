@@ -57,10 +57,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -88,6 +92,7 @@ import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.test.MockLookup;
@@ -138,6 +143,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
             GlobalPathRegistry.getDefault().unregister(id, classpaths.toArray(new ClassPath[classpaths.size()]));
         }
 
+        MockMimeLookup.setInstances(MimePath.parse("text/plain"));
         super.tearDown();
     }
 
@@ -190,7 +196,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
         };
         MockLookup.setInstances(new testAddIndexingJob_PathRecognizer());
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), factory);
-        Util.allMimeTypes = Collections.singleton("text/plain");
+        RepositoryUpdaterTest.setMimeTypes("text/plain");
 
         ruSync.reset(RepositoryUpdaterTest.TestHandler.Type.FILELIST, 2);
         RepositoryUpdater.getDefault().addIndexingJob(srcRoot1.getURL(), Collections.singleton(file1.getURL()), false, false, false, true, true, null);
@@ -329,7 +335,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
 
         final testRootsWorkCancelling_CustomIndexer indexer = new testRootsWorkCancelling_CustomIndexer();
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer));
-        Util.allMimeTypes = Collections.singleton("text/plain");
+        RepositoryUpdaterTest.setMimeTypes("text/plain");
 
         assertEquals("No roots should be indexed yet", 0, indexer.indexedRoots.size());
         final RepositoryUpdaterTest.MutableClassPathImplementation mcpi = new RepositoryUpdaterTest.MutableClassPathImplementation();
@@ -381,50 +387,73 @@ public class RepositoryUpdater2Test extends NbTestCase {
         url2file.put(srcRoot3.getURL(), srcRoot3);
 
         MockLookup.setInstances(new testRootsWorkCancelling_PathRecognizer());
-
-        final TimeoutCustomIndexer indexer = new TimeoutCustomIndexer(2000);
-        MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer), new FixedParserFactory(new EmptyParser()));
-        Util.allMimeTypes = Collections.singleton("text/plain");
-
-        assertEquals("No roots should be indexed yet", 0, indexer.indexedRoots.size());
-        final RepositoryUpdaterTest.MutableClassPathImplementation mcpi = new RepositoryUpdaterTest.MutableClassPathImplementation();
-        mcpi.addResource(srcRoot1, srcRoot2, srcRoot3);
-        globalPathRegistry_register(testRootsWorkCancelling_PathRecognizer.SOURCEPATH, new ClassPath[] { ClassPathFactory.createClassPath(mcpi) });
-
-        for(int cnt = 1; cnt <= 3; cnt++) {
-            long tm = System.currentTimeMillis();
-            for( ;System.currentTimeMillis() - tm < 5000; ) {
-                if (indexer.indexedRoots.size() == cnt) {
-                    break;
-                } else {
-                    try {
-                        Thread.sleep(345);
-                    } catch (InterruptedException ex) {
-                        break;
-                    }
+        final AtomicInteger counter = new AtomicInteger(0);
+        final CountDownLatch[] awaitIndexer = new CountDownLatch[] {
+            new CountDownLatch(1),
+            new CountDownLatch(1),
+            new CountDownLatch(1)
+        };
+        final CountDownLatch[] awaitUserTask = new CountDownLatch[] {
+            new CountDownLatch(1),
+            new CountDownLatch(1),
+            new CountDownLatch(1)
+        };
+        final Runnable action = new Runnable() {
+            @Override
+            public void run() {
+                int c = counter.get();
+                awaitIndexer[c].countDown();
+                try {
+                    awaitUserTask[c].await();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
-            assertEquals("Wrong number of roots indexed", cnt, indexer.indexedRoots.size());
+        };
+        final ActionCustomIndexer indexer = new ActionCustomIndexer(action);
+        MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer), new FixedParserFactory(new EmptyParser()));
+        try {
+            RepositoryUpdaterTest.setMimeTypes("text/plain");
 
-            final int fcnt = cnt;
-            final boolean [] taskCalled = new boolean [] { false };
-            ParserManager.parse("text/plain", new UserTask() {
-                public @Override void run(ResultIterator resultIterator) throws Exception {
-                    assertEquals("No more roots should be indexed", fcnt, indexer.indexedRoots.size());
-                    taskCalled[0] = true;
-                }
-            });
-            assertTrue("UserTask not called", taskCalled[0]);
+            assertEquals("No roots should be indexed yet", 0, indexer.indexedRoots.size());
+            final RepositoryUpdaterTest.MutableClassPathImplementation mcpi = new RepositoryUpdaterTest.MutableClassPathImplementation();
+            mcpi.addResource(srcRoot1, srcRoot2, srcRoot3);
+            globalPathRegistry_register(testRootsWorkCancelling_PathRecognizer.SOURCEPATH, new ClassPath[] { ClassPathFactory.createClassPath(mcpi) });
+
+            for(int cnt = 1; cnt <= 3; cnt++) {
+                awaitIndexer[counter.get()].await(10, TimeUnit.SECONDS);
+                assertEquals("Wrong number of roots indexed", cnt, indexer.indexedRoots.size());
+
+                final int fcnt = cnt;
+                final boolean [] taskCalled = new boolean [] { false };
+                ParserManager.parse("text/plain", new UserTask() {
+                    public @Override void run(ResultIterator resultIterator) throws Exception {
+                        awaitUserTask[counter.getAndIncrement()].countDown();
+                        Thread.sleep(2000); //Give RU.worker chance to displatch next root - should not happen should be blocked.
+                        assertEquals("No more roots should be indexed", fcnt, indexer.indexedRoots.size());
+                        taskCalled[0] = true;
+                    }
+                });
+                assertTrue("UserTask not called", taskCalled[0]);
+            }
+
+            RepositoryUpdater.getDefault().waitUntilFinished(-1);
+
+            assertEquals("All roots should be indexed: " + indexer.indexedRoots, 3, indexer.indexedRoots.size());
+            ArrayList<URL> expectedSourceRoots = new ArrayList<URL>(indexer.indexedRoots);
+            Collections.sort(expectedSourceRoots, new RepositoryUpdater.LexicographicComparator(true));
+            assertEquals("Wrong scanned sources", expectedSourceRoots, RepositoryUpdater.getDefault().getScannedSources());
+            assertEquals("Wrong scanned binaries", 0, RepositoryUpdater.getDefault().getScannedBinaries().size());
+            assertEquals("Wrong scanned unknowns", 0, RepositoryUpdater.getDefault().getScannedUnknowns().size());
+        } finally {
+            // unfreeze everything which could be waiting
+            for (int i = 0; i < awaitUserTask.length; i++) {
+                awaitUserTask[i].countDown();
+            }
+            for (int i = 0; i < awaitIndexer.length; i++) {
+                awaitIndexer[i].countDown();
+            }
         }
-        
-        RepositoryUpdater.getDefault().waitUntilFinished(-1);
-
-        assertEquals("All roots should be indexed: " + indexer.indexedRoots, 3, indexer.indexedRoots.size());
-        ArrayList<URL> expectedSourceRoots = new ArrayList<URL>(indexer.indexedRoots);
-        Collections.sort(expectedSourceRoots, new RepositoryUpdater.LexicographicComparator(true));
-        assertEquals("Wrong scanned sources", expectedSourceRoots, RepositoryUpdater.getDefault().getScannedSources());
-        assertEquals("Wrong scanned binaries", 0, RepositoryUpdater.getDefault().getScannedBinaries().size());
-        assertEquals("Wrong scanned unknowns", 0, RepositoryUpdater.getDefault().getScannedBinaries().size());
     }
 
     public static final class testRootsWorkCancelling_PathRecognizer extends PathRecognizer {
@@ -485,6 +514,23 @@ public class RepositoryUpdater2Test extends NbTestCase {
         }
 
     } // End of TimeoutCustomIndexer class
+    
+    private static final class ActionCustomIndexer extends CustomIndexer {
+        
+        public final List<URL> indexedRoots = Collections.synchronizedList(new ArrayList<URL>());
+        private final Runnable action;
+        
+        ActionCustomIndexer(@NonNull final Runnable action) {
+            action.getClass();
+            this.action = action;
+        }
+
+        @Override
+        protected void index(Iterable<? extends Indexable> files, Context context) {
+            indexedRoots.add(context.getRootURI());
+            this.action.run();
+        }
+    } // End of ActionCustomIndexer class
 
     private static final class FixedCustomIndexerFactory<T extends CustomIndexer> extends CustomIndexerFactory {
 
@@ -601,7 +647,6 @@ public class RepositoryUpdater2Test extends NbTestCase {
         }
     } // End of EmptyParser class
 
-    @RandomlyFails // usually fails for jglick
     public void testClasspathDeps1() throws IOException, InterruptedException {
         FileUtil.setMIMEType("txt", "text/plain");
         final FileObject srcRoot1 = workDir.createFolder("src1");
@@ -645,7 +690,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
 
         final testClasspathDeps1_Indexer indexer = new testClasspathDeps1_Indexer();
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer));
-        Util.allMimeTypes = Collections.singleton("text/plain");
+        RepositoryUpdaterTest.setMimeTypes("text/plain");
 
         assertEquals("No roots should be indexed yet", 0, indexer.indexedRoots.size());
 
@@ -659,10 +704,14 @@ public class RepositoryUpdater2Test extends NbTestCase {
         Thread.sleep(2000);
         RepositoryUpdater.getDefault().waitUntilFinished(-1);
 
+        //The srcRoot1, srcRoot2 and srcRoot3 should be indexed
+        //The srcRoot2 should be indexed before srcRoot1 because of dependency
+        //The srcRoot3 has no ordering to srcRoot1 and srcRoot2 as there is no dependency
         assertEquals("All roots should be indexed now", 3, indexer.indexedRoots.size());
-        assertEquals("Wrong first root", srcRoot2.getURL(), indexer.indexedRoots.get(0));
-        assertEquals("Wrong second root", srcRoot1.getURL(), indexer.indexedRoots.get(1));
-        assertEquals("Wrong third root", srcRoot3.getURL(), indexer.indexedRoots.get(2));
+        assertTrue(indexer.indexedRoots.contains(srcRoot1.getURL()));
+        assertTrue(indexer.indexedRoots.contains(srcRoot2.getURL()));
+        assertTrue(indexer.indexedRoots.contains(srcRoot3.getURL()));
+        assertTrue(indexer.indexedRoots.indexOf(srcRoot2.getURL()) < indexer.indexedRoots.indexOf(srcRoot1.getURL()));
 
         indexer.indexedRoots.clear();
         mcpi2.addResource(srcRoot4);
@@ -670,10 +719,14 @@ public class RepositoryUpdater2Test extends NbTestCase {
         Thread.sleep(2000);
         RepositoryUpdater.getDefault().waitUntilFinished(-1);
 
+        //The srcRoot1, srcRoot2 and srcRoot4 should be indexed.
+        //The srcRoot2 and srcRoot4 should be indexed before srcRoot1 because of dependency
         assertEquals("Additional and dependent roots not indexed", 3, indexer.indexedRoots.size());
-        assertEquals("Wrong first root", srcRoot4.getURL(), indexer.indexedRoots.get(0));
-        assertEquals("Wrong second root", srcRoot2.getURL(), indexer.indexedRoots.get(1));
-        assertEquals("Wrong second root", srcRoot1.getURL(), indexer.indexedRoots.get(2));
+        assertTrue(indexer.indexedRoots.contains(srcRoot1.getURL()));
+        assertTrue(indexer.indexedRoots.contains(srcRoot2.getURL()));
+        assertTrue(indexer.indexedRoots.contains(srcRoot4.getURL()));
+        assertTrue(indexer.indexedRoots.indexOf(srcRoot2.getURL()) < indexer.indexedRoots.indexOf(srcRoot1.getURL()));
+        assertTrue(indexer.indexedRoots.indexOf(srcRoot4.getURL()) < indexer.indexedRoots.indexOf(srcRoot1.getURL()));
 
     }
 
@@ -756,7 +809,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
 
         final TestCustomIndexer indexer = new TestCustomIndexer();
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer), new FixedParserFactory(new EmptyParser()));
-        Util.allMimeTypes = Collections.singleton("text/plain");
+        RepositoryUpdaterTest.setMimeTypes("text/plain");
 
         assertEquals("No roots should be indexed yet", 0, indexer.indexed.size());
 
@@ -803,7 +856,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
 
         final TestCustomIndexer indexer = new TestCustomIndexer();
         MockMimeLookup.setInstances(MimePath.parse("text/plain"), new FixedCustomIndexerFactory(indexer), new FixedParserFactory(new EmptyParser()));
-        Util.allMimeTypes = Collections.singleton("text/plain");
+        RepositoryUpdaterTest.setMimeTypes("text/plain");
 
         assertEquals("No roots should be indexed yet", 0, indexer.indexed.size());
 
@@ -888,7 +941,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
         public boolean workCancelled = false;
 
         public testShuttdown_TimedWork() {
-            super(false, false, false, true, null);
+            super(false, false, false, true, SuspendStatus.NOP, null);
         }
 
         protected @Override boolean getDone() {

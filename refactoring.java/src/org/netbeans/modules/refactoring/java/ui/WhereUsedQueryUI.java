@@ -49,8 +49,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.actions.Openable;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.api.java.source.ui.ElementOpen;
@@ -61,6 +63,7 @@ import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -69,16 +72,19 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Martin Matula, Jan Becicka, Ralph Ruijs
  */
-public class WhereUsedQueryUI implements RefactoringUI, Openable {
+public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactoringUIFactory {
     private WhereUsedQuery query = null;
-    private final String name;
+    private String name;
     private WhereUsedPanel panel;
-    private final TreePathHandle element;
+    private TreePathHandle element;
     private ElementHandle elementHandle;
     private ElementKind kind;
     private AbstractRefactoring delegate;
 
-    public WhereUsedQueryUI(TreePathHandle handle, CompilationInfo info) {
+    private WhereUsedQueryUI() {
+    }
+    
+    private WhereUsedQueryUI(TreePathHandle handle, CompilationInfo info) {
         this.query = new WhereUsedQuery(Lookups.singleton(handle));
         // ClasspathInfo needs to be in context until all other modules change there
         // implementation to use scopes #199779. This is used by at least JPA refactoring and
@@ -173,14 +179,18 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable {
 
     @Override
     public String getDescription() {
+        boolean isScanning = SourceUtils.isScanInProgress();
+        String desc = null;
+        
         if (panel!=null) {
             if ((kind == ElementKind.INTERFACE) || (kind == ElementKind.CLASS)) {
-                if (!panel.isClassFindUsages())
+                if (!panel.isClassFindUsages()) {
                     if (!panel.isClassSubTypesDirectOnly()) {
-                    return getString("DSC_WhereUsedFindAllSubTypes", name);
+                        desc = getString("DSC_WhereUsedFindAllSubTypes", name);
                     } else {
-                    return getString("DSC_WhereUsedFindDirectSubTypes", name);
+                        desc = getString("DSC_WhereUsedFindDirectSubTypes", name);
                     }
+                }
             } else {
                 if (kind == ElementKind.METHOD) {
                     String description = null;
@@ -198,11 +208,19 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable {
                     }
                     
                     description += " " + getString("DSC_WhereUsedOf", panel.getMethodDeclaringClass() + '.' + name); //NOI18N
-                    return description;
+                    desc = description;
                 }
             }
         }
-        return getString("DSC_WhereUsed", name);
+        if (desc == null) {
+            desc = getString("DSC_WhereUsed", name);
+        }
+        
+        if (isScanning) {
+            return getString("DSC_Scan_Warning", desc);
+        } else {
+            return desc;
+        }
     }
     
     private ResourceBundle bundle;
@@ -240,6 +258,15 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable {
         if (elementHandle!=null) {
             ElementOpen.open(element.getFileObject(), elementHandle);
         }
+    }
+
+    @Override
+    public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
+        return new WhereUsedQueryUI(handles[0], info);
+    }
+    
+    public static JavaRefactoringUIFactory factory() {
+        return new WhereUsedQueryUI();
     }
     
 }

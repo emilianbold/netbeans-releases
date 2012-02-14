@@ -73,7 +73,6 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -181,14 +180,7 @@ public class LayerHints implements UpToDateStatusProviderFactory {
                 cancelAll();
                 return;
             }
-            final URL layerURL;
-            try {
-                layerURL = handle.getLayerFile().getURL();
-            } catch (FileStateInvalidException x) {
-                LOG.log(Level.INFO, null, x);
-                cancelAll();
-                return;
-            }
+            final URL layerURL = handle.getLayerFile().toURL();
             String expectedLayers = "[" + layerURL + "]";
             List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
             RunnableFuture<Map<String,Integer>> linesFuture = new FutureTask<Map<String,Integer>>(new Callable<Map<String,Integer>>() {

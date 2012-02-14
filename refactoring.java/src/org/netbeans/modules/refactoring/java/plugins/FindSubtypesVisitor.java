@@ -53,7 +53,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.CompilationController;
 
 /**
  *
@@ -62,7 +62,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 public class FindSubtypesVisitor extends FindVisitor {
 
     private boolean recursive;
-    public FindSubtypesVisitor(boolean recursive, WorkingCopy workingCopy) {
+    public FindSubtypesVisitor(boolean recursive, CompilationController workingCopy) {
         super(workingCopy);
         this.recursive = recursive;
     }

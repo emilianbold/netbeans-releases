@@ -91,6 +91,7 @@ import java_cup.runtime.*;
 %state ST_COMMENT
 %state ST_DOCBLOCK
 %state ST_ONE_LINE_COMMENT
+%state ST_IN_SHORT_ECHO
 %{
     private final List commentList = new LinkedList();
     private String heredoc = null;
@@ -114,9 +115,9 @@ import java_cup.runtime.*;
     //private AST ast;
 
     private int bracket = 0;
-    
+
     /**
-     * Returns balance beween '{' and '}'. If it's equesl 0, 
+     * Returns balance beween '{' and '}'. If it's equesl 0,
      * then number of '{' == number of '}', if > 0 then '{' > '}' and
      * if return number < 0 then '{' < '}'
      */
@@ -131,7 +132,7 @@ import java_cup.runtime.*;
         public PHPVersion getPHPVersion() {
                 return PHPVersion.PHP_5;
         }
-    
+
         public boolean useAspTagsAsPhp () {
             return asp_tags;
         }
@@ -155,11 +156,11 @@ import java_cup.runtime.*;
 	public void resetCommentList() {
 		commentList.clear();
 	}
-	
+
 	public List getCommentList() {
 		return commentList;
-	}	
-	
+	}
+
 	protected void addComment(Comment.Type type) {
 		int leftPosition = getTokenStartPosition();
         //System.out.println("#####AddCommnet start: " + commentStartPosition + " end: " + (leftPosition + getTokenLength()) + ", type: " + type);
@@ -180,11 +181,11 @@ import java_cup.runtime.*;
         }
 		commentList.add(comm);
 	}
-	
+
 	public void setUseAspTagsAsPhp(boolean useAspTagsAsPhp) {
 		asp_tags = useAspTagsAsPhp;
 	}
-	
+
     private void pushState(int state) {
         stack.pushStack(zzLexicalState);
         yybegin(state);
@@ -209,15 +210,15 @@ import java_cup.runtime.*;
     public int getLength() {
         return zzEndRead - zzPushbackPos;
     }
-    
+
     private void handleCommentStart() {
         commentStartPosition = getTokenStartPosition();
     }
-	
+
     private void handleLineCommentEnd() {
          addComment(Comment.Type.TYPE_SINGLE_LINE);
     }
-    
+
     private void handleMultilineCommentEnd() {
     	addComment(Comment.Type.TYPE_MULTILINE);
     }
@@ -225,12 +226,12 @@ import java_cup.runtime.*;
     private void handlePHPDocEnd() {
         addComment(Comment.Type.TYPE_PHPDOC);
     }
-    
+
     private void handleVarComment() {
     	commentStartPosition = zzStartRead;
     	addComment(Comment.Type.TYPE_VARTYPE);
     }
-        
+
     private Symbol createFullSymbol(int symbolNumber) {
         Symbol symbol = createSymbol(symbolNumber);
         symbol.value = yytext();
@@ -246,8 +247,8 @@ import java_cup.runtime.*;
     public int[] getParamenters(){
     	return new int[]{zzMarkedPos, zzPushbackPos, zzCurrentPos, zzStartRead, zzEndRead, yyline};
     }
-    
-	private boolean parsePHPDoc(){	
+
+	private boolean parsePHPDoc(){
 		/*final IDocumentorLexer documentorLexer = getDocumentorLexer(zzReader);
 		if(documentorLexer == null){
 			return false;
@@ -258,17 +259,17 @@ import java_cup.runtime.*;
 		Object phpDocBlock = documentorLexer.parse();
 		commentList.add(phpDocBlock);
 		reset(zzReader, documentorLexer.getBuffer(), documentorLexer.getParamenters());*/
-                
+
                 //System.out.println("#######ParsePHPDoc()");
 		//return true;
                 return false;
 	}
-	
-	
+
+
 	/*protected IDocumentorLexer getDocumentorLexer(java.io.Reader  reader) {
 		return null;
 	}*/
-	
+
 	public void reset(java.io.Reader  reader, char[] buffer, int[] parameters){
 		this.zzReader = reader;
 		this.zzBuffer = buffer;
@@ -277,7 +278,7 @@ import java_cup.runtime.*;
 		this.zzCurrentPos = parameters[2];
 		this.zzStartRead = parameters[3];
 		this.zzEndRead = parameters[4];
-		this.yyline = parameters[5];  
+		this.yyline = parameters[5];
 		this.yychar = this.zzStartRead - this.zzPushbackPos;
 	}
 
@@ -287,6 +288,7 @@ LNUM=[0-9]+
 DNUM=([0-9]*[\.][0-9]+)|([0-9]+[\.][0-9]*)
 EXPONENT_DNUM=(({LNUM}|{DNUM})[eE][+-]?{LNUM})
 HNUM="0x"[0-9a-fA-F]+
+BNUM="0b"[01]+
 //LABEL=[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*
 LABEL=[[:letter:]_\x7f-\xff][[:letter:][:digit:]_\x7f-\xff]*
 NAMESPACE_SEPARATOR=[\\]
@@ -309,6 +311,11 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 
 %%
 
+<ST_IN_SHORT_ECHO>"=" {
+    yybegin(ST_IN_SCRIPTING);
+    return createSymbol(ASTPHP5Symbols.T_ECHO);
+}
+
 <ST_IN_SCRIPTING>"exit" {
 	return createFullSymbol(ASTPHP5Symbols.T_EXIT);
 }
@@ -317,7 +324,7 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 	return createFullSymbol(ASTPHP5Symbols.T_EXIT);
 }
 
-<ST_IN_SCRIPTING>"function"|"cfunction" {
+<ST_IN_SCRIPTING>"function" {
 	return createSymbol(ASTPHP5Symbols.T_FUNCTION);
 }
 
@@ -397,6 +404,10 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 	return createSymbol(ASTPHP5Symbols.T_INSTANCEOF);
 }
 
+<ST_IN_SCRIPTING>"insteadof" {
+	return createSymbol(ASTPHP5Symbols.T_INSTEADOF);
+}
+
 <ST_IN_SCRIPTING>"as" {
 	return createSymbol(ASTPHP5Symbols.T_AS);
 }
@@ -439,6 +450,10 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 
 <ST_IN_SCRIPTING>"class" {
 	return createSymbol(ASTPHP5Symbols.T_CLASS);
+}
+
+<ST_IN_SCRIPTING>"trait" {
+	return createSymbol(ASTPHP5Symbols.T_TRAIT);
 }
 
 <ST_IN_SCRIPTING>"interface" {
@@ -783,11 +798,15 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
     return createFullSymbol(ASTPHP5Symbols.T_DNUMBER);
 }
 
+<ST_IN_SCRIPTING>{BNUM} {
+    return createFullSymbol(ASTPHP5Symbols.T_DNUMBER);
+}
+
 <ST_VAR_OFFSET>0|([1-9][0-9]*) {
 	return createFullSymbol(ASTPHP5Symbols.T_NUM_STRING);
 }
 
-<ST_VAR_OFFSET>{LNUM}|{HNUM} { /* treat numbers (almost) as strings inside encapsulated strings */
+<ST_VAR_OFFSET>{LNUM}|{HNUM}|{BNUM} { /* treat numbers (almost) as strings inside encapsulated strings */
     return createFullSymbol(ASTPHP5Symbols.T_NUM_STRING);
 }
 
@@ -841,9 +860,8 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
     String text = yytext();
     if ((text.charAt(1)=='%' && asp_tags)
         || (text.charAt(1)=='?' && short_tags_allowed)) {
-        yybegin(ST_IN_SCRIPTING);
-        //return T_OPEN_TAG_WITH_ECHO;
-        //return createSymbol(ASTPHP5Symbols.T_OPEN_TAG);
+        yypushback(1);
+        yybegin(ST_IN_SHORT_ECHO);
     } else {
         return createSymbol(ASTPHP5Symbols.T_INLINE_HTML);
     }
@@ -965,7 +983,7 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
         yypushback(yylength());
 		yybegin(ST_IN_SCRIPTING);
 		//return T_COMMENT;
-	} 
+	}
 }
 
 <ST_IN_SCRIPTING>"/*"{WHITESPACE}*"@var"{WHITESPACE}("$"?){LABEL}{WHITESPACE}{QUALIFIED_LABEL}([|]{QUALIFIED_LABEL})*{WHITESPACE}?"*/" {
@@ -992,7 +1010,7 @@ yybegin(ST_DOCBLOCK);
         int len = yylength();
         yypushback(2); // go back to mark end of comment in the next token
         comment = yytext();
-} 
+}
 
 <ST_DOCBLOCK> <<EOF>> {
               if (yytext().length() > 0) {
@@ -1002,7 +1020,7 @@ yybegin(ST_DOCBLOCK);
               else {
                 return createSymbol(ASTPHP5Symbols.EOF);
               }
-              
+
 }
 
 <ST_IN_SCRIPTING>"/**/" {
@@ -1092,7 +1110,7 @@ yybegin(ST_DOCBLOCK);
     }
 }
 
-               
+
 <ST_NOWDOC>{NOWDOC_CHARS}*{NEWLINE}+{LABEL}";"?[\n\r] {
     int label_len = yylength() - 1;
 
@@ -1119,7 +1137,7 @@ yybegin(ST_DOCBLOCK);
     yybegin(ST_IN_SCRIPTING);
     return createSymbol(ASTPHP5Symbols.T_END_NOWDOC);
 }
-                 
+
 <ST_IN_SCRIPTING>b?"<<<"{TABS_AND_SPACES}({LABEL}|"\""{LABEL}"\""){NEWLINE} {
     int removeChars = (yytext().charAt(0) == 'b')?4:3;
     heredoc = yytext().substring(removeChars).trim();    // for 'b<<<' or '<<<'
@@ -1144,9 +1162,9 @@ yybegin(ST_DOCBLOCK);
     String text = yytext();
     int length = text.length() - 1;
     text = text.trim();
-    
+
     yypushback(1);
-    
+
     if (text.endsWith(";")) {
         text = text.substring(0, text.length() - 1);
         yypushback(1);
@@ -1169,7 +1187,7 @@ yybegin(ST_DOCBLOCK);
     } else {
 		text = text.substring(0, text.length() - 1);
     }
-	
+
 	int textLength = text.length();
 	int heredocLength = heredoc.length();
 	if (textLength > heredocLength && text.substring(textLength - heredocLength, textLength).equals(heredoc)) {
@@ -1183,7 +1201,7 @@ yybegin(ST_DOCBLOCK);
 	   	return sym;
 	}
 	yypushback(1);
-	
+
 }
 
 <ST_END_HEREDOC>{ANY_CHAR} {

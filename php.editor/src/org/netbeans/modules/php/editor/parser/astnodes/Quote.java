@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
@@ -47,11 +47,11 @@ import java.util.List;
 /**
  * Represents complex qoute(i.e. qoute that includes string and variables).
  * Also represents heredoc
- * <pre>e.g.<pre> 
+ * <pre>e.g.<pre>
  * "this is $a quote",
  * "'single ${$complex->quote()}'"
- * >>>Heredoc\n  This is here documents \nHeredoc;\n 
- * 
+ * >>>Heredoc\n  This is here documents \nHeredoc;\n
+ *
  * Note: "This is".$not." a quote node",
  *       'This is $not a quote too'
  */
@@ -62,7 +62,7 @@ public class Quote extends Expression {
         SINGLE,
         HEREDOC
     }
-    
+
     private final ArrayList<Expression> expressions = new ArrayList<Expression>();
     private Quote.Type quoteType;
 
@@ -87,13 +87,13 @@ public class Quote extends Expression {
     }
 
     /**
-     * The quote type 
+     * The quote type
      * @return quote type
      */
     public Quote.Type getQuoteType() {
         return quoteType;
     }
-    
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);

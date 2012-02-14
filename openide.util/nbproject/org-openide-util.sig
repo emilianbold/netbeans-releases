@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 8.15
+#Version 8.19
 
 CLSS public java.awt.datatransfer.Clipboard
 cons public init(java.lang.String)
@@ -927,12 +927,25 @@ meth public abstract java.util.prefs.Preferences preferencesRoot()
 
 CLSS public final org.openide.util.NetworkSettings
 cons public init()
+innr public abstract static ProxyCredentialsProvider
+meth public static <%0 extends java.lang.Object> {%%0} suppressAuthenticationDialog(java.util.concurrent.Callable<{%%0}>) throws java.lang.Exception
+meth public static boolean isAuthenticationDialogSuppressed()
 meth public static java.lang.String getAuthenticationUsername(java.net.URI)
 meth public static java.lang.String getKeyForAuthenticationPassword(java.net.URI)
 meth public static java.lang.String getProxyHost(java.net.URI)
 meth public static java.lang.String getProxyPort(java.net.URI)
 supr java.lang.Object
-hfds LOGGER,PROXY_AUTHENTICATION_PASSWORD,PROXY_AUTHENTICATION_USERNAME,USE_PROXY_AUTHENTICATION
+hfds LOGGER,PROXY_AUTHENTICATION_PASSWORD,authenticationDialogSuppressed
+
+CLSS public abstract static org.openide.util.NetworkSettings$ProxyCredentialsProvider
+ outer org.openide.util.NetworkSettings
+cons public init()
+meth protected abstract boolean isProxyAuthentication(java.net.URI)
+meth protected abstract char[] getProxyPassword(java.net.URI)
+meth protected abstract java.lang.String getProxyHost(java.net.URI)
+meth protected abstract java.lang.String getProxyPort(java.net.URI)
+meth protected abstract java.lang.String getProxyUserName(java.net.URI)
+supr java.lang.Object
 
 CLSS public org.openide.util.NotImplementedException
 cons public init()
@@ -999,8 +1012,8 @@ meth public void execute(java.lang.Runnable)
 meth public void shutdown()
 meth public void stop()
 supr java.lang.Object
-hfds DEFAULT,SLOW,UNLIMITED,counter,enableStackTraces,finishAwaitingTasks,inParallel,interruptThread,logger,name,processorLock,processors,queue,running,starterThread,stopped,throughput,warnParallel
-hcls EnqueueTask,FastItem,FixedDelayTask,FixedRateTask,Item,Processor,RPFutureTask,RunnableWrapper,ScheduledRPFutureTask,SlowItem,TaskFutureWrapper,WaitableCallable
+hfds DEFAULT,SLOW,TICK,UNLIMITED,counter,enableStackTraces,finishAwaitingTasks,inParallel,interruptThread,logger,name,processorLock,processors,queue,running,stopped,throughput,warnParallel
+hcls CreatedItem,FastItem,FixedDelayTask,FixedRateTask,Item,Processor,RPFutureTask,RunnableWrapper,ScheduledRPFutureTask,SlowItem,TaskFutureWrapper,TickTac,WaitableCallable
 
 CLSS public final org.openide.util.RequestProcessor$Task
  outer org.openide.util.RequestProcessor
@@ -1140,50 +1153,49 @@ fld public final static int OS_WINVISTA = 262144
 fld public final static int OS_WIN_OTHER = 32768
 fld public final static int TYPICAL_WINDOWS_TASKBAR_HEIGHT = 27
 innr public static UnorderableException
-meth public final static boolean isJavaIdentifier(java.lang.String)
-meth public final static boolean isLargeFrameIcons()
- anno 0 java.lang.Deprecated()
-meth public final static boolean isMac()
-meth public final static boolean isUnix()
-meth public final static boolean isWindows()
-meth public final static int getOperatingSystem()
-meth public final static int showJFileChooser(javax.swing.JFileChooser,java.awt.Component,java.lang.String)
- anno 0 java.lang.Deprecated()
-meth public final static java.awt.Cursor createProgressCursor(java.awt.Component)
-meth public final static java.awt.Dimension getScreenSize()
- anno 0 java.lang.Deprecated()
-meth public final static java.awt.Image icon2Image(javax.swing.Icon)
- anno 0 java.lang.Deprecated()
-meth public final static java.awt.Image loadImage(java.lang.String)
- anno 0 java.lang.Deprecated()
-meth public final static java.awt.Image loadImage(java.lang.String,boolean)
- anno 0 java.lang.Deprecated()
-meth public final static java.awt.Image mergeImages(java.awt.Image,java.awt.Image,int,int)
- anno 0 java.lang.Deprecated()
-meth public final static java.lang.String pureClassName(java.lang.String)
-meth public final static void attachInitJob(java.awt.Component,org.openide.util.AsyncGUIJob)
 meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> topologicalSort(java.util.Collection<{%%0}>,java.util.Map<? super {%%0},? extends java.util.Collection<? extends {%%0}>>) throws org.openide.util.TopologicalSortException
 meth public static boolean compareObjects(java.lang.Object,java.lang.Object)
 meth public static boolean compareObjectsImpl(java.lang.Object,java.lang.Object,int)
+meth public static boolean isJavaIdentifier(java.lang.String)
+meth public static boolean isLargeFrameIcons()
+ anno 0 java.lang.Deprecated()
+meth public static boolean isMac()
+meth public static boolean isUnix()
+meth public static boolean isWindows()
 meth public static int arrayHashCode(java.lang.Object[])
+meth public static int getOperatingSystem()
+meth public static int showJFileChooser(javax.swing.JFileChooser,java.awt.Component,java.lang.String)
+ anno 0 java.lang.Deprecated()
 meth public static java.awt.Component getFocusTraversableComponent(java.awt.Component)
 meth public static java.awt.Cursor createCustomCursor(java.awt.Component,java.awt.Image,java.lang.String)
+meth public static java.awt.Cursor createProgressCursor(java.awt.Component)
+meth public static java.awt.Dimension getScreenSize()
+ anno 0 java.lang.Deprecated()
+meth public static java.awt.Image icon2Image(javax.swing.Icon)
+ anno 0 java.lang.Deprecated()
+meth public static java.awt.Image loadImage(java.lang.String)
+ anno 0 java.lang.Deprecated()
+meth public static java.awt.Image loadImage(java.lang.String,boolean)
+ anno 0 java.lang.Deprecated()
+meth public static java.awt.Image mergeImages(java.awt.Image,java.awt.Image,int,int)
+ anno 0 java.lang.Deprecated()
 meth public static java.awt.Rectangle findCenterBounds(java.awt.Dimension)
 meth public static java.awt.Rectangle getUsableScreenBounds()
 meth public static java.awt.Rectangle getUsableScreenBounds(java.awt.GraphicsConfiguration)
-meth public static java.beans.BeanInfo getBeanInfo(java.lang.Class) throws java.beans.IntrospectionException
-meth public static java.beans.BeanInfo getBeanInfo(java.lang.Class,java.lang.Class) throws java.beans.IntrospectionException
+meth public static java.beans.BeanInfo getBeanInfo(java.lang.Class<?>) throws java.beans.IntrospectionException
+meth public static java.beans.BeanInfo getBeanInfo(java.lang.Class<?>,java.lang.Class<?>) throws java.beans.IntrospectionException
 meth public static java.io.File toFile(java.net.URL)
  anno 0 java.lang.Deprecated()
-meth public static java.lang.Class getObjectType(java.lang.Class)
-meth public static java.lang.Class getPrimitiveType(java.lang.Class)
+meth public static java.lang.Class<?> getObjectType(java.lang.Class<?>)
+meth public static java.lang.Class<?> getPrimitiveType(java.lang.Class<?>)
 meth public static java.lang.Object toPrimitiveArray(java.lang.Object[])
 meth public static java.lang.Object[] toObjectArray(java.lang.Object)
 meth public static java.lang.String escapeParameters(java.lang.String[])
-meth public static java.lang.String getClassName(java.lang.Class)
-meth public static java.lang.String getShortClassName(java.lang.Class)
+meth public static java.lang.String getClassName(java.lang.Class<?>)
+meth public static java.lang.String getShortClassName(java.lang.Class<?>)
 meth public static java.lang.String keyToString(javax.swing.KeyStroke)
 meth public static java.lang.String keyToString(javax.swing.KeyStroke,boolean)
+meth public static java.lang.String pureClassName(java.lang.String)
 meth public static java.lang.String replaceString(java.lang.String,java.lang.String,java.lang.String)
  anno 0 java.lang.Deprecated()
 meth public static java.lang.String translate(java.lang.String)
@@ -1205,6 +1217,7 @@ meth public static javax.swing.JPopupMenu actionsToPopup(javax.swing.Action[],or
 meth public static javax.swing.KeyStroke stringToKey(java.lang.String)
 meth public static javax.swing.KeyStroke[] stringToKeys(java.lang.String)
 meth public static org.openide.util.Lookup actionsGlobalContext()
+meth public static void attachInitJob(java.awt.Component,org.openide.util.AsyncGUIJob)
 supr java.lang.Object
 hfds ALT_WILDCARD_MASK,CTRL_WILDCARD_MASK,LOG,TRANS_LOCK,TYPICAL_MACOSX_MENU_HEIGHT,clearIntrospector,doClear,global,keywords,namesAndValues,operatingSystem,transExp,transLoader
 hcls NamesAndValues,RE

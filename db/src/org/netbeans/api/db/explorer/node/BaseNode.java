@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -117,6 +117,10 @@ public abstract class BaseNode extends AbstractNode {
     protected static final String FKREFERREDTABLEDESC = "ReferredFKTable"; // NOI18N
     protected static final String FKREFERREDCOLUMN = "ReferredFKColumn"; // NOI18N
     protected static final String FKREFERREDCOLUMNDESC = "ReferredFKColumn"; // NOI18N
+    protected static final String PKPART = "PKPart"; // NOI18N
+    protected static final String PKPARTDESC = "PKPartDescription"; // NOI18N
+    protected static final String INDEXPART = "IndexPart"; // NOI18N
+    protected static final String INDEXPARTDESC = "IndexPartDescription"; // NOI18N
 
     private final NodeDataLookup dataLookup;
     private final ActionRegistry actionRegistry;

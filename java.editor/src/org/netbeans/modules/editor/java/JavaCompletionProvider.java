@@ -44,14 +44,12 @@
 
 package org.netbeans.modules.editor.java;
 
-import org.netbeans.api.whitelist.WhiteListQuery;
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
@@ -71,12 +69,14 @@ import javax.tools.Diagnostic;
 
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -95,6 +95,7 @@ import org.openide.util.NbBundle;
  *
  * @author Dusan Balek
  */
+@MimeRegistration(mimeType = "text/x-java", service = CompletionProvider.class, position = 100) //NOI18N
 public class JavaCompletionProvider implements CompletionProvider {
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
@@ -289,15 +290,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (source == null)
                         source = Source.create(doc);
                     if (source != null) {
-                        Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singletonList(source), getTask());
-                        if (!f.isDone()) {
-                            component.putClientProperty("completion-active", Boolean.FALSE); //NOI18N
-                            resultSet.setWaitText(NbBundle.getMessage(JavaCompletionProvider.class, "scanning-in-progress")); //NOI18N
-                            f.get();
-                        }
+                        ParserManager.parse(Collections.singletonList(source), getTask());
                         if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
-                            if (results != null)
+                            if (results != null) {
                                 resultSet.addAllItems(results);
+                            }
                             resultSet.setHasAdditionalItems(hasAdditionalItems > 0);
                             if (hasAdditionalItems == 1)
                                 resultSet.setHasAdditionalItemsText(NbBundle.getMessage(JavaCompletionProvider.class, "JCP-imported-items")); //NOI18N
@@ -314,8 +311,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                         resultSet.setDocumentation(documentation);
                                         break;
                                     } catch (TimeoutException timeOut) {/*retry*/}
-                                }
-                                
+                                }                                
                             } else if (documentation != null) {
                                 resultSet.setDocumentation(documentation);
                             }
@@ -3219,10 +3215,9 @@ public class JavaCompletionProvider implements CompletionProvider {
             final TypeElement enclClass = scope.getEnclosingClass();
             final boolean isStatic = enclClass == null ? false :
                 (tu.isStaticContext(scope) || (env.getPath().getLeaf().getKind() == Tree.Kind.BLOCK && ((BlockTree)env.getPath().getLeaf()).isStatic()));
-            final Set<? extends Element> excludes = env.getExcludes();
             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
-                    if ((excludes == null || !excludes.contains(e)) && (e.getKind().isClass() || e.getKind().isInterface() || e.getKind() == TYPE_PARAMETER) && (!env.isAfterExtends() || containsAccessibleNonFinalType(e, scope, trees))) {
+                    if ((env.getExcludes() == null || !env.getExcludes().contains(e)) && (e.getKind().isClass() || e.getKind().isInterface() || e.getKind() == TYPE_PARAMETER) && (!env.isAfterExtends() || containsAccessibleNonFinalType(e, scope, trees))) {
                         String name = e.getSimpleName().toString();
                         return name.length() > 0 && !Character.isDigit(name.charAt(0)) && startsWith(env, name, prefix) &&
                                 (!isStatic || e.getModifiers().contains(STATIC) || e.getEnclosingElement() == enclMethod) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types);
@@ -3237,6 +3232,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case INTERFACE:
                     case ANNOTATION_TYPE:
                         results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)e, (DeclaredType)e.asType(), anchorOffset, false, elements.isDeprecated(e), env.isInsideNew(), env.isInsideNew() || env.isInsideClass(), false, false, false, env.getWhiteList()));
+                        env.addToExcludes(e);
                         break;
                     case TYPE_PARAMETER:
                         results.add(JavaCompletionItem.createTypeParameterItem((TypeParameterElement)e, anchorOffset));
@@ -3246,7 +3242,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
                     if ((e.getKind().isClass() || e.getKind().isInterface())) {
-                        return (excludes == null || !excludes.contains(e)) && startsWith(env, e.getSimpleName().toString(), prefix) &&
+                        return (env.getExcludes() == null || !env.getExcludes().contains(e)) && startsWith(env, e.getSimpleName().toString(), prefix) &&
                                 (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && trees.isAccessible(scope, (TypeElement)e) &&
                                 isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types) && (!env.isAfterExtends() || containsAccessibleNonFinalType(e, scope, trees));
                     }

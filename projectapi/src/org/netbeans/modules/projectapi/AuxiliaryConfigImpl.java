@@ -103,7 +103,7 @@ public class AuxiliaryConfigImpl implements AuxiliaryConfiguration {
                             InputStream is = config.getInputStream();
                             try {
                                 InputSource input = new InputSource(is);
-                                input.setSystemId(config.getURL().toString());
+                                input.setSystemId(config.toURL().toString());
                                 Element root = XMLUtil.parse(input, false, true, /*XXX*/null, null).getDocumentElement();
                                 return XMLUtil.findElement(root, elementName, namespace);
                             } finally {
@@ -160,7 +160,7 @@ public class AuxiliaryConfigImpl implements AuxiliaryConfiguration {
                             InputStream is = config.getInputStream();
                             try {
                                 InputSource input = new InputSource(is);
-                                input.setSystemId(config.getURL().toString());
+                                input.setSystemId(config.toURL().toString());
                                 doc = XMLUtil.parse(input, false, true, /*XXX*/ null, null);
                             } finally {
                                 is.close();
@@ -231,7 +231,7 @@ public class AuxiliaryConfigImpl implements AuxiliaryConfiguration {
                         InputStream is = config.getInputStream();
                         try {
                             InputSource input = new InputSource(is);
-                            input.setSystemId(config.getURL().toString());
+                            input.setSystemId(config.toURL().toString());
                             doc = XMLUtil.parse(input, false, true, /*XXX*/ null, null);
                         } finally {
                             is.close();

@@ -67,12 +67,14 @@ import org.openide.util.Exceptions;
  */
 public class EntityResourceModelBuilder {
 
-    private Map<String, EntityClassInfo> entityClassInfoMap;
-    EntityResourceBeanModel model;
+    private Map<String, EntityClassInfo> entitiesInRelationMap;
+    private Map<String, EntityClassInfo> allEntitiesClassInfoMap;
+    private EntityResourceBeanModel model;
 
     /** Creates a new instance of ModelBuilder */
     public EntityResourceModelBuilder(Project project, Collection<String> entities) {
-        entityClassInfoMap = new HashMap<String, EntityClassInfo>();
+        entitiesInRelationMap = new HashMap<String, EntityClassInfo>();
+        allEntitiesClassInfoMap = new HashMap<String, EntityClassInfo>();
         for (String entity : entities) {
             try {
                 EntityClassInfo info = null;
@@ -82,8 +84,11 @@ public class EntityResourceModelBuilder {
                 if (js != null) {
                     info = new EntityClassInfo(entity, project, this, js);
                 }
-                if (info != null && !info.getFieldInfos().isEmpty()) {
-                    entityClassInfoMap.put(entity, info);
+                if (info != null ){
+                    allEntitiesClassInfoMap.put(entity, info);
+                    if ( !info.getFieldInfos().isEmpty()) {
+                        entitiesInRelationMap.put(entity, info);
+                    }
                 }
                 
             } catch (IOException ioe) {
@@ -94,21 +99,21 @@ public class EntityResourceModelBuilder {
 
 
     public Set<EntityClassInfo> getEntityInfos() {
-        return new HashSet<EntityClassInfo>(entityClassInfoMap.values());
+        return new HashSet<EntityClassInfo>(allEntitiesClassInfoMap.values());
     }
 
     public Set<String> getAllEntityNames() {
-        return entityClassInfoMap.keySet();
+        return allEntitiesClassInfoMap.keySet();
     }
 
     public EntityClassInfo getEntityClassInfo(String type) {
-        return entityClassInfoMap.get(type);
+        return allEntitiesClassInfoMap.get(type);
     }
 
     public EntityResourceBeanModel build() {
         model = new EntityResourceBeanModel(this);
         try {
-            for (Entry<String, EntityClassInfo> entry : entityClassInfoMap.entrySet()) {
+            for (Entry<String, EntityClassInfo> entry : entitiesInRelationMap.entrySet()) {
                 String fqn = entry.getKey();
                 EntityClassInfo info = entry.getValue();
                 model.addEntityInfo( fqn, info);
@@ -122,6 +127,7 @@ public class EntityResourceModelBuilder {
             model.setValid(false);
         }
 
+        entitiesInRelationMap.clear();
         return model;
     }
 
@@ -130,11 +136,11 @@ public class EntityResourceModelBuilder {
             if (fieldInfo.isRelationship()) {
                 if (fieldInfo.isOneToMany() || fieldInfo.isManyToMany()) {
                     String typeArg = fieldInfo.getTypeArg();
-                    EntityClassInfo classInfo = entityClassInfoMap.get( typeArg );
+                    EntityClassInfo classInfo = allEntitiesClassInfoMap.get( typeArg );
                     model.addEntityInfo( typeArg, classInfo);
                 } else {
                     String type = fieldInfo.getType();
-                    EntityClassInfo classInfo = entityClassInfoMap.get(type);
+                    EntityClassInfo classInfo = allEntitiesClassInfoMap.get(type);
                     model.addEntityInfo( type, classInfo);
                 }
             }

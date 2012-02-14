@@ -136,7 +136,7 @@ public class NetworkSettingsTest extends TestCase {
             }
         });
 
-        Authenticator.requestPasswordAuthentication("localhost", Inet4Address.getLocalHost(), 1234, "http", null, "http");
+        Authenticator.requestPasswordAuthentication("wher.ev.er", Inet4Address.getByName("1.2.3.4"), 1234, "http", null, "http");
         assertFalse(suppressed[0]);
     }
 
@@ -155,7 +155,7 @@ public class NetworkSettingsTest extends TestCase {
 
             @Override
             public Void call() throws Exception {
-                Authenticator.requestPasswordAuthentication("localhost", Inet4Address.getLocalHost(), 1234, "http", null, "http");
+                Authenticator.requestPasswordAuthentication("wher.ev.er", Inet4Address.getByName("1.2.3.4"), 1234, "http", null, "http");
                 return null;
             }
         };
@@ -186,7 +186,7 @@ public class NetworkSettingsTest extends TestCase {
                     public Void call() throws Exception {
                         doneSignal1.countDown();
                         doneSignal2.await();
-                        Authenticator.requestPasswordAuthentication("localhost", Inet4Address.getLocalHost(), 1234, "http", null, "http");
+                        Authenticator.requestPasswordAuthentication("wher.ev.er", Inet4Address.getByName("1.2.3.4"), 1234, "http", null, "http");
                         return null;
                     }
                 };
@@ -199,7 +199,7 @@ public class NetworkSettingsTest extends TestCase {
         });
         t.start();
         doneSignal1.await();
-        Authenticator.requestPasswordAuthentication("localhost", Inet4Address.getLocalHost(), 1234, "http", null, "http");
+        Authenticator.requestPasswordAuthentication("wher.ev.er", Inet4Address.getByName("1.2.3.4"), 1234, "http", null, "http");
         assertFalse(suppressed[0]);
         doneSignal2.countDown();
         t.join();

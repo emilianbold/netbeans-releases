@@ -41,30 +41,32 @@
  */
 package org.netbeans.modules.php.project.ui.wizards;
 
-import java.util.List;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.SwingConstants;
-import org.netbeans.modules.php.project.connections.ConfigManager;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
-import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
+import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
+import org.netbeans.modules.php.project.connections.common.RemoteUtils;
+import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
+import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
 import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
@@ -72,34 +74,28 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.Uploa
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
 import org.netbeans.modules.php.project.ui.customizer.RunAsRemoteWeb.RemoteConnectionRenderer;
 import org.netbeans.modules.php.project.ui.customizer.RunAsRemoteWeb.RemoteUploadRenderer;
-import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
-import static org.netbeans.modules.php.project.ui.customizer.RunAsRemoteWeb.NO_CONFIG;
-import static org.netbeans.modules.php.project.ui.customizer.RunAsRemoteWeb.NO_REMOTE_CONFIGURATION;
 
 /**
  * @author Tomas Mysik
  */
 public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
-    private static final long serialVersionUID = -5592669886554191271L;
+
+    private static final long serialVersionUID = 857876755153456465L;
+
     private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
 
     final ChangeSupport changeSupport = new ChangeSupport(this);
     private final JLabel[] labels;
     private final JTextField[] textFields;
     private final String[] propertyNames;
-    private final String displayName;
     private final SourcesFolderProvider sourcesFolderProvider;
 
-    public RunAsRemoteWeb(ConfigManager manager, SourcesFolderProvider sourcesFolderProvider) {
-        this(manager, sourcesFolderProvider, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_ConfigRemoteWeb"));
-    }
 
-    public RunAsRemoteWeb(ConfigManager manager, SourcesFolderProvider sourcesFolderProvider, String displayName) {
+    public RunAsRemoteWeb(ConfigManager manager, SourcesFolderProvider sourcesFolderProvider) {
         super(manager);
-        this.displayName = displayName;
         this.sourcesFolderProvider = sourcesFolderProvider;
 
         initComponents();
@@ -194,12 +190,12 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
     @Override
     protected RunAsType getRunAsType() {
-        return RunAsType.REMOTE;
+        return RunConfigRemote.getRunAsType();
     }
 
     @Override
     protected String getDisplayName() {
-        return displayName;
+        return RunConfigRemote.getDisplayName();
     }
 
     @Override
@@ -251,7 +247,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         List<RemoteConfiguration> connections = RemoteConnections.get().getRemoteConfigurations();
         if (connections.isEmpty()) {
             // no connections defined
-            connections = Arrays.asList(NO_REMOTE_CONFIGURATION);
+            connections = Arrays.asList(RunConfigRemote.NO_REMOTE_CONFIGURATION);
         }
         DefaultComboBoxModel model = new DefaultComboBoxModel(new Vector<RemoteConfiguration>(connections));
         remoteConnectionComboBox.setModel(model);
@@ -262,15 +258,15 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         // #141849 - can be null if one adds remote config for the first time for a project but already has some remote connection
         DefaultComboBoxModel model = (DefaultComboBoxModel) remoteConnectionComboBox.getModel();
         if (remoteConnection == null
-                && model.getIndexOf(NO_REMOTE_CONFIGURATION) != -1) {
-            remoteConnectionComboBox.setSelectedItem(NO_REMOTE_CONFIGURATION);
+                && model.getIndexOf(RunConfigRemote.NO_REMOTE_CONFIGURATION) != -1) {
+            remoteConnectionComboBox.setSelectedItem(RunConfigRemote.NO_REMOTE_CONFIGURATION);
             return;
         }
         int size = remoteConnectionComboBox.getModel().getSize();
         for (int i = 0; i < size; ++i) {
             RemoteConfiguration rc = (RemoteConfiguration) remoteConnectionComboBox.getItemAt(i);
             if (remoteConnection == null
-                    || NO_CONFIG.equals(remoteConnection)
+                    || RunConfigRemote.NO_CONFIG_NAME.equals(remoteConnection)
                     || remoteConnection.equals(rc.getName())) {
                 // select existing or
                 // if no configuration formerly existed and now some were created => so select the first one
@@ -279,46 +275,36 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             }
         }
         // #165549
-        if (model.getIndexOf(NO_REMOTE_CONFIGURATION) == -1) {
-            model.addElement(NO_REMOTE_CONFIGURATION);
+        if (model.getIndexOf(RunConfigRemote.NO_REMOTE_CONFIGURATION) == -1) {
+            model.addElement(RunConfigRemote.NO_REMOTE_CONFIGURATION);
         }
-        remoteConnectionComboBox.setSelectedItem(NO_REMOTE_CONFIGURATION);
+        remoteConnectionComboBox.setSelectedItem(RunConfigRemote.NO_REMOTE_CONFIGURATION);
     }
 
-    public String getUrl() {
-        return urlTextField.getText().trim();
+    public RunConfigRemote createRunConfig() {
+        return RunConfigRemote.create()
+                .setUrl(urlTextField.getText().trim())
+                .setIndexParentDir(sourcesFolderProvider.getSourcesFolder())
+                .setIndexRelativePath(indexFileTextField.getText())
+                .setRemoteConfiguration((RemoteConfiguration) remoteConnectionComboBox.getSelectedItem())
+                .setUploadDirectory(uploadDirectoryTextField.getText().trim())
+                .setUploadFilesType((UploadFiles) uploadFilesComboBox.getSelectedItem());
     }
 
     public void setUrl(String url) {
         urlTextField.setText(url);
     }
 
-    public RemoteConfiguration getRemoteConfiguration() {
-        return (RemoteConfiguration) remoteConnectionComboBox.getSelectedItem();
-    }
-
     public void setRemoteConfiguration(RemoteConfiguration remoteConfiguration) {
         remoteConnectionComboBox.setSelectedItem(remoteConfiguration);
-    }
-
-    public String getUploadDirectory() {
-        return uploadDirectoryTextField.getText().trim();
     }
 
     public void setUploadDirectory(String uploadDirectory) {
         uploadDirectoryTextField.setText(uploadDirectory);
     }
 
-    public UploadFiles getUploadFiles() {
-        return (UploadFiles) uploadFilesComboBox.getSelectedItem();
-    }
-
     public void setUploadFiles(UploadFiles uploadFiles) {
         uploadFilesComboBox.setSelectedItem(uploadFiles);
-    }
-
-    public String getIndexFile() {
-        return indexFileTextField.getText().trim();
     }
 
     public void setIndexFile(String indexFile) {
@@ -343,12 +329,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     }
 
     void updateRemoteConnectionHint() {
-        RemoteConfiguration configuration = (RemoteConfiguration) remoteConnectionComboBox.getSelectedItem();
-        if (configuration == NO_REMOTE_CONFIGURATION) {
-            remoteConnectionHintLabel.setText(" "); // NOI18N
-            return;
-        }
-        remoteConnectionHintLabel.setText(configuration.getUrl(RunAsValidator.sanitizeUploadDirectory(uploadDirectoryTextField.getText(), true)));
+        remoteConnectionHintLabel.setText(createRunConfig().getRemoteConnectionHint());
     }
 
     /** This method is called from within the constructor to
@@ -377,8 +358,6 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         indexFileTextField = new JTextField();
         indexFileBrowseButton = new JButton();
 
-        setFocusTraversalPolicy(null);
-
         runAsLabel.setLabelFor(runAsComboBox);
         Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_RunAs")); // NOI18N
 
@@ -386,8 +365,8 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         Mnemonics.setLocalizedText(urlLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_ProjectUrl")); // NOI18N
 
         remoteConnectionLabel.setLabelFor(remoteConnectionComboBox);
-        Mnemonics.setLocalizedText(remoteConnectionLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_RemoteConnection"));
-        Mnemonics.setLocalizedText(manageRemoteConnectionButton, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Manage"));
+        Mnemonics.setLocalizedText(remoteConnectionLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_RemoteConnection")); // NOI18N
+        Mnemonics.setLocalizedText(manageRemoteConnectionButton, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Manage")); // NOI18N
         manageRemoteConnectionButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 manageRemoteConnectionButtonActionPerformed(evt);
@@ -397,16 +376,16 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         uploadDirectoryLabel.setLabelFor(uploadDirectoryTextField);
 
         Mnemonics.setLocalizedText(uploadDirectoryLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_UploadDirectory")); // NOI18N
-        Mnemonics.setLocalizedText(remoteConnectionHintLabel, "dummy");
+        Mnemonics.setLocalizedText(remoteConnectionHintLabel, "dummy"); // NOI18N
 
         uploadFilesLabel.setLabelFor(uploadFilesComboBox);
 
         Mnemonics.setLocalizedText(uploadFilesLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_UploadFiles")); // NOI18N
-        Mnemonics.setLocalizedText(uploadFilesHintLabel, "dummy");
+        Mnemonics.setLocalizedText(uploadFilesHintLabel, "dummy"); // NOI18N
 
         indexFileLabel.setLabelFor(indexFileTextField);
-        Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_IndexFile"));
-        Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_BrowseIndex"));
+        Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_IndexFile")); // NOI18N
+        Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_BrowseIndex")); // NOI18N
         indexFileBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 indexFileBrowseButtonActionPerformed(evt);
@@ -430,22 +409,20 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(remoteConnectionHintLabel)
                         .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(indexFileTextField)
-                                .addPreferredGap(ComponentPlacement.RELATED)
-                                .addComponent(indexFileBrowseButton))
-                            .addComponent(urlTextField, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 116, Short.MAX_VALUE)
-                            .addComponent(uploadFilesHintLabel)
-                            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(remoteConnectionComboBox, 0, 4, Short.MAX_VALUE)
-                                .addPreferredGap(ComponentPlacement.RELATED)
-                                .addComponent(manageRemoteConnectionButton))
-                            .addComponent(uploadDirectoryTextField, GroupLayout.DEFAULT_SIZE, 116, Short.MAX_VALUE)
-                            .addComponent(uploadFilesComboBox, 0, 116, Short.MAX_VALUE)
-                            .addComponent(runAsComboBox, 0, 116, Short.MAX_VALUE))
-                        .addGap(0, 0, 0))))
+                    .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(indexFileTextField)
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(indexFileBrowseButton))
+                        .addComponent(urlTextField, Alignment.TRAILING)
+                        .addComponent(uploadFilesHintLabel)
+                        .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                            .addComponent(remoteConnectionComboBox, 0, 1, Short.MAX_VALUE)
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(manageRemoteConnectionButton))
+                        .addComponent(uploadDirectoryTextField)
+                        .addComponent(uploadFilesComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(runAsComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {indexFileBrowseButton, manageRemoteConnectionButton});
@@ -485,43 +462,9 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        runAsLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.runAsLabel.AccessibleContext.accessibleName")); // NOI18N
-        runAsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.runAsLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        runAsComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.runAsComboBox.AccessibleContext.accessibleName")); // NOI18N
-        runAsComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.runAsComboBox.AccessibleContext.accessibleDescription")); // NOI18N
-        urlLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.urlLabel.AccessibleContext.accessibleName")); // NOI18N
-        urlLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsLocalWeb.urlLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        urlTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.urlTextField.AccessibleContext.accessibleName")); // NOI18N
-        urlTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.urlTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        remoteConnectionLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.remoteConnectionLabel.AccessibleContext.accessibleName")); // NOI18N
-        remoteConnectionLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.remoteConnectionLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        remoteConnectionComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.remoteConnectionComboBox.AccessibleContext.accessibleName")); // NOI18N
-        remoteConnectionComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.remoteConnectionComboBox.AccessibleContext.accessibleDescription")); // NOI18N
-        manageRemoteConnectionButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.manageRemoteConnectionButton.AccessibleContext.accessibleName")); // NOI18N
-        manageRemoteConnectionButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.manageRemoteConnectionButton.AccessibleContext.accessibleDescription")); // NOI18N
-        uploadDirectoryLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectoryLabel.AccessibleContext.accessibleName")); // NOI18N
-        uploadDirectoryLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectoryLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        uploadDirectoryTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectoryTextField.AccessibleContext.accessibleName")); // NOI18N
-        uploadDirectoryTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectoryTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        remoteConnectionHintLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.remoteConnectionHintLabel.AccessibleContext.accessibleName")); // NOI18N
-        remoteConnectionHintLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.remoteConnectionHintLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        uploadFilesLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadFilesLabel.AccessibleContext.accessibleName")); // NOI18N
-        uploadFilesLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadFilesLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        uploadFilesComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadFilesComboBox.AccessibleContext.accessibleName")); // NOI18N
-        uploadFilesComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadFilesComboBox.AccessibleContext.accessibleDescription")); // NOI18N
-        uploadFilesHintLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadFilesHintLabel.AccessibleContext.accessibleName")); // NOI18N
-        uploadFilesHintLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadFilesHintLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        indexFileLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.indexFileLabel.AccessibleContext.accessibleName")); // NOI18N
-        indexFileLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.indexFileLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        indexFileTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.indexFileTextField.AccessibleContext.accessibleName")); // NOI18N
-        indexFileTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.indexFileTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        indexFileBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.indexFileBrowseButton.AccessibleContext.accessibleName")); // NOI18N
-        indexFileBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.indexFileBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
-
-        getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.AccessibleContext.accessibleName")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.AccessibleContext.accessibleDescription")); // NOI18N
-    }// </editor-fold>//GEN-END:initComponents
-
+        runAsLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.runAsLabel.AccessibleContext.accessibleName"));         runAsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.runAsLabel.AccessibleContext.accessibleDescription"));         runAsComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.runAsComboBox.AccessibleContext.accessibleName"));         runAsComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.runAsComboBox.AccessibleContext.accessibleDescription"));         urlLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.urlLabel.AccessibleContext.accessibleName"));         urlLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsLocalWeb.urlLabel.AccessibleContext.accessibleDescription"));         urlTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.urlTextField.AccessibleContext.accessibleName"));         urlTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.urlTextField.AccessibleContext.accessibleDescription"));         remoteConnectionLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.remoteConnectionLabel.AccessibleContext.accessibleName"));         remoteConnectionLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.remoteConnectionLabel.AccessibleContext.accessibleDescription"));         remoteConnectionComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.remoteConnectionComboBox.AccessibleContext.accessibleName"));         remoteConnectionComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.remoteConnectionComboBox.AccessibleContext.accessibleDescription"));         manageRemoteConnectionButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.manageRemoteConnectionButton.AccessibleContext.accessibleName"));         manageRemoteConnectionButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.manageRemoteConnectionButton.AccessibleContext.accessibleDescription"));         uploadDirectoryLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectoryLabel.AccessibleContext.accessibleName"));         uploadDirectoryLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectoryLabel.AccessibleContext.accessibleDescription"));         uploadDirectoryTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectoryTextField.AccessibleContext.accessibleName"));         uploadDirectoryTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectoryTextField.AccessibleContext.accessibleDescription"));         remoteConnectionHintLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.remoteConnectionHintLabel.AccessibleContext.accessibleName"));         remoteConnectionHintLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.remoteConnectionHintLabel.AccessibleContext.accessibleDescription"));         uploadFilesLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadFilesLabel.AccessibleContext.accessibleName"));         uploadFilesLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadFilesLabel.AccessibleContext.accessibleDescription"));         uploadFilesComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadFilesComboBox.AccessibleContext.accessibleName"));         uploadFilesComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadFilesComboBox.AccessibleContext.accessibleDescription"));         uploadFilesHintLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadFilesHintLabel.AccessibleContext.accessibleName"));         uploadFilesHintLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadFilesHintLabel.AccessibleContext.accessibleDescription"));         indexFileLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.indexFileLabel.AccessibleContext.accessibleName"));         indexFileLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.indexFileLabel.AccessibleContext.accessibleDescription"));         indexFileTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.indexFileTextField.AccessibleContext.accessibleName"));         indexFileTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.indexFileTextField.AccessibleContext.accessibleDescription"));         indexFileBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.indexFileBrowseButton.AccessibleContext.accessibleName"));         indexFileBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.indexFileBrowseButton.AccessibleContext.accessibleDescription")); 
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.AccessibleContext.accessibleName"));         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.AccessibleContext.accessibleDescription"));     }// NOI18N
+//GEN-END:initComponents
     private void manageRemoteConnectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageRemoteConnectionButtonActionPerformed
         if (RemoteConnections.get().openManager((RemoteConfiguration) remoteConnectionComboBox.getSelectedItem())) {
             populateRemoteConnectionComboBox();
@@ -563,7 +506,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         protected String getPropValue() {
             String value = super.getPropValue();
             if (getPropName().equals(RunConfigurationPanel.REMOTE_DIRECTORY)) {
-                value = RunAsValidator.sanitizeUploadDirectory(value, true);
+                value = RemoteUtils.sanitizeUploadDirectory(value, true);
             }
             return value;
         }

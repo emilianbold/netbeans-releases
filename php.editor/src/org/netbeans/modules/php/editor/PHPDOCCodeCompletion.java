@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,25 +34,16 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -66,55 +57,25 @@ import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPDocCommentTokenId;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.php.editor.parser.api.Utils;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
+import org.netbeans.modules.php.project.api.PhpAnnotations;
+import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
+import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author tomslot
  */
 public class PHPDOCCodeCompletion {
-    
-    private static final Logger LOGGER = Logger.getLogger(PHPDOCCodeCompletion.class.getName());
-    
-    private static final String TAG_PREFIX = "@";
-    private static final String TAGS[] = new String[]{
-        "abstract", "access", "author", "category", "copyright", "deprecated", "example", "final",
-        "filesource", "global", "ignore", "internal", "license", "link", "method", "name", "package",
-        "param", "property", "property-read", "property-write", "return", "see", "since", "static",
-        "staticvar", "subpackage", "todo", "tutorial", "uses", "var", "version"
-    };
-    private static final Map<String, String> CUSTOM_TEMPLATES = new TreeMap<String, String>();
-    private static String docURLBase;
-    private static Collection<PHPDocCommentTokenId> TYPE_TOKENS = Arrays.asList(
-            PHPDocCommentTokenId.PHPDOC_RETURN,
-            PHPDocCommentTokenId.PHPDOC_VAR,
-            PHPDocCommentTokenId.PHPDOC_PARAM,
-            PHPDocCommentTokenId.PHPDOC_METHOD,
-            PHPDocCommentTokenId.PHPDOC_GLOBAL,
-            PHPDocCommentTokenId.PHPDOC_PROPERTY,
-            PHPDocCommentTokenId.PHPDOC_PROPERTY_READ,
-            PHPDocCommentTokenId.PHPDOC_PROPERTY_WRITE,
-            PHPDocCommentTokenId.PHPDOC_LINK,
-            PHPDocCommentTokenId.PHPDOC_USES,
-            PHPDocCommentTokenId.PHPDOC_SEE);
 
-    static {
-        File file = InstalledFileLocator.getDefault().locate("docs/phpdocdesc.zip", null, true); //NoI18N
-        if (file != null) {
-            try {
-                URL urll = file.toURI().toURL();
-                urll = FileUtil.getArchiveRoot(urll);
-                docURLBase = urll.toString();
-            } catch (java.net.MalformedURLException e) {
-                LOGGER.log(Level.INFO, "Is not possible to obtain documentation for PHP Documentor.", e);
-                }
-        } else {
-            docURLBase = null;
-        }
-    }
-    
+    private static final String TAG_PREFIX = "@"; //NOI18N
+
     static boolean isTypeCtx(PHPCompletionItem.CompletionRequest request){
         //TODO: get rid of the document
         TokenHierarchy<?> th = request.info.getSnapshot().getTokenHierarchy();
@@ -127,163 +88,152 @@ public class PHPDOCCodeCompletion {
             }
             tokenSequence.move(request.anchor);
             if (tokenSequence.movePrevious()) {
-
-                if (TYPE_TOKENS.contains(tokenSequence.token().id())) {
-                    int offset = tokenSequence.offset() + tokenSequence.token().length();
-                    if (tokenSequence.moveNext()) {
-                        CharSequence text = tokenSequence.token().text();
-                        String txt = text.subSequence(0, request.anchor - offset).toString();
-                        if (txt.charAt(txt.length() - 1) == '|') {
-                            // expect that user wants to complete mixed type
-                            txt = txt.trim();
-                            for (int i = 0; i < txt.length(); i++) {
-                                if (Character.isWhitespace(txt.charAt(i))) {
-                                    return false;
-                                }
-                            }
-                            return true;
-                        }
+                int offset = tokenSequence.offset() + tokenSequence.token().length();
+                if (tokenSequence.moveNext()) {
+                    CharSequence text = tokenSequence.token().text();
+                    String txt = text.subSequence(0, request.anchor - offset).toString();
+                    if (!txt.trim().isEmpty() && txt.charAt(txt.length() - 1) == '|') { //NOI18N
+                        // expect that user wants to complete mixed type
+                        txt = txt.trim();
                         for (int i = 0; i < txt.length(); i++) {
-                            if (!Character.isWhitespace(txt.charAt(i))) {
+                            if (Character.isWhitespace(txt.charAt(i))) {
                                 return false;
                             }
                         }
+                        return true;
                     }
-                    // text between PHPDoc directive and begining of the prefix, should only contain white spaces
-                    return true;
+                    for (int i = 0; i < txt.length(); i++) {
+                        if (!Character.isWhitespace(txt.charAt(i))) {
+                            return false;
+                        }
+                    }
                 }
+                // text between PHPDoc directive and begining of the prefix, should only contain white spaces
+                return true;
             }
         }
-        
         return false;
     }
 
-    public static void complete(final PHPCompletionResult completionResult,
-            PHPCompletionItem.CompletionRequest request) {
-        
-        
-        if (!request.prefix.startsWith("@")){
+    public static void complete(final PHPCompletionResult completionResult, CompletionRequest request) {
+        String prefix = null;
+        if (request.prefix.startsWith(TAG_PREFIX)){
+            prefix = request.prefix.substring(TAG_PREFIX.length());
+        } else {
             return;
         }
-
-        String prefix = request.prefix.startsWith(TAG_PREFIX) ?
-            request.prefix.substring(1) : request.prefix;
-
-        for (String tag : TAGS){
-            if (tag.startsWith(prefix)){
-                PHPDOCCodeCompletionItem item = new PHPDOCCodeCompletionItem(request, tag);
-                completionResult.add(item);
+        List<PhpAnnotationsProvider> providers = PhpAnnotations.getDefault().getProviders(request.info.getSnapshot().getSource().getFileObject());
+        ASTNode nodeAfterOffset = Utils.getNodeAfterOffset(request.result, request.anchor);
+        int priority = 0;
+        for (PhpAnnotationsProvider annotationProvider : providers) {
+            priority++;
+            List<PhpAnnotationTag> annotations = null;
+            if (nodeAfterOffset instanceof TypeDeclaration) {
+                annotations = annotationProvider.getTypeAnnotations();
+            } else if (nodeAfterOffset instanceof MethodDeclaration) {
+                annotations = annotationProvider.getMethodAnnotations();
+            } else if (nodeAfterOffset instanceof FunctionDeclaration) {
+                annotations = annotationProvider.getFunctionAnnotations();
+            } else if (nodeAfterOffset instanceof FieldsDeclaration) {
+                annotations = annotationProvider.getFieldAnnotations();
+            } else {
+                annotations = annotationProvider.getAnnotations();
             }
-        }
-    }
-
-    public static String getDoc(String tag) {
-        if (docURLBase != null) {
-            String resPath = String.format("%s%s.desc", docURLBase, tag); //NOI18N
-
-            try{
-                URL url = new URL(resPath);
-                InputStream is = url.openStream();
-                byte buffer[] = new byte[1000];
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                int count = 0;
-                do {
-                    count = is.read(buffer);
-                    if (count > 0) baos.write(buffer, 0, count);
-                } while (count > 0);
-
-                is.close();
-                String text = baos.toString();
-                baos.close();
-                return text;
-            } catch (java.io.IOException e){
-                return null;
-            }
-        } else {
-            // Try to find the documentation file
-            File file = InstalledFileLocator.getDefault().locate("docs/phpdocdesc.zip", null, true); //NoI18N
-            if (file != null) {
-                try {
-                    URL urll = file.toURI().toURL();
-                    urll = FileUtil.getArchiveRoot(urll);
-                    docURLBase = urll.toString();
-                } catch (java.net.MalformedURLException e) {
-                    LOGGER.log(Level.INFO, "Is not possible to obtain documentation for PHP Documentor.", e);
+            for (PhpAnnotationTag tag : annotations) {
+                if (tag.getName().startsWith(prefix)) {
+                    completionResult.add(new PHPDOCCodeCompletionItem(request.anchor, tag, annotationProvider.getName(), priority));
                 }
             }
-            if (docURLBase != null) {
-                // the documentation file was found, probably installed during this session
-                return getDoc(tag);
-            } else {
-                // the documentation is not available. 
-                return NbBundle.getMessage(PHPDOCCodeCompletion.class, "MSG_DOWNLOAD_PHPDOC_DOCUMENTATION");
-            }
         }
-        
     }
 
     public static class PHPDOCCodeCompletionItem implements CompletionProposal {
-        private String tag;
-        private PHPCompletionItem.CompletionRequest request;
-        private PHPDOCTagElement elem;
+        private static final String PHP_ANNOTATION_ICON = "org/netbeans/modules/php/editor/resources/annotation.png"; //NOI18N
+        private static ImageIcon ANNOTATION_ICON = null;
+        private final PhpAnnotationTag tag;
+        private final int anchorOffset;
+        private final PHPDOCTagElement elem;
+        private final String providerName;
+        private final int priority;
 
-        public PHPDOCCodeCompletionItem(CompletionRequest request, String tag) {
+        public PHPDOCCodeCompletionItem(int anchorOffset, PhpAnnotationTag tag, String providerName, int priority) {
             this.tag = tag;
-            this.request = request;
-            elem = new PHPDOCTagElement(tag);
+            this.anchorOffset = anchorOffset;
+            this.providerName= providerName;
+            this.priority = priority;
+            elem = new PHPDOCTagElement(tag.getName(), tag.getDocumentation());
         }
 
+        @Override
         public int getAnchorOffset() {
-            return request.anchor;
+            return anchorOffset;
         }
 
+        @Override
         public ElementHandle getElement() {
             return elem;
         }
 
+        @Override
         public String getName() {
-            return TAG_PREFIX + tag; //NOI18N
+            return TAG_PREFIX + tag.getName(); //NOI18N
         }
 
+        @Override
         public String getInsertPrefix() {
-            return getName(); 
-        }
-
-        public String getSortText() {
             return getName();
         }
 
+        @Override
+        public String getSortText() {
+            return priority + providerName + getName();
+        }
+
+        @Override
         public int getSortPrioOverride() {
             return 0;
         }
 
+        @Override
         public String getLhsHtml(HtmlFormatter formatter) {
+            formatter.name(getKind(), true);
             formatter.appendText(getName());
+            formatter.name(getKind(), false);
+            tag.formatParameters(formatter);
             return formatter.getText();
         }
 
+        @Override
         public String getRhsHtml(HtmlFormatter formatter) {
-            return ""; //NOI18N
+            return providerName;
         }
 
+        @Override
         public ElementKind getKind() {
-            return ElementKind.KEYWORD;
+            return elem.getKind();
         }
 
+        @Override
         public ImageIcon getIcon() {
-            return null;
+            if (ANNOTATION_ICON == null) {
+                ANNOTATION_ICON = new ImageIcon(ImageUtilities.loadImage(PHP_ANNOTATION_ICON));
+            }
+            return ANNOTATION_ICON;
         }
 
+        @Override
         public Set<Modifier> getModifiers() {
             return Collections.<Modifier>emptySet();
         }
 
+        @Override
         public boolean isSmart() {
             return false;
         }
 
+        @Override
         public String getCustomInsertTemplate() {
-            return CUSTOM_TEMPLATES.get(tag);
+            return tag.getInsertTemplate();
         }
     }
 }

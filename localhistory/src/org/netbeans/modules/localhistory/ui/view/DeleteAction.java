@@ -65,6 +65,7 @@ public class DeleteAction extends NodeAction {
                 for(Node node : activatedNodes) {
                     StoreEntry se =  node.getLookup().lookup(StoreEntry.class);
                     LocalHistory.getInstance().getLocalHistoryStore().deleteEntry(se.getFile(), se.getTimestamp());
+                    node.getParentNode().getChildren().remove(new Node[] {node});
                 }
             }
         });

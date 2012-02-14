@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.14
+#Version 1.17
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -391,6 +391,23 @@ CLSS public abstract interface java.io.Serializable
 
 CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
 meth public abstract int compareTo({java.lang.Comparable%0})
+
+CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
+cons protected init(java.lang.String,int)
+intf java.io.Serializable
+intf java.lang.Comparable<{java.lang.Enum%0}>
+meth protected final java.lang.Object clone() throws java.lang.CloneNotSupportedException
+meth protected final void finalize()
+meth public final boolean equals(java.lang.Object)
+meth public final int compareTo({java.lang.Enum%0})
+meth public final int hashCode()
+meth public final int ordinal()
+meth public final java.lang.Class<{java.lang.Enum%0}> getDeclaringClass()
+meth public final java.lang.String name()
+meth public java.lang.String toString()
+meth public static <%0 extends java.lang.Enum<{%%0}>> {%%0} valueOf(java.lang.Class<{%%0}>,java.lang.String)
+supr java.lang.Object
+hfds name,ordinal
 
 CLSS public java.lang.Object
 cons public init()
@@ -1091,10 +1108,12 @@ cons public init(javax.swing.table.TableModel,javax.swing.table.TableColumnModel
 fld protected int[] inverseSortingPermutation
 fld protected int[] sortingPermutation
 fld public final static java.lang.String PROP_QUICK_FILTER = "quickFilter"
+innr public final static !enum ColumnSelection
 innr public final static RowMapping
 meth protected boolean acceptByQuickFilter(javax.swing.table.TableModel,int)
 meth protected boolean processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
 meth protected javax.swing.ListSelectionModel createDefaultSelectionModel()
+meth protected javax.swing.table.JTableHeader createDefaultTableHeader()
 meth protected javax.swing.table.TableColumn createColumn(int)
 meth protected javax.swing.table.TableColumnModel createDefaultColumnModel()
 meth protected void configureEnclosingScrollPane()
@@ -1106,6 +1125,7 @@ meth public boolean isColumnHidingAllowed()
 meth public boolean isFullyEditable()
 meth public boolean isFullyNonEditable()
 meth public boolean isPopupUsedFromTheCorner()
+meth public final void showColumnSelectionDialog()
 meth public int convertRowIndexToModel(int)
 meth public int convertRowIndexToView(int)
 meth public int getQuickFilterColumn()
@@ -1122,6 +1142,8 @@ meth public javax.swing.JMenuItem getQuickFilterCompareItem(int,java.lang.Object
 meth public javax.swing.JMenuItem getQuickFilterEqualsItem(int,java.lang.Object,java.lang.String,java.lang.String,boolean)
 meth public javax.swing.JMenuItem getQuickFilterNoFilterItem(java.lang.String)
 meth public javax.swing.JMenuItem getQuickFilterPopup(int,java.lang.Object,java.lang.String)
+meth public javax.swing.RowSorter<? extends javax.swing.table.TableModel> getRowSorter()
+meth public org.netbeans.swing.etable.ETable$ColumnSelection getColumnSelectionOn(int)
 meth public org.netbeans.swing.etable.TableColumnSelector getColumnSelector()
 meth public static org.netbeans.swing.etable.TableColumnSelector getDefaultColumnSelector()
 meth public static void setDefaultColumnSelector(org.netbeans.swing.etable.TableColumnSelector)
@@ -1130,8 +1152,10 @@ meth public void displaySearchField()
 meth public void doLayout()
 meth public void readSettings(java.util.Properties,java.lang.String)
 meth public void removeEditor()
+meth public void setAutoCreateRowSorter(boolean)
 meth public void setCellBackground(java.awt.Component,boolean,int,int)
 meth public void setColumnHidingAllowed(boolean)
+meth public void setColumnSelectionOn(int,org.netbeans.swing.etable.ETable$ColumnSelection)
 meth public void setColumnSelector(org.netbeans.swing.etable.TableColumnSelector)
 meth public void setColumnSorted(int,boolean,int)
 meth public void setFullyEditable(boolean)
@@ -1140,14 +1164,24 @@ meth public void setModel(javax.swing.table.TableModel)
 meth public void setPopupUsedFromTheCorner(boolean)
 meth public void setQuickFilter(int,java.lang.Object)
 meth public void setQuickFilterFormatStrings(java.lang.String[])
+meth public void setRowSorter(javax.swing.RowSorter<? extends javax.swing.table.TableModel>)
 meth public void setSelectVisibleColumnsLabel(java.lang.String)
 meth public void setValueAt(java.lang.Object,int,int)
 meth public void tableChanged(javax.swing.event.TableModelEvent)
 meth public void unsetQuickFilter()
 meth public void writeSettings(java.util.Properties,java.lang.String)
 supr javax.swing.JTable
-hfds ACTION_FOCUS_NEXT,COMPUTING_TOOLTIP,DEFAULT,DEFAULT_COLUMNS_ICON,FULLY_EDITABLE,FULLY_NONEDITABLE,SEARCH_COLUMN,SEARCH_FIELD_PREFERRED_SIZE,SEARCH_FIELD_SPACE,columnHidingAllowed,columnSelectionMouseListener,columnSelector,defaultColumnSelector,editing,filteredRowCount,headerMouseListener,heightOfTextField,inEditRequest,inRemoveRequest,maxPrefix,popupUsedFromTheCorner,quickFilterColumn,quickFilterFormatStrings,quickFilterObject,searchColumn,searchCombo,searchPanel,searchTextField,selectVisibleColumnsLabel
+hfds ACTION_FOCUS_NEXT,COMPUTING_TOOLTIP,DEFAULT,DEFAULT_COLUMNS_ICON,FULLY_EDITABLE,FULLY_NONEDITABLE,SEARCH_COLUMN,SEARCH_FIELD_PREFERRED_SIZE,SEARCH_FIELD_SPACE,columnHidingAllowed,columnSelectionMouseListener,columnSelectionOnMouseClick,columnSelectionOnMouseClickLock,columnSelector,defaultColumnSelector,editing,filteredRowCount,headerMouseListener,heightOfTextField,inEditRequest,inRemoveRequest,maxPrefix,quickFilterColumn,quickFilterFormatStrings,quickFilterObject,searchColumn,searchCombo,searchPanel,searchTextField,selectVisibleColumnsLabel,sortable
 hcls CTRLTabAction,CancelEditAction,ColumnSelectionMouseListener,CompareQuickFilter,EditAction,EnterAction,EqualsQuickFilter,HeaderMouseListener,NavigationAction,OriginalRowComparator,STPolicy,SearchComboListener,SearchFieldListener,SearchTextField,SelectedRows
+
+CLSS public final static !enum org.netbeans.swing.etable.ETable$ColumnSelection
+ outer org.netbeans.swing.etable.ETable
+fld public final static org.netbeans.swing.etable.ETable$ColumnSelection DIALOG
+fld public final static org.netbeans.swing.etable.ETable$ColumnSelection NO_SELECTION
+fld public final static org.netbeans.swing.etable.ETable$ColumnSelection POPUP
+meth public static org.netbeans.swing.etable.ETable$ColumnSelection valueOf(java.lang.String)
+meth public static org.netbeans.swing.etable.ETable$ColumnSelection[] values()
+supr java.lang.Enum<org.netbeans.swing.etable.ETable$ColumnSelection>
 
 CLSS public final static org.netbeans.swing.etable.ETable$RowMapping
  outer org.netbeans.swing.etable.ETable
@@ -1173,7 +1207,6 @@ meth public boolean isSortingAllowed()
 meth public int compareTo(org.netbeans.swing.etable.ETableColumn)
 meth public int getSortRank()
 meth public java.util.Comparator getNestedComparator()
-meth public javax.swing.table.TableCellRenderer getHeaderRenderer()
 meth public void readSettings(java.util.Properties,int,java.lang.String)
 meth public void setAscending(boolean)
 meth public void setCustomIcon(javax.swing.Icon)
@@ -1184,8 +1217,8 @@ meth public void setSorted(int,boolean)
  anno 0 java.lang.Deprecated()
 meth public void writeSettings(java.util.Properties,int,java.lang.String)
 supr javax.swing.table.TableColumn
-hfds PROP_ASCENDING,PROP_COMPARATOR,PROP_HEADER_VALUE,PROP_MODEL_INDEX,PROP_PREFERRED_WIDTH,PROP_PREFIX,PROP_SORT_RANK,PROP_WIDTH,ascending,comparator,customIcon,headerRendererSetExternally,myHeaderRenderer,nestedComparator,sortRank,table
-hcls ETableHeaderRenderer,FlippingComparator,SortDownIcon,SortUpIcon
+hfds PROP_ASCENDING,PROP_COMPARATOR,PROP_HEADER_VALUE,PROP_MODEL_INDEX,PROP_PREFERRED_WIDTH,PROP_PREFIX,PROP_SORT_RANK,PROP_WIDTH,ascending,comparator,customIcon,myHeaderRenderer,nestedComparator,sortRank,table
+hcls ETableColumnHeaderRendererDelegate,FlippingComparator
 
 CLSS public org.netbeans.swing.etable.ETableColumn$RowComparator
  outer org.netbeans.swing.etable.ETableColumn
@@ -1211,7 +1244,7 @@ meth public void setColumnHierarchyRoot(org.netbeans.swing.etable.TableColumnSel
 meth public void setColumnSorted(org.netbeans.swing.etable.ETableColumn,boolean,int)
 meth public void writeSettings(java.util.Properties,java.lang.String)
 supr javax.swing.table.DefaultTableColumnModel
-hfds NUMBER_OF_COLUMNS,NUMBER_OF_HIDDEN_COLUMNS,PROP_HIDDEN_PREFIX,columnHierarchyRoot
+hfds NUMBER_OF_COLUMNS,NUMBER_OF_HIDDEN_COLUMNS,PROP_HIDDEN_POSITION_PREFIX,PROP_HIDDEN_PREFIX,columnHierarchyRoot,hiddenColumnsPosition
 hcls CompoundComparator
 
 CLSS public org.netbeans.swing.etable.ETableTransferHandler
@@ -1264,8 +1297,8 @@ meth public final void setBorder(javax.swing.border.Border)
 meth public java.awt.Component getTableCellRendererComponent(javax.swing.JTable,java.lang.Object,boolean,boolean,int,int)
 meth public java.lang.String getToolTipText()
 supr javax.swing.table.DefaultTableCellRenderer
-hfds checkBox,expanded,expansionBorder,expansionHandleHeight,expansionHandleWidth,fakeCellRendererPane,htmlRenderer,lastRenderedValueRef,lastRendererRef,leaf,nestingDepth,showHandle,swingRendering,theCheckBox
-hcls ExpansionHandleBorder
+hfds checkBox,expanded,expansionBorder,expansionHandleHeight,expansionHandleWidth,fakeCellRendererPane,htmlRenderer,htmlRendererClass,lastRenderedValueRef,lastRendererRef,leaf,nestingDepth,showHandle,swingRendering,theCheckBox
+hcls ExpansionHandleBorder,HtmlRenderer
 
 CLSS public org.netbeans.swing.outline.DefaultOutlineModel
 cons protected init(javax.swing.tree.TreeModel,javax.swing.table.TableModel,boolean,java.lang.String)
@@ -1311,6 +1344,7 @@ innr protected OutlineColumn
 meth protected javax.swing.table.TableColumn createColumn(int)
 meth protected void configureTreeCellEditor(java.awt.Component,int,int)
 meth protected void processMouseEvent(java.awt.event.MouseEvent)
+meth protected void sortAndFilter()
 meth public boolean editCellAt(int,int,java.util.EventObject)
 meth public boolean isExpanded(javax.swing.tree.TreePath)
 meth public boolean isRootVisible()
@@ -1334,7 +1368,7 @@ meth public void setRowHeight(int)
 meth public void setRowHeight(int,int)
 meth public void tableChanged(javax.swing.event.TableModelEvent)
 supr org.netbeans.swing.etable.ETable
-hfds cachedRootVisible,componentListener,initialized,lastEditPosition,renderDataProvider,rowHeightIsSet,selectedRow,selectionDisabled,toolTip
+hfds cachedRootVisible,componentListener,initialized,lastEditPosition,renderDataProvider,rowHeightIsSet,selectedRow,selectionDisabled,tempSortMap,tempSortMapLock,toolTip
 hcls ExpandAction,ND,SizeManager,TreeCellEditorBorder
 
 CLSS protected org.netbeans.swing.outline.Outline$OutlineColumn

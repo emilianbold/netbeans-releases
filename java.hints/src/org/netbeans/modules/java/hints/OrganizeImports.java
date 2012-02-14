@@ -57,6 +57,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
@@ -114,6 +115,13 @@ public class OrganizeImports {
         List<? extends Difference> diffs = result != null ? result.getDifferences(source.getFileObject()) : null;
         if (diffs != null && !diffs.isEmpty()) {
             Fix fix = JavaFix.toEditorFix(new OrganizeImportsFix(context.getInfo(), context.getPath()));
+            SourcePositions sp = context.getInfo().getTrees().getSourcePositions();
+            int offset = diffs.get(0).getStartPosition().getOffset();
+            CompilationUnitTree cu = context.getInfo().getCompilationUnit();
+            for (ImportTree imp : cu.getImports()) {
+                if (sp.getStartPosition(cu, imp) >= offset)
+                    return ErrorDescriptionFactory.forTree(context, imp, NbBundle.getMessage(OrganizeImports.class, "MSG_OragnizeImports"), fix); //NOI18N
+            }
             return ErrorDescriptionFactory.forTree(context, context.getInfo().getCompilationUnit().getImports().get(0), NbBundle.getMessage(OrganizeImports.class, "MSG_OragnizeImports"), fix); //NOI18N
         }
         return null;

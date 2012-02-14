@@ -51,6 +51,8 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
+import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
+import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionLayers;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 
 
@@ -129,7 +131,7 @@ public final class EvalAnnotation extends Annotation {
             
             // 6630840
             String expr = getSelectedExpr(ep, offset);
-            if (expr == null) {
+            if (expr == null && DebuggerOption.BALLOON_EVAL.isEnabled(DebuggerManager.get().globalOptions())) {
                 Element lineElem =
                     NbDocument.findLineRootElement(doc).
                     getElement(line.getLineNumber());
@@ -151,12 +153,7 @@ public final class EvalAnnotation extends Annotation {
                         TokenItem<TokenId> token = CndTokenUtilities.getToken(doc, offset, true);
                         if (token != null) {
                             String category = token.id().primaryCategory();
-                            if (CppTokenId.WHITESPACE_CATEGORY.equals(category) ||
-                                    CppTokenId.COMMENT_CATEGORY.equals(category) ||
-                                    CppTokenId.SEPARATOR_CATEGORY.equals(category) ||
-                                    CppTokenId.STRING_CATEGORY.equals(category) ||
-                                    CppTokenId.NUMBER_CATEGORY.equals(category) ||
-                                    CppTokenId.OPERATOR_CATEGORY.equals(category)) {
+                            if (!CppTokenId.IDENTIFIER_CATEGORY.equals(category)) {
                                 skip.set(true);
                             }
                         }

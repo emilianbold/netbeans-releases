@@ -232,7 +232,7 @@ public final class FileChooserBuilder {
 
         @Override
         public void setCurrentDirectory(File dir) {
-            if (!(dir instanceof FileObjectBasedFile) && env != null) {
+            if (dir != null && !(dir instanceof FileObjectBasedFile) && env != null) {
                 String path = dir.getPath().replace('\\', FileSystemProvider.getFileSeparatorChar(env)); //NOI18N
                 FileObject fo = FileSystemProvider.getFileObject(env, path);
                 if (fo != null) {

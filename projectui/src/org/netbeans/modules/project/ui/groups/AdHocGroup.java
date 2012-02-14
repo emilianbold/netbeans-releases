@@ -57,7 +57,6 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.openide.filesystems.FileStateInvalidException;
 
 /**
  * Arbitrary collection of projects, with an optional main project.
@@ -117,11 +116,7 @@ public class AdHocGroup extends Group {
     public void setProjects(Set<Project> projects) {
         Set<String> projectPaths = new TreeSet<String>();
         for (Project prj : projects) {
-            try {
-                projectPaths.add(prj.getProjectDirectory().getURL().toExternalForm());
-            } catch (FileStateInvalidException x) {
-                LOG.log(Level.WARNING, null, x);
-            }
+            projectPaths.add(prj.getProjectDirectory().toURL().toExternalForm());
         }
         prefs().put(KEY_PATH, joinPaths(projectPaths));
         LOG.log(Level.FINE, "updating projects for {0} to {1}", new Object[] {id, projects});

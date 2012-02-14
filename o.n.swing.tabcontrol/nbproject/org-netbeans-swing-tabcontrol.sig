@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.25
+#Version 1.29
 
 CLSS public abstract java.awt.AWTEvent
 cons public init(java.awt.Event)
@@ -1562,11 +1562,12 @@ meth public java.awt.Color getSelectionForeground()
 meth public java.awt.Component prepareRenderer(javax.swing.table.TableCellRenderer,int,int)
 meth public java.awt.Dimension getPreferredSize()
 meth public org.netbeans.swing.popupswitcher.SwitcherTableItem getSelectedItem()
+meth public void changeSelection(int,int,boolean,boolean)
 meth public void paint(java.awt.Graphics)
 meth public void setFont(java.awt.Font)
 meth public void updateUI()
 supr javax.swing.JTable
-hfds TABNAMES_HTML,background,ctx,foreground,needCalcRowHeight,nullIcon,prefSize,rendererBorder,selBackground,selForeground
+hfds TABNAMES_HTML,background,ctx,foreground,needCalcRowHeight,nullIcon,prefSize,rendererBorder,selBackground,selForeground,showIcons
 hcls NullIcon
 
 CLSS public org.netbeans.swing.popupswitcher.SwitcherTableItem
@@ -1643,6 +1644,7 @@ meth public abstract java.lang.Object getOrientation(java.awt.Component)
 
 CLSS public abstract interface org.netbeans.swing.tabcontrol.SlideBarDataModel
 fld public final static int EAST = 1
+fld public final static int NORTH = 4
 fld public final static int SOUTH = 3
 fld public final static int WEST = 2
 innr public static Impl
@@ -1748,10 +1750,13 @@ fld public final static java.lang.Object ORIENTATION_WEST
 fld public final static java.lang.String COMMAND_CLOSE = "close"
 fld public final static java.lang.String COMMAND_CLOSE_ALL = "closeAll"
 fld public final static java.lang.String COMMAND_CLOSE_ALL_BUT_THIS = "closeAllButThis"
+fld public final static java.lang.String COMMAND_CLOSE_GROUP = "closeGroup"
 fld public final static java.lang.String COMMAND_DISABLE_AUTO_HIDE = "disableAutoHide"
 fld public final static java.lang.String COMMAND_ENABLE_AUTO_HIDE = "enableAutoHide"
 fld public final static java.lang.String COMMAND_MAXIMIZE = "maximize"
+fld public final static java.lang.String COMMAND_MINIMIZE_GROUP = "minimizeGroup"
 fld public final static java.lang.String COMMAND_POPUP_REQUEST = "popup"
+fld public final static java.lang.String COMMAND_RESTORE_GROUP = "restoreGroup"
 fld public final static java.lang.String COMMAND_SELECT = "select"
 fld public final static java.lang.String EDITOR_TAB_DISPLAYER_UI_CLASS_ID = "EditorTabDisplayerUI"
 fld public final static java.lang.String PROP_ACTIVE = "active"
@@ -1825,6 +1830,7 @@ meth protected abstract javax.swing.SingleSelectionModel createSelectionModel()
 meth protected abstract void cancelRequestAttention(int)
 meth protected abstract void requestAttention(int)
 meth protected final boolean shouldPerformAction(java.lang.String,int,java.awt.event.MouseEvent)
+meth protected final boolean shouldPerformAction(org.netbeans.swing.tabcontrol.event.TabActionEvent)
 meth protected java.awt.Font getTxtFont()
 meth public abstract int dropIndexOfPoint(java.awt.Point)
 meth public abstract int tabForCoordinate(java.awt.Point)
@@ -1870,10 +1876,13 @@ fld public final static int TYPE_VIEW = 0
 fld public final static java.lang.String COMMAND_CLOSE = "close"
 fld public final static java.lang.String COMMAND_CLOSE_ALL = "closeAll"
 fld public final static java.lang.String COMMAND_CLOSE_ALL_BUT_THIS = "closeAllButThis"
+fld public final static java.lang.String COMMAND_CLOSE_GROUP = "closeGroup"
 fld public final static java.lang.String COMMAND_DISABLE_AUTO_HIDE = "disableAutoHide"
 fld public final static java.lang.String COMMAND_ENABLE_AUTO_HIDE = "enableAutoHide"
 fld public final static java.lang.String COMMAND_MAXIMIZE = "maximize"
+fld public final static java.lang.String COMMAND_MINIMIZE_GROUP = "minimizeGroup"
 fld public final static java.lang.String COMMAND_POPUP_REQUEST = "popup"
+fld public final static java.lang.String COMMAND_RESTORE_GROUP = "restoreGroup"
 fld public final static java.lang.String COMMAND_SELECT = "select"
 fld public final static java.lang.String COMMAND_TOGGLE_TRANSPARENCY = "toggleTransparency"
 fld public final static java.lang.String PROP_ACTIVE = "active"
@@ -1956,6 +1965,8 @@ meth public abstract java.lang.Object getOrientation(java.awt.Component)
 CLSS public abstract org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer
 cons public init()
 intf org.netbeans.swing.tabcontrol.WinsysInfoForTabbed
+meth public boolean isModeSlidingEnabled()
+meth public boolean isSlidedOutContainer()
 meth public boolean isTopComponentClosingEnabled()
 meth public boolean isTopComponentClosingEnabled(org.openide.windows.TopComponent)
 meth public boolean isTopComponentMaximizationEnabled()
@@ -2008,11 +2019,13 @@ cons public init(java.lang.Object,java.lang.String,int,java.awt.event.MouseEvent
 meth public boolean isConsumed()
 meth public int getTabIndex()
 meth public java.awt.event.MouseEvent getMouseEvent()
+meth public java.lang.String getGroupName()
 meth public java.lang.String toString()
 meth public void consume()
+meth public void setGroupName(java.lang.String)
 meth public void setSource(java.lang.Object)
 supr java.awt.event.ActionEvent
-hfds mouseEvent,tabIndex
+hfds groupName,mouseEvent,tabIndex
 
 CLSS public final org.netbeans.swing.tabcontrol.event.VeryComplexListDataEvent
 cons public init(java.lang.Object,org.netbeans.swing.tabcontrol.TabData[],org.netbeans.swing.tabcontrol.TabData[])
@@ -2155,8 +2168,10 @@ meth protected int createRepaintPolicy()
 meth protected java.awt.Component getControlButtons()
 meth protected java.awt.Font getTxtFont()
 meth protected org.netbeans.swing.tabcontrol.plaf.AbstractViewTabDisplayerUI$Controller createController()
+meth protected org.netbeans.swing.tabcontrol.plaf.TabLayoutModel createLayoutModel()
 meth protected void cancelRequestAttention(int)
 meth protected void installControlButtons()
+meth protected void paintDisplayerBackground(java.awt.Graphics,javax.swing.JComponent)
 meth protected void requestAttention(int)
 meth public final org.netbeans.swing.tabcontrol.plaf.TabLayoutModel getLayoutModel()
 meth public int dropIndexOfPoint(java.awt.Point)
@@ -2173,8 +2188,8 @@ meth public void registerShortcuts(javax.swing.JComponent)
 meth public void uninstallUI(javax.swing.JComponent)
 meth public void unregisterShortcuts(javax.swing.JComponent)
 supr org.netbeans.swing.tabcontrol.TabDisplayerUI
-hfds ICON_X_PAD,PIN_ACTION,TRANSPARENCY_ACTION,btnAutoHidePin,btnClose,controlButtons,dataModel,fm,layoutModel,pinAction,txtFont
-hcls PinAction,ViewTabState
+hfds ICON_X_PAD,PIN_ACTION,TRANSPARENCY_ACTION,btnAutoHidePin,btnClose,btnMinimizeMode,controlButtons,dataModel,fm,layoutModel,pinAction,txtFont
+hcls PinAction,PinButtonLayout,ViewTabState
 
 CLSS protected org.netbeans.swing.tabcontrol.plaf.AbstractViewTabDisplayerUI$Controller
  outer org.netbeans.swing.tabcontrol.plaf.AbstractViewTabDisplayerUI
@@ -2244,12 +2259,12 @@ meth protected final int getFirstVisibleTab()
 meth protected final int getLastVisibleTab()
 meth protected final int getTabsAreaWidth()
 meth protected final org.netbeans.swing.tabcontrol.plaf.ScrollingTabLayoutModel scroll()
-meth protected final org.netbeans.swing.tabcontrol.plaf.TabLayoutModel createLayoutModel()
 meth protected java.awt.Component getControlButtons()
 meth protected java.awt.LayoutManager createLayout()
 meth protected java.awt.Rectangle getControlButtonsRectangle(java.awt.Container)
 meth protected java.awt.event.ComponentListener createComponentListener()
 meth protected java.awt.event.HierarchyListener createHierarchyListener()
+meth protected org.netbeans.swing.tabcontrol.plaf.TabLayoutModel createLayoutModel()
 meth protected org.netbeans.swing.tabcontrol.plaf.TabState createTabState()
 meth protected void install()
 meth protected void installControlButtons()
@@ -2697,6 +2712,7 @@ hfds INSTANCE,defaults_initialized
 
 CLSS public final org.netbeans.swing.tabcontrol.plaf.NimbusViewTabDisplayerUI
 meth protected java.awt.Font getTxtFont()
+meth protected void paintDisplayerBackground(java.awt.Graphics,javax.swing.JComponent)
 meth protected void paintOverallBorder(java.awt.Graphics,javax.swing.JComponent)
 meth protected void paintTabBackground(java.awt.Graphics,int,int,int,int,int)
 meth protected void paintTabBorder(java.awt.Graphics,int,int,int,int,int)
@@ -2780,9 +2796,11 @@ fld public final static int ID_DROP_DOWN_BUTTON = 8
 fld public final static int ID_MAXIMIZE_BUTTON = 3
 fld public final static int ID_PIN_BUTTON = 2
 fld public final static int ID_RESTORE_BUTTON = 4
+fld public final static int ID_RESTORE_GROUP_BUTTON = 11
 fld public final static int ID_SCROLL_LEFT_BUTTON = 9
 fld public final static int ID_SCROLL_RIGHT_BUTTON = 10
 fld public final static int ID_SLIDE_DOWN_BUTTON = 7
+fld public final static int ID_SLIDE_GROUP_BUTTON = 12
 fld public final static int ID_SLIDE_LEFT_BUTTON = 5
 fld public final static int ID_SLIDE_RIGHT_BUTTON = 6
 fld public final static int STATE_DEFAULT = 0
@@ -2808,14 +2826,16 @@ hfds buttonId,displayer,showBorder,superConstructorsCompleted
 CLSS public org.netbeans.swing.tabcontrol.plaf.TabControlButtonFactory
 meth public static javax.swing.Icon getIcon(java.lang.String)
 meth public static org.netbeans.swing.tabcontrol.plaf.TabControlButton createCloseButton(org.netbeans.swing.tabcontrol.TabDisplayer)
+meth public static org.netbeans.swing.tabcontrol.plaf.TabControlButton createCloseGroupButton(org.netbeans.swing.tabcontrol.TabDisplayer)
 meth public static org.netbeans.swing.tabcontrol.plaf.TabControlButton createDropDownButton(org.netbeans.swing.tabcontrol.TabDisplayer,boolean)
 meth public static org.netbeans.swing.tabcontrol.plaf.TabControlButton createMaximizeRestoreButton(org.netbeans.swing.tabcontrol.TabDisplayer,boolean)
+meth public static org.netbeans.swing.tabcontrol.plaf.TabControlButton createRestoreGroupButton(org.netbeans.swing.tabcontrol.TabDisplayer,java.lang.String)
 meth public static org.netbeans.swing.tabcontrol.plaf.TabControlButton createScrollLeftButton(org.netbeans.swing.tabcontrol.TabDisplayer,javax.swing.Action,boolean)
 meth public static org.netbeans.swing.tabcontrol.plaf.TabControlButton createScrollRightButton(org.netbeans.swing.tabcontrol.TabDisplayer,javax.swing.Action,boolean)
+meth public static org.netbeans.swing.tabcontrol.plaf.TabControlButton createSlideGroupButton(org.netbeans.swing.tabcontrol.TabDisplayer)
 meth public static org.netbeans.swing.tabcontrol.plaf.TabControlButton createSlidePinButton(org.netbeans.swing.tabcontrol.TabDisplayer)
 supr java.lang.Object
-hfds iconCache
-hcls CloseButton,DropDownButton,IconLoader,MaximizeRestoreButton,SlidePinButton,TimerButton
+hcls CloseButton,CloseGroupButton,DropDownButton,MaximizeRestoreButton,RestoreGroupButton,SlideGroupButton,SlidePinButton,TimerButton
 
 CLSS public abstract interface org.netbeans.swing.tabcontrol.plaf.TabLayoutModel
 meth public abstract int dropIndexOfPoint(int,int)
@@ -3015,6 +3035,7 @@ hfds INSTANCE,defaults_initialized
 CLSS public final org.netbeans.swing.tabcontrol.plaf.WinXPViewTabDisplayerUI
 meth protected java.awt.Font getTxtFont()
 meth protected org.netbeans.swing.tabcontrol.plaf.AbstractViewTabDisplayerUI$Controller createController()
+meth protected void paintDisplayerBackground(java.awt.Graphics,javax.swing.JComponent)
 meth protected void paintTabBackground(java.awt.Graphics,int,int,int,int,int)
 meth protected void paintTabBorder(java.awt.Graphics,int,int,int,int,int)
 meth protected void paintTabContent(java.awt.Graphics,int,java.lang.String,int,int,int,int)

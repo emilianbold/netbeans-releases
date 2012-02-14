@@ -6,7 +6,6 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-
 package org.netbeans.test.subversion.main.checkout;
 
 import java.io.File;
@@ -34,24 +33,26 @@ import org.netbeans.test.subversion.utils.TestKit;
  * @author pvcs
  */
 public class CreateProjectVersionedDirTest extends JellyTestCase {
-    
+
     public static final String TMP_PATH = "/tmp";
     public static final String REPO_PATH = "repo";
     public static final String WORK_PATH = "work";
     public static final String PROJECT_NAME = "JavaApp";
     public File projectPath;
-    Operator.DefaultStringComparator comOperator; 
+    Operator.DefaultStringComparator comOperator;
     Operator.DefaultStringComparator oldOperator;
     static Logger log;
-    
-    /** Creates a new instance of CreateProjectVersionedDirTest */
+
+    /**
+     * Creates a new instance of CreateProjectVersionedDirTest
+     */
     public CreateProjectVersionedDirTest(String name) {
         super(name);
     }
-    
+
     @Override
-    protected void setUp() throws Exception {        
-        System.out.println("### "+getName()+" ###");
+    protected void setUp() throws Exception {
+        System.out.println("### " + getName() + " ###");
         if (log == null) {
             log = Logger.getLogger(TestKit.LOGGER_NAME);
             log.setLevel(Level.ALL);
@@ -59,70 +60,66 @@ public class CreateProjectVersionedDirTest extends JellyTestCase {
         } else {
             TestKit.removeHandlers(log);
         }
-        
+
     }
-    
+
     public static Test suite() {
-         return NbModuleSuite.create(
-                 NbModuleSuite.createConfiguration(CreateProjectVersionedDirTest.class).addTest(
-                    "testCreateNewProject"
-                 )
-                 .enableModules(".*")
-                 .clusters(".*")
-        );
-     }
-    
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(CreateProjectVersionedDirTest.class).addTest(
+                "testCreateNewProject").enableModules(".*").clusters(".*"));
+    }
+
     public void testCreateNewProject() throws Exception {
-        try {
-            MessageHandler mh = new MessageHandler("Checking out");
-            log.addHandler(mh);
-            TestKit.closeProject(PROJECT_NAME);
-            if (TestKit.getOsName().indexOf("Mac") > -1)
-                new NewProjectWizardOperator().invoke().close();
-            
-            comOperator = new Operator.DefaultStringComparator(true, true);
-            oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
-            Operator.setDefaultStringComparator(comOperator);
-            CheckoutWizardOperator.invoke();
-            Operator.setDefaultStringComparator(oldOperator);
-            RepositoryStepOperator rso = new RepositoryStepOperator();
-            
-            //create repository...
-            File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
-            new File(TMP_PATH).mkdirs();
-            work.mkdirs();
-            RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-            RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
-            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
-            rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
-            
-            rso.next();
-            WorkDirStepOperator wdso = new WorkDirStepOperator();
-            wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
-            wdso.setLocalFolder(work.getCanonicalPath());
-            wdso.checkCheckoutContentOnly(false);
-            wdso.finish();
-            //open project
-            TestKit.waitText(mh);
-            
-            NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
-            JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
-            open.push();
-            TestKit.waitForScanFinishedSimple();
-            
-            NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-            npwo.selectCategory("Java");
-            npwo.selectProject("Java Application");
-            npwo.next();
-            NewJavaProjectNameLocationStepOperator npnlso = new NewJavaProjectNameLocationStepOperator();
-            new JTextFieldOperator(npnlso, 1).setText(work.getAbsolutePath() + File.separator + PROJECT_NAME + File.separator+ "src"); // NOI18N
-            new JTextFieldOperator(npnlso, 0).setText(PROJECT_NAME); // NOI18N
-            new NewProjectWizardOperator().finish();
-            TestKit.waitForScanFinishedSimple();
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
-        } finally {
-            TestKit.closeProject(PROJECT_NAME);
-        }    
+
+        MessageHandler mh = new MessageHandler("Checking out");
+        log.addHandler(mh);
+        TestKit.closeProject(PROJECT_NAME);
+        if (TestKit.getOsName().indexOf("Mac") > -1) {
+            new NewProjectWizardOperator().invoke().close();
+        }
+
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
+        CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
+        RepositoryStepOperator rso = new RepositoryStepOperator();
+
+        //create repository...
+        File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
+        new File(TMP_PATH).mkdirs();
+        work.mkdirs();
+        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
+        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
+        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
+        rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
+
+        rso.next();
+        WorkDirStepOperator wdso = new WorkDirStepOperator();
+        wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
+        wdso.setLocalFolder(work.getCanonicalPath());
+        wdso.checkCheckoutContentOnly(false);
+        wdso.finish();
+        //open project
+        TestKit.waitText(mh);
+
+        NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
+        JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
+        open.push();
+        TestKit.waitForScanFinishedSimple();
+
+        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+        npwo.selectCategory("Java");
+        npwo.selectProject("Java Application");
+        npwo.next();
+        NewJavaProjectNameLocationStepOperator npnlso = new NewJavaProjectNameLocationStepOperator();
+        new JTextFieldOperator(npnlso, 1).setText(work.getAbsolutePath() + File.separator + PROJECT_NAME+"2" + File.separator + "src"); // NOI18N
+        new JTextFieldOperator(npnlso, 0).setText(PROJECT_NAME+"2"); // NOI18N
+        new NewProjectWizardOperator().finish();
+        TestKit.waitForScanFinishedSimple();
+
+        TestKit.closeProject(PROJECT_NAME);
+        TestKit.closeProject(PROJECT_NAME+"2");
+
     }
 }

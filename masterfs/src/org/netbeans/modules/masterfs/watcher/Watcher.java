@@ -245,7 +245,7 @@ public final class Watcher extends AnnotationProvider {
         }
         
         final void unregister(FileObject fo) {
-            assert fo.isFolder() : "Should be a folder: " + fo;
+            assert !fo.isValid() || fo.isFolder() : "If valid, it should be a folder: " + fo;
             synchronized (LOCK) {
                 final NotifierKeyRef[] equalOne = new NotifierKeyRef[1];
                 NotifierKeyRef<KEY> kr = new NotifierKeyRef<KEY>(fo, null, null, impl) {

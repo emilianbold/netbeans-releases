@@ -66,6 +66,7 @@ import java.lang.ref.WeakReference;
 import java.lang.ref.Reference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.queries.SharabilityQuery.Sharability;
 import org.netbeans.modules.versioning.core.APIAccessor;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
@@ -317,9 +318,11 @@ public final class VCSContext {
                         LOG.log(Level.WARNING, "addProjectFiles: source root {0} changed from valid to invalid", srcRootFo); //NOI18N
                         break;
                     }
-                    // XXX needed io.File for sharability
-                    File childFile = child != null ? child.toFile() : null;
-                    if (childFile != null && rootChildFo.isValid() && !sourceGroup.contains(rootChildFo) && SharabilityQuery.getSharability(childFile) != SharabilityQuery.NOT_SHARABLE) {
+                    if (rootChildFo != null && 
+                        rootChildFo.isValid() && 
+                        !sourceGroup.contains(rootChildFo) && 
+                        SharabilityQuery.getSharability(rootChildFo) != Sharability.NOT_SHARABLE) 
+                    {
                         rootFilesExclusions.add(child);
                     }
                 } catch (IllegalArgumentException ex) {

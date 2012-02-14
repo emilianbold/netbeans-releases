@@ -89,6 +89,7 @@ import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
@@ -107,7 +108,6 @@ import org.openide.windows.TopComponent;
  */
 public class DependencyGraphTopComponent extends TopComponent implements LookupListener, MultiViewElement {
 
-    static final /* XXX not actually in CP: @StaticResource */ String DEPENDENCY_JAR = "org/netbeans/modules/maven/repository/DependencyJar.gif";
     private static final @StaticResource String ZOOM_IN_ICON = "org/netbeans/modules/maven/graph/zoomin.gif";
     private static final @StaticResource String ZOOM_OUT_ICON = "org/netbeans/modules/maven/graph/zoomout.gif";
 //    public static final String ATTRIBUTE_DEPENDENCIES_LAYOUT = "MavenProjectDependenciesLayout"; //NOI18N
@@ -115,7 +115,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     
     @MultiViewElement.Registration(
         displayName="#TAB_Graph",
-        iconBase=DEPENDENCY_JAR,
+        iconBase=NodeUtils.ICON_DEPENDENCY_JAR,
         persistenceType=TopComponent.PERSISTENCE_NEVER,
         preferredID=ArtifactViewer.HINT_GRAPH,
         mimeType=Constants.POM_MIME_TYPE,

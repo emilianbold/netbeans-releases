@@ -77,6 +77,7 @@ import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplement
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -87,6 +88,8 @@ import org.openide.util.Utilities;
  */
 @ProjectServiceProvider(service=ProjectClassPathModifierImplementation.class, projectType="org-netbeans-modules-maven")
 public class CPExtender extends ProjectClassPathModifierImplementation {
+
+    private static final Logger LOG = Logger.getLogger(CPExtender.class.getName());
 
     private Project project;
     private static final String POM_XML = "pom.xml"; //NOI18N
@@ -111,9 +114,17 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
             modified = urls.size() > 0;
             assert model != null;
             for (URL url : urls) {
-                File jar = FileUtil.archiveOrDirForURL(url);
-                if (jar == null) {
+                FileObject fo = URLMapper.findFileObject(url);
+                if (fo == null) {
                     throw new IOException("Could find no file corresponding to " + url);
+                }
+                FileObject jarFO = FileUtil.getArchiveFile(fo);
+                if (jarFO == null || FileUtil.getArchiveRoot(jarFO) != fo) {
+                    throw new IOException("Cannot add non-root of JAR: " + url);
+                }
+                File jar = FileUtil.toFile(jarFO);
+                if (jar == null) {
+                    throw new IOException("no disk file found corresponding to " + jarFO);
                 }
                 if (jar.isDirectory()) {
                     throw new IOException("Cannot add folders to Maven projects as dependencies: " + url); //NOI18N
@@ -144,14 +155,17 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
         Dependency dependency = ModelUtils.checkModelDependency(mdl, dep.getGroupId(), dep.getArtifactId(), false);
         if (dependency == null) {
             dependency = ModelUtils.checkModelDependency(mdl, dep.getGroupId(), dep.getArtifactId(), true);
+            LOG.log(Level.FINE, "added new dep {0} as {1}", new Object[] {jar, dep});
             added = true;
         }
         if (!Utilities.compareObjects(dep.getVersion(), dependency.getVersion())) {
             dependency.setVersion(dep.getVersion());
+            LOG.log(Level.FINE, "upgraded version on {0} as {1}", new Object[] {jar, dep});
             added = true;
         }
         if (!Utilities.compareObjects(scope, dependency.getScope())) {
             dependency.setScope(scope);
+            LOG.log(Level.FINE, "changed scope on {0} as {1}", new Object[] {jar, dep});
             added = true;
         }
         return added;
@@ -169,6 +183,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
         Boolean modified = null;
         for (URL pom : library.getContent("maven-pom")) {
             ModelUtils.LibraryDescriptor result = ModelUtils.checkLibrary(pom);
+            LOG.log(Level.FINE, "found {0} for {1}", new Object[] {result, pom});
             if (result != null) {
                 //set dependency
                 modified = false;
@@ -210,6 +225,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
                 }
             }
         }
+        LOG.log(Level.FINE, "checkLibraryForPoms on {0} -> {1}", new Object[] {library, modified});
         return modified;
     }
         

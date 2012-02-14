@@ -51,6 +51,8 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -67,6 +69,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -98,6 +101,7 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
 
     public static class Factory implements CodeGenerator.Factory {
 
+        @Override
         public List<? extends CodeGenerator> create(Lookup context) {
             ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
             JTextComponent component = context.lookup(JTextComponent.class);
@@ -115,7 +119,7 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
                         ret.add(gen);
                 }
             } catch (IOException ioe) {
-                ioe.printStackTrace();
+                Exceptions.printStackTrace(ioe);
             }
             return ret;
         }
@@ -137,6 +141,7 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
         this.beanClass = beanClass;
     }
 
+    @Override
     public void invoke() {
        try {           
             final Project enterpriseProject = FileOwnerQuery.getOwner(srcFile);
@@ -149,7 +154,6 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
                     provider,
                     holder.getModuleDestinations(),
                     holder.getServerDestinations(),
-                    SendJMSMessageUiSupport.getMdbs(),
                     erc.getServiceLocatorName(),
                     ClasspathInfo.create(srcFile));
             final DialogDescriptor dialogDescriptor = new DialogDescriptor(
@@ -161,15 +165,24 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
                     DialogDescriptor.DEFAULT_ALIGN,
                     new HelpCtx(SendJMSMessageCodeGenerator.class),
                     null);
-            NotificationLineSupport statusLine = dialogDescriptor.createNotificationLineSupport();
-            sendJmsMessagePanel.setNotificationLine(statusLine);
+            final NotificationLineSupport notificationSupport = dialogDescriptor.createNotificationLineSupport();
             
-            sendJmsMessagePanel.addPropertyChangeListener(SendJmsMessagePanel.IS_VALID,
-                    new PropertyChangeListener() {
+            sendJmsMessagePanel.addPropertyChangeListener(SendJmsMessagePanel.IS_VALID, new PropertyChangeListener() {
+                        @Override
                         public void propertyChange(PropertyChangeEvent evt) {
                             Object newvalue = evt.getNewValue();
                             if ((newvalue != null) && (newvalue instanceof Boolean)) {
-                                dialogDescriptor.setValid(((Boolean)newvalue).booleanValue());
+                                boolean isValid = ((Boolean) newvalue).booleanValue();
+                                dialogDescriptor.setValid(isValid);
+                                if (isValid) {
+                                    if (sendJmsMessagePanel.getWarningMessage() == null) {
+                                        notificationSupport.clearMessages();
+                                    } else {
+                                        notificationSupport.setWarningMessage(sendJmsMessagePanel.getWarningMessage());
+                                    }
+                                } else {
+                                    notificationSupport.setErrorMessage(sendJmsMessagePanel.getErrorMessage());
+                                }
                             }
                         }
                     });
@@ -198,6 +211,7 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
             //http://www.netbeans.org/issues/show_bug.cgi?id=164834
             //http://www.netbeans.org/nonav/issues/showattachment.cgi/82529/error.log
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         generator.genMethods(erc, beanClass.getQualifiedName().toString(), sendJmsMessagePanel.getConnectionFactory(), srcFile, serviceLocatorStrategy, enterpriseProject.getLookup().lookup(J2eeModuleProvider.class));
@@ -234,7 +248,12 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
         if (serverInstanceId == null) {
             return true;
         }
-        J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceId);
+        J2eePlatform platform = null;
+        try {
+            platform = Deployment.getDefault().getServerInstance(serverInstanceId).getJ2eePlatform();
+        } catch (InstanceRemovedException ex) {
+            Logger.getLogger(SendJMSMessageCodeGenerator.class.getName()).log(Level.FINE, null, ex);
+        }
         if (platform == null) {
             return true;
         }
@@ -251,6 +270,7 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
         return false;
     }
     
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(SendJMSMessageCodeGenerator.class, "LBL_SendJMSMessageAction");
     }

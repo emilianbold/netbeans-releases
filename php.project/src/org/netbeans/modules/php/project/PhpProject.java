@@ -73,11 +73,13 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.api.PhpSeleniumProvider;
 import org.netbeans.modules.php.project.classpath.BasePathSupport;
 import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.classpath.IncludePathClassPathProvider;
+import org.netbeans.modules.php.project.internalserver.InternalWebServer;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
@@ -733,13 +735,14 @@ public final class PhpProject implements Project {
                 new PhpActionProvider(this),
                 new PhpConfigurationProvider(this),
                 new PhpModuleImpl(this),
+                PhpLanguagePropertiesAccessor.getDefault().createForProject(this),
                 new PhpEditorExtender(this),
                 helper.createCacheDirectoryProvider(),
                 helper.createAuxiliaryProperties(),
                 new ClassPathProviderImpl(this, getSourceRoots(), getTestRoots(), getSeleniumRoots()),
                 new PhpLogicalViewProvider(this),
                 new CustomizerProviderImpl(this),
-                new PhpSharabilityQuery(helper, getEvaluator(), getSourceRoots(), getTestRoots(), getSeleniumRoots()),
+                PhpSharabilityQuery.create(helper, getEvaluator(), getSourceRoots(), getTestRoots(), getSeleniumRoots()),
                 new PhpProjectOperations(this) ,
                 phpProjectEncodingQueryImpl,
                 new TemplateAttributesProviderImpl(getHelper(), phpProjectEncodingQueryImpl),
@@ -748,6 +751,7 @@ public final class PhpProject implements Project {
                 getHelper(),
                 getEvaluator(),
                 PhpSearchInfo.create(this),
+                InternalWebServer.createForProject(this),
                 new ProjectWebRootProviderImpl()
                 // ?? getRefHelper()
         });
@@ -903,6 +907,9 @@ public final class PhpProject implements Project {
                 for (PhpFrameworkProvider frameworkProvider : getFrameworks()) {
                     frameworkProvider.phpModuleClosed(phpModule);
                 }
+
+                // internal web server
+                lookup.lookup(InternalWebServer.class).stop();
             } finally {
                 // #187060 - exception in projectClosed => project IS closed (so do it in finally block)
                 getCopySupport().projectClosed();

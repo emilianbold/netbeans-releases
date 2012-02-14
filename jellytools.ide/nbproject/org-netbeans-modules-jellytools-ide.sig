@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 3.10.0
+#Version 3.12.0
 
 CLSS public java.lang.Object
 cons public init()
@@ -140,6 +140,7 @@ meth public org.netbeans.jemmy.operators.JLabelOperator lblStatusBar()
 meth public static java.lang.String getAnnotationShortDescription(java.lang.Object)
 meth public static java.lang.String getAnnotationType(java.lang.Object)
 meth public static void closeDiscardAll()
+meth public void clickForPopup()
 meth public void close(boolean)
 meth public void collapseFold()
 meth public void collapseFold(int)
@@ -155,6 +156,7 @@ meth public void pushDownArrowKey()
 meth public void pushEndKey()
 meth public void pushHomeKey()
 meth public void pushKey(int)
+meth public void pushKey(int,int)
 meth public void pushTabKey()
 meth public void pushUpArrowKey()
 meth public void replace(java.lang.String,java.lang.String)
@@ -172,6 +174,9 @@ meth public void setCaretPosition(java.lang.String,int,boolean)
 meth public void setCaretPositionRelative(int)
 meth public void setCaretPositionToEndOfLine(int)
 meth public void setCaretPositionToLine(int)
+meth public void typeKey(char)
+meth public void typeKey(char,int)
+meth public void typeKey(int,char,int)
 meth public void verify()
 meth public void waitCollapsed()
 meth public void waitExpanded()
@@ -351,6 +356,14 @@ meth public void waitText(java.lang.String,boolean)
 supr java.lang.Object
 hfds statusTextHistory
 
+CLSS public org.netbeans.jellytools.NavigatorOperator
+cons public init()
+meth public org.netbeans.jemmy.operators.JTreeOperator getTree()
+meth public static org.netbeans.jellytools.NavigatorOperator invokeNavigator()
+supr org.netbeans.jellytools.TopComponentOperator
+hfds NAVIGATOR_TITLE
+hcls NavigatorAction,NavigatorComponentChooser
+
 CLSS public org.netbeans.jellytools.NbDialogOperator
 cons public init(java.lang.String)
 cons public init(javax.swing.JDialog)
@@ -494,6 +507,7 @@ cons public init(java.lang.String)
 cons public init(java.lang.String,int)
 cons public init(javax.swing.JComponent)
 innr protected final static OutputTabSubchooser
+meth public final void makeComponentVisible()
 meth public int findLine(java.lang.String)
 meth public int getLength()
 meth public int getLineCount()
@@ -503,13 +517,13 @@ meth public java.lang.String getText(int,int)
 meth public org.netbeans.jemmy.operators.ComponentOperator outputPaneOperator()
 meth public org.netbeans.jemmy.operators.JButtonOperator btnAntSettings()
 meth public org.netbeans.jemmy.operators.JButtonOperator btnReRun()
+meth public org.netbeans.jemmy.operators.JButtonOperator btnReRunWithDifferentParameters()
 meth public org.netbeans.jemmy.operators.JButtonOperator btnStop()
 meth public void clear()
 meth public void close()
 meth public void copy()
 meth public void find()
 meth public void findNext()
-meth public void makeComponentVisible()
 meth public void nextError()
 meth public void previousError()
 meth public void saveAs()
@@ -518,7 +532,7 @@ meth public void verify()
 meth public void waitText(java.lang.String)
 meth public void wrapText()
 supr org.netbeans.jemmy.operators.JComponentOperator
-hfds btnAntSettings,btnReRun,btnStop,clearAction,closeAction,copyAction,findAction,findNextAction,nextErrorAction,outputPaneOperator,previousErrorAction,saveAsAction,selectAllAction,wrapTextAction
+hfds btnAntSettings,btnReRun,btnReRunWithDifferentParameters,btnStop,clearAction,closeAction,copyAction,findAction,findNextAction,nextErrorAction,outputPaneOperator,previousErrorAction,saveAsAction,wrapTextAction
 
 CLSS protected final static org.netbeans.jellytools.OutputTabOperator$OutputTabSubchooser
  outer org.netbeans.jellytools.OutputTabOperator
@@ -577,16 +591,6 @@ meth public void update()
 meth public void waitTabEnabled(java.lang.String)
 supr org.netbeans.jellytools.NbDialogOperator
 hfds AVAILABLE_PLUGINS_LABEL,INSTALLED_LABEL,PLUGINS_ITEM,TITLE,TOOLS_ITEM,_tabbedPane
-
-CLSS public org.netbeans.jellytools.PopupSwitcherOperator
-cons public init()
-cons public init(javax.swing.JTable)
-meth public static javax.swing.JTable waitPopupSwitcher()
-meth public void selectItem(int)
-meth public void selectItem(int,int)
-meth public void selectItem(java.lang.String)
-supr org.netbeans.jemmy.operators.JTableOperator
-hcls PopupChooser
 
 CLSS public org.netbeans.jellytools.ProjectsTabOperator
 cons public init()
@@ -684,7 +688,6 @@ meth public void maximize()
 meth public void pushMenuOnTab(java.lang.String)
 meth public void restore()
 meth public void save()
-meth public void saveDocument()
 meth public void setUnmodified()
 meth public void waitClosed()
 supr org.netbeans.jemmy.operators.JComponentOperator
@@ -761,6 +764,7 @@ fld protected final static long AFTER_ACTION_WAIT_TIME = 0
 fld protected final static long SELECTION_WAIT_TIME = 300
 fld protected final static long WAIT_AFTER_SHORTCUT_TIMEOUT = 0
 fld protected java.lang.Class systemActionClass
+fld protected java.lang.String layerInstancePath
 fld protected java.lang.String menuPath
 fld protected java.lang.String popupPath
 fld protected javax.swing.KeyStroke[] keystrokes
@@ -871,7 +875,7 @@ meth public void performPopup(org.netbeans.jellytools.nodes.Node[])
 meth public void performPopup(org.netbeans.jemmy.operators.ComponentOperator)
 meth public void performShortcut(org.netbeans.jellytools.nodes.Node[])
 supr org.netbeans.jellytools.actions.Action
-hfds menuPath,popupPath,windowItem
+hfds configureWindowItem,menuPath,popupPath,windowItem
 
 CLSS public org.netbeans.jellytools.actions.CloseAction
 cons public init()
@@ -934,7 +938,7 @@ meth public void performPopup(org.netbeans.jellytools.nodes.Node[])
 meth public void performPopup(org.netbeans.jemmy.operators.ComponentOperator)
 meth public void performShortcut(org.netbeans.jellytools.nodes.Node[])
 supr org.netbeans.jellytools.actions.Action
-hfds menuPath,popupPath,windowItem
+hfds configureWindowItem,menuPath,popupPath,windowItem
 
 CLSS public org.netbeans.jellytools.actions.DocumentsAction
 cons public init()
@@ -995,13 +999,13 @@ meth public void performPopup(org.netbeans.jellytools.nodes.Node[])
 meth public void performPopup(org.netbeans.jemmy.operators.ComponentOperator)
 meth public void performShortcut(org.netbeans.jellytools.nodes.Node[])
 supr org.netbeans.jellytools.actions.Action
-hfds popupPath,windowItem,windowMaximizePath
+hfds configureWindowItem,popupPathMaximize,windowItem,windowMaximizePath
 
 CLSS public org.netbeans.jellytools.actions.NewFileAction
 cons public init()
 cons public init(java.lang.String)
 supr org.netbeans.jellytools.actions.ActionNoBlock
-hfds keystroke,menuPath,popupPath,popupSubPath
+hfds keystroke,menuPathNewFile,popupPathNew,popupSubPath
 
 CLSS public org.netbeans.jellytools.actions.NewProjectAction
 cons public init()
@@ -1058,7 +1062,7 @@ hfds renamePopup
 
 CLSS public org.netbeans.jellytools.actions.ReplaceAction
 cons public init()
-supr org.netbeans.jellytools.actions.ActionNoBlock
+supr org.netbeans.jellytools.actions.Action
 hfds keystroke,replaceMenu
 
 CLSS public org.netbeans.jellytools.actions.RestoreWindowAction
@@ -1071,7 +1075,7 @@ meth public void performPopup(org.netbeans.jellytools.nodes.Node[])
 meth public void performPopup(org.netbeans.jemmy.operators.ComponentOperator)
 meth public void performShortcut(org.netbeans.jellytools.nodes.Node[])
 supr org.netbeans.jellytools.actions.Action
-hfds popupPath,windowItem,windowRestorePath
+hfds configureWindowItem,popupPathMaximize,windowItem,windowMaximizePath
 
 CLSS public org.netbeans.jellytools.actions.RuntimeViewAction
 cons public init()
@@ -1122,7 +1126,7 @@ meth public void performPopup(org.netbeans.jellytools.nodes.Node[])
 meth public void performPopup(org.netbeans.jemmy.operators.ComponentOperator)
 meth public void performShortcut(org.netbeans.jellytools.nodes.Node[])
 supr org.netbeans.jellytools.actions.Action
-hfds menuPath,popupPath,windowItem
+hfds configureWindowItem,floatMenuPath,floatPopupPath,windowItem
 
 CLSS public org.netbeans.jellytools.actions.ViewAction
 cons public init()
@@ -1298,7 +1302,7 @@ hfds mainMenuPath
 CLSS public org.netbeans.jellytools.modules.debugger.actions.BreakpointsWindowAction
 cons public init()
 supr org.netbeans.jellytools.actions.Action
-hfds keystroke,menuPath
+hfds keystroke,menuPathBreakpoints
 
 CLSS public org.netbeans.jellytools.modules.debugger.actions.ContinueAction
 cons public init()
@@ -1319,7 +1323,7 @@ hfds popup
 CLSS public org.netbeans.jellytools.modules.debugger.actions.FinishAllAction
 cons public init()
 supr org.netbeans.jellytools.actions.Action
-hfds popupPath
+hfds popupPathFinishAll
 
 CLSS public org.netbeans.jellytools.modules.debugger.actions.FinishDebuggerAction
 cons public init()
@@ -1330,7 +1334,7 @@ hfds keystroke,mainMenuPath
 CLSS public org.netbeans.jellytools.modules.debugger.actions.MakeCurrentAction
 cons public init()
 supr org.netbeans.jellytools.actions.Action
-hfds popupPath
+hfds popupPathMakeCurrent
 
 CLSS public org.netbeans.jellytools.modules.debugger.actions.NewBreakpointAction
 cons public init()
@@ -1346,12 +1350,12 @@ hfds keystroke,mainMenuPath
 CLSS public org.netbeans.jellytools.modules.debugger.actions.SessionsAction
 cons public init()
 supr org.netbeans.jellytools.actions.Action
-hfds keystroke,menuPath
+hfds keystroke,menuPathSessions
 
 CLSS public org.netbeans.jellytools.modules.debugger.actions.SourcesAction
 cons public init()
 supr org.netbeans.jellytools.actions.Action
-hfds keystroke,menuPath
+hfds keystroke,menuPathSources
 
 CLSS public org.netbeans.jellytools.modules.debugger.actions.StepIntoAction
 cons public init()
@@ -1395,433 +1399,6 @@ supr org.netbeans.jemmy.operators.JListOperator
 hfds LOG
 hcls DocumentWatcher
 
-CLSS public org.netbeans.jellytools.modules.javacvs.BranchOperator
-cons public init()
-meth public java.lang.String getBranchName()
-meth public java.lang.String getTagName()
-meth public org.netbeans.jellytools.modules.javacvs.BrowseTagsOperator browse()
-meth public org.netbeans.jemmy.operators.JButtonOperator btBranch()
-meth public org.netbeans.jemmy.operators.JButtonOperator btBrowse()
-meth public org.netbeans.jemmy.operators.JCheckBoxOperator cbSwitchToThisBranchAftewards()
-meth public org.netbeans.jemmy.operators.JCheckBoxOperator cbTagBeforeBranching()
-meth public org.netbeans.jemmy.operators.JLabelOperator lblBranchName()
-meth public org.netbeans.jemmy.operators.JLabelOperator lblTagName()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtBranchName()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtTagName()
-meth public static org.netbeans.jellytools.modules.javacvs.BranchOperator invoke(org.netbeans.jellytools.nodes.Node)
-meth public static org.netbeans.jellytools.modules.javacvs.BranchOperator invoke(org.netbeans.jellytools.nodes.Node[])
-meth public void branch()
-meth public void checkSwitchToThisBranchAftewards(boolean)
-meth public void checkTagBeforeBranching(boolean)
-meth public void setBranchName(java.lang.String)
-meth public void setTagName(java.lang.String)
-meth public void verify()
-supr org.netbeans.jellytools.NbDialogOperator
-hfds _btBranch,_btBrowse,_cbSwitchToThisBranchAftewards,_cbTagBeforeBranching,_lblBranchName,_lblTagName,_txtBranchName,_txtTagName
-
-CLSS public org.netbeans.jellytools.modules.javacvs.BrowseCVSModuleOperator
-cons public init()
-meth public org.netbeans.jemmy.operators.JTreeOperator tree()
-meth public void selectModule(java.lang.String)
-meth public void verify()
-supr org.netbeans.jellytools.NbDialogOperator
-hfds _tree
-
-CLSS public org.netbeans.jellytools.modules.javacvs.BrowseRepositoryFolderOperator
-cons public init()
-meth public org.netbeans.jemmy.operators.JTreeOperator tree()
-meth public void selectFolder(java.lang.String)
-meth public void verify()
-supr org.netbeans.jellytools.NbDialogOperator
-hfds _tree
-
-CLSS public org.netbeans.jellytools.modules.javacvs.BrowseTagsOperator
-cons public init()
-meth public org.netbeans.jemmy.operators.JTreeOperator tree()
-meth public void selectBranch(java.lang.String)
-meth public void selectPath(java.lang.String)
-meth public void selectTag(java.lang.String)
-meth public void verify()
-supr org.netbeans.jellytools.NbDialogOperator
-hfds _tree
-
-CLSS public org.netbeans.jellytools.modules.javacvs.CVSRootStepOperator
-cons public init()
-fld public final static java.lang.String ITEM_FORK = ":fork:"
-fld public final static java.lang.String ITEM_LOCAL = ":local:"
-meth public java.lang.String getCVSRoot()
-meth public org.netbeans.jellytools.OptionsOperator proxyConfiguration()
-meth public org.netbeans.jellytools.modules.javacvs.EditCVSRootOperator edit()
-meth public org.netbeans.jemmy.operators.JButtonOperator btEdit()
-meth public org.netbeans.jemmy.operators.JButtonOperator btProxyConfiguration()
-meth public org.netbeans.jemmy.operators.JCheckBoxOperator cbRememberPassword()
-meth public org.netbeans.jemmy.operators.JComboBoxOperator cboCVSRoot()
-meth public org.netbeans.jemmy.operators.JLabelOperator lblCVSRoot()
-meth public org.netbeans.jemmy.operators.JLabelOperator lblPassword()
-meth public org.netbeans.jemmy.operators.JLabelOperator lblSSHCommand()
-meth public org.netbeans.jemmy.operators.JPasswordFieldOperator txtPassword()
-meth public org.netbeans.jemmy.operators.JRadioButtonOperator rbUseExternalShell()
-meth public org.netbeans.jemmy.operators.JRadioButtonOperator rbUseInternalSSH()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtSSHCommand()
-meth public void checkRememberPassword(boolean)
-meth public void selectCVSRoot(java.lang.String)
-meth public void setCVSRoot(java.lang.String)
-meth public void setPassword(java.lang.String)
-meth public void setSSHCommand(java.lang.String)
-meth public void useExternalShell()
-meth public void useInternalSSH()
-meth public void verify()
-supr org.netbeans.jellytools.WizardOperator
-hfds _btEdit,_btProxyConfiguration,_cbRememberPassword,_cboCVSRoot,_lblCVSRoot,_lblPassword,_lblSSHCommand,_rbUseExternalShell,_rbUseInternalSSH,_txtPassword,_txtSSHCommand
-
-CLSS public org.netbeans.jellytools.modules.javacvs.CheckoutWizardOperator
-cons public init()
-meth public static org.netbeans.jellytools.modules.javacvs.CheckoutWizardOperator invoke()
-meth public void doCheckout(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)
-supr org.netbeans.jellytools.WizardOperator
-
-CLSS public org.netbeans.jellytools.modules.javacvs.CommitOperator
-cons public init()
-meth public java.lang.String getCommitMessage()
-meth public org.netbeans.jemmy.operators.JButtonOperator btCommit()
-meth public org.netbeans.jemmy.operators.JLabelOperator lblCommitMessage()
-meth public org.netbeans.jemmy.operators.JLabelOperator lblFilesToCommit()
-meth public org.netbeans.jemmy.operators.JTableOperator tabFiles()
-meth public org.netbeans.jemmy.operators.JTextAreaOperator txtCommitMessage()
-meth public static org.netbeans.jellytools.modules.javacvs.CommitOperator invoke(org.netbeans.jellytools.nodes.Node)
-meth public static org.netbeans.jellytools.modules.javacvs.CommitOperator invoke(org.netbeans.jellytools.nodes.Node[])
-meth public void commit()
-meth public void selectCommitAction(int,java.lang.String)
-meth public void selectCommitAction(java.lang.String,java.lang.String)
-meth public void setCommitMessage(java.lang.String)
-meth public void verify()
-supr org.netbeans.jellytools.NbDialogOperator
-hfds _btCommit,_lblCommitMessage,_lblFilesToCommit,_tabFiles,_txtCommitMessage
-
-CLSS public org.netbeans.jellytools.modules.javacvs.DiffOperator
-cons public init()
-cons public init(java.lang.String)
-meth public org.netbeans.jellytools.modules.javacvs.CommitOperator commit()
-meth public org.netbeans.jemmy.operators.JButtonOperator btCommit()
-meth public org.netbeans.jemmy.operators.JButtonOperator btNext()
-meth public org.netbeans.jemmy.operators.JButtonOperator btPrevious()
-meth public org.netbeans.jemmy.operators.JButtonOperator btRefresh()
-meth public org.netbeans.jemmy.operators.JButtonOperator btUpdate()
-meth public org.netbeans.jemmy.operators.JComboBoxOperator cbFiles()
-meth public org.netbeans.jemmy.operators.JToggleButtonOperator tbLocal()
-meth public org.netbeans.jemmy.operators.JToggleButtonOperator tbRemote()
-meth public org.netbeans.jemmy.operators.JToggleButtonOperator tbRemoteLocal()
-meth public void checkLocal(boolean)
-meth public void checkRemote(boolean)
-meth public void checkRemoteLocal(boolean)
-meth public void next()
-meth public void previous()
-meth public void refresh()
-meth public void selectFile(int)
-meth public void selectFile(java.lang.String)
-meth public void update()
-meth public void verify()
-supr org.netbeans.jellytools.TopComponentOperator
-hfds _btCommit,_btNext,_btPrevious,_btRefresh,_btUpdate,_cbFiles,_tbLocal,_tbRemote,_tbRemoveLocal
-hcls DiffSubchooser,TooltipChooser
-
-CLSS public org.netbeans.jellytools.modules.javacvs.EditCVSRootOperator
-cons public init()
-fld public final static java.lang.String ITEM_EXT = "ext"
-fld public final static java.lang.String ITEM_FORK = "fork"
-fld public final static java.lang.String ITEM_LOCAL = "local"
-fld public final static java.lang.String ITEM_PSERVER = "pserver"
-meth public java.lang.String getAccessMethod()
-meth public java.lang.String getHost()
-meth public java.lang.String getPort()
-meth public java.lang.String getRepositoryPath()
-meth public java.lang.String getUser()
-meth public org.netbeans.jemmy.operators.JComboBoxOperator cboAccessMethod()
-meth public org.netbeans.jemmy.operators.JLabelOperator lblAccessMethod()
-meth public org.netbeans.jemmy.operators.JLabelOperator lblHost()
-meth public org.netbeans.jemmy.operators.JLabelOperator lblPort()
-meth public org.netbeans.jemmy.operators.JLabelOperator lblRepositoryPath()
-meth public org.netbeans.jemmy.operators.JLabelOperator lblUser()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtHost()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtPort()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtRepositoryPath()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtUser()
-meth public void selectAccessMethod(java.lang.String)
-meth public void setHost(java.lang.String)
-meth public void setPort(java.lang.String)
-meth public void setRepositoryPath(java.lang.String)
-meth public void setUser(java.lang.String)
-meth public void verify()
-supr org.netbeans.jellytools.NbDialogOperator
-hfds _cboAccessMethod,_lblAccessMethod,_lblHost,_lblPort,_lblRepositoryPath,_lblUser,_txtHost,_txtPort,_txtRepositoryPath,_txtUser
-
-CLSS public org.netbeans.jellytools.modules.javacvs.FolderToImportStepOperator
-cons public init()
-meth public java.lang.String getFolderToImport()
-meth public java.lang.String getImportMessage()
-meth public java.lang.String getRepositoryFolder()
-meth public org.netbeans.jellytools.modules.javacvs.BrowseRepositoryFolderOperator browseRepositoryFolder()
-meth public org.netbeans.jemmy.operators.JButtonOperator btBrowseFolderToImport()
-meth public org.netbeans.jemmy.operators.JButtonOperator btBrowseRepositoryFolder()
-meth public org.netbeans.jemmy.operators.JCheckBoxOperator cbCheckoutAfterImport()
-meth public org.netbeans.jemmy.operators.JFileChooserOperator browseFolderToImport()
-meth public org.netbeans.jemmy.operators.JLabelOperator lblFolderToImport()
-meth public org.netbeans.jemmy.operators.JLabelOperator lblImportMessage()
-meth public org.netbeans.jemmy.operators.JLabelOperator lblRepositoryFolder()
-meth public org.netbeans.jemmy.operators.JTextAreaOperator txtImportMessage()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtFolderToImport()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtRepositoryFolder()
-meth public void checkCheckoutAfterImport(boolean)
-meth public void setFolderToImport(java.lang.String)
-meth public void setImportMessage(java.lang.String)
-meth public void setRepositoryFolder(java.lang.String)
-meth public void verify()
-supr org.netbeans.jellytools.modules.javacvs.ImportWizardOperator
-hfds _btBrowse,_btBrowse2,_cbCheckoutAfterImport,_lblFolderToImport,_lblImportMessage,_lblRepositoryFolder,_txtFolderToImport,_txtImportMessage,_txtRepositoryFolder
-
-CLSS public org.netbeans.jellytools.modules.javacvs.ImportWizardOperator
-cons public init()
-meth public static org.netbeans.jellytools.modules.javacvs.ImportWizardOperator invoke()
-meth public static org.netbeans.jellytools.modules.javacvs.ImportWizardOperator invoke(org.netbeans.jellytools.nodes.Node)
-meth public void doImport(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)
-supr org.netbeans.jellytools.WizardOperator
-
-CLSS public org.netbeans.jellytools.modules.javacvs.MergeChangesFromBranchOperator
-cons public init()
-meth public java.lang.String getBrancHead()
-meth public java.lang.String getStartingFromTag()
-meth public java.lang.String getUntilTag()
-meth public java.lang.String getWorkingBranch()
-meth public org.netbeans.jellytools.modules.javacvs.BrowseTagsOperator browseBranchHead()
-meth public org.netbeans.jellytools.modules.javacvs.BrowseTagsOperator browseStartingFromTag()
-meth public org.netbeans.jellytools.modules.javacvs.BrowseTagsOperator browseTagName()
-meth public org.netbeans.jellytools.modules.javacvs.BrowseTagsOperator browseUntilTag()
-meth public org.netbeans.jemmy.operators.JButtonOperator btBrowseBranchHead()
-meth public org.netbeans.jemmy.operators.JButtonOperator btBrowseStartingFromTag()
-meth public org.netbeans.jemmy.operators.JButtonOperator btBrowseTagName()
-meth public org.netbeans.jemmy.operators.JButtonOperator btBrowseUntilTag()
-meth public org.netbeans.jemmy.operators.JButtonOperator btMerge()
-meth public org.netbeans.jemmy.operators.JCheckBoxOperator cbTagAfterMerge()
-meth public org.netbeans.jemmy.operators.JLabelOperator lblWorkingBranch()
-meth public org.netbeans.jemmy.operators.JRadioButtonOperator rbBranchHead()
-meth public org.netbeans.jemmy.operators.JRadioButtonOperator rbBranchingPoint()
-meth public org.netbeans.jemmy.operators.JRadioButtonOperator rbStartingFromTag()
-meth public org.netbeans.jemmy.operators.JRadioButtonOperator rbTrunkHead()
-meth public org.netbeans.jemmy.operators.JRadioButtonOperator rbUntilTag()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtBranchHead()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtStartingFromTag()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtTagName()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtUntilTag()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtWorkingBranch()
-meth public static org.netbeans.jellytools.modules.javacvs.MergeChangesFromBranchOperator invoke(org.netbeans.jellytools.nodes.Node)
-meth public static org.netbeans.jellytools.modules.javacvs.MergeChangesFromBranchOperator invoke(org.netbeans.jellytools.nodes.Node[])
-meth public void checkTagAfterMerge(boolean)
-meth public void merge()
-meth public void mergeFromBranchingPoint()
-meth public void mergeFromTag()
-meth public void mergeTrunkHead()
-meth public void mergeUntilBranchHead()
-meth public void mergeUntilTag()
-meth public void setBranchHead(java.lang.String)
-meth public void setStartingFromTag(java.lang.String)
-meth public void setTagName(java.lang.String)
-meth public void setUntilTag(java.lang.String)
-meth public void verify()
-supr org.netbeans.jellytools.NbDialogOperator
-hfds _btBrowseBranchHead,_btBrowseStartingFromTag,_btBrowseTagName,_btBrowseUntilTag,_btMerge,_cbTagAfterMerge,_lblWorkingBranch,_rbBranchHead,_rbBranchingPoint,_rbStartingFromTag,_rbTrunkHead,_rbUntilTag,_txtBranchHead,_txtStartingFromTag,_txtTagName,_txtUntilTag,_txtWorkingBranch
-
-CLSS public org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator
-cons public init()
-meth public java.lang.String getBranch()
-meth public java.lang.String getLocalFolder()
-meth public java.lang.String getModule()
-meth public org.netbeans.jellytools.modules.javacvs.BrowseCVSModuleOperator browseModule()
-meth public org.netbeans.jellytools.modules.javacvs.BrowseTagsOperator browseBranch()
-meth public org.netbeans.jemmy.operators.JButtonOperator btBrowseBranch()
-meth public org.netbeans.jemmy.operators.JButtonOperator btBrowseLocalFolder()
-meth public org.netbeans.jemmy.operators.JButtonOperator btBrowseModule()
-meth public org.netbeans.jemmy.operators.JFileChooserOperator browseLocalFolder()
-meth public org.netbeans.jemmy.operators.JLabelOperator lblBranch()
-meth public org.netbeans.jemmy.operators.JLabelOperator lblLocalFolder()
-meth public org.netbeans.jemmy.operators.JLabelOperator lblModule()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtBranch()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtLocalFolder()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtModule()
-meth public void setBranch(java.lang.String)
-meth public void setLocalFolder(java.lang.String)
-meth public void setModule(java.lang.String)
-meth public void verify()
-supr org.netbeans.jellytools.modules.javacvs.CheckoutWizardOperator
-hfds _btBrowse,_btBrowse2,_btBrowse3,_lblBranch,_lblLocalFolder,_lblModule,_txtBranch,_txtLocalFolder,_txtModule
-
-CLSS public org.netbeans.jellytools.modules.javacvs.SearchHistoryOperator
-cons public init()
-meth public java.lang.String getFrom()
-meth public java.lang.String getMessage()
-meth public java.lang.String getTo()
-meth public java.lang.String getUsername()
-meth public org.netbeans.jellytools.modules.javacvs.BrowseTagsOperator browseFrom()
-meth public org.netbeans.jellytools.modules.javacvs.BrowseTagsOperator browseTo()
-meth public org.netbeans.jemmy.operators.JButtonOperator btBrowseFrom()
-meth public org.netbeans.jemmy.operators.JButtonOperator btBrowseTo()
-meth public org.netbeans.jemmy.operators.JButtonOperator btNext()
-meth public org.netbeans.jemmy.operators.JButtonOperator btPrevious()
-meth public org.netbeans.jemmy.operators.JButtonOperator btSearch()
-meth public org.netbeans.jemmy.operators.JLabelOperator lblFrom()
-meth public org.netbeans.jemmy.operators.JLabelOperator lblMessage()
-meth public org.netbeans.jemmy.operators.JLabelOperator lblTo()
-meth public org.netbeans.jemmy.operators.JLabelOperator lblUsername()
-meth public org.netbeans.jemmy.operators.JListOperator lstHistory()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtFrom()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtMessage()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtTo()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtUsername()
-meth public org.netbeans.jemmy.operators.JToggleButtonOperator tbDiff()
-meth public org.netbeans.jemmy.operators.JToggleButtonOperator tbSummary()
-meth public static org.netbeans.jellytools.modules.javacvs.SearchHistoryOperator invoke(org.netbeans.jellytools.nodes.Node)
-meth public static org.netbeans.jellytools.modules.javacvs.SearchHistoryOperator invoke(org.netbeans.jellytools.nodes.Node[])
-meth public void checkDiff(boolean)
-meth public void checkSummary(boolean)
-meth public void next()
-meth public void performPopup(int,java.lang.String)
-meth public void previous()
-meth public void search()
-meth public void setFrom(java.lang.String)
-meth public void setMessage(java.lang.String)
-meth public void setTo(java.lang.String)
-meth public void setUsername(java.lang.String)
-meth public void verify()
-supr org.netbeans.jellytools.TopComponentOperator
-hfds SEARCH_HISTORY_TITLE,_btBrowseFrom,_btBrowseTo,_btNext,_btPrevious,_btSearch,_lblFrom,_lblMessage,_lblTo,_lblUsername,_lstHistory,_tbDiff,_tbSummary,_txtFrom,_txtMessage,_txtTo,_txtUsername
-hcls SearchHistorySubchooser,TooltipChooser
-
-CLSS public org.netbeans.jellytools.modules.javacvs.SwitchToBranchOperator
-cons public init()
-meth public java.lang.String getBranch()
-meth public org.netbeans.jellytools.modules.javacvs.BrowseTagsOperator browse()
-meth public org.netbeans.jemmy.operators.JButtonOperator btBrowse()
-meth public org.netbeans.jemmy.operators.JButtonOperator btSwitch()
-meth public org.netbeans.jemmy.operators.JRadioButtonOperator rbSwitchToBranch()
-meth public org.netbeans.jemmy.operators.JRadioButtonOperator rbSwitchToTrunk()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtSwitchToBranch()
-meth public static org.netbeans.jellytools.modules.javacvs.SwitchToBranchOperator invoke(org.netbeans.jellytools.nodes.Node)
-meth public static org.netbeans.jellytools.modules.javacvs.SwitchToBranchOperator invoke(org.netbeans.jellytools.nodes.Node[])
-meth public void pushSwitch()
-meth public void setBranch(java.lang.String)
-meth public void switchToBranch()
-meth public void switchToTrunk()
-meth public void verify()
-supr org.netbeans.jellytools.NbDialogOperator
-hfds _btBrowse,_btSwitch,_rbSwitchToBranch,_rbSwitchToTrunk,_txtJTextField
-
-CLSS public org.netbeans.jellytools.modules.javacvs.TagOperator
-cons public init()
-meth public java.lang.String getTagName()
-meth public org.netbeans.jemmy.operators.JButtonOperator btBrowse()
-meth public org.netbeans.jemmy.operators.JButtonOperator btTag()
-meth public org.netbeans.jemmy.operators.JCheckBoxOperator cbAvoidTaggingLocallyModifiedFiles()
-meth public org.netbeans.jemmy.operators.JCheckBoxOperator cbMoveExistingTag()
-meth public org.netbeans.jemmy.operators.JTextFieldOperator txtTagName()
-meth public static org.netbeans.jellytools.modules.javacvs.TagOperator invoke(org.netbeans.jellytools.nodes.Node)
-meth public static org.netbeans.jellytools.modules.javacvs.TagOperator invoke(org.netbeans.jellytools.nodes.Node[])
-meth public void browse()
-meth public void checkAvoidTaggingLocallyModifiedFiles(boolean)
-meth public void checkMoveExistingTag(boolean)
-meth public void setTagName(java.lang.String)
-meth public void tag()
-meth public void verify()
-supr org.netbeans.jellytools.NbDialogOperator
-hfds _btBrowse,_btTag,_cbAvoidTaggingLocallyModifiedFilesC,_cbMoveExistingTagF,_txtTagName
-
-CLSS public org.netbeans.jellytools.modules.javacvs.VersioningOperator
-cons public init()
-meth public org.netbeans.jellytools.modules.javacvs.CommitOperator commit()
-meth public org.netbeans.jemmy.operators.JButtonOperator btCommit()
-meth public org.netbeans.jemmy.operators.JButtonOperator btDiff()
-meth public org.netbeans.jemmy.operators.JButtonOperator btRefresh()
-meth public org.netbeans.jemmy.operators.JButtonOperator btUpdate()
-meth public org.netbeans.jemmy.operators.JTableOperator tabFiles()
-meth public org.netbeans.jemmy.operators.JToggleButtonOperator tbAll()
-meth public org.netbeans.jemmy.operators.JToggleButtonOperator tbLocal()
-meth public org.netbeans.jemmy.operators.JToggleButtonOperator tbRemote()
-meth public static org.netbeans.jellytools.modules.javacvs.VersioningOperator invoke()
-meth public void checkAll(boolean)
-meth public void checkLocal(boolean)
-meth public void checkRemote(boolean)
-meth public void diff()
-meth public void performPopup(int,java.lang.String)
-meth public void performPopup(java.lang.String,java.lang.String)
-meth public void performPopupNoBlock(int,java.lang.String)
-meth public void performPopupNoBlock(java.lang.String,java.lang.String)
-meth public void refresh()
-meth public void update()
-meth public void verify()
-supr org.netbeans.jellytools.TopComponentOperator
-hfds VERSIONING_TITLE,_btCommit,_btDiff,_btRefresh,_btUpdate,_tabFiles,_tbAll,_tbLocal,_tbRemote
-hcls TooltipChooser,VersioningSubchooser
-
-CLSS public org.netbeans.jellytools.modules.javacvs.actions.BranchAction
-cons public init()
-meth public void performMenu(java.lang.String)
-supr org.netbeans.jellytools.actions.ActionNoBlock
-hfds BRANCHES_ITEM,BRANCH_ITEM,BRANCH_POPUP_ITEM,CVS_ITEM,VERSIONING_ITEM
-
-CLSS public org.netbeans.jellytools.modules.javacvs.actions.CheckoutAction
-cons public init()
-fld public final static java.lang.String CHECKOUT_ITEM
-fld public final static java.lang.String CVS_ITEM
-fld public final static java.lang.String VERSIONING_ITEM
-supr org.netbeans.jellytools.actions.ActionNoBlock
-
-CLSS public org.netbeans.jellytools.modules.javacvs.actions.CommitAction
-cons public init()
-meth public void performMenu(java.lang.String)
-supr org.netbeans.jellytools.actions.ActionNoBlock
-hfds COMMIT_ITEM,COMMIT_POPUP_ITEM,CVS_ITEM,VERSIONING_ITEM
-
-CLSS public org.netbeans.jellytools.modules.javacvs.actions.DiffAction
-cons public init()
-meth public void performMenu(java.lang.String)
-supr org.netbeans.jellytools.actions.Action
-hfds CVS_ITEM,DIFF_ITEM,DIFF_POPUP_ITEM,VERSIONING_ITEM
-
-CLSS public org.netbeans.jellytools.modules.javacvs.actions.ImportAction
-cons public init()
-fld public final static java.lang.String CVS_ITEM
-fld public final static java.lang.String TEAM_ITEM
-fld public final static java.lang.String VERSIONING_ITEM
-supr org.netbeans.jellytools.actions.ActionNoBlock
-hfds IMPORT_CVS_ITEM,IMPORT_ITEM
-
-CLSS public org.netbeans.jellytools.modules.javacvs.actions.MergeAction
-cons public init()
-supr org.netbeans.jellytools.actions.ActionNoBlock
-hfds BRANCHES_ITEM,CVS_ITEM,MERGE_POPUP_ITEM,VERSIONING_ITEM
-
-CLSS public org.netbeans.jellytools.modules.javacvs.actions.SearchHistoryAction
-cons public init()
-meth public void performMenu(java.lang.String)
-supr org.netbeans.jellytools.actions.Action
-hfds CVS_ITEM,SEARCH_ITEM,SEARCH_POPUP_ITEM,VERSIONING_ITEM
-
-CLSS public org.netbeans.jellytools.modules.javacvs.actions.ShowChangesAction
-cons public init()
-meth public void performMenu(java.lang.String)
-supr org.netbeans.jellytools.actions.Action
-hfds CVS_ITEM,SHOW_ITEM,SHOW_POPUP_ITEM,VERSIONING_ITEM
-
-CLSS public org.netbeans.jellytools.modules.javacvs.actions.SwitchToBranchAction
-cons public init()
-meth public void performMenu(java.lang.String)
-supr org.netbeans.jellytools.actions.ActionNoBlock
-hfds BRANCHES_ITEM,CVS_ITEM,SWITCH_TO_BRANCH_ITEM,SWITCH_TO_BRANCH_POPUP_ITEM,VERSIONING_ITEM
-
-CLSS public org.netbeans.jellytools.modules.javacvs.actions.TagAction
-cons public init()
-meth public void performMenu(java.lang.String)
-supr org.netbeans.jellytools.actions.ActionNoBlock
-hfds CVS_ITEM,TAG_ITEM,TAG_POPUP_ITEM,VERSIONING_ITEM
-
 CLSS public org.netbeans.jellytools.nodes.FolderNode
 cons public init(org.netbeans.jellytools.nodes.Node,java.lang.String)
 cons public init(org.netbeans.jemmy.operators.JTreeOperator,java.lang.String)
@@ -1856,7 +1433,7 @@ meth public void saveAsTemplate()
 meth public void verifyPopup()
 meth public void view()
 supr org.netbeans.jellytools.nodes.Node
-hfds copyAction,cutAction,deleteAction,openAction,pasteAction,propertiesAction,renameAction,saveAsTemplateAction,viewAction
+hfds copyAction,cutAction,deleteAction,openAction,pasteAction,propertiesAction,saveAsTemplateAction,viewAction
 
 CLSS public org.netbeans.jellytools.nodes.ImageNode
 cons public init(org.netbeans.jellytools.nodes.Node,java.lang.String)
@@ -1872,7 +1449,7 @@ meth public void rename()
 meth public void saveAsTemplate()
 meth public void verifyPopup()
 supr org.netbeans.jellytools.nodes.Node
-hfds copyAction,cutAction,deleteAction,openAction,pasteAction,propertiesAction,renameAction,saveAsTemplateAction
+hfds copyAction,cutAction,deleteAction,openAction,pasteAction,propertiesAction,saveAsTemplateAction
 
 CLSS public org.netbeans.jellytools.nodes.Node
 cons public init(org.netbeans.jellytools.nodes.Node,int)
@@ -1880,6 +1457,7 @@ cons public init(org.netbeans.jellytools.nodes.Node,java.lang.String)
 cons public init(org.netbeans.jemmy.operators.JTreeOperator,java.lang.String)
 cons public init(org.netbeans.jemmy.operators.JTreeOperator,java.lang.String,java.lang.String)
 cons public init(org.netbeans.jemmy.operators.JTreeOperator,javax.swing.tree.TreePath)
+fld protected java.lang.String stringPath
 fld protected javax.swing.tree.TreePath treePath
 fld protected org.netbeans.jemmy.operators.JTreeOperator treeOperator
 meth public boolean isChildPresent(java.lang.String)

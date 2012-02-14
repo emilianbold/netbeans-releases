@@ -40,6 +40,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
@@ -99,7 +100,7 @@ public class FilesViewDoubleRefTest extends JellyTestCase {
      }
 
     public void testFilesViewDoubleRefactoring() throws Exception {
-        try {
+        
             MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
 
@@ -141,9 +142,13 @@ public class FilesViewDoubleRefTest extends JellyTestCase {
             TestKit.waitForScanFinishedSimple();
 
             TestKit.createNewPackage(PROJECT_NAME, "a.b.c");
+            new EventTool().waitEvent(2000);
             TestKit.createNewElement(PROJECT_NAME, "a", "AClass");
+            new EventTool().waitEvent(2000);
             TestKit.createNewElement(PROJECT_NAME, "a.b", "BClass");
+            new EventTool().waitEvent(2000);
             TestKit.createNewElement(PROJECT_NAME, "a.b.c", "CClass");
+            new EventTool().waitEvent(2000);
 
             mh = new MessageHandler("Refreshing");
             TestKit.removeHandlers(log);
@@ -183,7 +188,12 @@ public class FilesViewDoubleRefTest extends JellyTestCase {
             }
             int result = TestKit.compareThem(expected, actual, false);
             assertEquals("Wrong files in Versioning View", expected.length, result);
-            expected = new String[]{"Locally Deleted", "Locally Copied"};
+            if (TestKit.getOsName().indexOf("Win") > -1){
+                expected = new String[]{"Locally Copied", "Locally Deleted"};
+            }else{
+                expected = new String[]{"Locally Added", "Locally Deleted"}; 
+            }
+                
             actual = new String[vo.tabFiles().getRowCount()];
             for (int i = 0; i < vo.tabFiles().getRowCount(); i++) {
                 actual[i] = vo.tabFiles().getValueAt(i, 1).toString().trim();
@@ -211,10 +221,8 @@ public class FilesViewDoubleRefTest extends JellyTestCase {
             txt.setText("AClass");
             refBut = new JButtonOperator(nbdialog, "Refactor");
             refBut.push();
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
-        } finally {
+        
             TestKit.closeProject(PROJECT_NAME);
-        }
+        
     }
 }

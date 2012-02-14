@@ -16,6 +16,7 @@ Other names may be trademarks of their respective owners.
 
 
 
+<!-- +++++++++++++++++++++++ TOC Topics +++++++++++++++++++++++++++ -->
 <!-- Start of "Developing Web Applications" help -->
     <mapID target="about_entwebapps" url="web/about_webtier.html" />
 
@@ -76,59 +77,13 @@ Other names may be trademarks of their respective owners.
 	<mapID target="jaxb_wizard" url="webservice/jaxb/jaxb_wizard.html" />
         <mapID target="marshall_unmarshall" url="webservice/jaxb/marshall_unmarshall.html" />
         <mapID target="unmarshall_marshall" url="webservice/jaxb/unmarshall_marshall.html" />
-        <mapID target="org.netbeans.modules.xml.jaxb.ui.JAXBWizBindingCfgPanel" url="webservice/jaxb/jaxb_wizard.html" />
 	<!-- End of "JAXB" section -->
-
-<!-- Start of "WSIT" section -->
-    <mapID target="org.netbeans.modules.websvc.wsitconf.about" url="webservice/nodes/wsitconf-about.html"/>
-    <mapID target="org.netbeans.modules.websvc.wsitconf.access" url="webservice/nodes/wsitconf-access.html"/>
-
-   <!-- Start of CSH -->
-    <!-- Client: -->
-   <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.CallbackClientNode" url="webservice/nodes/wsitconf-UserAuthenticationNode.html"/>
-   <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.TransportClientNode" url="webservice/nodes/wsitconf-TransportClientNode.html"/>
-   <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.AdvancedConfigurationClientNode" url="webservice/nodes/wsitconf-AdvancedConfigurationNode.html"/>
-   
-   <!-- Service: -->
-   <mapID target="org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingInputNode" url="webservice/nodes/wsitconf-BindingInputNode.html"/>
-   <mapID target="org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingOutputNode" url="webservice/nodes/wsitconf-BindingOutputNode.html"/>
-   <mapID target="org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationContainerServiceNode" url="webservice/nodes/wsitconf-OperationContainerServiceNode.html"/>
-   <mapID target="org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationNode" url="webservice/nodes/wsitconf-OperationNode.html"/>
-   <mapID target="org.netbeans.modules.websvc.wsitconf.ui.nodes.ServiceNode" url="webservice/nodes/wsitconf-ServiceNode.html"/>
-   
-   <!-- End of "WSIT" section -->
-
-
-<!--Start of RESTful web service wizard help links -->
-        <mapID target="org.netbeans.modules.websvc.rest.wizard.EntitySelectionPanel" url="webservice/create/create_rest_from_scratch.html" />
-        <mapID target="org.netbeans.modules.websvc.rest.wizard.PatternSelectionPanel" url="webservice/create/create_rest_from_scratch.html" />
-        <mapID target="org.netbeans.modules.websvc.rest.wizard.ClientStubsSetupPanel" url="webservice/consume/wsc_stubs.html" />
-<!--End of RESTful web service section -->
-
-<!--Start of web service CSH -->
-	<mapID target="org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardDescriptor" url="webservice/csh/wizards/WebServiceClientWizardDescriptor.html" />
-	<mapID target="org.netbeans.modules.websvc.core.dev.wizard.WebServiceTypePanel" url="webservice/csh/wizards/WebServiceWizardDescriptor.html" />
-        <mapID target="org.netbeans.modules.websvc.core.dev.wizard.WebServiceFromWSDLPanel" url="webservice/csh/wizards/WebServiceWizardFromWSDLDescriptor.html" />
-	<mapID target="org.netbeans.modules.websvc.core.dev.wizard.WebServiceWizardDescriptor" url="webservice/csh/wizards/WebServiceWizardFromWSDLDescriptor.html" />
-        <mapID target="org.netbeans.modules.websvc.wsdl.wizard.WsdlPanel" url="webservice/csh/wizards/WsdlPanel.html" />
-	<mapID target="org.netbeans.modules.websvc.core.dev.wizard.MessageHandlerWizard" url="webservice/csh/wizards/MessageHandlerWizard.html" />
-        <mapID target="org.netbeans.modules.websvc.core.dev.wizard.LogicalHandlerWizard" url="webservice/csh/wizards/LogicalHandlerWizard.html" />
-
-<!--Start of web service attributes editor CSH -->
-<mapID target="org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieImpl" url="webservice/csh/editor/EditWSAttributesCookieImpl.html"/>
-	<mapID target="ID_GLOBAL" url="webservice/csh/editor/ID_GLOBAL.html" />
-	<mapID target="ID_PORT_TYPE" url="webservice/csh/editor/ID_PORT_TYPE.html" />
-	<mapID target="ID_PORT_TYPE_OPERATION_FAULT" url="webservice/csh/editor/ID_PORT_TYPE_OPERATION_FAULT.html" />
-        <mapID target="ID_BINDING" url="webservice/csh/editor/ID_BINDING.html" />
-	<mapID target="ID_BINDING_OPERATION" url="webservice/csh/editor/ID_BINDING_OPERATION.html" />
-        <mapID target="ID_SERVICE" url="webservice/csh/editor/ID_SERVICE.html" />
-	<mapID target="ID_PORT" url="webservice/csh/editor/ID_PORT.html" />
-        <mapID target="ID_EXTERNAL_BINDING" url="webservice/csh/editor/ID_EXTERNAL_BINDING.html" />
-
 <!-- End of "Developing Web Services" help -->
 
-<!-- Start of J2EE Server help -->
-  
+
+
+<!-- Start of J2EE Server help-->
+<!-- Start of J2EE Server TOC topics-->
 	<mapID target="about_server" url="server/about_server.html" />
 	<mapID target="server_register" url="server/server_register.html" />
 	<mapID target="server_context" url="server/server_context.html" />
@@ -136,27 +91,19 @@ Other names may be trademarks of their respective owners.
 	<mapID target="server_remove" url="server/server_remove.html" />
         <mapID target="server_aboutdbconnect" url="server/server_aboutdbconnect.html" />
 	<mapID target="registering_app_server_jboss" url="server/jboss/registering_app_server_jboss.html" />
-		<mapID target="about_jboss" url="server/jboss/about_jboss.html" />
-		<mapID target="jboss_process" url="server/jboss/jboss_process.html" />
-		<mapID target="jboss_quickref" url="server/jboss/jboss_quickref.html" />
-		<mapID target="datasource_app_server_jboss" url="server/jboss/datasource_app_server_jboss.html" />
-		<mapID target="management_console_app_server_jboss" url="server/jboss/management_console_app_server_jboss.html" />
-		<mapID target="j2eeplugins_registering_app_server_jboss_location" url="server/jboss/jboss_location_csh.html" />
-		<mapID target="j2eeplugins_registering_app_server_jboss_properties" url="server/jboss/jboss_properties_csh.html" />
+        <mapID target="about_jboss" url="server/jboss/about_jboss.html" />
+        <mapID target="jboss_process" url="server/jboss/jboss_process.html" />
+        <mapID target="jboss_quickref" url="server/jboss/jboss_quickref.html" />
+        <mapID target="datasource_app_server_jboss" url="server/jboss/datasource_app_server_jboss.html" />
+        <mapID target="management_console_app_server_jboss" url="server/jboss/management_console_app_server_jboss.html" />
 	<mapID target="registering_app_server_weblogic" url="server/weblogic/registering_app_server_weblogic.html" />
-		<mapID target="j2eeplugins_registering_app_server_weblogic_location" url="server/weblogic/weblogic_location_csh.html" />
-		<mapID target="j2eeplugins_registering_app_server_weblogic_properties" url="server/weblogic/weblogic_properties_csh.html" />
-
-        <mapID target="nodes_server_registry_node_html" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_runtime.html" />
-        
-        <!-- The Server Manager dialog box -->
-	<mapID target="org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager" url="server/csh_server_manager.html" />
-        <mapID target="org.netbeans.api.server.CommonServerUIs" url="server/csh_server_manager.html" />
-
+<!-- End of J2EE Server TOC topics-->
 <!-- End of J2EE Server help -->
+
+
 	
 <!-- Start of Enterprise Application help -->
-
+<!-- Start of Enterprise Application TOC topics -->
     <mapID target="about_ent_apps" url="enterprise/general/about_ent_apps.html" />
     <mapID target="ent_app_process" url="enterprise/general/ent_app_process.html" />
     <mapID target="ent_app_quickref" url="enterprise/general/ent_app_quickref.html" />
@@ -171,25 +118,13 @@ Other names may be trademarks of their respective owners.
     <mapID target="use_db" url="enterprise/general/use_db.html" />
     <mapID target="send_jms" url="enterprise/general/send_jms.html" />
     <mapID target="send_email" url="enterprise/general/send_email.html" />
-
-    <!-- New Enterprise Application Project Wizard csh -->
-    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel_EAR" url="enterprise/csh/NewEarProjectWizardIterator.html" />
-    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_EAR" url="enterprise/csh/NewEarProjectWizardIterator_servers.html" />
-    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPanel_EAR" url="enterprise/csh/ImportBlueprintEarWizardIterator.html" />
-    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_EAR_IMPORT" url="enterprise/csh/ImportBlueprintEarWizardIterator_servers.html" />
-    <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.PanelModuleDetection" url="enterprise/csh/ImportBlueprintEarWizardIterator2.html" />
-     
-    <!-- Enterprise Application Project Properties dialog box csh -->
-
-    <mapID target="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerGeneral" url="enterprise/csh/CustomizerGeneral.html" />
-    <mapID target="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerJarContent" url="enterprise/csh/CustomizerJarContent.html" />
-    <mapID target="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerLibraries" url="enterprise/csh/CustomizerLibraries.html" />
-    <mapID target="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerRun" url="enterprise/csh/CustomizerRun.html" />
-
+<!-- Start of Enterprise Application TOC topics -->
 <!-- End of Enterprise Application help -->
 
-<!-- Start of EJB help -->
 
+
+<!-- Start of EJB help -->
+<!-- Start of EJB TOC topics -->
     <mapID target="about_entity_beans" url="ejb/general/about_entity_beans.html" />
     <mapID target="about_msg_driven_beans" url="ejb/general/about_msg_driven_beans.html" />
     <mapID target="about_session_beans" url="ejb/general/about_session_beans.html" />
@@ -197,7 +132,6 @@ Other names may be trademarks of their respective owners.
     <mapID target="about_ejbs" url="ejb/general/about_ejbs.html" />
     <mapID target="ejb_process" url="ejb/general/ejb_process.html" />
     <mapID target="ejb_quickref" url="ejb/general/ejb_quickref.html" />
-
     <mapID target="create_ejb" url="ejb/editing/create_ejb.html" />
     <mapID target="create_ejb_project" url="ejb/editing/create_ejb_project.html" />
     <mapID target="add_ejbql" url="ejb/editing/add_ejbql.html" />
@@ -210,129 +144,38 @@ Other names may be trademarks of their respective owners.
     <mapID target="about_call_ejb" url="ejb/editing/about_call_ejb.html" />
     <mapID target="refactor_ejb" url="ejb/editing/refactor_ejb.html" />
     <mapID target="generate_cmp_beans" url="ejb/editing/generate_cmp_beans.html" />
-
     <mapID target="build_ejb" url="ejb/deploy/build_ejb.html" />
-
     <!-- Debug and test EJB section -->
     <mapID target="deploy_ejb" url="ejb/deploy/deploy_ejb.html" />
     <mapID target="test_ejb" url="ejb/debug/test_ejb.html" />
     <mapID target="debug_ejb" url="ejb/debug/debug_ejb.html" />
     <mapID target="profile_ejb" url="ejb/debug/profile_ejb.html" />
-
     <mapID target="config_ejb_about" url="ejb/configuring/config_ejb_about.html" />
     <mapID target="ejb_relationship" url="ejb/configuring/ejb_relationship.html" />
     <mapID target="about_ejb_relationship" url="ejb/configuring/about_ejb_relationship.html" />
     <mapID target="config_ejb_dd" url="ejb/configuring/config_ejb_dd.html" />
-
     <mapID target="entity_quickref" url="ejb/general/entity_quickref.html" />
     <mapID target="about_cmp" url="ejb/general/about_cmp.html" />
-    
-    <!-- EJB Module CSH -->  
-      
-    <!-- EJB Module from Existing Sources Project Wizard dialog box csh: -->
-    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPanel_EJB" url="ejb/csh/ejb_with_source_wizard1.html" />
-    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_EJB_IMPORT" url="ejb/csh/ejb_new_wizard_server.html" />
-    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.PanelSourceFolders" url="ejb/csh/ejb_with_source_wizard2.html" />
-
-    <!-- EJB Module Project Wizard dialog box csh: -->
-    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel_EJB" url="ejb/csh/ejb_new_wizard.html" />
-    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_EJB" url="ejb/csh/ejb_new_wizard_server.html" />
+<!-- End of EJB TOC topics -->
+<!-- End of EJB help -->
 
 
-    <!-- Standard EJB Module project properties dialog box: -->
-    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarCustomizer" url="ejb/csh/stand-ejb-properties-sources.html" />
-    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerLibraries" url="ejb/csh/stand-ejb-properties-libraries.html" />
-    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerCompile" url="ejb/csh/stand-ejb-properties-compile.html" />
-    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerJar" url="ejb/csh/stand-ejb-properties-packaging.html" />
-    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerJavadoc" url="ejb/csh/stand-ejb-properties-javadoc.html" />
-    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerRun" url="ejb/csh/stand-ejb-properties-run.html" />
-    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerSources" url="ejb/csh/stand-ejb-properties-sources.html" />
-    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerWSServiceHost" url="ejb/csh/stand-ejb-properties-webservices.html" />
-    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerWSServiceHostDisabled" url="ejb/csh/stand-ejb-properties-webservices-disabled.html" />
-    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerWSClientHost" url="ejb/csh/stand-ejb-properties-webservices.html" />
-    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerWSClientHostDisabled" url="ejb/csh/stand-ejb-properties-webservices.html" />
-
-
-    <!-- Add Library dialog (EJB Module) CSH -->
-    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.LibrariesChooser" url="ejb/csh/stand-ejb-add-library.html" />
-
-    <!-- EJB Module with Existing Ant Script Project Wizard dialog box csh: -->
-    <!--<mapID target="org.netbeans.modules.j2ee.ejbfreeform.ui.EJBLocationsWizardPanel" url="ejb/csh/freeform_ejb_wizard.html" />-->
-
-    <!-- ejb-jar.xml editor csh: -->
-    <mapID target="org.netbeans.modules.j2ee.ddloaders.multiview.SessionNode" url="ejb/csh/graphic_editor/dd_multiview_Session.html" />
-    <mapID target="org.netbeans.modules.j2ee.ddloaders.multiview.EntityNode" url="ejb/csh/graphic_editor/dd_multiview_Entity.html" />
-    <mapID target="org.netbeans.modules.j2ee.ddloaders.multiview.MessageDrivenNode" url="ejb/csh/graphic_editor/dd_multiview_MDB.html" />
-    <mapID target="org.netbeans.modules.j2ee.ddloaders.multiview.CmpRelationshipsView" url="ejb/csh/graphic_editor/dd_multiview_Relationship.html" />
-    <mapID target="org.netbeans.modules.j2ee.ddloaders.multiview.CmpRelationShipsNode" url="ejb/csh/graphic_editor/dd_multiview_Relationship.html" />
-    <mapID target="org.netbeans.modules.j2ee.ddloaders.multiview.EjbJarView" url="ejb/csh/graphic_editor/dd_multiview_moduleDetails.html" />
-    <mapID target="org.netbeans.modules.j2ee.ddloaders.multiview.EjbJarDetailsNode" url="ejb/csh/graphic_editor/dd_multiview_moduleDetails.html" />
-    <mapID target="dd_multiview_beanDetails" url="ejb/csh/graphic_editor/dd_multiview_beanDetails.html" />
-    <mapID target="dd_multiview_beanEnviornment" url="ejb/csh/graphic_editor/dd_multiview_beanEnviornment.html" />
-    <mapID target="dd_multiview_beanImp.html" url="ejb/csh/graphic_editor/dd_multiview_beanImp.html" />
-    
-
-    <!-- GRAPHIC EDITOR FOR EJB-JAR.XML FILES - SECURITY-RELATED IDs: -->
-    <mapID target="org.netbeans.modules.j2ee.ddloaders.multiview.EjbJarSecurityRolesNode" url="ejb/csh/graphic_editor/dd_multiview_securityRoles.html" />
-    <mapID target="dd_multiview_beanSecurity" url="ejb/csh/graphic_editor/dd_multiview_beanSecurity.html" />
-
-
-    <!-- New EJB Wizard Pages -->
-
-    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.SessionEJBWizardDescriptor" url="ejb/csh/ejb_new_session.html" />
-    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.MessageEJBWizardPanel" url="ejb/csh/ejb_new_mdb.html" />
-    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.entity.EntityEJBWizardDescriptor" url="ejb/csh/ejb_new_entity.html" />
-    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp.DatabaseTablesPanel" url="ejb/csh/ejb_generate_cmp1.html" />
-    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp.EntityClassesPanel" url="ejb/csh/ejb_generate_cmp2.html" />
-    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.MessageDestinationPanel" url="ejb/csh/ejb_new_mdb_destination.html" />
-
-    <!-- Enterprise Resources CSH -->
-    <!-- These topics are for Enterprise Resources popup menu in Source Editor -->
-    <mapID target="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.CallEjbPanel" url="ejb/csh/call_ejb.html" />
-    <mapID target="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.SelectDatabasePanel" url="enterprise/csh/use_db.html" />
-    <mapID target="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.SendEmailPanel" url="enterprise/csh/send_email.html" />
-    <mapID target="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.SendJMSMessageCodeGenerator" url="enterprise/csh/send_jms.html" />
-    <!-- The following help id might no longer be valid in 6.8 -->
-    <mapID target="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.SendJMSMessageAction" url="enterprise/csh/send_jms.html" />
-
-
-    
-    <!-- End of EJB help -->
 
 <!-- Start of Application Client help -->
-
+<!-- Start of Application Client TOC topics -->
     <mapID target="appclient_about" url="appclient/appclient_about.html" />
     <mapID target="appclient_create" url="appclient/appclient_create.html" />
     <mapID target="appclient_edit_dd" url="appclient/appclient_edit_dd.html" />
     <mapID target="appclient_quickref" url="appclient/appclient_quickref.html" />
     <mapID target="appclient_process" url="appclient/appclient_process.html" />
-    
-    <!-- Start of Application Client CSH -->
-    
-    <!-- New App Client Wizards -->
-    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel_APPCLIENT" url="appclient/csh/new_appclient.html" />
-    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_APPCLIENT" url="appclient/csh/new_appclient_server.html" />
-    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPanel_APPCLIENT" url="appclient/csh/appclient_with_source_wizard1.html" />
-    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_APPCLIENT_IMPORT" url="appclient/csh/new_appclient_server.html" />
-    <mapID target="org.netbeans.modules.j2ee.clientproject.ui.wizards.PanelSourceFolders"  url="appclient/csh/appclient_with_source_wizard2.html" />
-    
-    <!-- App Client Project Properties -->
-    
-    <mapID target="org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerSources" url="appclient/csh/appclient_props_sources.html" />
-    <mapID target="org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerLibraries" url="appclient/csh/appclient_props_libraries.html" />
-    <mapID target="org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerCompile" url="appclient/csh/appclient_props_compiling.html" />
-    <mapID target="org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerJar" url="appclient/csh/appclient_props_packaging.html" />
-    <mapID target="org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerJavadoc" url="appclient/csh/appclient_props_documenting.html" />
-    <mapID target="org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerRun" url="appclient/csh/appclient_props_run.html" />
-    <mapID target="org.netbeans.modules.j2ee.clientproject.wsclient.CustomizerWSClientHostDisabled" url="appclient/csh/appclient_props_wsclient_disabled.html" />
-    <mapID target="org.netbeans.modules.j2ee.clientproject.wsclient.CustomizerWSClientHost" url="appclient/csh/appclient_props_wsclient.html" />
-    
-    <!-- End of Application Client CSH -->
-    
+<!-- End of Application Client TOC topics -->
 <!-- End of Application Client help -->
     
+    
+    
+    
 <!-- Start of Persistence help -->
-
+<!-- Start of Persistence TOC topics -->
     <mapID target="persist_about" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_about.html" />
     <mapID target="persist_unit" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_unit.html" />
     <mapID target="persist_unitabout" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_aboutunit.html" />
@@ -346,25 +189,13 @@ Other names may be trademarks of their respective owners.
     <mapID target="persist_mapping" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_mapping.html" />
     <mapID target="persist_webapp" url="persistence/general/persistence_webapp.html" />
     <mapID target="persist_session" url="persistence/general/persistence_sessionfromentity.html" />
-
-    <!-- New File Persistence CSH - includes the create JSF wizard pages -->
-    
-    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.entity.EntityWizardDescriptor" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/persist_new_entityclass.html" />
-    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/persist_new_entityclass_db1.html" />
-    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/persist_new_entityclass_db2.html" />
-    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.MappingOptionsPanel" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/persist_new_entityclass_db3.html" />
-    <mapID target="org.netbeans.modules.j2ee.persistence.unit.AddEntityPanel" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/db_persist_addentityclass.html" />
-    <mapID target="org.netbeans.modules.j2ee.common.DatasourceCustomizer" url="persistence/csh/db_new_datasource.html" />
-    <mapID target="org.netbeans.modules.j2ee.common.ui.MissingDatabaseConnectionWarning" url="persistence/csh/db_resolve_datasource.html" />
-    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao.EjbFacadeWizardIterator$PersistenceClientEntitySelection" url="persistence/csh/persist_new_sessionfromentity1.html" />
-    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao.EjbFacadeWizardPanel2" url="persistence/csh/persist_new_sessionfromentity2.html" />
-    
-    <!-- Other Persistence topics located in Java helpset -->
-
+<!-- End of Persistence TOC topics -->
 <!-- End of Persistence help -->
 
 
-<!-- Begin Glassfish help topics -->
+
+<!-- Begin Glassfish help -->
+<!-- Begin Glassfish TOC topics -->
     <mapID target="aboutplugin"      				url="server/glassfish/general/aboutplugin.html" />
     <mapID target="register_appserver"                          url="server/glassfish/general/register_appserver.html" />
     <mapID target="viewing_appserver"				url="server/glassfish/general/viewing_SJS.html" />
@@ -381,50 +212,211 @@ Other names may be trademarks of their respective owners.
     <mapID target="sjs_manageuser"                              url="server/glassfish/general/sjs_manage_users.html" />
     <mapID target="sjs_security"                                url="server/glassfish/general/sjs_configure_security.html" />
     <mapID target="adminconsole"                                url="server/glassfish/general/adminconsole.html" />
-    
-    
     <!-- CMP pages -->
     <mapID target="gen_tables" url="server/glassfish/cmp/gen_tables.html" />
     <mapID target="map_bean_to_db" url="server/glassfish/cmp/map_bean_to_db.html" />
     <mapID target="map_rel_fields" url="server/glassfish/cmp/map_rel_fields.html" />
-    
     <!-- sun-???.xml dataobject mappings -->
     <mapID target="sun-web_help"				url="server/glassfish/configeditors/WebAppGeneral.html"  />
     <mapID target="sun-ejb-jar_help"				url="server/glassfish/ejbconfigeditors/sunconfig.html"  />
     <mapID target="sun-application_help"			url="server/glassfish/appconfigeditors/sunapplication.html"  />
     <mapID target="sun-application-client_help"			url="server/glassfish/appclientconfigeditors/sun-application-client.html"  />
-    
-    
+<!-- End Glassfish TOC topics -->    
+<!-- End Glassfish help -->
 
-    <!-- sun-web.xml DD editor CSH: -->
-    <!-- DD dialogs -->
+
+
+
+
+<!-- +++++++++++++++++++++++ CSH Topics +++++++++++++++++++++++++++ -->
+
+
+
+<!-- Start of "Developing Web Services" CSH -->
+	<mapID target="org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardDescriptor" url="webservice/csh/wizards/WebServiceClientWizardDescriptor.html" />
+	<mapID target="org.netbeans.modules.websvc.core.dev.wizard.WebServiceTypePanel" url="webservice/csh/wizards/WebServiceWizardDescriptor.html" />
+        <mapID target="org.netbeans.modules.websvc.core.dev.wizard.WebServiceFromWSDLPanel" url="webservice/csh/wizards/WebServiceWizardFromWSDLDescriptor.html" />
+	<mapID target="org.netbeans.modules.websvc.core.dev.wizard.WebServiceWizardDescriptor" url="webservice/csh/wizards/WebServiceWizardFromWSDLDescriptor.html" />
+        <mapID target="org.netbeans.modules.websvc.wsdl.wizard.WsdlPanel" url="webservice/csh/wizards/WsdlPanel.html" />
+	<mapID target="org.netbeans.modules.websvc.core.dev.wizard.MessageHandlerWizard" url="webservice/csh/wizards/MessageHandlerWizard.html" />
+        <mapID target="org.netbeans.modules.websvc.core.dev.wizard.LogicalHandlerWizard" url="webservice/csh/wizards/LogicalHandlerWizard.html" />
+        <!-- WSIT CSH -->
+        <mapID target="org.netbeans.modules.websvc.wsitconf.about" url="webservice/nodes/wsitconf-about.html"/>
+        <mapID target="org.netbeans.modules.websvc.wsitconf.access" url="webservice/nodes/wsitconf-access.html"/>
+        <!-- JAXB CSH -->
+        <mapID target="org.netbeans.modules.xml.jaxb.ui.JAXBWizBindingCfgPanel" url="webservice/jaxb/jaxb_wizard.html" />
+        <!-- Client CSH: -->
+        <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.CallbackClientNode" url="webservice/nodes/wsitconf-UserAuthenticationNode.html"/>
+        <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.TransportClientNode" url="webservice/nodes/wsitconf-TransportClientNode.html"/>
+        <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.AdvancedConfigurationClientNode" url="webservice/nodes/wsitconf-AdvancedConfigurationNode.html"/>
+        <!-- Service: -->
+        <mapID target="org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingInputNode" url="webservice/nodes/wsitconf-BindingInputNode.html"/>
+        <mapID target="org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingOutputNode" url="webservice/nodes/wsitconf-BindingOutputNode.html"/>
+        <mapID target="org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationContainerServiceNode" url="webservice/nodes/wsitconf-OperationContainerServiceNode.html"/>
+        <mapID target="org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationNode" url="webservice/nodes/wsitconf-OperationNode.html"/>
+        <mapID target="org.netbeans.modules.websvc.wsitconf.ui.nodes.ServiceNode" url="webservice/nodes/wsitconf-ServiceNode.html"/>
+        <!--Start of RESTful web service wizard help links -->
+        <mapID target="org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.STANDALONE" url="webservice/csh/wizards/RestPatternResourceSimple.html" />
+        <mapID target="org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.CONTAINER" url="webservice/csh/wizards/RestPatternResourceContainer.html" />
+        <mapID target="org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.CLIENTCONTROLLED" url="webservice/csh/wizards/RestPatternResourceContainer.html" />
+        <!--Start of web service attributes editor CSH -->
+        <mapID target="org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieImpl" url="webservice/csh/editor/EditWSAttributesCookieImpl.html"/>
+	<mapID target="ID_GLOBAL" url="webservice/csh/editor/ID_GLOBAL.html" />
+	<mapID target="ID_PORT_TYPE" url="webservice/csh/editor/ID_PORT_TYPE.html" />
+	<mapID target="ID_PORT_TYPE_OPERATION_FAULT" url="webservice/csh/editor/ID_PORT_TYPE_OPERATION_FAULT.html" />
+        <mapID target="ID_BINDING" url="webservice/csh/editor/ID_BINDING.html" />
+	<mapID target="ID_BINDING_OPERATION" url="webservice/csh/editor/ID_BINDING_OPERATION.html" />
+        <mapID target="ID_SERVICE" url="webservice/csh/editor/ID_SERVICE.html" />
+	<mapID target="ID_PORT" url="webservice/csh/editor/ID_PORT.html" />
+        <mapID target="ID_EXTERNAL_BINDING" url="webservice/csh/editor/ID_EXTERNAL_BINDING.html" />
+<!-- End of "Developing Web Services" CSH -->
+
+<!-- Start of J2EE Server CSH topics-->
+        <mapID target="j2eeplugins_registering_app_server_jboss_location" url="server/jboss/jboss_location_csh.html" />
+        <mapID target="j2eeplugins_registering_app_server_jboss_properties" url="server/jboss/jboss_properties_csh.html" />
+        <mapID target="j2eeplugins_registering_app_server_weblogic_location" url="server/weblogic/weblogic_location_csh.html" />
+        <mapID target="j2eeplugins_registering_app_server_weblogic_properties" url="server/weblogic/weblogic_properties_csh.html" />
+        <!-- The Server Manager dialog box -->
+	<mapID target="org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager" url="server/csh_server_manager.html" />
+        <mapID target="org.netbeans.api.server.CommonServerUIs" url="server/csh_server_manager.html" />
+<!-- End of J2EE Server CSH topics-->
+
+<!-- Start of Enterprise Application CSH topics -->
+    <!-- New Enterprise Application Project Wizard csh -->
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel_EAR" url="enterprise/csh/NewEarProjectWizardIterator.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_EAR" url="enterprise/csh/NewEarProjectWizardIterator_servers.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPanel_EAR" url="enterprise/csh/ImportBlueprintEarWizardIterator.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_EAR_IMPORT" url="enterprise/csh/ImportBlueprintEarWizardIterator_servers.html" />
+    <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.PanelModuleDetection" url="enterprise/csh/ImportBlueprintEarWizardIterator2.html" />
+    <!-- Enterprise Application Project Properties dialog box csh -->
+    <mapID target="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerGeneral" url="enterprise/csh/CustomizerGeneral.html" />
+    <mapID target="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerJarContent" url="enterprise/csh/CustomizerJarContent.html" />
+    <mapID target="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerLibraries" url="enterprise/csh/CustomizerLibraries.html" />
+    <mapID target="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerRun" url="enterprise/csh/CustomizerRun.html" />
+<!-- End of Enterprise Application CSH topics -->
+
+<!-- Start of EJB CSH topics -->  
+    <!-- EJB Module from Existing Sources Project Wizard dialog box csh: -->
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPanel_EJB" url="ejb/csh/ejb_with_source_wizard1.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_EJB_IMPORT" url="ejb/csh/ejb_new_wizard_server.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.PanelSourceFolders" url="ejb/csh/ejb_with_source_wizard2.html" />
+    <!-- EJB Module Project Wizard dialog box csh: -->
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel_EJB" url="ejb/csh/ejb_new_wizard.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_EJB" url="ejb/csh/ejb_new_wizard_server.html" />
+    <!-- Standard EJB Module project properties dialog box: -->
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarCustomizer" url="ejb/csh/stand-ejb-properties-sources.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerLibraries" url="ejb/csh/stand-ejb-properties-libraries.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerCompile" url="ejb/csh/stand-ejb-properties-compile.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerJar" url="ejb/csh/stand-ejb-properties-packaging.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerJavadoc" url="ejb/csh/stand-ejb-properties-javadoc.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerRun" url="ejb/csh/stand-ejb-properties-run.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerSources" url="ejb/csh/stand-ejb-properties-sources.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerWSServiceHost" url="ejb/csh/stand-ejb-properties-webservices.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerWSServiceHostDisabled" url="ejb/csh/stand-ejb-properties-webservices-disabled.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerWSClientHost" url="ejb/csh/stand-ejb-properties-webservices.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerWSClientHostDisabled" url="ejb/csh/stand-ejb-properties-webservices.html" />
+    <!-- Add Library dialog (EJB Module) CSH -->
+    <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.LibrariesChooser" url="ejb/csh/stand-ejb-add-library.html" />
+    <!-- EJB Module with Existing Ant Script Project Wizard dialog box csh: -->
+    <!--<mapID target="org.netbeans.modules.j2ee.ejbfreeform.ui.EJBLocationsWizardPanel" url="ejb/csh/freeform_ejb_wizard.html" />-->
+    <!-- ejb-jar.xml editor csh: -->
+    <mapID target="org.netbeans.modules.j2ee.ddloaders.multiview.SessionNode" url="ejb/csh/graphic_editor/dd_multiview_Session.html" />
+    <mapID target="org.netbeans.modules.j2ee.ddloaders.multiview.EntityNode" url="ejb/csh/graphic_editor/dd_multiview_Entity.html" />
+    <mapID target="org.netbeans.modules.j2ee.ddloaders.multiview.MessageDrivenNode" url="ejb/csh/graphic_editor/dd_multiview_MDB.html" />
+    <mapID target="org.netbeans.modules.j2ee.ddloaders.multiview.CmpRelationshipsView" url="ejb/csh/graphic_editor/dd_multiview_Relationship.html" />
+    <mapID target="org.netbeans.modules.j2ee.ddloaders.multiview.CmpRelationShipsNode" url="ejb/csh/graphic_editor/dd_multiview_Relationship.html" />
+    <mapID target="org.netbeans.modules.j2ee.ddloaders.multiview.EjbJarView" url="ejb/csh/graphic_editor/dd_multiview_moduleDetails.html" />
+    <mapID target="org.netbeans.modules.j2ee.ddloaders.multiview.EjbJarDetailsNode" url="ejb/csh/graphic_editor/dd_multiview_moduleDetails.html" />
+    <mapID target="dd_multiview_beanDetails" url="ejb/csh/graphic_editor/dd_multiview_beanDetails.html" />
+    <mapID target="dd_multiview_beanEnviornment" url="ejb/csh/graphic_editor/dd_multiview_beanEnviornment.html" />
+    <mapID target="dd_multiview_beanImp.html" url="ejb/csh/graphic_editor/dd_multiview_beanImp.html" />
+    <!-- GRAPHIC EDITOR FOR EJB-JAR.XML FILES - SECURITY-RELATED IDs: -->
+    <mapID target="org.netbeans.modules.j2ee.ddloaders.multiview.EjbJarSecurityRolesNode" url="ejb/csh/graphic_editor/dd_multiview_securityRoles.html" />
+    <mapID target="dd_multiview_beanSecurity" url="ejb/csh/graphic_editor/dd_multiview_beanSecurity.html" />
+    <!-- New EJB Wizard Pages -->
+    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.SessionEJBWizardDescriptor" url="ejb/csh/ejb_new_session.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.MessageEJBWizardPanel" url="ejb/csh/ejb_new_mdb.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.entity.EntityEJBWizardDescriptor" url="ejb/csh/ejb_new_entity.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp.DatabaseTablesPanel" url="ejb/csh/ejb_generate_cmp1.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp.EntityClassesPanel" url="ejb/csh/ejb_generate_cmp2.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.MessageDestinationPanel" url="ejb/csh/ejb_new_mdb_destination.html" />
+    <!-- Enterprise Resources CSH -->
+    <!-- These topics are for Enterprise Resources popup menu in Source Editor -->
+    <mapID target="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.CallEjbPanel" url="ejb/csh/call_ejb.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.SelectDatabasePanel" url="enterprise/csh/use_db.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.SendEmailPanel" url="enterprise/csh/send_email.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.SendJMSMessageCodeGenerator" url="enterprise/csh/send_jms.html" />
+    <!-- The following help id might no longer be valid in 6.8 -->
+    <mapID target="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.SendJMSMessageAction" url="enterprise/csh/send_jms.html" />
+<!-- End of EJB CSH topics -->
+
+<!-- Start of Application Client CSH -->
+    <!-- New App Client Wizards -->
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel_APPCLIENT" url="appclient/csh/new_appclient.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_APPCLIENT" url="appclient/csh/new_appclient_server.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPanel_APPCLIENT" url="appclient/csh/appclient_with_source_wizard1.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_APPCLIENT_IMPORT" url="appclient/csh/new_appclient_server.html" />
+    <mapID target="org.netbeans.modules.j2ee.clientproject.ui.wizards.PanelSourceFolders"  url="appclient/csh/appclient_with_source_wizard2.html" />
+    <!-- App Client Project Properties -->
+    <mapID target="org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerSources" url="appclient/csh/appclient_props_sources.html" />
+    <mapID target="org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerLibraries" url="appclient/csh/appclient_props_libraries.html" />
+    <mapID target="org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerCompile" url="appclient/csh/appclient_props_compiling.html" />
+    <mapID target="org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerJar" url="appclient/csh/appclient_props_packaging.html" />
+    <mapID target="org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerJavadoc" url="appclient/csh/appclient_props_documenting.html" />
+    <mapID target="org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerRun" url="appclient/csh/appclient_props_run.html" />
+    <mapID target="org.netbeans.modules.j2ee.clientproject.wsclient.CustomizerWSClientHostDisabled" url="appclient/csh/appclient_props_wsclient_disabled.html" />
+    <mapID target="org.netbeans.modules.j2ee.clientproject.wsclient.CustomizerWSClientHost" url="appclient/csh/appclient_props_wsclient.html" />
+<!-- End of Application Client CSH -->
+
+<!-- Start New File Persistence CSH - includes the create JSF wizard pages -->
+    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.entity.EntityWizardDescriptor" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/persist_new_entityclass.html" />
+    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/persist_new_entityclass_db1.html" />
+    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/persist_new_entityclass_db2.html" />
+    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.MappingOptionsPanel" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/persist_new_entityclass_db3.html" />
+    <mapID target="org.netbeans.modules.j2ee.persistence.unit.AddEntityPanel" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/csh/db_persist_addentityclass.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.DatasourceCustomizer" url="persistence/csh/db_new_datasource.html" />
+    <mapID target="org.netbeans.modules.j2ee.common.ui.MissingDatabaseConnectionWarning" url="persistence/csh/db_resolve_datasource.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao.EjbFacadeWizardIterator$PersistenceClientEntitySelection" url="persistence/csh/persist_new_sessionfromentity1.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao.EjbFacadeWizardPanel2" url="persistence/csh/persist_new_sessionfromentity2.html" />
+    <!-- Note: Additional Persistence topics are located in Java helpset -->
+<!-- End of Persistence CSH topics -->
+
+
+<!-- Begin Glassfish CSH topics -->
+    <!-- glassfish-web.xml DD editor CSH -->
+    <!-- DD dialogs found in tabs -->
     <mapID target="AS_CFG_SecurityRoleNewPrincipal"		url="server/glassfish/configeditors/SecurityWebAddPrincipal.html"  />
     <mapID target="AS_CFG_SecurityRoleEditPrincipal"		url="server/glassfish/configeditors/SecurityWebEditPrincipal.html"  />
     <mapID target="AS_CFG_SecurityRoleNewGroup"                 url="server/glassfish/configeditors/SecurityWebAddGroup.html"  />
     <mapID target="AS_CFG_SecurityRoleEditGroup"                url="server/glassfish/configeditors/SecurityWebEditGroup.html"  />
-    
     <mapID target="AS_CFG_WebServiceEndpointSecurity"           url="server/glassfish/configeditors/SecurityWebMessageSecBindings.html"  />
     <mapID target="AS_CFG_WebServiceEndpointMessageSecurity"    url="server/glassfish/configeditors/SecurityWebMessageSecurity.html"  />
-    
-    <!-- DD CSH from within editor -->
-    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.JmsMappingView" 		url="server/glassfish/configeditors/WebAppMessages.html"  />
-    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.MessageDestinationNode" 	url="server/glassfish/configeditors/WebAppMessages.html"  />
-
+    <!-- DD CSH from within glassfish-web.xml visual editor -->
+    <!-- glassfish-web.xml visual editor : General tab -->
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebView"                    url="server/glassfish/configeditors/WebAppGeneral.html"  />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebDetailsNode"		url="server/glassfish/configeditors/WebAppGeneral.html"  />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebClassLoaderNode"         url="server/glassfish/configeditors/WebAppGeneral.html"  />
+    <!-- glassfish-web.xml visual editor : Messaging tab -->
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.JmsMappingView" 		url="server/glassfish/configeditors/WebAppMessages.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.MessageDestinationNode" 	url="server/glassfish/configeditors/WebAppMessages.html"  />
+    <!-- glassfish-web.xml visual editor : Servlets tab -->
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletView"                   url="server/glassfish/configeditors/Servlet.html"  />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletNode"                   url="server/glassfish/configeditors/Servlet.html"  />   
-
+    <!-- glassfish-web.xml visual editor : Web Services tab -->
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice.WebServiceView" 	url="server/glassfish/configeditors/WebserviceDescriptor.html"  />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice.WebServiceNode" 	url="server/glassfish/configeditors/WebserviceDescriptor.html"  />
- 
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefNode"             url="server/glassfish/configeditors/WebserviceClients.html"  />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefView"             url="server/glassfish/configeditors/WebserviceClients.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.PortInfoNode"               url="server/glassfish/configeditors/WebserviceClients.html"  />
+    <!-- glassfish-web.xml visual editor : Security tab -->
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.SecurityRoleMappingView"	url="server/glassfish/configeditors/SecurityWebRoleMapping.html"  />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.SecurityRoleMappingNode"	url="server/glassfish/configeditors/SecurityWebRoleMapping.html"  />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.EnvironmentView"            url="server/glassfish/appclientconfigeditors/sun-applicationclient_env.html"  />
-
+    <!-- glassfish-web.xml visual editor : Environment tab -->
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.MessageDestinationRefNode"     url="server/glassfish/appclientconfigeditors/sun-applicationclient_env.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.EjbRefNode"                 url="server/glassfish/appclientconfigeditors/sun-applicationclient_env.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ResourceRefNode"            url="server/glassfish/appclientconfigeditors/sun-applicationclient_env.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ResourceEnvRefNode"         url="server/glassfish/appclientconfigeditors/sun-applicationclient_env.html"  />
     <!-- sun-ejb-jar.xml DD editor CSH: -->
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbJarView"                 url="server/glassfish/ejbconfigeditors/sunconfig.html" />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbJarDetailsNode"          url="server/glassfish/ejbconfigeditors/sunconfig.html" />
@@ -433,37 +425,32 @@ Other names may be trademarks of their respective owners.
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.EjbNode"                       url="server/glassfish/ejbconfigeditors/entitybean.html" />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.ReferencesNode"                url="server/glassfish/ejbconfigeditors/entitybean.html" />  
     <mapID target="AS_CFG_CmpEntityEjb"                                                                 url="server/glassfish/ejbconfigeditors/entitybean.html" />
-
     <!-- sun-application-client.xml DD editor CSH -->
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.appclient.SunAppClientJWSNode"     url="server/glassfish/appclientconfigeditors/sun-application-client.html"  />
-
     <!-- older targets we can probably remove -->
-    <mapID target="AS_CFG_ServiceRefPortInfoStubProperty"               url="server/glassfish/configeditors/Servlet.html"  />
+    <!--    <mapID target="AS_CFG_ServiceRefPortInfoStubProperty" url="server/glassfish/configeditors/Servlet.html"  />-->
+    <!-- Sun Resource New File wizard and property sheet CSH pages: -->
+    <mapID target="AS_Wiz_ConnPool_chooseDB" 		url="server/glassfish/resourcewizards/ConnPool_chooseDB.html"  />
+    <mapID target="AS_Wiz_ConnPool_props" 		url="server/glassfish/resourcewizards/ConnPool_props.html"  />
+    <mapID target="AS_Wiz_ConnPool_poolSettings" 	url="server/glassfish/resourcewizards/ConnPool_poolSettings.html"  />
+    <mapID target="AS_Wiz_DataSource_general" 		url="server/glassfish/resourcewizards/DataSource_general.html"  />
+    <mapID target="AS_Wiz_DataSource_props" 		url="server/glassfish/resourcewizards/DataSource_props.html"  />
+    <mapID target="AS_Wiz_JMS_general"                  url="server/glassfish/resourcewizards/JMS_general.html"  />
+    <mapID target="AS_Wiz_JMS_props"                    url="server/glassfish/resourcewizards/JMS_props.html"  />
+    <mapID target="AS_Wiz_Mail_general"                 url="server/glassfish/resourcewizards/Mail_general.html"  />
+    <mapID target="AS_Wiz_Mail_props"                   url="server/glassfish/resourcewizards/Mail_props.html"  />
+    <mapID target="AS_RegServ_EnterPIDir"               url="server/glassfish/runtimetab/RegServ_UserDef.html" />
+    <mapID target="AS_RegServ_EnterDomainDir"      	url="server/glassfish/runtimetab/RegServ_UserDef.html" />
+    <mapID target="AS_RegServ_EnterRemoteInfo"      	url="server/glassfish/runtimetab/RegServ_Remote.html" />
+    <mapID target="AS_RegServ_EnterNameAndPassword"     url="server/glassfish/runtimetab/RegServ_LogInfo.html" />
+    <mapID target="AS_RegServ_EnterPlatformDir"      	url="server/glassfish/runtimetab/RegServ_Choose.html" />
+    <mapID target="AS_RegServ_DefinePorts"      	url="server/glassfish/runtimetab/RegServ_Create.html" />
+    <mapID target="registering_app_server_hk2_location" url="server/glassfish/runtimetab/RegServ_Choose_v3.html" />
+    <mapID target="registering_app_server_hk2_domain"   url="server/glassfish/runtimetab/RegServ_Remote_v3.html" />
+    <!-- glassfish-application.xml DD editor CSH: -->
+    <mapID target="AS_CFG_Application"                  url="server/glassfish/appconfigeditors/sunapplication.html" />
+<!-- End Glassfish CSH topics -->
 
-   <!-- Sun Resource New File wizard and property sheet CSH pages: -->
-   <mapID target="AS_Wiz_ConnPool_chooseDB" 		url="server/glassfish/resourcewizards/ConnPool_chooseDB.html"  />
-   <mapID target="AS_Wiz_ConnPool_props" 		url="server/glassfish/resourcewizards/ConnPool_props.html"  />
-   <mapID target="AS_Wiz_ConnPool_poolSettings" 	url="server/glassfish/resourcewizards/ConnPool_poolSettings.html"  />
-   <mapID target="AS_Wiz_DataSource_general" 		url="server/glassfish/resourcewizards/DataSource_general.html"  />
-   <mapID target="AS_Wiz_DataSource_props" 		url="server/glassfish/resourcewizards/DataSource_props.html"  />
-   <mapID target="AS_Wiz_JMS_general"                   url="server/glassfish/resourcewizards/JMS_general.html"  />
-   <mapID target="AS_Wiz_JMS_props"                     url="server/glassfish/resourcewizards/JMS_props.html"  />
-   <mapID target="AS_Wiz_Mail_general"                  url="server/glassfish/resourcewizards/Mail_general.html"  />
-   <mapID target="AS_Wiz_Mail_props"                    url="server/glassfish/resourcewizards/Mail_props.html"  />
-
-    <mapID target="AS_RegServ_EnterPIDir"                                       url="server/glassfish/runtimetab/RegServ_UserDef.html" />
-    <mapID target="AS_RegServ_EnterDomainDir"      				url="server/glassfish/runtimetab/RegServ_UserDef.html" />
-    <mapID target="AS_RegServ_EnterRemoteInfo"      				url="server/glassfish/runtimetab/RegServ_Remote.html" />
-    <mapID target="AS_RegServ_EnterNameAndPassword"                             url="server/glassfish/runtimetab/RegServ_LogInfo.html" />
-    <mapID target="AS_RegServ_EnterPlatformDir"      				url="server/glassfish/runtimetab/RegServ_Choose.html" />
-    <mapID target="AS_RegServ_DefinePorts"      				url="server/glassfish/runtimetab/RegServ_Create.html" />
-
-    <mapID target="registering_app_server_hk2_location"      			url="server/glassfish/runtimetab/RegServ_Choose_v3.html" />
-    <mapID target="registering_app_server_hk2_domain"      			url="server/glassfish/runtimetab/RegServ_Remote_v3.html" />
-  
-
-  <!-- sun-application.xml DD editor CSH: -->
-  <mapID target="AS_CFG_Application"                    			url="server/glassfish/appconfigeditors/sunapplication.html" />
 
 </map>
 

@@ -75,7 +75,7 @@ public class ClientStubsSetupPanel extends AbstractPanel implements WizardDescri
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx(ClientStubsSetupPanel.class);
+        return null;
     }
     
 }

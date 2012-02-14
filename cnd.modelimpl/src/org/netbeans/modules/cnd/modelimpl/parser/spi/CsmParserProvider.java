@@ -61,6 +61,10 @@ public abstract class CsmParserProvider {
     
     protected abstract CsmParser create(CsmFile file);
 
+    public interface CsmParseCallback {
+        
+    }
+    
     public interface CsmParser {
         enum ConstructionKind {
             TRANSLATION_UNIT, 
@@ -70,7 +74,7 @@ public abstract class CsmParserProvider {
             COMPOUND_STATEMENT,
             NAMESPACE_DEFINITION_BODY
         }
-        void init(CsmObject object, TokenStream ts);
+        void init(CsmObject object, TokenStream ts, CsmParseCallback callback);
         CsmParserResult parse(ConstructionKind kind);
     }
     

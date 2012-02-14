@@ -64,6 +64,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystemFactoryHid;
 import org.openide.filesystems.FileSystemTestHid;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileUtilJavaIOFileHidden;
 import org.openide.filesystems.FileUtilTestHidden;
 import org.openide.filesystems.URLMapperTestHidden;
 
@@ -103,6 +104,7 @@ public class ClearcaseFileSystemTest extends FileSystemFactoryHid {
         suite.addTestSuite(FileObjectTestHid.class);        
         suite.addTestSuite(URLMapperTestHidden.class);
         suite.addTestSuite(FileUtilTestHidden.class);                
+        suite.addTestSuite(FileUtilJavaIOFileHidden.class);                
         suite.addTestSuite(BaseFileObjectTestHid.class);                                
 
 //      XXX failing        

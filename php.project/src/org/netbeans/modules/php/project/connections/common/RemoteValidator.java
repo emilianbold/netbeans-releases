@@ -42,28 +42,34 @@
 
 package org.netbeans.modules.php.project.connections.common;
 
+import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.openide.util.NbBundle;
 
 /**
- * @author Tomas Mysik
+ * Validator for remote properties like port, uypload directory etc.
  */
 public final class RemoteValidator {
+
     public static final int MINIMUM_PORT = 0;
     public static final int MAXIMUM_PORT = 65535;
+    public static final String INVALID_SEPARATOR = "\\"; // NOI18N
+
 
     private RemoteValidator() {
     }
 
     public static String validateHost(String host) {
-        assert host != null;
-        if (host.trim().length() == 0) {
+        if (!StringUtils.hasText(host)) {
             return NbBundle.getMessage(RemoteValidator.class, "MSG_NoHostName");
+        } else if (host.contains(" ")) { // NOI18N
+            return NbBundle.getMessage(RemoteValidator.class, "MSG_HostNameSpaces");
         }
         return null;
     }
 
     public static String validateUser(String username) {
-        if (username.trim().length() == 0) {
+        if (!StringUtils.hasText(username)) {
             return NbBundle.getMessage(RemoteValidator.class, "MSG_NoUserName");
         }
         return null;
@@ -82,8 +88,12 @@ public final class RemoteValidator {
         return err;
     }
 
+    @NbBundle.Messages({
+        "MSG_TimeoutNotNumeric=Timeout must be a number.",
+        "MSG_TimeoutNotPositive=Timeout must be higher than or equal to 0."
+    })
     public static String validateTimeout(String timeout) {
-        return validatePositiveNumber(timeout, "MSG_TimeoutNotPositive", "MSG_TimeoutNotNumeric"); // NOI18N
+        return validatePositiveNumber(timeout, Bundle.MSG_TimeoutNotPositive(), Bundle.MSG_TimeoutNotNumeric());
     }
 
     /**
@@ -91,26 +101,47 @@ public final class RemoteValidator {
      * @param keepAliveInterval value to be validated
      * @return error message or {@code null} if keep-alive interval is correct
      */
+    @NbBundle.Messages({
+        "MSG_KeepAliveNotNumeric=Keep-alive interval must be a number.",
+        "MSG_KeepAliveNotPositive=Keep-alive interval must be higher than or equal to 0."
+    })
     public static String validateKeepAliveInterval(String keepAliveInterval) {
-        return validatePositiveNumber(keepAliveInterval, "MSG_KeepAliveNotPositive", "MSG_KeepAliveNotNumeric"); // NOI18N
+        return validatePositiveNumber(keepAliveInterval, Bundle.MSG_KeepAliveNotPositive(), Bundle.MSG_KeepAliveNotNumeric());
     }
+
+    @NbBundle.Messages({
+        "RemoteValidator.error.uploadDirectory.missing=Upload directory must be specified.",
+        "RemoteValidator.error.uploadDirectory.start=Upload directory must start with \"{0}\".",
+        "RemoteValidator.error.uploadDirectory.content=Upload directory cannot contain \"{0}\"."
+    })
+    public static String validateUploadDirectory(String uploadDirectory) {
+        if (!StringUtils.hasText(uploadDirectory)) {
+            return Bundle.RemoteValidator_error_uploadDirectory_missing();
+        } else if (!uploadDirectory.startsWith(TransferFile.REMOTE_PATH_SEPARATOR)) {
+            return Bundle.RemoteValidator_error_uploadDirectory_start(TransferFile.REMOTE_PATH_SEPARATOR);
+        } else if (uploadDirectory.contains(INVALID_SEPARATOR)) {
+            return Bundle.RemoteValidator_error_uploadDirectory_content(INVALID_SEPARATOR);
+        }
+        return null;
+    }
+
 
     /**
      * Validate input as a positive number.
      * @param number input to be validated
-     * @param errorNotPositiveKey error key used if input is not positive number
-     * @param errorNotNumericKey error key used if input is not number
+     * @param errorNotPositive error used if input is not positive number
+     * @param errorNotNumeric error used if input is not number
      * @return error message or {@code null} if input is positive number
      */
-    private static String validatePositiveNumber(String number, String errorNotPositiveKey, String errorNotNumericKey) {
+    static String validatePositiveNumber(String number, String errorNotPositive, String errorNotNumeric) {
         String err = null;
         try {
             int t = Integer.parseInt(number);
             if (t < 0) {
-                err = NbBundle.getMessage(RemoteValidator.class, errorNotPositiveKey);
+                err = errorNotPositive;
             }
         } catch (NumberFormatException nfe) {
-            err = NbBundle.getMessage(RemoteValidator.class, errorNotNumericKey);
+            err = errorNotNumeric;
         }
         return err;
     }

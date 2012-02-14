@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.php.editor;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -49,9 +52,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -110,11 +117,13 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
+import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -128,7 +137,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     private final ElementHandle element;
     protected QualifiedNameKind generateAs;
     private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-    private static final Cache<FileObject, Properties> PROPERTIES_CACHE = new Cache<FileObject, Properties>(new WeakHashMap<FileObject, Properties>());
+    private static final Cache<FileObject, PhpLanguageProperties> PROPERTIES_CACHE = new Cache<FileObject, PhpLanguageProperties>(new WeakHashMap<FileObject, PhpLanguageProperties>());
 
     PHPCompletionItem(ElementHandle element, CompletionRequest request, QualifiedNameKind generateAs) {
         this.request = request;
@@ -228,12 +237,14 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             FullyQualifiedElement ifq = (FullyQualifiedElement) elem;
             final QualifiedName qn = QualifiedName.create(request.prefix);
             final FileObject fileObject = request.result.getSnapshot().getSource().getFileObject();
-            Properties props = PROPERTIES_CACHE.get(fileObject);
+            PhpLanguageProperties props = PROPERTIES_CACHE.get(fileObject);
             if (props == null) {
-                props = PhpLanguageOptions.getDefault().getProperties(fileObject);
+                props = PhpLanguageProperties.forFileObject(fileObject);
+                PropertyChangeListener propertyChangeListener = WeakListeners.propertyChange(new PhpVersionChangeListener(fileObject), props);
+                props.addPropertyChangeListener(propertyChangeListener);
                 PROPERTIES_CACHE.save(fileObject, props);
             }
-            if (props.getPhpVersion() == PhpLanguageOptions.PhpVersion.PHP_53) {
+            if (props.getPhpVersion() != PhpLanguageProperties.PhpVersion.PHP_5) {
                 if (generateAs == null) {
                     CodeCompletionType codeCompletionType = OptionsUtils.codeCompletionType();
                     switch (codeCompletionType) {
@@ -414,39 +425,58 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         private final CompletionRequest request;
         private final int caretOffset;
         private final List<VariableName> usedVariables = new LinkedList<VariableName>();
+        private static final RequestProcessor RP = new RequestProcessor("ExistingVariableResolver"); //NOI18N
 
         public ExistingVariableResolver(CompletionRequest request) {
             this.request = request;
             caretOffset = request.anchor;
         }
 
-        public ParameterElement resolveVariable(ParameterElement param) {
+        public ParameterElement resolveVariable(final ParameterElement param) {
             if (OptionsUtils.codeCompletionSmartParametersPreFilling()) {
-                Collection<? extends VariableName> declaredVariables = getDeclaredVariables();
-                VariableName variableToUse = null;
-                if (declaredVariables != null) {
-                    int oldOffset = 0;
-                    for (VariableName variable : declaredVariables) {
-                        if (!usedVariables.contains(variable) && !variable.representsThis()) {
-                            if (isPreviousVariable(variable)) {
-                                if (hasCorrectType(variable, param.getTypes())) {
-                                    if (variable.getName().equals(param.getName())) {
-                                        variableToUse = variable;
-                                        break;
-                                    }
-                                    int newOffset = variable.getNameRange().getStart();
-                                    if (newOffset > oldOffset) {
-                                        oldOffset = newOffset;
-                                        variableToUse = variable;
+                Future<VariableName> futureVariableToUse = RP.submit(new Callable<VariableName>() {
+
+                    @Override
+                    public VariableName call() throws Exception {
+                        Collection<? extends VariableName> declaredVariables = getDeclaredVariables();
+                        VariableName variableToUse = null;
+                        if (declaredVariables != null) {
+                            int oldOffset = 0;
+                            for (VariableName variable : declaredVariables) {
+                                if (!usedVariables.contains(variable) && !variable.representsThis()) {
+                                    if (isPreviousVariable(variable)) {
+                                        if (hasCorrectType(variable, param.getTypes())) {
+                                            if (variable.getName().equals(param.getName())) {
+                                                variableToUse = variable;
+                                                break;
+                                            }
+                                            int newOffset = variable.getNameRange().getStart();
+                                            if (newOffset > oldOffset) {
+                                                oldOffset = newOffset;
+                                                variableToUse = variable;
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
+                        return variableToUse;
                     }
+                    
+                });
+                VariableName variableToUseName = null;
+                try {
+                    variableToUseName = futureVariableToUse.get(300, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (TimeoutException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-                if (variableToUse != null) {
-                    usedVariables.add(variableToUse);
-                    return new ParameterElementImpl(variableToUse.getName(), param.getDefaultValue(), param.getOffset(), param.getTypes(), param.isMandatory(), param.hasDeclaredType(), param.isReference());
+                if (variableToUseName != null) {
+                    usedVariables.add(variableToUseName);
+                    return new ParameterElementImpl(variableToUseName.getName(), param.getDefaultValue(), param.getOffset(), param.getTypes(), param.isMandatory(), param.hasDeclaredType(), param.isReference());
                 }
             }
             return param;
@@ -1490,6 +1520,26 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
     }
 
+    static class LanguageConstructForTypeHint extends LanguageConstructItem {
+        public LanguageConstructForTypeHint(String fncName, CompletionRequest request) {
+            super(fncName, request);
+        }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            StringBuilder builder = new StringBuilder();
+            builder.append(getName());
+            builder.append("${cursor}"); // NOI18N
+            return builder.toString();
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            prependName(formatter);
+            return formatter.getText();
+        }
+    }
+
     static class TagItem extends KeywordItem {
         private int sortKey;
 
@@ -1524,5 +1574,24 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 }
             }, 750, TimeUnit.MILLISECONDS);
         }
+    }
+
+    private class PhpVersionChangeListener implements PropertyChangeListener {
+        private final WeakReference<FileObject> fileObjectReference;
+
+        public PhpVersionChangeListener(FileObject fileObject) {
+            this.fileObjectReference = new WeakReference<FileObject>(fileObject);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (PhpLanguageProperties.PROP_PHP_VERSION.equals(evt.getPropertyName())) {
+                FileObject fileObject = fileObjectReference.get();
+                if (fileObject != null) {
+                    PROPERTIES_CACHE.save(fileObject, PhpLanguageProperties.forFileObject(fileObject));
+                }
+            }
+        }
+
     }
 }

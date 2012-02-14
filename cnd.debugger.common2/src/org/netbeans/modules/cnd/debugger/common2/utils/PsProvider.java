@@ -402,7 +402,7 @@ public abstract class PsProvider {
 	    "   PID", // NOI18N
 	    "  PPID", // NOI18N
 	    "   C",		// skipped // NOI18N
-	    "     STIME", // NOI18N
+	    "STIME", // NOI18N
 	    "TTY     ",		// skipped // NOI18N
 	    "    TIME",         // skipped // NOI18N
 	    "CMD", // NOI18N

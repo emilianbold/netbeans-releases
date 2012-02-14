@@ -83,7 +83,6 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
@@ -559,11 +558,7 @@ public final class ClassPath {
         if (f.isFolder()) {
             path += "/"; // NOI18N
         }
-        try {
-            return filter.includes(root.getURL(), path);
-        } catch (FileStateInvalidException x) {
-            throw new AssertionError(x);
-        }
+        return filter.includes(root.toURL(), path);
     }
 
     /**
@@ -1047,7 +1042,6 @@ public final class ClassPath {
             f = findPath(roots[ridx], nameComponents);
             FilteringPathResourceImplementation filter = root2Filter.get(roots[ridx]);
             if (filter != null) {
-                try {
                     if (f != null) {
                         String path = FileUtil.getRelativePath(roots[ridx], f);
                         assert path != null : String.format("FileUtil.getRelativePath(%s(%b),%s(%b)) returned null",
@@ -1058,13 +1052,10 @@ public final class ClassPath {
                         if (f.isFolder()) {
                             path += "/"; // NOI18N
                         }
-                        if (!filter.includes(roots[ridx].getURL(), path)) {
+                        if (!filter.includes(roots[ridx].toURL(), path)) {
                             f = null;
                         }
                     }
-                } catch (FileStateInvalidException x) {
-                    throw new AssertionError(x);
-                }
             }
         }
         rootIndex[0] = ridx;

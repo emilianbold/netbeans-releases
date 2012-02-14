@@ -523,22 +523,26 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             int indent = GsfUtilities.getLineIndent(doc, offset);
             StringBuilder sb = new StringBuilder();
             // the new line will not be added, if we are in middle of array declaration
-            if (LexUtilities.textEquals(token.text(), ')') && ts.movePrevious()) {
+            if ((LexUtilities.textEquals(token.text(), ')') || LexUtilities.textEquals(token.text(), ']')) && ts.movePrevious()) {
                 Token<?extends PHPTokenId> helpToken = LexUtilities.findPrevious(ts, Arrays.asList(
                         PHPTokenId.WHITESPACE,
                         PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT_START,
                         PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
                         PHPTokenId.PHP_LINE_COMMENT));
                 if (helpToken.id() == PHPTokenId.PHP_TOKEN
-                        && (helpToken.text().charAt(0) == ',' || helpToken.text().charAt(0) == '(') && ts.movePrevious()) {
+                        && (helpToken.text().charAt(0) == ',' || helpToken.text().charAt(0) == '(' || helpToken.text().charAt(0) == '[') && ts.movePrevious()) {
                     // only in array declaration we will add new line
-                    helpToken = LexUtilities.findPrevious(ts, Arrays.asList(
-                            PHPTokenId.WHITESPACE,
-                            PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT_START,
-                            PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
-                            PHPTokenId.PHP_LINE_COMMENT));
-                    if (helpToken.id() == PHPTokenId.PHP_ARRAY) {
+                    if (helpToken.text().charAt(0) == '[') {
                         sb.append("\n"); // NOI18N
+                    } else {
+                        helpToken = LexUtilities.findPrevious(ts, Arrays.asList(
+                                PHPTokenId.WHITESPACE,
+                                PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT_START,
+                                PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
+                                PHPTokenId.PHP_LINE_COMMENT));
+                        if (helpToken.id() == PHPTokenId.PHP_ARRAY || (helpToken.id() == PHPTokenId.PHP_TOKEN && helpToken.text().charAt(0) == '[')) { //NOI18N
+                            sb.append("\n"); // NOI18N
+                        }
                     }
                 }
             }
@@ -679,7 +683,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                                 public void run(ResultIterator resultIterator) throws Exception {
                                     if (System.currentTimeMillis() - currentTimeMillis < 1500) {
                                         GeneratingBracketCompleter.generateDocTags(doc, (Integer) ret[0], indent);
-                                        caret.setDot((Integer) ret[0] - 1);
+                                        caret.setDot((Integer) ret[0]);
                                     }
                                 }
                             });

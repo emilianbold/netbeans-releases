@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -65,8 +65,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions;
-import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
+import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.WeakListeners;
@@ -92,16 +91,11 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     }
 
     @Override
-    public void cancel() {
-        LOGGER.finest("ParserTask canceled without a reason");
-    }
-
-    @Override
     public void cancel(CancelReason reason, SourceModificationEvent event) {
         super.cancel(reason, event);
         LOGGER.fine("ParserTask cancel: " + reason.name());
     }
-   
+
     @Override
     public void addChangeListener(ChangeListener changeListener) {
         changeSupport.addChangeListener(changeListener);
@@ -117,14 +111,13 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         long startTime = System.currentTimeMillis();
         FileObject file = snapshot.getSource().getFileObject();
 //        ParseListener listener = request.listener;
-        
+
 //        ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
 //        request.listener.started(beginEvent);
-        Properties languageProperties = PhpLanguageOptions.getDefault().getProperties(file);
-
+        PhpLanguageProperties languageProperties = PhpLanguageProperties.forFileObject(file);
         if (!projectPropertiesListenerAdded){
             PropertyChangeListener weakListener = WeakListeners.propertyChange(this, languageProperties);
-            PhpLanguageOptions.getDefault().addPropertyChangeListener(weakListener);
+            languageProperties.addPropertyChangeListener(weakListener);
             projectPropertiesListenerAdded = true;
         }
 
@@ -146,7 +139,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             Program emptyProgram = new Program(0, end, statements, Collections.<Comment>emptyList());
             result = new PHPParseResult(snapshot, emptyProgram);
         }
-        long endTime = System.currentTimeMillis();        
+        long endTime = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Parsing took: {0}ms source: {1}", new Object[]{endTime - startTime, System.identityHashCode(snapshot.getSource())}); //NOI18N
     }
 
@@ -207,7 +200,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                 boolean ok = true;
                 for (Statement statement : statements) {
                     if (statement instanceof ASTError) {
-                        // if there is an errot, try to sanitize only if there 
+                        // if there is an errot, try to sanitize only if there
                         // is a class or function inside the error
                         String errorCode = "<?" + source.substring(statement.getStartOffset(), statement.getEndOffset()) + "?>";
                         ASTPHP5Scanner fcScanner = new ASTPHP5Scanner(new StringReader(errorCode), shortTags, aspTags);
@@ -244,7 +237,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             result = sanitize(context, sanitizing, errorHandler);
             result.setErrors(errorHandler.displayFatalError());
         }
-        
+
         return result;
     }
 
@@ -348,16 +341,16 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             List<PHP5ErrorHandler.SyntaxError> syntaxErrors = errorHandler.getSyntaxErrors();
             if (syntaxErrors.size() > 0) {
                 PHP5ErrorHandler.SyntaxError error =  syntaxErrors.get(0);
-                
+
                 int start = Utils.getRowStart(context.getSource(), error.getPreviousToken().left);
                 int end = Utils.getRowEnd(context.getSource(), error.getCurrentToken().left);
-                
+
                 return sanitizeRequireAndInclude(context, start, end);
             }
         }
         return false;
     }
-    
+
     protected boolean sanitizeRequireAndInclude(Context context, int start, int end) {
         try {
             String source = context.getSource();
@@ -424,8 +417,8 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
 
                         if (canBeSanitized) {
                             int sanitizedChars = numberOfSanitizedChars(containsOpenParenthese, hasCloseDelimiter, hasCloseParenthese);
-                            context.sanitizedSource = source.substring(0, start + currentLeftOffset - 1) 
-                                    + sanitizationString(delimiter, containsOpenParenthese, hasCloseDelimiter, hasCloseParenthese) 
+                            context.sanitizedSource = source.substring(0, start + currentLeftOffset - 1)
+                                    + sanitizationString(delimiter, containsOpenParenthese, hasCloseDelimiter, hasCloseParenthese)
                                     + source.substring(start + currentLeftOffset + sanitizedChars - phpOpenDelimiter.length() + 1);
                             return true;
                         } else {
@@ -444,7 +437,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     }
 
     private boolean isRequireFunction(Symbol token) {
-        return token.sym == ASTPHP5Symbols.T_REQUIRE || token.sym == ASTPHP5Symbols.T_REQUIRE_ONCE 
+        return token.sym == ASTPHP5Symbols.T_REQUIRE || token.sym == ASTPHP5Symbols.T_REQUIRE_ONCE
                 || token.sym == ASTPHP5Symbols.T_INCLUDE || token.sym == ASTPHP5Symbols.T_INCLUDE_ONCE;
     }
 
@@ -650,7 +643,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
 
                 return new PHPParseResult(context.getSnapshot(), emptyProgram);
         }
-        
+
     }
 
     private static String asString(CharSequence sequence) {
@@ -662,7 +655,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (PhpLanguageOptions.PROP_PHP_VERSION.equals(evt.getPropertyName())){
+        if (PhpLanguageProperties.PROP_PHP_VERSION.equals(evt.getPropertyName())){
             forceReparsing();
         }
     }
@@ -670,11 +663,11 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     private void forceReparsing(){
         changeSupport.fireChange();
     }
-    
+
     /** Attempts to sanitize the input buffer */
     public static enum Sanitize {
         /** Only parse the current file accurately, don't try heuristics */
-        NEVER, 
+        NEVER,
         /** Perform no sanitization */
         NONE,
         /** Remove current error token */
@@ -686,16 +679,16 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         /** try to delete the whole block, where is the error*/
         SYNTAX_ERROR_BLOCK,
         /** Try to remove the trailing . or :: at the caret line */
-        EDITED_DOT, 
+        EDITED_DOT,
         /** Try to remove the trailing . or :: at the error position, or the prior
          * line, or the caret line */
-        ERROR_DOT, 
+        ERROR_DOT,
         /** Try to remove the initial "if" or "unless" on the block
          * in case it's not terminated
          */
         BLOCK_START,
         /** Try to cut out the error line */
-        ERROR_LINE, 
+        ERROR_LINE,
         /** Try to cut out the current edited line, if known */
         EDITED_LINE,
         /** Attempt to fix missing } */
@@ -703,7 +696,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         /** Try tu fix incomplete 'require("' function for FS code complete */
         REQUIRE_FUNCTION_INCOMPLETE,
     }
-    
+
     /** Parsing context */
     public static class Context {
         private final Snapshot snapshot;
@@ -715,18 +708,18 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         private int caretOffset;
         private Sanitize sanitized = Sanitize.NONE;
 
-        
+
         public Context(Snapshot snapshot, String source, int caretOffset) {
             this.snapshot = snapshot;
             this.source = source;
             this.caretOffset = caretOffset;
         }
-        
+
         @Override
         public String toString() {
             return "PHPParser.Context(" + snapshot.getSource().getFileObject() + ")"; // NOI18N
         }
-        
+
         public OffsetRange getSanitizedRange() {
             return sanitizedRange;
         }
@@ -734,11 +727,11 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         public Sanitize getSanitized() {
             return sanitized;
         }
-        
+
         public String getSanitizedSource() {
             return sanitizedSource;
         }
-        
+
         public int getErrorOffset() {
             return errorOffset;
         }

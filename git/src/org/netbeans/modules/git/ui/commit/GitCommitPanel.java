@@ -269,12 +269,15 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
 
                     ArrayList<GitFileNode> nodesList = new ArrayList<GitFileNode>(fileList.size());
 
+                    Git git = Git.getInstance();
                     for (Iterator<File> it = fileList.iterator(); it.hasNext();) {
                         File file = it.next();
-                        GitFileNode node = new GitFileNode(repository, file);
-                        nodesList.add(node);
+                        if (repository.equals(git.getRepositoryRoot(file))) {
+                            GitFileNode node = new GitFileNode(repository, file);
+                            nodesList.add(node);
+                        }
                     }
-                    final GitFileNode[] nodes = nodesList.toArray(new GitFileNode[fileList.size()]);
+                    final GitFileNode[] nodes = nodesList.toArray(new GitFileNode[nodesList.size()]);
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {

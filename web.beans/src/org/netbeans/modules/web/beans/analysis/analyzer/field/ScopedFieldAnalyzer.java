@@ -45,6 +45,7 @@ package org.netbeans.modules.web.beans.analysis.analyzer.field;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -96,6 +97,36 @@ public class ScopedFieldAnalyzer extends AbstractScopedAnalyzer implements
                             NbBundle.getMessage(
                             ScopedFieldAnalyzer.class,
                             "ERR_WrongScopeParameterizedProducer", // NOI18N
+                            scopeElement.getQualifiedName().toString()));
+        }
+        if ( cancel.get() ){
+            return;
+        }
+        checkPassivationCapable(scopeElement, element, model, result);
+    }
+    
+    private void checkPassivationCapable( TypeElement scopeElement,
+            Element element, WebBeansModel model, Result result )
+    {
+        if ( !isPassivatingScope(scopeElement, model) ){
+            return;
+        }
+        TypeMirror type = element.asType();
+        if ( type.getKind().isPrimitive() ){
+            return;
+        }
+        if ( isSerializable(type, model)){
+            return;
+        }
+        Element typeElement = model.getCompilationController().getTypes().
+            asElement( type );
+        if ( typeElement == null ){
+            return;
+        }
+        if ( typeElement.getModifiers().contains( Modifier.FINAL )){
+            result.addError( element, model,   
+                    NbBundle.getMessage(ScopedFieldAnalyzer.class, 
+                            "ERR_NotPassivationProducer",    // NOI18N
                             scopeElement.getQualifiedName().toString()));
         }
     }

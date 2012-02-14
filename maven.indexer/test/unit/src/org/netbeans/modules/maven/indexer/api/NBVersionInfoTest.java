@@ -76,6 +76,8 @@ public class NBVersionInfoTest extends NbTestCase {
                     + "api:newmod:2.0:nb, modules:impl:3.1:other, modules:impl:3.0:nb]",
             versions.toString());
         assertTrue(new NBVersionInfo("nb", "api", "mod", "RELEASE69", "nbm", null, null, null, null).compareTo(new NBVersionInfo("nb", "api", "mod", "RELEASE69", "jar", null, null, null, null)) > 0);
+        assertTrue(new NBVersionInfo("nb", "api", "mod", "RELEASE691", null, null, null, null, null).equals(new NBVersionInfo("nb", "api", "mod", "RELEASE691", null, null, null, null, null)));
+        assertEquals(0, new NBVersionInfo("nb", "api", "mod", "RELEASE691", null, null, null, null, null).compareTo(new NBVersionInfo("nb", "api", "mod", "RELEASE691", null, null, null, null, null)));
     }
 
 }

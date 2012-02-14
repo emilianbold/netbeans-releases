@@ -52,34 +52,54 @@ import org.openide.util.CharSequences;
  * @author gorrus
  */
 public abstract class APTTokenAbstact implements APTToken {
+    @Override
     public int getOffset() {return -1;};
+    @Override
     public void setOffset(int o) {};
     
+    @Override
     public int getEndOffset() {return -1;};
+    @Override
     public void setEndOffset(int o) {};
     
+    @Override
     public int getEndColumn() {return -1;};
+    @Override
     public void setEndColumn(int c) {};
     
+    @Override
     public int getEndLine() {return -1;};
+    @Override
     public void setEndLine(int l) {};
     
+    @Override
     public CharSequence getTextID() {return CharSequences.empty();};
+    @Override
     public void setTextID(CharSequence id) {};
     
+    @Override
     public int getColumn() {return -1;};
+    @Override
     public void setColumn(int c) {};
 
+    @Override
     public int getLine() {return -1;};
+    @Override
     public void setLine(int l) {};
 
+    @Override
     public String getFilename() {return null;};
+    @Override
     public void setFilename(String name) {};
     
+    @Override
     public String getText() {return "<empty>";};// NOI18N
+    @Override
     public void setText(String t) {};
 
+    @Override
     public int getType() {return INVALID_TYPE;};
+    @Override
     public void setType(int t) {};
     
     @Override
@@ -116,4 +136,9 @@ public abstract class APTTokenAbstact implements APTToken {
         hash = 59 * hash + this.getTextID().hashCode();
         return hash;
     }
+    
+    @Override
+    public Object getProperty(Object key) {
+        return null;
+    }    
 }

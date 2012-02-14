@@ -171,6 +171,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         this.remoteClient = client;
     }
 
+    @Override
     public String getBaseRemoteDirectory() {
         return baseRemoteDirectory;
     }
@@ -261,9 +262,9 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
             }
             List<TransferFile> transferFiles = new ArrayList<TransferFile>(remoteFiles.size());
             for (RemoteFile remoteFile : remoteFiles) {
-                if (isVisible(remoteFile.getName())) {
+                if (isVisible(getLocalFile(new File(file.getBaseLocalDirectoryPath()), file, remoteFile))) {
                     LOGGER.log(Level.FINE, "File {0} added to download queue", remoteFile);
-                    TransferFile transferFile = TransferFile.fromRemoteFile(file, remoteFile, this);
+                    TransferFile transferFile = TransferFile.fromRemoteFile(file, remoteFile, this, file.getBaseLocalDirectoryPath());
                     getOperationMonitor().operationProcess(Operation.LIST, transferFile);
                     transferFiles.add(transferFile);
                 } else {
@@ -295,14 +296,14 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
             }
             if (isVisible(f)) {
                 LOGGER.log(Level.FINE, "File {0} added to upload queue", fo);
-                queue.offer(TransferFile.fromFileObject(null, fo, baseLocalAbsolutePath));
+                queue.offer(TransferFile.fromFileObject(null, fo, baseLocalAbsolutePath, baseRemoteDirectory));
             } else {
                 LOGGER.log(Level.FINE, "File {0} NOT added to upload queue [invisible]", fo);
             }
         }
 
         Set<TransferFile> files = new HashSet<TransferFile>();
-        while(!queue.isEmpty()) {
+        while (!queue.isEmpty()) {
             if (cancelled) {
                 LOGGER.fine("Prepare upload cancelled");
                 break;
@@ -325,7 +326,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                     for (File child : children) {
                         if (isVisible(child)) {
                             LOGGER.log(Level.FINE, "File {0} added to upload queue", child);
-                            queue.offer(TransferFile.fromFile(file, child, baseLocalAbsolutePath));
+                            queue.offer(TransferFile.fromFile(file, child, baseLocalAbsolutePath, baseRemoteDirectory));
                         } else {
                             LOGGER.log(Level.FINE, "File {0} NOT added to upload queue [invisible]", child);
                         }
@@ -339,10 +340,8 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         return files;
     }
 
-    public TransferInfo upload(FileObject baseLocalDirectory, Set<TransferFile> filesToUpload) throws RemoteException {
-        assert baseLocalDirectory != null;
+    public TransferInfo upload(Set<TransferFile> filesToUpload) throws RemoteException {
         assert filesToUpload != null;
-        assert baseLocalDirectory.isFolder() : "Base local directory must be a directory";
         assert filesToUpload.size() > 0 : "At least one file to upload must be specified";
 
         ensureConnected();
@@ -350,7 +349,6 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         final long start = System.currentTimeMillis();
         TransferInfo transferInfo = new TransferInfo();
 
-        File baseLocalDir = FileUtil.toFile(baseLocalDirectory);
 
         // XXX order filesToUpload?
         try {
@@ -363,7 +361,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
 
                 getOperationMonitor().operationProcess(Operation.UPLOAD, file);
                 try {
-                    uploadFile(transferInfo, baseLocalDir, file);
+                    uploadFile(transferInfo, file);
                 } catch (IOException exc) {
                     transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
                     continue;
@@ -382,7 +380,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         return transferInfo;
     }
 
-    private void uploadFile(TransferInfo transferInfo, File baseLocalDir, TransferFile file) throws IOException, RemoteException {
+    private void uploadFile(TransferInfo transferInfo, TransferFile file) throws IOException, RemoteException {
         // xxx upload cannot check symlinks because project files of /path/<symlink>/my/project would not be uploaded at all!
 //        if (file.isLink()) {
 //            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_Symlink", file.getRemotePath()));
@@ -432,7 +430,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 }
             }
             // XXX lock the file?
-            InputStream is = new FileInputStream(new File(baseLocalDir, file.getLocalPath()));
+            InputStream is = new FileInputStream(new File(new File(file.getBaseLocalDirectoryPath()), file.getLocalPath()));
             boolean success = false;
             try {
                 for (int i = 1; i <= TRIES_TO_TRANSFER; i++) {
@@ -576,10 +574,10 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 LOGGER.log(Level.FINE, "File {0} added to download queue", f);
                 TransferFile tf;
                 if (f.exists()) {
-                    tf = TransferFile.fromFile(null, f, baseLocalAbsolutePath);
+                    tf = TransferFile.fromFile(null, f, baseLocalAbsolutePath, baseRemoteDirectory);
                 } else {
                     // assume folder for non-existing file => recursive fetch
-                    tf = TransferFile.fromDirectory(null, f, baseLocalAbsolutePath);
+                    tf = TransferFile.fromDirectory(null, f, baseLocalAbsolutePath, baseRemoteDirectory);
                 }
                 baseFiles.add(tf);
             } else {
@@ -616,7 +614,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                     for (RemoteFile child : remoteFiles) {
                         if (isVisible(getLocalFile(baseLocalDir, file, child))) {
                             LOGGER.log(Level.FINE, "File {0} added to download queue", child);
-                            files.add(TransferFile.fromRemoteFile(file, child, this));
+                            files.add(TransferFile.fromRemoteFile(file, child, this, baseLocalAbsolutePath));
                         } else {
                             LOGGER.log(Level.FINE, "File {0} NOT added to download queue [invisible]", child);
                         }
@@ -633,10 +631,8 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         return files;
     }
 
-    public TransferInfo download(FileObject baseLocalDirectory, Set<TransferFile> filesToDownload) throws RemoteException {
-        assert baseLocalDirectory != null;
+    public TransferInfo download(Set<TransferFile> filesToDownload) throws RemoteException {
         assert filesToDownload != null;
-        assert baseLocalDirectory.isFolder() : "Base local directory must be a directory";
         assert filesToDownload.size() > 0 : "At least one file to download must be specified";
 
         ensureConnected();
@@ -644,13 +640,11 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         final long start = System.currentTimeMillis();
         final TransferInfo transferInfo = new TransferInfo();
 
-        final File baseLocalDir = FileUtil.toFile(baseLocalDirectory);
-
         // XXX order filesToDownload?
         try {
             getOperationMonitor().operationStart(Operation.DOWNLOAD, filesToDownload);
             for (final TransferFile file : filesToDownload) {
-                downloadFile(transferInfo, baseLocalDir, file);
+                downloadFile(transferInfo, file);
             }
         } finally {
             getOperationMonitor().operationFinish(Operation.DOWNLOAD, filesToDownload);
@@ -662,7 +656,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         return transferInfo;
     }
 
-    private void downloadFile(final TransferInfo transferInfo, final File baseLocalDir, final TransferFile file) {
+    private void downloadFile(final TransferInfo transferInfo, final TransferFile file) {
         if (cancelled) {
             LOGGER.fine("Download cancelled");
             return;
@@ -674,7 +668,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 @Override
                 public void run() {
                     try {
-                        downloadFileInternal(transferInfo, baseLocalDir, file);
+                        downloadFileInternal(transferInfo, file);
                     } catch (IOException exc) {
                         transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
                     } catch (RemoteException exc) {
@@ -687,8 +681,8 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         }
     }
 
-    private void downloadFileInternal(TransferInfo transferInfo, File baseLocalDir, TransferFile file) throws IOException, RemoteException {
-        File localFile = getLocalFile(baseLocalDir, file);
+    private void downloadFileInternal(TransferInfo transferInfo, TransferFile file) throws IOException, RemoteException {
+        File localFile = getLocalFile(new File(file.getBaseLocalDirectoryPath()), file);
         if (file.isLink()) {
             transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_Symlink", file.getRemotePath()));
         } else if (isParentLink(file)) {
@@ -717,7 +711,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
             if (!file.hasChildrenFetched()) {
                 // download all children as well
                 for (TransferFile child : file.getChildren()) {
-                    downloadFile(transferInfo, baseLocalDir, child);
+                    downloadFile(transferInfo, child);
                 }
             }
         } else if (file.isFile()) {
@@ -759,6 +753,11 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
 
             boolean success = false;
             OutputStream os = tmpLocalFile.getOutputStream();
+            if (os == null) {
+                // definitely should not happen
+                transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_CannotOpenTmpLocalFile", tmpLocalFile));
+                return;
+            }
             try {
                 for (int i = 1; i <= TRIES_TO_TRANSFER; i++) {
                     boolean fileRetrieved;
@@ -780,9 +779,9 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 try {
                     if (success) {
                         // move the file
-                        success = moveTmpLocalFile(tmpLocalFile, localFile);
+                        success = copyTmpLocalFile(tmpLocalFile, localFile);
                         if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine(String.format("File %s renamed to %s: %s", tmpLocalFile, localFile, success));
+                            LOGGER.fine(String.format("File %s copied to %s: %s", tmpLocalFile, localFile, success));
                         }
                     }
                 } finally {
@@ -808,7 +807,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         return TmpLocalFile.onDisk();
     }
 
-    private boolean moveTmpLocalFile(final TmpLocalFile source, final File target) {
+    private boolean copyTmpLocalFile(final TmpLocalFile source, final File target) {
         final AtomicBoolean moved = new AtomicBoolean();
         FileUtil.runAtomicAction(new Runnable() {
             @Override
@@ -828,6 +827,11 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                     lock = foTarget.lock();
                     try {
                         in = source.getInputStream();
+                        if (in == null) {
+                            // definitely should not happen
+                            moved.getAndSet(false);
+                            return;
+                        }
                         try {
                             // TODO the doewnload action shoudln't save all file before
                             // executing, then the ide will ask, whether user wants

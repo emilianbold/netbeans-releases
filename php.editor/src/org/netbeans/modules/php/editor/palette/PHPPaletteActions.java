@@ -42,13 +42,13 @@ import org.openide.util.NbBundle;
 
 
 public class PHPPaletteActions extends PaletteActions {
-    
+
     /** Creates a new instance of jbossddPaletteActions */
     public PHPPaletteActions() {
     }
 
     public Action[] getImportActions() {
-        return new Action[0]; 
+        return new Action[0];
     }
 
     public Action[] getCustomCategoryActions(Lookup category) {
@@ -56,7 +56,7 @@ public class PHPPaletteActions extends PaletteActions {
     }
 
     public Action[] getCustomItemActions(Lookup item) {
-        return new Action[0]; 
+        return new Action[0];
     }
 
     public Action[] getCustomPaletteActions() {
@@ -66,19 +66,19 @@ public class PHPPaletteActions extends PaletteActions {
     public Action getPreferredAction( Lookup item ) {
         return new MFPaletteInsertAction(item);
     }
-    
+
     private static class MFPaletteInsertAction extends AbstractAction {
-        
+
         private final Lookup item;
-        
+
         MFPaletteInsertAction(Lookup item) {
             this.item = item;
         }
-                
+
         public void actionPerformed(ActionEvent event) {
-      
+
             ActiveEditorDrop drop = (ActiveEditorDrop) item.lookup(ActiveEditorDrop.class);
-            
+
             JTextComponent target = Utilities.getFocusedComponent();
             if (target == null) {
                 String msg = NbBundle.getMessage(PHPPaletteActions.class, "MSG_ErrorNoFocusedDocument");
@@ -86,7 +86,7 @@ public class PHPPaletteActions extends PaletteActions {
                 return;
             }
             if (drop == null) {
-                Logger.global.log(Level.INFO, item.getClass() + " doesn't provide " + ActiveEditorDrop.class);//NOI18N
+                Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).log(Level.INFO, item.getClass() + " doesn't provide " + ActiveEditorDrop.class);//NOI18N
                 return;
             }
             try {
@@ -95,16 +95,16 @@ public class PHPPaletteActions extends PaletteActions {
             finally {
                 Utilities.requestFocus(target);
             }
-            
+
             try {
                 PaletteController paletteController = PHPPaletteFactory.getPalette();
                 paletteController.clearSelection();
             }
             catch (IOException ioe) {
-                Logger.global.log(Level.INFO, null, ioe);
-            } 
+                Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).log(Level.INFO, null, ioe);
+            }
 
         }
     }
-    
+
 }

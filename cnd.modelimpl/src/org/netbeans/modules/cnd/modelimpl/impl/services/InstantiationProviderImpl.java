@@ -391,7 +391,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                         fqn.append(OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR);
                         fqn.append(cls.getQualifiedName());
                         fqn.append('<'); // NOI18N
-                        Collection<CsmOffsetableDeclaration> specs = ((ProjectBase) proj).findDeclarationsByPrefix(fqn.toString());
+                        Collection<CsmOffsetableDeclaration> specs = new ArrayList<CsmOffsetableDeclaration>(((ProjectBase) proj).findDeclarationsByPrefix(fqn.toString()));
                         fqn = new StringBuilder(Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.STRUCT));
                         fqn.append(OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR);
                         fqn.append(cls.getQualifiedName());

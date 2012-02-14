@@ -53,7 +53,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ui.OpenProjectList;
-import org.netbeans.modules.project.ui.actions.ProjectActionTest.ActionCreator;
+import org.netbeans.modules.project.ui.actions.TestSupport.ActionCreator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -72,8 +72,8 @@ public class SetMainProjectTest extends NbTestCase {
     }
     
     public void testAcceleratorsPropagated() {
-        ProjectActionTest.doTestAcceleratorsPropagated(new ActionCreator() {
-            public ProjectAction create(Lookup l) {
+        TestSupport.doTestAcceleratorsPropagated(new ActionCreator() {
+            public LookupSensitiveAction create(Lookup l) {
                 return new SetMainProject(l);
             }
         }, false);

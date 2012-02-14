@@ -49,7 +49,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Future;
 import javax.lang.model.element.ElementKind;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -65,7 +64,11 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappings;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.editor.completion.db.DBCompletionContextResolver;
@@ -91,7 +94,7 @@ import org.openide.util.NbBundle;
  * see NNCompletionProvider and NNCompletionQuery as nb 5.5 precursors for this class 
  * @author sp153251
  */
-@MimeRegistration(mimeType = "text/x-java", service = CompletionProvider.class)//NOI18N
+@MimeRegistration(mimeType = "text/x-java", service = CompletionProvider.class, position = 400)//NOI18N
 public class JPACodeCompletionProvider implements CompletionProvider {
 
     @Override
@@ -179,12 +182,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
                         anchorOffset = -1;
                         Source source = Source.create(doc);
                         if (source != null) {
-                            Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singletonList(source), getTask());
-                            if (!f.isDone()) {
-                                component.putClientProperty("completion-active", Boolean.FALSE); //NOI18N
-                                resultSet.setWaitText(NbBundle.getMessage(JPACodeCompletionProvider.class, "scanning-in-progress")); //NOI18N
-                                f.get();
-                            }
+                            ParserManager.parse(Collections.singletonList(source), getTask());
                             if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                                 if (results != null) {
                                     resultSet.addAllItems(results);
@@ -300,15 +298,54 @@ public class JPACodeCompletionProvider implements CompletionProvider {
             results = new ArrayList<JPACompletionItem>();
             while (resolversItr.hasNext()) {
                 CompletionContextResolver resolver = (CompletionContextResolver) resolversItr.next();
-                Context ctx = new Context(component, controller, startOffset, false);
-                if (ctx.getEntityMappings() == null) {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "No EnitityMappings defined.");
-                    break;
-                } else {
-                    results.addAll(resolver.resolve(ctx));
+                TaskUserAction task = new TaskUserAction(controller, resolver, startOffset);
+                try {
+                    EntityClassScope scope = EntityClassScope.getEntityClassScope(URLMapper.findFileObject(controller.getCompilationUnit().getSourceFile().toUri().toURL()));
+                    MetadataModel<EntityMappingsMetadata> entityMappingsModel = null;
+                    if (scope != null) {
+                        entityMappingsModel = scope.getEntityMappingsModel(false); // false since I guess you only want the entity classes defined in the project
+                    }
+                    if(entityMappingsModel != null){
+                        entityMappingsModel.runReadAction(new TaskUserAction(controller, resolver, startOffset));
+                    }
+                } catch (IOException ex) {
+                   
                 }
+
+                if(!task.isValid())break;
             }
         }
+        
+        private class TaskUserAction implements MetadataModelAction<EntityMappingsMetadata, Boolean> {
+            private final CompilationController controller;
+            private final CompletionContextResolver resolver;
+            private final int startOffset;
+            private boolean valid;
+
+            private TaskUserAction(CompilationController controller, CompletionContextResolver resolver, int startOffset) {
+                this.controller = controller;
+                this.resolver = resolver;
+                this.startOffset = startOffset;
+                valid = false;
+            }
+            
+            public boolean isValid(){
+                return valid;
+            }
+
+            @Override
+            public Boolean run(EntityMappingsMetadata metadata) throws Exception {
+                    Context ctx = new Context(component, controller, startOffset, false);
+                    if (ctx.getEntityMappings() == null) {
+                        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "No EnitityMappings defined.");
+                    } else {
+                        results.addAll(resolver.resolve(ctx));
+                        valid = true;
+                    }
+                    return valid;
+            }
+            
+        } 
 
         private class Task extends UserTask {
 
@@ -413,7 +450,6 @@ public class JPACodeCompletionProvider implements CompletionProvider {
                 } catch (IOException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
-                this.emaps = PersistenceUtils.getEntityMappings(documentFO);
             }
 
             this.CCParser = new CCParser(controller);
@@ -423,19 +459,19 @@ public class JPACodeCompletionProvider implements CompletionProvider {
         public javax.lang.model.element.Element getJavaClass() {
             TreePath path = null;
             try {
-                path = getCompletionTreePath(controller, endOffset, COMPLETION_QUERY_TYPE);
+                path = getCompletionTreePath(getController(), endOffset, COMPLETION_QUERY_TYPE);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
             javax.lang.model.element.Element el = null;
             try {
-                controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                getController().toPhase(Phase.ELEMENTS_RESOLVED);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
             while ((el == null || !(ElementKind.CLASS == el.getKind() || ElementKind.INTERFACE == el.getKind())) && path != null) {
                 path.getCompilationUnit().getTypeDecls();
-                el = controller.getTrees().getElement(path);
+                el = getController().getTrees().getElement(path);
                 path = path.getParentPath();
             }
             return el;
@@ -448,7 +484,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
 
         public FileObject getFileObject() {
             try {
-                return URLMapper.findFileObject(controller.getCompilationUnit().getSourceFile().toUri().toURL());
+                return URLMapper.findFileObject(getController().getCompilationUnit().getSourceFile().toUri().toURL());
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -461,6 +497,10 @@ public class JPACodeCompletionProvider implements CompletionProvider {
         }
 
         public EntityMappings getEntityMappings() {
+            if(emaps == null){
+                FileObject documentFO = getFileObject();
+                this.emaps = PersistenceUtils.getEntityMappings(documentFO);
+            }
             return this.emaps;
         }
 
@@ -498,16 +538,16 @@ public class JPACodeCompletionProvider implements CompletionProvider {
             String type = null;
             String genericType = null;
             String propertyName = null;
-            CCParser nnp = new CCParser(controller); //helper parser
+            CCParser nnp = new CCParser(getController()); //helper parser
 
-            TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+            TokenSequence<JavaTokenId> ts = getController().getTokenHierarchy().tokenSequence(JavaTokenId.language());
             ts.move(getCompletionOffset() + 1);
             nextNonWhitespaceToken(ts);
             Token<JavaTokenId> ti = ts.token();
             while (ti != null && propertyName == null) {
                 javax.lang.model.element.Element el = null;
                 try {
-                    el = controller.getTrees().getElement(getCompletionTreePath(controller, ts.offset() + 1, CompletionProvider.COMPLETION_QUERY_TYPE));
+                    el = getController().getTrees().getElement(getCompletionTreePath(getController(), ts.offset() + 1, CompletionProvider.COMPLETION_QUERY_TYPE));
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -566,6 +606,13 @@ public class JPACodeCompletionProvider implements CompletionProvider {
                 }
             }
             return null;
+        }
+
+        /**
+         * @return the controller
+         */
+        public CompilationController getController() {
+            return controller;
         }
     }
     

@@ -75,6 +75,7 @@ public class NetigsoReloadTest extends NetigsoHid {
         withActivator = createTestJAR("activate", null);
         withoutA = changeManifest(withActivator, "Manifest-Version: 1.0\n" +
                 "Bundle-SymbolicName: org.activate\n" +
+                "Import-Package: org.osgi.framework\n" +
                 "Bundle-Version: 1.2\n");
     }
 

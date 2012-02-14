@@ -82,6 +82,7 @@ import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.Occurence.Accuracy;
 import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
@@ -97,6 +98,7 @@ import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.TraitDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
@@ -120,6 +122,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.openide.util.Union2;
@@ -144,6 +147,7 @@ class OccurenceBuilder {
     private Map<ASTNodeInfo<StaticConstantAccess>, Scope> staticConstantInvocations;
     private Map<ClassDeclarationInfo, ClassScope> clasDeclarations;
     private Map<InterfaceDeclarationInfo, InterfaceScope> ifaceDeclarations;
+    private Map<TraitDeclarationInfo, TraitScope> traitDeclarations;
     private HashMap<PhpDocTypeTagInfo, Scope> docTags;
     private Map<ASTNodeInfo<ClassName>, Scope> clasNames;
     private Map<ASTNodeInfo<ClassInstanceCreation>, Scope> clasInstanceCreations;
@@ -180,6 +184,7 @@ class OccurenceBuilder {
         this.staticConstantInvocations = new HashMap<ASTNodeInfo<StaticConstantAccess>, Scope>();
         this.clasDeclarations = new HashMap<ClassDeclarationInfo, ClassScope>();
         this.ifaceDeclarations = new HashMap<InterfaceDeclarationInfo, InterfaceScope>();
+        this.traitDeclarations = new HashMap<TraitDeclarationInfo, TraitScope>();
         this.clasNames = new HashMap<ASTNodeInfo<ClassName>, Scope>();
         this.clasInstanceCreations = new HashMap<ASTNodeInfo<ClassInstanceCreation>, Scope>();
         this.clasIDs = new HashMap<ASTNodeInfo<Expression>, Scope>();
@@ -377,6 +382,13 @@ class OccurenceBuilder {
         }
     }
 
+    void prepare(TraitDeclaration traitDeclaration, TraitScope scope) {
+        if (canBePrepared(traitDeclaration, scope)) {
+            TraitDeclarationInfo nodeInfo = TraitDeclarationInfo.create(traitDeclaration);
+            traitDeclarations.put(nodeInfo, scope);
+        }
+    }
+
     void prepare(FunctionDeclaration functionDeclaration, FunctionScope scope) {
         if (canBePrepared(functionDeclaration, scope)) {
             FunctionDeclarationInfo node = FunctionDeclarationInfo.create(functionDeclaration);
@@ -513,6 +525,10 @@ class OccurenceBuilder {
             setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
         }
 
+        for (Entry<TraitDeclarationInfo, TraitScope> entry : traitDeclarations.entrySet()) {
+            setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
+        }
+
         for (Entry<ASTNodeInfo<FunctionDeclaration>, FunctionScope> entry : fncDeclarations.entrySet()) {
             setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
         }
@@ -600,6 +616,15 @@ class OccurenceBuilder {
                         buildInterfaceDeclarations(elementInfo, fileScope, cachedOccurences);
                         buildClassInstanceCreation(elementInfo, fileScope, cachedOccurences);
                         buildMagicMethodDeclarationReturnType(elementInfo, fileScope, cachedOccurences);
+                    }
+                    break;
+                case TRAIT:
+                    final QualifiedName traitQualifiedName = elementInfo.getNodeInfo() != null
+                            ? VariousUtils.getFullyQualifiedName(elementInfo.getNodeInfo().getQualifiedName(), elementInfo.getNodeInfo().getOriginalNode().getStartOffset(), elementInfo.getScope())
+                            : elementInfo.getQualifiedName();
+                    final Set<TypeElement> traitTypes = index.getTypes(NameKind.exact(traitQualifiedName));
+                    if (elementInfo.setDeclarations(traitTypes)) {
+                        buildTraitDeclarations(elementInfo, fileScope, cachedOccurences);
                     }
                     break;
                 case METHOD:
@@ -1122,7 +1147,7 @@ class OccurenceBuilder {
                     ASTNodeInfo<StaticFieldAccess> nodeInfo = entry.getKey();
                     QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
                     final Scope scope = entry.getValue().getInScope();
-                    if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
+                    if (clzName != null && clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
                         if (clzName.getName().equalsIgnoreCase("self")) {
                             clzName = ((TypeScope) scope).getFullyQualifiedName();
                         } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {
@@ -1492,6 +1517,21 @@ class OccurenceBuilder {
         for (PhpElement phpElement : elements) {
             for (Entry<ClassDeclarationInfo, ClassScope> entry : clasDeclarations.entrySet()) {
                 ClassDeclarationInfo nodeInfo = entry.getKey();
+                if (NameKind.exact(nodeInfo.getQualifiedName()).matchesName(phpElement) &&
+                        nodeInfo.getRange().containsInclusive(phpElement.getOffset())) {
+                    if (fileScope.getFileObject() == phpElement.getFileObject()) {
+                        occurences.add(new OccurenceImpl(phpElement, nodeInfo.getRange()));
+                    }
+                }
+            }
+        }
+    }
+
+    private void buildTraitDeclarations(ElementInfo query, FileScopeImpl fileScope, final List<Occurence> occurences) {
+        Set<? extends PhpElement> elements = query.getDeclarations();
+        for (PhpElement phpElement : elements) {
+            for (Entry<TraitDeclarationInfo, TraitScope> entry : traitDeclarations.entrySet()) {
+                TraitDeclarationInfo nodeInfo = entry.getKey();
                 if (NameKind.exact(nodeInfo.getQualifiedName()).matchesName(phpElement) &&
                         nodeInfo.getRange().containsInclusive(phpElement.getOffset())) {
                     if (fileScope.getFileObject() == phpElement.getFileObject()) {
@@ -1893,7 +1933,8 @@ class OccurenceBuilder {
                     }
                 }
                 if (originalNode instanceof StaticDispatch) {
-                    qualifiedName = ASTNodeInfo.toQualifiedName(originalNode, true);
+                    QualifiedName pureQualifiedName = ASTNodeInfo.toQualifiedName(originalNode, true);
+                    qualifiedName = VariousUtils.getFullyQualifiedName(pureQualifiedName, originalNode.getStartOffset(), getScope());
                 } else {
                     if (getScope().getInScope() instanceof TypeScope) {
                         if (originalNode instanceof MethodDeclaration

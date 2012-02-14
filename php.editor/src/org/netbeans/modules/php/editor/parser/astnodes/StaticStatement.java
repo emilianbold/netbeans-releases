@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -65,11 +65,11 @@ public class StaticStatement extends Statement {
 			this.expressions.add(expression);
 		}
 	}
-        
+
         public StaticStatement(int start, int end,  List<Exception> expressions) {
 		this(start, end, expressions == null ? null : (Expression[]) expressions.toArray(new Expression[expressions.size()]));
 	}
-        
+
         /**
 	 * @return the variables that participate in the static call
 	 */
@@ -87,14 +87,14 @@ public class StaticStatement extends Statement {
 		}
 		return (Variable[]) vars.toArray(new Variable[vars.size()]);
 	}
-        
+
         /**
 	 * @return expression list of the static statement
 	 */
 	public List<Expression> getExpressions() {
 		return this.expressions;
 	}
-        
+
         @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);

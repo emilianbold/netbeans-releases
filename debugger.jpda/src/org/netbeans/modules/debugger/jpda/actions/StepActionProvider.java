@@ -51,6 +51,8 @@ import com.sun.jdi.event.Event;
 import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.StepRequest;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -101,6 +103,8 @@ import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 
 /**
@@ -124,6 +128,7 @@ implements Executor {
     private String className;
     private String methodName;
     private int depth;
+    private static RequestProcessor operationsRP = new RequestProcessor("Debugger Operations Computation", 1);
     
     private static boolean ssverbose = 
         System.getProperty ("netbeans.debugger.smartstepping") != null;
@@ -541,38 +546,102 @@ implements Executor {
         } catch (ObjectCollectedExceptionWrapper iex) {
             return true;
         }
-        ExpressionPool exprPool = debugger.getExpressionPool();
-        ExpressionPool.Expression expr = exprPool.getExpressionAt(loc, url);
-        if (expr == null) {
-            return true;
-        }
-        Operation[] ops = expr.getOperations();
-        // code index right after the method call (step out)
-        int codeIndex;
-        byte[] bytecodes;
-        try {
-            codeIndex = (int) LocationWrapper.codeIndex(loc);
-            bytecodes = MethodWrapper.bytecodes(LocationWrapper.method(loc));
-        } catch (InternalExceptionWrapper iex) {
-            return false;
-        }
-        if (codeIndex >= 5 && (bytecodes[codeIndex - 5] & 0xFF) == 185) { // invokeinterface
-            codeIndex -= 5;
-        } else {
-            codeIndex -= 3; // invokevirtual, invokespecial, invokestatic
-        }
-        int opIndex = expr.findNextOperationIndex(codeIndex - 1);
-        Operation lastOperation;
-        if (opIndex >= 0 && ops[opIndex].getBytecodeIndex() == codeIndex) {
-            lastOperation = ops[opIndex];
-        } else {
-            return true;
-        }
-        lastOperation.setReturnValue(returnValue);
-        JPDAThreadImpl jtr = debugger.getThread(tr);
-        jtr.addLastOperation(lastOperation);
-        jtr.setCurrentOperation(lastOperation);
+        setOperationsLazily(debugger.getThread(tr), returnValue, debugger, loc, url);
         return true;
+    }
+    
+    private static final long OPERATION_TIMEOUT = 200;
+    
+    private static void setOperationsLazily(final JPDAThreadImpl jtr,
+                                            final Variable returnValue,
+                                            final JPDADebuggerImpl debugger,
+                                            final Location loc,
+                                            final String url) throws VMDisconnectedExceptionWrapper {
+        
+        final Object[] finishedInTime = new Object[] { null };
+        final Task task = operationsRP.create(new Runnable() {
+            @Override
+            public void run() {
+                ExpressionPool exprPool = debugger.getExpressionPool();
+                ExpressionPool.Expression expr = exprPool.getExpressionAt(loc, url);
+                if (expr == null) {
+                    return ;
+                }
+                Operation[] ops = expr.getOperations();
+                // code index right after the method call (step out)
+                int codeIndex;
+                byte[] bytecodes;
+                try {
+                    codeIndex = (int) LocationWrapper.codeIndex(loc);
+                    bytecodes = MethodWrapper.bytecodes(LocationWrapper.method(loc));
+                } catch (InternalExceptionWrapper iex) {
+                    return ;
+                } catch (VMDisconnectedExceptionWrapper vmdex) {
+                    synchronized (finishedInTime) {
+                        finishedInTime[0] = vmdex;
+                    }
+                    return;
+                }
+                if (codeIndex >= 5 && (bytecodes[codeIndex - 5] & 0xFF) == 185) { // invokeinterface
+                    codeIndex -= 5;
+                } else {
+                    codeIndex -= 3; // invokevirtual, invokespecial, invokestatic
+                }
+                int opIndex = expr.findNextOperationIndex(codeIndex - 1);
+                Operation lastOperation;
+                if (opIndex >= 0 && ops[opIndex].getBytecodeIndex() == codeIndex) {
+                    lastOperation = ops[opIndex];
+                } else {
+                    return ;
+                }
+                synchronized (jtr) {
+                    boolean needsUpdate;
+                    synchronized (finishedInTime) {
+                        if (finishedInTime[0] == Boolean.FALSE) {
+                            // Too late
+                            //logger.severe("Operations computed, but it's too late.");
+                            return;
+                        }
+                        needsUpdate = finishedInTime[0] == Boolean.TRUE;
+                    }
+                    lastOperation.setReturnValue(returnValue);
+                    if (needsUpdate) {
+                        jtr.updateLastOperation(lastOperation);
+                        //logger.severe("Operations computed, updated.");
+                    } else {
+                        jtr.addLastOperation(lastOperation);
+                        jtr.setCurrentOperation(lastOperation);
+                        //logger.severe("Operations computed, set.");
+                    }
+                }
+            }
+        });
+        PropertyChangeListener threadChangeListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                synchronized (finishedInTime) {
+                    finishedInTime[0] = Boolean.FALSE;
+                    task.cancel();
+                }
+                jtr.removePropertyChangeListener(JPDAThreadImpl.PROP_OPERATIONS_SET, this);
+                //logger.severe("Operations were SET. Listener removed.");
+            }
+        };
+        jtr.addPropertyChangeListener(JPDAThreadImpl.PROP_OPERATIONS_SET, threadChangeListener);
+        task.schedule(0);
+        try {
+            boolean finished = task.waitFinished(OPERATION_TIMEOUT);
+            synchronized (finishedInTime) {
+                if (finishedInTime[0] instanceof VMDisconnectedExceptionWrapper) {
+                    throw (VMDisconnectedExceptionWrapper) finishedInTime[0];
+                }
+                if (!finished) {
+                    finishedInTime[0] = Boolean.TRUE;
+                }
+            }
+        } catch (InterruptedException ex) {
+            return;
+        }
     }
     
     private StepIntoActionProvider stepIntoActionProvider;

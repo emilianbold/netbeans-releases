@@ -73,10 +73,12 @@ public final class APTElseNode extends APTTokenAndChildBasedNode
         super(token);
     }
     
+    @Override
     public final int getType() {
         return APT.Type.ELSE;
     }
     
+    @Override
     public boolean accept(APTFile curFile,APTToken token) {
         assert (token != null);
         int ttype = token.getType();

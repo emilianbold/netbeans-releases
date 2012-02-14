@@ -89,7 +89,7 @@ class DiffSidebarDiffPanel extends javax.swing.JPanel implements PropertyChangeL
 
         contentPanel.setLayout(new java.awt.BorderLayout());
 
-        nextButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/diff/diff-prev.png"))); // NOI18N
+        nextButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/diff/diff-next.png"))); // NOI18N
         nextButton.setToolTipText(org.openide.util.NbBundle.getMessage(DiffSidebarDiffPanel.class, "TT_GoToNextDifference")); // NOI18N
         nextButton.setBorderPainted(false);
         nextButton.setFocusable(false);
@@ -102,7 +102,7 @@ class DiffSidebarDiffPanel extends javax.swing.JPanel implements PropertyChangeL
             }
         });
 
-        prevButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/diff/diff-next.png"))); // NOI18N
+        prevButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/diff/diff-prev.png"))); // NOI18N
         prevButton.setToolTipText(org.openide.util.NbBundle.getMessage(DiffSidebarDiffPanel.class, "TT_GoToPreviousDifference")); // NOI18N
         prevButton.setBorderPainted(false);
         prevButton.setFocusable(false);

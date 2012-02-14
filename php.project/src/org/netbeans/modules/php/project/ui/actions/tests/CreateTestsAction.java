@@ -42,12 +42,7 @@
 
 package org.netbeans.modules.php.project.ui.actions.tests;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -56,12 +51,8 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.api.editor.EditorSupport;
@@ -71,10 +62,11 @@ import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.phpunit.PhpUnit.ConfigFiles;
+import org.netbeans.modules.php.project.phpunit.PhpUnitSkelGen;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
@@ -95,14 +87,11 @@ import org.openide.util.actions.NodeAction;
  * @author Tomas Mysik
  */
 public final class CreateTestsAction extends NodeAction {
-    private static final long serialVersionUID = 952382987542628824L;
+
+    private static final long serialVersionUID = -468532132435473111L;
 
     private static final Logger LOGGER = Logger.getLogger(CreateTestsAction.class.getName());
 
-    private static final String REQUIRE_ONCE_TPL = "require_once '%s';"; // NOI18N
-
-    private static final ExecutionDescriptor EXECUTION_DESCRIPTOR
-            = new ExecutionDescriptor().controllable(false).frontWindow(false);
     private static final RequestProcessor RP = new RequestProcessor("Generate PHP Unit tests", 1); // NOI18N
     static final Queue<Runnable> RUNNABLES = new ConcurrentLinkedQueue<Runnable>();
     private static final RequestProcessor.Task TASK = RP.create(new Runnable() {
@@ -130,13 +119,19 @@ public final class CreateTestsAction extends NodeAction {
         if (activatedNodes.length == 0) {
             return;
         }
-        final PhpUnit phpUnit = CommandUtils.getPhpUnit(true);
-        if (phpUnit == null) {
-            return;
-        }
+
         // ensure that test sources directory exists
         final PhpProject phpProject = PhpProjectUtils.getPhpProject(activatedNodes[0]);
         assert phpProject != null : "PHP project must be found for " + activatedNodes[0];
+
+        // programs available?
+        PhpUnitSkelGen skelGen = CommandUtils.getPhpUnitSkelGen(false);
+        PhpUnit phpUnit = CommandUtils.getPhpUnit(phpProject, false);
+        if (skelGen == null && phpUnit == null) {
+            // prefer skelGen, show customizer
+            CommandUtils.getPhpUnitSkelGen(true);
+            return;
+        }
         if (ProjectPropertiesSupport.getTestDirectory(phpProject, true) == null) {
             return;
         }
@@ -148,7 +143,7 @@ public final class CreateTestsAction extends NodeAction {
                 handle.start();
                 try {
                     LifecycleManager.getDefault().saveAll();
-                    generateTests(activatedNodes, phpUnit, phpProject);
+                    generateTests(activatedNodes, phpProject);
                 } finally {
                     handle.finish();
                 }
@@ -205,7 +200,7 @@ public final class CreateTestsAction extends NodeAction {
         return null;
     }
 
-    void generateTests(final Node[] activatedNodes, final PhpUnit phpUnit, final PhpProject phpProject) {
+    void generateTests(final Node[] activatedNodes, final PhpProject phpProject) {
         assert phpProject != null;
 
         final List<FileObject> files = CommandUtils.getFileObjects(activatedNodes);
@@ -220,10 +215,10 @@ public final class CreateTestsAction extends NodeAction {
                 try {
                     final PhpVisibilityQuery phpVisibilityQuery = PhpVisibilityQuery.forProject(phpProject);
                     for (FileObject fo : files) {
-                        generateTest(phpUnit, phpProject, phpVisibilityQuery, fo, proceeded, failed, toOpen);
+                        generateTest(phpProject, phpVisibilityQuery, fo, proceeded, failed, toOpen);
                         Enumeration<? extends FileObject> children = fo.getChildren(true);
                         while (children.hasMoreElements()) {
-                            generateTest(phpUnit, phpProject, phpVisibilityQuery, children.nextElement(), proceeded, failed, toOpen);
+                            generateTest(phpProject, phpVisibilityQuery, children.nextElement(), proceeded, failed, toOpen);
                         }
                     }
                 } catch (ExecutionException ex) {
@@ -264,7 +259,7 @@ public final class CreateTestsAction extends NodeAction {
         }
     }
 
-    private void generateTest(PhpUnit phpUnit, PhpProject phpProject, PhpVisibilityQuery phpVisibilityQuery, FileObject sourceFo,
+    private void generateTest(PhpProject phpProject, PhpVisibilityQuery phpVisibilityQuery, FileObject sourceFo,
             Set<FileObject> proceeded, Set<FileObject> failed, Set<File> toOpen) throws ExecutionException {
         if (sourceFo.isFolder()
                 || !FileUtils.isPhpFile(sourceFo)
@@ -276,191 +271,91 @@ public final class CreateTestsAction extends NodeAction {
         }
         proceeded.add(sourceFo);
 
-        final ConfigFiles configFiles = PhpUnit.getConfigFiles(phpProject, false);
-        final String paramSkeleton = PhpUnit.PARAM_SKELETON;
-        final File sourceFile = FileUtil.toFile(sourceFo);
-        final File parent = FileUtil.toFile(sourceFo.getParent());
-        final File workingDirectory = phpUnit.getWorkingDirectory(configFiles, parent);
+        final TestGenerator testGenerator = getTestGenerator(phpProject, sourceFo);
 
         // find out the name of a class(es)
         EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
         assert editorSupport != null : "Editor support must exist";
         Collection<PhpClass> classes = editorSupport.getClasses(sourceFo);
         if (classes.isEmpty()) {
-            // run phpunit in order to have some output
-            generateSkeleton(phpUnit, configFiles, sourceFo.getName(), sourceFo, workingDirectory, paramSkeleton);
             failed.add(sourceFo);
             return;
         }
         for (PhpClass phpClass : classes) {
-            final String className = phpClass.getName();
-            final File testFile = getTestFile(phpProject, sourceFo, className);
-            if (testFile.isFile()) {
-                // already exists
+            File testFile = testGenerator.generateTest(phpClass);
+            if (testFile != null) {
                 toOpen.add(testFile);
-                continue;
-            }
-            // # 205135
-            final File generatedFile = getGeneratedFile(className, parent);
-            if (generatedFile.isFile()) {
-                // test already exists, next to source file
-                if (!useExistingTestInSources(generatedFile)) {
-                    continue;
-                }
             } else {
-                // test does not exist yet
-                Future<Integer> result = generateSkeleton(phpUnit, configFiles, phpClass.getFullyQualifiedName(), sourceFo, workingDirectory, paramSkeleton);
-                try {
-                    if (result.get() != 0) {
-                        // test not generated
-                        failed.add(sourceFo);
-                        if (!generatedFile.isFile()) {
-                            LOGGER.log(Level.WARNING, "Generated PHPUnit test file {0} was not found.", generatedFile.getName());
-                        }
-                        continue;
-                    }
-                } catch (InterruptedException ex) {
-                    LOGGER.log(Level.WARNING, null, ex);
-                }
-            }
-            File moved = moveAndAdjustGeneratedFile(generatedFile, testFile, sourceFile);
-            if (moved == null) {
+                // test not generated
                 failed.add(sourceFo);
-            } else {
-                toOpen.add(moved);
             }
         }
     }
 
-    private Future<Integer> generateSkeleton(PhpUnit phpUnit, ConfigFiles configFiles, String className, FileObject sourceFo, File workingDirectory, String paramSkeleton) {
-        // test does not exist yet
-        ExternalProcessBuilder externalProcessBuilder = phpUnit.getProcessBuilder()
-                .workingDirectory(workingDirectory);
-
-        // #179960
-        if (configFiles.bootstrap != null
-                && configFiles.useBootstrapForCreateTests) {
-            externalProcessBuilder = externalProcessBuilder
-                    .addArgument(PhpUnit.PARAM_BOOTSTRAP)
-                    .addArgument(configFiles.bootstrap.getAbsolutePath());
+    private TestGenerator getTestGenerator(PhpProject phpProject, FileObject source) {
+        PhpUnitSkelGen skelGen = CommandUtils.getPhpUnitSkelGen(false);
+        if (skelGen != null) {
+            // phpunit-skel-gen is preferred
+            LOGGER.log(Level.FINE, "Using phpunit-skel-gen for generating a test for {0}", source.getNameExt());
+            return new PhpUnitSkelGenTestGenerator(skelGen, phpProject, source);
         }
-        if (configFiles.configuration != null) {
-            externalProcessBuilder = externalProcessBuilder
-                    .addArgument(PhpUnit.PARAM_CONFIGURATION)
-                    .addArgument(configFiles.configuration.getAbsolutePath());
-        }
-
-        // http://www.phpunit.de/ticket/904
-        if (className.startsWith("\\")) { // NOI18N
-            className = className.substring(1);
-        }
-
-        externalProcessBuilder = externalProcessBuilder
-                .addArgument(paramSkeleton)
-                .addArgument(className)
-                .addArgument(FileUtil.toFile(sourceFo).getAbsolutePath());
-        ExecutionService service = ExecutionService.newService(externalProcessBuilder, EXECUTION_DESCRIPTOR,
-                String.format("%s %s %s %s", phpUnit.getProgram(), paramSkeleton, className, sourceFo.getNameExt())); // NOI18N
-        return service.run();
+        LOGGER.log(Level.FINE, "Using phpunit-skel-gen for generating a test for {0}", source.getNameExt());
+        PhpUnit phpUnit = CommandUtils.getPhpUnit(phpProject, false);
+        ConfigFiles configFiles = PhpUnit.getConfigFiles(phpProject, false);
+        File parent = FileUtil.toFile(source.getParent());
+        File workingDirectory = phpUnit.getWorkingDirectory(configFiles, parent);
+        return new PhpUnitTestGenerator(phpUnit, phpProject, source, configFiles, workingDirectory);
     }
 
-    private File getGeneratedFile(String className, File parent) {
-        return new File(parent, PhpUnit.makeTestFile(className));
+    //~ Inner classes
+
+    private interface TestGenerator {
+        File generateTest(PhpClass phpClass);
     }
 
-    private File getTestDirectory(PhpProject phpProject) {
-        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(phpProject, false);
-        assert testDirectory != null && testDirectory.isValid() : "Valid folder for tests must be found for " + phpProject;
-        return FileUtil.toFile(testDirectory);
-    }
+    private static final class PhpUnitTestGenerator implements TestGenerator {
 
-    private File getTestFile(PhpProject project, FileObject source, String className) {
-        assert project != null;
-        assert source != null;
+        private final PhpUnit phpUnit;
+        private final PhpProject phpProject;
+        private final FileObject source;
+        private final ConfigFiles configFiles;
+        private final File workingDirectory;
 
-        FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
-        String relativeSourcePath = FileUtil.getRelativePath(sourcesDirectory, source.getParent());
-        assert relativeSourcePath != null : String.format("Relative path must be found for sources %s and folder %s", sourcesDirectory, source.getParent());
 
-        File relativeTestDirectory = new File(getTestDirectory(project), relativeSourcePath.replace('/', File.separatorChar)); // NOI18N
-
-        return new File(relativeTestDirectory, PhpUnit.makeTestFile(className));
-    }
-
-    private boolean useExistingTestInSources(File testFile) {
-        NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation(
-                NbBundle.getMessage(CreateTestsAction.class, "MSG_UseTestFileInSources", testFile.getName()),
-                NotifyDescriptor.YES_NO_OPTION);
-        return DialogDisplayer.getDefault().notify(confirmation) == NotifyDescriptor.YES_OPTION;
-    }
-
-    private File moveAndAdjustGeneratedFile(File generatedFile, File testFile, File sourceFile) {
-        assert generatedFile.isFile() : "Generated files must exist: " + generatedFile;
-        assert !testFile.exists() : "Test file cannot exist: " + testFile;
-
-        // create all the parents
-        try {
-            FileUtil.createFolder(testFile.getParentFile());
-        } catch (IOException exc) {
-            // what to do now??
-            LOGGER.log(Level.WARNING, null, exc);
-            return generatedFile;
+        public PhpUnitTestGenerator(PhpUnit phpUnit, PhpProject phpProject, FileObject source, ConfigFiles configFiles, File workingDirectory) {
+            this.phpUnit = phpUnit;
+            this.phpProject = phpProject;
+            this.source = source;
+            this.configFiles = configFiles;
+            this.workingDirectory = workingDirectory;
         }
 
-        testFile = adjustFileContent(generatedFile, testFile, sourceFile, PhpUnit.getRequireOnce(testFile, sourceFile));
-        if (testFile == null) {
-            return null;
-        }
-        assert testFile.isFile() : "Test file must exist: " + testFile;
-
-        // reformat the file
-        try {
-            PhpProjectUtils.reformatFile(testFile);
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, "Cannot reformat file " + testFile, ex);
+        @Override
+        public File generateTest(PhpClass phpClass) {
+            return phpUnit.generateTest(phpProject, configFiles, phpClass, source, workingDirectory);
         }
 
-        return testFile;
     }
 
-    private File adjustFileContent(File generatedFile, File testFile, File sourceFile, String requireOnce) {
-        try {
-            // input
-            BufferedReader in = new BufferedReader(new FileReader(generatedFile));
+    private static final class PhpUnitSkelGenTestGenerator implements TestGenerator {
 
-            try {
-                // output
-                BufferedWriter out = new BufferedWriter(new FileWriter(testFile));
+        private final PhpUnitSkelGen skelGen;
+        private final PhpProject phpProject;
+        private final FileObject source;
 
-                try {
-                    String line;
-                    boolean requireWritten = false;
-                    String filename = sourceFile.getName();
-                    while ((line = in.readLine()) != null) {
-                        if (!requireWritten && PhpUnit.isRequireOnceSourceFile(line.trim(), filename)) {
-                            // original require generated by phpunit
-                            out.write(String.format(REQUIRE_ONCE_TPL, requireOnce).replace("''.", "")); // NOI18N
-                            requireWritten = true;
-                        } else {
-                            out.write(line);
-                        }
-                        out.newLine();
-                    }
-                } finally {
-                    out.flush();
-                    out.close();
-                }
-            } finally {
-                in.close();
-            }
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-            return null;
+
+        public PhpUnitSkelGenTestGenerator(PhpUnitSkelGen skelGen, PhpProject phpProject, FileObject source) {
+            this.skelGen = skelGen;
+            this.phpProject = phpProject;
+            this.source = source;
         }
 
-        if (!generatedFile.delete()) {
-            LOGGER.log(Level.INFO, "Cannot delete generated file {0}", generatedFile);
+        @Override
+        public File generateTest(PhpClass phpClass) {
+            return skelGen.generateTest(phpClass.getFullyQualifiedName(), FileUtil.toFile(source),
+                    phpClass.getFullyQualifiedName() + PhpUnit.TEST_CLASS_SUFFIX, PhpUnit.getTestFile(phpProject, source, phpClass.getName()));
         }
-        return testFile;
+
     }
+
 }

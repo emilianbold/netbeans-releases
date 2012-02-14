@@ -180,10 +180,14 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
             TestModelHelper testModelHelper = iterator.next();
             testModelHelper.shutdown(!iterator.hasNext());
         }
-        outputWriter.flush();
-        logWriter.flush();
-        outputWriter.close();
-        logWriter.close();
+        if (outputWriter != null) {
+            outputWriter.flush();
+            outputWriter.close();
+        }
+        if (logWriter != null) {
+            logWriter.flush();
+            logWriter.close();
+        }
         sysIncludes = Collections.<String>emptyList();
         usrIncludes = Collections.<String>emptyList();
     }

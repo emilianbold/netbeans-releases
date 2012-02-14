@@ -113,6 +113,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
         set ();
     }
     
+    @Override
     protected void setRequests () {
         setClassRequests (
             breakpoint.getClassFilters (), 
@@ -124,6 +125,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
         }
     }
     
+    @Override
     protected EventRequest createEventRequest(EventRequest oldRequest) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
         if (oldRequest instanceof BreakpointRequest) {
             return EventRequestManagerWrapper.createBreakpointRequest(getEventRequestManager (),
@@ -178,6 +180,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
 
     private final Map<Event, Value> returnValueByEvent = new WeakHashMap<Event, Value>();
 
+    @Override
     public boolean processCondition(Event event) {
         try {
             if (event instanceof BreakpointEvent) {
@@ -303,7 +306,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                                                  (signature == null ||
                                                   egualMethodSignatures(signature, TypeComponentWrapper.signature(method)))) {
 
-                        if ((breakpoint.getBreakpointType() & breakpoint.TYPE_METHOD_ENTRY) != 0) {
+                        if ((breakpoint.getBreakpointType() & MethodBreakpoint.TYPE_METHOD_ENTRY) != 0) {
                             if (MethodWrapper.location(method) != null && !MethodWrapper.isNative(method)) {
                                 Location location = MethodWrapper.location(method);
                                 BreakpointRequest br = EventRequestManagerWrapper.
@@ -346,7 +349,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                                 entryMethodNames.add(TypeComponentWrapper.name (method));
                             }
                         }
-                        if ((breakpoint.getBreakpointType() & breakpoint.TYPE_METHOD_EXIT) != 0) {
+                        if ((breakpoint.getBreakpointType() & MethodBreakpoint.TYPE_METHOD_EXIT) != 0) {
                             if (exitReq == null) {
                                 exitReq = EventRequestManagerWrapper.
                                         createMethodExitRequest(getEventRequestManager());

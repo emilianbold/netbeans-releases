@@ -43,7 +43,18 @@
 package org.netbeans.modules.web.common.api;
 
 import java.awt.Color;
+import java.util.*;
+import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.parsing.api.*;
+import org.netbeans.modules.parsing.spi.EmbeddingProvider;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -51,6 +62,8 @@ import org.openide.filesystems.FileObject;
  * @author marekfukala
  */
 public class WebUtilsTest extends CslTestBase {
+
+    private static final String HTML_MIME_TYPE = "text/html";
 
     public WebUtilsTest(String testName) {
         super(testName);
@@ -121,6 +134,106 @@ public class WebUtilsTest extends CslTestBase {
         FileReference resolved = WebUtils.resolveToReference(one, "/css/common.css");
         assertNull(resolved);
 
+    }
+
+    public void testGetResultIteratorForNoEmbedding() throws Exception {
+        // embeddings => text/html (no embedding)
+        Source source = getSourceForMimeType(HTML_MIME_TYPE);
+        getResultIteratorAndCheckMimePath(source, HTML_MIME_TYPE);
+    }
+
+    public void testGetResultIteratorForEmbeddingLevel1() throws Exception {
+        // embeddings => text/x-php5/text/html
+        final String mimeType = "text/x-php5";
+        setEmbeddingProviderIntoMockLookup(mimeType, Collections.singleton(HTML_MIME_TYPE));
+
+        Source source = getSourceForMimeType(mimeType);
+        getResultIteratorAndCheckMimePath(source, mimeType + "/" + HTML_MIME_TYPE);
+    }
+
+    public void testGetResultIteratorForEmbeddingLevel2() throws Exception {
+        // embeddings => text/x-tpl/text/x-php5/text/html
+        final String mimeType = "text/x-tpl";
+        final String embeddedPhpMimeType = "text/x-php5";
+
+        setEmbeddingProviderIntoMockLookup(mimeType, Collections.singleton(embeddedPhpMimeType));
+        setEmbeddingProviderIntoMockLookup(embeddedPhpMimeType, Collections.singleton(HTML_MIME_TYPE));
+
+        Source source = getSourceForMimeType(mimeType);
+        getResultIteratorAndCheckMimePath(source, mimeType + "/" + embeddedPhpMimeType + "/" + HTML_MIME_TYPE);
+    }
+
+    public void testGetResultIteratorForShortestEmbedding() throws Exception {
+        // embeddings => text/x-tpl/text/x-php5/text/html
+        // embeddings => text/x-tpl/text/html
+        final String mimeType = "text/x-tpl";
+        final String embeddedPhpMimeType = "text/x-php5";
+
+        Set<String> embeddedMimeTypes = new HashSet<String>(Arrays.asList(embeddedPhpMimeType, HTML_MIME_TYPE));
+        setEmbeddingProviderIntoMockLookup(mimeType, embeddedMimeTypes);
+        setEmbeddingProviderIntoMockLookup(embeddedPhpMimeType, Collections.singleton(HTML_MIME_TYPE));
+
+        Source source = getSourceForMimeType(mimeType);
+        getResultIteratorAndCheckMimePath(source, mimeType + "/" + HTML_MIME_TYPE);
+    }
+
+    public void testGetResultIteratorForFirstShortestEmbedding() throws Exception {
+        // embeddings => text/x-tpl/text/x-php4/text/html
+        // embeddings => text/x-tpl/text/x-php5/text/html
+        final String mimeType = "text/x-tpl";
+        final String embeddedPhp4MimeType = "text/x-php4";
+        final String embeddedPhp5MimeType = "text/x-php5";
+
+        Set<String> embeddedMimeTypes = new HashSet<String>(Arrays.asList(embeddedPhp4MimeType, embeddedPhp5MimeType));
+        setEmbeddingProviderIntoMockLookup(mimeType, embeddedMimeTypes);
+        setEmbeddingProviderIntoMockLookup(embeddedPhp4MimeType, Collections.singleton(HTML_MIME_TYPE));
+        setEmbeddingProviderIntoMockLookup(embeddedPhp5MimeType, Collections.singleton(HTML_MIME_TYPE));
+
+        Source source = getSourceForMimeType(mimeType);
+        getResultIteratorAndCheckMimePath(source, mimeType + "/text/x-php[4,5]/" + HTML_MIME_TYPE);
+    }
+
+    private void setEmbeddingProviderIntoMockLookup(String forMimeType, final Set<String> embeddedMimeTypes) {
+        MockMimeLookup.setInstances(MimePath.parse(forMimeType), new TaskFactory() {
+            public @Override Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+                return Collections.singletonList(new EmbeddingProvider() {
+                    public @Override List<Embedding> getEmbeddings(Snapshot snapshot) {
+                        List<Embedding> embeddings = new ArrayList<Embedding>();
+                        for (String embeddedType : embeddedMimeTypes) {
+                            embeddings.add(snapshot.create(embeddedType + " section\n", embeddedType));
+                        }
+                        return embeddings;
+                    }
+
+                    public @Override int getPriority() {
+                        return Integer.MAX_VALUE;
+                    }
+
+                    public @Override void cancel() {
+                    }
+                });
+            }
+        });
+
+    }
+
+    private void getResultIteratorAndCheckMimePath(Source source, final String mimePathRegex) throws ParseException {
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                resultIterator = WebUtils.getResultIterator(resultIterator, HTML_MIME_TYPE);
+                assertEquals(resultIterator.getSnapshot().getMimeType(), HTML_MIME_TYPE);
+                assertTrue(resultIterator.getSnapshot().getMimePath().getPath().matches(mimePathRegex));
+            }
+        });
+    }
+
+    private Source getSourceForMimeType(String mimeType) {
+        EditorKit kit = new DefaultEditorKit();
+        Document doc = kit.createDefaultDocument();
+        doc.putProperty("mimeType", mimeType);
+        return Source.create(doc);
     }
 
 }

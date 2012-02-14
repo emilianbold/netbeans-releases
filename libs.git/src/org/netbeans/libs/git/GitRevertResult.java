@@ -47,8 +47,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- *
- * @author ondra
+ * Provides information about the result of reverting a commit.
+ * 
+ * @author Ondra Vrabec
  */
 public final class GitRevertResult {
     
@@ -58,6 +59,9 @@ public final class GitRevertResult {
     private final List<File> conflicts;
     private final List<File> failures;
 
+    /**
+     * Result status of a commit revert.
+     */
     public static enum Status {
         REVERTED {
             @Override
@@ -98,18 +102,35 @@ public final class GitRevertResult {
         this.failures = failures == null ? Collections.<File>emptyList() : failures;
     }
 
+    /**
+     * @return result of the revert.
+     */
     public Status getStatus () {
         return status;
     }
 
+    /**
+     * @return current HEAD commit after the successful revert or <code>null</code> if it failed.
+     */
     public GitRevisionInfo getNewHead () {
         return revertCommit;
     }
 
+    /**
+     * If the revert started but was unable to finish because of unresolved conflicts then the method
+     * returns a collection of such files in conflict.
+     * To complete the commit revert you need to resolve the conflicts and commit the changes.
+     * @return files in conflict
+     */
     public Collection<File> getConflicts () {
         return conflicts;
     }
 
+    /**
+     * When the commit revert fails because of local modifications then this 
+     * method returns a collections of files causing the failure.
+     * @return files that cause the revert to fail.
+     */
     public Collection<File> getFailures () {
         return failures;
     }

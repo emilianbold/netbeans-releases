@@ -91,6 +91,10 @@ public class ParseProjectXmlTest extends TestBase {
         doScanBinariesForOSGi("modules", "netigso.test_repackaged");
     }
 
+    public void testScanBinariesForOSGiWithDash() throws Exception {
+        doScanBinariesForOSGi("osgi", "netigso.test-dash");
+    }
+
     private void doScanBinariesForOSGi(String whereTo, String cnb) throws Exception {
         Project fakeproj = new Project();
         fakeproj.addBuildListener(new BuildListener() {
@@ -112,7 +116,7 @@ public class ParseProjectXmlTest extends TestBase {
         Manifest man = createManifest();
         man.getMainAttributes().putValue("Bundle-SymbolicName", cnb);
         man.getMainAttributes().putValue("Bundle-Version", "7.0.1.Prelude");
-        String dashCnb = cnb.replace('.', '-');
+        String dashCnb = cnb.replace('-', '_').replace('.', '-');
         generateJar(new File(osgiRepo, dashCnb + ".jar"), new String[0], man);
 
         CreateModuleXML cmxml = new CreateModuleXML();

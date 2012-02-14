@@ -50,9 +50,8 @@ import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.GitClient;
-import org.netbeans.libs.git.GitClientFactory;
+import org.netbeans.libs.git.GitRepository;
 import org.netbeans.libs.git.jgit.JGitRepository;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -74,7 +73,7 @@ public class InitTest extends AbstractGitTestCase {
 
     public void testInit () throws Exception {
         File repo2 = new File(workDir.getParentFile(), "other");
-        GitClient client = GitClientFactory.getInstance().getClient(repo2);
+        GitClient client = GitRepository.getInstance(repo2).getClient();
         Field f = GitClient.class.getDeclaredField("gitRepository");
         f.setAccessible(true);
         JGitRepository jgitRepo = (JGitRepository) f.get(client);

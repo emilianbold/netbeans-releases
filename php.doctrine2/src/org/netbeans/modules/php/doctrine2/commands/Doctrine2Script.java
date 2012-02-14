@@ -62,9 +62,9 @@ public final class Doctrine2Script extends PhpProgram {
     }
 
     /**
-     * Get the default, <b>valid only</b> ApiGen script.
-     * @return the default, <b>valid only</b> ApiGen script.
-     * @throws InvalidPhpProgramException if ApiGen script is not valid.
+     * Get the default, <b>valid only</b> Doctrine2 script.
+     * @return the default, <b>valid only</b> Doctrine2 script.
+     * @throws InvalidPhpProgramException if Doctrine2 script is not valid.
      */
     public static Doctrine2Script getDefault() throws InvalidPhpProgramException {
         String script = Doctrine2Options.getInstance().getScript();
@@ -79,14 +79,10 @@ public final class Doctrine2Script extends PhpProgram {
         return new Doctrine2Script(command).validate();
     }
 
-    @NbBundle.Messages("Doctrine2Script.prefix=Doctrine2 script: {0}")
+    @NbBundle.Messages("Doctrine2Script.script.label=Doctrine2 script")
     @Override
     public String validate() {
-        String error = FileUtils.validateFile(getProgram(), false);
-        if (error == null) {
-            return null;
-        }
-        return Bundle.Doctrine2Script_prefix(error);
+        return FileUtils.validateFile(Bundle.Doctrine2Script_script_label(), getProgram(), false);
     }
 
 }

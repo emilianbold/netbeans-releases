@@ -45,6 +45,7 @@ package org.netbeans.modules.refactoring.java.ui;
 
 import com.sun.source.util.TreePath;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementHeaders;
@@ -54,6 +55,7 @@ import org.netbeans.modules.refactoring.java.api.ExtractSuperclassRefactoring;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -61,17 +63,22 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Matula, Jan Pokorsky
  */
-public class ExtractSuperclassRefactoringUI implements RefactoringUI {
+public class ExtractSuperclassRefactoringUI implements RefactoringUI, JavaRefactoringUIFactory {
     // reference to refactoring this UI object corresponds to
-    private final ExtractSuperclassRefactoring refactoring;
+    private ExtractSuperclassRefactoring refactoring;
     // source type
-    private final TreePathHandle sourceType;
+    private TreePathHandle sourceType;
     // UI panel for collecting parameters
     private ExtractSuperclassPanel panel;
-    private final String name;
-    
-    public static ExtractSuperclassRefactoringUI create(TreePathHandle selectedHandle, CompilationInfo info) {
-        TreePath path = selectedHandle.resolve(info);
+    private String name;
+
+    private ExtractSuperclassRefactoringUI() {
+    }
+
+    @Override
+    public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
+        assert handles.length == 1;
+        TreePath path = handles[0].resolve(info);
 
         path = JavaRefactoringUtils.findEnclosingClass(info, path, true, false, false, false, false);
 
@@ -148,5 +155,9 @@ public class ExtractSuperclassRefactoringUI implements RefactoringUI {
     private void captureParameters() {
         refactoring.setSuperClassName(panel.getSuperClassName());
         refactoring.setMembers(panel.getMembers());
+    }
+    
+    public static JavaRefactoringUIFactory factory() {
+        return new ExtractSuperclassRefactoringUI();
     }
 }

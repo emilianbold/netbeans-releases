@@ -92,8 +92,8 @@ public class BootClassPathImplementationTest extends NbTestCase {
         scratch = TestUtil.makeScratchDir(this);
         this.defaultPlatformBootRoot = scratch.createFolder("DefaultPlatformBootRoot");
         this.explicitPlatformBootRoot = scratch.createFolder("ExplicitPlatformBootRoot");
-        ClassPath defBCP = ClassPathSupport.createClassPath(new URL[]{defaultPlatformBootRoot.getURL()});
-        ClassPath expBCP = ClassPathSupport.createClassPath(new URL[]{explicitPlatformBootRoot.getURL()});
+        ClassPath defBCP = ClassPathSupport.createClassPath(new URL[]{defaultPlatformBootRoot.toURL()});
+        ClassPath expBCP = ClassPathSupport.createClassPath(new URL[]{explicitPlatformBootRoot.toURL()});
         tp = new TestPlatformProvider (defBCP, expBCP);
         MockLookup.setLayersAndInstances(
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation(),

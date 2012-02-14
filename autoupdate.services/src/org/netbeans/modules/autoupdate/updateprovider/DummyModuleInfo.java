@@ -73,12 +73,7 @@ public final class DummyModuleInfo extends ModuleInfo {
 //                List urls = new ArrayList(Math.max(kids.length, 1)); // List<URL>
 //                for (int i = 0; i < kids.length; i++) {
 //                    if (kids[i].hasExt("xml")) {
-//                        try {
-//                            urls.add(kids[i].getURL());
-//                        }
-//                        catch (FileStateInvalidException e) {
-//                            Exceptions.printStackTrace(e);
-//                        }
+//                        urls.add(kids[i].toURL());
 //                    }
 //                }
 //                try {

@@ -58,6 +58,11 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 public class EJBCategoryBuilder extends CategoryBuilder {
 
     public EJBCategoryBuilder(Project proj) {
-        super(proj, "org-netbeans-modules-j2ee-ejbjarproject");
+        super(proj);
+    }
+
+    @Override
+    protected String getProjectTypeId() {
+        return "org-netbeans-modules-j2ee-ejbjarproject"; // NOI18N
     }
 }

@@ -54,7 +54,7 @@ public class ModelFactory {
     public static Model getModel(PHPParseResult info) {
         return new Model(info);
     }
-    
+
     /*public static IndexScope getIndex(PHPIndex index) {
         return ModelVisitor.getIndexScope(index);
     }*/

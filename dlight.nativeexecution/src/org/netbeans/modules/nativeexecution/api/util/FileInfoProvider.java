@@ -416,4 +416,33 @@ public class FileInfoProvider {
             return text;
         }
     }
+    
+    public static final class SftpIOException extends IOException {
+        // from jsch
+        //public static final int SSH_FX_OK=                            0;
+        public static final int SSH_FX_EOF=                           1;
+        public static final int SSH_FX_NO_SUCH_FILE=                  2;
+        public static final int SSH_FX_PERMISSION_DENIED=             3;
+        public static final int SSH_FX_FAILURE=                       4;
+        public static final int SSH_FX_BAD_MESSAGE=                   5;
+        public static final int SSH_FX_NO_CONNECTION=                 6;
+        public static final int SSH_FX_CONNECTION_LOST=               7;
+        public static final int SSH_FX_OP_UNSUPPORTED=                8;
+        
+        private final int id;
+        private final String path;
+        SftpIOException(int id, String message, String path, Throwable cause) {
+            super(message, cause);
+            this.id = id;
+            this.path = path;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public String getPath() {
+            return path;
+        }
+    }
 }

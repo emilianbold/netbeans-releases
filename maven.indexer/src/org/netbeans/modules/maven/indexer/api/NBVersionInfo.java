@@ -199,13 +199,7 @@ public final class NBVersionInfo implements Comparable<NBVersionInfo> {
         if (c != 0) {
             return -c; // show newest versions first!
         }
-        if (type != null && o.type != null) {
-            c = type.compareTo(o.type);
-            if (c != 0) {
-                return c; // show e.g. jar vs. nbm artifacts in some predictable order
-            }
-        }
-        return System.identityHashCode(this) - System.identityHashCode(o); // don't care
+        return extrakey().compareTo(o.extrakey());// show e.g. jar vs. nbm artifacts in some predictable order
     }
     private ComparableVersion version() {
         if (version.matches("RELEASE\\d+(-.+)?")) { // NOI18N
@@ -214,6 +208,9 @@ public final class NBVersionInfo implements Comparable<NBVersionInfo> {
         } else {
             return new ComparableVersion(version);
         }
+    }
+    private String extrakey() {
+        return "" + classifier + type + repoId;
     }
     
 }

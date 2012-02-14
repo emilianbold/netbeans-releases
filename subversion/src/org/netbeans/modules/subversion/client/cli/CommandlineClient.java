@@ -859,7 +859,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
                     false,
                     null);
         } catch (SVNClientException ex) {
-            if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage())) {
+            if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) || SvnClientExceptionHandler.isNodeNotFound(ex.getMessage())) {
                 return new SVNStatusUnversioned(file);
             } else {
                 throw ex;

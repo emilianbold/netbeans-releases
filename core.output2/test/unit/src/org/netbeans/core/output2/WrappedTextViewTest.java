@@ -60,10 +60,10 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.View;
-import junit.framework.TestCase;
 import org.netbeans.core.output2.ui.AbstractOutputPane;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
-import org.openide.util.Utilities;
 import org.openide.windows.IOContainer;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -72,7 +72,8 @@ import org.openide.windows.OutputListener;
  *
  * @author Tim Boudreau
  */
-public class WrappedTextViewTest extends TestCase {
+@RandomlyFails // "Cannot write XdndAware property" from XDnDDropTargetProtocol.registerDropTarget in setUp
+public class WrappedTextViewTest extends NbTestCase {
     
     public WrappedTextViewTest(String testName) {
         super(testName);

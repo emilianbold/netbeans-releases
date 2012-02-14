@@ -83,7 +83,6 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -102,13 +101,13 @@ import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.lib.profiler.ProfilerLogger;
 import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.lib.profiler.TargetAppRunner;
+import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.project.ProjectStorage;
+import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointReport;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
@@ -620,6 +619,7 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
                     CommonUtils.runInEventDispatchThread(new Runnable() {
                             public void run() {
                                 ProfilingPointsWindow.getDefault().notifyProfilingStateChanged(); // this needs to be called on EDT
+                                ProfilingPointReport.refreshOpenReports();
                             }
                         });
                 }
@@ -803,8 +803,8 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
         ValidityAwarePanel showingCustomizer = getShowingCustomizer();
 
         if (showingCustomizer != null) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    Bundle.ProfilingPointsManager_AnotherPpEditedMsg(), NotifyDescriptor.WARNING_MESSAGE));
+            ProfilerDialogs.displayWarning(
+                    Bundle.ProfilingPointsManager_AnotherPpEditedMsg());
             SwingUtilities.getWindowAncestor(showingCustomizer).requestFocus();
             showingCustomizer.requestFocusInWindow();
         } else {
@@ -1214,11 +1214,9 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
                 try {
                     factory.saveProfilingPoints(project);
                 } catch (IOException ex) {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    ProfilerDialogs.displayError(
                             Bundle.ProfilingPointsManager_CannotStorePpMsg(
-                                factory.getType(),
-                                ProjectUtilities.getDisplayName(project)), 
-                            NotifyDescriptor.ERROR_MESSAGE));
+                                factory.getType(), ProjectUtilities.getDisplayName(project)));
                 }
             }
         }

@@ -56,6 +56,7 @@ public interface SECTIONS {
     String DYNAMIC = ".dynamic"; // NOI18N
     String DEBUG_LINE = ".debug_line"; // NOI18N
     String DEBUG_MACINFO = ".debug_macinfo"; // NOI18N
+    String DEBUG_MACRO = ".debug_macro"; // GNU extension // NOI18N 
     String DEBUG_ABBREV = ".debug_abbrev"; // NOI18N
     String DEBUG_ARANGES = ".debug_aranges"; // NOI18N
     String DEBUG_PUBNAMES = ".debug_pubnames"; // NOI18N

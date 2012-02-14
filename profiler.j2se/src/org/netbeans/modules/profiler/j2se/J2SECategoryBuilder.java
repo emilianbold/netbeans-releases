@@ -57,7 +57,11 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 public class J2SECategoryBuilder extends CategoryBuilder {
 
     public J2SECategoryBuilder(Project proj) {
-        super(proj, "org-netbeans-modules-java-j2seproject");
+        super(proj);
     }
 
+    @Override
+    protected String getProjectTypeId() {
+        return "org-netbeans-modules-java-j2seproject"; // NOI18N
+    }
 }

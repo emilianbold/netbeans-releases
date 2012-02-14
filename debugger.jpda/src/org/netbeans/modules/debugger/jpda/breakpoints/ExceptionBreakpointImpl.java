@@ -84,6 +84,7 @@ public class ExceptionBreakpointImpl extends ClassBasedBreakpoint {
         set ();
     }
     
+    @Override
     protected void setRequests () {
         setClassRequests (
             new String[] {breakpoint.getExceptionClassName ()},
@@ -117,6 +118,7 @@ public class ExceptionBreakpointImpl extends ClassBasedBreakpoint {
         }
     }
     
+    @Override
     protected ExceptionRequest createEventRequest(EventRequest oldRequest) throws VMDisconnectedExceptionWrapper, InternalExceptionWrapper {
         ExceptionRequest excRequest = (ExceptionRequest) oldRequest;
         ExceptionRequest er = EventRequestManagerWrapper.createExceptionRequest (
@@ -140,6 +142,7 @@ public class ExceptionBreakpointImpl extends ClassBasedBreakpoint {
         }
     }
 
+    @Override
     public boolean processCondition(Event event) {
         if (event instanceof ExceptionEvent) {
             try {
@@ -155,6 +158,7 @@ public class ExceptionBreakpointImpl extends ClassBasedBreakpoint {
         }
     }
 
+    @Override
     public boolean exec (Event event) {
         if (event instanceof ExceptionEvent) {
             ExceptionEvent ee = (ExceptionEvent) event;

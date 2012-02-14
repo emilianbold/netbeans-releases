@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -56,10 +57,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementUtilities;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.*;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
@@ -68,6 +67,7 @@ import org.netbeans.modules.spring.beans.BeansAttributes;
 import org.netbeans.modules.spring.java.JavaUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Finds the actual class which is implementing the specified bean. 
@@ -120,12 +120,12 @@ public class BeanClassFinder {
         this.walkedBeanNames = new HashSet<String>();
     }
 
-    public String findImplementationClass() {
+    public String findImplementationClass(boolean immediateAction) {
         walkedBeanNames.add(startBeanName);
-        return findImplementationClass(startBean);
+        return findImplementationClass(startBean, immediateAction);
     }
 
-    private String findImplementationClass(SpringBean logicalBean) {
+    private String findImplementationClass(SpringBean logicalBean, boolean immediateAction) {
         String implClass = null;
         if (logicalBean == null) {
             return null;
@@ -134,7 +134,7 @@ public class BeanClassFinder {
         boolean staticFlag = false;
         
         if (StringUtils.hasText(logicalBean.getFactoryBean())) {
-            implClass = findImplementationClass(logicalBean.getFactoryBean());
+            implClass = findImplementationClass(logicalBean.getFactoryBean(), immediateAction);
             staticFlag = false;
         } else if (StringUtils.hasText(logicalBean.getClassName())) {
             implClass = logicalBean.getClassName();
@@ -142,13 +142,14 @@ public class BeanClassFinder {
         }
 
         if(logicalBean.getFactoryMethod() != null && implClass != null) {
-            implClass = getFactoryMethodReturnTypeName(implClass, logicalBean.getFactoryMethod(), staticFlag);
+            implClass = getFactoryMethodReturnTypeName(
+                    implClass, logicalBean.getFactoryMethod(), staticFlag, immediateAction);
         }
         
         return implClass;
     }
 
-    private String findImplementationClass(final String beanName) {
+    private String findImplementationClass(final String beanName, final boolean immediateAction) {
         if(walkedBeanNames.contains(beanName)) {
             // possible circular dep - bail out
             return null;
@@ -172,7 +173,7 @@ public class BeanClassFinder {
                     
                     String beanName = getBeanIdOrName(bean);
                     walkedBeanNames.add(beanName);
-                    clazz[0] = findImplementationClass(bean);
+                    clazz[0] = findImplementationClass(bean, immediateAction);
                 }
             });
         } catch (IOException ex) {
@@ -186,56 +187,100 @@ public class BeanClassFinder {
      * Tries to search for a factory method with a specified name on the class.
      * Due to current limitations of the model, if more than one factory method
      * is found, we are not able to disambiguate based on the parameter types of
-     * the factory method. 
-     * 
+     * the factory method.
+     *
      * Hence we return a null in such a scenario.
-     * 
+     *
      */
-    private String getFactoryMethodReturnTypeName(final String implClass, final String factoryMethodName, 
-            final boolean staticFlag) {
+    @NbBundle.Messages("title.class.resolver=Resolving Class")
+    private String getFactoryMethodReturnTypeName(final String implClass, final String factoryMethodName,
+            final boolean staticFlag, final boolean immediateAction) {
         final String[] retVal = {null};
 
-        if(!StringUtils.hasText(factoryMethodName)) {
+        if (!StringUtils.hasText(factoryMethodName)) {
             return null;
         }
-        
+
+        JavaSource js = JavaUtils.getJavaSource(fileObject);
+        if (js == null) {
+            return null;
+        }
+
+        ClassResolver classResolver = new ClassResolver(js, implClass, factoryMethodName, staticFlag, retVal);
+        runClassResolverAsUserActionTask(js, classResolver);
+        if (!immediateAction && !classResolver.wasClassResolved() && SourceUtils.isScanInProgress()) {
+            ScanDialog.runWhenScanFinished(classResolver, Bundle.title_class_resolver());
+        }
+
+        return retVal[0];
+    }
+
+    private void runClassResolverAsUserActionTask(JavaSource javaSource, ClassResolver classResolver) {
         try {
-            JavaSource js = JavaUtils.getJavaSource(fileObject);
-            if (js == null) {
-                return null;
-            }
-
-            js.runUserActionTask(new Task<CompilationController>() {
-
-                public void run(CompilationController cc) throws Exception {
-                    if (implClass == null) {
-                        return;
-                    }
-                    TypeElement te = JavaUtils.findClassElementByBinaryName(implClass, cc);
-                    if (te == null) {
-                        return;
-                    }
-
-                    FactoryMethodFinder factoryMethodFinder = new FactoryMethodFinder(te, factoryMethodName, staticFlag, cc.getElementUtilities());
-                    List<ExecutableElement> methods = factoryMethodFinder.findMethods();
-                    if (methods.size() != 1) {
-                        return;
-                    }
-
-                    ExecutableElement method = methods.get(0);
-                    if (method.getReturnType().getKind() != TypeKind.DECLARED) {
-                        return;
-                    }
-
-                    DeclaredType dt = (DeclaredType) method.getReturnType();
-                    retVal[0] = ElementUtilities.getBinaryName((TypeElement) dt.asElement());
-                }
-            }, true);
+            javaSource.runUserActionTask(classResolver, true);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        
-        return retVal[0];
+    }
+
+    private class ClassResolver implements Runnable, CancellableTask<CompilationController> {
+
+        private final AtomicBoolean wasClassResolved = new AtomicBoolean(false);
+        private final JavaSource javaSource;
+        private final String implClass;
+        private final String factoryMethodName;
+        private final boolean staticFlag;
+        private final String[] resolvedClass;
+
+        public ClassResolver(JavaSource javaSource, String implClass, String factoryMethodName,
+                boolean staticFlag, String[] resolvedClass) {
+            this.javaSource = javaSource;
+            this.implClass = implClass;
+            this.factoryMethodName = factoryMethodName;
+            this.staticFlag = staticFlag;
+            this.resolvedClass = resolvedClass;
+        }
+
+        @Override
+        public void run() {
+            runClassResolverAsUserActionTask(javaSource, this);
+        }
+
+        @Override
+        public void cancel() {
+        }
+
+        @Override
+        public void run(CompilationController controller) throws Exception {
+            controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            if (implClass == null) {
+                return;
+            }
+            TypeElement te = JavaUtils.findClassElementByBinaryName(implClass, controller);
+            if (te == null) {
+                return;
+            }
+
+            FactoryMethodFinder factoryMethodFinder = new FactoryMethodFinder(
+                    te, factoryMethodName, staticFlag, controller.getElementUtilities());
+            List<ExecutableElement> methods = factoryMethodFinder.findMethods();
+            if (methods.size() != 1) {
+                return;
+            }
+
+            ExecutableElement method = methods.get(0);
+            if (method.getReturnType().getKind() != TypeKind.DECLARED) {
+                return;
+            }
+
+            wasClassResolved.set(true);
+            DeclaredType dt = (DeclaredType) method.getReturnType();
+            resolvedClass[0] = ElementUtilities.getBinaryName((TypeElement) dt.asElement());
+        }
+
+        public boolean wasClassResolved() {
+            return wasClassResolved.get();
+        }
     }
 
     private static class FactoryMethodFinder {

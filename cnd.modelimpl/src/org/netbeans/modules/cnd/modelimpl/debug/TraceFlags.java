@@ -128,8 +128,8 @@ public class TraceFlags {
     public static final boolean CLOSE_AFTER_PARSE = DebugUtils.getBoolean("cnd.close.ide.after.parse", false); // NOI18N
     public static final int     CLOSE_TIMEOUT = Integer.getInteger("cnd.close.ide.timeout",0); // in seconds // NOI18N
 
-    public static final boolean USE_DEEP_REPARSING_TRACE = DebugUtils.getBoolean("cnd.modelimpl.use.deep.repersing.trace", false); // NOI18N
-    public static final boolean DEEP_REPARSING_OPTIMISTIC = DebugUtils.getBoolean("cnd.modelimpl.use.deep.repersing.optimistic", false); // NOI18N
+    public static final boolean USE_DEEP_REPARSING_TRACE = DebugUtils.getBoolean("cnd.modelimpl.use.deep.reparsing.trace", false); // NOI18N
+    public static final boolean DEEP_REPARSING_OPTIMISTIC = DebugUtils.getBoolean("cnd.modelimpl.use.deep.reparsing.optimistic", false); // NOI18N
 
     
     public static final boolean SAFE_REPOSITORY_ACCESS = DebugUtils.getBoolean("cnd.modelimpl.repository.safe.access", false); // NOI18N
@@ -165,6 +165,10 @@ public class TraceFlags {
     public static final boolean EXPRESSION_EVALUATOR_RECURSIVE_CALC = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator.recursive.calc", false); // NOI18N
     public static final boolean EXPRESSION_EVALUATOR_EXTRA_SPEC_PARAMS_MATCHING = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator.extra.spec.params.matching", false); // NOI18N
 
+    public static final boolean CPP_PARSER_ACTION = DebugUtils.getBoolean("cnd.modelimpl.cpp.parser.action", false); // NOI18N
+    public static final boolean CPP_PARSER_NEW_GRAMMAR = DebugUtils.getBoolean("cnd.modelimpl.cpp.parser.new.grammar", false); // NOI18N
+    public static final boolean PARSE_HEADERS_WITH_SOURCES = DebugUtils.getBoolean("cnd.modelimpl.parse.headers.with.sources", false); // NOI18N
+    
     public static final List<String> logMacros;
     static {
          String text = System.getProperty("parser.log.macro"); //NOI18N

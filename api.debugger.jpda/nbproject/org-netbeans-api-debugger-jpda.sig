@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 2.31
+#Version 2.33
 
 CLSS public abstract interface java.io.Serializable
 
@@ -633,7 +633,7 @@ meth public org.netbeans.api.debugger.jpda.JPDAThread getThread()
 meth public org.netbeans.api.debugger.jpda.Variable getVariable()
 meth public void resume()
 supr java.util.EventObject
-hfds conditionException,conditionResult,debugger,referenceType,resume,thread,variable
+hfds conditionException,conditionResult,debugger,event,referenceType,resume,thread,variable
 
 CLSS public abstract interface org.netbeans.api.debugger.jpda.event.JPDABreakpointListener
 intf java.util.EventListener

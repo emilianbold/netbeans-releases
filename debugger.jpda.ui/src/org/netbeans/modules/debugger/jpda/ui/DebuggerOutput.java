@@ -45,7 +45,9 @@
 package org.netbeans.modules.debugger.jpda.ui;
 
 import com.sun.jdi.AbsentInformationException;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.beancontext.BeanContextChild;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
@@ -100,6 +102,10 @@ PropertyChangeListener {
     private SourcePath          engineContext;
     private IOManager           ioManager;
     private ContextProvider     contextProvider;
+    
+    private static final String PROP_OPERATIONS_UPDATE = "operationsUpdate"; // NOI18N
+    private static final String PROP_OPERATIONS_SET = "operationsSet"; // NOI18N
+    
 
 
     public DebuggerOutput (ContextProvider contextProvider) {
@@ -152,7 +158,7 @@ PropertyChangeListener {
     }
 
     public void propertyChange (java.beans.PropertyChangeEvent evt) {
-        JPDAThread t;
+        final JPDAThread t;
         int debuggerState;
         IOManager ioManager;
         synchronized (this) {
@@ -293,17 +299,14 @@ PropertyChangeListener {
                     break;
                 }
             }
-            String language = (session != null) ? session.getCurrentLanguage() : null;
+            final String language = (session != null) ? session.getCurrentLanguage() : null;
             String threadName = t.getName ();
-            String methodName = t.getMethodName ();
+            final String methodName = t.getMethodName ();
             String className = t.getClassName ();
-            int lineNumber = t.getLineNumber (language);
+            final int lineNumber = t.getLineNumber (language);
             Operation op = t.getCurrentOperation();
-            List<Operation> lastOperations = t.getLastOperations();
-            Operation lastOperation = (lastOperations != null && lastOperations.size() > 0) ?
-                                      lastOperations.get(lastOperations.size() - 1) : null;
             try {
-                String sourceName = t.getSourceName (language);
+                final String sourceName = t.getSourceName (language);
                 String relativePath = EditorContextBridge.getRelativePath 
                     (t, language);
                 String url = null;
@@ -312,46 +315,41 @@ PropertyChangeListener {
                         url = engineContext.getURL(relativePath, true);
                     }
                 }
-                IOManager.Line line = null;
-                if (lineNumber > 0 && url != null)
+                final IOManager.Line line;
+                if (lineNumber > 0 && url != null) {
                     line = new IOManager.Line (
                         url, 
                         lineNumber,
                         debugger
                     );
+                } else {
+                    line = null;
+                }
 
                 boolean important = url == null; // Bring attention to the console output if there's no URL to display.
                 // Make an exception for a service class used by visual debugger
                 if (important && "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService".equals(className)) {
                     important = false;
                 }
-                if (op != null) {
-                    boolean done = op == lastOperation;
-                    if (!done) {
-                        print("CTL_Thread_stopped_before_op",
-                            new String[] {
-                                threadName,
-                                sourceName,
-                                methodName,
-                                String.valueOf(lineNumber),
-                                op.getMethodName()
-                            },
-                            line,
-                            important
-                        );
-                    } else {
-                        print("CTL_Thread_stopped_after_op",
-                            new String[] {
-                                threadName,
-                                sourceName,
-                                methodName,
-                                String.valueOf(lineNumber),
-                                lastOperation.getMethodName()
-                            },
-                            line,
-                            important
-                        );
+                final boolean importantf = important;
+                PropertyChangeListener operationsUpdateListener = new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        String name = evt.getPropertyName();
+                        if (PROP_OPERATIONS_UPDATE.equals(name)) {
+                            Operation op = t.getCurrentOperation();
+                            printOperation(t, op, sourceName, methodName, lineNumber, line, importantf);
+                        }
+                        if (PROP_OPERATIONS_SET.equals(name)) {
+                            ((BeanContextChild) t).removePropertyChangeListener(PROP_OPERATIONS_UPDATE, this);
+                            ((BeanContextChild) t).removePropertyChangeListener(PROP_OPERATIONS_SET, this);
+                        }
                     }
+                };
+                ((BeanContextChild) t).addPropertyChangeListener(PROP_OPERATIONS_UPDATE, operationsUpdateListener);
+                ((BeanContextChild) t).addPropertyChangeListener(PROP_OPERATIONS_SET, operationsUpdateListener);
+                if (op != null) {
+                    printOperation(t, op, sourceName, methodName, lineNumber, line, important);
                 } else if (lineNumber > 0)
                     print (
                         "CTL_Thread_stopped",
@@ -411,6 +409,41 @@ PropertyChangeListener {
                         true
                     );
             }
+        }
+    }
+    
+    public void printOperation(JPDAThread t, Operation op, String sourceName,
+                               String methodName, int lineNumber,
+                               IOManager.Line line, boolean important) {
+        String threadName = t.getName();
+        List<Operation> lastOperations = t.getLastOperations();
+        Operation lastOperation = (lastOperations != null && lastOperations.size() > 0) ?
+                                  lastOperations.get(lastOperations.size() - 1) : null;
+        boolean done = op == lastOperation;
+        if (!done) {
+            print("CTL_Thread_stopped_before_op",
+                new String[] {
+                    threadName,
+                    sourceName,
+                    methodName,
+                    String.valueOf(lineNumber),
+                    op.getMethodName()
+                },
+                line,
+                important
+            );
+        } else {
+            print("CTL_Thread_stopped_after_op",
+                new String[] {
+                    threadName,
+                    sourceName,
+                    methodName,
+                    String.valueOf(lineNumber),
+                    lastOperation.getMethodName()
+                },
+                line,
+                important
+            );
         }
     }
 

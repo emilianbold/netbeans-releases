@@ -166,7 +166,7 @@ tokens {
 	Exponent;
 	Vocabulary;
 	NUMBER;
-	ID;
+	IDENT;
         BINARYINT;
 
     // preprocessor specific tokens
@@ -303,6 +303,17 @@ tokens {
     LITERAL_bit="bit"; // NOI18N
     LITERAL___symbolic="__symbolic"; // NOI18N
     LITERAL___hidden="__hidden"; // NOI18N
+    LITERAL_final="final"; // NOI18N
+    LITERAL_override="override"; // NOI18N
+    LITERAL_constexpr="constexpr"; // NOI18N
+    LITERAL_decltype="decltype"; // NOI18N
+    LITERAL_nullptr="nullptr"; // NOI18N
+    LITERAL_thread_local="thread_local"; // NOI18N
+    LITERAL_static_assert="static_assert"; // NOI18N
+    LITERAL_alignas="alignas"; // NOI18N
+    LITERAL_char16_t="char16_t"; // NOI18N
+    LITERAL_char32_t="char32_t"; // NOI18N
+    LITERAL_noexcept="noexcept"; // NOI18N
 
     // Extension points
     LITERAL__BUILT_IN_TYPE__; // extra built-in type name
@@ -945,7 +956,9 @@ FIRST_LESS :
                | '=' {$setType(SHIFTLEFTEQUAL);}))      //SHIFTLEFTEQUAL        : "<<=" ;
     );
 
+/*
 DOLLAR options { constText=true; }  :  '$' ;
+*/
 
 AT  options { constText=true; }     :  '@' ;
 
@@ -1244,7 +1257,7 @@ ID_LIKE:
                         setAfterPPDefined(false);
                         $setType(ID_DEFINED);
                     } else {
-                        $setType(ID); 
+                        $setType(IDENT); 
                     }
                 }
            )
@@ -1258,7 +1271,7 @@ ID_LIKE:
                     setFunLikeMacro(true);
                 }
             }
-            $setType(ID);
+            $setType(IDENT);
         }
      |
         // We have checked opposite above
@@ -1278,7 +1291,7 @@ Identifier
             // I think this check should have been done before
             //{ LA(1)!='L' || (LA(2)!='\'' && LA(2) != '\"') }? // L"" and L'' are StringLiterals/CharLiterals, not ID
             (
-                (options {combineChars=true;} : 'a'..'z'|'A'..'Z'|'_') 
+                (options {combineChars=true;} : 'a'..'z'|'A'..'Z'|'_'|'$') // '$' added for gcc support
 		(options {combineChars=true;} : 'a'..'z'|'A'..'Z'|'_'|'0'..'9'|'$')* // '$' added for gcc support
             )
         ;

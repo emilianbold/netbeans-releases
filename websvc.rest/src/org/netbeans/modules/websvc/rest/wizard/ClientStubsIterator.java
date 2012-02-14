@@ -130,7 +130,7 @@ public final class ClientStubsIterator implements WizardDescriptor.Instantiating
             generatorTask = RequestProcessor.getDefault().create(new Runnable() {
                 public void run() {
                     ProgressHandle pHandle = dialog.getProgressHandle();
-                    //pHandle.start();
+                    pHandle.start();
                     
                     try {
                         if(isProjectSelected) {
@@ -148,7 +148,7 @@ public final class ClientStubsIterator implements WizardDescriptor.Instantiating
                         Exceptions.printStackTrace(iox);
                     } finally {
                         dialog.close();
-                        //pHandle.finish();
+                        pHandle.finish();
                     }
                 }
             });

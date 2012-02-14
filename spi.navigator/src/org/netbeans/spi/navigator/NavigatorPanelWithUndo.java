@@ -52,8 +52,8 @@ import org.openide.awt.UndoRedo;
  * Clients will implement this interface when they need undo and redo support
  * enabled for their Navigator view/panel.
  *
- * Implementors of this interface, also registered in layer,
- * will be plugged into Navigator UI.
+ * Implementors of this interface will be plugged into Navigator UI.
+ * @see NavigatorPanel.Registration
  * 
  * @since 1.5
  *

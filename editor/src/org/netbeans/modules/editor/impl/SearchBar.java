@@ -39,79 +39,49 @@
  */
 package org.netbeans.modules.editor.impl;
 
-import java.awt.event.FocusEvent;
+import java.awt.*;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
-import java.util.Arrays;
-import java.util.logging.Level;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import org.netbeans.editor.*;
-import javax.swing.Action;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
-
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Insets;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import javax.swing.Timer;
+import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.InputMap;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JRootPane;
-import javax.swing.JTextField;
-import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
-import javax.swing.MutableComboBoxModel;
-import javax.swing.SwingConstants;
-import javax.swing.UIManager;
+import javax.swing.Timer;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.editor.BaseAction;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.MultiKeymap;
+import org.netbeans.modules.editor.lib2.KeyEventBlocker;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.openide.awt.CloseButtonFactory;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  * This is an implementation of a Firefox(TM) style Incremental Search Side Bar.
- * 
+ *
  * @author Sandip V. Chitale (Sandip.Chitale@Sun.Com)
  */
 public final class SearchBar extends JPanel {
-    
+
     private static SearchBar searchbarInstance = null;
     private static final Logger LOG = Logger.getLogger(SearchBar.class.getName());
     private static final boolean CLOSE_ON_ENTER = Boolean.getBoolean("org.netbeans.modules.editor.search.closeOnEnter"); // NOI18N
@@ -124,12 +94,11 @@ public final class SearchBar extends JPanel {
     private static final int DEFAULT_INCREMANTAL_SEARCH_COMBO_WIDTH = 200;
     private static final int MAX_INCREMANTAL_SEARCH_COMBO_WIDTH = 350;
     private static final Color DEFAULT_FG_COLOR = UIManager.getColor("textText");
+    private static KeyEventBlocker blocker;
     private WeakReference<JTextComponent> actualTextComponent;
     private List<PropertyChangeListener> actualComponentListeners = new LinkedList<PropertyChangeListener>();
     private FocusAdapter focusAdapterForComponent;
     private PropertyChangeListener propertyChangeListenerForComponent;
-    private final JButton expandButton;
-    private final JPopupMenu expandPopup;
     private final JLabel findLabel;
     private final JComboBox incSearchComboBox;
     private final JTextField incSearchTextField;
@@ -142,25 +111,11 @@ public final class SearchBar extends JPanel {
     private final JCheckBox regexpCheckBox;
     private final JCheckBox highlightCheckBox;
     private final JCheckBox wrapAroundCheckBox;
-    private final JPanel padding;
     private final JButton closeButton;
+    private final ExpandMenu expandMenu;
     private Map<String, Object> findProps = EditorFindSupport.getInstance().getFindProperties();
     private boolean searched = false;
-    /**
-     * contains everything that is in Search bar and is possible to move to
-     * expand popup
-     */
-    private final List<Component> inBar = new ArrayList<Component>();
-    /**
-     * components moved to popup
-     */
-    private final LinkedList<Component> inPopup = new LinkedList<Component>();
-    /**
-     * defines index of all components in Search bar
-     */
-    private final List<Component> barOrder = new ArrayList<Component>();
-    private boolean isPopupGoingToShow = false;
-    private boolean isPopupShown = false;
+    private boolean popupMenuWasCanceled = false;
 
     public static SearchBar getInstance() {
         if (searchbarInstance == null) {
@@ -169,13 +124,14 @@ public final class SearchBar extends JPanel {
         return searchbarInstance;
     }
 
-    /* 
-     * default getInstance 
+    /*
+     * default getInstance
      */
     public static SearchBar getInstance(JTextComponent component) {
         SearchBar searchbarIns = getInstance();
         if (searchbarIns.getActualTextComponent() != component) {
             searchbarIns.setActualTextComponent(component);
+            blocker = new KeyEventBlocker(component, true);
         }
         return searchbarIns;
     }
@@ -195,7 +151,7 @@ public final class SearchBar extends JPanel {
         setForeground(DEFAULT_FG_COLOR); //NOI18N
 
         add(Box.createHorizontalStrut(8)); //spacer in the beginnning of the toolbar
-
+        
         incSearchComboBox = createIncSearchComboBox();
         incSearchTextField = createIncSearchTextField(incSearchComboBox);
         incSearchTextFieldListener = createIncSearchTextFieldListener(incSearchTextField);
@@ -254,26 +210,36 @@ public final class SearchBar extends JPanel {
         add(wrapAroundCheckBox);
         selectCheckBoxes();
 
-        expandButton = createExpandButton();
-        expandPopup = createExpandPopup(expandButton);
-        add(expandButton);
-        expandButton.setVisible(true);
+        expandMenu = new ExpandMenu(matchCaseCheckBox.getHeight());
+        JButton expButton = expandMenu.getExpandButton();
+        expButton.setMnemonic(NbBundle.getMessage(SearchBar.class, "CTL_ExpandButton_Mnemonic").charAt(0)); // NOI18N
+        expButton.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_ExpandButton")); // NOI18N
+        add(expButton);
 
         // padding at the end of the toolbar
-        padding = new JPanel();
-        padding.setOpaque(false);
-        add(padding);
+        add(expandMenu.getPadding());
 
         closeButton = createCloseButton();
         add(closeButton);
 
-        makeBarExpandable();
-
-        setVisible(false);
+        makeBarExpandable(expandMenu);
+        setVisible(false);       
     }
-
+    
+    private void makeBarExpandable(ExpandMenu expMenu) {
+        expMenu.addToInbar(matchCaseCheckBox);
+        expMenu.addToInbar(wholeWordsCheckBox);
+        expMenu.addToInbar(regexpCheckBox);
+        expMenu.addToInbar(highlightCheckBox);
+        expMenu.addToInbar(wrapAroundCheckBox);
+        expMenu.addAllToBarOrder(Arrays.asList(this.getComponents()));
+        remove(getExpandButton());
+        getExpandButton().setVisible(false);
+    }
+    
     void updateIncSearchComboBoxHistory(String incrementalSearchText) {
-        incSearchTextField.getDocument().removeDocumentListener(incSearchTextFieldListener);
+        EditorFindSupport.getInstance().addToHistory(new EditorFindSupport.SPW(incrementalSearchText, 
+                wholeWordsCheckBox.isSelected(), matchCaseCheckBox.isSelected(), regexpCheckBox.isSelected()));
         // Add the text to the top of the list
         for (int i = incSearchComboBox.getItemCount() - 1; i >= 0; i--) {
             String item = (String) incSearchComboBox.getItemAt(i);
@@ -285,7 +251,7 @@ public final class SearchBar extends JPanel {
         incSearchComboBox.setSelectedIndex(0);
         incSearchTextField.getDocument().addDocumentListener(incSearchTextFieldListener);
     }
-
+    
     private FocusAdapter createFocusAdapterForComponent() {
         return new FocusAdapter() {
 
@@ -397,7 +363,7 @@ public final class SearchBar extends JPanel {
     }
 
     private JTextField createIncSearchTextField(final JComboBox incSearchComboBox) {
-        JTextField incrementalSearchTextField = (JTextField) incSearchComboBox.getEditor().getEditorComponent();
+        final JTextField incrementalSearchTextField = (JTextField) incSearchComboBox.getEditor().getEditorComponent();
         incrementalSearchTextField.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_IncrementalSearchText")); // NOI18N
         // flatten the action map for the text field to allow removal
         ActionMap origActionMap = incrementalSearchTextField.getActionMap();
@@ -411,6 +377,7 @@ public final class SearchBar extends JPanel {
             @Override
             public void focusGained(FocusEvent e) {
                 hadFocusOnIncSearchTextField = true;
+                incrementalSearchTextField.selectAll();
             }
         });
         return incrementalSearchTextField;
@@ -470,7 +437,15 @@ public final class SearchBar extends JPanel {
     }
 
     private JCheckBox createRegExpCheckBox(String resName, final String findConstant) {
-        final JCheckBox regExpCheckBox = new JCheckBox();
+        final JCheckBox regExpCheckBox = new JCheckBox() {
+
+            @Override
+            public void setSelected(boolean b) {
+                super.setSelected(b);
+                wholeWordsCheckBox.setEnabled(!regexpCheckBox.isSelected());
+            }
+            
+        };
         regExpCheckBox.setOpaque(false);
         Mnemonics.setLocalizedText(regExpCheckBox, NbBundle.getMessage(SearchBar.class, resName));
         regExpCheckBox.addActionListener(new ActionListener() {
@@ -513,29 +488,169 @@ public final class SearchBar extends JPanel {
         wrapAroundCheckBox.setSelected(getFindSupportValue(EditorFindSupport.FIND_WRAP_SEARCH));
     }
 
-    private JPopupMenu createExpandPopup(final JButton expButton) {
-        JPopupMenu expPopup = new JPopupMenu();
-        expPopup.addPopupMenuListener(new PopupMenuListener() {
+    class ExpandMenu {
+        /**
+         * contains everything that is in Search bar and is possible to move to
+         * expand popup
+         */
+        private final List<JComponent> inBar = new ArrayList<JComponent>();
+        /**
+         * components moved to popup
+         */
+        private final LinkedList<JComponent> inPopup = new LinkedList<JComponent>();
+        /**
+         * defines index of all components in Search bar
+         */
+        private final List<Component> barOrder = new ArrayList<Component>();
+        private boolean isPopupShown = false;
+        private final JButton expandButton;
+        private final JPopupMenu expandPopup;
+        private final JPanel padding;
+        private int popupHeight;
 
-            @Override
-            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-            }
+        public ExpandMenu(int popupHeight) {
+            this.popupHeight = popupHeight;
+            expandButton = createExpandButton();
+            expandPopup = createExpandPopup(expandButton);
+            expandButton.setVisible(true);
+            padding = new JPanel();
+            padding.setOpaque(false);
+        }
 
-            @Override
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-            }
+        public JButton getExpandButton() {
+            return expandButton;
+        }
 
-            @Override
-            public void popupMenuCanceled(PopupMenuEvent e) {
-                // check if it was canceled by click on expand button
-                if (expButton.getMousePosition() == null) {
-                    expButton.setContentAreaFilled(false);
-                    expButton.setBorderPainted(false);
-                    isPopupShown = false;
+        public JPanel getPadding() {
+            return padding;
+        }
+
+        public void addToInbar(JComponent component) {
+            inBar.add(component);
+        }
+
+        public void addAllToBarOrder(Collection<? extends Component> c) {
+            barOrder.addAll(c);
+        }
+
+        private JButton createExpandButton() {
+            JButton expButton = new JButton(ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/find_expand.png", false)); // NOI18N
+            expButton.setMargin(BUTTON_INSETS);
+            expButton.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    boolean state = !isPopupShown;
+                    isPopupShown = state;
+                    if (state) {
+                        showExpandedMenu();
+                    } else {
+                        hideExpandedMenu();
+                    }
+                }
+            });
+            return expButton;
+        }
+
+        private JPopupMenu createExpandPopup(final JButton expButton) {
+            JPopupMenu expPopup = new JPopupMenu();
+            expPopup.setLayout(new GridLayout(0,1));
+            expPopup.addPopupMenuListener(new PopupMenuListener() {
+
+                @Override
+                public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                }
+
+                @Override
+                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                }
+
+                @Override
+                public void popupMenuCanceled(PopupMenuEvent e) {
+                    // check if it was canceled by click on expand button
+                    if (expButton.getMousePosition() == null) {
+                        expButton.setContentAreaFilled(false);
+                        expButton.setBorderPainted(false);
+                        isPopupShown = false;
+                    }
+                }
+            });
+            return expPopup;
+        }
+
+        void computeLayout(JPanel jpanel) {
+            int parentWidth = jpanel.getParent().getWidth();
+            int totalWidth = 0;
+            for (Component c : jpanel.getComponents()) {
+                if (c != padding) {
+                    totalWidth += c.getPreferredSize().width;
                 }
             }
-        });
-        return expPopup;
+
+            boolean change = false;
+            if (totalWidth <= parentWidth) { // enough space try to clear expand popup
+                while (!inPopup.isEmpty()) {
+                    JComponent c = inPopup.getFirst();
+                    totalWidth += c.getPreferredSize().width;
+                    if (totalWidth > parentWidth) {
+                        break;
+                    }
+                    inPopup.removeFirst();
+                    inBar.add(c);
+                    expandPopup.remove(c);
+                    c.setOpaque(false);
+                    jpanel.add(c, barOrder.indexOf(c));
+                    change = true;
+                }
+            } else { // lack of space
+                while (totalWidth > parentWidth && !inBar.isEmpty()) {
+                    JComponent c = inBar.remove(inBar.size() - 1);
+                    inPopup.addFirst(c);
+                    jpanel.remove(c);
+                    expandPopup.add(c, 0);
+                    c.setOpaque(true);
+                    totalWidth -= c.getPreferredSize().width;
+                    change = true;
+                }
+            }
+
+            if (change) {
+                if (inPopup.isEmpty()) {
+                    jpanel.remove(expandButton);
+                    expandButton.setVisible(false);
+                } else if (getComponentIndexIn(expandButton, jpanel) < 0) {
+                    jpanel.add(expandButton, getComponentIndexIn(padding, jpanel));
+                    expandButton.setVisible(true);
+                }
+                jpanel.revalidate();
+                expandPopup.invalidate();
+                expandPopup.validate();
+            }
+        }
+
+        private void showExpandedMenu() {
+            if (!inPopup.isEmpty() && !expandPopup.isVisible()) {
+                Insets ins = expandPopup.getInsets();
+                // compute popup height since JPopupMenu.getHeight does not work
+                expandPopup.show(expandButton, 0, -(popupHeight * inPopup.size() + ins.top + ins.bottom));
+            }
+        }
+
+        private void hideExpandedMenu() {
+            if (expandPopup.isVisible()) {
+                expandPopup.setVisible(false);
+            }
+        }
+
+        private int getComponentIndexIn(Component c, JPanel jpanel) {
+            Component[] comps = jpanel.getComponents();
+            for (int i = 0; i < comps.length; i++) {
+                if (c == comps[i]) {
+                    return i;
+                }
+            }
+            return -1;
+        }
     }
 
     private JButton createFindButton(String imageIcon, String resName) {
@@ -546,29 +661,9 @@ public final class SearchBar extends JPanel {
         return button;
     }
 
-    private JButton createExpandButton() {
-        JButton expButton = new JButton(ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/find_expand.png", false)); // NOI18N
-        expButton.setMnemonic(NbBundle.getMessage(SearchBar.class, "CTL_ExpandButton_Mnemonic").charAt(0)); // NOI18N
-        expButton.setToolTipText(NbBundle.getMessage(ReplaceBar.class, "TOOLTIP_ExpandButton")); // NOI18N
-        expButton.setMargin(BUTTON_INSETS);
-        expButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                boolean state = !isPopupShown;
-                isPopupShown = state;
-                if (state) {
-                    showExpandedMenu();
-                } else {
-                    hideExpandedMenu();
-                }
-            }
-        });
-        return expButton;
-    }
-
     private JComboBox createIncSearchComboBox() {
         JComboBox incrementalSearchComboBox = new JComboBox() {
+            
             @Override
             public Dimension getMinimumSize() {
                 return getPreferredSize();
@@ -596,6 +691,41 @@ public final class SearchBar extends JPanel {
         };
 
         incrementalSearchComboBox.setEditable(true);
+        incrementalSearchComboBox.addPopupMenuListener(new PopupMenuListener() {
+            private boolean canceled = false;
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                
+            }
+
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                if (!canceled) {
+                    Object selectedItem = incSearchComboBox.getModel().getSelectedItem();
+                    if (selectedItem instanceof String) {
+                        String findWhat = (String) selectedItem;
+                        for (EditorFindSupport.SPW spw : EditorFindSupport.getInstance().getHistory())
+                            if (findWhat.equals(spw.getSearchExpression())) {
+                                getRegexpCheckBox().setSelected(spw.isRegExp());
+                                break;
+                            }
+                    }
+                    
+                        
+                    
+                } else  {
+                    canceled = false;
+                }
+            }
+
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {
+                canceled = true;
+                popupMenuWasCanceled = true;
+            }
+
+            
+        });
         return incrementalSearchComboBox;
     }
 
@@ -643,10 +773,11 @@ public final class SearchBar extends JPanel {
     private static final String FATTR_CURRENT_KEYMAP_PROFILE = "currentKeymap";      // NOI18N
     private static final String KEYMAPS_FOLDER = "Keymaps"; // NOI18N
 
-    /* This method is verbatim copy from class
-     * org.netbeans.modules.editor.settings.storage.EditorSettingsImpl
-     * bacause we don't want to introduce the dependency between this module
-     * and Editor Setting Storage module.
+    /*
+     * This method is verbatim copy from class
+     * org.netbeans.modules.editor.settings.storage.EditorSettingsImpl bacause
+     * we don't want to introduce the dependency between this module and Editor
+     * Setting Storage module.
      */
     private String getCurrentKeyMapProfile() {
         String currentKeyMapProfile = null;
@@ -663,98 +794,10 @@ public final class SearchBar extends JPanel {
         return currentKeyMapProfile;
     }
 
-    private void makeBarExpandable() {
-        inBar.add(matchCaseCheckBox);
-        inBar.add(wholeWordsCheckBox);
-        inBar.add(regexpCheckBox);
-        inBar.add(highlightCheckBox);
-        inBar.add(wrapAroundCheckBox);
-        barOrder.addAll(Arrays.asList(this.getComponents()));
-        remove(expandButton);
-        expandButton.setVisible(false);
-    }
-
     @Override
     public Dimension getPreferredSize() {
-        computeLayout();
+        expandMenu.computeLayout(this);
         return super.getPreferredSize();
-    }
-    
-    void computeLayout() {
-        int parentWidth = this.getParent().getWidth();
-        int totalWidth = 0;
-        for (Component c : this.getComponents()) {
-            if (c != padding) {
-                totalWidth += c.getPreferredSize().width;
-            }
-        }
-
-        boolean change = false;
-        if (totalWidth <= parentWidth) { // enough space try to clear expand popup
-            while (!inPopup.isEmpty()) {
-                Component c = inPopup.getFirst();
-                totalWidth += c.getPreferredSize().width;
-
-                if (totalWidth > parentWidth) {
-                    
-                    break;
-                }
-                inPopup.removeFirst();
-                inBar.add(c);
-                expandPopup.remove(c);
-                add(c, barOrder.indexOf(c));
-                change = true;
-            }
-        } else { // lack of space
-            while (totalWidth > parentWidth && !inBar.isEmpty()) {
-                Component c = inBar.remove(inBar.size() - 1);
-                inPopup.addFirst(c);
-                remove(c);
-                expandPopup.add(c, 0);
-                totalWidth -= c.getPreferredSize().width;
-                change = true;
-            }
-        }
-
-        if (change) {
-            if (inPopup.isEmpty()) {
-                remove(expandButton);
-                expandButton.setVisible(false);
-            } else if (getComponentIndex(expandButton) < 0) {
-                add(expandButton, getComponentIndex(padding));
-                expandButton.setVisible(true);
-            }
-            this.revalidate();
-            expandPopup.invalidate();
-            expandPopup.validate();
-        }
-    }
-
-    private int getComponentIndex(Component c) {
-        Component[] comps = getComponents();
-        for (int i = 0; i < comps.length; i++) {
-            if (c == comps[i]) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private void showExpandedMenu() {
-        if (!inPopup.isEmpty() && !expandPopup.isVisible()) {
-            isPopupGoingToShow = true;
-            Insets ins = expandPopup.getInsets();
-            // compute popup height since JPopupMenu.getHeight does not work
-            expandPopup.show(expandButton, 0, -(matchCaseCheckBox.getHeight() * inPopup.size() + ins.top + ins.bottom));
-        }
-    }
-
-    private void hideExpandedMenu() {
-        if (expandPopup.isVisible()) {
-            expandPopup.setVisible(false);
-            incrementalSearch();
-            incSearchTextField.requestFocusInWindow();
-        }
     }
 
     @Override
@@ -772,25 +815,28 @@ public final class SearchBar extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (!CLOSE_ON_ENTER && !searched) {
-                        findNext();
+                    findNext();
                 }
-                looseFocus();
+                if (!popupMenuWasCanceled)
+                    looseFocus();
+                else
+                    popupMenuWasCanceled = false;
             }
         });
     }
-
     private final static AbstractAction INVOKE_REPLACE_ACTION = new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
-                    if (lastFocusedComponent == null) {
-                        return;
-                    }
-                    BaseAction replaceAction = (BaseAction) lastFocusedComponent.getActionMap().get(SearchAndReplaceBarHandler.REPLACE_ACTION);
-                    replaceAction.actionPerformed(e, lastFocusedComponent);
-                }
-            };
-    
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
+            if (lastFocusedComponent == null) {
+                return;
+            }
+            BaseAction replaceAction = (BaseAction) lastFocusedComponent.getActionMap().get(SearchAndReplaceBarHandler.REPLACE_ACTION);
+            replaceAction.actionPerformed(e, lastFocusedComponent);
+        }
+    };
+
     void addKeystrokeReplaceActionTo(JComponent component) {
         JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
         if (lastFocusedComponent == null) {
@@ -811,20 +857,19 @@ public final class SearchBar extends JPanel {
             component.getActionMap().put("replace-from-component", INVOKE_REPLACE_ACTION);
         }
     }
-
-    
     private final static AbstractAction INVOKE_FIND_ACTION = new AbstractAction() {
 
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
-                    if (lastFocusedComponent == null) {
-                        return;
-                    }
-                    BaseAction findAction = (BaseAction) lastFocusedComponent.getActionMap().get(SearchAndReplaceBarHandler.INCREMENTAL_SEARCH_FORWARD);
-                    findAction.actionPerformed(e, lastFocusedComponent);
-                }
-            };
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
+            if (lastFocusedComponent == null) {
+                return;
+            }
+            BaseAction findAction = (BaseAction) lastFocusedComponent.getActionMap().get(SearchAndReplaceBarHandler.INCREMENTAL_SEARCH_FORWARD);
+            findAction.actionPerformed(e, lastFocusedComponent);
+        }
+    };
+
     void addKeystrokeFindActionTo(JComponent component) {
         JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
         if (lastFocusedComponent == null) {
@@ -847,9 +892,16 @@ public final class SearchBar extends JPanel {
     }
 
     void gainFocus() {
+        if (blocker != null)
+            blocker.stopBlocking();
         hadFocusOnIncSearchTextField = true;
-        isPopupShown = false;
         setVisible(true);
+        MutableComboBoxModel comboBoxModelIncSearch = ((MutableComboBoxModel) incSearchComboBox.getModel());
+        for (int i = comboBoxModelIncSearch.getSize() - 1; i >= 0; i--) {
+            comboBoxModelIncSearch.removeElementAt(i);
+        }
+        for (EditorFindSupport.SPW spw : EditorFindSupport.getInstance().getHistory())
+            comboBoxModelIncSearch.addElement(spw.getSearchExpression());
         initBlockSearch();
 
         incSearchTextField.requestFocusInWindow();
@@ -869,10 +921,6 @@ public final class SearchBar extends JPanel {
     void looseFocus() {
         hadFocusOnIncSearchTextField = false;
         if (!isVisible()) {
-            return;
-        }
-        if (isPopupGoingToShow) {
-            isPopupGoingToShow = false;
             return;
         }
 
@@ -1131,8 +1179,16 @@ public final class SearchBar extends JPanel {
     }
 
     JComponent getExpandButton() {
-        return expandButton;
+        return expandMenu.getExpandButton();
     }
 
+    public boolean isPopupMenuWasCanceled() {
+        return popupMenuWasCanceled;
+    }
+
+    public void setPopupMenuWasCanceled(boolean popupMenuWasCanceled) {
+        this.popupMenuWasCanceled = popupMenuWasCanceled;
+    }
+    
     
 }

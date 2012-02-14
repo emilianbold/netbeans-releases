@@ -52,9 +52,8 @@ import java.io.File;
 import java.util.Collection;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.ppoints.ProfilingPointsManager;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
@@ -159,9 +158,8 @@ public class ShowOppositeProfilingPointAction extends SystemAction implements Co
                         if (oppositeLocation != null) {
                             Utils.openLocation(oppositeLocation);
                         } else {
-                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    Bundle.ShowOppositeProfilingPointAction_NoEndDefinedMsg(),
-                                    NotifyDescriptor.WARNING_MESSAGE));
+                            ProfilerDialogs.displayWarning(
+                                    Bundle.ShowOppositeProfilingPointAction_NoEndDefinedMsg());
                         }
                     }
                 };

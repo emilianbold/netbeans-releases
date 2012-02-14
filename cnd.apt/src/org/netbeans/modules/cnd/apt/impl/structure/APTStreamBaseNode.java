@@ -85,6 +85,7 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
     ////////////////////////////////////////////////////////////////////////////
     // implementation of abstract methods
     
+    @Override
     public boolean accept(APTFile curFile,APTToken token) {
         boolean accepted = false;
         if (validToken(token)) {
@@ -97,6 +98,7 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
     /**
      * APTStream node doesn't have children
      */
+    @Override
     public APT getFirstChild() {
         return null;
     }
@@ -104,6 +106,7 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
     /**
      * APTStream node doesn't have children
      */
+    @Override
     public void setFirstChild(APT child) {
         assert(false) : "stream node doesn't support children"; // NOI18N
     }
@@ -167,6 +170,7 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
             this.size = tokens != null ? tokens.size() : 0;
         }
         
+        @Override
         public APTToken nextToken() throws TokenStreamException {
             APTToken token;
             if (index == -1) {

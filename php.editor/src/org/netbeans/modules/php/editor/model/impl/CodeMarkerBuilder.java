@@ -226,7 +226,7 @@ class CodeMarkerBuilder {
         if (range.containsInclusive(offset)) {
             currentNodeInfo = nodeInfo;
             currentScope = scope;
-            
+
         }
 
     }

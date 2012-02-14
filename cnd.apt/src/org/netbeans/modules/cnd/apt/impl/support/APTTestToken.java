@@ -79,27 +79,33 @@ public final class APTTestToken extends TokenImpl implements APTToken {
         this.setTextID(token.getTextID());
     }
     
+    @Override
     public int getOffset() {
         return offset;
     }
       
+    @Override
     public void setOffset(int o) {
         offset = o;
     }
     
+    @Override
     public int getEndOffset() {
         return getOffset() + getText().length();
     }
 
+    @Override
     public void setEndOffset(int end) {
         // do nothing
     }
     
+    @Override
     public CharSequence getTextID() {
         CharSequence res = getText();
         return res;
     }
     
+    @Override
     public void setTextID(CharSequence textID) {
         setText(textID == null ? null : textID.toString());
     }
@@ -116,19 +122,28 @@ public final class APTTestToken extends TokenImpl implements APTToken {
         return "[\"" + getText() + "\",<" + APTUtils.getAPTTokenName(getType()) + ">,line=" + getLine() + ",col=" + getColumn() + "]"+",offset="+getOffset();//+",file="+getFilename(); // NOI18N
     }
 
+    @Override
     public int getEndColumn() {
         return getColumn() + getText().length();
     }
 
+    @Override
     public void setEndColumn(int c) {
         // do nothing
     }
 
+    @Override
     public int getEndLine() {
         return getLine();
     }
 
+    @Override
     public void setEndLine(int l) {
         // do nothin
+    }
+    
+    @Override
+    public Object getProperty(Object key) {
+        return null;
     }
 }

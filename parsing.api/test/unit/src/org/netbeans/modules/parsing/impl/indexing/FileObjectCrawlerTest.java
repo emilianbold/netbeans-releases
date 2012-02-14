@@ -69,6 +69,7 @@ import org.openide.filesystems.FileUtil;
 public class FileObjectCrawlerTest extends NbTestCase {
 
     private static final CancelRequest CR = new CancelRequest() {
+        @Override
         public boolean isRaised() {
             return false;
         }
@@ -125,7 +126,7 @@ public class FileObjectCrawlerTest extends NbTestCase {
             public void removePropertyChangeListener(PropertyChangeListener listener) {}
         }));
 
-        FileObjectCrawler crawler = new FileObjectCrawler(src, false, cp.entries().get(0), CR);
+        FileObjectCrawler crawler = new FileObjectCrawler(src, false, cp.entries().get(0), CR, SuspendStatus.NOP);
         assertCollectedFiles("Wrong files collected", crawler.getAllResources(),
                 "p1/Included1.java",
                 "p1/Included2.java",
@@ -150,12 +151,12 @@ public class FileObjectCrawlerTest extends NbTestCase {
         };
         populateFolderStructure(root, paths);
 
-        FileObjectCrawler crawler1 = new FileObjectCrawler(FileUtil.toFileObject(root), false, null, CR);
+        FileObjectCrawler crawler1 = new FileObjectCrawler(FileUtil.toFileObject(root), false, null, CR, SuspendStatus.NOP);
         assertCollectedFiles("Wrong files collected", crawler1.getResources(), paths);
         assertCollectedFiles("Wrong files collected", crawler1.getAllResources(), paths);
         
         FileObject folder = FileUtil.toFileObject(new File(root, "org/pckg1/pckg2"));
-        FileObjectCrawler crawler2 = new FileObjectCrawler(FileUtil.toFileObject(root), new FileObject [] { folder }, false, null, CR);
+        FileObjectCrawler crawler2 = new FileObjectCrawler(FileUtil.toFileObject(root), new FileObject [] { folder }, false, null, CR, SuspendStatus.NOP);
         assertCollectedFiles("Wrong files collected from " + folder, crawler2.getResources(),
             "org/pckg1/pckg2/file1.txt",
             "org/pckg1/pckg2/file2.txt"
@@ -173,7 +174,7 @@ public class FileObjectCrawlerTest extends NbTestCase {
         };
         populateFolderStructure(root, paths);
 
-        FileObjectCrawler crawler1 = new FileObjectCrawler(FileUtil.toFileObject(root), false, null, CR);
+        FileObjectCrawler crawler1 = new FileObjectCrawler(FileUtil.toFileObject(root), false, null, CR, SuspendStatus.NOP);
         assertCollectedFiles("Wrong files collected", crawler1.getResources(), paths);
         assertCollectedFiles("Wrong files collected", crawler1.getAllResources(), paths);
 
@@ -181,11 +182,11 @@ public class FileObjectCrawlerTest extends NbTestCase {
         FileObject org = FileUtil.toFileObject(new File(root, "org"));
         org.delete();
 
-        FileObjectCrawler crawler2 = new FileObjectCrawler(FileUtil.toFileObject(root), new FileObject [] { pckg2 }, false, null, CR);
+        FileObjectCrawler crawler2 = new FileObjectCrawler(FileUtil.toFileObject(root), new FileObject [] { pckg2 }, false, null, CR, SuspendStatus.NOP);
         assertCollectedFiles("There should be no files in " + root, crawler2.getResources());
         assertNull("All resources should not be computed for subtree", crawler2.getAllResources());
 
-        FileObjectCrawler crawler3 = new FileObjectCrawler(FileUtil.toFileObject(root), false, null, CR);
+        FileObjectCrawler crawler3 = new FileObjectCrawler(FileUtil.toFileObject(root), false, null, CR, SuspendStatus.NOP);
         assertCollectedFiles("There should be no files in " + root, crawler3.getResources());
         assertCollectedFiles("There should be no files in " + root, crawler3.getAllResources());
         assertCollectedFiles("All files in " + root + " should be deleted", crawler3.getDeletedResources());
@@ -202,7 +203,7 @@ public class FileObjectCrawlerTest extends NbTestCase {
         populateFolderStructure(root, paths);
 
         //First scan with timestamps enabled (project open)
-        FileObjectCrawler crawler1 = new FileObjectCrawler(FileUtil.toFileObject(root), true, null, CR);
+        FileObjectCrawler crawler1 = new FileObjectCrawler(FileUtil.toFileObject(root), true, null, CR, SuspendStatus.NOP);
         assertCollectedFiles("Wrong all files collected", crawler1.getAllResources(), paths);
         assertTrue(crawler1.getAllResources() != crawler1.getResources());
         assertEquals(crawler1.getAllResources().size(), crawler1.getResources().size());
@@ -210,21 +211,21 @@ public class FileObjectCrawlerTest extends NbTestCase {
         crawler1.storeTimestamps();
 
         //Second scan with timestamps enabled (project reopen)
-        FileObjectCrawler crawler2 = new FileObjectCrawler(FileUtil.toFileObject(root), true, null, CR);
+        FileObjectCrawler crawler2 = new FileObjectCrawler(FileUtil.toFileObject(root), true, null, CR, SuspendStatus.NOP);
         assertCollectedFiles("Wrong all files collected", crawler2.getAllResources(), paths);
         assertTrue(crawler2.getAllResources() != crawler2.getResources());
         assertEquals(0, crawler2.getResources().size());
         crawler2.storeTimestamps();
 
         //Rescan of root with force == false
-        FileObjectCrawler crawler3 = new FileObjectCrawler(FileUtil.toFileObject(root), true, null, CR);
+        FileObjectCrawler crawler3 = new FileObjectCrawler(FileUtil.toFileObject(root), true, null, CR, SuspendStatus.NOP);
         assertCollectedFiles("Wrong all files collected", crawler3.getAllResources(), paths);
         assertTrue(crawler3.getAllResources() != crawler3.getResources());
         assertEquals(0, crawler3.getResources().size());
         crawler3.storeTimestamps();
 
         //Rescan of root with force == true
-        FileObjectCrawler crawler4 = new FileObjectCrawler(FileUtil.toFileObject(root), false, null, CR);
+        FileObjectCrawler crawler4 = new FileObjectCrawler(FileUtil.toFileObject(root), false, null, CR, SuspendStatus.NOP);
         assertCollectedFiles("Wrong all files collected", crawler4.getAllResources(), paths);
         assertTrue(crawler4.getAllResources() == crawler4.getResources());
         crawler4.storeTimestamps();
@@ -233,13 +234,13 @@ public class FileObjectCrawlerTest extends NbTestCase {
         final FileObject rootFo = FileUtil.toFileObject(root);
         final FileObject expFile1 = rootFo.getFileObject("org/pckg1/pckg2/file1.txt");
         final FileObject expFile2 = rootFo.getFileObject("org/pckg1/pckg2/file2.txt");
-        FileObjectCrawler crawler5 = new FileObjectCrawler(rootFo, new FileObject[] {expFile1, expFile2}, false, null, CR);
+        FileObjectCrawler crawler5 = new FileObjectCrawler(rootFo, new FileObject[] {expFile1, expFile2}, false, null, CR, SuspendStatus.NOP);
         assertNull(crawler5.getAllResources());
         assertCollectedFiles("Wrong files collected", crawler5.getResources(), new String[] {"org/pckg1/pckg2/file1.txt","org/pckg1/pckg2/file2.txt"});
         crawler5.storeTimestamps();
 
         //Rescan of specified files with timestamps
-        FileObjectCrawler crawler6 = new FileObjectCrawler(rootFo, new FileObject[] {expFile1, expFile2}, true, null, CR);
+        FileObjectCrawler crawler6 = new FileObjectCrawler(rootFo, new FileObject[] {expFile1, expFile2}, true, null, CR, SuspendStatus.NOP);
         assertNull(crawler6.getAllResources());
         assertEquals(0, crawler6.getResources().size());
         crawler6.storeTimestamps();
@@ -260,7 +261,7 @@ public class FileObjectCrawlerTest extends NbTestCase {
         final Map<FileObject,FileObjectCrawler.LinkType> linkMap = new HashMap<FileObject, FileObjectCrawler.LinkType>();
         linkMap.put(folder2, FileObjectCrawler.LinkType.IN);
         FileObjectCrawler.mockLinkTypes = linkMap;
-        final FileObjectCrawler c = new FileObjectCrawler(rootWithCycle, false, null, CR);
+        final FileObjectCrawler c = new FileObjectCrawler(rootWithCycle, false, null, CR, SuspendStatus.NOP);
         final Collection<IndexableImpl> indexables = c.getAllResources();
         assertCollectedFiles("Wring collected files", indexables,
                 "folder1/data1.txt",
@@ -282,7 +283,7 @@ public class FileObjectCrawlerTest extends NbTestCase {
         final Map<FileObject,FileObjectCrawler.LinkType> linkMap = new HashMap<FileObject, FileObjectCrawler.LinkType>();
         linkMap.put(folder2, FileObjectCrawler.LinkType.OUT);
         FileObjectCrawler.mockLinkTypes = linkMap;
-        final FileObjectCrawler c = new FileObjectCrawler(rootWithCycle, false, null, CR);
+        final FileObjectCrawler c = new FileObjectCrawler(rootWithCycle, false, null, CR, SuspendStatus.NOP);
         final Collection<IndexableImpl> indexables = c.getAllResources();
         assertCollectedFiles("Wring collected files", indexables,
                 "folder1/data1.txt",

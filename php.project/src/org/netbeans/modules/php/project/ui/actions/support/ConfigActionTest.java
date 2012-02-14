@@ -66,14 +66,14 @@ import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO;
-import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
-import org.netbeans.modules.php.project.ui.codecoverage.PhpUnitCoverageLogParser;
-import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.phpunit.PhpUnit.ConfigFiles;
 import org.netbeans.modules.php.project.phpunit.PhpUnitTestGroupsFetcher;
 import org.netbeans.modules.php.project.phpunit.PhpUnitTestRunInfo;
+import org.netbeans.modules.php.project.ui.codecoverage.CoverageVO;
+import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
+import org.netbeans.modules.php.project.ui.codecoverage.PhpUnitCoverageLogParser;
+import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -104,7 +104,12 @@ class ConfigActionTest extends ConfigAction {
     }
 
     @Override
-    public boolean isValid(boolean indexFileNeeded) {
+    public boolean isProjectValid() {
+        throw new IllegalStateException("Validation is not needed for tests");
+    }
+
+    @Override
+    public boolean isFileValid() {
         throw new IllegalStateException("Validation is not needed for tests");
     }
 
@@ -163,7 +168,7 @@ class ConfigActionTest extends ConfigAction {
     }
 
     private boolean isPhpUnitValid() {
-        return CommandUtils.getPhpUnit(true) != null;
+        return CommandUtils.getPhpUnit(project, true) != null;
     }
 
     void run(PhpUnitTestRunInfo info) {
@@ -173,7 +178,7 @@ class ConfigActionTest extends ConfigAction {
 
         // test groups, not for rerun
         if (!info.isRerun() && ProjectPropertiesSupport.askForTestGroups(project)) {
-            PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
+            PhpUnit phpUnit = CommandUtils.getPhpUnit(project, false);
             ConfigFiles configFiles = PhpUnit.getConfigFiles(project, false);
 
             PhpUnitTestGroupsFetcher testGroupsFetcher = new PhpUnitTestGroupsFetcher(project);
@@ -196,7 +201,7 @@ class ConfigActionTest extends ConfigAction {
     }
 
     private PhpUnitTestRunInfo getPhpUnitTestRunInfo(Lookup context) {
-        PhpUnit phpUnit = CommandUtils.getPhpUnit(true);
+        PhpUnit phpUnit = CommandUtils.getPhpUnit(project, true);
         if (phpUnit == null) {
             return null;
         }
@@ -254,14 +259,14 @@ class ConfigActionTest extends ConfigAction {
             this.info = info;
             rerunUnitTestHandler = getRerunUnitTestHandler();
             testRunner = getTestRunner();
-            phpUnit = CommandUtils.getPhpUnit(false);
+            phpUnit = CommandUtils.getPhpUnit(project, false);
             assert phpUnit != null;
         }
 
         @Override
         public ExecutionDescriptor getDescriptor() throws IOException {
             ExecutionDescriptor executionDescriptor = PhpProgram.getExecutionDescriptor()
-                    .optionsPath(UiUtils.OPTIONS_PATH + "/" + PhpUnit.OPTIONS_SUB_PATH) // NOI18N
+                    .optionsPath(PhpUnit.OPTIONS_PATH)
                     .frontWindow(false)
                     .outConvertorFactory(PHPUNIT_LINE_CONVERTOR_FACTORY)
                     .inputVisible(false)

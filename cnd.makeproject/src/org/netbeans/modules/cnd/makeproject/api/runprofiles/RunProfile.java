@@ -813,7 +813,7 @@ public boolean isSimpleRunCommand() {
         // until we have cnd.tha module
 
         if (thaSupportEnabled()) {
-            set.put(new IntNodeProp(getRemoveInstrumentation(), true, null,
+            set.put(new IntNodeProp(getRemoveInstrumentation(), true, "RemoveInstrumentation", // NOI18N
                     getString("RemoveInstrumentation_LBL"), getString("RemoveInstrumentation_HINT"))); // NOI18N
         }
 

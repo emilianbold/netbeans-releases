@@ -75,9 +75,9 @@ public final class PHPBracesMatcher implements BracesMatcher {
         try {
             BaseDocument doc = (BaseDocument) context.getDocument();
             int offset = context.getSearchOffset();
-            
+
             TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
-            
+
             if (ts != null) {
                 ts.move(offset);
 
@@ -90,9 +90,9 @@ public final class PHPBracesMatcher implements BracesMatcher {
                 if (token == null) {
                     return null;
                 }
-                
+
                 TokenId id = token.id();
-                
+
                 if (LexUtilities.textEquals(token.text(), '(')) {
                     return new int [] { ts.offset(), ts.offset() + token.length() };
                 } else if (LexUtilities.textEquals(token.text(), ')')) {
@@ -126,10 +126,10 @@ public final class PHPBracesMatcher implements BracesMatcher {
                         return new int [] { ts.offset(), ts.offset() + token.length() };
                     }
                 } else if (id == PHPTokenId.PHP_ENDFOR || id == PHPTokenId.PHP_ENDFOREACH
-                        || id == PHPTokenId.PHP_ENDIF || id == PHPTokenId.PHP_ENDSWITCH 
+                        || id == PHPTokenId.PHP_ENDIF || id == PHPTokenId.PHP_ENDSWITCH
                         || id == PHPTokenId.PHP_ENDWHILE) {
                     return new int [] { ts.offset(), ts.offset() + token.length() };
-                } else if (id == PHPTokenId.PHP_ELSEIF || id == PHPTokenId.PHP_ELSE) {                    
+                } else if (id == PHPTokenId.PHP_ELSEIF || id == PHPTokenId.PHP_ELSE) {
                     while (token.id() != PHPTokenId.PHP_CURLY_OPEN && !":".equals(token.text().toString()) && ts.moveNext()) {
                             token = LexUtilities.findNextToken(ts, Arrays.asList(PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_CURLY_OPEN));
                     }
@@ -139,9 +139,9 @@ public final class PHPBracesMatcher implements BracesMatcher {
                         token = ts.token();
                         return new int [] { ts.offset(), ts.offset() + token.length() };
                     }
-                    
+
                 }
-                
+
             }
             return null;
         } finally {
@@ -170,9 +170,9 @@ public final class PHPBracesMatcher implements BracesMatcher {
                 if (token == null) {
                     return null;
                 }
-                
+
                 TokenId id = token.id();
-                
+
                 OffsetRange r;
                 if (LexUtilities.textEquals(token.text(), '(')) {
                     r = LexUtilities.findFwd(doc, ts, PHPTokenId.PHP_TOKEN, '(', PHPTokenId.PHP_TOKEN, ')');
@@ -199,7 +199,7 @@ public final class PHPBracesMatcher implements BracesMatcher {
                     r = LexUtilities.findFwdAlternativeSyntax(doc, ts, token);
                     return new int [] {r.getStart(), r.getEnd() };
                 } else if (id == PHPTokenId.PHP_ENDFOR || id == PHPTokenId.PHP_ENDFOREACH
-                        || id == PHPTokenId.PHP_ENDIF || id == PHPTokenId.PHP_ENDSWITCH 
+                        || id == PHPTokenId.PHP_ENDIF || id == PHPTokenId.PHP_ENDSWITCH
                         || id == PHPTokenId.PHP_ENDWHILE || id == PHPTokenId.PHP_ELSEIF
                         || id == PHPTokenId.PHP_ELSE) {
                     r = LexUtilities.findBwdAlternativeSyntax(doc, ts, token);
@@ -211,5 +211,5 @@ public final class PHPBracesMatcher implements BracesMatcher {
             ((AbstractDocument) context.getDocument()).readUnlock();
         }
     }
-    
+
 }

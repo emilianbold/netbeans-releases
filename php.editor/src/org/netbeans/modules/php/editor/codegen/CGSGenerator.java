@@ -392,7 +392,7 @@ public class CGSGenerator implements CodeGenerator {
     private static String upFirstLetterWithoutUnderscore(String name) {
         return upFirstLetter(withoutUnderscore(name));
     }
-    
+
     private static String withoutUnderscore(String name) {
         return (name.length() > 0 && name.charAt(0) == '_') ? name.substring(1) : name;
     }

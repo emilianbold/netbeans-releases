@@ -79,8 +79,10 @@ import org.netbeans.editor.LocaleSupport;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.lib.EditorPackageAccessor;
 import org.netbeans.modules.editor.lib2.document.ReadWriteUtils;
+import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.modules.editor.options.AnnotationTypesFolder;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.OperationEvent;
@@ -110,6 +112,18 @@ public class EditorModule extends ModuleInstall {
     
     private static final boolean debug = Boolean.getBoolean("netbeans.debug.editor.kits");
 
+    private static class SearchHistoryUtility {
+        public static List convertFromSearchHistoryToEditorFindSupport(List<SearchPattern> searchPatterns) {
+            List history = new ArrayList<EditorFindSupport.SPW>();
+            for (int i = 0; i < searchPatterns.size(); i++) {
+                SearchPattern sptr = searchPatterns.get(i);
+                EditorFindSupport.SPW spwrap = new EditorFindSupport.SPW(sptr.getSearchExpression(),
+                        sptr.isWholeWords(), sptr.isMatchCase(), sptr.isRegExp());
+                history.add(spwrap);
+            }
+            return history;
+        }
+    }
     private PropertyChangeListener searchSelectedPatternListener;
     private PropertyChangeListener editorHistoryChangeListener;
     private PropertyChangeListener topComponentRegistryListener;
@@ -208,93 +222,46 @@ public class EditorModule extends ModuleInstall {
 //        }
 
         // ------------------------------------------------------------
-         
+        
          searchSelectedPatternListener = new PropertyChangeListener(){
              
+            @Override
              public void propertyChange(PropertyChangeEvent evt){
-                 if (evt == null){
-                     return;
-                 }
-
-                 FindSupport fs = FindSupport.getFindSupport();                 
-                 if (SearchHistory.LAST_SELECTED.equals(evt.getPropertyName())){
-                     //System.out.println("API -> editor:");                
-                     SearchPattern sp = SearchHistory.getDefault().getLastSelected();
-                     if (sp==null){
-                         return;
-                     }
-
-                     FindSupport.SearchPatternWrapper spw = new FindSupport.SearchPatternWrapper(sp.getSearchExpression(),
-                             sp.isWholeWords(), sp.isMatchCase(), sp.isRegExp());
-                     //System.out.println("spw:"+spw);
-                     fs.setLastSelected(spw);
-                 } else if (SearchHistory.ADD_TO_HISTORY.equals(evt.getPropertyName())){
-                     List searchPatterns = SearchHistory.getDefault().getSearchPatterns();
-
-                     List history = new ArrayList();
-                     for (int i = 0; i<searchPatterns.size(); i++){
-                         SearchPattern sptr = ((SearchPattern)searchPatterns.get(i));
-                         SearchPatternWrapper spwrap = new SearchPatternWrapper(sptr.getSearchExpression(),
-                                 sptr.isWholeWords(), sptr.isMatchCase(), sptr.isRegExp());
-                         history.add(spwrap);
-                     }
-
-                     fs.setHistory(history);
+                 if (evt == null)
+                     return;             
+                 EditorFindSupport efs = EditorFindSupport.getInstance();
+                 if (SearchHistory.ADD_TO_HISTORY.equals(evt.getPropertyName())){
+                     EditorFindSupport.getInstance().setHistory(
+                             SearchHistoryUtility.convertFromSearchHistoryToEditorFindSupport(SearchHistory.getDefault().getSearchPatterns()));
                  }
              }
          };
-         
-         editorHistoryChangeListener =  new PropertyChangeListener(){
-             public void propertyChange(PropertyChangeEvent evt){
-                 
-                 if (evt == null || !FindSupport.FIND_HISTORY_PROP.equals(evt.getPropertyName())){
-                     return;
-                 }
- 
-                 //System.out.println("");
-                 //System.out.println("editor -> API");
-                 
-                 SearchPatternWrapper spw = (SearchPatternWrapper)evt.getNewValue();
-                 SearchPattern spLast = SearchHistory.getDefault().getLastSelected();
-                 
-                 if (spw == null || spw.getSearchExpression()==null || "".equals(spw.getSearchExpression()) ){ //NOI18N
-                     return;
-                 }
-                 //System.out.println("spw:"+spw);
-                 
-                 SearchPattern sp = SearchPattern.create(spw.getSearchExpression(),
-                         spw.isWholeWords(), spw.isMatchCase(), spw.isRegExp());
-                 
-                 if (sp == null || (sp.equals(spLast))){
-                     return;
-                 }
-                 
-                 SearchHistory.getDefault().add(sp);
-                 SearchHistory.getDefault().setLastSelected(sp);
-             }
-         };
- 
-         SearchHistory.getDefault().addPropertyChangeListener(searchSelectedPatternListener);
-         FindSupport.getFindSupport().addPropertyChangeListener(editorHistoryChangeListener);
-         
-         // TEMP start
-         /*
-         final int fired[] = new int[1];
-         fired[0] = 0;
-         
-         Timer timer;
-         timer = new Timer(15000, new ActionListener(){
-                 public void actionPerformed(ActionEvent e){
-                    SearchPattern p;
-                     p = SearchPattern.create(String.valueOf(fired[0]),false,false,false);
-                     SearchHistory.getDefault().add(p);                    
-                     SearchHistory.getDefault().setLastSelected(p);
-                     fired[0] ++;
-                 }
-         });
-         timer.start();
-         */
-         //TEMP end
+
+        editorHistoryChangeListener = new PropertyChangeListener() {
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt == null) {
+                    return;
+                }
+                if (EditorFindSupport.FIND_HISTORY_PROP.equals(evt.getPropertyName())) {
+                    EditorFindSupport.SPW spw = (EditorFindSupport.SPW) evt.getNewValue();
+                    if (spw == null || spw.getSearchExpression() == null || "".equals(spw.getSearchExpression())) { //NOI18N
+                        return;
+                    }
+                    SearchPattern sp = SearchPattern.create(spw.getSearchExpression(),
+                            spw.isWholeWords(), spw.isMatchCase(), spw.isRegExp());
+                    SearchHistory.getDefault().add(sp);
+                } else if (EditorFindSupport.FIND_HISTORY_CHANGED_PROP.equals(evt.getPropertyName())) {
+                    EditorFindSupport.getInstance().setHistory(
+                             SearchHistoryUtility.convertFromSearchHistoryToEditorFindSupport(SearchHistory.getDefault().getSearchPatterns()));
+                }                       
+            }
+        };
+
+        SearchHistory.getDefault().addPropertyChangeListener(searchSelectedPatternListener);
+        EditorFindSupport.getInstance().addPropertyChangeListener(editorHistoryChangeListener);
+      
 
          if (GraphicsEnvironment.isHeadless()) {
              return;
@@ -637,6 +604,10 @@ public class EditorModule extends ModuleInstall {
             
             final StyledDocument doc = ec.openDocument();
             final Reformat reformat = Reformat.get(doc);
+            String defaultLineSeparator = (String) file.getPrimaryFile().getAttribute(FileObject.DEFAULT_LINE_SEPARATOR_ATTR);
+            if (defaultLineSeparator != null) {
+                doc.putProperty(FileObject.DEFAULT_LINE_SEPARATOR_ATTR, defaultLineSeparator);
+            }
             
             reformat.lock();
             
@@ -658,7 +629,12 @@ public class EditorModule extends ModuleInstall {
                 
             } finally {
                 reformat.unlock();
-                doc.putProperty(BaseDocument.READ_LINE_SEPARATOR_PROP, ReadWriteUtils.getSystemLineSeparator());
+                defaultLineSeparator = (String) doc.getProperty(FileObject.DEFAULT_LINE_SEPARATOR_ATTR);
+                if (defaultLineSeparator != null) {
+                    doc.putProperty(BaseDocument.READ_LINE_SEPARATOR_PROP, defaultLineSeparator);
+                } else {
+                    doc.putProperty(BaseDocument.READ_LINE_SEPARATOR_PROP, ReadWriteUtils.getSystemLineSeparator());
+                }
                 ec.saveDocument();
             }
             

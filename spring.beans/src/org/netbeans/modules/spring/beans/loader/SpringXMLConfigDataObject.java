@@ -52,6 +52,7 @@ import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
@@ -65,6 +66,17 @@ import org.xml.sax.InputSource;
  *
  * @author Andrei Badea et al.
  */
+@MIMEResolver.NamespaceRegistration(
+    displayName="",
+    position=440,
+    mimeType="text/x-springconfig+xml",
+    elementName="beans",
+    elementNS="http://www.springframework.org/schema/beans",
+    doctypePublicId={
+        "-//SPRING//DTD BEAN 2.0//EN",
+        "-//SPRING//DTD BEAN//EN"
+    }
+)
 public class SpringXMLConfigDataObject extends MultiDataObject {
 
     public SpringXMLConfigDataObject(FileObject pf, SpringXMLConfigDataLoader loader) throws DataObjectExistsException {

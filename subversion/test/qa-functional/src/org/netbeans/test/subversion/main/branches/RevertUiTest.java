@@ -20,6 +20,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbModuleSuite;
@@ -75,7 +76,7 @@ public class RevertUiTest extends JellyTestCase{
      }
     
     public void testInvokeCloseRevert() throws Exception {
-        try {
+        //try {
             MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
             TestKit.closeProject(PROJECT_NAME);
@@ -114,6 +115,7 @@ public class RevertUiTest extends JellyTestCase{
             Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
             RevertModificationsOperator rmo = RevertModificationsOperator.invoke(projNode);
             rmo.verify();
+            
             TimeoutExpiredException tee = null;
             try {
                 rmo.setStartRevision("1");
@@ -169,11 +171,11 @@ public class RevertUiTest extends JellyTestCase{
 
             rmo.cancel();
             TestKit.TIME_OUT = 15;
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
-        } finally {
+       // } catch (Exception e) {
+         //   throw new Exception("Test failed: " + e);
+        //} finally {
             TestKit.closeProject(PROJECT_NAME);
-        } 
+      //  } 
         
     }
 }

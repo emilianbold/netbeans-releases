@@ -302,7 +302,15 @@ public class UIDUtilities {
     public static int getEndOffset(CsmUID<?> uid) {
         if (uid instanceof KeyBasedUID<?>) {
             Key key = ((KeyBasedUID<?>) uid).getKey();
-            return KeyUtilities.getKeyEndOffset(key);
+            int out = KeyUtilities.getKeyEndOffset(key);
+            if (out == KeyUtilities.NON_INITIALIZED) {
+                Object object = uid.getObject();
+                if (CsmKindUtilities.isOffsetable(object)) {
+                    out = ((CsmOffsetable) object).getEndOffset();
+                    KeyUtilities.cacheKeyEndOffset(key, out);
+                }
+            }
+            return out;
         } else if (UIDProviderIml.isSelfUID(uid)) {
             Object object = uid.getObject();
             if (CsmKindUtilities.isOffsetable(object)) {
@@ -369,6 +377,23 @@ public class UIDUtilities {
         }
         return out;
     }
+    
+    public static <T extends CsmOffsetableDeclaration> CsmUID<T> findExistingUIDInList(List<CsmUID<T>> list, int start, CharSequence name, CsmDeclaration.Kind kind) {
+        CsmUID<T> out = null;
+        // look for the object with the same start position and the same name
+        // TODO: for now we are in O(n), but better to be O(ln n) speed
+        for (int i = list.size() - 1; i >= 0; i--) {
+            CsmUID<T> csmUID = list.get(i);
+            int startOffset = UIDUtilities.getStartOffset(csmUID);
+            if (startOffset == start && name.equals(UIDUtilities.getName(csmUID)) && kind.equals(UIDUtilities.getKind(csmUID))) {
+                out = csmUID;
+                break;
+            } else if (startOffset < start) {
+                break;
+            }
+        }
+        return out;
+    }        
 
     public static <T extends CsmOffsetable> void insertIntoSortedUIDList(CsmUID<T> uid, List<CsmUID<T>> list) {
         int start = UIDUtilities.getStartOffset(uid);

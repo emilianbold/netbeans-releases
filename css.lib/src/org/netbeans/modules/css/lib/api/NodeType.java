@@ -90,6 +90,11 @@ public enum NodeType {
     fnAttributeValue,
     function,
     functionName,
+     /**
+         * any @xxxx { ... } generic at-rule
+         */
+     generic_at_rule,
+
     /**
      * @charset "..." rule
      */

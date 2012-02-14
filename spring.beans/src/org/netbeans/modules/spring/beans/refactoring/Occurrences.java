@@ -76,7 +76,9 @@ public class Occurrences {
 
         js.runUserActionTask(new Task<CompilationController>() {
 
+            @Override
             public void run(final CompilationController cc) throws Exception {
+                cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 for (SpringConfigModel model : scope.getAllConfigModels()) {
                     model.runDocumentAction(new Action<DocumentAccess>() {
                         public void run(DocumentAccess docAccess) {

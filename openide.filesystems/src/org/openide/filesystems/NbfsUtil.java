@@ -45,13 +45,14 @@
 package org.openide.filesystems;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.StringTokenizer;
 
 /**
  * @author Radek Matous
@@ -61,14 +62,20 @@ final class NbfsUtil {
     /** url separator */
     private static final char SEPARATOR = '/';
 
+    private static final String SYSTEM_FILE_SYSTEM_NAME = "SystemFileSystem";
+
     /**
      * Gets URL with nbfs protocol for passes fo
      * @param fo
      * @return url with nbfs protocol
-     * @throws FileStateInvalidException if FileObject somehow corrupted
      */
-    static URL getURL(FileObject fo) throws FileStateInvalidException {
-        final String fsPart = encodeFsPart(fo);
+    static URL getURL(final FileObject fo) {
+        String fsPart;
+        try {
+            fsPart = encodeFsPart(fo);
+        } catch (FileStateInvalidException x) {
+            fsPart = "invalid";
+        }
         final String foPart = encodeFoPart(fo);
 
         final String host = "nbhost"; //NOI18N
@@ -137,7 +144,7 @@ final class NbfsUtil {
         String fsName = decodeFsPart(urlParts[0]);
         String foName = decodeFoPart(urlParts[1]);
 
-        FileSystem fsys = Repository.getDefault().findFileSystem(fsName);
+        FileSystem fsys = fsName.equals(SYSTEM_FILE_SYSTEM_NAME) ? Repository.getDefault().getDefaultFileSystem() : Repository.getDefault().findFileSystem(fsName);
 
         return (fsys == null) ? null : fsys.findResource(foName);
     }
@@ -145,26 +152,26 @@ final class NbfsUtil {
     private static String encodeFsPart(FileObject fo) throws FileStateInvalidException {
         FileSystem fs = fo.getFileSystem();
         assert fs != null : "File object " + fo + " returns null from getFileSystem()";
-        return encoder(fs.getSystemName());
+        String n = fs.isDefault() ? SYSTEM_FILE_SYSTEM_NAME : fs.getSystemName();
+        if (n.isEmpty()) {
+            n = String.format("%s.%h", fs.getClass().getName(), fs);
+        }
+        return encoder(n);
     }
 
     private static String encodeFoPart(FileObject fo) {
-        StringTokenizer elemsEnum;
-        StringBuffer sBuff = new StringBuffer();
-        elemsEnum = new StringTokenizer(fo.getPath(), String.valueOf(SEPARATOR));
-
-        while (elemsEnum.hasMoreElements()) {
-            sBuff.append(SEPARATOR);
-            sBuff.append(encoder((String) elemsEnum.nextElement()));
+        String path = fo.getPath();
+        if (fo.isFolder()) {
+            path += "/";
         }
-
-        String retVal = sBuff.toString();
-
-        if ((retVal.length() == 0) || (fo.isFolder() && (retVal.charAt(retVal.length() - 1) != SEPARATOR))) {
-            retVal += SEPARATOR;
+        if (!fo.isRoot()) {
+            path = "/" + path;
         }
-
-        return retVal;
+        try {
+            return new URI(null, path, null).toString();
+        } catch (URISyntaxException x) {
+            return "???";
+        }
     }
 
     private static String decodeFsPart(String encodedStr) {
@@ -175,17 +182,14 @@ final class NbfsUtil {
         if (encodedStr == null) {
             return ""; //NOI18N
         }
-
-        StringTokenizer elemsEnum;
-        StringBuffer sBuff = new StringBuffer();
-        elemsEnum = new StringTokenizer(encodedStr, String.valueOf(SEPARATOR));
-
-        while (elemsEnum.hasMoreElements()) {
-            sBuff.append(SEPARATOR);
-            sBuff.append(decoder((String) elemsEnum.nextElement()));
+        if (encodedStr.endsWith("/")) {
+            encodedStr = encodedStr.substring(0, encodedStr.length() - 1);
         }
-
-        return sBuff.toString();
+        try {
+            return new URI(encodedStr).getPath();
+        } catch (URISyntaxException x) {
+            return "???";
+        }
     }
 
     private static String encoder(String elem) {

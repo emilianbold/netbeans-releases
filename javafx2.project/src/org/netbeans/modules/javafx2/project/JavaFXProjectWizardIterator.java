@@ -77,7 +77,7 @@ import org.openide.util.NbBundle;
  * @author phrebejk, Anton Chechel
  */
 public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
-    enum WizardType {APPLICATION, PRELOADER, FXML, LIBRARY, EXTISTING}
+    public static enum WizardType {APPLICATION, PRELOADER, FXML, LIBRARY, EXTISTING}
     
     static final String PROP_NAME_INDEX = "nameIndex"; // NOI18N
     static final String PROP_PRELOADER_NAME = "preloader.name"; // NOI18N

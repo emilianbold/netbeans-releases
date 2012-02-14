@@ -119,7 +119,7 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
             namespace.getFullyQualifiedName() : QualifiedName.createForDefaultNamespaceName();
         return new FunctionElementImpl(
                 fullyQualifiedName.append(info.getName()), info.getRange().getStart(),
-                fileQuery.getURL().toExternalForm(), fileQuery, info.getParameters(), 
+                fileQuery.getURL().toExternalForm(), fileQuery, info.getParameters(),
                 TypeResolverImpl.parseTypes(VariousUtils.getReturnTypeFromPHPDoc(fileQuery.getResult().getProgram(), node)));
     }
 

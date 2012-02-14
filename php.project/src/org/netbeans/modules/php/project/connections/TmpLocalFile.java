@@ -95,8 +95,8 @@ public abstract class TmpLocalFile {
     public abstract boolean isInMemory();
 
     /**
-     * Get the file output stream, never {@code null}.
-     * @return file output stream, never {@code null}
+     * Get the file output stream, can be {@code null} if any error occurs.
+     * @return file output stream, can be {@code null} if any error occurs
      */
     public abstract OutputStream getOutputStream();
 
@@ -162,7 +162,7 @@ public abstract class TmpLocalFile {
 
 
         public DiskTmpLocalFile() throws IOException {
-            file = File.createTempFile("nb-ftp-tmp-file-", null); // NOI18N
+            file = File.createTempFile("nb-remote-tmp-file-", null); // NOI18N
         }
 
         @Override

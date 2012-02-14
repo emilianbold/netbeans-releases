@@ -43,23 +43,23 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 /**
- * This interface says that the scope is not build directly, but lazy, when 
+ * This interface says that the scope is not build directly, but lazy, when
  * it's needed. One example are bodies of methods. The model for the bodies
  * doesn't have to be build for all method at once, if it's necessary.
  * Through this interface a feature can find out, whether the model contains
  * information from the ASTNode and also can invoke to build model for the ASTNode.
- * 
+ *
  * @author PetrPisl
  */
 public interface LazyBuild {
-   
+
     /**
-     * 
+     *
      * @return true, if the model already contains information, false when
      * the model doesn't contain the information.
      */
     boolean isScanned();
-    
+
     /**
      * Create the model for the scope.
      */

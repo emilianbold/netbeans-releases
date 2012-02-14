@@ -175,7 +175,7 @@ public class ValidateModulesTest extends NbTestCase {
     public void testAutomaticDependenciesUnused() throws Exception {
         List<URL> urls = new ArrayList<URL>();
         for (FileObject kid : FileUtil.getConfigFile("ModuleAutoDeps").getChildren()) {
-            urls.add(kid.getURL());
+            urls.add(kid.toURL());
         }
         StringBuilder problems = new StringBuilder();
         AutomaticDependencies ad = AutomaticDependencies.parse(urls.toArray(new URL[urls.size()]));

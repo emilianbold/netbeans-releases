@@ -61,8 +61,8 @@ public class NbAuthenticatorTest extends NbTestCase {
 
     public void testUserInfoInUrl () throws Exception {
         NbAuthenticator.install4test();
-        PasswordAuthentication auth = Authenticator.requestPasswordAuthentication("localhost", Inet4Address.getLocalHost(), 1234, "http", null, "http",
-                new URL("http://user:password@localhost/resource"), Authenticator.RequestorType.SERVER);
+        PasswordAuthentication auth = Authenticator.requestPasswordAuthentication("wher.ev.er", Inet4Address.getByName("1.2.3.4"), 1234, "http", null, "http",
+                new URL("http://user:password@wher.ev.er/resource"), Authenticator.RequestorType.SERVER);
         
         assertNotNull(auth);
         assertEquals("user", auth.getUserName());
@@ -75,8 +75,8 @@ public class NbAuthenticatorTest extends NbTestCase {
             NetworkSettings.suppressAuthenticationDialog(new Callable<PasswordAuthentication>() {
                 @Override
                 public PasswordAuthentication call () throws Exception {
-                    return Authenticator.requestPasswordAuthentication("localhost", Inet4Address.getLocalHost(), 1234, "http", null, "http",
-                            new URL("http://user:password@localhost/resource"), Authenticator.RequestorType.SERVER);
+                    return Authenticator.requestPasswordAuthentication("wher.ev.er", Inet4Address.getByName("1.2.3.4"), 1234, "http", null, "http",
+                            new URL("http://user:password@wher.ev.er/resource"), Authenticator.RequestorType.SERVER);
                 }
             });
         assertNull(auth);

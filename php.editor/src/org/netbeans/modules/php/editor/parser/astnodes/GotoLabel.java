@@ -42,8 +42,8 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 /**
- * Holds a label declaration that is used in goto expression. 
- * <pre>e.g.<pre> 
+ * Holds a label declaration that is used in goto expression.
+ * <pre>e.g.<pre>
  *START:
  */
 public class GotoLabel extends Statement {

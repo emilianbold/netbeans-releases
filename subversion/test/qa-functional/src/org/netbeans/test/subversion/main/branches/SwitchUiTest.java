@@ -74,7 +74,7 @@ public class SwitchUiTest extends JellyTestCase{
      }
     
     public void testInvokeCloseSwitch() throws Exception {
-        try {
+       // try {
             MessageHandler mh = new MessageHandler("Checking out");
             log.addHandler(mh);
             TestKit.closeProject(PROJECT_NAME);
@@ -124,10 +124,10 @@ public class SwitchUiTest extends JellyTestCase{
 //            rbo.ok();
 //            assertEquals("Folder wasn't created", "branches", so.getRepositoryFolder());
             so.cancel();
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
-        } finally {
+        //} catch (Exception e) {
+         //   throw new Exception("Test failed: " + e);
+       // } finally {
             TestKit.closeProject(PROJECT_NAME);
-        }    
+       // }    
     }
 }

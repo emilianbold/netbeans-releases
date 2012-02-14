@@ -984,5 +984,61 @@ public class Css3ParserTest extends CssTestBase {
         assertResultOK(TestUtil.parse("div.test *:not(a|p) {  }"));
     }
     
+    //Bug 207080 - Insufficient CSS parser error recovery
+    public void testIssue_207080() {
+        String code = "#wrapper {\n"
+                + "   height: 100%;\n"
+                + "#z-index: 200; \n"
+                + "}\n"
+                + "\n"
+                + "#header {\n"
+                + "}\n";
+        CssParserResult result = TestUtil.parse(code);
+        
+//        TestUtil.dumpResult(result);
+        
+        assertResult(result, 1); //ProblemDescription{from=28, to=36, description=Unexpected token HASH found, key=PARSING, type=ERROR}
+
+        
+        //check if the #header rule is properly parsed
+        Node node = NodeUtil.query(result.getParseTree(),
+                "styleSheet/bodylist/bodyset|1/"
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/cssId");
+        assertNotNull(node);
+        
+                
+    }
+    
+    public void testGenericAtRule() {
+        String code = "@-webkit-keyframes spin { h2 { color: red; } }";
+        CssParserResult result = TestUtil.parse(code);
+        
+        assertResultOK(result);
+        
+        TestUtil.dumpResult(result);
+        
+        Node node = NodeUtil.query(result.getParseTree(),
+                "styleSheet/bodylist/bodyset/generic_at_rule");
+                
+        assertNotNull(node);
+        
+    }
+    
+//    public void testRecoveryInBodySet() {
+//        String code = "div { } ;@ a { } h1 { }";
+//        CssParserResult result = TestUtil.parse(code);
+//        
+//        assertResultOK(result);
+//        
+//        TestUtil.dumpResult(result);
+//        
+//        Node node = NodeUtil.query(result.getParseTree(),
+//                "styleSheet/bodylist/bodyset/generic_at_rule");
+//                
+//        assertNotNull(node);
+//        
+//        
+//    }
+    
     
 }

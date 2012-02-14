@@ -46,7 +46,6 @@ package org.netbeans.modules.ant.freeform;
 
 import org.netbeans.api.queries.SharabilityQuery;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -77,13 +76,13 @@ public class FreeformSharabilityQueryTest extends TestBase {
 	assertNotNull(myAppJava);
 	assertNotNull(buildXML);
 	
-	assertEquals(SharabilityQuery.MIXED, SharabilityQuery.getSharability(FileUtil.toFile(nbproject)));
-	assertEquals(SharabilityQuery.SHARABLE, SharabilityQuery.getSharability(FileUtil.toFile(nbprojectProjectXML)));
-	assertEquals(SharabilityQuery.NOT_SHARABLE, SharabilityQuery.getSharability(FileUtil.toFile(nbprojectPrivate)));
-	assertEquals(SharabilityQuery.NOT_SHARABLE, SharabilityQuery.getSharability(FileUtil.toFile(nbprojectPrivatePrivateXML)));
-	assertEquals(SharabilityQuery.UNKNOWN, SharabilityQuery.getSharability(FileUtil.toFile(src)));
-	assertEquals(SharabilityQuery.UNKNOWN, SharabilityQuery.getSharability(FileUtil.toFile(myAppJava)));
-	assertEquals(SharabilityQuery.UNKNOWN, SharabilityQuery.getSharability(FileUtil.toFile(buildXML)));
+	assertEquals(SharabilityQuery.Sharability.MIXED, SharabilityQuery.getSharability(nbproject));
+	assertEquals(SharabilityQuery.Sharability.SHARABLE, SharabilityQuery.getSharability(nbprojectProjectXML));
+	assertEquals(SharabilityQuery.Sharability.NOT_SHARABLE, SharabilityQuery.getSharability(nbprojectPrivate));
+	assertEquals(SharabilityQuery.Sharability.NOT_SHARABLE, SharabilityQuery.getSharability(nbprojectPrivatePrivateXML));
+	assertEquals(SharabilityQuery.Sharability.UNKNOWN, SharabilityQuery.getSharability(src));
+	assertEquals(SharabilityQuery.Sharability.UNKNOWN, SharabilityQuery.getSharability(myAppJava));
+	assertEquals(SharabilityQuery.Sharability.UNKNOWN, SharabilityQuery.getSharability(buildXML));
     }
     
 }

@@ -54,9 +54,9 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 import java.awt.Dialog;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 
 
@@ -89,17 +89,15 @@ public class InsertProfilingPointAction extends NodeAction {
 
     public void performAction(Lookup.Provider project) {
         if (ProfilingPointsManager.getDefault().isProfilingSessionInProgress()) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    Bundle.InsertProfilingPointAction_ProfilingInProgressMsg(),
-                                    NotifyDescriptor.WARNING_MESSAGE));
+            ProfilerDialogs.displayWarning(
+                    Bundle.InsertProfilingPointAction_ProfilingInProgressMsg());
 
             return;
         }
 
         if (ProjectUtilities.getOpenedProjects().length == 0) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                    Bundle.InsertProfilingPointAction_NoProjectMsg(),
-                                    NotifyDescriptor.WARNING_MESSAGE));
+            ProfilerDialogs.displayWarning(
+                    Bundle.InsertProfilingPointAction_NoProjectMsg());
 
             return;
         }

@@ -82,6 +82,23 @@ public class RequestProcessorTest extends NbTestCase {
         return Level.FINE;
     }
     
+    public void testStopAndSchedule() throws Exception {
+        final boolean executed[] = { false };
+        class R implements Runnable {
+            @Override
+            public void run() {
+                executed[0] = true;
+            }
+        }
+        
+        RequestProcessor rp = new RequestProcessor("stopped");
+        RequestProcessor.Task task = rp.create(new R());
+        assertTrue("No runnables", rp.shutdownNow().isEmpty());
+        task.schedule(0);
+        task.waitFinished(500);
+        assertFalse("Not executed at all", executed[0]);
+    }
+    
     public void testUseAsInCND() throws Exception {
         final RequestProcessor processor = new RequestProcessor("testUseAsInCND");
         final AtomicReference<String> threadName = new AtomicReference<String>();

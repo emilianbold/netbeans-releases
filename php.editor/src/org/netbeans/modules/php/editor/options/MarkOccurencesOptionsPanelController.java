@@ -51,51 +51,51 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 public final class MarkOccurencesOptionsPanelController extends OptionsPanelController {
-    
+
     private MarkOccurencesPanel panel;
-    
+
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
-                    
+
     public void update() {
         panel.load( this );
     }
-    
+
     public void applyChanges() {
         panel.store();
     }
-    
+
     public void cancel() {
 	// need not do anything special, if no changes have been persisted yet
     }
-    
+
     public boolean isValid() {
-        return true; // Always valid 
+        return true; // Always valid
     }
-    
+
     public boolean isChanged() {
 	return panel.changed();
     }
-    
+
     public HelpCtx getHelpCtx() {
 	return new HelpCtx("netbeans.optionsDialog.php.markoccurrences");
     }
-    
+
     public synchronized JComponent getComponent(Lookup masterLookup) {
         if ( panel == null ) {
             panel = new MarkOccurencesPanel(this);
         }
         return panel;
     }
-    
+
     public void addPropertyChangeListener(PropertyChangeListener l) {
 	pcs.addPropertyChangeListener(l);
     }
-    
+
     public void removePropertyChangeListener(PropertyChangeListener l) {
 	pcs.removePropertyChangeListener(l);
     }
-    
+
     void changed() {
 	if (!changed) {
 	    changed = true;
@@ -103,5 +103,5 @@ public final class MarkOccurencesOptionsPanelController extends OptionsPanelCont
 	}
 	pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
-    
+
 }

@@ -55,9 +55,9 @@ import org.netbeans.modules.php.editor.parser.api.Utils;
  * @author Radek Matous
  */
 public final class Model {
-    
+
     private static final Logger LOGGER = Logger.getLogger(Model.class.getName());
-    
+
     private ModelVisitor modelVisitor;
     private final PHPParseResult info;
     private OccurencesSupport occurencesSupport;
@@ -71,7 +71,7 @@ public final class Model {
 //    }
 
     public List<PhpBaseElement>  getExtendedElements() {
-        return getModelVisitor().extendedElements();        
+        return getModelVisitor().extendedElements();
     }
 
     public FileScope getFileScope() {

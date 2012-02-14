@@ -110,7 +110,7 @@ public class JFXProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    static AntProjectHelper createProject(final File dir, final String name, final String mainClass,
+    public static AntProjectHelper createProject(final File dir, final String name, final String mainClass,
             final String manifestFile, final String librariesDefinition,
             final String platformName, final String preloader, final WizardType type) throws IOException {
         Parameters.notNull("dir", dir); //NOI18N

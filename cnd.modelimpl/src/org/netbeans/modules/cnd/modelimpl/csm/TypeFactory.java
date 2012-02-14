@@ -254,7 +254,7 @@ public class TypeFactory {
                         int templateDepth = 0;
                         StringBuilder sb = new StringBuilder();
                         for( AST namePart = tokFirstId; namePart != null; namePart = namePart.getNextSibling() ) {
-                            if( templateDepth == 0 && namePart.getType() == CPPTokenTypes.ID ) {
+                            if( templateDepth == 0 && namePart.getType() == CPPTokenTypes.IDENT ) {
                                 sb.append(namePart.getText());
                                 l.add(NameCache.getManager().getString(AstUtil.getText(namePart)));
                                 //l.add(namePart.getText());
@@ -359,6 +359,17 @@ public class TypeFactory {
         return type;
     }
 
+    public static CsmType createSimpleType(CsmClassifier cls, CsmFile file, int startOffset, int endOffset) {
+        TypeImpl type = new TypeImpl(file, 0, false, 0, false, startOffset, endOffset);
+        type.setClassifierText(cls.getName());
+        List<CharSequence> l = new ArrayList<CharSequence>();
+        l.add(cls.getName());
+        type.setQName(l.toArray(new CharSequence[l.size()]));
+        type.initClassifier(cls);
+        return type;
+    }
+    
+    
     private static class TypeWrapper implements CsmType {
         protected CsmType type;
         protected int pointerDepth;

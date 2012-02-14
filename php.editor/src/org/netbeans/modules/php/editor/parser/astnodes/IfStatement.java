@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,16 +34,16 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 /**
  * Represents if statement
- * <pre>e.g.<pre> 
+ * <pre>e.g.<pre>
  * if ($a > $b) {
  *   echo "a is bigger than b";
  * } elseif ($a == $b) {
@@ -51,7 +51,7 @@ package org.netbeans.modules.php.editor.parser.astnodes;
  * } else {
  *   echo "a is smaller than b";
  * },
- * 
+ *
  * if ($a):
  *   echo "a is bigger than b";
  *   echo "a is NOT bigger than b";
@@ -73,7 +73,7 @@ public class IfStatement extends Statement {
 
     /**
      * Returns the expression of this if statement.
-     * 
+     *
      * @return the expression node
      */
     public Expression getCondition() {
@@ -82,7 +82,7 @@ public class IfStatement extends Statement {
 
     /**
      * Returns the "then" part of this if statement.
-     * 
+     *
      * @return the "then" statement node
      */
     public Statement getTrueStatement() {
@@ -93,16 +93,16 @@ public class IfStatement extends Statement {
      * Returns the "else" part of this if statement, or <code>null</code> if
      * this if statement has <b>no</b> "else" part.
      * <p>
-     * Note that there is a subtle difference between having no else 
+     * Note that there is a subtle difference between having no else
      * statement and having an empty statement ("{}") or null statement (";").
      * </p>
-     * 
+     *
      * @return the "else" statement node, or <code>null</code> if none
      */
     public Statement getFalseStatement() {
         return this.falseStatement;
     }
-    
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);

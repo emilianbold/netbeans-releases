@@ -62,6 +62,9 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.openide.awt.AcceleratorBinding;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
+import org.openide.util.lookup.ServiceProvider;
 
 
 /**
@@ -942,6 +945,206 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 "if (c == '\\\\'|)"
         );
     }
+   
+    public void testPositionInString() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "class Test {\n"
+                + "    {\n"
+                + "        \"H|\"\n"
+                + "    }\n"
+                + "}\n");
+        ctx.typeChar('\n');
+        ctx.assertDocumentTextEquals(
+                "class Test {\n"
+                + "    {\n"
+                + "        \"H\"\n"
+                + "        + \"|\"\n"
+                + "    }\n"
+                + "}\n");
+    }
+    
+    public void testPositionInEmptyString() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "class Test {\n"
+                + "    {\n"
+                + "        \"|\"\n"
+                + "    }\n"
+                + "}\n");
+        ctx.typeChar('\n');
+        ctx.assertDocumentTextEquals(
+                "class Test {\n"
+                + "    {\n"
+                + "        \"\"\n"
+                + "        + \"|\"\n"
+                + "    }\n"
+                + "}\n");
+    }
+    
+    public void testCommentBlockCompletion() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "class Test {\n"
+                + "    {\n"
+                + "        /*|\n"
+                + "    }\n"
+                + "}\n");
+        ctx.typeChar('\n');
+        ctx.assertDocumentTextEquals(
+                "class Test {\n"
+                + "    {\n"
+                + "        /*\n"
+                + "         * |\n"
+                + "         */\n"
+                + "    }\n"
+                + "}\n");
+    }
+   
+    public void testCommentBlockCompletionNotNeeded() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "class Test {\n"
+                + "    {\n"
+                + "        /*|\n"
+                + "         */\n"
+                + "    }\n"
+                + "}\n");
+        ctx.typeChar('\n');
+        ctx.assertDocumentTextEquals(
+                "class Test {\n"
+                + "    {\n"
+                + "        /*\n"
+                + "         * |\n"
+                + "         */\n"
+                + "    }\n"
+                + "}\n");
+    }
+    
+
+    public void testCommentBlockCompletionTwoComments () {
+        Context ctx = new Context(new JavaKit(),
+                "/*|\n" +
+                "/*\n" +
+                " */"
+        );
+        ctx.typeChar('\n');
+        ctx.assertDocumentTextEquals(
+                "/*\n" +
+                " * |\n" +
+                " */\n" +
+                "/*\n" +
+                " */"
+        );
+    }
+
+    public void testCommentBlockCompletionTwoComments2 () {
+        Context ctx = new Context(new JavaKit(),
+                "/*|\n" +
+                "\n" +
+                "/*\n" +
+                " */"
+        );
+        ctx.typeChar('\n');
+        ctx.assertDocumentTextEquals(
+                "/*\n" +
+                " * |\n" +
+                " */\n" +
+                "\n" +
+                "/*\n" +
+                " */"
+        );
+    }
+    
+    public void testCommentBlockCompletionNoClose () {
+        Context ctx = new Context(new JavaKit(),
+                "/*| a"
+        );
+        ctx.typeChar('\n');
+        ctx.assertDocumentTextEquals(
+                "/*\n" +
+                " * |a"
+        );
+    }
+    
+    public void testJavaDocCompletion() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "class Test {\n"
+                + "    {\n"
+                + "        /**|\n"
+                + "    }\n"
+                + "}\n");
+        ctx.typeChar('\n');
+        ctx.assertDocumentTextEquals(
+                "class Test {\n"
+                + "    {\n"
+                + "        /**\n"
+                + "         * |\n"
+                + "         */\n"
+                + "    }\n"
+                + "}\n");
+    }
+    
+    public void testJavaDocCompletionNotNeeded() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "class Test {\n"
+                + "    {\n"
+                + "        /**|\n"
+                + "         */\n"
+                + "    }\n"
+                + "}\n");
+        ctx.typeChar('\n');
+        ctx.assertDocumentTextEquals(
+                "class Test {\n"
+                + "    {\n"
+                + "        /**\n"
+                + "         * |\n"
+                + "         */\n"
+                + "    }\n"
+                + "}\n");
+    }
+  
+    public void insertBreakJavadocComplete() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "class Test {\n"
+                + "    {\n"
+                + "        /**|\n"
+                + "        public static void main(String[] args) {\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n");
+        ctx.typeChar('\n');
+        ctx.assertDocumentTextEquals (
+            "class Test {\n"
+                + "    {\n"
+                + "        /**\n"
+                + "         * |\n"
+                + "         * @param args\n"
+                + "         */\n"
+                + "        public static void main(String[] args) {\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n"
+        );
+    }
+    
+    public void testRemoveBracketBackSpace() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "()(|)");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("()|");
+    }
+
+    public void testRemoveBracketDelete() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "()|()");
+        ctx.typeChar('\f');
+        ctx.assertDocumentTextEquals("()|");
+    }
+    
+    public void testJumpCharacters() throws Exception {
+        Context ctx = new Context(new JavaKit(), "m(\"p|\");");
+        ctx.typeChar('"');
+        ctx.assertDocumentTextEquals("m(\"p\"|);");
+        ctx.typeChar(')');
+        ctx.assertDocumentTextEquals("m(\"p\")|;");
+    }
 
     public void testCorrectHandlingOfStringEscapes184059() throws Exception {
         assertTrue(isInsideString("foo\n\"bar|\""));
@@ -973,6 +1176,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         public Context(final EditorKit kit, final String textWithPipe) {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
                     public void run() {
                         pane = new JEditorPane();
                         pane.setEditorKit(kit);
@@ -1007,16 +1211,29 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         public void typeChar(final char ch) {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
                     public void run() {
                         KeyEvent keyEvent;
-                        if (ch != '\n') {
-                            keyEvent = new KeyEvent(pane, KeyEvent.KEY_TYPED,
-                                EventQueue.getMostRecentEventTime(),
-                                0, KeyEvent.VK_UNDEFINED, ch);
-                        } else { // Simulate pressing of Enter
-                            keyEvent = new KeyEvent(pane, KeyEvent.KEY_PRESSED,
-                                EventQueue.getMostRecentEventTime(),
-                                0, KeyEvent.VK_ENTER, KeyEvent.CHAR_UNDEFINED);
+                        switch (ch) {
+                            case '\n':
+                                keyEvent = new KeyEvent(pane, KeyEvent.KEY_PRESSED,
+                                        EventQueue.getMostRecentEventTime(),
+                                        0, KeyEvent.VK_ENTER, KeyEvent.CHAR_UNDEFINED); // Simulate pressing of Enter
+                                break;
+                            case '\b':
+                                keyEvent = new KeyEvent(pane, KeyEvent.KEY_PRESSED,
+                                        EventQueue.getMostRecentEventTime(),
+                                        0, KeyEvent.VK_BACK_SPACE, KeyEvent.CHAR_UNDEFINED); // Simulate pressing of BackSpace
+                                break;
+                            case '\f':
+                                keyEvent = new KeyEvent(pane, KeyEvent.KEY_PRESSED,
+                                        EventQueue.getMostRecentEventTime(),
+                                        0, KeyEvent.VK_DELETE, KeyEvent.CHAR_UNDEFINED); // Simulate pressing of Delete
+                                break;
+                            default:
+                                keyEvent = new KeyEvent(pane, KeyEvent.KEY_TYPED,
+                                        EventQueue.getMostRecentEventTime(),
+                                        0, KeyEvent.VK_UNDEFINED, ch);
                         }
                         SwingUtilities.processKeyBindings(keyEvent);
                     }
@@ -1035,6 +1252,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         public void assertDocumentTextEquals(final String textWithPipe) {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
                     public void run() {
                         int caretOffset = textWithPipe.indexOf('|');
                         String text;
@@ -1073,6 +1291,18 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
             } catch (Exception e) {
                 throw new IllegalStateException(e);
             }
+        }
+    }
+
+    @ServiceProvider(service=MIMEResolver.class)
+    public static final class MIMEResolverImpl extends MIMEResolver {
+
+        public MIMEResolverImpl() {
+            super("text/x-nbeditor-keybindingsettings");
+        }
+
+        @Override public String findMIMEType(FileObject fo) {
+            return fo.getPath().contains("Keybindings") ? "text/x-nbeditor-keybindingsettings" : null;
         }
     }
 
