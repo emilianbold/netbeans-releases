@@ -415,7 +415,10 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                                 break; // Creation finished successfully
                             } else {
                                 // There could be additional changes in the meantime
-                                pRegion = pRegion.union(fetchParagraphRebuildRegion(), true);
+                                OffsetRegion newPRegion = fetchParagraphRebuildRegion();
+                                if (newPRegion != null) {
+                                    pRegion = pRegion.union(newPRegion, true);
+                                }
                             }
                         }
                         noException = true;
