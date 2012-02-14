@@ -95,6 +95,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/model/parameters01.js", "formatter.println(\"Author: \" + au^tor);", true);
     }
     
+    public void testFunctionParameters04() throws Exception {
+        checkOccurrences("testfiles/model/returnTypes02.js", "zip = zi^pp;", true);
+    }
+    
     public void testMethod01() throws Exception {
         checkOccurrences("testfiles/model/parameters01.js", "formatter.println(\"Name: \" + this.getNa^me());", true);
     }

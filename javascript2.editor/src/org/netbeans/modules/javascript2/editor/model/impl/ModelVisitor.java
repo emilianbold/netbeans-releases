@@ -507,14 +507,17 @@ public class ModelVisitor extends PathNodeVisitor {
             JsObject parent = modelBuilder.getCurrentObject();
             Identifier name = new IdentifierImpl(varNode.getName().getName(),
                     ModelUtils.documentOffsetRange(parserResult, varNode.getName().getStart(), varNode.getName().getFinish()));
-            JsObjectImpl variable =  new JsObjectImpl(parent, name, name.getOffsetRange());
+            JsObjectImpl variable = new JsObjectImpl(parent, name, name.getOffsetRange());
             variable.setDeclared(true);
-            if(parent.getJSKind() != JsElement.Kind.FILE) {
+            if (parent.getJSKind() != JsElement.Kind.FILE) {
                 variable.getModifiers().remove(Modifier.PUBLIC);
                 variable.getModifiers().add(Modifier.PRIVATE);
             }
             parent.addProperty(name.getName(), variable);
             modelBuilder.setCurrentObject(variable);
+            if (varNode.getInit() instanceof IdentNode) {
+                addOccurence((IdentNode)varNode.getInit());
+            }
         }
         if (!onset && !(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode)) {
             modelBuilder.reset();
