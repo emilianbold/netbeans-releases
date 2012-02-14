@@ -48,10 +48,8 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
@@ -60,9 +58,9 @@ import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.*;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.RepositoryComparator;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.*;
 import org.openide.util.Mutex;
@@ -156,15 +154,6 @@ public class BugtrackingRootNode extends AbstractNode {
         }
     }
 
-    private static class RepositoryComparator implements Comparator<RepositoryProvider> {
-        public int compare(RepositoryProvider r1, RepositoryProvider r2) {
-            if(r1 == null && r2 == null) return 0;
-            if(r1 == null) return -1;
-            if(r2 == null) return 1;
-            return r1.getInfo().getDisplayName().compareTo(r2.getInfo().getDisplayName());
-        }
-    }
-    
     public static void selectNode(final String... path) {
         Mutex.EVENT.readAccess(new Runnable() {
             public void run() {

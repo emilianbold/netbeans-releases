@@ -67,6 +67,7 @@ import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import static java.awt.event.HierarchyEvent.DISPLAYABILITY_CHANGED;
+import java.util.Arrays;
 import static java.util.logging.Level.FINEST;
 
 /**
@@ -555,7 +556,9 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
 
         int reposCount = (repos != null) ? repos.length : 0;
         Object[] comboData;
-
+        if(repos != null) {
+            Arrays.sort(repos, new RepositoryComparator());
+        }
         int startIndex = 0;
         if (reposCount == 0) {
             comboData = new Object[] {NO_REPOSITORIES};
