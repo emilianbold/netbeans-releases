@@ -158,6 +158,9 @@ public final class RepositoryInfo {
     void store(Preferences preferences, String key) {
         boolean isNetbeans = isNbRepository();
         preferences.put(key, getStringValue(isNetbeans));
+        if(isNetbeans) {
+            BugtrackingUtil.saveNBUsername(getUsername());
+        }
     }
     
     private String getStringValue(boolean dropUser) {
