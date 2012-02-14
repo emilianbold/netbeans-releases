@@ -110,15 +110,7 @@ import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
-import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
-import org.netbeans.modules.parsing.spi.indexing.Context;
-import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
-import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
-import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
-import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
-import org.netbeans.modules.parsing.spi.indexing.SourceIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.*;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -176,7 +168,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         scannedRoots2Peers,
                         sourcesForBinaryRoots,
                         false,
-                        suspendSupport,
+                        suspendSupport.getSuspendStatus(),
                         LogContext.create(LogContext.EventType.PATH, null));
                 }
             }
@@ -391,7 +383,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     forceRefresh,
                     sourcesForBinaryRoots.contains(rootUrl),
                     steady,
-                    suspendSupport,
+                    suspendSupport.getSuspendStatus(),
                     logCtx);
             }
         } else {
@@ -402,7 +394,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 checkEditor,
                 forceRefresh,
                 sourcesForBinaryRoots.contains(rootUrl),
-                suspendSupport,
+                suspendSupport.getSuspendStatus(),
                 logCtx);
         }
         return flw;
@@ -424,7 +416,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         if (cifInfos == null) {
             throw new InvalidParameterException("No CustomIndexerFactory with name: '" + indexerName + "'"); //NOI18N
         } else {
-            Work w = new RefreshCifIndices(cifInfos, scannedRoots2Dependencies, sourcesForBinaryRoots, suspendSupport, logCtx);
+            Work w = new RefreshCifIndices(cifInfos, scannedRoots2Dependencies, sourcesForBinaryRoots, suspendSupport.getSuspendStatus(), logCtx);
             scheduleWork(w, false);
         }
     }
@@ -453,7 +445,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 logStatistics,
                 filesOrFileObjects == null ? Collections.<Object>emptySet() : Arrays.asList(filesOrFileObjects),
                 fsRefreshInterceptor,
-                suspendSupport,
+                suspendSupport.getSuspendStatus(),
                 logCtx),
             wait);
     }
@@ -541,7 +533,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         scannedRoots2Peers,
                         sourcesForBinaryRoots,
                         !existingPathsChanged,
-                        suspendSupport,
+                        suspendSupport.getSuspendStatus(),
                         logContext),
                     false);
         }
@@ -554,7 +546,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     false,
                     false,
                     sourcesForBinaryRoots.contains(rootUrl),
-                    suspendSupport,
+                    suspendSupport.getSuspendStatus(),
                     logContext),
                 false);
         }
@@ -662,7 +654,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                     scannedRoots2Peers,
                                     sourcesForBinaryRoots,
                                     false,
-                                    suspendSupport,
+                                    suspendSupport.getSuspendStatus(),
                                     LogContext.create(LogContext.EventType.FILE, null));
                             } else {
                                 //Already seen files work is enough
@@ -677,7 +669,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                         true,
                                         sourcForBinaryRoot,
                                         true,
-                                        suspendSupport,
+                                        suspendSupport.getSuspendStatus(),
                                         LogContext.create(LogContext.EventType.FILE, null));
                                 } else {
                                     //If no children nothing needs to be done - save some CPU time
@@ -694,7 +686,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                 true,
                                 sourcForBinaryRoot,
                                 true,
-                                suspendSupport,
+                                suspendSupport.getSuspendStatus(),
                                 LogContext.create(LogContext.EventType.FILE, null));
                         }
                         if (wrk != null) {
@@ -710,7 +702,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 if (root != null && isVisible(fo, root.second)) {
                     final Work wrk = new BinaryWork(
                         root.first,
-                        suspendSupport,
+                        suspendSupport.getSuspendStatus(),
                         LogContext.create(LogContext.EventType.FILE, null));
                     eventQueue.record(FileEventLog.FileOp.CREATE, root.first, null, fe, wrk);
                     processed = true;
@@ -754,7 +746,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             true,
                             sourceForBinaryRoot,
                             true,
-                            suspendSupport,
+                            suspendSupport.getSuspendStatus(),
                             LogContext.create(LogContext.EventType.FILE, null));
                         eventQueue.record(FileEventLog.FileOp.CREATE, root.first, FileUtil.getRelativePath(root.second, fo), fe, wrk);
                         processed = true;
@@ -767,7 +759,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 if (root != null && isVisible(fo,root.second)) {
                     final Work wrk = new BinaryWork(
                         root.first,
-                        suspendSupport,
+                        suspendSupport.getSuspendStatus(),
                         LogContext.create(LogContext.EventType.FILE, null));
                     eventQueue.record(FileEventLog.FileOp.CREATE, root.first, null, fe, wrk);
                     processed = true;
@@ -816,7 +808,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         final Work wrk = new DeleteWork(
                             root.first,
                             Collections.singleton(relativePath),
-                            suspendSupport,
+                            suspendSupport.getSuspendStatus(),
                             LogContext.create(LogContext.EventType.FILE, null));
                         eventQueue.record(FileEventLog.FileOp.DELETE, root.first, relativePath, fe, wrk);
                         processed = true;
@@ -833,7 +825,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 if (root != null && isVisible(fo, root.second)) {
                     final Work wrk = new BinaryWork(
                         root.first,
-                        suspendSupport,
+                        suspendSupport.getSuspendStatus(),
                         LogContext.create(LogContext.EventType.FILE, null));
                     eventQueue.record(FileEventLog.FileOp.DELETE, root.first, null, fe, wrk);
                     processed = true;
@@ -879,7 +871,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         final Work work = new DeleteWork(
                             root.first,
                             Collections.singleton(oldFilePath),
-                            suspendSupport,
+                            suspendSupport.getSuspendStatus(),
                             LogContext.create(LogContext.EventType.FILE, null));
                         eventQueue.record(FileEventLog.FileOp.DELETE, root.first, oldFilePath, fe, work);
                     } else {
@@ -889,7 +881,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             final Work work = new DeleteWork(
                                 root.first,
                                 oldFilePaths,
-                                suspendSupport,
+                                suspendSupport.getSuspendStatus(),
                                 LogContext.create(LogContext.EventType.FILE, null));
                             eventQueue.record(FileEventLog.FileOp.DELETE, root.first, path, fe, work);
                         }
@@ -908,7 +900,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                 true,
                                 sourceForBinaryRoot,
                                 true,
-                                suspendSupport,
+                                suspendSupport.getSuspendStatus(),
                                 LogContext.create(LogContext.EventType.FILE, null));
                             eventQueue.record(FileEventLog.FileOp.CREATE, root.first, FileUtil.getRelativePath(rootFo, newFile), fe,flw);
                         }
@@ -930,7 +922,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                     null,
                                     fe,
                                     new BinaryWork(oldBinaryRoot,
-                                        suspendSupport,
+                                        suspendSupport.getSuspendStatus(),
                                         LogContext.create(LogContext.EventType.FILE, null)));    //NOI18N
                         } catch (MalformedURLException mue) {
                             LOGGER.log(Level.WARNING, null, mue);
@@ -943,7 +935,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             null,
                             fe,
                             new BinaryWork(root.first,
-                                suspendSupport,
+                                suspendSupport.getSuspendStatus(),
                                 LogContext.create(LogContext.EventType.FILE, null)));
                     processed = true;
                 }
@@ -977,7 +969,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         changedIndexers,
                         scannedRoots2Dependencies,
                         sourcesForBinaryRoots,
-                        suspendSupport,
+                        suspendSupport.getSuspendStatus(),
                         LogContext.create(LogContext.EventType.INDEXER,null)),
                         false);
             }
@@ -990,7 +982,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         changedIndexers,
                         scannedRoots2Dependencies,
                         sourcesForBinaryRoots,
-                        suspendSupport,
+                        suspendSupport.getSuspendStatus(),
                         LogContext.create(LogContext.EventType.INDEXER, null)),
                         false);
             }
@@ -1096,7 +1088,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                     true,
                                     sourcesForBinaryRoots.contains(root.first),
                                     true,
-                                    suspendSupport,
+                                    suspendSupport.getSuspendStatus(),
                                     LogContext.create(LogContext.EventType.FILE, null));
                             jobs.put(root.first, job);
                         } else {
@@ -1315,8 +1307,18 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     for(IndexerCache.IndexerInfo<CustomIndexerFactory> info : cifInfos) {
                         try {
                             CustomIndexerFactory factory = info.getIndexerFactory();
-                            Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.first), root.first,
-                                    factory.getIndexerName(), factory.getIndexVersion(), null, false, true, false, null);
+                            Context ctx = SPIAccessor.getInstance().createContext(
+                                    CacheFolder.getDataFolder(root.first),
+                                    root.first,
+                                    factory.getIndexerName(),
+                                    factory.getIndexVersion(),
+                                    null,
+                                    false,
+                                    true,
+                                    false,
+                                    SuspendSupport.NOP,
+                                    null,
+                                    null);
                             factory.filesDirty(dirty, ctx);
                         } catch (IOException ex) {
                             LOGGER.log(Level.WARNING, null, ex);
@@ -1327,8 +1329,18 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> info : eifInfos) {
                         try {
                             EmbeddingIndexerFactory factory = info.getIndexerFactory();
-                            Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.first), root.first,
-                                    factory.getIndexerName(), factory.getIndexVersion(), null, false, true, false, null);
+                            Context ctx = SPIAccessor.getInstance().createContext(
+                                    CacheFolder.getDataFolder(root.first),
+                                    root.first,
+                                    factory.getIndexerName(),
+                                    factory.getIndexVersion(),
+                                    null,
+                                    false,
+                                    true,
+                                    false,
+                                    SuspendSupport.NOP,
+                                    null,
+                                    null);
                             factory.filesDirty(dirty, ctx);
                         } catch (IOException ex) {
                             LOGGER.log(Level.WARNING, null, ex);
@@ -1391,7 +1403,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 scannedRoots2Peers,
                 sourcesForBinaryRoots,
                 true,
-                suspendSupport,
+                suspendSupport.getSuspendStatus(),
                 work == null ?
                     LogContext.create(LogContext.EventType.PATH, null)
                     : work.getLogContext()), false);
@@ -2095,8 +2107,18 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 final Pair<String,Integer> key = Pair.of(factory.getIndexerName(),factory.getIndexVersion());
                 Pair<SourceIndexerFactory,Context> value = ctxToFinish.get(key);
                 if (value == null) {
-                    final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null,
-                        followUpJob, checkEditor, sourceForBinaryRoot, getShuttdownRequest());
+                    final Context ctx = SPIAccessor.getInstance().createContext(
+                            cacheRoot,
+                            root,
+                            factory.getIndexerName(),
+                            factory.getIndexVersion(),
+                            null,
+                            followUpJob,
+                            checkEditor,
+                            sourceForBinaryRoot,
+                            getSuspendStatus(),
+                            getShuttdownRequest(),
+                            null);
                     value = Pair.<SourceIndexerFactory,Context>of(factory,ctx);
                     ctxToFinish.put(key,value);
                 }
@@ -2124,8 +2146,18 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     final Pair<String,Integer> key = Pair.of(eif.getIndexerName(), eif.getIndexVersion());
                     Pair<SourceIndexerFactory,Context> value = ctxToFinish.get(key);
                     if (value == null) {
-                        final Context context = SPIAccessor.getInstance().createContext(cacheRoot, root, eif.getIndexerName(), eif.getIndexVersion(), null,
-                                followUpJob, checkEditor, sourceForBinaryRoot, null);
+                        final Context context = SPIAccessor.getInstance().createContext(
+                                cacheRoot,
+                                root,
+                                eif.getIndexerName(),
+                                eif.getIndexVersion(),
+                                null,
+                                followUpJob,
+                                checkEditor,
+                                sourceForBinaryRoot,
+                                getSuspendStatus(),
+                                getShuttdownRequest(),
+                                null);
                         value = Pair.<SourceIndexerFactory,Context>of(eif,context);
                         ctxToFinish.put(key, value);
                     }
@@ -2284,7 +2316,18 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         final Pair<String,Integer> key = Pair.of(factory.getIndexerName(),factory.getIndexVersion());
                         Pair<SourceIndexerFactory,Context> value = contexts.get(key);
                         if (value == null) {
-                            final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, sourceForBinaryRoot, getShuttdownRequest());
+                            final Context ctx = SPIAccessor.getInstance().createContext(
+                                    cacheRoot,
+                                    root,
+                                    factory.getIndexerName(),
+                                    factory.getIndexVersion(),
+                                    null,
+                                    followUpJob,
+                                    checkEditor,
+                                    sourceForBinaryRoot,
+                                    getSuspendStatus(),
+                                    getShuttdownRequest(),
+                                    null);
                             value = Pair.<SourceIndexerFactory,Context>of(factory,ctx);
                             contexts.put(key,value);
                         }
@@ -2383,7 +2426,18 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                     final Pair<String,Integer> key = Pair.of(factory.getIndexerName(),factory.getIndexVersion());
                                     Pair<SourceIndexerFactory,Context> value = contexts.get(key);
                                     if (value == null) {
-                                        final Context ctx = SPIAccessor.getInstance().createContext(cacheRoot, root, factory.getIndexerName(), factory.getIndexVersion(), null, followUpJob, checkEditor, sourceForBinaryRoot, getShuttdownRequest());
+                                        final Context ctx = SPIAccessor.getInstance().createContext(
+                                                cacheRoot,
+                                                root,
+                                                factory.getIndexerName(),
+                                                factory.getIndexVersion(),
+                                                null,
+                                                followUpJob,
+                                                checkEditor,
+                                                sourceForBinaryRoot,
+                                                getSuspendStatus(),
+                                                getShuttdownRequest(),
+                                                null);
                                         value = Pair.<SourceIndexerFactory,Context>of(factory,ctx);
                                         contexts.put(key,value);
                                     }
@@ -2482,8 +2536,17 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             final FileObject cacheRoot = CacheFolder.getDataFolder(root);
             for(BinaryIndexerFactory bif : indexers.bifs) {
                 final Context ctx = SPIAccessor.getInstance().createContext(
-                    cacheRoot, root, bif.getIndexerName(), bif.getIndexVersion(), null, false, false,
-                    false, getShuttdownRequest());
+                    cacheRoot,
+                    root,
+                    bif.getIndexerName(),
+                    bif.getIndexVersion(),
+                    null,
+                    false,
+                    false,
+                    false,
+                    getSuspendStatus(),
+                    getShuttdownRequest(),
+                    null);
                 contexts.put(bif, ctx);
             }
         }
@@ -2630,7 +2693,18 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                             final Pair<String,Integer> key = Pair.of(indexerName,indexerVersion);
                                             Pair<SourceIndexerFactory,Context> value = transactionContexts.get(key);
                                             if (value == null) {
-                                                final Context context = SPIAccessor.getInstance().createContext(cache, rootURL, indexerName, indexerVersion, null, followUpJob, checkEditor, sourceForBinaryRoot, null);
+                                                final Context context = SPIAccessor.getInstance().createContext(
+                                                        cache,
+                                                        rootURL,
+                                                        indexerName,
+                                                        indexerVersion,
+                                                        null,
+                                                        followUpJob,
+                                                        checkEditor,
+                                                        sourceForBinaryRoot,
+                                                        getSuspendStatus(),
+                                                        getShuttdownRequest(),
+                                                        null);
                                                 value = Pair.<SourceIndexerFactory,Context>of(indexerFactory,context);
                                                 transactionContexts.put(key,value);
                                             }

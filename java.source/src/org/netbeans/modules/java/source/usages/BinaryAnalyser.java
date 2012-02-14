@@ -108,6 +108,7 @@ import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
+import org.netbeans.modules.parsing.impl.indexing.SuspendSupport;
 import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.openide.filesystems.FileObject;
@@ -200,8 +201,20 @@ public class BinaryAnalyser {
      */
     @Deprecated
     public final Result start (final @NonNull URL url, final AtomicBoolean canceled, final AtomicBoolean shutdown) throws IOException, IllegalArgumentException  {
-        return start (url, SPIAccessor.getInstance().createContext(FileUtil.createMemoryFileSystem().getRoot(), url,
-                JavaIndex.NAME, JavaIndex.VERSION, null, false, false, false, null));
+        return start (
+                url,
+                SPIAccessor.getInstance().createContext(
+                    FileUtil.createMemoryFileSystem().getRoot(),
+                    url,
+                    JavaIndex.NAME,
+                    JavaIndex.VERSION,
+                    null,
+                    false,
+                    false,
+                    false,
+                    SuspendSupport.NOP,
+                    null,
+                    null));
     }
 
     public Result resume () throws IOException {
