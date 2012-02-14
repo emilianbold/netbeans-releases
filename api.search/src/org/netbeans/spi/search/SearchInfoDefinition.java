@@ -45,6 +45,7 @@ package org.netbeans.spi.search;
 
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.api.search.SearchInfoDefinitionFactory;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchListener;
@@ -56,19 +57,15 @@ import org.openide.filesystems.FileObject;
  * <code>FileObject</code>s should be searched. Iterator returned by this
  * interface's method enumerates
  * <code>FileObject</code>s that should be searched. <p>
- * <code>SearchInfo</code> objects are used by module User Utilities &ndash; in
- * actions <em>Find</em> (since User Utilities 1.16) and <em>Find in
- * Projects</em> (since User Utilities 1.23). Action <em>Find</em> obtains
- * <code>SearchInfo</code> from <a href="@org-openide-nodes@/org/openide/nodes/Node.html#getLookup()"><code>Lookup</code>
- * of nodes</a> the action was invoked on. Action <em>Find in Projects</em>
- * obtains
- * <code>SearchInfo</code> from <a href="@org-netbeans-modules-projectapi@/org/netbeans/api/project/Project.html#getLookup()"><code>Lookup</code>
- * of the projects</a>. </p> <p> <b>Recommendation</b>: Use {@link Files}
- * instead of this interface. See {@link #objectsToSearch()} and {@link Files#filesToSearch()}.
+ * <code>SearchInfoDefinition</code> objects are used in
+ * action <em>Find in Projects</em>. Action obtains
+ * <code>SearchInfoDefinition</code> from 
+ * <a href="@org-openide-nodes@/org/openide/nodes/Node.html#getLookup()"><code>Lookup</code>
+ * of nodes or projects</a> the action was invoked on.
  * </p>
  *
- * @see SearchInfoFactory
- * @see <a href="@org-openide-loaders@/org/openide/loaders/DataObject.html"><code>DataObject</code></a>
+ * @see SearchInfoDefinitionFactory
+ * @see FileObject
  * @see <a href="@org-openide-nodes@/org/openide/nodes/Node.html#getLookup()"><code>Node.getLookup()</code></a>
  * @see <a href="@org-netbeans-modules-projectapi@/org/netbeans/api/project/Project.html#getLookup()"><code>Project.getLookup()</code></a>
  *
@@ -79,7 +76,7 @@ public abstract class SearchInfoDefinition {
     /**
      * Determines whether the object which provided this
      * <code>SearchInfo</code> can be searched. This method determines whether
-     * the <em>Find</em> action should be enabled for the object or not. <p>
+     * the <em>Find</em> action should be enabled for the object or not.
      * This method must be very quick as it may be called frequently and its
      * speed may influence responsiveness of the whole application. If the exact
      * algorithm for determination of the result value should be slow, it is
@@ -100,6 +97,11 @@ public abstract class SearchInfoDefinition {
      * <code>UnsupportedOperationException</code> instead of actual
      * implementation).
      *
+     * @param options File name pattern, traversing options and custom filters.
+     * @param listener Listener that should be notified about important events
+     * and progress.
+     * @param terminationFlag Object that can be asked whether the search has
+     * been terminated by the user.
      * @return iterator which iterates over
      * <code>FileObject</code>s to be searched
      */

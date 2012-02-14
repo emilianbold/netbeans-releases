@@ -41,16 +41,14 @@
  */
 package org.netbeans.spi.search.provider;
 
+import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
+import org.netbeans.api.search.provider.SearchListener;
 
 /**
  * An object that can be passed to FileObject iterator that is returned by
- * method {@link SearchInfo#getFilesToSearch(
- * org.netbeans.api.search.SearchScopeOptions,
- * org.netbeans.api.search.provider.SearchListener)} or its twin convenience
- * method {@link SearchInfo#iterateFilesToSearch(
- * org.netbeans.api.search.SearchScopeOptions,
- * org.netbeans.api.search.provider.SearchListener)}.
+ * methods {@link SearchInfo#getFilesToSearch(SearchScopeOptions,SearchListener, TerminationFlag)}
+ * or {@link SearchInfo#iterateFilesToSearch(SearchScopeOptions, SearchListener, TerminationFlag)}.
  *
  * @author jhavlin
  */

@@ -79,7 +79,9 @@ public abstract class ComponentFactory {
      * should be shown.
      * @param fileNameComboBox File-name combo box that will be bound to this
      * settings panel.
-     * @return
+     * @return Panel with controls for setting search options (search in
+     * archives, search in generated sources, use ignore list, treat file name
+     * pattern as regular expression matching file path)
      */
     public abstract ScopeSettingsPanel createScopeSettingsPanel(
             boolean searchAndReplace, FileNameComboBox fileNameComboBox);

@@ -189,7 +189,6 @@ public class SearchScopeOptions {
      * @param regexp File name pattern specified as regular expression.
      * @param searchInArchives Enable searching in archives.
      * @param searchInGenerated Enable searching in generated sources.
-     * @param useIgnoreList Use ignore list.
      * @param filters List of file object filters. Can be null.
      *
      * @return Instance initialized with passed options;

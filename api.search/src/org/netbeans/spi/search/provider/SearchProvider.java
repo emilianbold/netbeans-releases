@@ -55,6 +55,8 @@ public abstract class SearchProvider {
     /**
      * Create presenter for this search provider.
      *
+     * @param replaceMode True if the presenter will be used in Replace dialog,
+     * false if it will be used in Find dialog.
      * @return New presenter that will be used in the search dialog.
      */
     public abstract Presenter createPresenter(boolean replaceMode);
@@ -71,7 +73,7 @@ public abstract class SearchProvider {
      * Tells whether this search provider is enabled. It can depend on operating
      * system, type of opened projects, or available databases.
      *
-     * @return
+     * @return True if this provider is enabled at the moment, false otherwise.
      */
     public abstract boolean isEnabled();
 
@@ -122,6 +124,9 @@ public abstract class SearchProvider {
         /**
          * Add change listener to the form. This listener should be notified
          * when usability of the search settings changes.
+         *
+         * @param cl Change listener that should be notified when usability of
+         * the form changes.
          */
         public abstract void addUsabilityChangeListener(ChangeListener cl);
 

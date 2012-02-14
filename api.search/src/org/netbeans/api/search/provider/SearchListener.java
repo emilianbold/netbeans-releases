@@ -64,14 +64,14 @@ public abstract class SearchListener {
      * @param filter filter that filtered out the file (can be null).
      * @param message message describing reasons for skipping (can be null).
      */
-    public void fileSkipped(FileObject fo,
+    public void fileSkipped(FileObject fileObject,
             SearchFilterDefinition filter, String message) {
     }
 
     /**
      * Called when a directory was visited.
      *
-     * @param directory Path of the visited directory.
+     * @param path Path of the visited directory.
      */
     public void directoryEntered(String path) {
     }
@@ -102,7 +102,7 @@ public abstract class SearchListener {
      * Called when an exception occurs during file content checking.
      *
      * @param fileName File that caused the error.
-     * @param t Error description.
+     * @param throwable Error description.
      */
     public void fileContentMatchingError(String fileName,
             Throwable throwable) {

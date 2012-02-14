@@ -66,9 +66,12 @@ import org.openide.nodes.Node;
  */
 public final class SearchInfoDefinitionFactory {
     /**
-     * Default filters.
+     * Filter for unsharable files. One of default filters.
      */
     public static final SearchFilterDefinition SHARABILITY_FILTER = SharabilityFilter.getInstance();
+    /**
+     * Filter for invisible files. One of default filters.
+     */
     public static final SearchFilterDefinition VISIBILITY_FILTER = VisibilityFilter.getInstance();
 
     /**
@@ -88,9 +91,7 @@ public final class SearchInfoDefinitionFactory {
      * multiple filters are passed, the filters are applied on each file/folder
      * in the same order as in the array passed to this method.
      *
-     * @param folder folder which should be searched
-     * @param recursive whether the folder's subfolders should be taken into
-     * account
+     * @param root File of folder where the search should start
      * @param filters filters to be used when searching; or
      * <code>null</code> if no filters should be used
      * @return
@@ -119,15 +120,13 @@ public final class SearchInfoDefinitionFactory {
      * in the same order as in the array passed to this method.
      *
      * @param roots folders which should be searched
-     * @param recursive whether the folders' subfolders should be taken into
-     * account
      * @param filters filters to be used when searching; or
      * <code>null</code> if no filters should be used
      * @return
      * <code>SearchInfo</code> object which iterates through
      * <code>DataObject</code>s found in the specified folders and (optionally)
      * their subfolders
-     * @see FileObjectFilter
+     * @see SearchFilterDefinition
      */
     public static SearchInfoDefinition createSearchInfo(
             final FileObject[] roots,
