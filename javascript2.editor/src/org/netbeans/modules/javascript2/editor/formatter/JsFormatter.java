@@ -99,9 +99,14 @@ public class JsFormatter implements Formatter {
                 int indentationLevel = 0;
 
                 List<FormatToken> tokens = tokenStream.getTokens();
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    for (FormatToken token : tokens) {
+                        LOGGER.log(Level.FINE, token.toString());
+                    }
+                }
+
                 for (int i = 0; i < tokens.size(); i++) {
                     FormatToken token = tokens.get(i);
-                    LOGGER.log(Level.FINE, token.toString());
 
                     switch (token.getKind()) {
                         case SOURCE_START:
