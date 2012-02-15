@@ -51,17 +51,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Dictionary;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -308,7 +298,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
                             while ((line = r.readLine()) != null) {
                                 if (!line.isEmpty() && !line.startsWith("#")) {
                                     final String fqn = line;
-                                    Properties props = new Properties();
+                                    Dictionary<String,Object> props = new Hashtable<String,Object>();
                                     props.put(URLConstants.URL_HANDLER_PROTOCOL, protocol);
                                     class Svc extends AbstractURLStreamHandlerService {
                                         public @Override URLConnection openConnection(final URL u) throws IOException {
