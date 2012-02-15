@@ -79,7 +79,7 @@ public class JsFormatter implements Formatter {
     @Override
     public void reformat(final Context context, final ParserResult compilationInfo) {
         final BaseDocument doc = (BaseDocument) context.document();
-        
+
         doc.runAtomic(new Runnable() {
 
             @Override
@@ -93,19 +93,22 @@ public class JsFormatter implements Formatter {
                 if (root != null) {
                     root.accept(visitor);
                 }
-                
+
                 int offsetDiff = 0;
+                int indentationLevel = 0;
+
                 List<FormatToken> tokens = tokenStream.getTokens();
                 for (int i = 0; i < tokens.size(); i++) {
                     FormatToken token = tokens.get(i);
                     LOGGER.log(Level.FINE, token.toString());
-                    
+
                     switch (token.getKind()) {
                         case EOL:
                             // remove trailing spaces
                             FormatToken start = null;
                             for (int j = i - 1; j > 0; j--) {
-                                if (tokens.get(j).getKind() != FormatToken.Kind.WHITESPACE) {
+                                if (!tokens.get(j).isVirtual()
+                                        && tokens.get(j).getKind() != FormatToken.Kind.WHITESPACE) {
                                     break;
                                 } else {
                                     start = tokens.get(j);
@@ -113,10 +116,18 @@ public class JsFormatter implements Formatter {
                             }
                             while (start != null
                                     && start.getKind() != FormatToken.Kind.EOL) {
-                                offsetDiff = remove(doc, start.getOffset(),
-                                        start.getText().length(), offsetDiff);
+                                if (!start.isVirtual()) {
+                                    offsetDiff = remove(doc, start.getOffset(),
+                                            start.getText().length(), offsetDiff);
+                                }
                                 start = start.next();
                             }
+                            break;
+                        case INDENTATION_INC:
+                            indentationLevel++;
+                            break;
+                        case INDENTATION_DEC:
+                            indentationLevel--;
                             break;
                     }
                 }

@@ -45,6 +45,7 @@ import com.oracle.nashorn.ir.*;
 import java.util.List;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.LineSeparatorConversion;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 
 /**
@@ -87,8 +88,13 @@ public class FormatVisitor extends NodeVisitor {
                 }
             }
 
+            Node lastStatement = null;
             for (Node statement : block.getStatements()) {
                 statement.accept(this);
+                if (lastStatement == null || lastStatement.getFinish() <= statement.getFinish()) {
+                    lastStatement = statement;
+                }
+
                 token = getToken(statement.getFinish(), null);
                 if (token != null) {
                     FormatToken formatToken = tokenStream.getToken(ts.offset());
@@ -98,11 +104,17 @@ public class FormatVisitor extends NodeVisitor {
                 }
             }
 
-            token = getToken(block.getFinish(), JsTokenId.BRACKET_RIGHT_CURLY);
-            if (token != null && !isScript(block) && ts.movePrevious()) {
-                FormatToken formatToken = tokenStream.getToken(ts.offset());
-                if (formatToken != null) {
-                    appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
+            if (lastStatement != null) {
+                token = getToken(lastStatement.getFinish(), null);
+                if (token != null && !isScript(block)) {
+                    FormatToken formatToken = tokenStream.getToken(ts.offset());
+                    if (formatToken != null) {
+                        FormatToken next = formatToken.next();
+                        if (next != null && next.getKind() == FormatToken.Kind.AFTER_STATEMENT) {
+                            formatToken = next;
+                        }
+                        appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
+                    }
                 }
             }
         }

@@ -95,6 +95,10 @@ public final class FormatToken {
         return next;
     }
 
+    public boolean isVirtual() {
+        return offset < 0;
+    }
+
     @Override
     public String toString() {
         return "FormattingToken{" + "kind=" + kind + ", offset=" + offset + ", text=" + text + '}';
@@ -106,23 +110,23 @@ public final class FormatToken {
 
     public static enum Kind {
         TEXT,
-        
+
         WHITESPACE,
-        
+
         EOL,
 
         BEFORE_LINE_COMMENT,
         LINE_COMMENT,
-        
+
         DOC_COMMENT,
-        
+
         BLOCK_COMMENT,
 
         INDENTATION_INC,
         INDENTATION_DEC,
-        
+
         AFTER_STATEMENT,
-        
+
         AFTER_FUNCTION_KEYWORD,
         AFTER_FUNCTION_NAME,
         //AFTER_FUNCTION_PARAMETER,
