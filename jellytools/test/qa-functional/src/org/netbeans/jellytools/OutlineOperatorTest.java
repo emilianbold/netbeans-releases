@@ -39,11 +39,9 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.jellytools;
 
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.modules.debugger.actions.DebugJavaFileAction;
@@ -56,39 +54,29 @@ import org.openide.nodes.Node.Property;
 
 /**
  *
- * @author Vojtech.Sigler@sun.com
+ * @author Vojtech Sigler
  */
 public class OutlineOperatorTest extends JellyTestCase {
 
-    public OutlineOperatorTest(String isName)
-    {
+    public static final String[] tests = new String[]{"testNodes"};
+
+    public OutlineOperatorTest(String isName) {
         super(isName);
     }
 
-     /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-
-    public static final String[] tests = new String[] {
-                "testNodes" };
-
-    /** Method used for explicit testsuite definition
-     * @return  created suite
+    /**
+     * Method used for explicit test suite definition
+     *
+     * @return created suite
      */
     public static Test suite() {
-        
-        return createModuleTest(OutlineOperatorTest.class,
-                tests);
+        return createModuleTest(OutlineOperatorTest.class, tests);
     }
 
     @Override
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         System.out.println("### " + getName() + " ###");
-        
+
         openDataProjects("SampleProject");
 
         ProjectsTabOperator lrPTO = ProjectsTabOperator.invoke();
@@ -100,14 +88,14 @@ public class OutlineOperatorTest extends JellyTestCase {
         eo.setCaretPosition(67, 1);
 
         new ToggleBreakpointAction().perform();
-        
+
         new EventTool().waitNoEvent(500);
-        
+
         String windowMenu = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window");
         String debugMenu = Bundle.getStringTrimmed("org.netbeans.modules.debugger.resources.Bundle", "Menu/Window/Debug");
         String watchesItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_WatchesAction");
 
-        (new Action(windowMenu + "|" + debugMenu +"|" + watchesItem,null)).perform();
+        (new Action(windowMenu + "|" + debugMenu + "|" + watchesItem, null)).perform();
 
         String debug = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject");
         String newWatch = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_New_Watch");
@@ -116,27 +104,27 @@ public class OutlineOperatorTest extends JellyTestCase {
 
         NbDialogOperator dia = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_WatchDialog_Title"));
 
-        JEditorPaneOperator txtWatch = new JEditorPaneOperator (dia);
+        JEditorPaneOperator txtWatch = new JEditorPaneOperator(dia);
 
         txtWatch.typeText("test");
 
         dia.ok();
 
-        (new ActionNoBlock(debug + "|" + newWatch, null)).performMenu();
+        new ActionNoBlock(debug + "|" + newWatch, null).performMenu();
 
         dia = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_WatchDialog_Title"));
 
-        txtWatch = new JEditorPaneOperator (dia);
+        txtWatch = new JEditorPaneOperator(dia);
 
         txtWatch.typeText("test");
 
         dia.ok();
 
-        (new ActionNoBlock(debug + "|" + newWatch, null)).performMenu();
+        new ActionNoBlock(debug + "|" + newWatch, null).performMenu();
 
         dia = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_WatchDialog_Title"));
 
-        txtWatch = new JEditorPaneOperator (dia);
+        txtWatch = new JEditorPaneOperator(dia);
 
         txtWatch.typeText("test");
 
@@ -149,13 +137,7 @@ public class OutlineOperatorTest extends JellyTestCase {
 
     }
 
-    public void tearDown()
-    {
-
-    }
-
-    public void testNodes() throws Exception
-    {
+    public void testNodes() throws Exception {
         TopComponentOperator tco = new TopComponentOperator(
                 Bundle.getString("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Watches_view"));
 
@@ -167,13 +149,13 @@ public class OutlineOperatorTest extends JellyTestCase {
 
         lrOO.getRootNode("test", 1).expand();
 
-        OutlineNode lrNode = lrOO.getRootNode("test",2);
+        OutlineNode lrNode = lrOO.getRootNode("test", 2);
 
         lrNode.expand();
 
         OutlineNode lrNewNode = new OutlineNode(lrNode, "test");
 
-        new Action(null,Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.actions.Bundle",
+        new Action(null, Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.actions.Bundle",
                 "CTL_CreateVariable")).performPopup(lrNewNode);
 
         OutlineNode lrFixedWatch = lrOO.getRootNode("test");
@@ -192,6 +174,5 @@ public class OutlineOperatorTest extends JellyTestCase {
 
         assertTrue("Values of the original node and the fixed watch do not match! (absolute row values)",
                 lrNodeProperty.getValue().toString().equals(lrFixedProperty.getValue().toString()));
-
     }
 }

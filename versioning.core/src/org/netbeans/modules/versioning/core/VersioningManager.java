@@ -260,7 +260,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
 
     private void fireFileStatusChanged(Set<VCSFileProxy> files) {
         // pushing the change ... DiffSidebarManager may as well listen for changes
-        propertyChangeSupport.firePropertyChange(EVENT_STATUS_CHANGED, files, null);
+        propertyChangeSupport.firePropertyChange(EVENT_STATUS_CHANGED, null, files);
     }
     
     void flushFileOwnerCache() {
