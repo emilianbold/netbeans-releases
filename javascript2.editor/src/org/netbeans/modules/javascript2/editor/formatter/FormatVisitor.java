@@ -89,6 +89,13 @@ public class FormatVisitor extends NodeVisitor {
 
             for (Node statement : block.getStatements()) {
                 statement.accept(this);
+                token = getToken(statement.getFinish(), null);
+                if (token != null) {
+                    FormatToken formatToken = tokenStream.getToken(ts.offset());
+                    if (formatToken != null) {
+                        appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_STATEMENT));
+                    }
+                }
             }
 
             token = getToken(block.getFinish(), JsTokenId.BRACKET_RIGHT_CURLY);
