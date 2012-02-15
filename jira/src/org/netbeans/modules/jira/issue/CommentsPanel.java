@@ -74,7 +74,7 @@ import javax.swing.UIManager;
 import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueSettingsStorage;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
@@ -113,7 +113,7 @@ public class CommentsPanel extends JPanel {
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
-                        Issue is = issue.getRepository().getIssue(issueKey);
+                        IssueProvider is = issue.getRepository().getIssue(issueKey);
                         if (is != null) {
                             is.open();
                         }

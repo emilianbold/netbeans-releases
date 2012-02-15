@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,23 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.db.dataview.util;
 
-package org.netbeans.modules.bugtracking.ui.issue;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.RandomAccessFile;
 
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.openide.nodes.Node;
+class RandomAccessOutputStream extends OutputStream {
 
-/**
- *
- * @author Tomas Stupka
- */
-public abstract class IssueAccessor {
-    protected static IssueAccessor IMPL;
-    public abstract void setSelection(Issue issue, Node[] nodes);
-    
-    static IssueAccessor getInstance() {
-        return IMPL;
+    private RandomAccessFile raf;
+
+    public RandomAccessOutputStream(RandomAccessFile raf) {
+        this.raf = raf;
+    }
+
+    @Override
+    public void write(byte[] b) throws IOException {
+        raf.write(b);
+    }
+
+    @Override
+    public void write(int b) throws IOException {
+        raf.write(b);
+    }
+
+    @Override
+    public void close() throws IOException {
+        raf.close();
     }
 }

@@ -37,23 +37,69 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugtracking.spi;
 
+import java.io.IOException;
+import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
+import org.openide.util.HelpCtx;
+
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
-public class QueryAccessor {
-    private final Query query;
+public interface RepositoryController {
 
-    public QueryAccessor(Query query) {
-        this.query = query;
-    }
+    /**
+     * Returns a visual component representing the repository this controller is meant for
+     * 
+     * @return a visual component representing a repository
+     */
+    public JComponent getComponent();
 
-    public void setSaved(boolean bl) {
-        query.setSaved(bl);
-    }
+    /**
+     * Returns the help context associated with this controllers visual component
+     * @return
+     */
+    public HelpCtx getHelpCtx();
+
+    /**
+     * Return true if data in this controllers visual component are valid
+     * @return
+     */
+    public boolean isValid();
+
+    /**
+     * Populate the controllers component
+     */
+    public void populate();
+    
+    /**
+     * Return an error message in case the controller isn't valid
+     * @return
+     */
+    public String getErrorMessage();
+    
+    /**
+     * Is called when the changes made in the
+     * controllers visual component are confirmed
+     */
+    public void applyChanges() throws IOException; 
+
+    /**
+     * Registers a ChangeListener
+     * @param l
+     */
+    public void addChangeListener(ChangeListener l);
+
+    /**
+     * Unregisters a ChangeListener
+     * @param l
+     */
+    public void removeChangeListener(ChangeListener l);
+    
+
 }

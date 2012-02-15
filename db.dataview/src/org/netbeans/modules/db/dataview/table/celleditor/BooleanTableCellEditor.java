@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.db.dataview.table.celleditor;
 
-package org.netbeans.modules.bugtracking.spi;
+import java.awt.Component;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JTable;
+import javax.swing.table.TableCellEditor;
+import org.jdesktop.swingx.renderer.JRendererCheckBox;
 
-import org.netbeans.modules.bugtracking.ui.issue.IssueAccessor;
-import org.openide.nodes.Node;
+public class BooleanTableCellEditor extends ResultSetTableCellEditor implements TableCellEditor {
 
-/**
- *
- * @author Tomas Stupka
- */
-class IssueAccessorImpl extends IssueAccessor {
-    private static IssueAccessorImpl qa;
-
-    static void create() {
-        IssueAccessor.IMPL = new IssueAccessorImpl();
-    }
-
-    private IssueAccessorImpl() {
+    public BooleanTableCellEditor(JRendererCheckBox cb) {
+        super(cb);
+        cb.setHorizontalAlignment(0);
     }
 
     @Override
-    public void setSelection(Issue issue, Node[] nodes) {
-        issue.setSelection(nodes);
+    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+        this.table = table;
+        Component c = super.getTableCellEditorComponent(table, value, isSelected, row, column);
+        setEditable(column, c, table.isCellEditable(row, column));
+        if (isGtk && c instanceof JComponent) {
+            ((JComponent) c).setBorder(BorderFactory.createEmptyBorder());
+        }
+        return c;
     }
-
 }

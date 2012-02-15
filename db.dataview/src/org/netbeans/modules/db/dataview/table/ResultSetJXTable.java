@@ -43,10 +43,18 @@ Other names may be trademarks of their respective owners.
  */
 package org.netbeans.modules.db.dataview.table;
 
+import org.netbeans.modules.db.dataview.table.celleditor.BlobFieldTableCellEditor;
+import org.netbeans.modules.db.dataview.table.celleditor.StringTableCellEditor;
+import org.netbeans.modules.db.dataview.table.celleditor.ClobFieldTableCellEditor;
+import org.netbeans.modules.db.dataview.table.celleditor.NumberFieldEditor;
+import org.netbeans.modules.db.dataview.table.celleditor.DateTimePickerCellEditor;
+import org.netbeans.modules.db.dataview.table.celleditor.BooleanTableCellEditor;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -158,7 +166,9 @@ public class ResultSetJXTable extends JXTableDecorator {
         setDefaultEditor(Object.class, new StringTableCellEditor(txtFld));
         setDefaultEditor(String.class, new StringTableCellEditor(txtFld));
         setDefaultEditor(java.sql.Time.class, new StringTableCellEditor(txtFld));
-
+        setDefaultEditor(Blob.class, new BlobFieldTableCellEditor());
+        setDefaultEditor(Clob.class, new ClobFieldTableCellEditor());
+        
         JTextField numFld = new JTextField();
         txtFld.addKeyListener(kl);
         setDefaultEditor(Number.class, new NumberFieldEditor(numFld));
@@ -262,7 +272,14 @@ public class ResultSetJXTable extends JXTableDecorator {
         return new ResultSetTableModel(this);
     }
 
-
+    @Override
+    public boolean isEditable() {
+        if(dView != null && dView.isEditable()) {
+            return dView.isEditable();
+        }
+        return false;
+    }
+    
     // This is mainly used for set Tooltip for column headers
 
     private class JTableHeaderImpl extends JXTableHeader {

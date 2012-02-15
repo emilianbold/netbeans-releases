@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.db.dataview.util;
 
-package org.netbeans.modules.bugtracking.spi;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
 
-/**
- * Repository user.
- *
- * @author Jan Stola
- */
-public class RepositoryUser {
-    /** User name (login) of the user. */
-    private String userName;
-    /** Full name of the user. */
-    private String fullName;
+class RandomAccessInputStream extends InputStream {
 
-    /**
-     * Creates new <code>RepositoryUser</code>.
-     *
-     * @param userName user name.
-     * @param fullName full name.
-     */
-    public RepositoryUser(String userName, String fullName) {
-        this.userName = userName;
-        this.fullName = fullName;
+    private RandomAccessFile raf;
+
+    public RandomAccessInputStream(RandomAccessFile raf) {
+        this.raf = raf;
     }
 
-    /**
-     * Returns user name.
-     *
-     * @return user name.
-     */
-    public String getUserName() {
-        return userName;
+    @Override
+    public int read(byte[] b) throws IOException {
+        return raf.read(b);
     }
 
-    /**
-     * Returns full name.
-     *
-     * @return full name.
-     */
-    public String getFullName() {
-        return fullName;
+    @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+        return raf.read(b, off, len);
     }
 
+    @Override
+    public int read() throws IOException {
+        return raf.read();
+    }
+
+    @Override
+    public void close() throws IOException {
+        raf.close();
+    }
 }
