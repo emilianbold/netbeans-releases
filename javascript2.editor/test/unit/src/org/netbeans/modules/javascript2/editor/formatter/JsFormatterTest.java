@@ -58,8 +58,13 @@ public class JsFormatterTest extends JsTestBase {
         format("var a = 1;   \nvar b = 3;                   \n",
                 "var a = 1;\nvar b = 3;\n", new IndentPrefs(4, 4));
     }
-    
+
     public void testTrailingSpaces2() throws Exception {
+        format("var a = 1;   \nvar b = 3;                   \n         \n",
+                "var a = 1;\nvar b = 3;\n\n", new IndentPrefs(4, 4));
+    }
+    
+    public void testTrailingSpaces3() throws Exception {
         reformatFileContents("testfiles/formatter/functions.js",new IndentPrefs(4, 4));
     }
     
