@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.web.common.api.browser;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.URL;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -61,11 +63,12 @@ import org.openide.windows.TopComponent;
 public final class BrowserSupport {
     
     private WebBrowserPane pane;
-    private Project project;
     
     private Pair currentContext;
     private URL currentURL;
     private WebBrowserPane.WebBrowserPaneListener l;
+    private WebBrowser browser;
+    private PropertyChangeListener listener;
 
     private static BrowserSupport INST;
     
@@ -84,28 +87,56 @@ public final class BrowserSupport {
      * Returns singleton instance of BrowserSupport with its own WebBrowserPane.
      * Using this instance means that all URLs opened with BrowserSupport will 
      * have its own browser pane and all URLs opened via HtmlSupport.URLDisplayer
-     * will have its own browser pane as well.
+     * will have its own browser pane as well. The browser used to open URLs is
+     * always the one configured in IDE Options.
      */
     public static synchronized BrowserSupport getDefault() {
         if (INST == null) {
-            // XXX: update when preferred browser changes:
-            INST = new BrowserSupport(WebBrowsers.getInstance().getPreffered().createNewBrowserPane(), null);
+            INST = create();
         }
         return INST;
     }
 
     /**
-     * Returns per-project instance of BrowserSupport. All project URLs opened
-     * via this instance will have its own dedicated browser pane.
+     * Creates a new instance of BrowserSupport which will always use browser
+     * according to IDE Optios.
      */
-    public static BrowserSupport getProjectScoped(Project p) {
-        // XXX: easy to implement; to be done later
-        throw new UnsupportedOperationException("not implemented yet");
+    public static BrowserSupport create() {
+        return new BrowserSupport();
     }
-
-    private BrowserSupport(WebBrowserPane pane, Project project) {
-        this.pane = pane;
-        this.project = project;
+    
+    /**
+     * Creates a new instance of BrowserSupport for given browser.
+     */
+    public static BrowserSupport create(WebBrowser browser) {
+        return new BrowserSupport(browser);
+    }
+    /**
+     * Use browser from IDE settings and change browser pane whenever default
+     * browser changes in IDE options.
+     */
+    private BrowserSupport() {
+        this(WebBrowsers.getInstance().getPreffered());
+        listener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (WebBrowsers.PROP_DEFAULT_BROWSER.equals(evt.getPropertyName())) {
+                    if (!WebBrowsers.getInstance().getPreffered().getId().equals(browser.getId())) {
+                        // update browser pane
+                        browser = WebBrowsers.getInstance().getPreffered();
+                        pane.removeListener(l);
+                        pane = INST.browser.createNewBrowserPane();
+                        pane.addListener(l);
+                    }
+                }
+            }
+        };
+        WebBrowsers.getInstance().addPropertyChangeListener(listener);
+    }
+    
+    private BrowserSupport(WebBrowser browser) {
+        this.browser = browser;
+        this.pane = browser.createNewBrowserPane();
         this.l = new ListenerImpl();
         pane.addListener(l);
     }

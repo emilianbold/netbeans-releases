@@ -80,6 +80,9 @@ public final class WebBrowserPane {
                 if (HtmlBrowser.Impl.PROP_BROWSER_WAS_CLOSED.equals(evt.getPropertyName())) {
                     firePaneClosed();
                 }
+                if (HtmlBrowser.Impl.PROP_URL.equals(evt.getPropertyName())) {
+                    fireUrlChange();
+                }
             }
         };
         impl.addPropertyChangeListener(listener);
@@ -172,6 +175,12 @@ public final class WebBrowserPane {
         }
     }
     
+    private void fireUrlChange() {
+        for (WebBrowserPaneListener listener : listeners) {
+            listener.browserEvent(new WebBrowserPaneURLChangedEvent(this));
+        }
+    }
+    
     /**
      * Listener to browser pane events, eg. pane was closed.
      */
@@ -183,9 +192,19 @@ public final class WebBrowserPane {
     /**
      * Marker interface for all browser events.
      */
-    public static class WebBrowserPaneEvent {
+    public static abstract class WebBrowserPaneEvent {
 
-        private WebBrowserPaneEvent() {
+        private WebBrowserPane pane;
+
+        private WebBrowserPaneEvent(WebBrowserPane pane) {
+            this.pane = pane;
+        }
+        
+        /**
+         * Which pane was closed.
+         */
+        public WebBrowserPane getWebBrowserPane() {
+            return pane;
         }
     }
 
@@ -194,18 +213,20 @@ public final class WebBrowserPane {
      */
     public static final class WebBrowserPaneWasClosedEvent extends WebBrowserPaneEvent {
 
-        private WebBrowserPane pane;
-
-        public WebBrowserPaneWasClosedEvent(WebBrowserPane pane) {
-            super();
-            this.pane = pane;
+        private WebBrowserPaneWasClosedEvent(WebBrowserPane pane) {
+            super(pane);
         }
 
-        /**
-         * Which pane was closed.
-         */
-        public WebBrowserPane getWebBrowserPane() {
-            return pane;
+    }
+    
+    /**
+     * Event notifying listeners that the pane URL has changed.
+     */
+    public static final class WebBrowserPaneURLChangedEvent extends WebBrowserPaneEvent {
+
+        private WebBrowserPaneURLChangedEvent(WebBrowserPane pane) {
+            super(pane);
         }
+
     }
 }

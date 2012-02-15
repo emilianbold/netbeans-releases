@@ -46,6 +46,8 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.core.IDESettings;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.InstanceCookie;
@@ -54,6 +56,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbPreferences;
 
 /**
  * Access to browsers available in the IDE.
@@ -65,6 +68,11 @@ public final class WebBrowsers {
      */
     public static final String PROP_BROWSERS = "browsers"; // NOI18N
     
+    /**
+     * Property fired when default browser has changed.
+     */
+    public static final String PROP_DEFAULT_BROWSER = "browser"; // NOI18N
+    
     private static WebBrowsers INST;
     private static final String BROWSERS_FOLDER = "Services/Browsers"; // NOI18N
     
@@ -72,6 +80,7 @@ public final class WebBrowsers {
     private PropertyChangeSupport sup = new PropertyChangeSupport(this);
     private PropertyChangeListener l;
     private FileChangeListener lis;
+    private PreferenceChangeListener lis2;
     
     private WebBrowsers() {
         sup = new PropertyChangeSupport(this);
@@ -85,31 +94,41 @@ public final class WebBrowsers {
 
                 @Override
                 public void fileDataCreated(FileEvent fe) {
-                    fireChange();
+                    fireBrowsersChange();
                 }
 
                 @Override
                 public void fileChanged(FileEvent fe) {
-                    fireChange();
+                    fireBrowsersChange();
                 }
 
                 @Override
                 public void fileDeleted(FileEvent fe) {
-                    fireChange();
+                    fireBrowsersChange();
                 }
 
                 @Override
                 public void fileRenamed(FileRenameEvent fe) {
-                    fireChange();
+                    fireBrowsersChange();
                 }
 
                 @Override
                 public void fileAttributeChanged(FileAttributeEvent fe) {
-                    fireChange();
+                    fireBrowsersChange();
                 }
             };
             servicesBrowsers.addRecursiveListener(lis);
         }
+        lis2 = new PreferenceChangeListener() {
+
+            @Override
+            public void preferenceChange(PreferenceChangeEvent evt) {
+                if (IDESettings.PROP_WWWBROWSER.equals(evt.getKey())) {
+                    fireDefaultBrowserChange();
+                }
+            }
+        };
+        NbPreferences.forModule(IDESettings.class).addPreferenceChangeListener(lis2);
     }
 
     /**
@@ -155,8 +174,12 @@ public final class WebBrowsers {
         sup.removePropertyChangeListener(l);
     }
     
-    private void fireChange() {
+    private void fireBrowsersChange() {
         sup.firePropertyChange(PROP_BROWSERS, null, null);
+    }
+    
+    private void fireDefaultBrowserChange() {
+        sup.firePropertyChange(PROP_DEFAULT_BROWSER, null, null);
     }
 
     
