@@ -143,6 +143,18 @@ public class PhpStructureScannerTest extends ParserTestBase{
         checkFolds("testfiles/parser/foldingCycles.php");
     }
 
+    public void testFoldingMethod_1() throws Exception {
+        checkFolds("testfiles/parser/foldingMethod_1.php");
+    }
+
+    public void testFoldingConditionalStatements_1() throws Exception {
+        checkFolds("testfiles/parser/foldingConditionalStatements_1.php");
+    }
+
+    public void testFoldingCycles_1() throws Exception {
+        checkFolds("testfiles/parser/foldingCycles_1.php");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         StringBuffer sb = new StringBuffer();

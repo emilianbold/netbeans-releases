@@ -296,61 +296,86 @@ public class PhpStructureScanner implements StructureScanner {
         @Override
         public void visit(IfStatement node) {
             super.visit(node);
-            int endOffset = node.getEndOffset();
-            Statement falseStatement = node.getFalseStatement();
-            if (falseStatement != null) {
-                endOffset = falseStatement.getEndOffset();
-                addFold(falseStatement);
+            if (node.getTrueStatement() != null) {
+                addFold(node.getTrueStatement());
             }
-            addFold(new OffsetRange(node.getStartOffset(), endOffset));
+            if (node.getFalseStatement() instanceof Block) {
+                addFold(node.getFalseStatement());
+            }
         }
 
         @Override
         public void visit(ForEachStatement node) {
             super.visit(node);
-            addFold(node);
+            if (node.getStatement() != null) {
+                addFold(node.getStatement());
+            }
         }
 
         @Override
         public void visit(ForStatement node) {
             super.visit(node);
-            addFold(node);
+            if (node.getBody() != null) {
+                addFold(node.getBody());
+            }
         }
 
         @Override
         public void visit(WhileStatement node) {
             super.visit(node);
-            addFold(node);
+            if (node.getBody() != null) {
+                addFold(node.getBody());
+            }
         }
 
         @Override
         public void visit(DoStatement node) {
             super.visit(node);
-            addFold(node);
+            if (node.getBody() != null) {
+                addFold(node.getBody());
+            }
         }
 
         @Override
         public void visit(SwitchStatement node) {
             super.visit(node);
-            addFold(node);
+            if (node.getBody() != null) {
+                addFold(node.getBody());
+            }
         }
 
         @Override
         public void visit(SwitchCase node) {
             super.visit(node);
-            addFold(node);
+            List<Statement> actions = node.getActions();
+            if (!actions.isEmpty()) {
+                OffsetRange offsetRange = null;
+                if (node.isDefault()) {
+                    offsetRange = new OffsetRange(node.getStartOffset() + "default:".length(), actions.get(actions.size() - 1).getEndOffset()); //NOI18N
+                } else {
+                    Expression value = node.getValue();
+                    if (value != null) {
+                        offsetRange = new OffsetRange(value.getEndOffset() + ":".length(), actions.get(actions.size() - 1).getEndOffset()); //NOI18N
+                    }
+                }
+                addFold(offsetRange);
+            }
         }
 
         @Override
         public void visit(TryStatement node) {
             super.visit(node);
-            addFold(node);
+            if (node.getBody() != null) {
+                addFold(node.getBody());
+            }
         }
 
         @Override
         public void visit(CatchClause node) {
             super.visit(node);
-            addFold(node);
+            if (node.getBody() != null) {
+                addFold(node.getBody());
+            }
         }
 
         private void addFold(final ASTNode node) {
