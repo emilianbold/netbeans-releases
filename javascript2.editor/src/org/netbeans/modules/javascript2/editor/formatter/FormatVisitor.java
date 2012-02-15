@@ -73,7 +73,7 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public Node visit(Block block, boolean onset) {
         if (onset) {
-
+            // indentation mark
             Token token = getToken(block.position(), JsTokenId.BRACKET_LEFT_CURLY);
             if (token != null && !isScript(block)) {
                 FormatToken formatToken = tokenStream.getToken(ts.offset());
@@ -104,6 +104,7 @@ public class FormatVisitor extends NodeVisitor {
                 }
             }
 
+            // put indentation mark after last statement
             if (lastStatement != null) {
                 token = getToken(lastStatement.getFinish(), null);
                 if (token != null && !isScript(block)) {
