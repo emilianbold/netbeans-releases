@@ -61,6 +61,7 @@ public class ProjectSearchScopeDefinitionProvider
                 new ArrayList<SearchScopeDefinition>(2);
         list.add(new SearchScopeMainProject());
         list.add(new SearchScopeOpenProjects());
+        list.add(new SearchScopeNodeSelection());
         return list;
     }
 }

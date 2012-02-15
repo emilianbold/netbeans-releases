@@ -55,7 +55,6 @@ import org.netbeans.api.search.SearchInfoDefinitionFactory;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.spi.search.SearchFilterDefinition;
-import org.netbeans.spi.search.SearchInfoDefinition;
 import org.netbeans.spi.search.SearchScopeDefinition;
 import org.openide.filesystems.FileObject;
 import org.openide.util.WeakListeners;
@@ -97,18 +96,15 @@ abstract class AbstractProjectSearchScope extends SearchScopeDefinition
     
     protected SearchInfo createSingleProjectSearchInfo(Project project) {
 
-        SearchInfoDefinition prjSearchInfo =
-                project.getLookup().lookup(SearchInfoDefinition.class);
+        SearchInfo prjSearchInfo = CompatibilityUtils.getSearchInfoForLookup(
+                project.getLookup());
         if (prjSearchInfo != null) {
-            SearchInfoUtils.createForDefinition(prjSearchInfo);
+            return prjSearchInfo;
         }
 
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] sourceGroups = sources.getSourceGroups(
                 Sources.TYPE_GENERIC);
-        
-        if (sourceGroups.length == 0) {        
-        }
 
         SearchFilterDefinition[] filters
                 = new SearchFilterDefinition[] {SearchInfoDefinitionFactory.VISIBILITY_FILTER,

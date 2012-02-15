@@ -73,7 +73,7 @@ public class SearchScopeOptions {
     /**
      * Add a file object filter.
      */
-    public void addFilter(SearchFilterDefinition filter) {
+    public void addFilter(@NonNull SearchFilterDefinition filter) {
         Parameters.notNull("filter", filter);                           //NOI18N
         if (!filters.contains(filter)) {
             filters.add(filter);

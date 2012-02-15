@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.search;
+package org.netbeans.modules.search.project;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,9 +51,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchInfoUtils;
-import org.netbeans.spi.search.SearchInfoDefinition;
 import org.netbeans.spi.search.SearchScopeDefinition;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -155,20 +153,8 @@ final class SearchScopeNodeSelection extends SearchScopeDefinition
      */
     private static boolean canSearch(Node node) {
 
-        Lookup nodeLookup = node.getLookup();
-
-        /* 1st try - is the SearchInfo object in the node's lookup? */
-        SearchInfoDefinition searchInfo
-                = nodeLookup.lookup(SearchInfoDefinition.class);
-        if (searchInfo != null) {
-            return searchInfo.canSearch();
-        }
-        final DataObject dataObj = nodeLookup.lookup(DataObject.class);
-        if ((dataObj != null) && dataObj.isValid()) {
-            return true;
-        }
-        SearchInfo si = SearchInfoUtils.getSearchInfoForNode(node);
-        return  si != null && si.canSearch();
+        SearchInfo si = CompatibilityUtils.getSearchInfoForNode(node);
+        return si != null && si.canSearch();
     }
 
     @Override
@@ -212,7 +198,7 @@ final class SearchScopeNodeSelection extends SearchScopeDefinition
     /**
      */
     private static SearchInfo getSearchInfo(Node node) {
-        return SearchInfoUtils.getSearchInfoForNode(node);
+        return CompatibilityUtils.getSearchInfoForNode(node);
     }
 
     /**

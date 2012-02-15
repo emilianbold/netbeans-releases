@@ -37,6 +37,7 @@
  */
 package org.netbeans.modules.search;
 
+//import org.netbeans.modules.search.project.SearchScopeNodeSelection;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
@@ -89,7 +90,7 @@ public abstract class ActionManager<A extends SystemAction, S extends CallbackSy
      * Holds class {@code SearchScopeNodeSelection.LookupSensitive}. See Bug
      * #183434.
      */
-    private Class<SearchScopeNodeSelection> ssnslsClass;
+    //private Class<SearchScopeNodeSelection> ssnslsClass;
     /**
      * Holds e.g. class {@code FindInFilesAction.LookupSensitive}. See Bug
      * #183434.
@@ -113,7 +114,7 @@ public abstract class ActionManager<A extends SystemAction, S extends CallbackSy
 
         // Fix of the Bug #183434 - caching of the classes to avoid their 
         // loading during execution of the action
-        ssnslsClass = SearchScopeNodeSelection.class;
+        //ssnslsClass = SearchScopeNodeSelection.class;
     }
 
     /**
@@ -142,7 +143,7 @@ public abstract class ActionManager<A extends SystemAction, S extends CallbackSy
         });
 
         // cleaning up classes that have been cached
-        ssnslsClass = null;
+        //ssnslsClass = null;
     }
 
     @Override

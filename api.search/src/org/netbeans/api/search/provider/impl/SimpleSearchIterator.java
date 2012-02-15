@@ -51,6 +51,7 @@ import java.util.NoSuchElementException;
 import java.util.Stack;
 import java.util.TreeMap;
 import org.netbeans.api.search.SearchScopeOptions;
+import org.netbeans.api.search.provider.FileNameMatcher;
 import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.provider.TerminationFlag;

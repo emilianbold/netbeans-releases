@@ -58,7 +58,6 @@ public class DefaultSearchScopeProvider extends SearchScopeDefinitionProvider {
     public List<SearchScopeDefinition> createSearchScopeDefinitions() {
         List<SearchScopeDefinition> list =
                 new ArrayList<SearchScopeDefinition>(2);
-        list.add(new SearchScopeNodeSelection());
         list.add(new SearchScopeBrowse());
         return list;
     }

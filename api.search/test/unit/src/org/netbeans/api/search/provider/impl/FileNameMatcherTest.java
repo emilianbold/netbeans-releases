@@ -44,6 +44,7 @@ package org.netbeans.api.search.provider.impl;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.search.SearchScopeOptions;
+import org.netbeans.api.search.provider.FileNameMatcher;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

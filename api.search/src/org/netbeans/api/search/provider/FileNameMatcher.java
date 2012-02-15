@@ -39,11 +39,11 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.api.search.provider.impl;
+package org.netbeans.api.search.provider;
 
-import org.netbeans.api.search.RegexpUtil;
 import java.io.File;
 import java.util.regex.Pattern;
+import org.netbeans.api.search.RegexpUtil;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.openide.filesystems.FileObject;
 
@@ -53,17 +53,20 @@ import org.openide.filesystems.FileObject;
  *
  * @author jhavlin
  */
-abstract class FileNameMatcher {
+public abstract class FileNameMatcher {
 
     private static final FileNameMatcher TAKE_ALL_INSTANCE =
             new FileNameMatcher.TakeAllMatcher();
 
+    private FileNameMatcher() {
+    }
+
     /**
      * @return True if file path matches required criteria, false otherwise.
      */
-    abstract boolean pathMatches(File file);
+    public abstract boolean pathMatches(File file);
 
-    abstract boolean pathMatches(FileObject fileObject);
+    public abstract boolean pathMatches(FileObject fileObject);
 
     /**
      * Create an appripriate matcher for specific search options.
@@ -88,12 +91,12 @@ abstract class FileNameMatcher {
     private static class TakeAllMatcher extends FileNameMatcher {
 
         @Override
-        boolean pathMatches(File file) {
+        public boolean pathMatches(File file) {
             return true;
         }
 
         @Override
-        boolean pathMatches(FileObject fileObject) {
+        public boolean pathMatches(FileObject fileObject) {
             return true;
         }
     }
@@ -116,7 +119,7 @@ abstract class FileNameMatcher {
         }
 
         @Override
-        boolean pathMatches(File file) {
+        public boolean pathMatches(File file) {
             String fileName = file.getName();
             if (fileName == null || fileName.length() <= extWithDotLen) {
                 return false;
@@ -126,7 +129,7 @@ abstract class FileNameMatcher {
         }
 
         @Override
-        boolean pathMatches(FileObject fileObject) {
+        public boolean pathMatches(FileObject fileObject) {
             String fileExt = fileObject.getExt();
             return fileExt != null && fileExt.equalsIgnoreCase(ext);
         }
@@ -149,12 +152,12 @@ abstract class FileNameMatcher {
         }
 
         @Override
-        boolean pathMatches(File file) {
+        public boolean pathMatches(File file) {
             return pattern.matcher(file.getPath()).find();
         }
 
         @Override
-        boolean pathMatches(FileObject fileObject) {
+        public boolean pathMatches(FileObject fileObject) {
             return pattern.matcher(fileObject.getPath()).find();
         }
     }
@@ -176,12 +179,12 @@ abstract class FileNameMatcher {
         }
 
         @Override
-        boolean pathMatches(File file) {
+        public boolean pathMatches(File file) {
             return pattern.matcher(file.getName()).matches();
         }
 
         @Override
-        boolean pathMatches(FileObject fileObject) {
+        public boolean pathMatches(FileObject fileObject) {
             return pattern.matcher(fileObject.getNameExt()).matches();
         }
     }
