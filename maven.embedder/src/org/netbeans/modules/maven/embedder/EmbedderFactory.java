@@ -43,11 +43,7 @@
 package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -56,11 +52,7 @@ import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
 import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.model.Model;
-import org.apache.maven.model.building.DefaultModelBuildingRequest;
-import org.apache.maven.model.building.ModelBuilder;
-import org.apache.maven.model.building.ModelBuildingException;
-import org.apache.maven.model.building.ModelBuildingRequest;
-import org.apache.maven.model.building.ModelBuildingResult;
+import org.apache.maven.model.building.*;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
@@ -70,6 +62,7 @@ import org.codehaus.plexus.component.repository.ComponentDescriptor;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.logging.BaseLoggerManager;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.maven.embedder.impl.ExtensionModule;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbPreferences;
@@ -140,7 +133,7 @@ public final class EmbedderFactory {
         componentDescriptor.setRoleHint(roleHint);
         container.addComponentDescriptor(componentDescriptor);
     }
-
+    
     /**
      * #191267: suppresses logging from embedded Maven, since interesting results normally appear elsewhere.
      */
@@ -201,11 +194,11 @@ public final class EmbedderFactory {
             .setClassWorld( new ClassWorld(mavenCoreRealmId, EmbedderFactory.class.getClassLoader()) )
             .setName("maven");
         
-        DefaultPlexusContainer pc = new DefaultPlexusContainer(dpcreq);
+        DefaultPlexusContainer pc = new DefaultPlexusContainer(dpcreq, new ExtensionModule());
         pc.setLoggerManager(new NbLoggerManager());
 
         addComponentDescriptor(pc, RepositoryConnectorFactory.class, OfflineConnector.class, "offline");
-       
+
         Properties props = new Properties();
         props.putAll(System.getProperties());
         EmbedderConfiguration configuration = new EmbedderConfiguration(pc, fillEnvVars(props), true, getSettingsXml());

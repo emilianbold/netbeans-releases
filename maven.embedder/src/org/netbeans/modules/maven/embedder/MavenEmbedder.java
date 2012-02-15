@@ -92,6 +92,7 @@ import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.maven.embedder.impl.NbWorkspaceReader;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -181,25 +182,7 @@ public final class MavenEmbedder {
     }
 
     public MavenExecutionResult readProjectWithDependencies(MavenExecutionRequest req) {
-        req.setWorkspaceReader(new WorkspaceReader() {
-            final WorkspaceRepository repo = new WorkspaceRepository("ide", getClass());
-            final Collection<? extends ArtifactFixer> fixers = Lookup.getDefault().lookupAll(ArtifactFixer.class);
-            @Override public WorkspaceRepository getRepository() {
-                return repo;
-            }
-            @Override public File findArtifact(org.sonatype.aether.artifact.Artifact artifact) {
-                for (ArtifactFixer fixer : fixers) {
-                    File f = fixer.resolve(artifact);
-                    if (f != null) {
-                        return f;
-                    }
-                }
-                return null;
-            }
-            @Override public List<String> findVersions(org.sonatype.aether.artifact.Artifact artifact) {
-                return Collections.emptyList();
-            }
-        });
+        req.setWorkspaceReader(new NbWorkspaceReader());
         File pomFile = req.getPom();
         MavenExecutionResult result = new DefaultMavenExecutionResult();
         try {
