@@ -102,7 +102,23 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testMethod01() throws Exception {
         checkOccurrences("testfiles/model/parameters01.js", "formatter.println(\"Name: \" + this.getNa^me());", true);
     }
-    
+
+    public void testUndefinedMethods01() throws Exception {
+        checkOccurrences("testfiles/completion/undefinedMethods.js", "dvorek.getPrasatko().udelejChro(dvo^rek.dejDefault(), \"afdafa\");", true);
+    }
+
+    public void testUndefinedMethods02() throws Exception {
+        checkOccurrences("testfiles/completion/undefinedMethods.js", "dvorek.getPra^satko().udelejChro(dvorek.dejDefault(), \"afdafa\");", true);
+    }
+
+    public void testUndefinedMethods03() throws Exception {
+        checkOccurrences("testfiles/completion/undefinedMethods.js", "dvorek.getPrasatko().udelejC^hro(dvorek.dejDefault(), \"afdafa\");", true);
+    }
+
+    public void testUndefinedMethods04() throws Exception {
+        checkOccurrences("testfiles/completion/undefinedMethods.js", "dvorek.getKo^cicku().udelejMau();", true);
+    }
+
     @Override
     protected void assertDescriptionMatches(FileObject fileObject,
             String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
