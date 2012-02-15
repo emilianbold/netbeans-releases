@@ -183,7 +183,7 @@ public final class ExternalBrowserPlugin {
             try {
                 u = new URL(url);
             } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
+                LOG.log(Level.WARNING, "cannot parse URL: "+url);
             }
             ExtBrowserImpl browserImpl = awatingBrowserResponse.remove(u);
             
