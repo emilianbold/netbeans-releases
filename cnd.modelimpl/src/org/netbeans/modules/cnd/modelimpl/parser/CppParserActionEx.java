@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,23 +37,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.bugtracking.spi;
+package org.netbeans.modules.cnd.modelimpl.parser;
 
 /**
  *
- * @author tomas
+ * @author Vladimir Voskresensky
  */
-public class QueryAccessor {
-    private final Query query;
-
-    public QueryAccessor(Query query) {
-        this.query = query;
-    }
-
-    public void setSaved(boolean bl) {
-        query.setSaved(bl);
-    }
+public interface CppParserActionEx extends CppParserAction, PreprocessorAction {
+    
 }

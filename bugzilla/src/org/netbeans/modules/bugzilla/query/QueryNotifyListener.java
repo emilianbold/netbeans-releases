@@ -40,28 +40,30 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.spi;
+package org.netbeans.modules.bugzilla.query;
 
-import org.netbeans.modules.bugtracking.ui.issue.IssueAccessor;
-import org.openide.nodes.Node;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 
 /**
- *
+ * Notifies changes on a query
  * @author Tomas Stupka
  */
-class IssueAccessorImpl extends IssueAccessor {
-    private static IssueAccessorImpl qa;
+public interface QueryNotifyListener {
 
-    static void create() {
-        IssueAccessor.IMPL = new IssueAccessorImpl();
-    }
+    /**
+     * Query execution was started
+     */
+    public void started();
 
-    private IssueAccessorImpl() {
-    }
+    /**
+     *
+     * @param issue
+     */
+    public void notifyData(IssueProvider issue);
 
-    @Override
-    public void setSelection(Issue issue, Node[] nodes) {
-        issue.setSelection(nodes);
-    }
+    /**
+     * Query execution was finished
+     */
+    public void finished();
 
 }

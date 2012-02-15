@@ -143,7 +143,25 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
             return;
         }
         LOGGER.finest("initConfigListCombo");
-        configListCombo = new JComboBox();
+        configListCombo = new JComboBox() {
+            // #207919: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4618607 Mark McLaren's workaround
+            private boolean layingOut = false;
+            @Override public void doLayout() {
+                try {
+                    layingOut = true;
+                    super.doLayout();
+                } finally {
+                    layingOut = false;
+                }
+            }
+            @Override public Dimension getSize() {
+                Dimension sz = super.getSize();
+                if (!layingOut) {
+                    sz.width = Math.max(sz.width, getPreferredSize().width);
+                }
+                return sz;
+            }
+        };
         configListCombo.addPopupMenuListener(new PopupMenuListener() {
             private Component prevFocusOwner = null;
             public @Override void popupMenuWillBecomeVisible(PopupMenuEvent e) {

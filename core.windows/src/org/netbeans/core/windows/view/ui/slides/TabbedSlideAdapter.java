@@ -114,8 +114,17 @@ public final class TabbedSlideAdapter extends Tabbed {
     public void cancelRequestAttention (TopComponent tc) {
         slideBar.setBlinking(tc, false);
     }
-    
 
+    @Override
+    public void makeBusy( TopComponent tc, boolean busy ) {
+        slideBar.makeBusy( tc, busy );
+    }
+
+    @Override
+    public boolean isBusy( TopComponent tc ) {
+        return WindowManagerImpl.getInstance().isTopComponentBusy( tc );
+    }
+    
     private void setSide (String side) {
         int orientation = SlideBarDataModel.WEST;
         if (Constants.LEFT.equals(side)) {

@@ -67,22 +67,12 @@ public class Util {
     /*
      * return all properties for specific provider, except some handled specially
      */
-    public static ArrayList<String> getAllPropNames(Provider propCat) {
-        ArrayList<String> results = new ArrayList<String>();
-        if (Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(propCat))) {
-            Collections.addAll(results, PersistenceCfgProperties.defaultJPA20Keys);
-        }
-        results.addAll(propCat.getPropertyNames());
-        if (ProviderUtil.ECLIPSELINK_PROVIDER.equals(propCat)) {
-            Collections.addAll(results, PersistenceCfgProperties.eclipselink20Keys);//TODO: should it be moved into a provider
-        } else if(ProviderUtil.HIBERNATE_PROVIDER2_0.equals(propCat)){
-            Collections.addAll(results, PersistenceCfgProperties.hibernate20Keys);//TODO: should it be moved into a provider
-        }
-        return results;
+    public static List<String> getAllPropNames(Provider propCat) {
+        return PersistenceCfgProperties.getKeys(propCat);
     }
 
-    public static ArrayList<String> getPropsNamesExceptGeneral(Provider propCat) {
-        ArrayList<String> propsList = getAllPropNames(propCat);
+    public static List<String> getPropsNamesExceptGeneral(Provider propCat) {
+        List<String> propsList = getAllPropNames(propCat);
         propsList.remove(propCat.getJdbcDriver());
         propsList.remove(propCat.getJdbcUsername());
         propsList.remove(propCat.getJdbcUrl());

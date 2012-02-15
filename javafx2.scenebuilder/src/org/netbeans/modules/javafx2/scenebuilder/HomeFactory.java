@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.bugtracking.spi;
-
-import org.netbeans.modules.bugtracking.ui.query.QueryAccessor;
-import org.openide.nodes.Node;
+package org.netbeans.modules.javafx2.scenebuilder;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Jaroslav Bachorik
  */
-class QueryAccessorImpl extends QueryAccessor {
-    private static QueryAccessorImpl qa;
-
-    static void create() {
-        QueryAccessor.IMPL = new QueryAccessorImpl();
-    }
-
-    private QueryAccessorImpl() {
-    }
-
-    @Override
-    public void setSelection(Query query, Node[] nodes) {
-        query.setSelection(nodes);
-    }
-
+public interface HomeFactory {
+    /**
+     * Try to locate the default SB installation path
+     * @return Returns the default SB installation path or null
+     */
+    Home defaultHome();
+    /**
+     * Loads a custom SB installation path
+     * @param customPath The custom SB installation path
+     * @return Returns a valid home or null
+     */
+    Home loadHome(String customPath);
 }

@@ -50,8 +50,8 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -64,14 +64,14 @@ import org.openide.util.WeakListeners;
  * @author Tomas Stupka
  */
 class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionListener, PropertyChangeListener {
-    private final Query query;
+    private final QueryProvider query;
     private final PropertyChangeSupport changeSupport;
     protected final boolean predefined;
-    private Issue[] issues = new Issue[0];
+    private IssueProvider[] issues = new IssueProvider[0];
     private String stringValue;
     protected boolean needsRefresh;
 
-    QueryHandleImpl(Query query, boolean needsRefresh, boolean predefined) {
+    QueryHandleImpl(QueryProvider query, boolean needsRefresh, boolean predefined) {
         this.query = query;
         this.needsRefresh = needsRefresh;
         this.predefined = predefined;
@@ -81,7 +81,7 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
     }
 
     @Override
-    public Query getQuery() {
+    public QueryProvider getQuery() {
         return query;
     }
 
@@ -112,7 +112,7 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(Query.EVENT_QUERY_ISSUES_CHANGED)) {
+        if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_ISSUES_CHANGED)) {
             registerIssues();
             changeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_QUERY_RESULT, null, getQueryResults())); // XXX add result handles
         } else if(evt.getPropertyName().equals(IssueCache.EVENT_ISSUE_SEEN_CHANGED)) {
@@ -150,7 +150,7 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
 
     private void registerIssues() {
         issues = query.getIssues(IssueCache.ISSUE_STATUS_ALL);
-        for (Issue issue : issues) {
+        for (IssueProvider issue : issues) {
             issue.addPropertyChangeListener(WeakListeners.propertyChange(this, issue));
             IssueCacheUtils.addCacheListener(issue, this);
         }
@@ -161,7 +161,7 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
         if(stringValue == null) {
             StringBuilder sb = new StringBuilder();
             sb.append("[");                                                     // NOI18N
-            sb.append(query.getRepository().getDisplayName());
+            sb.append(query.getRepository().getInfo().getDisplayName());
             sb.append(",");                                                     // NOI18N
             sb.append(query.getDisplayName());
             sb.append("]");                                                     // NOI18N

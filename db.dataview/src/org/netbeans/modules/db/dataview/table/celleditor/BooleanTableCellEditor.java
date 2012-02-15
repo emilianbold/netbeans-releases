@@ -39,12 +39,30 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javafx2.scenebuilder;
+package org.netbeans.modules.db.dataview.table.celleditor;
 
-/**
- *
- * @author Jaroslav Bachorik
- */
-public interface HomeLocator {
-    Home locateHome();
+import java.awt.Component;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JTable;
+import javax.swing.table.TableCellEditor;
+import org.jdesktop.swingx.renderer.JRendererCheckBox;
+
+public class BooleanTableCellEditor extends ResultSetTableCellEditor implements TableCellEditor {
+
+    public BooleanTableCellEditor(JRendererCheckBox cb) {
+        super(cb);
+        cb.setHorizontalAlignment(0);
+    }
+
+    @Override
+    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+        this.table = table;
+        Component c = super.getTableCellEditorComponent(table, value, isSelected, row, column);
+        setEditable(column, c, table.isCellEditable(row, column));
+        if (isGtk && c instanceof JComponent) {
+            ((JComponent) c).setBorder(BorderFactory.createEmptyBorder());
+        }
+        return c;
+    }
 }

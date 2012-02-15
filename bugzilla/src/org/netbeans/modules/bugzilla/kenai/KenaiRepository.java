@@ -55,9 +55,9 @@ import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
@@ -86,7 +86,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     private String host;
     private final KenaiProject kenaiProject;
 
-    KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String userName, String password, String urlParam, String product) {
+    KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String userName, char[] password, String urlParam, String product) {
         super(getRepositoryId(repoName, url), repoName, url, userName, password, null, null); // use name as id - can't be changed anyway
         this.urlParam = urlParam;
         icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -107,43 +107,43 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     }
 
     @Override
-    public Query createQuery() {
+    public QueryProvider createQuery() {
         KenaiQuery q = new KenaiQuery(null, this, null, product, false, false);
         return q;
     }
 
     @Override
-    public Issue createIssue() {
+    public IssueProvider createIssue() {
         return super.createIssue();
     }
 
     @Override
-    public synchronized Query[] getQueries() {
-        Query[] qs = super.getQueries();
-        Query[] dq = getDefinedQueries();
-        Query[] ret = new Query[qs.length + dq.length];
+    public synchronized QueryProvider[] getQueries() {
+        QueryProvider[] qs = super.getQueries();
+        QueryProvider[] dq = getDefinedQueries();
+        QueryProvider[] ret = new QueryProvider[qs.length + dq.length];
         System.arraycopy(qs, 0, ret, 0, qs.length);
         System.arraycopy(dq, 0, ret, qs.length, dq.length);
         return ret;
     }
 
-    private Query[] getDefinedQueries() {
-        List<Query> queries = new ArrayList<Query>();
+    private QueryProvider[] getDefinedQueries() {
+        List<QueryProvider> queries = new ArrayList<QueryProvider>();
         
-        Query mi = getMyIssuesQuery();
+        QueryProvider mi = getMyIssuesQuery();
         if(mi != null) {
             queries.add(mi);
         }
 
-        Query ai = getAllIssuesQuery();
+        QueryProvider ai = getAllIssuesQuery();
         if(ai != null) {
             queries.add(ai);
         }
 
-        return queries.toArray(new Query[queries.size()]);
+        return queries.toArray(new QueryProvider[queries.size()]);
     }
 
-    synchronized Query getAllIssuesQuery() throws MissingResourceException {
+    synchronized QueryProvider getAllIssuesQuery() throws MissingResourceException {
         if(!providePredefinedQueries() || BugzillaUtil.isNbRepository(this)) return null;
         if (allIssues == null) {
             StringBuffer url = new StringBuffer();
@@ -155,7 +155,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         return allIssues;
     }
 
-    synchronized Query getMyIssuesQuery() throws MissingResourceException {
+    synchronized QueryProvider getMyIssuesQuery() throws MissingResourceException {
         if(!providePredefinedQueries()) return null;
         if (myIssues == null) {
             String url = getMyIssuesQueryUrl();
@@ -201,7 +201,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         return kc;
     }
 
-    protected void setCredentials(String user, String password) {
+    protected void setCredentials(String user, char[] password) {
         super.setCredentials(user, password, null, null);
     }
 
@@ -220,7 +220,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         String user = pa.getUserName();
         char[] password = pa.getPassword();
 
-        setCredentials(user, new String(password));
+        setCredentials(user, password);
 
         return true;
     }
@@ -251,12 +251,12 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         return "";                                                              // NOI18N
     }
 
-    private static String getKenaiPassword(KenaiProject kenaiProject) {
+    private static char[] getKenaiPassword(KenaiProject kenaiProject) {
         PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false);
         if(pa != null) {
-            return new String(pa.getPassword());
+            return pa.getPassword();
         }
-        return "";                                                              // NOI18N
+        return new char[0];                                                     // NOI18N
     }
 
     @Override
@@ -298,15 +298,15 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
             // XXX move to spi?
             // get kenai credentials
             String user;
-            String psswd;
+            char[] psswd;
             PasswordAuthentication pa = 
                     KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false); // do not force login
             if(pa != null) {
                 user = pa.getUserName();
-                psswd = new String(pa.getPassword());
+                psswd = pa.getPassword();
             } else {
                 user = "";                                                      // NOI18N
-                psswd = "";                                                     // NOI18N
+                psswd = new char[0];                                            // NOI18N
             }
 
             setCredentials(user, psswd);

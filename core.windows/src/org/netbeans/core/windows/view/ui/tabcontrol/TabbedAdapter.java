@@ -60,6 +60,7 @@ import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.Switches;
 import org.netbeans.swing.tabcontrol.*;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
+import org.netbeans.swing.tabcontrol.plaf.BusyTabsSupport;
 
 /** Adapter class that implements a pseudo JTabbedPane API on top
  * of the new tab control.  This class should eventually be eliminated
@@ -192,6 +193,11 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed.Accessor, S
         public boolean isModeSlidingEnabled() {
             return Switches.isModeSlidingEnabled();
         }
+
+        @Override
+        public boolean isTopComponentBusy( TopComponent tc ) {
+            return WindowManagerImpl.getInstance().isTopComponentBusy( tc );
+        }
     } // end of LocInfo
     
     private final AbstractTabbedImpl tabbedImpl = new AbstractTabbedImpl() {
@@ -306,5 +312,23 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed.Accessor, S
         protected Shape getDropIndication( TopComponent draggedTC, Point location ) {
             return TabbedAdapter.this.getDropIndication( draggedTC, location );
         }
+
+        @Override
+        public void makeBusy( TopComponent tc, boolean busy ) {
+            int tabIndex = indexOf( tc );
+            BusyTabsSupport.getDefault().makeTabBusy( this, tabIndex, busy );
+        }
     };
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        BusyTabsSupport.getDefault().install( getTabbed(), getModel() );
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        BusyTabsSupport.getDefault().uninstall( getTabbed(), getModel() );
+    }
 }

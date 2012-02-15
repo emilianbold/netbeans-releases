@@ -447,6 +447,7 @@ simple_declaration_or_function_definition [decl_kind kind]
 scope Declaration;
 @init { init_declaration(CTX, kind); }
     :
+        {action.declaration(input.LT(1));}
         decl_specifier*
         (
             SEMICOLON
@@ -470,6 +471,7 @@ scope Declaration;
                 initializer? ( COMMA init_declarator )* SEMICOLON
             )
         )
+        {action.end_declaration(input.LT(0));}
     ;
 
 decl_specifier
@@ -480,10 +482,10 @@ decl_specifier
         function_specifier 
 //        { $Declaration::decl_specifiers.apply_specifier($decl_specifier.start, CTX); }
     |
-        LITERAL_friend
+        LITERAL_friend          //{action.decl_specifier($LITERAL_friend);}
 //        { $Declaration::decl_specifiers.apply_specifier($LITERAL_friend, CTX); }
     |
-        LITERAL_typedef
+        LITERAL_typedef         //{action.decl_specifier($LITERAL_typedef);}
 //        { $Declaration::decl_specifiers.apply_specifier($LITERAL_typedef, CTX); }
     |
         type_specifier

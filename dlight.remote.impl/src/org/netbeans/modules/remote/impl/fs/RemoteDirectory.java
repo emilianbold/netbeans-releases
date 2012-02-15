@@ -319,7 +319,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (entry == null) {
                 return null;
             }
-            return createFileObject(entry).getOwnerFileObject();
+            return getFileSystem().getFactory().createFileObject(this, entry).getOwnerFileObject();
         } catch (InterruptedException ex) {
             RemoteLogger.finest(ex, this);
             return null;
@@ -363,22 +363,6 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 //            } else {
 //                fireFileDataCreatedEvent(getListeners(), e);
 //            }
-    }
-
-    private RemoteFileObjectBase createFileObject(DirEntry entry) {
-        File childCache = new File(getCache(), entry.getCache());
-        String childPath = getPath() + '/' + entry.getName();
-        RemoteFileObjectBase fo = null;
-        if (entry.isDirectory()) {
-            fo = getFileSystem().getFactory().createRemoteDirectory(this, childPath, childCache);
-        }  else if (entry.isLink()) {
-            fo = getFileSystem().getFactory().createRemoteLink(this, childPath, entry.getLinkTarget());
-        } else if (entry.isPlainFile()) {
-            fo = getFileSystem().getFactory().createRemotePlainFile(this, childPath, childCache, FileType.Regular);
-        } else {
-            fo = getFileSystem().getFactory().createSpecialFile(this, childPath, childCache, entry.getFileType());
-        }
-        return fo;
     }
 
     @Override
@@ -442,7 +426,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             RemoteFileObject[] childrenFO = new RemoteFileObject[entries.size()];
             for (int i = 0; i < entries.size(); i++) {
                 DirEntry entry = entries.get(i);
-                childrenFO[i] = createFileObject(entry).getOwnerFileObject();
+                childrenFO[i] = getFileSystem().getFactory().createFileObject(this, entry).getOwnerFileObject();
             }
             return childrenFO;
         } catch (InterruptedException ex) {
@@ -715,17 +699,14 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                             }
                         } else {
                             changed = true;
-                            RemoteFileObject removedFO = invalidate(oldEntry);
-                            // remove old
-                            if (removedFO != null) {
-                                filesToFireDeleted.add(removedFO);
-                            }
-                            // add new 
-                            entriesToFireCreated.add(newEntry);
-                            cacheName = RemoteFileSystemUtils.escapeFileName(newEntry.getName());
+                            getFileSystem().getFactory().changeImplementor(this, oldEntry, newEntry);
+                            entriesToFireChanged.add(newEntry);
+                            cacheName = null; // unchanged
                         }
                     }
-                    newEntry.setCache(cacheName);
+                    if (cacheName !=null) {
+                        newEntry.setCache(cacheName);
+                    }
                     String lowerCacheName = RemoteFileSystemUtils.isSystemCaseSensitive() ? newEntry.getCache() : newEntry.getCache().toLowerCase();
                     List<DirEntry> dupEntries = dupLowerNames.get(lowerCacheName);
                     if (dupEntries == null) {
@@ -798,7 +779,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     fireFileDeletedEvent(getListeners(), new FileEvent(this.getOwnerFileObject(), deleted));
                 }
                 for (DirEntry entry : entriesToFireCreated) {
-                    RemoteFileObjectBase fo = createFileObject(entry);
+                    RemoteFileObjectBase fo = getFileSystem().getFactory().createFileObject(this, entry);
                     fireRemoteFileObjectCreated(fo.getOwnerFileObject());
                 }
                 for (DirEntry entry : entriesToFireChanged) {
@@ -1036,17 +1017,14 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                             }
                         } else {
                             changed = true;
-                            RemoteFileObject removedFO = invalidate(oldEntry);
-                            // remove old
-                            if (removedFO != null) {
-                                filesToFireDeleted.add(removedFO);
-                            }
-                            // add new 
-                            entriesToFireCreated.add(newEntry);
-                            cacheName = RemoteFileSystemUtils.escapeFileName(newEntry.getName());
+                            getFileSystem().getFactory().changeImplementor(this, oldEntry, newEntry);
+                            entriesToFireChanged.add(newEntry);
+                            cacheName = null; // unchanged
                         }
                     }
-                    newEntry.setCache(cacheName);
+                    if (cacheName !=null) {
+                        newEntry.setCache(cacheName);
+                    }
                     String lowerCacheName = RemoteFileSystemUtils.isSystemCaseSensitive() ? newEntry.getCache() : newEntry.getCache().toLowerCase();
                     List<DirEntry> dupEntries = dupLowerNames.get(lowerCacheName);
                     if (dupEntries == null) {
@@ -1122,7 +1100,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     fireDeletedEvent(this.getOwnerFileObject(), deleted, interceptor, expected);
                 }
                 for (DirEntry entry : entriesToFireCreated) {
-                    RemoteFileObject fo = createFileObject(entry).getOwnerFileObject();
+                    RemoteFileObject fo = getFileSystem().getFactory().createFileObject(this, entry).getOwnerFileObject();
                     if (interceptor != null && expectedCreated != null && !expectedCreated.equals(entry)) {
                         interceptor.createdExternally(FilesystemInterceptorProvider.toFileProxy(fo));
                     }

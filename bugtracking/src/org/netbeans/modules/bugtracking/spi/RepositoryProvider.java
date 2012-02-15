@@ -56,10 +56,9 @@ import org.openide.util.Lookup;
  * 
  * @author Tomas Stupka, Jan Stola
  */
-public abstract class Repository implements Lookup.Provider {
+public abstract class RepositoryProvider implements Lookup.Provider {
 
     private RepositoryNode node;
-    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     /**
      * a query from this repository was saved or removed
@@ -67,36 +66,19 @@ public abstract class Repository implements Lookup.Provider {
     public final static String EVENT_QUERY_LIST_CHANGED = "bugtracking.repository.queries.changed"; // NOI18N
 
     /**
-     * Repository's attributes have changed, e.g. name, url, etc.
+     * RepositoryProvider's attributes have changed, e.g. name, url, etc.
      * Old and new value are maps of changed doubles: attribute-name / attribute-value.
      * Old value can be null in case the repository is created.
      */
     public final static String EVENT_ATTRIBUTES_CHANGED = "bugtracking.repository.attributes.changed"; //NOI18N
 
+    public abstract RepositoryInfo getInfo();
+    
     /**
      * Returns the icon for this repository
      * @return
      */
     public abstract Image getIcon();
-
-    /**
-     * Returns the display name for this repository
-     * @return
-     */
-    public abstract String getDisplayName();
-
-    /**
-     * Returs the tooltip for this repository
-     * @return
-     */
-    public abstract String getTooltip();
-
-    /**
-     * Returns a unique ID for this repository
-     * 
-     * @return
-     */
-    public abstract String getID();
 
     /**
      * Returns a {@link Node} representing this repository
@@ -111,12 +93,6 @@ public abstract class Repository implements Lookup.Provider {
     }
 
     /**
-     * Returns the repositories url
-     * @return
-     */
-    public abstract String getUrl();
-
-    /**
      * Returns an issue with the given ID
      *
      * XXX add flag refresh
@@ -126,7 +102,7 @@ public abstract class Repository implements Lookup.Provider {
      * @deprecated only kenai and nbbugzilla related. will be removed. 
      * XXX move out to kenaisupport
      */
-    public abstract Issue getIssue(String id);
+    public abstract IssueProvider getIssue(String id);
 
     /**
      * Removes this repository from its connector
@@ -138,36 +114,29 @@ public abstract class Repository implements Lookup.Provider {
      * Returns the {@link BugtrackignController} for this repository
      * @return
      */
-    public abstract BugtrackingController getController();
+    public abstract RepositoryController getController();
 
     /**
      * Creates a new query instance. Might block for a longer time.
      *
-     * @return a new Query instance or null if it's not possible
+     * @return a new QueryProvider instance or null if it's not possible
      * to access the repository.
      */
-    public abstract Query createQuery(); 
+    public abstract QueryProvider createQuery(); 
 
     /**
-     * Creates a new Issue instance. Might block for a longer time.
+     * Creates a new IssueProvider instance. Might block for a longer time.
      *
-     * @return return a new Issue instance or null if it's not possible
+     * @return return a new IssueProvider instance or null if it's not possible
      * to access the repository.
      */
-    public abstract Issue createIssue();
+    public abstract IssueProvider createIssue();
 
     /**
      * Returns all saved queries
      * @return
      */
-    public abstract Query[] getQueries();
-
-    /**
-     * Returns all known repository users.
-     *
-     * @return all known repository users.
-     */
-    public abstract Collection<RepositoryUser> getUsers();
+    public abstract QueryProvider[] getQueries();
 
     /**
      * Runs a query against the bugtracking repository to get all issues
@@ -177,31 +146,10 @@ public abstract class Repository implements Lookup.Provider {
      *
      * @param criteria
      */
-    public abstract Issue[] simpleSearch(String criteria);
+    public abstract IssueProvider[] simpleSearch(String criteria);
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
+    public abstract void removePropertyChangeListener(PropertyChangeListener listener);
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-
-    /**
-     * Notify listeners on this repository that a query was either removed or saved
-     * XXX make use of new/old value
-     */
-    protected void fireQueryListChanged() {
-        support.firePropertyChange(EVENT_QUERY_LIST_CHANGED, null, null);
-    }
-
-    /**
-     * Notify listeners on this repository that some of repository's attributes have changed.
-     * @param oldValue map of old attributes
-     * @param newValue map of new attributes
-     */
-    protected void fireAttributesChanged (java.util.Map<String, Object> oldAttributes, java.util.Map<String, Object> newAttributes) {
-        support.firePropertyChange(new java.beans.PropertyChangeEvent(this, EVENT_ATTRIBUTES_CHANGED, oldAttributes, newAttributes));
-    }
+    public abstract void addPropertyChangeListener(PropertyChangeListener listener);
 
 }

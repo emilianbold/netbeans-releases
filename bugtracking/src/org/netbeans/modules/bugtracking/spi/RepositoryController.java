@@ -37,49 +37,69 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugtracking.spi;
 
+import java.io.IOException;
+import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
+import org.openide.util.HelpCtx;
+
 /**
- * Repository user.
  *
- * @author Jan Stola
+ * @author Tomas Stupka
  */
-public class RepositoryUser {
-    /** User name (login) of the user. */
-    private String userName;
-    /** Full name of the user. */
-    private String fullName;
+public interface RepositoryController {
 
     /**
-     * Creates new <code>RepositoryUser</code>.
-     *
-     * @param userName user name.
-     * @param fullName full name.
+     * Returns a visual component representing the repository this controller is meant for
+     * 
+     * @return a visual component representing a repository
      */
-    public RepositoryUser(String userName, String fullName) {
-        this.userName = userName;
-        this.fullName = fullName;
-    }
+    public JComponent getComponent();
 
     /**
-     * Returns user name.
-     *
-     * @return user name.
+     * Returns the help context associated with this controllers visual component
+     * @return
      */
-    public String getUserName() {
-        return userName;
-    }
+    public HelpCtx getHelpCtx();
 
     /**
-     * Returns full name.
-     *
-     * @return full name.
+     * Return true if data in this controllers visual component are valid
+     * @return
      */
-    public String getFullName() {
-        return fullName;
-    }
+    public boolean isValid();
+
+    /**
+     * Populate the controllers component
+     */
+    public void populate();
+    
+    /**
+     * Return an error message in case the controller isn't valid
+     * @return
+     */
+    public String getErrorMessage();
+    
+    /**
+     * Is called when the changes made in the
+     * controllers visual component are confirmed
+     */
+    public void applyChanges() throws IOException; 
+
+    /**
+     * Registers a ChangeListener
+     * @param l
+     */
+    public void addChangeListener(ChangeListener l);
+
+    /**
+     * Unregisters a ChangeListener
+     * @param l
+     */
+    public void removeChangeListener(ChangeListener l);
+    
 
 }
