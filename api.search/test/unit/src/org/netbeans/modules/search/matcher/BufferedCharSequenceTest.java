@@ -55,6 +55,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -346,12 +348,14 @@ public class BufferedCharSequenceTest {
     @Test
     public void testUnicodeAt4KB() {
         File f = getFile("more_than_4KB.txt");
-        FileInputStream is = getFileInputStream(f);
-        BufferedCharSequence chars = new BufferedCharSequence(is, cs_UTF_8.newDecoder(), 4098);
+        assertNotNull(f);
+        FileObject fo = FileUtil.toFileObject(f);
+        assertNotNull(fo);
+        BufferedCharSequence chars = new BufferedCharSequence(fo, cs_UTF_8.newDecoder(), f.length());
         assertEquals('0', chars.charAt(0));
         assertEquals('1', chars.charAt(1));
-        assertEquals('X', chars.charAt(4097));
-        assertEquals('Y', chars.charAt(4098));
+        assertEquals('X', chars.charAt(4098));
+        assertEquals('Y', chars.charAt(4099));
     }
 
     /**

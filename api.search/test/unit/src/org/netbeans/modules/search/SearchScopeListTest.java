@@ -82,7 +82,9 @@ public class SearchScopeListTest extends NbTestCase {
         ssl.addChangeListener(cl2);
 
         for (SearchScopeDefinition ssd : ssl.getSeachScopeDefinitions()) {
-            ((CustomSearchScope) ssd).fireChangeEvent();
+            if (ssd instanceof CustomSearchScope) {
+                ((CustomSearchScope) ssd).fireChangeEvent();
+            }
         }
 
         assertEquals(3, cl.getCounter());
