@@ -43,20 +43,12 @@ package org.netbeans.modules.j2ee.persistence.editor.completion;
 
 import java.io.IOException;
 import java.util.*;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.*;
 import javax.swing.text.Document;
-import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -64,8 +56,6 @@ import org.netbeans.modules.j2ee.persistence.editor.CompletionContext;
 import org.netbeans.modules.j2ee.persistence.editor.JPAEditorUtil;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
-import org.netbeans.spi.editor.completion.CompletionItem;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -126,6 +116,7 @@ public abstract class Completor {
             this.itemTexts = itemTextAndDocs;
         }
 
+        @Override
         public List<JPACompletionItem> doCompletion(CompletionContext context) {
             List<JPACompletionItem> results = new ArrayList<JPACompletionItem>();
             int caretOffset = context.getCaretOffset();
@@ -156,6 +147,7 @@ public abstract class Completor {
             this.itemTextAndDocs = itemTextAndDocs;
         }
 
+        @Override
         public List<JPACompletionItem> doCompletion(CompletionContext context) {
             List<JPACompletionItem> results = new ArrayList<JPACompletionItem>();
             int caretOffset = context.getCaretOffset();
@@ -193,6 +185,7 @@ public abstract class Completor {
             this.packageOnly = packageOnly;
         }
 
+        @Override
         public List<JPACompletionItem> doCompletion(final CompletionContext context) {
             final List<JPACompletionItem> results = new ArrayList<JPACompletionItem>();
             try {
@@ -220,6 +213,7 @@ public abstract class Completor {
                 final String typedPrefix, final int substitutionOffset) throws IOException {
             js.runUserActionTask(new Task<CompilationController>() {
 
+                @Override
                 public void run(CompilationController cc) throws Exception {
                     cc.toPhase(Phase.ELEMENTS_RESOLVED);
                     ClassIndex ci = cc.getClasspathInfo().getClassIndex();
@@ -261,6 +255,7 @@ public abstract class Completor {
                 final String typedPrefix, final int substitutionOffset) throws IOException {
             js.runUserActionTask(new Task<CompilationController>() {
 
+                @Override
                 public void run(CompilationController cc) throws Exception {
                     cc.toPhase(Phase.ELEMENTS_RESOLVED);
                     ClassIndex ci = cc.getClasspathInfo().getClassIndex();
@@ -323,6 +318,7 @@ public abstract class Completor {
                 JavaSource classJavaSrc = JPAEditorUtil.getJavaSource(context.getDocument());
                 classJavaSrc.runUserActionTask(new Task<CompilationController>() {
 
+                    @Override
                     public void run(CompilationController cc) throws Exception {
                         cc.toPhase(Phase.ELEMENTS_RESOLVED);
                         TypeElement typeElem = cc.getElements().getTypeElement(className);
@@ -365,6 +361,7 @@ public abstract class Completor {
             this.allKeyAndValues = allKeyAndValues;
         }
 
+        @Override
         public List<JPACompletionItem> doCompletion(CompletionContext context) {
             List<JPACompletionItem> results = new ArrayList<JPACompletionItem>();
             int caretOffset = context.getCaretOffset();
@@ -396,6 +393,7 @@ public abstract class Completor {
         public PersistenceMappingFileCompletor() {
         }
 
+        @Override
         public List<JPACompletionItem> doCompletion(CompletionContext context) {
             List<JPACompletionItem> results = new ArrayList<JPACompletionItem>();
             int caretOffset = context.getCaretOffset();
