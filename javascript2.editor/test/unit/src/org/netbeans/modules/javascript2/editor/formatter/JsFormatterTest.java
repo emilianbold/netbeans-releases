@@ -65,7 +65,20 @@ public class JsFormatterTest extends JsTestBase {
     }
     
     public void testTrailingSpaces3() throws Exception {
-        reformatFileContents("testfiles/formatter/functions.js",new IndentPrefs(4, 4));
+        reformatFileContents("testfiles/formatter/functions1.js",new IndentPrefs(4, 4));
     }
-    
+
+    public void testIndentation1() throws Exception {
+        format("\n var a = 1;   \n        var b = 3;                   \n",
+                "\nvar a = 1;\nvar b = 3;\n", new IndentPrefs(4, 4));
+    }
+
+    public void testIndentation2() throws Exception {
+        format(" var a = 1;   \n        var b = 3;                   \n",
+                "var a = 1;\nvar b = 3;\n", new IndentPrefs(4, 4));
+    }
+
+    public void testIndentation3() throws Exception {
+        reformatFileContents("testfiles/formatter/functions2.js",new IndentPrefs(4, 4));
+    }
 }

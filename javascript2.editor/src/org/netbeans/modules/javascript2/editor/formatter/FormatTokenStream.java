@@ -67,7 +67,8 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
         if (diff <= 0) {
             ts.movePrevious();
         }
-        
+        ret.addToken(FormatToken.forFormat(FormatToken.Kind.SOURCE_START));
+
         while (ts.moveNext() && ts.offset() < end) {
             Token<? extends JsTokenId> token = ts.token();
             JsTokenId id = token.id();

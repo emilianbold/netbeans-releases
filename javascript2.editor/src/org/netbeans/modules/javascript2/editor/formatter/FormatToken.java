@@ -109,10 +109,9 @@ public final class FormatToken {
     }
 
     public static enum Kind {
+        SOURCE_START,
         TEXT,
-
         WHITESPACE,
-
         EOL,
 
         BEFORE_LINE_COMMENT,

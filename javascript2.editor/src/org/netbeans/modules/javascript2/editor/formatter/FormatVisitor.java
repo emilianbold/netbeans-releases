@@ -45,7 +45,6 @@ import com.oracle.nashorn.ir.*;
 import java.util.List;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.LineSeparatorConversion;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 
 /**
