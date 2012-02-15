@@ -44,8 +44,12 @@
 NetBeans.cleanup();
 
 // Register reload-callback
-NetBeans.browserReloadCallback = function(tabId) {
-    chrome.tabs.reload(tabId, {bypassCache: true});
+NetBeans.browserReloadCallback = function(tabId, newUrl) {
+    if (newUrl != undefined) {
+        chrome.tabs.update(tabId, {url: newUrl});
+    } else {
+        chrome.tabs.reload(tabId, {bypassCache: true});
+    }
 }
 
 // Register tab listeners

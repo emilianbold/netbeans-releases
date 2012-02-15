@@ -39,76 +39,59 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.clientside.project;
+package org.netbeans.modules.web.common.api.browser;
 
-import java.net.URISyntaxException;
-import java.net.URL;
-import org.netbeans.modules.web.common.api.browser.BrowserSupport;
-import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.modules.web.common.spi.browser.DependentFileQueryImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
- *
- * @author david
+ * An API entry point to query dependency relationships between files. 
+ * None SPI is really implemented at this stage - see comments below.
  */
-public class ClientSideProjectActionProvider implements ActionProvider {
+public class DependentFileQuery {
 
-    private ClientSideProject p;
-
-    public ClientSideProjectActionProvider(ClientSideProject p) {
-        this.p = p;
-    }
+    private static Lookup.Result<DependentFileQueryImplementation> lookup = 
+            Lookup.getDefault().lookupResult(DependentFileQueryImplementation.class);
     
-    @Override
-    public String[] getSupportedActions() {
-        return new String[]{
-                    COMMAND_RUN_SINGLE
-                };
-    }
-
-    @Override
-    public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
-        FileObject fo = getFile(context);
-        if (fo == null) {
-            return;
-        }
-        browseFile(p.getBrowserSupport(), fo);
-    }
-    
-    private static void browseFile(BrowserSupport bs, FileObject fo) {
-        URL url;
-        String urlString;
-        try {
-            url = fo.getURL();
-            urlString = url.toURI().toString();
-            // XXXXX:
-            urlString = urlString.replaceAll("file:/", "file:///");
-        } catch (URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
-            return;
-        } catch (FileStateInvalidException ex) {
-            Exceptions.printStackTrace(ex);
-            return;
-        }
-        bs.load(url, fo);
-    }
-
-    @Override
-    public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-        if (COMMAND_RUN_SINGLE.equals(command) && isHTMLFile(getFile(context))) {
+    /**
+     * Does "master" FileObject depends on "dependent" FileObject? Typical usage will
+     * be to answer questions like "does foo.html depends on style.css?"
+     */
+    public static boolean isDependent(FileObject master, FileObject dependent) {
+        if (dependent.equals(master)) {
             return true;
         }
+        for (DependentFileQueryImplementation impl : lookup.allInstances()) {
+            if (Boolean.TRUE.equals(impl.isDependent(master, dependent))) {
+                return true;
+            }
+        }
+        
+        // XXX
+        
+        // I can imagine following implementations to be registered in the lookup:
+        
+        // HTMLDependentFileQueryImplementation - capable of parsing HTML files
+        // and returning TRUE for any JS file, CSS file, image file, etc. which are
+        // referenced from the given HTML document.
+        
+        // JspDependentFileQueryImplementation - returns true for any Java files,
+        // that is if any Java file is changed in a project and some JSP was deployed 
+        // from that project we must assume that Java file change has impact on JSP
+        // and JSP should be reloaded. If we are able to do better analysis of JSP
+        // file and its dependencies on Java files then this implementation can be
+        // improved. But it is P4 for now.        
+        
+        // JavaDependentFileQueryImplementation - when a Java Servlet was executed we
+        // again either say true for any Java file changes or perform calls closure to check
+        // whether Java file being tested does impact master Java file or not.
+        
+        // XXX: just for testing purposes:
+        if (dependent.getNameExt().equals("test.css") && master.getNameExt().equals("test.html")) {
+            return true;
+        }
+        
         return false;
-    }
-    
-    private FileObject getFile(Lookup context) {
-        return context.lookup(FileObject.class);
-    }
-    
-    private boolean isHTMLFile(FileObject fo) {
-        return (fo != null && "html".equals(fo.getExt()));
     }
 }

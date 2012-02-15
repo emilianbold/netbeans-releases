@@ -44,10 +44,11 @@
 NetBeans.cleanup();
 
 // Register reload-callback
-NetBeans.browserReloadCallback = function(tabId) {
+NetBeans.browserReloadCallback = function(tabId, url) {
     self.postMessage({
         type: 'reload',
-        tabId: tabId
+        tabId: tabId,
+        url: url
     });
 }
 

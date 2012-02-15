@@ -44,5 +44,5 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <antlib>
-    <taskdef name="nbbregister" classname="org.netbeans.modules.web.common.BrowserRegister"/>
+    <taskdef name="nbbrowse2" classname="org.netbeans.modules.web.common.BrowserReloadTask"/>
 </antlib>

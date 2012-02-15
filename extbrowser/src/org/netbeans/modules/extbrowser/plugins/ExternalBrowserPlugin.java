@@ -40,37 +40,39 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.common.reload;
+package org.netbeans.modules.extbrowser.plugins;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.channels.SelectionKey;
 import java.nio.charset.Charset;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.netbeans.modules.web.common.reload.Message.MessageType;
+import org.netbeans.modules.extbrowser.ExtBrowserImpl;
 import org.netbeans.modules.web.common.websocket.WebSocketReadHandler;
 import org.netbeans.modules.web.common.websocket.WebSocketServer;
-import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 
 /**
- * @author ads
- *
+ * Support class running a WebSocket server for communication with browser plugins.
  */
-final class ExternalBrowserPlugin implements BrowserPlugin {
+public final class ExternalBrowserPlugin {
     
     private static final int PORT = 8008;
     
     private static final Logger LOG = Logger.getLogger( 
-            BrowserReload.class.getCanonicalName());
+            ExternalBrowserPlugin.class.getCanonicalName());
+
+    public static ExternalBrowserPlugin getInstance(){
+        return INSTANCE;
+    }
+    
+    private static final ExternalBrowserPlugin INSTANCE = new ExternalBrowserPlugin();
     
     private ExternalBrowserPlugin() {
         try {
@@ -91,80 +93,52 @@ final class ExternalBrowserPlugin implements BrowserPlugin {
                 }
             };
             Runtime.getRuntime().addShutdownHook( shutdown);
-            
-            url2File = new ConcurrentHashMap<String, FileObject>();
         }
         catch (IOException e) {
             LOG.log( Level.WARNING , null , e);
         }
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.common.reload.BrowserPlugin#register(org.openide.filesystems.FileObject, java.lang.String)
+    /**
+     * Register that given URL was opened in external browser and browser
+     * should confirm it by sending a message back to IDE. This handshake
+     * will store ID if the browser tab and use it for all consequent external 
+     * browser requests.
      */
-    @Override
-    public void register( FileObject localFileObject, String browserUrl ) {
-        url2File.put( browserUrl, localFileObject );        
+    public void register(URL url, ExtBrowserImpl browserImpl) {
+        awatingBrowserResponse.put(url, browserImpl);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.common.reload.BrowserPlugin#canReload(org.openide.filesystems.FileObject)
+    /**
+     * Show URL in browser in given browser tab.
      */
-    @Override
-    public boolean canReload( FileObject fileObject ) {
-        Couple<BrowserPlugin, ? extends Couple> couple = BrowserReload.
-            getInstance().getPluginMap().get( fileObject );
-        if ( couple == null ){
-            return false;
-        }
-        Couple<?,?> communicationCouple = couple.getEnd();
-        return communicationCouple != null && communicationCouple.getStart()!= null 
-            && communicationCouple.getEnd()!= null ;
+    public void showURLInTab(BrowserTabDescriptor tab, URL url) {
+        server.sendMessage(tab.key, createReloadMessage(tab.tabID, url));
+
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.common.reload.BrowserPlugin#reload(org.openide.filesystems.FileObject)
-     */
-    @Override
-    public void reload( FileObject fileObject ) {
-        Couple<BrowserPlugin, ? extends Couple> couple = BrowserReload.
-            getInstance().getPluginMap().get( fileObject );
-        Couple<?,?> communicationCouple = couple.getEnd();
-        SelectionKey selectionKey = (SelectionKey)communicationCouple.getStart();
-        if ( selectionKey == null ){
-            return;
-        }
-        String id = communicationCouple.getEnd().toString();
-            
-        server.sendMessage(selectionKey, createReloadMessage(id) );
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.common.reload.BrowserPlugin#clear(org.openide.filesystems.FileObject)
-     */
-    @Override
-    public void clear( FileObject fileObject ) {
-    }
-    
     private void removeKey( SelectionKey key ) {
-         Map<FileObject, Couple<BrowserPlugin, ? extends Couple>> pluginMap = 
-             BrowserReload.getInstance().getPluginMap();
-         for(Iterator<Entry<FileObject,Couple<BrowserPlugin, ? extends Couple>>> 
-             iterator = pluginMap.entrySet().iterator() ; iterator.hasNext() ; )
-         {
-             Entry<FileObject, Couple<BrowserPlugin, ? extends Couple>> entry = 
-                 iterator.next();
-             Couple<BrowserPlugin, ? extends Couple> couple = entry.getValue();
-             if ( couple == null ){
-                 continue;
-             }
-             Couple<?,?> commCouple = couple.getEnd();
-             if ( key.equals( commCouple.getStart() )) {
-                 iterator.remove();
-             }
-         }
+        for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
+            BrowserTabDescriptor browserTab = iterator.next();
+            if ( key.equals( browserTab.key )) {
+                iterator.remove();
+                browserTab.browserImpl.wasClosed();
+            }
+        }
     }
     
+    /**
+     * Just an example/placeholder.
+     */
+    public Object getDOM(BrowserTabDescriptor browserTab) {
+        if (browserTab != null && browserTab.key != null ){
+            server.sendMessage(browserTab.key, "a message to retrieve DOM description for "+ browserTab.tabID);
+            // wait for response and return it
+            return new Object(/* data from response*/);
+        }
+        return null;
+    }
+
     class BrowserPluginHandler implements WebSocketReadHandler {
 
         private static final String URL = "url";        // NOI18N
@@ -182,13 +156,16 @@ final class ExternalBrowserPlugin implements BrowserPlugin {
             if ( msg == null ){
                 return;
             }
-            MessageType type = msg.getType();
+            Message.MessageType type = msg.getType();
             switch (type) {
                 case INIT:
                     handleInit(msg, key );
                     break;
                 case CLOSE:
                     handleClose( msg , key );
+                    break;
+                case URLCHANGE:
+                    handleURLChange(msg, key);
                     break;
                 default:
                     assert false;
@@ -202,23 +179,38 @@ final class ExternalBrowserPlugin implements BrowserPlugin {
             if ( url == null || tabId == null ){
                 return;
             }
-            FileObject localFile = url2File.remove( url );
-            if ( localFile == null ){
+            URL u = null;
+            try {
+                u = new URL(url);
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            ExtBrowserImpl browserImpl = awatingBrowserResponse.remove(u);
+            
+            // XXX: workaround: when Web Project is run it is started as "http:/localhost/aa" but browser URL is
+            // "http:/localhost/aa/"
+            if (browserImpl == null && url.endsWith("/")) {
+                try {
+                    u = new URL(url.substring(0, url.length()-1));
+                    browserImpl = awatingBrowserResponse.remove(u);
+                } catch (MalformedURLException ex) {
+                    LOG.log(Level.WARNING, "cannot parse URL: "+url);
+                }
+            }
+            if (browserImpl == null) {
                 Map<String,String> map = new HashMap<String, String>();
                 map.put( Message.TAB_ID, tabId );
                 map.put("status","notaccepted");       // NOI18N
-                Message msg = new Message( MessageType.INIT , map );
+                Message msg = new Message( Message.MessageType.INIT , map );
                 server.sendMessage(key, msg.toString());
-            }
-            else  {
-                BrowserReload.getInstance().getPluginMap().put( localFile , 
-                        new Couple<BrowserPlugin,Couple>( 
-                                ExternalBrowserPlugin.getInstance() , 
-                                    new Couple(key,tabId)) );
+            } else  {
+                BrowserTabDescriptor tab = new BrowserTabDescriptor(key, tabId, browserImpl);
+                browserImpl.setBrowserTabDescriptor(tab);
+                knownBrowserTabs.add(tab);
                 Map<String,String> map = new HashMap<String, String>();
                 map.put( Message.TAB_ID, tabId );
                 map.put("status","accepted");       // NOI18N
-                Message msg = new Message( MessageType.INIT , map );
+                Message msg = new Message( Message.MessageType.INIT , map );
                 server.sendMessage(key, msg.toString());
             }
         }
@@ -228,20 +220,25 @@ final class ExternalBrowserPlugin implements BrowserPlugin {
             if ( tabId == null ){
                 return;
             }
-            Map<FileObject, Couple<BrowserPlugin, ? extends Couple>> pluginMap = 
-                BrowserReload.getInstance().getPluginMap();
-            for(Iterator<Entry<FileObject,Couple<BrowserPlugin, ? extends Couple>>> 
-                iterator = pluginMap.entrySet().iterator() ; iterator.hasNext() ; )
-            {
-                Entry<FileObject, Couple<BrowserPlugin, ? extends Couple>> entry = 
-                    iterator.next();
-                Couple<BrowserPlugin, ? extends Couple> couple = entry.getValue();
-                if ( couple == null ){
-                    continue;
-                }
-                Couple<?,?> commCouple = couple.getEnd();
-                if ( tabId.equals( commCouple.getEnd() )) {
+            for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
+                BrowserTabDescriptor browserTab = iterator.next();
+                if ( tabId.equals( browserTab.tabID )) {
                     iterator.remove();
+                    browserTab.browserImpl.wasClosed();
+                    return;
+                }
+            }
+        }
+
+        private void handleURLChange( Message message, SelectionKey key  ){
+            String tabId = message.getValue( Message.TAB_ID );
+            if ( tabId == null ){
+                return;
+            }
+            for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
+                BrowserTabDescriptor browserTab = iterator.next();
+                if ( tabId.equals( browserTab.tabID )) {
+                    browserTab.browserImpl.urlHasChanged();
                     return;
                 }
             }
@@ -257,18 +254,39 @@ final class ExternalBrowserPlugin implements BrowserPlugin {
         
     }
     
-    private String createReloadMessage(String tabId) {
-        Message msg = new Message( MessageType.RELOAD, 
-                Collections.singletonMap( Message.TAB_ID, tabId ));
+    private String createReloadMessage(String tabId, URL newURL) {
+        Map<String, String> params = new HashMap<String, String>();
+        params.put( Message.TAB_ID, tabId );
+        if (newURL != null) {
+            try {
+                params.put( "url", newURL.toURI().toString() );
+            } catch (URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        Message msg = new Message( Message.MessageType.RELOAD, params);
         return msg.toString();
     }
     
-    public static ExternalBrowserPlugin getInstance(){
-        return INSTANCE;
+    private WebSocketServer server;
+
+    private Map<URL,ExtBrowserImpl> awatingBrowserResponse = new HashMap<URL,ExtBrowserImpl>();
+    
+    private List<BrowserTabDescriptor> knownBrowserTabs = new ArrayList<BrowserTabDescriptor>();
+    
+    /**
+     * Descriptor of tab opened in the external browser.
+     */
+    public static class BrowserTabDescriptor {
+        private SelectionKey key;
+        private String tabID;
+        private ExtBrowserImpl browserImpl;
+
+        public BrowserTabDescriptor(SelectionKey key, String tabID, ExtBrowserImpl browserImpl) {
+            this.key = key;
+            this.tabID = tabID;
+            this.browserImpl = browserImpl;
+        }
     }
     
-    private WebSocketServer server;
-    private Map<String, FileObject> url2File;
-    private static final ExternalBrowserPlugin INSTANCE = new ExternalBrowserPlugin();
-
 }

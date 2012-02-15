@@ -51,7 +51,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -70,8 +69,6 @@ import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
-import org.netbeans.api.java.source.BuildArtifactMapper;
-import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -81,7 +78,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveListener;
-import org.netbeans.modules.web.common.reload.BrowserReload;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.jsfapi.spi.JsfSupportHandle;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
@@ -166,6 +162,7 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
+import org.netbeans.modules.web.common.api.browser.BrowserSupport;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.web.project.classpath.WebProjectLibrariesModifierImpl;
@@ -241,6 +238,8 @@ public final class WebProject implements Project {
     private WhiteListUpdater whiteListUpdater;
     
     private AntBuildExtender buildExtender;
+    
+    private BrowserSupport browserSupport;
 
     // set to true when project customizer is being closed and changes persisted
     private final ThreadLocal<Boolean> projectPropertiesSave;
@@ -410,6 +409,13 @@ public final class WebProject implements Project {
         whiteListUpdater = WhiteListUpdater.createWhiteListUpdater(this, evaluator());
     }
 
+    public synchronized BrowserSupport getBrowserSupport() {
+        if (browserSupport == null) {
+            browserSupport = BrowserSupport.getDefault();
+        }
+        return browserSupport;
+    }
+    
     public void setProjectPropertiesSave(boolean value) {
         this.projectPropertiesSave.set(value);
     }
@@ -609,7 +615,8 @@ public final class WebProject implements Project {
             LookupMergerSupport.createJFBLookupMerger(),
             QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
             new ProjectWebRootProviderImpl(),
-            new JsfSupportHandle()
+            new JsfSupportHandle(),
+            getBrowserSupport(),
         });
 
         Lookup ee6 = Lookups.fixed(new Object[]{
@@ -1536,7 +1543,10 @@ public final class WebProject implements Project {
                     for( Artifact artifact : artifacts ){
                         FileObject fileObject = getReloadFileObject(artifact);
                         if ( fileObject!= null ){
-                            BrowserReload.getInstance().reload( fileObject );
+                            URL u = getBrowserSupport().getBrowserURL(fileObject, true);
+                            if (u != null) {
+                                getBrowserSupport().reload(u);
+                            }
                         }
                     }
                 }
@@ -1572,15 +1582,13 @@ public final class WebProject implements Project {
             resources = getWebModule().getResourceDirectory();
             buildWeb = evaluator().getProperty(WebProjectProperties.BUILD_WEB_DIR);
 
-            FileSystem docBaseFileSystem = null;
             if (docBase != null) {
-                docBaseFileSystem = docBase.getFileSystem();
-                docBaseFileSystem.addFileChangeListener(this);
+                docBase.addRecursiveListener(this);
             }
 
             if (webInf != null) {
-                if (!webInf.getFileSystem().equals(docBaseFileSystem)) {
-                    webInf.getFileSystem().addFileChangeListener(this);
+                if (!FileUtil.isParentOf(docBase, webInf)) {
+                    webInf.addRecursiveListener(this);
                 }
             }
 
@@ -1631,6 +1639,10 @@ public final class WebProject implements Project {
 
         @Override
         public void fileChanged(FileEvent fe) {
+            URL u = getBrowserSupport().getBrowserURL(fe.getFile(), true);
+            if (u != null) {
+                getBrowserSupport().reload(u);
+            }
             try {
                 if (!handleResource(fe)) {
                     handleCopyFileToDestDir(fe.getFile());
@@ -1654,7 +1666,7 @@ public final class WebProject implements Project {
         @Override
         public void fileRenamed(FileRenameEvent fe) {
             try {
-                BrowserReload.getInstance().clear(fe.getFile());
+            // XXX: notify BrowserReload about filename change
                 if (handleResource(fe)) {
                     return;
                 }
@@ -1720,7 +1732,10 @@ public final class WebProject implements Project {
         @Override
         public void fileDeleted(FileEvent fe) {
             try {
-                BrowserReload.getInstance().clear(fe.getFile());
+                URL u = getBrowserSupport().getBrowserURL(fe.getFile(), false);
+                if (u != null) {
+                    // XXX: close browser's tab ???
+                }
                 if (handleResource(fe)) {
                     return;
                 }
@@ -1768,12 +1783,7 @@ public final class WebProject implements Project {
             File file = artifact.getFile();
             FileObject fileObject = FileUtil.toFileObject( FileUtil.normalizeFile(file));
             if ( fileObject.getExt().equals("class")){               //  NOI18N
-                if ( BrowserReload.getInstance().isScopedArtifact(fileObject)){
-                    return getJavaSourceFileObject(fileObject);
-                }
-                else {
-                    return null;
-                }
+                return getJavaSourceFileObject(fileObject);
             }
             else {
                 return getWebDocFileObject(fileObject);

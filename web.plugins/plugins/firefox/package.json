@@ -2,7 +2,7 @@
     "name": "netbeans-firefox-plugin", 
     "license": "CDDL/GPL 2", 
     "author": "Oracle", 
-    "version": "0.1.2", 
+    "version": "0.1.3", 
     "fullName": "NetBeans IDE Support Plugin", 
     "id": "firefox-plugin@netbeans.org", 
     "description": "Support plugin for NetBeans IDE"

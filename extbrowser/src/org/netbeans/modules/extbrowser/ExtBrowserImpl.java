@@ -47,7 +47,12 @@ package org.netbeans.modules.extbrowser;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.URL;
+import org.netbeans.modules.extbrowser.plugins.DOMInspectionFeatureImpl;
+import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin;
+import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin.BrowserTabDescriptor;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * The ExtBrowserImpl is generalized external browser.
@@ -60,12 +65,14 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
     protected PropertyChangeSupport pcs;
 
     /** requested URL */
-    protected URL url;
+    private URL url;
     protected String title = "";      // NOI18N
 
     /** reference to a factory to get settings */
     protected ExtWebBrowser extBrowserFactory;
-
+    
+    private BrowserTabDescriptor browserTabDescriptor = null;
+    
     /** Default constructor. 
       * <p>Builds PropertyChangeSupport. 
       */
@@ -103,7 +110,13 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
      * Browser must be set to reload document and do not cache them.
      */
     public void reloadDocument() {
-        if (url != null) {
+        if (url == null) {
+            return;
+        }
+        BrowserTabDescriptor tab = getBrowserTabDescriptor();
+        if (tab != null) {
+            ExternalBrowserPlugin.getInstance().showURLInTab(tab, url);
+        } else {
             setURL(url);
         }
     }
@@ -123,7 +136,18 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
      *
      * @param url URL to show in the browser.
      */
-    public abstract void setURL(URL url);
+    final public void setURL(URL url) {
+        BrowserTabDescriptor tab = getBrowserTabDescriptor();
+        if (tab == null) {
+            ExternalBrowserPlugin.getInstance().register(url, this);
+            loadURLInBrowser(url);
+        } else {
+            ExternalBrowserPlugin.getInstance().showURLInTab(tab, url);
+        }
+        this.url = url;
+    }
+    
+    abstract protected void loadURLInBrowser(URL url);
     
     /** Returns visual component of html browser.
      *
@@ -149,4 +173,27 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
         pcs.removePropertyChangeListener (l);
     }
 
+    public Lookup getLookup() {
+        // XXX: this should be provided only by browsers which has corresponding plugin installed
+        return Lookups.fixed(new DOMInspectionFeatureImpl(this));
+    }
+
+    public void wasClosed() {
+        setBrowserTabDescriptor(null);
+        url = null;
+        pcs.firePropertyChange(HtmlBrowser.Impl.PROP_BROWSER_WAS_CLOSED, null, null);
+    }
+
+    public synchronized BrowserTabDescriptor getBrowserTabDescriptor() {
+        return browserTabDescriptor;
+    }
+
+    public synchronized void setBrowserTabDescriptor(BrowserTabDescriptor browserTabDescriptor) {
+        this.browserTabDescriptor = browserTabDescriptor;
+    }
+
+    public void urlHasChanged() {
+        pcs.firePropertyChange(HtmlBrowser.Impl.PROP_URL, null, null);
+    }
+    
 }

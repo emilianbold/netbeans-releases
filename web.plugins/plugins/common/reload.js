@@ -142,6 +142,14 @@ NetBeans.sendCloseMessage = function(tabId) {
     });
 }
 
+NetBeans.sendUrlChangeMessage = function(tabId, url) {
+    this.sendMessage({
+        message: 'urlchange',
+        tabId: tabId,
+        url: url
+    });
+}
+
 NetBeans.sendPendingMessages = function() {
     for (var i=0; i<this.pendingMessages.length; i++) {
         this.sendMessage(this.pendingMessages[i]);
@@ -207,7 +215,7 @@ NetBeans.processReloadMessage = function(message) {
     if (tabId !== undefined) {
         var status = this.tabStatus(tabId);
         if (status === this.STATUS_MANAGED) {
-            this.browserReloadCallback(tabId);
+            this.browserReloadCallback(tabId, message.url);
         } else {
             console.log('Refusing to reload tab that is not managed: '+tabId);
         }
@@ -227,15 +235,15 @@ NetBeans.tabUpdated = function(tab) {
         // Send URL to IDE - ask if the tab is managed
         this.sendInitMessage(tab);
     } else if ((tabInfo !== undefined) && (tabInfo.url !== tab.url)) {
-        // URL has changed
+        // URL change should not mean that tab was closed; it may notify
+        // IDE that different page is opened in the browser pane if such knowledge
+        // of such state is desirable.
         if (status === this.STATUS_UNCONFIRMED) {
             // Navigation in an unconfirmed tab
-            // Confirmation may be delayed; Mark it such that we know that
-            // "close" message should be sent if such delayed confirmation arrives
-            this.managedTabs[tab.id].closed = true;
+            // Confirmation may be delayed; do nothing for now
         } else if (status === this.STATUS_MANAGED) {
-            // Navigation in a managed tab => send "close" message
-            this.sendCloseMessage(tab.id);
+            // Navigation in a managed tab => send "urlchange" message
+            this.sendUrlChangeMessage(tab.id, tab.url);
         }
     }
 }

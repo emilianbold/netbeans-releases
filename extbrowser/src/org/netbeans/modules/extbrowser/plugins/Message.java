@@ -40,7 +40,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.common.reload;
+package org.netbeans.modules.extbrowser.plugins;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -60,6 +60,7 @@ class Message {
     enum MessageType {
         INIT,
         RELOAD,
+        URLCHANGE,
         CLOSE;
         
         @Override

@@ -51,6 +51,7 @@ import java.net.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
+import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin;
 
 import org.openide.*;
 import org.openide.awt.StatusDisplayer;
@@ -142,7 +143,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
      *
      * @param url URL to show in the browser.
      */
-    public void setURL(URL url) {
+    protected void loadURLInBrowser(URL url) {
         if (SwingUtilities.isEventDispatchThread ()) {
             final URL newUrl = url;
             RequestProcessor.getDefault ().post (
@@ -173,9 +174,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             
             RequestProcessor.getDefault ().post (new Status (cmd, p, url), 1000);
 
-            URL old = this.url;
-            this.url = url;
-            pcs.firePropertyChange (PROP_URL, old, url);
+            pcs.firePropertyChange (PROP_URL, getURL(), url);
         }
         catch (java.io.IOException ex) {
             ExtWebBrowser.getEM().log(Level.INFO, null, ex);
