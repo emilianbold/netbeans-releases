@@ -132,7 +132,6 @@ public class AddFinderMethodTest extends AddMethodTest {
             new OpenAction().performAPI(openFile2);
             final EditorOperator editor2 = EditorWindowOperator.getEditor(toSearchFile);
             editor2.txtEditorPane().waitText(methodName);
-            editor2.waitModified(true);
             // need to wait because sometimes is save() called sooner than it can take effect
             new EventTool().waitNoEvent(300);
             editor2.save();
