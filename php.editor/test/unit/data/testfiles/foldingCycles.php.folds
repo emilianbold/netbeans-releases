@@ -39,8 +39,8 @@
 - }
   
 + do {
-| 
-- } while(true);
+- 
+  } while(true);
   
 + switch ($foo) {
 +     case 1: {
