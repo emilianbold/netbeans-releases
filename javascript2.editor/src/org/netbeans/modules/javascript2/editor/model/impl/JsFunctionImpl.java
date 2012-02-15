@@ -85,6 +85,12 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         this.setFileObject(file);
     }
     
+    protected JsFunctionImpl(FileObject file, JsObject parentObject, Identifier name, List<Identifier> parameters) {
+        this(null, parentObject, name, parameters, name.getOffsetRange());
+        this.setFileObject(file);
+        this.setDeclared(false);
+    }
+    
     @Override
     public Collection<? extends JsObject> getParameters() {
         return this.parameters;

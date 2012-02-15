@@ -122,6 +122,17 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (property != null) {
                     property.addOccurrence(ModelUtils.documentOffsetRange(parserResult, accessNode.getProperty().getStart(), accessNode.getProperty().getFinish()));
                     fromAN = property;
+                } else {
+                    int pathSize = getPath().size();
+                    if (pathSize > 1 && getPath().get(pathSize - 2) instanceof CallNode) {
+                        CallNode cNode = (CallNode)getPath().get(pathSize - 2);
+                        Identifier name = ModelElementFactory.create(parserResult, (IdentNode)accessNode.getProperty());
+                        property = ModelElementFactory.createVirtualFunction(parserResult, fromAN, name, cNode.getArgs().size());
+                        fromAN.addProperty(name.getName(), property);
+                    }
+                }
+                if(property != null) {
+                    fromAN = property;
                 }
             }
             if (!(getPath().get(getPath().size() - 1) instanceof AccessNode)) {
@@ -206,27 +217,27 @@ public class ModelVisitor extends PathNodeVisitor {
     @Override
     public Node visit(CallNode callNode, boolean onset) {
         if (onset) {
-            Node calledFunction = callNode.getFunction();
-            if (calledFunction instanceof AccessNode) {
-                AccessNode aNode = (AccessNode)callNode.getFunction();
-                if (aNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)aNode.getBase()).getName())) {
-
-                } else {
-                    List<Identifier> name = getName(aNode);
-                    JsObject parent = ModelUtils.getJsObject(modelBuilder, name.subList(0, 1));
-                    JsObject property;
-
-                    for (int i = 1; i < name.size(); i++) {
-                        Identifier iden = name.get(i);
-                        property = parent.getProperty(iden.getName());
-                        if (property == null) {
-                            if(!parent.isDeclared()) {
-                                property = new JsObjectImpl(parent, iden, iden.getOffsetRange());
-                                parent.addProperty(property.getName(), property);
-                            }
-                        }
-                    }
-
+//            Node calledFunction = callNode.getFunction();
+//            if (calledFunction instanceof AccessNode) {
+//                AccessNode aNode = (AccessNode)callNode.getFunction();
+//                if (aNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)aNode.getBase()).getName())) {
+//
+//                } else if(aNode.getBase() instanceof IdentNode){
+//                    List<Identifier> name = getName(aNode);
+//                    JsObject parent = ModelUtils.getJsObject(modelBuilder, name.subList(0, 1));
+//                    JsObject property;
+//
+//                    for (int i = 1; i < name.size(); i++) {
+//                        Identifier iden = name.get(i);
+//                        property = parent.getProperty(iden.getName());
+//                        if (property == null) {
+//                            if(!parent.isDeclared()) {
+//                                property = new JsObjectImpl(parent, iden, iden.getOffsetRange());
+//                                parent.addProperty(property.getName(), property);
+//                            }
+//                        }
+//                    }
+//
                     for(Node argument : callNode.getArgs()) {
                         if (argument instanceof IdentNode) {
                             addOccurence((IdentNode)argument);
@@ -248,9 +259,10 @@ public class ModelVisitor extends PathNodeVisitor {
 //                        property = new JsObjectImpl(parent, name.get(0), name.get(0).getOffsetRange());
 //                        parent.addProperty(property.getName(), property);
 //                    }
-                }
-            }
-        }
+//                }
+//            }
+        } 
+            
         return super.visit(callNode, onset);
     }
 

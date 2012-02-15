@@ -94,7 +94,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             // global object
             return Kind.FILE;
         }
-        if (getProperties().isEmpty()) {
+        if (hasOnlyVirtualMethods()) {
             if (getParent().isAnonymous() && (getParent() instanceof AnonymousObject)) {
                 return Kind.PROPERTY;
             }
@@ -108,6 +108,15 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             return Kind.PROPERTY;
         }
         return Kind.OBJECT;
+    }
+    
+    private boolean hasOnlyVirtualMethods() {
+        for(JsObject property: getProperties().values()) {
+            if (!(property instanceof JsFunction && !property.isDeclared())) {
+                return false;
+            }
+        }
+        return true;
     }
     
     @Override 
