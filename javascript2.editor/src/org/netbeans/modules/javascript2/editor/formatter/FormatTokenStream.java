@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.indent;
+package org.netbeans.modules.javascript2.editor.formatter;
 
 import java.util.*;
 import org.netbeans.api.lexer.Token;
