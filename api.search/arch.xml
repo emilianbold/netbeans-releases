@@ -140,22 +140,23 @@
                 Example:
             </p>
             <blockquote>
-                <pre>import org.openide.util.lookup.Lookups;
+                <pre>
+import org.openide.util.lookup.Lookups;
 
-                    public class MyNode extends AbstractNode {
+public class MyNode extends AbstractNode {
 
-                    public MyNode(FileObject folder) {
-                        super( new MyNodeChildren(folder),
-                            Lookups.singleton(SearchInfoDescriptionFactory.createSearchInfo(
-                                folder,
-                                new SearchFilterDescription[] {
-                                    SearchInfoDescriptionFactory.VISIBILITY_FILTER
-                        }) );
-                    }
+    public MyNode(FileObject folder) {
+        super( new MyNodeChildren(folder),
+            Lookups.singleton(SearchInfoDescriptionFactory.createSearchInfo(
+                folder,
+                new SearchFilterDescription[] {
+                    SearchInfoDescriptionFactory.VISIBILITY_FILTER
+        }) );
+    }
 
-                    ...
+    ...
 
-                    }
+}
                 </pre>
             </blockquote>
             <p>
@@ -170,23 +171,24 @@
                 In this case, a special technique must be used:
             </p>
             <blockquote>
-                <pre>import org.openide.util.lookup.AbstractLookup;
-                    import org.openide.util.lookup.InstanceContent;
+                <pre>
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
-                    public class MyNode extends AbstractNode {
+public class MyNode extends AbstractNode {
 
-                        public MyNode() {
-                            this(new InstanceContent());
-                        }
+    public MyNode() {
+        this(new InstanceContent());
+    }
 
-                        public MyNode(InstanceContent ic) {
-                            super(new AbstractLookup(ic));
-                            ic.add(SearchInfoDefinitionFactory.createSearchInfoBySubnodes(this));
-                        }
+    public MyNode(InstanceContent ic) {
+        super(new AbstractLookup(ic));
+        ic.add(SearchInfoDefinitionFactory.createSearchInfoBySubnodes(this));
+    }
 
-                        ...
+    ...
 
-                    }
+}
                 </pre>
             </blockquote>
 
@@ -198,27 +200,28 @@
                 have to be put into the lookup of the root node.
             </p>
             <blockquote>
-                <pre>import org.openide.util.lookup.AbstractLookup;
-                    import org.openide.util.lookup.InstanceContent;
+                <pre>
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
-                    public class MyNode extends AbstractNode {
+public class MyNode extends AbstractNode {
 
-                        public MyNode() {
-                            this(new InstanceContent());
-                        }
+    public MyNode() {
+        this(new InstanceContent());
+    }
 
-                        public MyNode(InstanceContent ic) {
-                            super(new AbstractLookup(ic));
-                            ic.add(new SubTreeSearchOptions() {
-                                public List&lt;SearchFilterDefinition&gt; getFilters() {
-                                // return list of SearchInfoDefinition objects.
-                                }
-                            });
-                        }
+    public MyNode(InstanceContent ic) {
+        super(new AbstractLookup(ic));
+        ic.add(new SubTreeSearchOptions() {
+            public List&lt;SearchFilterDefinition&gt; getFilters() {
+            // return list of SearchFilterDefinitions objects.
+            }
+        });
+    }
 
-                        ...
+    ...
 
-                    }
+}
                 </pre>
             </blockquote>
 
@@ -260,76 +263,65 @@
             </ul>
             <blockquote>
                 <pre>
-                    // use annotation register this provider
-                    @ServiceProvider(service = SearchProvider.class)
-                    public class ExampleSearchProvider extends SearchProvider {
+// use annotation register this provider
+[at]ServiceProvider(service = SearchProvider.class)
+public class ExampleSearchProvider extends SearchProvider {
 
-                        @Override
-                        public Presenter createPresenter(boolean replaceMode) {
-                            return new BasicSearchPresenter(replaceMode);
-                        }
+    public Presenter createPresenter(boolean replaceMode) {
+        return new BasicSearchPresenter(replaceMode);
+    }
 
-                        /**
-                        * Replacing is supported.
-                        */
-                        @Override
-                        public boolean isReplaceSupported() {
-                            return true;
-                        }
+    /**
+    * Replacing is supported.
+    */
+    public boolean isReplaceSupported() {
+        return true;
+    }
 
-                        /**
-                        * This search provider is always enabled.
-                        */
-                        @Override
-                        public boolean isEnabled() {
-                            return true; // could be disabled on some platforms
-                        }
+    /**
+    * This search provider is always enabled.
+    */
+    public boolean isEnabled() {
+        return true; // could be disabled on some platforms
+    }
 
-                        /**
-                        *
-                        */
-                        private static class ExampleSearchPresenter
-                                extends BasicSearchProvider.Presenter {
+    private static class ExampleSearchPresenter
+            extends BasicSearchProvider.Presenter {
 
-                            BasicSearchForm form = null;
-                            private boolean replacing;
+        BasicSearchForm form = null;
+        private boolean replacing;
 
-                            public BasicSearchPresenter(boolean replacing) {
-                                this.replacing = replacing;
-                            }
+        public BasicSearchPresenter(boolean replacing) {
+            this.replacing = replacing;
+        }
 
-                            @Override
-                            public JComponent createForm() {
-                                if (form == null) {
-                                    form = new Form(); // create a new with UI for specifying search settings
-                                    form.setName("Example Provider");
-                                }
-                                return form;
-                            }
+        public JComponent createForm() {
+            if (form == null) {
+                form = new Form(); // create a new with UI for specifying search settings
+                form.setName("Example Provider");
+            }
+            return form;
+        }
 
-                            @Override
-                            public SearchComposition&lt;Def&gt; composeSearch() {
+        public SearchComposition&lt;Def&gt; composeSearch() {
 
-                                // here create a new search composition appropriate for settings specified in the form.
-                            }
+            // here create a new search composition appropriate for settings specified in the form.
+        }
 
-                            @Override
-                            public boolean isUsable() {
-                                return form.isUsable();
-                            }
+        public boolean isUsable() {
+            return form.isUsable();
+        }
 
-                            @Override
-                            public void addUsabilityChangeListener(ChangeListener cl) {
-                                form.setUsabilityChangeListener(cl);
-                            }
+        public void addUsabilityChangeListener(ChangeListener cl) {
+            form.setUsabilityChangeListener(cl);
+        }
 
-                            @Override
-                            public void clean() {
-                                super.clean();
-                                form.clean();
-                            }
-                        }
-                    }
+        public void clean() {
+            super.clean();
+            form.clean();
+        }
+    }
+}
                 </pre>
             </blockquote>
             <api group="java"
