@@ -42,6 +42,7 @@
 package org.netbeans.spi.search.provider;
 
 import javax.swing.JComponent;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.nodes.Node;
 
 /**
@@ -56,14 +57,14 @@ public abstract class SearchResultsDisplayer<T> {
     /**
      * Create component that will be shown in the Search Results window.
      */
-    public abstract JComponent createVisualComponent();
+    public abstract @NonNull JComponent createVisualComponent();
 
     /**
      * This method is called when a new matching object is
      * found. It should add representation of this matching object to model of
      * created visual component.
      */
-    public abstract void addMatchingObject(T object);
+    public abstract void addMatchingObject(@NonNull T object);
 
     /**
      * Get default displayer that shows results as a tree of nodes.
@@ -71,7 +72,8 @@ public abstract class SearchResultsDisplayer<T> {
      * @param helper Helper that returns nodes for matching objects.
      */
     public static <U> SearchResultsDisplayer<U> createDefault(
-            NodeDisplayer<U> helper) {
+            @NonNull NodeDisplayer<U> helper,
+            @NonNull SearchComposition<U> searchComposition) {
 
         return null; //TODO
     }
@@ -88,5 +90,5 @@ public abstract class SearchResultsDisplayer<T> {
      * Return title of this displayer. It will be displayed in the tab within
      * search results window.
      */
-    public abstract String getTitle();
+    public abstract @NonNull String getTitle();
 }

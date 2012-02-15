@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.search.provider.SearchInfo;
 
 /**
@@ -66,14 +68,14 @@ public abstract class SearchScopeDefinition {
     /**
      * Identifies type of search scope.
      */
-    public abstract String getTypeId();
+    public abstract @NonNull String getTypeId();
 
     /**
      * Returns human-readable, localized name of this search scope.
      * 
      * @return  name of this search scope
      */
-    public abstract String getDisplayName();
+    public abstract @NonNull String getDisplayName();
 
     /**
      * Returns an additional information about this search scope.
@@ -84,7 +86,7 @@ public abstract class SearchScopeDefinition {
      * @return  string with the additional information,
      *          or {@code null} if no additional information is available
      */
-    public String getAdditionalInfo() {
+    public @CheckForNull String getAdditionalInfo() {
         return null;
     }
     
@@ -105,7 +107,8 @@ public abstract class SearchScopeDefinition {
      * @param l listener to be registered
      * @see #isApplicable
      */
-    public synchronized final void addChangeListener(ChangeListener l) {
+    public synchronized final void addChangeListener(
+            @NonNull ChangeListener l) {
         if (!changeListeners.contains(l)) {
             changeListeners.add(l);
         }
@@ -120,7 +123,8 @@ public abstract class SearchScopeDefinition {
      * @see #addChangeListener
      * @see #isApplicable
      */
-    public final void removeChangeListener(ChangeListener l) {
+    public synchronized final void removeChangeListener(
+            @NonNull ChangeListener l) {
         changeListeners.remove(l);
     }
 
@@ -141,7 +145,7 @@ public abstract class SearchScopeDefinition {
      * 
      * @return  {@code SearchInfo} defining the search scope
      */
-    public abstract SearchInfo getSearchInfo();
+    public abstract @NonNull SearchInfo getSearchInfo();
 
     @Override
     public String toString() {

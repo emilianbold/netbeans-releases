@@ -43,6 +43,8 @@ package org.netbeans.api.search;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.Parameters;
 
 /**
  * Helper for creating regular expression patterns for file-name patterns that
@@ -166,18 +168,21 @@ public final class RegexpUtil {
 
     /**
      * Compile file name pattern for search options.
+     *
+     * @param searchScopeOptions Search scope options containing file name
+     * pattern specification.
+     * @return Pattern for matching file names or file paths.
+     * @throws PatternSyntaxException Thrown if file name pattern is invalid.
      */
-    public static Pattern makeFileNamePattern(SearchScopeOptions so)
+    public static Pattern makeFileNamePattern(
+            @NonNull SearchScopeOptions searchScopeOptions)
             throws PatternSyntaxException {
 
-        if (so == null) {
-            throw new NullPointerException();
-        }
-
-        if (so.isRegexp()) {
-            return compileRegexpFileNamePattern(so.getPattern());
+        Parameters.notNull("searchScopeOptions", searchScopeOptions);   //NOI18N
+        if (searchScopeOptions.isRegexp()) {
+            return compileRegexpFileNamePattern(searchScopeOptions.getPattern());
         } else {
-            return compileSimpleFileNamePattern(so.getPattern());
+            return compileSimpleFileNamePattern(searchScopeOptions.getPattern());
         }
     }
 }

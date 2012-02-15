@@ -41,6 +41,7 @@
  */
 package org.netbeans.api.search.ui;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Lookup;
 
 /**
@@ -51,7 +52,7 @@ import org.openide.util.Lookup;
  */
 public abstract class ComponentFactory {
 
-    public static ComponentFactory getDefault() {
+    public static @NonNull ComponentFactory getDefault() {
         ComponentFactory def =
                 Lookup.getDefault().lookup(ComponentFactory.class);
         if (def == null) {
@@ -65,12 +66,12 @@ public abstract class ComponentFactory {
     /**
      * Creates combo box for specifying file name pattern.
      */
-    public abstract FileNameComboBox createFileNameComboBox();
+    public abstract @NonNull FileNameComboBox createFileNameComboBox();
 
     /**
      * Creates combo box for specifying search scope.
      */
-    public abstract ScopeComboBox createScopeComboBox();
+    public abstract @NonNull ScopeComboBox createScopeComboBox();
 
     /**
      * Creates panel for specifying search scope options.
@@ -83,6 +84,6 @@ public abstract class ComponentFactory {
      * archives, search in generated sources, use ignore list, treat file name
      * pattern as regular expression matching file path)
      */
-    public abstract ScopeSettingsPanel createScopeSettingsPanel(
-            boolean searchAndReplace, FileNameComboBox fileNameComboBox);
+    public abstract @NonNull ScopeSettingsPanel createScopeSettingsPanel(
+            boolean searchAndReplace, @NonNull FileNameComboBox fileNameComboBox);
 }

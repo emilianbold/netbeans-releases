@@ -43,6 +43,8 @@ package org.netbeans.spi.search.provider;
 
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.HelpCtx;
 
 /**
@@ -59,7 +61,7 @@ public abstract class SearchProvider {
      * false if it will be used in Find dialog.
      * @return New presenter that will be used in the search dialog.
      */
-    public abstract Presenter createPresenter(boolean replaceMode);
+    public abstract @NonNull Presenter createPresenter(boolean replaceMode);
 
     /**
      * If replace is supported, this dialog will be shown in replace dialog.
@@ -81,7 +83,7 @@ public abstract class SearchProvider {
      * Get help ID for this type of search. Can return null if it is not
      * available.
      */
-    public HelpCtx getHelpCtx() {
+    public @CheckForNull HelpCtx getHelpCtx() {
         return null;
     }
 
@@ -102,7 +104,7 @@ public abstract class SearchProvider {
          * the current settings can be obtained from the form when a new search
          * is started, e.i. when {@link #composeSearch()} is called.
          */
-        public abstract JComponent createForm();
+        public abstract @NonNull JComponent createForm();
 
         /**
          * Performs search considering current settings in the panel that was
@@ -110,7 +112,7 @@ public abstract class SearchProvider {
          *
          * @return A new search composition.
          */
-        public abstract SearchComposition<?> composeSearch();
+        public abstract @NonNull SearchComposition<?> composeSearch();
 
         /**
          * Test that the current settings specified in associated form are
@@ -128,7 +130,8 @@ public abstract class SearchProvider {
          * @param cl Change listener that should be notified when usability of
          * the form changes.
          */
-        public abstract void addUsabilityChangeListener(ChangeListener cl);
+        public abstract void addUsabilityChangeListener(
+                @NonNull ChangeListener cl);
 
         /**
          * Method called when the dialog is closed. It should release allocated

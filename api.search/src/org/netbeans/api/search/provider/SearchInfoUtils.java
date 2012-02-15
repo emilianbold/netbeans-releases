@@ -41,6 +41,8 @@
  */
 package org.netbeans.api.search.provider;
 
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.search.SearchInfoDefinitionFactory;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.impl.CompoundSearchInfo;
@@ -52,6 +54,7 @@ import org.netbeans.spi.search.impl.SearchInfoDefinitionUtils;
 import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.Parameters;
 
 /**
  * Method for getting SearchInfo for nodes.
@@ -66,7 +69,9 @@ public final class SearchInfoUtils {
      * @return Search info for a node. If no search info was defined and it
      * cannot be created for this node, null is returned.
      */
-    public static SearchInfo getSearchInfoForNode(Node node) {
+    public static @CheckForNull SearchInfo getSearchInfoForNode(
+            @NonNull Node node) {
+        Parameters.notNull("node", node);                               //NOI18N
         SearchInfoDefinition sid =
                 SearchInfoDefinitionUtils.getSearchInfoDefinition(node);
         if (sid == null) {
@@ -82,7 +87,9 @@ public final class SearchInfoUtils {
      *
      * @return Defined SearchInfo, or null if not available.
      */
-    public static SearchInfo findDefinedSearchInfo(Node node) {
+    public static @CheckForNull SearchInfo findDefinedSearchInfo(
+            @NonNull Node node) {
+        Parameters.notNull("node", node);                               //NOI18N
         SearchInfoDefinition sid =
                 SearchInfoDefinitionUtils.findSearchInfoDefinition(node);
         if (sid != null) {
@@ -95,11 +102,9 @@ public final class SearchInfoUtils {
     /**
      * Create a new SearchInfo for a SearchInfoDefinition instance.
      */
-    public static SearchInfo createForDefinition(
-            SearchInfoDefinition definition) {
-        if (definition == null) {
-            throw new NullPointerException("No definition passed.");    //NOI18N
-        }
+    public static @NonNull SearchInfo createForDefinition(
+            @NonNull SearchInfoDefinition definition) {
+        Parameters.notNull("definition", definition);                   //NOI18N
         return new DelegatingSearchInfo(definition);
     }
 
@@ -124,31 +129,25 @@ public final class SearchInfoUtils {
      * <code>null</code>
      * @since 3.13
      */
-    public static SearchInfo createCompoundSearchInfo(
+    public static @NonNull SearchInfo createCompoundSearchInfo(
             SearchInfo... delegates) {
-        if (delegates == null) {
-            throw new IllegalArgumentException("null");                 //NOI18N
-        }
         return new CompoundSearchInfo(delegates);
     }
 
     /**
      * Create a SearchInstance that is always unsearchable.
      */
-    public static SearchInfo createEmptySearchInfo() {
+    public static @NonNull SearchInfo createEmptySearchInfo() {
         return new EmptySearchInfo();
     }
 
     /**
      * Create a search info for a FileObject and a set of filters.
      */
-    public static SearchInfo createSearchInfoForRoot(FileObject root,
-            SearchFilterDefinition... filters) {
+    public static @NonNull SearchInfo createSearchInfoForRoot(
+            @NonNull FileObject root, SearchFilterDefinition... filters) {
 
-        if (root == null) {
-            throw new NullPointerException("Root cannot be null.");     //NOI18N
-        }
-
+        Parameters.notNull("root", root);                               //NOI18N
         return new DelegatingSearchInfo(
                 SearchInfoDefinitionFactory.createSearchInfo(root, filters));
     }
@@ -156,14 +155,12 @@ public final class SearchInfoUtils {
     /**
      * Create a search info for an array of FileObjects and a set of filters.
      */
-    public static SearchInfo createSearchInfoForRoots(FileObject[] folders,
+    public static @NonNull SearchInfo createSearchInfoForRoots(
+            @NonNull FileObject[] roots,
             SearchFilterDefinition... filters) {
 
-        if (folders == null) {
-            throw new NullPointerException("Folders cannot be null.");  //NOI18N
-        }
-
+        Parameters.notNull("roots", roots);                             //NOI18N
         return new DelegatingSearchInfo(
-                SearchInfoDefinitionFactory.createSearchInfo(folders, filters));
+                SearchInfoDefinitionFactory.createSearchInfo(roots, filters));
     }
 }

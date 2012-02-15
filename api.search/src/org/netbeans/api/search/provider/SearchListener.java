@@ -41,6 +41,8 @@
  */
 package org.netbeans.api.search.provider;
 
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.spi.search.SearchFilterDefinition;
 import org.openide.filesystems.FileObject;
 
@@ -64,8 +66,9 @@ public abstract class SearchListener {
      * @param filter filter that filtered out the file (can be null).
      * @param message message describing reasons for skipping (can be null).
      */
-    public void fileSkipped(FileObject fileObject,
-            SearchFilterDefinition filter, String message) {
+    public void fileSkipped(@NonNull FileObject fileObject,
+            @NullAllowed SearchFilterDefinition filter,
+            @NullAllowed String message) {
     }
 
     /**
@@ -73,7 +76,7 @@ public abstract class SearchListener {
      *
      * @param path Path of the visited directory.
      */
-    public void directoryEntered(String path) {
+    public void directoryEntered(@NonNull String path) {
     }
 
     /**
@@ -81,7 +84,7 @@ public abstract class SearchListener {
      *
      * @param fileName Name of file.
      */
-    public void fileContentMatchingStarted(String fileName) {
+    public void fileContentMatchingStarted(@NonNull String fileName) {
     }
 
     /**
@@ -94,7 +97,7 @@ public abstract class SearchListener {
      * @param fileName Name of file whose content is being read.
      * @param fileOffset Offset in file that has been processed.
      */
-    public void fileContentMatchingProgress(String fileName,
+    public void fileContentMatchingProgress(@NonNull String fileName,
             long fileOffset) {
     }
 
@@ -104,8 +107,8 @@ public abstract class SearchListener {
      * @param fileName File that caused the error.
      * @param throwable Error description.
      */
-    public void fileContentMatchingError(String fileName,
-            Throwable throwable) {
+    public void fileContentMatchingError(@NonNull String fileName,
+            @NonNull Throwable throwable) {
     }
 
     /**
@@ -113,8 +116,9 @@ public abstract class SearchListener {
      *
      * @param t Error description.
      */
-    public void generalError(Throwable t) {
+    public void generalError(@NonNull Throwable t) {
     }
+    
     /**
      * Called when the search is finishing.
      */

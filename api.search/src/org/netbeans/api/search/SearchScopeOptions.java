@@ -44,7 +44,10 @@ package org.netbeans.api.search;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.spi.search.SearchFilterDefinition;
+import org.openide.util.Parameters;
 
 /**
  * This class holds user options and custom filters for standard searchers.
@@ -54,7 +57,7 @@ import org.netbeans.spi.search.SearchFilterDefinition;
 public class SearchScopeOptions {
 
     static final SearchScopeOptions DEFAULT = new DefaultSearchOptions();
-    private String pattern = "";
+    private String pattern = "";                                        //NOI18N
     private boolean regexp = false;
     private boolean searchInArchives = false;
     private boolean searchInGenerated = false;
@@ -71,16 +74,16 @@ public class SearchScopeOptions {
      * Add a file object filter.
      */
     public void addFilter(SearchFilterDefinition filter) {
-        if (filter == null) {
-            throw new NullPointerException();
+        Parameters.notNull("filter", filter);                           //NOI18N
+        if (!filters.contains(filter)) {
+            filters.add(filter);
         }
-        filters.add(filter);
     }
 
     /**
      * Get list of custom filters.
      */
-    public List<SearchFilterDefinition> getFilters() {
+    public @NonNull List<SearchFilterDefinition> getFilters() {
         return filters;
     }
 
@@ -123,8 +126,8 @@ public class SearchScopeOptions {
     /**
      * Set file name pattern.
      */
-    public void setPattern(String pattern) {
-        this.pattern = pattern == null ? "" : pattern;
+    public void setPattern(@NullAllowed String pattern) {
+        this.pattern = pattern == null ? "" : pattern;                  //NOI18N
     }
 
     /**
@@ -165,9 +168,9 @@ public class SearchScopeOptions {
     }
 
     /**
-     * Instance initialized with default options.
+     * Create instance initialized with default options.
      */
-    public static SearchScopeOptions create() {
+    public @NonNull static SearchScopeOptions create() {
         return new SearchScopeOptions();
     }
 
@@ -177,7 +180,8 @@ public class SearchScopeOptions {
      *
      * @return Instance initialized with passed file-name related options.
      */
-    public static SearchScopeOptions create(String pattern, boolean regexp) {
+    public static @NonNull SearchScopeOptions create(
+            @NullAllowed String pattern, boolean regexp) {
         SearchScopeOptions so = SearchScopeOptions.create();
         so.setPattern(pattern);
         so.setRegexp(regexp);
@@ -193,9 +197,10 @@ public class SearchScopeOptions {
      *
      * @return Instance initialized with passed options;
      */
-    public static SearchScopeOptions create(String pattern, boolean regexp,
+    public static @NonNull SearchScopeOptions create(
+            @NullAllowed String pattern, boolean regexp,
             boolean searchInArchives, boolean searchInGenerated,
-            List<SearchFilterDefinition> filters) {
+            @NullAllowed List<SearchFilterDefinition> filters) {
 
         SearchScopeOptions so = SearchScopeOptions.create(pattern, regexp);
         so.setSearchInArchives(searchInArchives);

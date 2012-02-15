@@ -43,6 +43,7 @@
  */
 package org.netbeans.api.search;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.SearchInfoDefinition;
@@ -53,6 +54,7 @@ import org.netbeans.spi.search.impl.SubnodesSearchInfoDefinition;
 import org.netbeans.spi.search.impl.VisibilityFilter;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.Parameters;
 
 /**
  * Factory for creating
@@ -100,12 +102,10 @@ public final class SearchInfoDefinitionFactory {
      * its subfolders
      * @see SearchFilterDefinition
      */
-    public static SearchInfoDefinition createSearchInfo(
-            final FileObject root,
-            final SearchFilterDefinition[] filters) {
-        if (root == null) {
-            throw new IllegalArgumentException("folder is <null>");     //NOI18N
-        }
+    public static @NonNull SearchInfoDefinition createSearchInfo(
+            @NonNull final FileObject root,
+            @NonNull final SearchFilterDefinition[] filters) {
+        Parameters.notNull("root", root);                               //NOI18N
         return new SimpleSearchInfoDefinition(root, filters);
     }
 
@@ -128,9 +128,10 @@ public final class SearchInfoDefinitionFactory {
      * their subfolders
      * @see SearchFilterDefinition
      */
-    public static SearchInfoDefinition createSearchInfo(
-            final FileObject[] roots,
-            final SearchFilterDefinition[] filters) {
+    public static @NonNull SearchInfoDefinition createSearchInfo(
+            @NonNull final FileObject[] roots,
+            @NonNull final SearchFilterDefinition[] filters) {
+        Parameters.notNull("roots", roots);                             //NOI18N
         if (roots.length == 0) {
             return SimpleSearchInfoDefinition.EMPTY_SEARCH_INFO;
         }
@@ -167,7 +168,9 @@ public final class SearchInfoDefinitionFactory {
      * <code>SearchInfoDefinition</code> object representing combination of
      * <code>SearchInfoDefinition</code> objects of the node's subnodes
      */
-    public static SearchInfoDefinition createSearchInfoBySubnodes(Node node) {
+    public static @NonNull SearchInfoDefinition createSearchInfoBySubnodes(
+            @NonNull Node node) {
+        Parameters.notNull("node", node);                               //NOI18N
         return new SubnodesSearchInfoDefinition(node);
     }
 }

@@ -42,6 +42,7 @@
 package org.netbeans.api.search.ui;
 
 import javax.swing.JComboBox;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.search.provider.SearchInfo;
 
 /**
@@ -54,7 +55,7 @@ public abstract class ScopeComboBox extends JComboBox {
     /**
      * Get info for selected search scope.
      */
-    public abstract SearchInfo getSearchScopeInfo();
+    public abstract @NonNull SearchInfo getSearchScopeInfo();
 
     /**
      * Clean all resources when the component is no longer needed.

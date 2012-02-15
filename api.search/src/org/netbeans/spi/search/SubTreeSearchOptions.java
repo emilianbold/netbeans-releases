@@ -42,14 +42,16 @@
 package org.netbeans.spi.search;
 
 import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * This class defines default search options for a node and its subnodes.
  *
- * It only applies if no SearchInfo is found in the node where search starts.
+ * It only applies if no {@link SearchInfoDefinition} is found in the lookup of
+ * node where search starts.
  *
- * If an instance of this class is found in lookup of a node in the Projects
- * Window, it will be used for setting default search options.
+ * If an instance of this class is found in lookup of a node it will be used for
+ * setting default search options.
  *
  * It is mainly useful in project nodes to set which folders and files are
  * skipped (filtered).
@@ -61,5 +63,6 @@ public abstract class SubTreeSearchOptions {
     /**
      * Get list of filters that will be used for searching under a node.
      */
-    public abstract List<SearchFilterDefinition> getFilters();
+    public abstract @NonNull
+    List<SearchFilterDefinition> getFilters();
 }

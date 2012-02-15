@@ -41,6 +41,9 @@
  */
 package org.netbeans.api.search;
 
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+
 /**
  * This class enables users to show search dialog and start searches
  * programatically.
@@ -55,28 +58,38 @@ public final class SearchControl {
      * If options are not specified (null is passed), previous or default values
      * are used.
      */
-    public void openFindDialog(SearchPattern sp, SearchScopeOptions so,
-            boolean useIgnoreList, String scopeId) {
+    public void openFindDialog(
+            @NullAllowed SearchPattern searchPattern,
+            @NullAllowed SearchScopeOptions searchScopeOptions,
+            @NullAllowed Boolean useIgnoreList,
+            @NullAllowed String scopeId) {
     }
 
     /**
      * Shows dialog for basic replace task.
      *
      * If options are not specified (null is passed), previous or default values
-     * are be used.
+     * are used.
      */
-    public void openReplaceDialog(SearchPattern sp,
-            String replaceString, boolean preserveCase, SearchScopeOptions so,
-            String scopeId) {
+    public void openReplaceDialog(
+            @NullAllowed SearchPattern searchPattern,
+            @NullAllowed String replaceString,
+            @NullAllowed Boolean preserveCase,
+            @NullAllowed SearchScopeOptions searchScopeOptions,
+            @NullAllowed String scopeId) {
     }
 
     /**
-     * Start basic search task.
+     * Start basic search for specified parameters.
      *
-     * If options are not specified (null is passed), previous or default values
-     * are used.
+     * @param scopeId Identifier of search scope. If not specified, the default
+     * one is used.
+     * @throws IllegalArgumentException if neither non-trivial file name pattern
+     * nor non-empty text search pattern is specified.
      */
-    public void startBasicSearch(SearchPattern sp, SearchScopeOptions so,
-            String scopeId) {
+    public void startBasicSearch (
+            @NonNull SearchPattern searchPattern,
+            @NonNull SearchScopeOptions searchScopeOptions,
+            @NullAllowed String scopeId) throws IllegalArgumentException {
     }
 }

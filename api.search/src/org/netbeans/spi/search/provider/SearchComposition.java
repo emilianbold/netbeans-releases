@@ -41,6 +41,7 @@
  */
 package org.netbeans.spi.search.provider;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.search.provider.SearchListener;
 
 /**
@@ -54,18 +55,18 @@ public abstract class SearchComposition<R> {
     /**
      * Start searching.
      */
-    public abstract void start(SearchListener listener);
+    public abstract void start(@NonNull SearchListener listener);
 
     /**
      * Terminate searching.
      *
      * @param listener Search listener, can be null.
      */
-    public abstract void terminate(SearchListener listener);
+    public abstract void terminate(@NonNull SearchListener listener);
 
     /**
      * Get results displayer. All invocations of this method on a this object
      * should return identical object.
      */
-    public abstract SearchResultsDisplayer<R> getSearchResultsDisplayer();
+    public abstract @NonNull SearchResultsDisplayer<R> getSearchResultsDisplayer();
 }

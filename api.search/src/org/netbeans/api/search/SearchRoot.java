@@ -43,8 +43,11 @@ package org.netbeans.api.search;
 
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.search.provider.SearchFilter;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
 
 /**
  * Search root is a pair containing a folder (or file) and a set of file
@@ -63,12 +66,10 @@ public final class SearchRoot {
      * @param rootFile Root file, cannot be null.
      * @param filters List of default filters, can be null.
      */
-    public SearchRoot(FileObject rootFile, List<SearchFilter> filters) {
+    public SearchRoot(@NonNull FileObject rootFile,
+            @NullAllowed List<SearchFilter> filters) {
 
-        if (rootFile == null) {
-            throw new NullPointerException(
-                    "Root file cannot be null.");                       //NOI18N
-        }
+        Parameters.notNull("rootFile", rootFile);                       //NOI18N
         this.rootFile = rootFile;
         this.filters = filters == null ? EMPTY_FILTER_LIST : filters;
     }
@@ -78,7 +79,7 @@ public final class SearchRoot {
      *
      * @return List of default filters. Can be empty list, but never null.
      */
-    public List<SearchFilter> getFilters() {
+    public @NonNull List<SearchFilter> getFilters() {
         return filters;
     }
 
@@ -87,7 +88,7 @@ public final class SearchRoot {
      *
      * @return Root file (regular file or folder). Never null.
      */
-    public FileObject getFileObject() {
+    public @NonNull FileObject getFileObject() {
         return rootFile;
     }
 }

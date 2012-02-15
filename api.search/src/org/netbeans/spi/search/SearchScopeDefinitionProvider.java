@@ -42,6 +42,7 @@
 package org.netbeans.spi.search;
 
 import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * Provider of search scopes. It is an object registered in the default lookup.
@@ -52,5 +53,5 @@ import java.util.List;
  */
 public abstract class SearchScopeDefinitionProvider {
 
-    public abstract List<SearchScopeDefinition> createSearchScopeDefinitions();
+    public abstract @NonNull List<SearchScopeDefinition> createSearchScopeDefinitions();
 }

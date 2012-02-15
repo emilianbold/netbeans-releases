@@ -43,6 +43,7 @@ package org.netbeans.api.search.provider;
 
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.spi.search.provider.SearchComposition;
@@ -71,7 +72,7 @@ public abstract class SearchInfo {
      *
      * @return List of search roots associated with this search info.
      */
-    public abstract List<SearchRoot> getSearchRoots();
+    public abstract @NonNull List<SearchRoot> getSearchRoots();
 
     /**
      * Get {@link Iterator} that iterates over all files in the search scope
@@ -88,20 +89,22 @@ public abstract class SearchInfo {
      * @return Iterator over all files that comply with specified options (in
      * the scope of this search info).
      */
-    public abstract Iterator<FileObject> getFilesToSearch(
-            SearchScopeOptions options, SearchListener listener,
-            TerminationFlag terminationFlag);
+    public abstract @NonNull Iterator<FileObject> getFilesToSearch(
+            @NonNull SearchScopeOptions options,
+            @NonNull SearchListener listener,
+            @NonNull TerminationFlag terminationFlag);
 
     /**
      * Get {@link Iterable} that iterates over all files in the search scope
      * that comply with search options and search filters.
      *
      * This is only convenience method. The iterated files are the same that
-     * would be retrieved with {@link #getFilesToSearch(org.netbeans.api.search.SearchScopeOptions, org.netbeans.api.search.provider.SearchListener, org.netbeans.spi.search.provider.TerminationFlag)}.
+     * would be retrieved with {@link #getFilesToSearch(SearchScopeOptions, SearchListener, TerminationFlag)}.
      */
-    public final Iterable<FileObject> iterateFilesToSearch(
-            final SearchScopeOptions options, final SearchListener listener,
-            final TerminationFlag terminationFlag) {
+    public final @NonNull Iterable<FileObject> iterateFilesToSearch(
+            @NonNull final SearchScopeOptions options,
+            @NonNull final SearchListener listener,
+            @NonNull final TerminationFlag terminationFlag) {
 
         return new Iterable<FileObject>() {
 

@@ -43,6 +43,7 @@ package org.netbeans.api.search.ui;
 
 import javax.swing.JComboBox;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * Component for specifying file name pattern.
@@ -54,7 +55,7 @@ public abstract class FileNameComboBox extends JComboBox {
     /**
      * Get pattern for matching file names.
      */
-    public abstract String getFileNamePattern();
+    public abstract @NonNull String getFileNamePattern();
 
     /**
      * Sets whether the contained expression should be interpreted as a simple
@@ -92,10 +93,10 @@ public abstract class FileNameComboBox extends JComboBox {
     /**
      * Add listener that is notified about chagnes in the file name pattern.
      */
-    public abstract void addPatternChangeListener(ChangeListener l);
+    public abstract void addPatternChangeListener(@NonNull ChangeListener l);
 
     /**
      * Remove pattern change listener.
      */
-    public abstract void removePatternChangeListener(ChangeListener l);
+    public abstract void removePatternChangeListener(@NonNull ChangeListener l);
 }

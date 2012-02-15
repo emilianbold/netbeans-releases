@@ -45,6 +45,7 @@ package org.netbeans.spi.search;
 
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.search.SearchInfoDefinitionFactory;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
@@ -105,9 +106,10 @@ public abstract class SearchInfoDefinition {
      * @return iterator which iterates over
      * <code>FileObject</code>s to be searched
      */
-    public abstract Iterator<FileObject> filesToSearch(
-            SearchScopeOptions options, SearchListener listener,
-            TerminationFlag terminationFlag);
+    public abstract @NonNull Iterator<FileObject> filesToSearch(
+            @NonNull SearchScopeOptions options,
+            @NonNull SearchListener listener,
+            @NonNull TerminationFlag terminationFlag);
 
     /**
      * Returns list of files or folders where the search starts. It can be used
@@ -116,5 +118,5 @@ public abstract class SearchInfoDefinition {
      *
      * @return List of search roots.
      */
-    public abstract List<SearchRoot> getSearchRoots();
+    public abstract @NonNull List<SearchRoot> getSearchRoots();
 }

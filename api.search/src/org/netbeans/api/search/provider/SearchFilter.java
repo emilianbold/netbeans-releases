@@ -41,6 +41,7 @@
  */
 package org.netbeans.api.search.provider;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -83,7 +84,7 @@ public abstract class SearchFilter {
      * @exception java.lang.IllegalArgumentException if the passed
      * <code>FileObject</code> is a folder
      */
-    public abstract boolean searchFile(FileObject file)
+    public abstract boolean searchFile(@NonNull FileObject file)
             throws IllegalArgumentException;
 
     /**
@@ -97,6 +98,6 @@ public abstract class SearchFilter {
      * @exception java.lang.IllegalArgumentException if the passed
      * <code>FileObject</code> is not a folder
      */
-    public abstract FolderResult traverseFolder(FileObject folder)
-            throws IllegalArgumentException;
+    public abstract @NonNull FolderResult traverseFolder(
+            @NonNull FileObject folder) throws IllegalArgumentException;
 }

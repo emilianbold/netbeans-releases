@@ -43,6 +43,7 @@ package org.netbeans.api.search.ui;
 
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * Panel for setting search scope options.
@@ -67,7 +68,9 @@ public abstract class ScopeSettingsPanel extends JPanel {
 
     public abstract void setFileNameRegexp(boolean fileNameRegexp);
 
-    public abstract void addSettingsChangeListener(ChangeListener cl);
+    public abstract void addSettingsChangeListener(
+            @NonNull ChangeListener cl);
 
-    public abstract void removeSettingsChangeListener(ChangeListener l);
+    public abstract void removeSettingsChangeListener(
+            @NonNull ChangeListener l);
 }
