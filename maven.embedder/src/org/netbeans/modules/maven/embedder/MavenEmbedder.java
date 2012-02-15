@@ -92,6 +92,7 @@ import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.netbeans.api.annotations.common.NonNull;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
@@ -147,7 +148,7 @@ public final class MavenEmbedder {
         try {
             String localRepositoryPath = getSettings().getLocalRepository();
             if (localRepositoryPath != null) {
-                return repositorySystem.createLocalRepository(new File(localRepositoryPath));
+                return repositorySystem.createLocalRepository(FileUtil.normalizeFile(new File(localRepositoryPath)));
             }
             return repositorySystem.createLocalRepository(RepositorySystem.defaultUserLocalRepository);
         } catch (InvalidRepositoryException ex) {
