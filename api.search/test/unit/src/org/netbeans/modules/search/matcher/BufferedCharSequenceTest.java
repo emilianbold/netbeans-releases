@@ -354,8 +354,16 @@ public class BufferedCharSequenceTest {
         BufferedCharSequence chars = new BufferedCharSequence(fo, cs_UTF_8.newDecoder(), f.length());
         assertEquals('0', chars.charAt(0));
         assertEquals('1', chars.charAt(1));
-        assertEquals('X', chars.charAt(4098));
-        assertEquals('Y', chars.charAt(4099));
+        int xPos;
+        if (chars.charAt(4094) == '\r' && chars.charAt(4095) == '\n') {
+            // windows line-endings, can be caused by hg extension win32text
+            xPos = 4098;
+        } else {
+            // unix or mac line-endings
+            xPos = 4097;
+        }
+        assertEquals('X', chars.charAt(xPos));
+        assertEquals('Y', chars.charAt(xPos+1));
     }
 
     /**
