@@ -116,29 +116,39 @@ public final class BrowserSupport {
      * browser changes in IDE options.
      */
     private BrowserSupport() {
-        this(WebBrowsers.getInstance().getPreffered());
-        listener = new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (WebBrowsers.PROP_DEFAULT_BROWSER.equals(evt.getPropertyName())) {
-                    if (!WebBrowsers.getInstance().getPreffered().getId().equals(browser.getId())) {
-                        // update browser pane
-                        browser = WebBrowsers.getInstance().getPreffered();
-                        pane.removeListener(l);
-                        pane = INST.browser.createNewBrowserPane();
-                        pane.addListener(l);
-                    }
-                }
-            }
-        };
-        WebBrowsers.getInstance().addPropertyChangeListener(listener);
+        this(null);
     }
     
     private BrowserSupport(WebBrowser browser) {
         this.browser = browser;
-        this.pane = browser.createNewBrowserPane();
-        this.l = new ListenerImpl();
-        pane.addListener(l);
+    }
+    
+    private synchronized WebBrowserPane getWebBrowserPane() {
+        if (pane == null) {
+            if (browser == null) {
+                browser = WebBrowsers.getInstance().getPreffered();
+                listener = new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if (WebBrowsers.PROP_DEFAULT_BROWSER.equals(evt.getPropertyName())) {
+                            if (!WebBrowsers.getInstance().getPreffered().getId().equals(browser.getId())) {
+                                assert pane != null;
+                                // update browser pane
+                                browser = WebBrowsers.getInstance().getPreffered();
+                                pane.removeListener(l);
+                                pane = INST.browser.createNewBrowserPane();
+                                pane.addListener(l);
+                            }
+                        }
+                    }
+                };
+                WebBrowsers.getInstance().addPropertyChangeListener(listener);
+            }
+            pane = browser.createNewBrowserPane();
+            l = new ListenerImpl();
+            pane.addListener(l);
+        }
+        return pane;
     }
     
     /**
@@ -159,7 +169,7 @@ public final class BrowserSupport {
 
         currentContext = new Pair(p, file);
         currentURL = url;
-        pane.showURL(url);
+        getWebBrowserPane().showURL(url);
     }
 
     /**
@@ -170,7 +180,7 @@ public final class BrowserSupport {
         if (!canReload(url)) {
             return false;
         }
-        pane.reload();
+        getWebBrowserPane().reload();
         return true;
     }
     
@@ -232,7 +242,7 @@ public final class BrowserSupport {
      * DOMInspectionFeature would fit here.
      */
     public Object getDOM() {
-        DOMInspectionFeature dom = pane.getLookup().lookup(DOMInspectionFeature. class);
+        DOMInspectionFeature dom = getWebBrowserPane().getLookup().lookup(DOMInspectionFeature. class);
         if (dom == null) {
             return null;
         }
