@@ -107,7 +107,11 @@ page.on('message', function (message) {
         for (i=0; i<tabs.length; i++) {
             tab = tabs[i];
             if (tab[tabIdKey] === message.tabId) {
-                tab.reload();
+                if (message.url != undefined) {
+                    tab.url = message.url;
+                } else {
+                    tab.reload();
+                }
             }
         }
     } else if (type === 'backgroundPageReady') {

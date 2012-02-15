@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
@@ -11,7 +11,7 @@
  * Development and Distribution License("CDDL") (collectively, the
  * "License"). You may not use this file except in compliance with the
  * License. You can obtain a copy of the License at
- * http://www.NetBeans.org/cddl-gplv2.html
+ * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
@@ -39,45 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.extbrowser.plugins;
 
-// Initialization/cleanup
-NetBeans.cleanup();
+import org.netbeans.modules.extbrowser.ExtBrowserImpl;
+import org.netbeans.modules.web.common.spi.browser.DOMInspectionFeature;
 
-// Register reload-callback
-NetBeans.browserReloadCallback = function(tabId, newUrl) {
-    if (newUrl != undefined) {
-        chrome.tabs.update(tabId, {url: newUrl});
-    } else {
-        chrome.tabs.reload(tabId, {bypassCache: true});
+/**
+ * This is just as example/placeholder.
+ */
+public class DOMInspectionFeatureImpl implements DOMInspectionFeature {
+
+    private ExtBrowserImpl impl;
+
+    public DOMInspectionFeatureImpl(ExtBrowserImpl impl) {
+        this.impl = impl;
     }
+    
+    @Override
+    public Object getDOM() {
+        return ExternalBrowserPlugin.getInstance().getDOM(impl.getBrowserTabDescriptor());
+    }
+    
 }
-
-// Register tab listeners
-chrome.tabs.onCreated.addListener(function(tab) {
-    NetBeans.tabCreated(tab.id);
-});
-chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
-    NetBeans.tabUpdated(tab);
-});
-chrome.tabs.onRemoved.addListener(function(tabId) {
-    NetBeans.tabRemoved(tabId);
-});
-
-// onCreated event is not delivered for the first tab;
-// As a workaround, we go through all existing tabs and consider them as new.
-// onUpdated event is not delivered sometimes as well for the first tab;
-// Hence, we consider also tab urls that are known already.
-chrome.windows.getAll({populate: true}, function(windows) {
-    for (var i=0; i<windows.length; i++) {
-        var window = windows[i];
-        for (var j=0; j<window.tabs.length; j++) {
-            var tab = window.tabs[j];
-            NetBeans.tabCreated(tab.id);
-            var url = tab.url;
-            if (url !== undefined && url !== null && url.length !== 0) {
-                // URL of the tab is known already
-                NetBeans.tabUpdated(tab);
-            }
-        }
-    }    
-});

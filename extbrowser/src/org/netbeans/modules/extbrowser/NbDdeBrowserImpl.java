@@ -65,6 +65,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin;
 import org.openide.util.Exceptions;
 
 
@@ -159,7 +160,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
      *
      * @param url URL to show in the browser.
      */
-    public synchronized void setURL(final URL url) {
+    protected void loadURLInBrowser(URL url) {
         if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
             ExtWebBrowser.getEM().log(Level.FINE, "" + System.currentTimeMillis() + "NbDdeBrowserImpl.setUrl: " + url); // NOI18N
         }
@@ -380,9 +381,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                     ExtWebBrowser.getEM().log(Level.FINE, "" + System.currentTimeMillis() + " secondpart");          // NOI18N
                 }
 
-                URL oldUrl = task.browser.url;
-                task.browser.url = url;
-                task.browser.pcs.firePropertyChange(PROP_URL, oldUrl, url);
+                task.browser.pcs.firePropertyChange(PROP_URL, task.browser.getURL(), url);
 
             } catch (Exception ex) {
                 final Exception ex1 = ex;
