@@ -90,7 +90,7 @@ public final class BrowserSupport {
      * will have its own browser pane as well. The browser used to open URLs is
      * always the one configured in IDE Options.
      */
-    public BrowserSupport getDefault() {
+    public static BrowserSupport getDefault() {
         return INSTANCE;
     }
 
