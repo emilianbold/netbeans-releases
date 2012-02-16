@@ -669,7 +669,40 @@ public abstract class JPACompletionItem implements CompletionItem {
             return this;
         }
     }
+    public static final class AddConnectionElementItem extends JPACompletionItem {
 
+        private static CCPaintComponent.AddConnectionItemPaintComponent paintComponent = null;
+
+        @Override
+        public int getSortPriority() {
+            return 1000;
+        }
+
+        @Override
+        public String getItemText() {
+            return "";
+        }
+        
+        @Override
+        public boolean substituteText(JTextComponent c, int offset, int len, boolean shift) {
+            ConnectionManager.getDefault().showAddConnectionDialog(null);
+            return false;
+        }
+
+        @Override
+        public Component getPaintComponent(boolean isSelected) {
+            if (paintComponent == null) {
+                paintComponent = new CCPaintComponent.AddConnectionItemPaintComponent();
+            }
+            paintComponent.setSelected(isSelected);
+            return paintComponent;
+        }
+
+        public Object getAssociatedObject() {
+            return this;
+        }
+    }
+    
     abstract private static class PersistenceXmlCompletionItem extends JPACompletionItem {
         /////////
 

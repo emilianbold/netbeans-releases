@@ -78,6 +78,8 @@ public final class PUCompletionManager {
         // Items for property names 
         Completor.PersistencePropertyNameCompletor propertyNamesCompletor = new Completor.PersistencePropertyNameCompletor(PersistenceCfgProperties.getAllKeyAndValues());
         registerCompletor(PersistenceCfgXmlConstants.PROPERTY_TAG, PersistenceCfgXmlConstants.NAME_ATTRIB, propertyNamesCompletor);
+        Completor.PersistencePropertyValueCompletor propertyValuesCompletor = new Completor.PersistencePropertyValueCompletor(PersistenceCfgProperties.getAllKeyAndValues());
+        registerCompletor(PersistenceCfgXmlConstants.PROPERTY_TAG, PersistenceCfgXmlConstants.VALUE_ATTRIB, propertyValuesCompletor);
 
         // Items for mapping xml files
         Completor.PersistenceMappingFileCompletor mappingFilesCompletor = new Completor.PersistenceMappingFileCompletor();

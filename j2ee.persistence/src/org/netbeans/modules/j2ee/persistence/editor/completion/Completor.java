@@ -45,6 +45,8 @@ import java.io.IOException;
 import java.util.*;
 import javax.lang.model.element.*;
 import javax.swing.text.Document;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -57,6 +59,10 @@ import org.netbeans.modules.j2ee.persistence.editor.CompletionContext;
 import org.netbeans.modules.j2ee.persistence.editor.JPAEditorUtil;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
+import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
+import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourceProvider;
+import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Node;
 
@@ -357,9 +363,9 @@ public abstract class Completor {
      */
     public static class PersistencePropertyNameCompletor extends Completor {
 
-        private Map<Provider, Map<String, Object>> allKeyAndValues;
+        private Map<Provider, Map<String, String[]>> allKeyAndValues;
 
-        PersistencePropertyNameCompletor(Map<Provider, Map<String, Object>> allKeyAndValues) {
+        PersistencePropertyNameCompletor(Map<Provider, Map<String, String[]>> allKeyAndValues) {
             this.allKeyAndValues = allKeyAndValues;
         }
 
@@ -384,6 +390,58 @@ public abstract class Completor {
                             itemTexts[i]);
                     results.add(item);
                 }
+            }
+
+            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            return results;
+        }
+    }
+    /**
+     * A completor for completing the persistence property value in persistence.xml file
+     * 
+     */
+    public static class PersistencePropertyValueCompletor extends Completor {
+
+        private Map<Provider, Map<String, String[]>> allKeyAndValues;
+
+        PersistencePropertyValueCompletor(Map<Provider, Map<String, String[]>> allKeyAndValues) {
+            this.allKeyAndValues = allKeyAndValues;
+        }
+
+        @Override
+        public List<JPACompletionItem> doCompletion(CompletionContext context) {
+            List<JPACompletionItem> results = new ArrayList<JPACompletionItem>();
+            int caretOffset = context.getCaretOffset();
+            String typedChars = context.getTypedPrefix();
+            String propertyName = getPropertyName(context.getTag());
+            if(propertyName == null || propertyName.equals("")) return results;
+            String providerClass = getProviderClass(context.getTag());
+            Project enclosingProject = FileOwnerQuery.getOwner(
+                    NbEditorUtilities.getFileObject(context.getDocument())
+                    );
+            Provider provider = ProviderUtil.getProvider(providerClass, enclosingProject);
+            String[] values = null;
+            if(provider == null || Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(provider))){
+                values = allKeyAndValues.get(null).get(propertyName);
+            }
+            if(values == null && provider != null){
+                values = allKeyAndValues.get(provider).get(propertyName);
+                if(values == null && propertyName.equals(provider.getJdbcUrl())){
+   
+                    //always allow this property completion, even for container managed(it's in jta-data-source  tag, not in properties)
+                    DatabaseConnection[] cns = ConnectionManager.getDefault().getConnections();
+                    for(DatabaseConnection cn:cns){
+                        JPACompletionItem item = JPACompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
+                                cn.getDatabaseURL());
+                        results.add(item);
+                    }
+                    results.add(new JPACompletionItem.AddConnectionElementItem());
+                }
+            }
+            if(values != null)for (int i = 0; i < values.length; i ++) {
+                    JPACompletionItem item = JPACompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
+                            values[i]);
+                    results.add(item);
             }
 
             setAnchorOffset(context.getCurrentToken().getOffset() + 1);
@@ -444,6 +502,17 @@ public abstract class Completor {
                     name = ch.getFirstChild().getNodeValue();
                 }
             }
+        }
+        return name;
+    }
+    private static String getPropertyName(Node tag){
+        String name = null;
+        while(tag!=null && !"property".equals(tag.getNodeName()))tag = tag.getParentNode();//NOI18N
+        if(tag != null){
+             Node nmN = tag.getAttributes().getNamedItem("name");//NOI18N
+             if(nmN != null){
+                 name = nmN.getNodeValue();
+             }
         }
         return name;
     }
