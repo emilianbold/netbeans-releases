@@ -45,12 +45,14 @@ import com.oracle.nashorn.ir.FunctionNode;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
@@ -61,6 +63,8 @@ import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 public class JsFormatter implements Formatter {
 
     private static final Logger LOGGER = Logger.getLogger(JsFormatter.class.getName());
+
+    private static final Pattern SAFE_DELETE_PATTERN = Pattern.compile("\\s*"); // NOI18N
 
     @Override
     public int hangingIndentSize() {
@@ -113,7 +117,7 @@ public class JsFormatter implements Formatter {
                         case EOL:
                             // remove trailing spaces
                             FormatToken start = null;
-                            for (int j = i - 1; j > 0; j--) {
+                            for (int j = i - 1; j >= 0; j--) {
                                 FormatToken nextToken = tokens.get(j);
                                 if (!nextToken.isVirtual()
                                         && nextToken.getKind() != FormatToken.Kind.WHITESPACE) {
@@ -134,6 +138,7 @@ public class JsFormatter implements Formatter {
                             FormatToken indentationStart = null;
                             FormatToken indentationEnd = null;
                             StringBuilder current = new StringBuilder();
+                            int index = i;
                             // we move main loop here as well to not to process tokens twice
                             for (int j = i + 1; j < tokens.size(); j++) {
                                 FormatToken nextToken = tokens.get(j);
@@ -156,8 +161,12 @@ public class JsFormatter implements Formatter {
                                 i++;
                             }
                             if (indentationEnd != null && indentationEnd.getKind() != FormatToken.Kind.EOL) {
+                                int indentationSize = indentationLevel * IndentUtils.indentLevelSize(doc);
+                                if (isContinuation(tokens, index)) {
+                                    indentationSize += 4; // FIXME
+                                }
                                 offsetDiff = replace(doc, indentationStart.getOffset(),
-                                        current.toString(), IndentUtils.createIndentString(doc, indentationLevel * IndentUtils.indentLevelSize(doc)),
+                                        current.toString(), IndentUtils.createIndentString(doc, indentationSize),
                                         offsetDiff);
                             }
                             break;
@@ -167,6 +176,40 @@ public class JsFormatter implements Formatter {
                 }
             }
         });
+    }
+
+    public boolean isContinuation(List<FormatToken> tokens, int index) {
+        FormatToken token = tokens.get(index);
+        if (token.getKind() == FormatToken.Kind.SOURCE_START) {
+            return false;
+        }
+        FormatToken next = token.next();
+        if (next.getKind() == FormatToken.Kind.AFTER_STATEMENT) {
+            return false;
+        }
+
+        FormatToken result = null;
+        for (int i = index - 1; i >= 0; i--) {
+            FormatToken previous = tokens.get(i);
+            FormatToken.Kind kind = previous.getKind();
+            if (kind == FormatToken.Kind.SOURCE_START
+                    || kind == FormatToken.Kind.TEXT
+                    || kind == FormatToken.Kind.AFTER_STATEMENT) {
+                result = previous;
+                break;
+            }
+        }
+        if (result == null
+                || result.getKind() == FormatToken.Kind.SOURCE_START
+                || result.getKind() == FormatToken.Kind.AFTER_STATEMENT) {
+            return false;
+        }
+        String text = result.getText().toString();
+        return !(JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(text)
+                || JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(text)
+                // this is just safeguard literal offsets should be fixed
+                || JsTokenId.OPERATOR_SEMICOLON.fixedText().equals(text));
+
     }
 
     private int updateIndentationLevel(FormatToken token, int indentationLevel) {
@@ -185,6 +228,8 @@ public class JsFormatter implements Formatter {
         }
 
         try {
+            assert SAFE_DELETE_PATTERN.matcher(oldString).matches()
+                    : oldString;
             doc.remove(offset + offsetDiff, oldString.length());
             doc.insertString(offset + offsetDiff, newString, null);
             return offsetDiff + (newString.length() - oldString.length());
@@ -196,6 +241,8 @@ public class JsFormatter implements Formatter {
 
     private int remove(BaseDocument doc, int offset, int length, int offsetDiff) {
         try {
+            assert SAFE_DELETE_PATTERN.matcher(doc.getText(offset + offsetDiff, length)).matches()
+                    : doc.getText(offset + offsetDiff, length);
             doc.remove(offset + offsetDiff, length);
             return offsetDiff - length;
         } catch (BadLocationException ex) {

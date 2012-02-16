@@ -81,4 +81,8 @@ public class JsFormatterTest extends JsTestBase {
     public void testIndentation3() throws Exception {
         reformatFileContents("testfiles/formatter/functions2.js",new IndentPrefs(4, 4));
     }
+
+    public void testFormatting1() throws Exception {
+        reformatFileContents("testfiles/formatter/functions3.js",new IndentPrefs(4, 4));
+    }
 }
