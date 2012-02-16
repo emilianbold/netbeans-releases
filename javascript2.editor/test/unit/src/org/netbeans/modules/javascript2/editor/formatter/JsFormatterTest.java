@@ -94,6 +94,10 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/functions4.js",new IndentPrefs(4, 4));
     }
 
+    public void testFunctions5() throws Exception {
+        reformatFileContents("testfiles/formatter/functions5.js",new IndentPrefs(4, 4));
+    }
+
     public void testObjects1() throws Exception {
         reformatFileContents("testfiles/formatter/objects1.js",new IndentPrefs(4, 4));
     }

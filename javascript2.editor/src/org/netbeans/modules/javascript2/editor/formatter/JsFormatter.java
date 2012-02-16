@@ -188,13 +188,26 @@ public class JsFormatter implements Formatter {
 
     public boolean isContinuation(List<FormatToken> tokens, int index) {
         FormatToken token = tokens.get(index);
+
+        assert token.getKind() == FormatToken.Kind.SOURCE_START
+                || token.getKind() == FormatToken.Kind.EOL;
+
         if (token.getKind() == FormatToken.Kind.SOURCE_START) {
             return false;
         }
+
         FormatToken next = token.next();
         if (next.getKind() == FormatToken.Kind.AFTER_STATEMENT
                 || next.getKind() == FormatToken.Kind.AFTER_PROPERTY) {
             return false;
+        }
+
+        if (!next.isVirtual() && next.getText() != null) {
+            String nextText = next.getText().toString();
+            if(JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(nextText)
+                    || JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(nextText)) {
+                return false;
+            }
         }
 
         FormatToken result = null;
