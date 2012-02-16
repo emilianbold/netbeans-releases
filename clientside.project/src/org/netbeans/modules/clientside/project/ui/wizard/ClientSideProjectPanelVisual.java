@@ -240,6 +240,11 @@ public class ClientSideProjectPanelVisual extends JPanel implements DocumentList
         String projectName = (String) settings.getProperty("name");
         if (projectName == null) {
             projectName = "ClientSideProject";
+            int index = 0;
+            while ((new File(projectLocation, projectName)).exists()) {
+                index++;
+                projectName = "ClientSideProject"+index;
+            }
         }
         this.projectNameTextField.setText(projectName);
         this.projectNameTextField.selectAll();
