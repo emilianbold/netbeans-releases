@@ -71,7 +71,8 @@ public class FormatVisitor extends NodeVisitor {
 
     @Override
     public Node visit(Block block, boolean onset) {
-        if (onset) {
+        if (onset && (block instanceof FunctionNode || isScript(block)
+                || block.getStart() != block.getFinish())) {
             // indentation mark
             Token token = getToken(block.position(), JsTokenId.BRACKET_LEFT_CURLY);
             if (token != null && !isScript(block)) {
@@ -118,7 +119,13 @@ public class FormatVisitor extends NodeVisitor {
                 }
             }
         }
-        return null;
+
+        if (block instanceof FunctionNode || isScript(block)
+                || block.getStart() != block.getFinish()) {
+            return null;
+        } else {
+            return super.visit(block, onset);
+        }
     }
 
     @Override
