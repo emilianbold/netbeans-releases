@@ -511,6 +511,15 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             }
         }
     }
+
+    @Override
+    public final SystemAction[] getActions(final Set<FileObject> foSet) {
+        SystemAction[] some = status.getActions (foSet);
+        if (some != null) {
+            return some;
+        }        
+        return new SystemAction[] {};
+    }
     
     @Override
     public Status getStatus() {
