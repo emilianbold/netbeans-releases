@@ -1575,7 +1575,7 @@ public class FileObjectTestHid extends TestBaseHid {
         checkSetUp();
         FileObject fo;
         try {
-            fo = FileUtil.createData(root, "file.jarda"); // file with completely strange extension
+            fo = FileUtil.createData(root, "file.jess"); // file with completely strange extension
         } catch (IOException iex) {
             fsAssert(
             "Does not seem to be writeable. So there was expected.",

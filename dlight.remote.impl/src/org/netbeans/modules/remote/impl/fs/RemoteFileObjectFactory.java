@@ -126,7 +126,35 @@ public class RemoteFileObjectFactory {
         }
     }
 
-    public RemoteDirectory createRemoteDirectory(RemoteFileObjectBase parent, String remotePath, File cacheFile) {
+    public void changeImplementor(RemoteDirectory parent, DirEntry oldEntry, DirEntry newEntry) {        
+        String path = parent.getPath() + '/' + oldEntry.getName();
+        synchronized (lock) {
+            RemoteFileObject owner = invalidate(path);
+            RemoteFileObjectBase newImpl = createFileObject(parent, newEntry, owner);
+        }
+    }
+
+    public RemoteFileObjectBase createFileObject(RemoteDirectory parent, DirEntry entry) {
+        return createFileObject(parent, entry, null);
+    }
+    
+    public RemoteFileObjectBase createFileObject(RemoteDirectory parent, DirEntry entry, RemoteFileObject owner) {
+        File childCache = new File(parent.getCache(), entry.getCache());
+        String childPath = parent.getPath() + '/' + entry.getName();
+        RemoteFileObjectBase fo = null;
+        if (entry.isDirectory()) {
+            fo = createRemoteDirectory(parent, childPath, childCache, owner);
+        }  else if (entry.isLink()) {
+            fo = createRemoteLink(parent, childPath, entry.getLinkTarget(), owner);
+        } else if (entry.isPlainFile()) {
+            fo = createRemotePlainFile(parent, childPath, childCache, FileType.Regular, owner);
+        } else {
+            fo = createSpecialFile(parent, childPath, childCache, entry.getFileType(), owner);
+        }
+        return fo;
+    }
+
+    private RemoteDirectory createRemoteDirectory(RemoteFileObjectBase parent, String remotePath, File cacheFile, RemoteFileObject owner) {
         cacheRequests++;
         if (fileObjectsCache.size() == 0) {
             scheduleCleanDeadEntries(); // schedule on 1-st request
@@ -143,7 +171,10 @@ public class RemoteFileObjectFactory {
             fo.invalidate();
             fileObjectsCache.remove(remotePath, fo);
         }
-        fo = RemoteDirectory.createNew(fileSystem, env, parent, remotePath, cacheFile);
+        if (owner == null) {
+            owner = new RemoteFileObject(fileSystem);
+        }
+        fo = new RemoteDirectory(owner, fileSystem, env, parent, remotePath, cacheFile);
         if (fo.isValid()) {
             RemoteFileObjectBase result = putIfAbsent(remotePath, fo);
             if (result instanceof RemoteDirectory && result.getParent() == parent) {
@@ -153,7 +184,7 @@ public class RemoteFileObjectFactory {
         return (RemoteDirectory) fo;
     }
 
-    public RemotePlainFile createRemotePlainFile(RemoteDirectory parent, String remotePath, File cacheFile, FileType fileType) {
+    private RemotePlainFile createRemotePlainFile(RemoteDirectory parent, String remotePath, File cacheFile, FileType fileType, RemoteFileObject owner) {
         cacheRequests++;
         if (fileObjectsCache.size() == 0) {
             scheduleCleanDeadEntries(); // schedule on 1-st request
@@ -170,7 +201,10 @@ public class RemoteFileObjectFactory {
             fo.invalidate();
             fileObjectsCache.remove(remotePath, fo);
         }
-        fo = RemotePlainFile.createNew(fileSystem, env, parent, remotePath, cacheFile, fileType);
+        if (owner == null) {
+            owner = new RemoteFileObject(fileSystem);
+        }
+        fo = new RemotePlainFile(owner, fileSystem, env, parent, remotePath, cacheFile, fileType);
         if (fo.isValid()) {
             RemoteFileObjectBase result = putIfAbsent(remotePath, fo);
             if (result instanceof RemotePlainFile && result.getParent() == parent) {
@@ -180,7 +214,7 @@ public class RemoteFileObjectFactory {
         return (RemotePlainFile) fo;
     }
 
-    SpecialRemoteFileObject createSpecialFile(RemoteDirectory parent, String remotePath, File cacheFile, FileType fileType) {
+    private SpecialRemoteFileObject createSpecialFile(RemoteDirectory parent, String remotePath, File cacheFile, FileType fileType, RemoteFileObject owner) {
         cacheRequests++;
         if (fileObjectsCache.size() == 0) {
             scheduleCleanDeadEntries(); // schedule on 1-st request
@@ -197,7 +231,10 @@ public class RemoteFileObjectFactory {
             fo.invalidate();
             fileObjectsCache.remove(remotePath, fo);
         }
-        fo = SpecialRemoteFileObject.createNew(fileSystem, env, parent, remotePath, fileType);
+        if (owner == null) {
+            owner = new RemoteFileObject(fileSystem);
+        }
+        fo = new SpecialRemoteFileObject(owner, fileSystem, env, parent, remotePath, fileType);
         if (fo.isValid()) {
             RemoteFileObjectBase result = putIfAbsent(remotePath, fo);
             if (result instanceof SpecialRemoteFileObject && result.getParent() == parent) {
@@ -208,21 +245,11 @@ public class RemoteFileObjectFactory {
     }
 
 
-    public RemoteLink createRemoteLink(RemoteFileObjectBase parent, String remotePath, String link) {
-// It was never cached because of incorrect instanceof check                
-//        cacheRequests++;
-//        if (fileObjectsCache.size() == 0) {
-//            scheduleCleanDeadEntries(); // schedule on 1-st request
-//        }
-//        RemoteFileObjectBase fo = fileObjectsCache.get(remotePath);
-//        if (fo instanceof RemotePlainFile && fo.isValid() && fo.getType() == FileType.Symlink) {
-//            cacheHits++;
-//            return (RemoteLink) fo;
-//        }
-//        if (fo != null) {
-//            fo.invalidate();
-//        }
-        RemoteLink fo = RemoteLink.createNew(fileSystem, env, parent, remotePath, link);        
+    private RemoteLink createRemoteLink(RemoteFileObjectBase parent, String remotePath, String link, RemoteFileObject owner) {
+        if (owner == null) {
+            owner = new RemoteFileObject(fileSystem);
+        }
+        RemoteLink fo = new RemoteLink(owner, fileSystem, env, parent, remotePath, link);
         RemoteFileObjectBase result = putIfAbsent(remotePath, fo);
         if (result instanceof RemoteLink) {
             // (result == fo) means that result was placed into cache => we need to init listeners,
@@ -232,6 +259,31 @@ public class RemoteFileObjectFactory {
             }
         }
         return (RemoteLink) result;
+    }
+
+    public RemoteLinkChild createRemoteLinkChild(RemoteLinkBase parent, String remotePath, RemoteFileObjectBase delegate) {
+        RemoteLinkChild fo = new RemoteLinkChild(new RemoteFileObject(fileSystem), fileSystem, env, parent, remotePath, delegate);
+        RemoteFileObjectBase result = putIfAbsent(remotePath, fo);
+        if (result instanceof RemoteLinkChild) {
+            // (result == fo) means that result was placed into cache => we need to init listeners,
+            // otherwise there already was an object in cache => listener has been already initialized
+            if (result == fo) { 
+                ((RemoteLinkChild) result).initListeners();
+            } else {
+                RemoteFileObjectBase oldDelegate = ((RemoteLinkChild) result).getDelegate();
+                if (oldDelegate != delegate) {
+                    // delegate has changed
+                    RemoteFileObject ownerFileObject = result.getOwnerFileObject();
+                    result.invalidate();
+                    fileObjectsCache.remove(remotePath, result);
+                    // recreate
+                    fo = new RemoteLinkChild(ownerFileObject, fileSystem, env, parent, remotePath, delegate);
+                    result = putIfAbsent(remotePath, fo);
+                    // TODO: is it possible that somebody has just placed another one? of different kind?
+                }
+            }
+        }
+        return (RemoteLinkChild) result;
     }
 
     private RemoteFileObjectBase putIfAbsent(String remotePath, RemoteFileObjectBase fo) {
@@ -292,12 +344,13 @@ public class RemoteFileObjectFactory {
      * Removes file object from cache and invalidates it.
      * @return an invalidated object or null
      */
-    public RemoteFileObjectBase invalidate(String remotePath) {
+    public RemoteFileObject invalidate(String remotePath) {
         RemoteFileObjectBase fo = fileObjectsCache.remove(remotePath);
         if (fo != null) {
             fo.invalidate();
+            return fo.getOwnerFileObject();
         }
-        return fo;
+        return null;
     }
     
     public void rename(String path2Rename, String newPath, RemoteFileObjectBase fo2Rename) {

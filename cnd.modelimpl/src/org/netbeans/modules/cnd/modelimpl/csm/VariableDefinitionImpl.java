@@ -256,7 +256,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         if( cnt >= 1 ) {
             List<CharSequence> l = new ArrayList<CharSequence>();
             for( AST token = qid.getFirstChild(); token != null; token = token.getNextSibling() ) {
-                if( token.getType() == CPPTokenTypes.ID ) {
+                if( token.getType() == CPPTokenTypes.IDENT ) {
                     if( token.getNextSibling() != null ) {
                         CharSequence name = AstUtil.getText(token);
                         l.add(NameCache.getManager().getString(name));
@@ -276,7 +276,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
                 case CPPTokenTypes.CSM_ARRAY_DECLARATION:
                     return token.getFirstChild();
                 case CPPTokenTypes.CSM_QUALIFIED_ID:
-                case CPPTokenTypes.ID:
+                case CPPTokenTypes.IDENT:
                     return token;
             }
         }

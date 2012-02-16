@@ -86,8 +86,8 @@ public class RemoteFileUrlMapper extends URLMapper {
 
     @Override
     public URL getURL(FileObject fo, int type) {
-        if (fo instanceof RemoteFileObjectBase) {
-            RemoteFileObjectBase rfo = (RemoteFileObjectBase) fo;
+        if (fo instanceof RemoteFileObject) {
+            RemoteFileObject rfo = (RemoteFileObject) fo;
             try {
                 ExecutionEnvironment env = rfo.getExecutionEnvironment();
                 return getURL(env, rfo.getPath(), rfo.isFolder());
@@ -100,6 +100,12 @@ public class RemoteFileUrlMapper extends URLMapper {
 
     private static URL getURL(ExecutionEnvironment env, String path, boolean folder) throws MalformedURLException {
         String host = env.getUser() + '@' + env.getHost();
+        if (path.indexOf("#")>=0) {
+            path = path.replace("#", "%23");
+        }
+        if (path.indexOf("?")>=0) {
+            path = path.replace("?", "%3f");
+        }
         URL url = new URL(RemoteFileURLStreamHandler.PROTOCOL, host, env.getSSHPort(), path);
         String ext = url.toExternalForm() + (folder ? "/" : ""); // is there a way to set authority? // NOI18N
         return new URL(ext);

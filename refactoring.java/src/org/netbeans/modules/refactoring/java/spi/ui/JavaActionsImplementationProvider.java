@@ -233,4 +233,22 @@ public class JavaActionsImplementationProvider {
     public void doInline(Lookup lookup) {
         throw new UnsupportedOperationException("Not implemented"); // NOI18N
     }
+    
+    /**
+     * @param lookup 
+     * @return true if provider can handle Introduce local extension
+     * @since 1.34
+     */
+    public boolean canIntroduceLocalExtension(Lookup lookup) {
+        return false;
+    }
+
+    /**
+     * implementation of "Introduce local extension"
+     * @param lookup 
+     * @since 1.34
+     */
+    public void doIntroduceLocalExtension(Lookup lookup) {
+        throw new UnsupportedOperationException("Not implemented"); // NOI18N
+    }
 }

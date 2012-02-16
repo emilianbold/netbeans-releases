@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,12 +42,7 @@
 
 package org.netbeans.api.db.explorer.node;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 import javax.swing.event.ChangeListener;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
@@ -162,7 +157,7 @@ public abstract class NodeProvider implements Lookup.Provider {
         synchronized (nodeSet) {
             for (Node child : nodeSet) {
                 Object obj = child.getLookup().lookup(dataObject.getClass());
-                if (obj.hashCode() == dataObject.hashCode()) {
+                if (obj.hashCode() == dataObject.hashCode() && obj.equals(dataObject)) {
                     results.add(child);
                 }
             }

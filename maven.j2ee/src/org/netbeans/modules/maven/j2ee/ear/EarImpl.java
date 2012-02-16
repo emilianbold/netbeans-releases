@@ -86,10 +86,14 @@ import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.NBPluginParameterExpressionEvaluator;
 import org.netbeans.modules.maven.j2ee.EjbChangeDescriptorImpl;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.spi.debug.AdditionalDebuggedProjects;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.AuxiliaryProperties;
@@ -228,7 +232,9 @@ public class EarImpl implements EarImplementation, EarImplementation2,
         return null;
     }
 
-    /** Add j2ee webmodule into application.
+    /** 
+     * Add web module into EAR application.
+     *
      * @param module the module to be added
      */
     public void addWebModule(WebModule webModule) {
@@ -236,7 +242,9 @@ public class EarImpl implements EarImplementation, EarImplementation2,
         throw new IllegalStateException("Not implemented for maven based projects.");//NOI18N
     }
 
-    /** Add j2ee ejbjar module into application.
+    /** 
+     * Add EJB module into EAR application.
+     * 
      * @param module the module to be added
      */
     public void addEjbJarModule(EjbJar ejbJar) {

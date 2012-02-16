@@ -49,9 +49,15 @@ import org.netbeans.junit.NbModuleSuite;
  * @author lukas
  */
 public class AmazonTest extends SaasTestBase {
+    
+    protected static Server server = Server.GLASSFISH;
 
-    public AmazonTest(String name) {
-        super(name);
+    public AmazonTest(String name, Server server) {
+        super(name, server);
+    }
+    
+     public AmazonTest(String name) {
+        super(name, server);
     }
 
     @Override

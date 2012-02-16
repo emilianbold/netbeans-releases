@@ -233,6 +233,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                 int insertLength = evt.getLength();
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("\nDOCUMENT-INSERT-evt: offset=" + insertOffset + ", length=" + insertLength + // NOI18N
+                            ", cRegion=" + charRebuildRegion + // NOI18N
                             ", current-docViewEndOffset=" + (evt.getDocument().getLength()+1) + '\n'); // NOI18N
                 }
                 updateViewsByModification(insertOffset, insertLength, evt);
@@ -262,6 +263,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                 int removeLength = evt.getLength();
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("\nDOCUMENT-REMOVE-evt: offset=" + removeOffset + ", length=" + removeLength + // NOI18N
+                            ", cRegion=" + charRebuildRegion + // NOI18N
                             ", current-docViewEndOffset=" + (evt.getDocument().getLength()+1) + '\n'); // NOI18N
                 }
                 updateViewsByModification(removeOffset, -removeLength, evt);
@@ -413,7 +415,10 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                                 break; // Creation finished successfully
                             } else {
                                 // There could be additional changes in the meantime
-                                pRegion = pRegion.union(fetchParagraphRebuildRegion(), true);
+                                OffsetRegion newPRegion = fetchParagraphRebuildRegion();
+                                if (newPRegion != null) {
+                                    pRegion = pRegion.union(newPRegion, true);
+                                }
                             }
                         }
                         noException = true;

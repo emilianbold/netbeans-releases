@@ -423,6 +423,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     public static class ClassBuilder implements CsmObjectBuilder {
         
         private CharSequence name;// = CharSequences.empty();
+        private int nameStartOffset;
+        private int nameEndOffset;
         private CsmDeclaration.Kind kind = CsmDeclaration.Kind.CLASS;
         private CsmFile file;
         private int startOffset;
@@ -438,9 +440,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             this.kind = kind;
         }
         
-        public void setName(CharSequence name) {
+        public void setName(CharSequence name, int startOffset, int endOffset) {
             if(this.name == null) {
                 this.name = name;
+                this.nameStartOffset = startOffset;
+                this.nameEndOffset = endOffset;
             }
         }
 
@@ -502,12 +506,17 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         public ClassImpl create() {
             ClassImpl cls = getClassDefinitionInstance();
             if (cls == null && name != null && getScope() != null) {
-                NameHolder nameHolder = NameHolder.createName(name);
+                NameHolder nameHolder = NameHolder.createName(name, nameStartOffset, nameEndOffset);
                 cls = new ClassImpl(nameHolder, kind, file, startOffset, endOffset);
                 cls.init3(getScope(), true);
 //                temporaryRepositoryRegistration(true, cls);
                 if (nameHolder != null) {
                     nameHolder.addReference(file, cls);
+                }
+                if(parent != null) {
+                    ((NamespaceDefinitionImpl.NamespaceBuilder)parent).addDeclaration(cls);
+                } else {
+                    ((FileImpl)file).addDeclaration(cls);
                 }
             }
             return cls;
@@ -1020,7 +1029,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 AST colonAST;
                 if (idAST == null) {
                     break;
-                } else if (idAST.getType() == CPPTokenTypes.ID) {
+                } else if (idAST.getType() == CPPTokenTypes.IDENT) {
                     colonAST = idAST.getNextSibling();
                 } else if (idAST.getType() == CPPTokenTypes.COLON){
                     colonAST = idAST;

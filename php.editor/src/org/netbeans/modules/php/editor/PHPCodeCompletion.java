@@ -298,11 +298,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             request.prefix = prefix;
             request.index = ElementQueryFactory.getIndexQuery(info);
 
-            try {
-                request.currentlyEditedFileURL = fileObject.getURL().toString();
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            request.currentlyEditedFileURL = fileObject.toURL().toString();
             switch (context) {
                 case DEFAULT_PARAMETER_VALUE:
                     final Prefix nameKindPrefix = NameKind.prefix(prefix);
@@ -385,10 +381,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                    autoCompleteClassMembers(completionResult, request, true);
                     break;
                 case PHPDOC:
+                    PHPDOCCodeCompletion.complete(completionResult, request);
                     if (PHPDOCCodeCompletion.isTypeCtx(request)) {
                         autoCompleteTypeNames(completionResult, request);
-                    } else {
-                        PHPDOCCodeCompletion.complete(completionResult, request);
                     }
                     break;
                 case CLASS_CONTEXT_KEYWORDS:

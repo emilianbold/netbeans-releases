@@ -96,6 +96,7 @@ implements ActionListener, Runnable, Callable<JButton> {
         }
     }
 
+    @Override
     public void publish(LogRecord record) {
         if ((record.getLevel().equals(Level.CONFIG)) &&
                 (record.getMessage().startsWith("NotifyExcPanel: "))) {//NOI18N
@@ -110,6 +111,7 @@ implements ActionListener, Runnable, Callable<JButton> {
             if (shouldReportScanCancel()) {
                 class WriteOut implements Runnable {
                     public LogRecord r;
+                    @Override
                     public void run() {
                         Installer.writeOut(r);
                         SUPPORT.firePropertyChange(null, null, null);
@@ -147,6 +149,7 @@ implements ActionListener, Runnable, Callable<JButton> {
 
         class WriteOut implements Runnable {
             public LogRecord r;
+            @Override
             public void run() {
                 Installer.writeOut(r);
                 SUPPORT.firePropertyChange(null, null, null);
@@ -163,15 +166,16 @@ implements ActionListener, Runnable, Callable<JButton> {
         }
     }
 
+    @Override
     public void flush() {
         waitFlushed();
     }
     
-    static final void flushImmediatelly() {
+    static void flushImmediatelly() {
         flushOnRecord = true;
     }
     
-    static final void waitFlushed() {
+    static void waitFlushed() {
         try {
             lastRecord.waitFinished(1000);
         } catch (InterruptedException ex) {
@@ -179,15 +183,18 @@ implements ActionListener, Runnable, Callable<JButton> {
         }
     }
 
+    @Override
     public void close() throws SecurityException {
     }
     
+    @Override
     public void run() {
         Installer.displaySummary("ERROR_URL", true, false,true); // NOI18N
         Installer.setSelectedExcParams(null);
     }
 
     private JButton button;
+    @Override
     public JButton call() throws Exception {
         if (button == null) {
             button = new JButton();
@@ -197,6 +204,7 @@ implements ActionListener, Runnable, Callable<JButton> {
         return button;
     }
 
+    @Override
     public void actionPerformed(ActionEvent ev) {
         JComponent c = (JComponent)ev.getSource();
         Window w = SwingUtilities.windowForComponent(c);

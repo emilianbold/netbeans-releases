@@ -143,6 +143,14 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
 
+    /** copy pasted version from CndUtils to prevent load of CndUtils during startup */
+    public static boolean isStandalone() {
+        if ("true".equals(System.getProperty("cnd.command.line.utility"))) { // NOI18N
+            return true;
+        }
+        return !ModelSupport.class.getClassLoader().getClass().getName().startsWith("org.netbeans."); // NOI18N
+    }
+    
     public void startup() {
         modifiedListener.clean();
         DataObject.getRegistry().addChangeListener(modifiedListener);
@@ -150,7 +158,7 @@ public class ModelSupport implements PropertyChangeListener {
         synchronized (openedProjects) {
             closed = false;
         }
-        if (!CndUtils.isStandalone()) {
+        if (!isStandalone()) {
             openedProjects.clear();
             if (TRACE_STARTUP) {
                 System.out.println("Model support: Inited"); // NOI18N

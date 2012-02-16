@@ -1473,8 +1473,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         }
                         csmFile.setAPTCacheEntry(preprocHandler, aptCacheEntry, clean);
                         entry.setStates(statesToKeep, new PreprocessorStatePair(newState, pcState));
-                        ParserQueue.instance().add(csmFile, statesToParse, ParserQueue.Position.HEAD, clean,
-                                clean ? ParserQueue.FileAction.MARK_REPARSE : ParserQueue.FileAction.MARK_MORE_PARSE);
+                        if (!TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+                            ParserQueue.instance().add(csmFile, statesToParse, ParserQueue.Position.HEAD, clean,
+                                    clean ? ParserQueue.FileAction.MARK_REPARSE : ParserQueue.FileAction.MARK_MORE_PARSE);
+                        }
                         csmFile.setAPTCacheEntry(preprocHandler, aptCacheEntry, clean);
                         if (TRACE_FILE && FileImpl.traceFile(file) &&
                                 (TraceFlags.TRACE_PC_STATE || TraceFlags.TRACE_PC_STATE_COMPARISION)) {

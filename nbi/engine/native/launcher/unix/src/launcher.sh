@@ -2,7 +2,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+# Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
 #
 # Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 # Other names may be trademarks of their respective owners.
@@ -463,6 +463,15 @@ initializeVariables() {
 	else
 		POSSIBLE_JAVA_EXE_SUFFIX="$POSSIBLE_JAVA_EXE_SUFFIX_COMMON"
 	fi
+        if [ 1 -eq $isMacOSX ] ; then
+                # set default userdir and cachedir on MacOS
+                DEFAULT_USERDIR_ROOT=${HOME}/Library/Application Support/NetBeans
+                DEFAULT_CACHEDIR_ROOT=${HOME}/Library/Caches/NetBeans
+        else
+                # set default userdir and cachedir on unix systems
+                DEFAULT_USERDIR_ROOT=${HOME}/.netbeans
+                DEFAULT_CACHEDIR_ROOT=${HOME}/.cache/netbeans
+        fi
 	systemInfo=`uname -a 2>/dev/null`
 	debug "System Information:"
 	debug "$systemInfo"             
@@ -1060,42 +1069,42 @@ searchJava() {
 
 normalizePath() {	
 	argument="$1"
-
-	# replace XXX/../YYY to 'dirname XXX'/YYY
-	while [ 0 -eq 0 ] ; do	
-		beforeDotDot=`echo "$argument" | sed "s/\/\.\.\/.*//g" 2> /dev/null`
-                if [ 0 -eq `ifEquals "$beforeDotDot" "$argument"` ] && [ 0 -eq `ifEquals "$beforeDotDot" "."` ] && [ 0 -eq `ifEquals "$beforeDotDot" ".."` ] ; then
-	            esc=`echo "$beforeDotDot" | sed "s/\\\//\\\\\\\\\//g"`
-                    afterDotDot=`echo "$argument" | sed "s/^$esc\/\.\.//g" 2> /dev/null` 
-		    parent=`dirname "$beforeDotDot"`
-		    argument=`echo "$parent""$afterDotDot"`
-		else 
-                    break
-		fi	
-	done
-
-	# replace XXX/.. to 'dirname XXX'
-	while [ 0 -eq 0 ] ; do	
-		beforeDotDot=`echo "$argument" | sed "s/\/\.\.$//g" 2> /dev/null`
-                if [ 0 -eq `ifEquals "$beforeDotDot" "$argument"` ] && [ 0 -eq `ifEquals "$beforeDotDot" "."` ] && [ 0 -eq `ifEquals "$beforeDotDot" ".."` ] ; then
-		    argument=`dirname "$beforeDotDot"`
-		else 
-                    break
-		fi	
-	done
-
-	# replace all /./ to /
+  
+  # replace all /./ to /
 	while [ 0 -eq 0 ] ; do	
 		testArgument=`echo "$argument" | sed 's/\/\.\//\//g' 2> /dev/null`
 		if [ -n "$testArgument" ] && [ 0 -eq `ifEquals "$argument" "$testArgument"` ] ; then
-		    	# something changed
+		  # something changed
 			argument="$testArgument"
 		else
 			break
 		fi	
 	done
 
-        # remove /. a the end (if the resulting string is not zero)
+	# replace XXX/../YYY to 'dirname XXX'/YYY
+	while [ 0 -eq 0 ] ; do	
+		beforeDotDot=`echo "$argument" | sed "s/\/\.\.\/.*//g" 2> /dev/null`
+      if [ 0 -eq `ifEquals "$beforeDotDot" "$argument"` ] && [ 0 -eq `ifEquals "$beforeDotDot" "."` ] && [ 0 -eq `ifEquals "$beforeDotDot" ".."` ] ; then
+        esc=`echo "$beforeDotDot" | sed "s/\\\//\\\\\\\\\//g"`
+        afterDotDot=`echo "$argument" | sed "s/^$esc\/\.\.//g" 2> /dev/null` 
+        parent=`dirname "$beforeDotDot"`
+        argument=`echo "$parent""$afterDotDot"`
+		else 
+      break
+		fi	
+	done
+
+	# replace XXX/.. to 'dirname XXX'
+	while [ 0 -eq 0 ] ; do	
+		beforeDotDot=`echo "$argument" | sed "s/\/\.\.$//g" 2> /dev/null`
+    if [ 0 -eq `ifEquals "$beforeDotDot" "$argument"` ] && [ 0 -eq `ifEquals "$beforeDotDot" "."` ] && [ 0 -eq `ifEquals "$beforeDotDot" ".."` ] ; then
+		  argument=`dirname "$beforeDotDot"`
+		else 
+      break
+		fi	
+	done
+
+  # remove /. a the end (if the resulting string is not zero)
 	testArgument=`echo "$argument" | sed 's/\/\.$//' 2> /dev/null`
 	if [ -n "$testArgument" ] ; then
 		argument="$testArgument"
@@ -1560,6 +1569,15 @@ prepareJVMArguments() {
 	 LAUNCHER_JVM_ARGUMENTS="$LAUNCHER_JVM_ARGUMENTS $arg"	
  	 jvmArgCounter=`expr "$jvmArgCounter" + 1`
     done                
+    if [ ! -z "${DEFAULT_USERDIR_ROOT}" ] ; then
+            debug "DEFAULT_USERDIR_ROOT: $DEFAULT_USERDIR_ROOT"
+            LAUNCHER_JVM_ARGUMENTS="$LAUNCHER_JVM_ARGUMENTS -Dnetbeans.default_userdir_root=\"${DEFAULT_USERDIR_ROOT}\""	
+    fi
+    if [ ! -z "${DEFAULT_CACHEDIR_ROOT}" ] ; then
+            debug "DEFAULT_CACHEDIR_ROOT: $DEFAULT_CACHEDIR_ROOT"
+            LAUNCHER_JVM_ARGUMENTS="$LAUNCHER_JVM_ARGUMENTS -Dnetbeans.default_cachedir_root=\"${DEFAULT_CACHEDIR_ROOT}\""	
+    fi
+
     debug "Final JVM arguments : $LAUNCHER_JVM_ARGUMENTS"            
 }
 

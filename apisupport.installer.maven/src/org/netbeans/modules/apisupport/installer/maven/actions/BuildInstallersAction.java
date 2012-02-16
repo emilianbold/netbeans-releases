@@ -60,10 +60,12 @@ import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.installer.ui.SuiteInstallerProjectProperties;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -121,6 +123,11 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
             if (watcher == null
                     || !NbMavenProject.TYPE_NBM_APPLICATION.equalsIgnoreCase(watcher.getPackagingType())) {
                 setEnabled(false);
+            } else {
+                String version = PluginPropertyUtils.getPluginVersion(watcher.getMavenProject(), "org.codehaus.mojo", "nbm-maven-plugin");
+                if (version == null || new ComparableVersion(version).compareTo(new ComparableVersion("3.7-SNAPSHOT")) >= 0) {
+                    setEnabled(false); // now handled by maven.apisupport
+                }
             }
         }
 

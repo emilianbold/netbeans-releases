@@ -65,6 +65,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyVetoException;
@@ -80,7 +81,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
@@ -121,7 +121,6 @@ import javax.swing.table.TableModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.openide.explorer.ExplorerActionsImpl;
-import org.netbeans.modules.openide.explorer.ExternalDragAndDrop;
 import org.netbeans.swing.etable.ETable;
 import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.etable.ETableTransferHandler;
@@ -136,6 +135,7 @@ import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.propertysheet.PropertyPanel;
+import org.openide.explorer.view.TableQuickSearchSupport.QuickSearchSettings;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.PropertySupport;
@@ -146,7 +146,6 @@ import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
-import org.openide.util.datatransfer.ExTransferable;
 
 /**
  * <p>Explorer view displaying nodes in a tree table.</p>
@@ -217,6 +216,10 @@ public class OutlineView extends JScrollPane {
     private ScrollListener listener;
     
     private Selection selection = null;
+    
+    private QuickSearch quickSearch;
+    private Component searchPanel;
+    private final Object searchConstraints = new Object();
 
     /** Creates a new instance of TableView */
     public OutlineView() {
@@ -224,11 +227,30 @@ public class OutlineView extends JScrollPane {
     }    
     
     /** Creates a new instance of TableView */
+    @SuppressWarnings("OverridableMethodCallInConstructor")
     public OutlineView(String nodesColumnLabel) {
         treeModel = new NodeTreeModel();
         rowModel = new PropertiesRowModel();
         model = createOutlineModel(treeModel, rowModel, nodesColumnLabel);
         outline = new OutlineViewOutline(model, rowModel);
+        quickSearch = QuickSearch.attach(this, searchConstraints);
+        TableQuickSearchSupport tqss = new TableQuickSearchSupport(outline, outline, outline.qss);
+        quickSearch.addQuickSearchListener(tqss);
+        outline.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                quickSearch.processKeyEvent(e);
+            }
+            @Override
+            public void keyPressed(KeyEvent e) {
+                quickSearch.processKeyEvent(e);
+            }
+            @Override
+            public void keyReleased(KeyEvent e) {
+                quickSearch.processKeyEvent(e);
+            }
+        });
+        quickSearch.setPopupMenu(tqss.createSearchPopupMenu());
         rowModel.setOutline(outline);
         outline.setRenderDataProvider(new NodeRenderDataProvider(outline));
         SheetCell tableCell = new SheetCell.OutlineSheetCell(outline);
@@ -264,11 +286,13 @@ public class OutlineView extends JScrollPane {
         final Color focusSelectionBackground = outline.getSelectionBackground();
         final Color focusSelectionForeground = outline.getSelectionForeground();
         outline.addFocusListener(new java.awt.event.FocusListener(){
+            @Override
             public void focusGained(java.awt.event.FocusEvent ev) {
                 outline.setSelectionBackground(focusSelectionBackground);
                 outline.setSelectionForeground(focusSelectionForeground);
             }
 
+            @Override
             public void focusLost(java.awt.event.FocusEvent ev) {
                 outline.setSelectionBackground(SheetCell.getNoFocusSelectionBackground());
                 outline.setSelectionForeground(SheetCell.getNoFocusSelectionForeground());
@@ -293,6 +317,23 @@ public class OutlineView extends JScrollPane {
         initializeTreeScrollSupport();
     }
 
+    @Override
+    public void add(Component comp, Object constraints) {
+        if (constraints == searchConstraints) {
+            searchPanel = comp;
+            constraints = null;
+        }
+        super.add(comp, constraints);
+    }
+
+    @Override
+    public void remove(Component comp) {
+        if (comp == searchPanel) {
+            searchPanel = null;
+        }
+        super.remove(comp);
+    }
+    
     /**
      * This method allows plugging own OutlineModel to the OutlineView.
      * You can override it and create different model in the subclass.
@@ -639,6 +680,25 @@ public class OutlineView extends JScrollPane {
         outline.setTreeSortable(treeSortable);
     }
     
+    /**
+     * Test whether the quick search feature is enabled or not.
+     * Default is enabled (true).
+     * @since 
+     * @return <code>true</code> if quick search feature is enabled, <code>false</code> otherwise.
+     */
+    /*public*/ boolean isQuickSearchAllowed() {
+        return quickSearch.isEnabled();
+    }
+    
+    /**
+     * Set whether the quick search feature is enabled or not.
+     * @since 
+     * @param allowedQuickSearch <code>true</code> if quick search shall be enabled
+     */
+    /*public*/ void setQuickSearchAllowed(boolean allowedQuickSearch) {
+        quickSearch.setEnabled(allowedQuickSearch);
+    }
+
     /** Initializes the component and lookup explorer manager.
      */
     @Override
@@ -848,13 +908,16 @@ public class OutlineView extends JScrollPane {
     void showPopup(int xpos, int ypos, final JPopupMenu popup) {
         if ((popup != null) && (popup.getSubElements().length > 0)) {
             final PopupMenuListener p = new PopupMenuListener() {
+                @Override
                 public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
                     
                 }
+                @Override
                 public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
                     popup.removePopupMenuListener(this);
                     outline.requestFocus();
                 }
+                @Override
                 public void popupMenuCanceled(PopupMenuEvent e) {
                     
                 }
@@ -933,9 +996,11 @@ public class OutlineView extends JScrollPane {
      * Action registered in the component's action map.
      */
     private class PopupAction extends javax.swing.AbstractAction implements Runnable {
+        @Override
         public void actionPerformed(ActionEvent evt) {
             SwingUtilities.invokeLater(this);
         }
+        @Override
         public void run() {
             Point p = getPositionForPopup ();
             if (p == null) {
@@ -955,6 +1020,7 @@ public class OutlineView extends JScrollPane {
 
 	PopupAdapter() {}
 	
+        @Override
         protected void showPopup (MouseEvent e) {
             int selRow = outline.rowAtPoint(e.getPoint());
 
@@ -979,7 +1045,7 @@ public class OutlineView extends JScrollPane {
     /**
      * Called when selection in tree is changed.
      */
-    final private void callSelectionChanged (Node[] nodes) {
+    private void callSelectionChanged (Node[] nodes) {
         manager.removePropertyChangeListener (wlpc);
         manager.removeVetoableChangeListener (wlvc);
         try {
@@ -1171,11 +1237,30 @@ public class OutlineView extends JScrollPane {
         return getOutline().isExpanded(treePath);
     }
     
+    @Override
+    public Insets getInsets() {
+        Insets res = getInnerInsets();
+        res = new Insets(res.top, res.left, res.bottom, res.right);
+        if( null != searchPanel && searchPanel.isVisible() ) {
+            res.bottom += searchPanel.getPreferredSize().height;
+        }
+        return res;
+    }
+
+    private Insets getInnerInsets() {
+        Insets res = super.getInsets();
+        if( null == res ) {
+            res = new Insets(0,0,0,0);
+        }
+        return res;
+    }
+
     /**
      * Listener attached to the explorer manager and also to the
      * changes in the table selection.
      */
     private class TableSelectionListener implements VetoableChangeListener, ListSelectionListener, PropertyChangeListener {
+        @Override
         public void propertyChange(java.beans.PropertyChangeEvent evt) {
             synchronized (managerLock) {
                 if (manager == null) return; // the tree view has been removed before the event got delivered
@@ -1188,6 +1273,7 @@ public class OutlineView extends JScrollPane {
             }
         }
 
+        @Override
         public void valueChanged(javax.swing.event.ListSelectionEvent listSelectionEvent) {
             int selectedRows[] = outline.getSelectedRows();
             ArrayList<Node> selectedNodes = new ArrayList<Node> (selectedRows.length);
@@ -1200,6 +1286,7 @@ public class OutlineView extends JScrollPane {
             callSelectionChanged(selectedNodes.toArray (new Node[selectedNodes.size ()]));
         }
 
+        @Override
         public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
             if (evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
                 // issue 11928 check if selecetion mode will be broken
@@ -1225,6 +1312,7 @@ public class OutlineView extends JScrollPane {
         /**
          * Invoked when an action occurs.
          */
+        @Override
         public void actionPerformed (ActionEvent e) {
             if (outline.getSelectedColumn () != 0) {
                 return;
@@ -1239,7 +1327,7 @@ public class OutlineView extends JScrollPane {
      * Extension of the ETable that allows adding a special comparator
      * for sorting the rows.
      */
-    static class OutlineViewOutline extends Outline {
+    static class OutlineViewOutline extends Outline implements TableQuickSearchSupport.StringValuedTable {
         private final PropertiesRowModel rowModel;
         private static final String COLUMNS_SELECTOR_HINT = "ColumnsSelectorHint"; // NOI18N
         private static final String COPY_ACTION_DELEGATE = "Outline Copy Action Delegate "; // NOI18N
@@ -1256,6 +1344,7 @@ public class OutlineView extends JScrollPane {
         private String nodesColumnDescription;
         private ExplorerManager manager;
         //private int maxRowWidth;
+        private QuickSearchSettings qss = new QuickSearchSettings();
 
         public OutlineViewOutline(final OutlineModel mdl, PropertiesRowModel rowModel) {
             super(mdl);
@@ -1317,7 +1406,36 @@ public class OutlineView extends JScrollPane {
             }
             return null;
         }
-        
+
+        @Override
+        public String getStringValueAt(int row, int col) {
+            Object value = transformValue(getValueAt(row, col));
+            String str;
+            if (value instanceof Property) {
+                Property p = (Property) value;
+                Object v = null;
+                try {
+                    v = p.getValue();
+                } catch (IllegalAccessException ex) {
+                } catch (InvocationTargetException ex) {
+                }
+                if (v instanceof String) {
+                    str = (String) v;
+                } else {
+                    str = null;
+                }
+            } else if (value instanceof VisualizerNode) {
+                str = ((VisualizerNode) value).getDisplayName();
+            } else if (value instanceof Node) {
+                str = ((Node) value).getDisplayName();
+            } else if (value instanceof String) {
+                str = (String) value;
+            } else {
+                str = null;
+            }
+            return str;
+        }
+
         private class CopyToClipboardAction implements Action {
             
             private Action orig;
@@ -1730,6 +1848,7 @@ public class OutlineView extends JScrollPane {
                             if (act != null) {
                                 SwingUtilities.invokeLater(
                                     new Runnable() {
+                                        @Override
                                         public void run() {
                                             r.x = 0;
                                             r.width = getWidth();
@@ -1840,6 +1959,7 @@ public class OutlineView extends JScrollPane {
                 public OutlineViewOutlineHeaderRenderer(TableCellRenderer delegate) {
                     orig = delegate;
                 }
+                @Override
                 public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                     Component oc = orig.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                     if (tooltip == null) {
@@ -1855,6 +1975,7 @@ public class OutlineView extends JScrollPane {
 
             private class NodeNestedComparator implements
                     Comparator {
+                @Override
                 public int compare (Object o1, Object o2) {
                     assert o1 instanceof Node : o1 + " is instanceof Node";
                     assert o2 instanceof Node : o2 + " is instanceof Node";
@@ -2080,6 +2201,7 @@ public class OutlineView extends JScrollPane {
         }
 
         //ScrollBar or Viewport change
+        @Override
         public void stateChanged(ChangeEvent evt) {
             if (evt.getSource() == hScrollBar.getModel()) {
                 int value = hScrollBar.getModel().getValue();
@@ -2295,6 +2417,13 @@ public class OutlineView extends JScrollPane {
             } else {
                 super.layoutContainer(parent);
             }
+            Component searchPanel = ov.searchPanel;
+            if (null != searchPanel && searchPanel.isVisible()) {
+                Insets innerInsets = ov.getInnerInsets();
+                Dimension prefSize = searchPanel.getPreferredSize();
+                searchPanel.setBounds(innerInsets.left, parent.getHeight()-innerInsets.bottom-prefSize.height,
+                        parent.getWidth()-innerInsets.left-innerInsets.right, prefSize.height);
+            }
         }
 
         private JScrollBar createFakeHSB(final JScrollBar hsb) {
@@ -2381,5 +2510,5 @@ public class OutlineView extends JScrollPane {
             sm.setLeadSelectionIndex(lead);
         }
     }
-
+    
 }

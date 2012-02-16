@@ -51,6 +51,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
 import org.openide.util.Exceptions;
 
@@ -68,86 +69,8 @@ import org.openide.util.Exceptions;
 public class LineBreakHook implements TypedBreakInterceptor {
     private static final Logger LOG = Logger.getLogger(LineBreakHook.class.getName());
     
-    /**
-     * Checks conditions for repositioning the caret:
-     * <ul>
-     * <li>Some text precedes the insertion point at the same line
-     * <li>Some text follows the caret position at the same line
-     * <li>The preceding text (whitespace skipped) is the opening tag
-     * <li>The following text (ws skipped) is closing tag
-     * <li>The tags are on different lines and there is a line in between them
-     * </ul>
-     * If something is not true, the method does nothing. If all conditions are met,
-     * it positions the caret at the end of the line just below the insertion point.
-     * 
-     * @param context the hook context
-     * @throws BadLocationException programmer's error :)
-     */
-    private void repositionCaret(Context context) throws BadLocationException {
-        if (!(context.getDocument() instanceof BaseDocument)) {
-            return;
-        }
-        BaseDocument doc = (BaseDocument)context.getDocument();
-
-        int insertPos = context.getCaretOffset();
-        int caretPos = context.getComponent().getCaretPosition();
-        int lineStartPos = Utilities.getRowStart(doc, insertPos);
-        int nonWhiteBefore = Utilities.getFirstNonWhiteBwd(doc, insertPos, 
-                lineStartPos);
-        if (nonWhiteBefore == -1) {
-            // ignore if not directly at the line with the start tag
-            return;
-        }
-        int lineEndPos = Utilities.getRowEnd(doc, caretPos);
-        int nonWhiteAfter = Utilities.getFirstNonWhiteFwd(doc, caretPos, lineEndPos);
-        if (nonWhiteAfter == -1) {
-            // ignore if the (supposedly) closing tag is not immediately after
-            // the caret + whitespace
-            return;
-        }
-        
-        TokenHierarchy h = TokenHierarchy.get(doc);
-        TokenSequence seq = h.tokenSequence();
-        // check the actual tokens
-        seq.move(nonWhiteBefore + 1);
-        // check whether the preceding tokens form a opening tag
-        int closingIndex = followsOpeningTag(seq);
-        if (closingIndex == -1) {
-            return;
-        }
-        // check that the following token (after whitespace(s)) is a 
-        // opening tag
-        seq.move(nonWhiteAfter);
-        if (!precedesClosingTag(seq)) {
-            return;
-        }
-        // now we need to position the caret at the END of the line immediately 
-        // preceding the closing tag. Assuming it's already indented
-        int startClosingLine = Utilities.getRowStart(doc, nonWhiteAfter);
-        if (startClosingLine == lineStartPos) {
-            // open and close tag on the same line for some reason
-            return;
-        }
-        int nextLineStart = Utilities.getRowStart(doc, insertPos, 1);
-        if (nextLineStart >= startClosingLine) {
-            // no change, we're at the line with closing tag
-            return;
-        }
-        int newCaretPos = Utilities.getRowEnd(doc, nextLineStart);
-        context.getComponent().getCaret().setDot(newCaretPos);
-    }
-    
     @Override
     public void afterInsert(final Context context) throws BadLocationException {
-        context.getDocument().render(new Runnable() {
-            public void run() {
-                try {
-                    repositionCaret(context);
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        });
     }
     
     private boolean precedesClosingTag(TokenSequence seq) {
@@ -167,12 +90,16 @@ public class LineBreakHook implements TypedBreakInterceptor {
      * Determines whether the token sequence immediately follows an opening tag
      * (possibly with some whitespace in between the token sequence and the
      * opening tag ending > sign.
+     * <p/>
+     * If the preceding tag is self-closing, the returned offset will be negative offset
+     * just after the 1st tag character (the opening &lt;)
      * 
      * @param seq positioned sequence
-     * @return index just after the > sign, or -1 if opening tag is not found
+     * @return index just at the opening &lt; sign, or Integer.MIN_VALUE if opening tag is not found
      */
     private int followsOpeningTag(TokenSequence seq) {
         int closingIndex = -1;
+        boolean selfClose = false;
         while (seq.movePrevious()) {
             Token tukac = seq.token();
             switch ((XMLTokenId)tukac.id()) {
@@ -181,7 +108,7 @@ public class LineBreakHook implements TypedBreakInterceptor {
                 case VALUE:
                     if (closingIndex == -1) {
                         // in the middle of a tag
-                        return -1;
+                        return Integer.MIN_VALUE;
                     }
                     
                 case WS:
@@ -190,25 +117,33 @@ public class LineBreakHook implements TypedBreakInterceptor {
                 case TAG: {
                     String text = tukac.text().toString();
                     // it may be the closing tag
-                    if (">".equals(text)) {
+                    if (text.endsWith(">")) {
                         if (closingIndex > -1) {
-                            return -1;
+                            return Integer.MIN_VALUE;
                         }
                         closingIndex = seq.offset() + tukac.length();
-                        continue;
+                        if (text.endsWith("/>")) {
+                            selfClose = true;
+                        }
+                        break;
                     }
                     if (text.startsWith("<") && text.length() > 1 && text.charAt(1) != '/') {
                         // found start tag
-                        return closingIndex;
-                    }
-                    return -1;
+                        if (selfClose) {
+                            // note: this indicate position just after the opening <
+                            return -seq.offset() - 1;
+                        } else {
+                            return seq.offset();
+                        }
+                    } 
+                    return Integer.MIN_VALUE;
                 }
                     
                 default:
-                    return -1;
+                    return Integer.MIN_VALUE;
             }
         }
-        return -1;
+        return Integer.MIN_VALUE;
     }
 
     @Override
@@ -224,7 +159,75 @@ public class LineBreakHook implements TypedBreakInterceptor {
 
     @Override
     public void insert(MutableContext context) throws BadLocationException {
-        // no op
+        if (!(context.getDocument() instanceof BaseDocument)) {
+            return;
+        }
+        BaseDocument doc = (BaseDocument)context.getDocument();
+
+        int insertPos = context.getCaretOffset();
+        int caretPos = context.getComponent().getCaretPosition();
+        int lineStartPos = Utilities.getRowStart(doc, insertPos);
+
+        TokenHierarchy h = TokenHierarchy.get(doc);
+        TokenSequence seq = h.tokenSequence();
+        // check the actual tokens
+        seq.move(context.getCaretOffset());
+        int openOffset = followsOpeningTag(seq);
+        
+        int nonWhiteBefore = Utilities.getFirstNonWhiteBwd(doc, insertPos, lineStartPos);
+
+        int lineEndPos = Utilities.getRowEnd(doc, caretPos);
+        int nonWhiteAfter = Utilities.getFirstNonWhiteFwd(doc, caretPos, lineEndPos);
+
+        // there is a opening tag preceding on the line && something following the insertion point
+        if (nonWhiteBefore != -1 && nonWhiteAfter != -1 && openOffset >= 0) {
+            // check that the following token (after whitespace(s)) is a 
+            // opening tag
+            seq.move(nonWhiteAfter);
+            // now we need to position the caret at the END of the line immediately 
+            // preceding the closing tag. Assuming it's already indented
+            if (precedesClosingTag(seq)) {
+                int startClosingLine = Utilities.getRowStart(doc, nonWhiteAfter);
+                int nextLineStart = Utilities.getRowStart(doc, insertPos, 1);
+                if (nextLineStart >= startClosingLine - 1) {
+                    insertBlankBetweenTabs(context, openOffset);
+                }
+                return;
+            }
+        }
+        // if the rest of the line is blank, we must insert newline + indent, so the cursor
+        // appears at the correct place
+        if (nonWhiteAfter != -1) {
+            // will be handled by the formatter automatically
+            return;
+        }
+
+        int desiredIndent;
+
+        if (openOffset != Integer.MIN_VALUE) {
+            desiredIndent = IndentUtils.lineIndent(doc, Utilities.getRowStart(doc, Math.abs(openOffset)));
+            if (openOffset >= 0) {
+                desiredIndent += IndentUtils.indentLevelSize(doc);
+            }
+        } else {
+            // align with the current line
+            desiredIndent = IndentUtils.lineIndent(doc, lineStartPos);
+        }
+        String blankLine = "\n" + 
+            IndentUtils.createIndentString(doc, desiredIndent);
+        context.setText(blankLine, -1, desiredIndent + 1, 1, blankLine.length());
+    }
+    
+    private void insertBlankBetweenTabs(MutableContext context, int openOffset) throws BadLocationException {
+        BaseDocument baseDoc = (BaseDocument)context.getDocument();
+        // otherwise inser the newline, followed by a proper indent, followed by another
+        // newline :)
+        int spacesPerTab = IndentUtils.indentLevelSize(baseDoc);
+        int col = Utilities.getVisualColumn(baseDoc, openOffset);
+        String blankLine = "\n" + 
+                IndentUtils.createIndentString(baseDoc, col + spacesPerTab) + "\n" + 
+                IndentUtils.createIndentString(baseDoc, col);
+        context.setText(blankLine, -1, col + spacesPerTab + 2, 1, blankLine.length());
     }
     
     @MimeRegistration(mimeType="text/xml", service=TypedBreakInterceptor.Factory.class)

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugtracking.ui.issue.cache;
 
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.util.*;
@@ -59,6 +60,7 @@ import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.BugtrackingConfig;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
 /**
@@ -99,8 +101,8 @@ public class StorageTest extends NbTestCase {
 
         String url = "http://test/bugzilla";
         String qName = "SomeQuery";
-        Issue i1 = new DummyIssue(id1, attr1);
-        Issue i2 = new DummyIssue(id2, attr2);
+        IssueProvider i1 = new DummyIssue(id1, attr1);
+        IssueProvider i2 = new DummyIssue(id2, attr2);
 
         storage.storeQuery(url, qName, new String[] {id1, id2});
 
@@ -186,8 +188,8 @@ public class StorageTest extends NbTestCase {
         String url = "http://test/bugzilla";
         String qName = "SomeQuery";
 
-        Issue i1 = new DummyIssue(id1, attr);
-        Issue i2 = new DummyIssue(id2, attr);
+        IssueProvider i1 = new DummyIssue(id1, attr);
+        IssueProvider i2 = new DummyIssue(id2, attr);
         long lm = System.currentTimeMillis();
         IssueCache.IssueEntry ie1 = new IssueCache.IssueEntry(i1, attr, -1, -1, false, lm);
         IssueCache.IssueEntry ie2 = new IssueCache.IssueEntry(i2, attr, -1, -1, false, lm);
@@ -250,7 +252,7 @@ public class StorageTest extends NbTestCase {
         if(!v.equals(value)) fail("value [" + v + "] for attribute [" + attr + "] instead of [" + value + "]");
     }
 
-    private static class DummyIssue extends Issue {
+    private static class DummyIssue extends IssueProvider {
         private Map<String, String> m;
         private String id;
 
@@ -313,6 +315,21 @@ public class StorageTest extends NbTestCase {
 
         @Override
         public boolean isNew() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void setContext(Node[] nodes) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

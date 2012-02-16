@@ -45,12 +45,14 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.osgi.baseadaptor.BaseData;
 import org.eclipse.osgi.baseadaptor.bundlefile.BundleEntry;
 import org.eclipse.osgi.baseadaptor.bundlefile.BundleFile;
@@ -59,6 +61,8 @@ import org.eclipse.osgi.baseadaptor.bundlefile.MRUBundleFileList;
 import org.eclipse.osgi.baseadaptor.bundlefile.ZipBundleFile;
 import org.netbeans.core.netigso.spi.BundleContent;
 import org.netbeans.core.netigso.spi.NetigsoArchive;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 
 /** This is fake bundle. It is created by the Netbinox infrastructure to 
  * use the {@link NetigsoArchive} to get cached data and speed up the start.
@@ -216,7 +220,28 @@ final class JarBundleFile extends BundleFile implements BundleContent {
         return arr;
     }
 
-    private BundleEntry findEntry(String why, String name) {
+    private BundleEntry findEntry(String why, final String name) {
+        if (!name.equals("META-INF/MANIFEST.MF") && // NOI18N
+            data != null && 
+            data.getLocation() != null && 
+            data.getLocation().startsWith("netigso://") // NOI18N
+        ) { 
+            String cnb = data.getLocation().substring(10);
+            for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+                if (mi.getCodeNameBase().equals(cnb)) {
+                    if (!mi.isEnabled()) {
+                        break;
+                    }
+                    final URL url = mi.getClassLoader().getResource(name);
+                    if (url != null) {
+                        return new ModuleEntry(url, name);
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+        
         BundleEntry u;
         for (;;) {
             BundleFile d = delegate(why, name);
@@ -270,7 +295,17 @@ final class JarBundleFile extends BundleFile implements BundleContent {
 
             @Override
             public URL getLocalURL() {
-                return findEntry("getLocalURL", name).getLocalURL(); // NOI18N
+                try {
+                    URL superLocal = findEntry("getLocalURL", name).getLocalURL();
+                    if (superLocal.getProtocol().equals("jar")) {
+                        return new URL("jar:" + getBaseFile().toURI() + "!/" + name); // NOI18N
+                    } else {
+                        return superLocal;
+                    }
+                } catch (MalformedURLException ex) {
+                    NetbinoxFactory.LOG.log(Level.SEVERE, null, ex);
+                    return null;
+                }
             }
 
             @Override

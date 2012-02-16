@@ -42,19 +42,21 @@
 
 package org.netbeans.modules.bugtracking.vcs;
 
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 
 /**
  *
  * @author tomas
  */
-public class HookIssue extends Issue {
+public class HookIssue extends IssueProvider {
     static HookIssue instance;
 
     boolean closed;
@@ -141,6 +143,21 @@ public class HookIssue extends Issue {
             };
         }
         return controller;
+    }
+
+    @Override
+    public void setContext(Node[] nodes) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

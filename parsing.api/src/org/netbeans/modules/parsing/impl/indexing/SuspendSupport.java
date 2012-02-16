@@ -60,6 +60,7 @@ final class SuspendSupport implements SuspendStatus {
 
     private final RequestProcessor worker;
     private final Object lock = new Object();
+    private final ThreadLocal<Boolean> ignoreSuspend = new ThreadLocal<Boolean>();
     //@GuardedBy("lock")
     private int suspedDepth;
 
@@ -102,9 +103,21 @@ final class SuspendSupport implements SuspendStatus {
             }
         }
     }
+    
+    public void runWithNoSuspend(final Runnable work) {
+        ignoreSuspend.set(Boolean.TRUE);
+        try {
+            work.run();
+        } finally {
+            ignoreSuspend.remove();
+        }
+    }
 
     @Override
     public boolean isSuspended() {
+        if (ignoreSuspend.get() == Boolean.TRUE) {
+            return false;
+        }
         synchronized(lock) {
             return suspedDepth > 0;
         }
@@ -112,6 +125,9 @@ final class SuspendSupport implements SuspendStatus {
 
     @Override
     public void parkWhileSuspended() throws InterruptedException {
+        if (ignoreSuspend.get() == Boolean.TRUE) {
+            return;
+        }
         synchronized(lock) {
             boolean parked = false;
             while (suspedDepth > 0) {
@@ -124,5 +140,15 @@ final class SuspendSupport implements SuspendStatus {
             }
         }
     }
+    
+    static final SuspendStatus NOP = new SuspendStatus () {
+        @Override
+        public boolean isSuspended() {
+            return false;
+        }
+        @Override
+        public void parkWhileSuspended() throws InterruptedException {
+        }
+    };
 
 }

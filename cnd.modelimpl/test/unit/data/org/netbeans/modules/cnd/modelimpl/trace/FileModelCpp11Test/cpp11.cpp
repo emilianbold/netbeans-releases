@@ -33,50 +33,50 @@ extern template class B<int>;
 //#include <initializer_list>
 //#include <vector>
 //#include <string>
-//class SequenceClass {
-//public:
-//    SequenceClass(std::initializer_list<int> list) {
-//    }
-//};
-//SequenceClass some_var = {1, 4, 5, 6};
-//void function_name(std::initializer_list<float> list) {    
-//}
-//void foo() {
-//    function_name({1.0f, -3.45f, -0.4f});
-//    
-//    std::vector<std::string> v = { "xyzzy", "plugh", "abracadabra" };
-//    std::vector<std::string> v2{ "xyzzy", "plugh", "abracadabra" };
-//}
+class SequenceClass {
+public:
+    SequenceClass(std::initializer_list<int> list) {
+    }
+};
+SequenceClass some_var = {1, 4, 5, 6};
+void function_name(std::initializer_list<float> list) {    
+}
+void foo() {
+    function_name({1.0f, -3.45f, -0.4f});
+    
+    std::vector<std::string> v = { "xyzzy", "plugh", "abracadabra" };
+    std::vector<std::string> v2{ "xyzzy", "plugh", "abracadabra" };
+}
 
 //        Uniform initialization
 
-//struct BasicStruct {
-//    int x;
-//    double y;
-//};
-// 
-//struct AltStruct {
-//    AltStruct(int x, double y) : x_{x}, y_{y} {}
-// 
-//private:
-//    int x_;
-//    double y_;
-//};
-// 
-//BasicStruct var1{5, 3.2};
-//AltStruct var2{2, 4.3};
+struct BasicStruct {
+    int x;
+    double y;
+};
+ 
+struct AltStruct {
+    AltStruct(int x, double y) : x_{x}, y_{y} {}
+ 
+private:
+    int x_;
+    double y_;
+};
+ 
+BasicStruct var1{5, 3.2};
+AltStruct var2{2, 4.3};
 
 //#include <string>
 
-//struct IdString {
-//    std::string name;
-//    int identifier;
-//};
-// 
-//IdString get_string()
-//{
-//    return {"SomeName", 4}; //Note the lack of explicit type.
-//}
+struct IdString {
+    std::string name;
+    int identifier;
+};
+ 
+IdString get_string()
+{
+    return {"SomeName", 4}; //Note the lack of explicit type.
+}
 
 //        Type inference
 
@@ -197,10 +197,10 @@ std::vector<SomeType<(1>2)>> x1;
 //        Template aliases
 
 // ?
-//template <typename First, typename Second, int third>
-//class SomeType; 
-//template <typename Second> using TypedefName = SomeType<OtherType, Second, 5>;
-//using OtherType = void (*)(double);           // New introduced syntax
+template <typename First, typename Second, int third>
+class SomeType; 
+template <typename Second> using TypedefName = SomeType<OtherType, Second, 5>;
+using OtherType = void (*)(double);           // New introduced syntax
 
 
 //        Unrestricted unions

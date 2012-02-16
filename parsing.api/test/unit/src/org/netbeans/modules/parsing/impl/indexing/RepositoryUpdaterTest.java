@@ -221,11 +221,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
 //        MockMimeLookup.setInstances(MimePath.get(JARMIME), jarIndexerFactory);
         MockMimeLookup.setInstances(MimePath.get(MIME), indexerFactory);
         MockMimeLookup.setInstances(MimePath.get(EMIME), eindexerFactory, new EmbParserFactory());
-        Set<String> mt = new HashSet<String>();
-        mt.add(EMIME);
-        mt.add(MIME);
-        Util.allMimeTypes = mt;
-
+        setMimeTypes(EMIME, MIME);
+        
         assertNotNull("No masterfs",wd);
         srcRoot1 = wd.createFolder("src1");
         assertNotNull(srcRoot1);
@@ -758,16 +755,16 @@ public class RepositoryUpdaterTest extends NbTestCase {
 
     public void testFileListWork164622() throws FileStateInvalidException {
         final RepositoryUpdater ru = RepositoryUpdater.getDefault();
-        RepositoryUpdater.FileListWork flw1 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRootWithFiles1.getURL(), false, false, true, false, SuspendStatus.NOP, null);
-        RepositoryUpdater.FileListWork flw2 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRootWithFiles1.getURL(), false, false, true, false, SuspendStatus.NOP, null);
+        RepositoryUpdater.FileListWork flw1 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRootWithFiles1.getURL(), false, false, true, false, SuspendSupport.NOP, null);
+        RepositoryUpdater.FileListWork flw2 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRootWithFiles1.getURL(), false, false, true, false, SuspendSupport.NOP, null);
         assertTrue("The flw2 job was not absorbed", flw1.absorb(flw2));
 
         FileObject [] children = srcRootWithFiles1.getChildren();
         assertTrue(children.length > 0);
-        RepositoryUpdater.FileListWork flw3 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRootWithFiles1.getURL(), Collections.singleton(children[0]), false, false, true, false, true, SuspendStatus.NOP, null);
+        RepositoryUpdater.FileListWork flw3 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRootWithFiles1.getURL(), Collections.singleton(children[0]), false, false, true, false, true, SuspendSupport.NOP, null);
         assertTrue("The flw3 job was not absorbed", flw1.absorb(flw3));
 
-        RepositoryUpdater.FileListWork flw4 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRoot1.getURL(), false, false, true, false, SuspendStatus.NOP, null);
+        RepositoryUpdater.FileListWork flw4 = new RepositoryUpdater.FileListWork(ru.getScannedRoots2Dependencies(),srcRoot1.getURL(), false, false, true, false, SuspendSupport.NOP, null);
         assertFalse("The flw4 job should not have been absorbed", flw1.absorb(flw4));
     }
     
@@ -1052,7 +1049,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
     public void testFileListWorkVsRefreshWork() throws IOException {
         File root1 = new File(getWorkDir(), "root1");
         {
-        RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, false, true, SuspendStatus.NOP, null);
+        RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, false, true, SuspendSupport.NOP, null);
         RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(
                 Collections.<URL, List<URL>>emptyMap(),
                 Collections.<URL,List<URL>>emptyMap(),
@@ -1062,12 +1059,12 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 false,
                 null,
                 new RepositoryUpdater.FSRefreshInterceptor(),
-                SuspendStatus.NOP,
+                SuspendSupport.NOP,
                 null);
         assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
         }
         {
-        RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, true, true, SuspendStatus.NOP, null);
+        RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, true, true, SuspendSupport.NOP, null);
         RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(
                 Collections.<URL, List<URL>>emptyMap(),
                 Collections.<URL,List<URL>>emptyMap(),
@@ -1077,12 +1074,12 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 false,
                 null,
                 new RepositoryUpdater.FSRefreshInterceptor(),
-                SuspendStatus.NOP,
+                SuspendSupport.NOP,
                 null);
         assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
         }
         {
-        RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, false, true, SuspendStatus.NOP, null);
+        RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, false, true, SuspendSupport.NOP, null);
         RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(
                 Collections.<URL, List<URL>>emptyMap(),
                 Collections.<URL,List<URL>>emptyMap(),
@@ -1092,12 +1089,12 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 false,
                 null,
                 new RepositoryUpdater.FSRefreshInterceptor(),
-                SuspendStatus.NOP,
+                SuspendSupport.NOP,
                 null);
         assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
         }
         {
-        RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, true, true, SuspendStatus.NOP, null);
+        RepositoryUpdater.FileListWork flw = new RepositoryUpdater.FileListWork(Collections.<URL, List<URL>>emptyMap(), root1.toURL(), false, false, true, true, SuspendSupport.NOP, null);
         RepositoryUpdater.RefreshWork rw = new RepositoryUpdater.RefreshWork(
                 Collections.<URL, List<URL>>emptyMap(),
                 Collections.<URL,List<URL>>emptyMap(),
@@ -1107,7 +1104,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 false,
                 null,
                 new RepositoryUpdater.FSRefreshInterceptor(),
-                SuspendStatus.NOP,
+                SuspendSupport.NOP,
                 null);
         assertTrue("RefreshWork didn't absorb FileListWork", rw.absorb(flw));
         }
@@ -1126,7 +1123,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 false,
                 Collections.singleton(root1),
                 new RepositoryUpdater.FSRefreshInterceptor(),
-                SuspendStatus.NOP,
+                SuspendSupport.NOP,
                 null);
         RepositoryUpdater.RefreshWork rw2 = new RepositoryUpdater.RefreshWork(
                 Collections.<URL, List<URL>>emptyMap(),
@@ -1137,7 +1134,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 false,
                 Collections.singleton(root2),
                 new RepositoryUpdater.FSRefreshInterceptor(),
-                SuspendStatus.NOP,
+                SuspendSupport.NOP,
                 null);
         assertFalse("RefreshWork should not be cancelled by other RefreshWork", rw1.isCancelledBy(rw2, new ArrayList<RepositoryUpdater.Work>()));
         assertTrue("RefreshWork should absorb other RefreshWork", rw1.absorb(rw2));
@@ -1828,7 +1825,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
                             @Override
                             public void run() {
                                 try {
-                                    IndexManager.readAccess(new IndexManager.Action<Void>() {
+                                    IndexManager.priorityAccess(new IndexManager.Action<Void>() {
                                         @Override
                                         public Void run() throws IOException, InterruptedException {
                                             return null;
@@ -2385,6 +2382,11 @@ public class RepositoryUpdaterTest extends NbTestCase {
 //        System.out.println("Time: " + h.time);
 //    }
 
+    public static void setMimeTypes(final String... mimes) {
+        Set<String> mt = new HashSet<String>(Arrays.asList(mimes));
+        Util.allMimeTypes = mt;
+    }
+    
     // <editor-fold defaultstate="collapsed" desc="Mock Services">
     public static class TestHandler extends Handler {
 

@@ -41,11 +41,11 @@
  */
 package org.netbeans.modules.versioning.ui.history;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import javax.swing.Action;
-import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
 
 /**
  *
@@ -55,7 +55,7 @@ public class HistoryEntry {
     private final VCSHistoryProvider.HistoryEntry entry;
     private final boolean local;
 
-    HistoryEntry(VCSHistoryProvider.HistoryEntry entry, File[] files, boolean local) {
+    HistoryEntry(VCSHistoryProvider.HistoryEntry entry, boolean local) {
         this.entry = entry;
         this.local = local;
     }
@@ -72,7 +72,7 @@ public class HistoryEntry {
         return entry.getRevisionShort();
     }
 
-    public void getRevisionFile(File originalFile, File revisionFile) {
+    public void getRevisionFile(VCSFileProxy originalFile, VCSFileProxy revisionFile) {
         entry.getRevisionFile(originalFile, revisionFile);
     }
 
@@ -84,7 +84,7 @@ public class HistoryEntry {
         return entry.getMessage();
     }
 
-    public File[] getFiles() {
+    public VCSFileProxy[] getFiles() {
         return entry.getFiles();
     }
 
@@ -113,7 +113,7 @@ public class HistoryEntry {
         StringBuilder sb = new StringBuilder();
         sb.append("[");
         sb.append("files=[");
-        File[] files = getFiles();
+        VCSFileProxy[] files = getFiles();
         for (int i = 0; i < files.length; i++) {
             sb.append(files[i]);
             if(i < files.length -1) sb.append(",");

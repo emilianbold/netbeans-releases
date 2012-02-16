@@ -68,4 +68,6 @@ public interface APTToken extends Token, Serializable {
     public String getText();
     public CharSequence getTextID();
     public void setTextID(CharSequence id);    
+    
+    public Object getProperty(Object key);
 }

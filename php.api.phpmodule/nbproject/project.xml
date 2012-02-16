@@ -15,6 +15,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.csl.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>2.24</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.extexecution</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -103,7 +112,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.6</specification-version>
+                        <specification-version>8.22</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -164,11 +173,13 @@
                 <friend>org.netbeans.modules.php.symfony2</friend>
                 <friend>org.netbeans.modules.php.yii</friend>
                 <friend>org.netbeans.modules.php.zend</friend>
+                <package>org.netbeans.modules.php.api.annotations</package>
                 <package>org.netbeans.modules.php.api.doc</package>
                 <package>org.netbeans.modules.php.api.editor</package>
                 <package>org.netbeans.modules.php.api.phpmodule</package>
                 <package>org.netbeans.modules.php.api.util</package>
                 <package>org.netbeans.modules.php.spi.actions</package>
+                <package>org.netbeans.modules.php.spi.annotations</package>
                 <package>org.netbeans.modules.php.spi.commands</package>
                 <package>org.netbeans.modules.php.spi.doc</package>
                 <package>org.netbeans.modules.php.spi.editor</package>

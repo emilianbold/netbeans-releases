@@ -51,12 +51,7 @@ import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -223,8 +218,20 @@ final class MIMESupport extends Object {
 
             ERR.fine("Computing resolvers"); // NOI18N
 
-            List<MIMEResolver> all = new ArrayList<MIMEResolver>(declarativeResolvers());
-            all.addAll(result.allInstances());
+            List<FileObject> instances = new ArrayList<FileObject>();
+            List<MIMEResolver> all = new ArrayList<MIMEResolver>(declarativeResolvers(instances));
+            final Collection<? extends MIMEResolver> regularLookup = result.allInstances();
+            if (regularLookup.isEmpty() && !instances.isEmpty()) {
+                for (FileObject fo : instances) {
+                    MIMEResolver mr = FileUtil.getConfigObject(fo.getPath(), MIMEResolver.class);
+                    if (mr != null) {
+                        all.add(mr);
+                    }
+                }
+            } else {
+                all.addAll(regularLookup);
+            }
+            
             MIMEResolver[] toRet = all.toArray(new MIMEResolver[all.size()]);
 
             ERR.fine("Resolvers computed"); // NOI18N
@@ -272,7 +279,9 @@ final class MIMESupport extends Object {
         // holds reference to not loose FileChangeListener
         private static FileObject declarativeFolder = null;
 
-        private static synchronized List<MIMEResolver> declarativeResolvers() {
+        private static synchronized List<MIMEResolver> declarativeResolvers(
+            List<FileObject> instances
+        ) {
             List<MIMEResolver> declmimes = new ArrayList<MIMEResolver>();
             if (declarativeFolder == null) {
                 declarativeFolder = FileUtil.getConfigFile("Services/MIMEResolver"); // NOI18N
@@ -282,6 +291,9 @@ final class MIMESupport extends Object {
                     if (f.hasExt("xml")) { // NOI18N
                         // For now, just assume it has the right DTD. Could check this if desired.
                         declmimes.add(MIMEResolverImpl.forDescriptor(f));
+                    }
+                    if (f.hasExt("instance")) { // NOI18N
+                        instances.add(f);
                     }
                 }
                 declarativeFolder.removeFileChangeListener(weakDeclarativeFolderListener);

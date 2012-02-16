@@ -13,8 +13,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-import org.codehaus.jettison.json.JSONObject;
-import org.codehaus.jettison.json.JSONString;
 
 /**
  * REST Web Service
@@ -39,7 +37,7 @@ public class CI1CClass {
      */
     @GET
     @Produces("application/json")
-    public JSONObject getJson() {
+    public org.codehaus.jettison.json.JSONObject getJson() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
     }
@@ -52,7 +50,7 @@ public class CI1CClass {
     @POST
     @Consumes("application/json")
     @Produces("application/json")
-    public Response postJson(JSONString content) {
+    public Response postJson(org.codehaus.jettison.json.JSONString content) {
         //TODO
         return Response.created(context.getAbsolutePath()).build();
     }

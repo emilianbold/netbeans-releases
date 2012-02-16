@@ -87,16 +87,13 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.TableColumnModelListener;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.bugtracking.BugtrackingConfig;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.query.IssueTableSupport;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.view.TreeTableView;
@@ -115,12 +112,12 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
 
     private TableSorter     sorter;
 
-    private Query query;
+    private QueryProvider query;
     private ColumnDescriptor[] descriptors;
 
     private Filter filter;
     private Filter[] filters;
-    private Set<Issue> issues = new HashSet<Issue>();
+    private Set<IssueProvider> issues = new HashSet<IssueProvider>();
 
     private QueryTableHeaderRenderer queryTableHeaderRenderer;
 
@@ -157,7 +154,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         }
     };
 
-    public IssueTable(Query query, ColumnDescriptor[] descriptors) {
+    public IssueTable(QueryProvider query, ColumnDescriptor[] descriptors) {
         assert query != null;
         assert descriptors != null;
         assert descriptors.length > 0;
@@ -165,7 +162,6 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         this.query = query;
 
         this.descriptors = descriptors;
-        query.addNotifyListener(new NotifyListener());
         query.addPropertyChangeListener(this);
 
         tableModel = new NodeTableModel();
@@ -310,7 +306,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(Query.EVENT_QUERY_SAVED)) {
+        if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_SAVED)) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -415,7 +411,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
 
     private void setFilterIntern(Filter filter) {
         List<IssueNode> issueNodes = new ArrayList<IssueNode>(issues.size());
-        for (Issue issue : issues) {
+        for (IssueProvider issue : issues) {
             if (filter == null || filter.accept(issue)) {
                 issueNodes.add(((NodeProvider) issue).getNode());
             }
@@ -618,7 +614,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     @Override
     public void ancestorRemoved(AncestorEvent event) { }
 
-    private void setModelProperties(Query query) {
+    private void setModelProperties(QueryProvider query) {
         List<ColumnDescriptor> properties = new ArrayList<ColumnDescriptor>(descriptors.length + (query.isSaved() ? 2 : 0));
         int i = 0;
         for (; i < descriptors.length; i++) {
@@ -693,7 +689,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
                 // seen column
                 if(column == getSeenColumnIdx()) {
                     IssueNode in = (IssueNode) tableModel.getNodes()[row];
-                    final Issue issue = in.getLookup().lookup(Issue.class);
+                    final IssueProvider issue = in.getLookup().lookup(IssueProvider.class);
                     BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
                         @Override
                         public void run() {
@@ -745,39 +741,33 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     @Override
     public void keyReleased(KeyEvent e) { }
 
-    private class NotifyListener implements QueryNotifyListener {
-        @Override
-        public void notifyData(final Issue issue) {
-            assert issue instanceof NodeProvider;
-            issues.add(issue);
-            if(filter == null || filter.accept(issue)) {
-                final IssueNode node = ((NodeProvider)issue).getNode();
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        tableModel.insertNode(node);
-                    }
-                });
-            }
+    public void notifyData(final IssueProvider issue) {
+        assert issue instanceof NodeProvider;
+        issues.add(issue);
+        if(filter == null || filter.accept(issue)) {
+            final IssueNode node = ((NodeProvider)issue).getNode();
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    tableModel.insertNode(node);
+                }
+            });
         }
-        @Override
-        public void started() {
-            issues.clear();
-            IssueTable.this.setTableModel(new IssueNode[0]);
-        }
-        @Override
-        public void finished() { }
+    }
+    public void started() {
+        issues.clear();
+        IssueTable.this.setTableModel(new IssueNode[0]);
     }
 
     private class SeenDescriptor extends ColumnDescriptor<Boolean> {
         public SeenDescriptor() {
-            super(IssueNode.LABEL_NAME_SEEN, Boolean.class, "", NbBundle.getBundle(Issue.class).getString("CTL_Issue_Seen_Desc"), -1, true, true); // NOI18N
+            super(IssueNode.LABEL_NAME_SEEN, Boolean.class, "", NbBundle.getBundle(IssueProvider.class).getString("CTL_Issue_Seen_Desc"), -1, true, true); // NOI18N
         }
     }
 
     private class RecentChangesDescriptor extends ColumnDescriptor<String> {
         public RecentChangesDescriptor() {
-            super(IssueNode.LABEL_RECENT_CHANGES, String.class, NbBundle.getBundle(Issue.class).getString("CTL_Issue_Recent"), NbBundle.getBundle(Issue.class).getString("CTL_Issue_Recent_Desc"), -1, true, true); // NOI18N
+            super(IssueNode.LABEL_RECENT_CHANGES, String.class, NbBundle.getBundle(IssueProvider.class).getString("CTL_Issue_Recent"), NbBundle.getBundle(IssueProvider.class).getString("CTL_Issue_Recent_Desc"), -1, true, true); // NOI18N
         }
     }
 
@@ -786,7 +776,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         if(name == null) {
             name = "#find#issues#hitlist#table#";               // NOI18N
         }
-        return query.getRepository().getID() + ":" + name;      // NOI18N
+        return query.getRepository().getInfo().getId() + ":" + name;      // NOI18N
     }
 
     private class StoreColumnsHandler implements Runnable {

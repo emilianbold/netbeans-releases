@@ -78,6 +78,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
@@ -88,7 +89,6 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle.Messages;
 import org.openide.util.UserCancelException;
 import org.openide.windows.TopComponent;
 import org.xml.sax.InputSource;
@@ -98,6 +98,11 @@ import org.xml.sax.InputSource;
  * @author Ian Formanek
  * @author Marek Fukala
  */
+@MIMEResolver.Registration(
+    displayName="#HTMLResolver",
+    position=300,
+    resource="resolver.xml"
+)
 public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory {
     public static final String PROP_ENCODING = "Content-Encoding"; // NOI18N
     public static final String DEFAULT_ENCODING = new InputStreamReader(System.in).getEncoding();

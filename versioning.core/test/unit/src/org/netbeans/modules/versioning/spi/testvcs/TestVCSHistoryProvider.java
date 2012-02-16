@@ -42,7 +42,6 @@
 package org.netbeans.modules.versioning.spi.testvcs;
 
 import java.awt.event.ActionEvent;
-import java.io.File;
 import java.util.Date;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -53,10 +52,41 @@ import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
  *
  * @author tomas
  */
-public class TestVCSHistoryProvider implements VCSHistoryProvider {
+public class TestVCSHistoryProvider implements VCSHistoryProvider, VCSHistoryProvider.RevisionProvider {
+    public static final String FILE_PROVIDES_REVISIONS_SUFFIX = "providesRevisions";
+    public static TestVCSHistoryProvider instance;
+    
+    public boolean revisionProvided = false;
     public static HistoryEntry[] history;
+    
+    public TestVCSHistoryProvider() {
+        instance = this;
+    }
+    
+
+    public static void reset() {
+        instance.history = null;
+        instance.revisionProvided = false;
+    }
+    
     @Override
     public HistoryEntry[] getHistory(VCSFileProxy[] files, Date fromDate) {
+        for (VCSFileProxy file : files) {
+            if(file.getName().endsWith(FILE_PROVIDES_REVISIONS_SUFFIX)) {
+                return new VCSHistoryProvider.HistoryEntry[] {
+                        new VCSHistoryProvider.HistoryEntry(
+                            new VCSFileProxy[] {file}, 
+                            new Date(System.currentTimeMillis()), 
+                            "msg", 
+                            "user", 
+                            "username", 
+                            "12345", 
+                            "1234567890", 
+                            new Action[0], 
+                            this)};
+                
+            }
+        }
         return history;
     }
 
@@ -78,5 +108,10 @@ public class TestVCSHistoryProvider implements VCSHistoryProvider {
     @Override
     public void removeHistoryChangeListener(HistoryChangeListener l) {
         
+    }
+
+    @Override
+    public void getRevisionFile(VCSFileProxy originalFile, VCSFileProxy revisionFile) {
+        revisionProvided = true;
     }
 }

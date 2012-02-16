@@ -122,7 +122,7 @@ public class AstRenderer {
                         if(o instanceof ClassImpl) {
                             ClassImpl cls = (ClassImpl)o;
                             cls.render(token, isRenderingLocalContext());
-                            container.addDeclaration(cls);
+                            //container.addDeclaration(cls);
                             addTypedefs(renderTypedef(token, cls, currentNamespace).typedefs, currentNamespace, container, cls);
                             renderVariableInClassifier(token, cls, currentNamespace, container);
                         } else {
@@ -485,7 +485,7 @@ public class AstRenderer {
             return false;
         }
         if (name.getType() != CPPTokenTypes.CSM_QUALIFIED_ID &&
-                name.getType() != CPPTokenTypes.ID) {
+                name.getType() != CPPTokenTypes.IDENT) {
             return false;
         }
 
@@ -862,7 +862,7 @@ public class AstRenderer {
                                 case CPPTokenTypes.CSM_QUALIFIED_ID:
                                     nameHolder = NameHolder.createSimpleName(AstUtil.getLastChild(varNode));
                                     break;
-                                case CPPTokenTypes.ID:
+                                case CPPTokenTypes.IDENT:
                                     nameHolder = NameHolder.createSimpleName(varNode);
                                     break;
                             }
@@ -882,7 +882,7 @@ public class AstRenderer {
                         }
                         break;
                     }
-                    case CPPTokenTypes.ID:
+                    case CPPTokenTypes.IDENT:
                         {
                             nothingBeforSemicolon = false;
                             if (token.getNextSibling() != null && token.getNextSibling().getType() == CPPTokenTypes.COLON) {
@@ -1266,7 +1266,7 @@ public class AstRenderer {
             if (qid.getNextSibling() != null) {
                 List<CharSequence> l = new ArrayList<CharSequence>();
                 for (AST namePart = qid.getFirstChild(); namePart != null; namePart = namePart.getNextSibling()) {
-                    if (templateDepth == 0 && namePart.getType() == CPPTokenTypes.ID) {
+                    if (templateDepth == 0 && namePart.getType() == CPPTokenTypes.IDENT) {
                         l.add(NameCache.getManager().getString(AstUtil.getText(namePart)));
                     } else if (namePart.getType() == CPPTokenTypes.LESSTHAN) {
                         // the beginning of template parameters
@@ -1661,7 +1661,7 @@ public class AstRenderer {
                         name = NameHolder.createSimpleName(AstUtil.getLastChild(token));
                     }
                     break;
-                case CPPTokenTypes.ID:
+                case CPPTokenTypes.IDENT:
                     if (inParamsLevel == 0) {
                         name = NameHolder.createSimpleName(token);
                     }
@@ -1916,7 +1916,7 @@ public class AstRenderer {
         if (id == null) {
             return false;
         }
-        if (id.getType() == CPPTokenTypes.ID) {
+        if (id.getType() == CPPTokenTypes.IDENT) {
             AST scope = id.getNextSibling();
             scope = skipTemplateParameters(scope);
             if (scope != null && scope.getType() == CPPTokenTypes.SCOPE) {

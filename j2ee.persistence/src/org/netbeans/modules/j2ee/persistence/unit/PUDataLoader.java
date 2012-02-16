@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
  */
 public class PUDataLoader extends UniFileLoader {
     
-    public static final String REQUIRED_MIME = "text/x-persistence1.0";
+    public static final String REQUIRED_MIME = "text/x-persistence1.0+xml";
     
     public PUDataLoader() {
         super(PUDataObject.class.getName());

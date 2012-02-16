@@ -56,7 +56,7 @@ import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient.DiffMode;
 import org.netbeans.libs.git.GitClient.ResetType;
 import org.netbeans.libs.git.GitClientCallback;
-import org.netbeans.libs.git.GitClientFactory;
+import org.netbeans.libs.git.GitRepository;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.GitPullResult;
@@ -196,7 +196,7 @@ public final class GitClient {
 
     public GitClient (File repository, GitProgressSupport progressSupport, boolean handleAuthenticationIssues) throws GitException {
         this.repositoryRoot = repository;
-        delegate = GitClientFactory.getInstance().getClient(repository);
+        delegate = GitRepository.getInstance(repository).getClient();
         this.progressSupport = progressSupport;
         this.handleAuthenticationIssues = handleAuthenticationIssues;
     }

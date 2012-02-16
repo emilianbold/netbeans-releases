@@ -252,6 +252,7 @@ public class FmtOptions {
     public static final String separateImportGroups = "separateImportGroups"; //NOI18N
     
     public static final String enableCommentFormatting = "enableCommentFormatting"; //NOI18N
+    public static final String enableBlockCommentFormatting = "enableBlockCommentFormatting"; //NOI18N
     public static final String wrapCommentText = "wrapCommentText"; //NOI18N
     public static final String wrapOneLineComment = "wrapOneLineComment"; //NOI18N
     public static final String preserveNewLinesInComments = "preserveNewLinesInComments"; //NOI18N
@@ -509,6 +510,7 @@ public class FmtOptions {
             { separateImportGroups, TRUE}, //NOI18N
             
             { enableCommentFormatting, TRUE}, //NOI18N
+            { enableBlockCommentFormatting, FALSE}, //NOI18N
             { wrapCommentText, TRUE}, //NOI18N
             { wrapOneLineComment, TRUE}, //NOI18N
             { preserveNewLinesInComments, FALSE}, //NOI18N

@@ -78,7 +78,7 @@ public class RemotePathTestCase extends RemoteFileTestBase {
             }
             parent = child;
         }
-        Exception lastAssertion = RemoteLogger.getLastAssertion();
+        AssertionError lastAssertion = RemoteLogger.getLastAssertion();
         if (lastAssertion != null) {
             throw lastAssertion;
         }

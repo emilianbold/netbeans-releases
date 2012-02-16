@@ -46,6 +46,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -72,7 +73,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -89,7 +89,8 @@ public final class OptionsChooserPanel extends JPanel {
     private DialogDescriptor dialogDescriptor;
     private PanelType panelType;
     private OptionsExportModel optionsExportModel;
-    private TreeModel treeModel;
+    private static TreeModel treeModel;
+    private static OptionsTreeDataProvider treeDataProvider;
 
     /** To distinguish between import and export panels. */
     private enum PanelType {
@@ -155,8 +156,21 @@ public final class OptionsChooserPanel extends JPanel {
 
                 public void actionPerformed(ActionEvent e) {
                     if (e.getSource() == DialogDescriptor.OK_OPTION) {
-                        // show confirmation dialog when user click OK
-                        finalExportConfirmationPanel.showConfirmation();
+                        String passwords = NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.export.passwords.displayName");
+                        Enumeration dfs = ((DefaultMutableTreeNode) treeModel.getRoot()).depthFirstEnumeration();
+                        while (dfs.hasMoreElements()) {
+                            Object nodeObj = dfs.nextElement();
+                            DefaultMutableTreeNode node = (DefaultMutableTreeNode)nodeObj;
+                            Object userObject = node.getUserObject();
+                            if (userObject instanceof OptionsExportModel.Item) {
+                                if(((OptionsExportModel.Item) userObject).getDisplayName().equals(passwords)) {
+                                    if(treeDataProvider.isSelected(nodeObj)) {
+                                        // show confirmation dialog when user click OK and All/Passwords/Passwords item is selected
+                                        finalExportConfirmationPanel.showConfirmation();
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             });
@@ -228,13 +242,8 @@ public final class OptionsChooserPanel extends JPanel {
             }
             LOGGER.fine("Import finished.");  //NOI18N
             // restart IDE
-            if (confirmationPanel.restartNow()) {
-                LifecycleManager.getDefault().markForRestart();
-                LifecycleManager.getDefault().exit();
-            } else {
-                // try to refresh system filesystem at least
-                FileUtil.refreshAll();
-            }
+            LifecycleManager.getDefault().markForRestart();
+            LifecycleManager.getDefault().exit();
         }
     }
 
@@ -277,7 +286,8 @@ public final class OptionsChooserPanel extends JPanel {
                 new OptionsRowModel(),
                 true,
                 NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.outline.header.tree")));
-        outline.setRenderDataProvider(new OptionsTreeDataProvider());
+        treeDataProvider = new OptionsTreeDataProvider();
+        outline.setRenderDataProvider(treeDataProvider);
         //outline.setRootVisible(false);
         outline.getTableHeader().setReorderingAllowed(false);
         outline.setColumnHidingAllowed(false);

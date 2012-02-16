@@ -73,6 +73,7 @@ public class JavaEESamplesWizardPanel implements WizardDescriptor.Panel,
         this.specifyPrjName = specifyPrjName;
     }
     
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new JavaEESamplesPanelVisual(this, withDB, specifyPrjName);
@@ -81,22 +82,28 @@ public class JavaEESamplesWizardPanel implements WizardDescriptor.Panel,
         }
         return component;
     }
-    
+
+    @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(JavaEESamplesWizardPanel.class);
+        return null;
     }
-    
+
+    @Override
     public boolean isValid() {
         getComponent();
         return component.valid(wizardDescriptor);
     }
     
     private final Set<ChangeListener> listeners = new HashSet(1);
+
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
+    
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -112,7 +119,8 @@ public class JavaEESamplesWizardPanel implements WizardDescriptor.Panel,
             ((ChangeListener) it.next()).stateChanged(ev);
         }
     }
-    
+
+    @Override
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         component.read(wizardDescriptor);
@@ -124,20 +132,22 @@ public class JavaEESamplesWizardPanel implements WizardDescriptor.Panel,
             wizardDescriptor.putProperty("NewProjectWizard_Title", substitute); // NOI18N
         }
     }
-    
+
+    @Override
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
         d.putProperty("NewProjectWizard_Title", null); // NOI18N
     }
-    
+
+    @Override
     public boolean isFinishPanel() {
         return true;
     }
-    
+
+    @Override
     public void validate() throws WizardValidationException {
         getComponent();
         component.validate(wizardDescriptor);
     }
-    
 }

@@ -52,9 +52,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -115,8 +119,10 @@ import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -419,39 +425,58 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         private final CompletionRequest request;
         private final int caretOffset;
         private final List<VariableName> usedVariables = new LinkedList<VariableName>();
+        private static final RequestProcessor RP = new RequestProcessor("ExistingVariableResolver"); //NOI18N
 
         public ExistingVariableResolver(CompletionRequest request) {
             this.request = request;
             caretOffset = request.anchor;
         }
 
-        public ParameterElement resolveVariable(ParameterElement param) {
+        public ParameterElement resolveVariable(final ParameterElement param) {
             if (OptionsUtils.codeCompletionSmartParametersPreFilling()) {
-                Collection<? extends VariableName> declaredVariables = getDeclaredVariables();
-                VariableName variableToUse = null;
-                if (declaredVariables != null) {
-                    int oldOffset = 0;
-                    for (VariableName variable : declaredVariables) {
-                        if (!usedVariables.contains(variable) && !variable.representsThis()) {
-                            if (isPreviousVariable(variable)) {
-                                if (hasCorrectType(variable, param.getTypes())) {
-                                    if (variable.getName().equals(param.getName())) {
-                                        variableToUse = variable;
-                                        break;
-                                    }
-                                    int newOffset = variable.getNameRange().getStart();
-                                    if (newOffset > oldOffset) {
-                                        oldOffset = newOffset;
-                                        variableToUse = variable;
+                Future<VariableName> futureVariableToUse = RP.submit(new Callable<VariableName>() {
+
+                    @Override
+                    public VariableName call() throws Exception {
+                        Collection<? extends VariableName> declaredVariables = getDeclaredVariables();
+                        VariableName variableToUse = null;
+                        if (declaredVariables != null) {
+                            int oldOffset = 0;
+                            for (VariableName variable : declaredVariables) {
+                                if (!usedVariables.contains(variable) && !variable.representsThis()) {
+                                    if (isPreviousVariable(variable)) {
+                                        if (hasCorrectType(variable, param.getTypes())) {
+                                            if (variable.getName().equals(param.getName())) {
+                                                variableToUse = variable;
+                                                break;
+                                            }
+                                            int newOffset = variable.getNameRange().getStart();
+                                            if (newOffset > oldOffset) {
+                                                oldOffset = newOffset;
+                                                variableToUse = variable;
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
+                        return variableToUse;
                     }
+                    
+                });
+                VariableName variableToUseName = null;
+                try {
+                    variableToUseName = futureVariableToUse.get(300, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (TimeoutException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-                if (variableToUse != null) {
-                    usedVariables.add(variableToUse);
-                    return new ParameterElementImpl(variableToUse.getName(), param.getDefaultValue(), param.getOffset(), param.getTypes(), param.isMandatory(), param.hasDeclaredType(), param.isReference());
+                if (variableToUseName != null) {
+                    usedVariables.add(variableToUseName);
+                    return new ParameterElementImpl(variableToUseName.getName(), param.getDefaultValue(), param.getOffset(), param.getTypes(), param.isMandatory(), param.hasDeclaredType(), param.isReference());
                 }
             }
             return param;

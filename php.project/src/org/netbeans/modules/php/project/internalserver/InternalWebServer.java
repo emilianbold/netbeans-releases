@@ -100,7 +100,7 @@ public final class InternalWebServer implements PropertyChangeListener {
         // listen to changes in project.properties
         ProjectPropertiesSupport.getPropertyEvaluator(project).addPropertyChangeListener(server);
         // listen to changes in webroot
-        ProjectPropertiesSupport.addPropertyChangeListener(project, server);
+        ProjectPropertiesSupport.addProjectPropertyChangeListener(project, server);
         return server;
     }
 

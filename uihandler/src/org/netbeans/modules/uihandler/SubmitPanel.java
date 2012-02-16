@@ -70,6 +70,7 @@ public class SubmitPanel extends javax.swing.JPanel
 
     private EditorKit betterXMLKit;
 
+    @SuppressWarnings("LeakingThisInConstructor")
     public SubmitPanel() {
         manager = new ExplorerManager();
 
@@ -77,6 +78,7 @@ public class SubmitPanel extends javax.swing.JPanel
         RequestProcessor.getDefault().post(this);
     }
 
+    @Override
     public void run() {
         if (EventQueue.isDispatchThread()) {
             try {
@@ -155,6 +157,7 @@ public class SubmitPanel extends javax.swing.JPanel
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    @Override
     public ExplorerManager getExplorerManager() {
         return manager;
     }
@@ -169,6 +172,7 @@ public class SubmitPanel extends javax.swing.JPanel
         }
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent ev) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(ev.getPropertyName())) {
             Node[] arr = getExplorerManager().getSelectedNodes();
@@ -186,6 +190,7 @@ public class SubmitPanel extends javax.swing.JPanel
         }
     }
     
+    @Override
     public void caretUpdate(CaretEvent e) {
         int offset = text.getCaretPosition();
         
@@ -206,6 +211,7 @@ public class SubmitPanel extends javax.swing.JPanel
         }
     }
 
+    @Override
     public int compare(Object o1, Object o2) {
         if (o1 instanceof Node) o1 = ((Node)o1).getValue("offset"); // NOI18N
         if (o2 instanceof Node) o2 = ((Node)o2).getValue("offset"); // NOI18N

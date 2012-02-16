@@ -110,8 +110,11 @@ public class EEWizardIterator extends BaseWizardIterator {
         Set<FileObject> projects = ArchetypeWizards.openProjects(rootFile, rootFile);
         for (FileObject projectFile : projects) {
             Project project = ProjectManager.getDefault().findProject(projectFile);
+            if (project == null) {
+                continue;
+            }
             
-            saveSettingsToNbConfiguration(projectFile);
+            saveSettingsToNbConfiguration(project);
             MavenProjectSupport.changeServer(project, true);
         }
         

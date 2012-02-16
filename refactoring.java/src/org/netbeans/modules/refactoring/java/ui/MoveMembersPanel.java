@@ -46,18 +46,13 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.*;
+import java.awt.event.*;
 import java.beans.BeanInfo;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
@@ -65,6 +60,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.UIResource;
+import javax.swing.plaf.metal.MetalIconFactory;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.*;
@@ -128,6 +124,8 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
     private final Action[] actions;
     private Project project;
     private SourceGroup[] groups;
+    private JLabel label;
+    private ComponentListener componenListener;
 
     /**
      * Creates new form MoveMembersPanel
@@ -183,22 +181,22 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
 //        desc.addFilter(SHOW_INHERITED,
 //                NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowInherited"), //NOI18N
 //                NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowInheritedTip"), //NOI18N
-//                false, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/filterHideInherited.png", false), //NOI18N
+//                false, ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/filterHideInherited.png", false), //NOI18N
 //                null);
         desc.addFilter(SHOW_FIELDS,
                 NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowFields"), //NOI18N
                 NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowFieldsTip"), //NOI18N
-                true, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/filterHideFields.png", false), //NOI18N
+                true, ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/filterHideFields.png", false), //NOI18N
                 null);
         desc.addFilter(SHOW_STATIC,
                 NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowStatic"), //NOI18N
                 NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowStaticTip"), //NOI18N
-                true, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/filterHideStatic.png", false), //NOI18N
+                true, ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/filterHideStatic.png", false), //NOI18N
                 null);
         desc.addFilter(SHOW_NON_PUBLIC,
                 NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowNonPublic"), //NOI18N
                 NbBundle.getMessage(MoveMembersPanel.class, "LBL_ShowNonPublicTip"), //NOI18N
-                true, ImageUtilities.loadImageIcon("org/netbeans/modules/java/navigation/resources/filterHideNonPublic.png", false), //NOI18N
+                true, ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/filterHideNonPublic.png", false), //NOI18N
                 null);
         AbstractButton[] res = new AbstractButton[4];
         sortByNameButton = new JToggleButton(new SortActionSupport.SortByNameAction(this));
@@ -403,30 +401,87 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
         boolean fields = filtersManager.isSelected(SHOW_FIELDS);
         boolean inherited = /* filtersManager.isSelected(SHOW_INHERITED) */ false;
 
+        boolean warn = false;
         ArrayList<Description> result = new ArrayList<Description>(original.size());
         for (Description description : original) {
 
             if (description.isConstructor()) {
+                if(description.getSelected() == Boolean.TRUE) warn |= true;
                 continue;
             }
             if (!inherited && description.isInherited()) {
+                if(description.getSelected() == Boolean.TRUE) warn |= true;
                 continue;
             }
             if (!non_public
                     && !description.getModifiers().contains(Modifier.PUBLIC)) {
+                if(description.getSelected() == Boolean.TRUE) warn |= true;
                 continue;
             }
 
             if (!statik && description.getModifiers().contains(Modifier.STATIC)) {
+                if(description.getSelected() == Boolean.TRUE) warn |= true;
                 continue;
             }
 
             if (!fields && description.getKind() == ElementKind.FIELD) {
+                if(description.getSelected() == Boolean.TRUE) warn |= true;
                 continue;
             }
             result.add(description);
         }
         Collections.sort(result, isNaturalSort() ? Description.POSITION_COMPARATOR : Description.ALPHA_COMPARATOR);
+        if(warn) {
+            if(this.label == null) {
+                final JLayeredPane layeredPaneAbove = JLayeredPane.getLayeredPaneAbove(outlineView1);
+                ImageIcon imageIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/warning_16.png", false); //NOI18N
+                this.label = new JLabel("Some selected members are not visible", imageIcon, SwingConstants.LEFT);//NOI18N
+                this.label.setBackground(outlineView1.getBackground());
+                this.label.setOpaque(true);
+
+                Rectangle ownerCompBounds = SwingUtilities.convertRectangle(outlineView1.getParent(), outlineView1.getBounds(), layeredPaneAbove);
+
+                final Dimension labelSize = label.getPreferredSize();
+                final Insets insets = outlineView1.getInsets();
+                int x = ownerCompBounds.x + ownerCompBounds.width - labelSize.width - insets.right;
+                int y = ownerCompBounds.y + ownerCompBounds.height - labelSize.height - insets.bottom;
+                label.setBounds(x, y, labelSize.width, labelSize.height);
+                outlineView1.addComponentListener(this.componenListener = new ComponentListener() {
+
+                    @Override
+                    public void componentResized(ComponentEvent e) {
+                        Rectangle ownerCompBounds = SwingUtilities.convertRectangle(outlineView1.getParent(), outlineView1.getBounds(), layeredPaneAbove);
+                        int x = ownerCompBounds.x + ownerCompBounds.width - labelSize.width - insets.right;
+                        int y = ownerCompBounds.y + ownerCompBounds.height - labelSize.height - insets.bottom;
+                        label.setBounds(x, y, labelSize.width, labelSize.height);
+                    }
+
+                    @Override
+                    public void componentMoved(ComponentEvent e) {
+                        Rectangle ownerCompBounds = SwingUtilities.convertRectangle(outlineView1.getParent(), outlineView1.getBounds(), layeredPaneAbove);
+                        int x = ownerCompBounds.x + ownerCompBounds.width - labelSize.width - insets.right;
+                        int y = ownerCompBounds.y + ownerCompBounds.height - labelSize.height - insets.bottom;
+                        label.setBounds(x, y, labelSize.width, labelSize.height);
+                    }
+
+                    @Override
+                    public void componentShown(ComponentEvent e) {}
+
+                    @Override
+                    public void componentHidden(ComponentEvent e) {}
+                });
+                layeredPaneAbove.add(label, new Integer(JLayeredPane.POPUP_LAYER - 1));
+            }
+        } else {
+            JLayeredPane layeredPaneAbove = JLayeredPane.getLayeredPaneAbove(outlineView1);
+            if(this.label != null) {
+                outlineView1.removeComponentListener(componenListener);
+                componenListener = null;
+                layeredPaneAbove.remove(label);
+                label = null;
+                layeredPaneAbove.repaint();
+            }
+        }
         return result;
     }
 
@@ -930,8 +985,6 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
     class ElementScanningTask implements CancellableTask<CompilationController> {
 
         private final AtomicBoolean canceled = new AtomicBoolean();
-        private static final String TYPE_COLOR = "#707070";
-        private static final String INHERITED_COLOR = "#7D694A";
 
         public ElementScanningTask() {
         }
@@ -998,14 +1051,14 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
 
             if (e instanceof TypeElement) {
                 d.setSubs(new HashSet<Description>());
-                d.setHtmlHeader(createHtmlHeader((TypeElement) e, info.getElements().isDeprecated(e), d.isInherited()));
+                d.setHtmlHeader(UIUtilities.createHtmlHeader((TypeElement) e, info.getElements().isDeprecated(e), d.isInherited()));
             } else if (e instanceof ExecutableElement) {
-                d.setHtmlHeader(createHtmlHeader((ExecutableElement) e, info.getElements().isDeprecated(e), d.isInherited()));
+                d.setHtmlHeader(UIUtilities.createHtmlHeader((ExecutableElement) e, info.getElements().isDeprecated(e), d.isInherited()));
             } else if (e instanceof VariableElement) {
                 if (!(e.getKind() == ElementKind.FIELD || e.getKind() == ElementKind.ENUM_CONSTANT)) {
                     return null;
                 }
-                d.setHtmlHeader(createHtmlHeader((VariableElement) e, info.getElements().isDeprecated(e), d.isInherited()));
+                d.setHtmlHeader(UIUtilities.createHtmlHeader((VariableElement) e, info.getElements().isDeprecated(e), d.isInherited()));
             }
 
             d.setModifiers(e.getModifiers());
@@ -1023,244 +1076,6 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
                 return -1;
             }
             return res.longValue();
-        }
-
-        /**
-         * Creates HTML display name of the Executable element
-         */
-        private String createHtmlHeader(ExecutableElement e, boolean isDeprecated, boolean isInherited) {
-
-            StringBuilder sb = new StringBuilder();
-            if (isDeprecated) {
-                sb.append("<s>"); // NOI18N
-            }
-            if (isInherited) {
-                sb.append("<font color=" + INHERITED_COLOR + ">"); // NOI18N
-            }
-            Name name = e.getKind() == ElementKind.CONSTRUCTOR ? e.getEnclosingElement().getSimpleName() : e.getSimpleName();
-            sb.append(UIUtilities.escape(name.toString()));
-            if (isDeprecated) {
-                sb.append("</s>"); // NOI18N
-            }
-
-            sb.append("("); // NOI18N
-
-            List<? extends VariableElement> params = e.getParameters();
-            for (Iterator<? extends VariableElement> it = params.iterator(); it.hasNext();) {
-                VariableElement param = it.next();
-                sb.append("<font color=" + TYPE_COLOR + ">"); // NOI18N
-                final boolean vararg = !it.hasNext() && e.isVarArgs();
-                sb.append(printArg(param.asType(), vararg));
-                sb.append("</font>"); // NOI18N
-                sb.append(" "); // NOI18N
-                sb.append(UIUtilities.escape(param.getSimpleName().toString()));
-                if (it.hasNext()) {
-                    sb.append(", "); // NOI18N
-                }
-            }
-
-
-            sb.append(")"); // NOI18N
-
-            if (e.getKind() != ElementKind.CONSTRUCTOR) {
-                TypeMirror rt = e.getReturnType();
-                if (rt.getKind() != TypeKind.VOID) {
-                    sb.append(" : "); // NOI18N     
-                    sb.append("<font color=" + TYPE_COLOR + ">"); // NOI18N
-                    sb.append(print(e.getReturnType()));
-                    sb.append("</font>"); // NOI18N                    
-                }
-            }
-
-            return sb.toString();
-        }
-
-        private String createHtmlHeader(VariableElement e, boolean isDeprecated, boolean isInherited) {
-
-            StringBuilder sb = new StringBuilder();
-
-            if (isDeprecated) {
-                sb.append("<s>"); // NOI18N
-            }
-            if (isInherited) {
-                sb.append("<font color=" + INHERITED_COLOR + ">"); // NOI18N
-            }
-            sb.append(UIUtilities.escape(e.getSimpleName().toString()));
-            if (isDeprecated) {
-                sb.append("</s>"); // NOI18N
-            }
-
-            if (e.getKind() != ElementKind.ENUM_CONSTANT) {
-                sb.append(" : "); // NOI18N
-                sb.append("<font color=" + TYPE_COLOR + ">"); // NOI18N
-                sb.append(print(e.asType()));
-                sb.append("</font>"); // NOI18N
-            }
-
-            return sb.toString();
-        }
-
-        private String createHtmlHeader(TypeElement e, boolean isDeprecated, boolean isInherited) {
-
-            StringBuilder sb = new StringBuilder();
-            if (isDeprecated) {
-                sb.append("<s>"); // NOI18N
-            }
-            if (isInherited) {
-                sb.append("<font color=" + INHERITED_COLOR + ">"); // NOI18N
-            }
-            sb.append(UIUtilities.escape(e.getSimpleName().toString()));
-            if (isDeprecated) {
-                sb.append("</s>"); // NOI18N
-            }
-            List<? extends TypeParameterElement> typeParams = e.getTypeParameters();
-            if (typeParams != null && !typeParams.isEmpty()) {
-                sb.append("&lt;"); // NOI18N
-
-                for (Iterator<? extends TypeParameterElement> it = typeParams.iterator(); it.hasNext();) {
-                    TypeParameterElement tp = it.next();
-                    sb.append(UIUtilities.escape(tp.getSimpleName().toString()));
-                    List<? extends TypeMirror> bounds = null;
-                    try {
-                        bounds = tp.getBounds();
-                    } catch (NullPointerException npe) {
-                        // Ignore
-                    }
-                    if (bounds != null && !bounds.isEmpty()) {
-                        sb.append(printBounds(bounds));
-                    }
-
-                    if (it.hasNext()) {
-                        sb.append(", "); // NOI18N
-                    }
-                }
-
-                sb.append("&gt;"); // NOI18N
-            }
-
-            // Add superclass and implemented interfaces
-
-            TypeMirror sc = e.getSuperclass();
-            String scName = print(sc);
-
-            if (sc == null
-                    || e.getKind() == ElementKind.ENUM
-                    || e.getKind() == ElementKind.ANNOTATION_TYPE
-                    || "Object".equals(scName) || // NOI18N
-                    "<none>".equals(scName)) { // NOI18N
-                scName = null;
-            }
-
-            List<? extends TypeMirror> ifaces = e.getInterfaces();
-
-            if ((scName != null || !ifaces.isEmpty())
-                    && e.getKind() != ElementKind.ANNOTATION_TYPE) {
-                sb.append(" :: "); // NOI18N
-                if (scName != null) {
-                    sb.append("<font color=" + TYPE_COLOR + ">"); // NOI18N                
-                    sb.append(scName);
-                    sb.append("</font>"); // NOI18N
-                }
-                if (!ifaces.isEmpty()) {
-                    if (scName != null) {
-                        sb.append(" : "); // NOI18N
-                    }
-                    for (Iterator<? extends TypeMirror> it = ifaces.iterator(); it.hasNext();) {
-                        TypeMirror typeMirror = it.next();
-                        sb.append("<font color=" + TYPE_COLOR + ">"); // NOI18N                
-                        sb.append(print(typeMirror));
-                        sb.append("</font>"); // NOI18N
-                        if (it.hasNext()) {
-                            sb.append(", "); // NOI18N
-                        }
-                    }
-
-                }
-            }
-
-            return sb.toString();
-        }
-
-        private String printBounds(List<? extends TypeMirror> bounds) {
-            if (bounds.size() == 1 && "java.lang.Object".equals(bounds.get(0).toString())) {
-                return "";
-            }
-
-            StringBuilder sb = new StringBuilder();
-
-            sb.append(" extends "); // NOI18N
-
-            for (Iterator<? extends TypeMirror> it = bounds.iterator(); it.hasNext();) {
-                TypeMirror bound = it.next();
-                sb.append(print(bound));
-                if (it.hasNext()) {
-                    sb.append(" & "); // NOI18N
-                }
-            }
-
-            return sb.toString();
-        }
-
-        private String printArg(final TypeMirror tm, final boolean varArg) {
-            if (varArg) {
-                if (tm.getKind() == TypeKind.ARRAY) {
-                    final ArrayType at = (ArrayType) tm;
-                    final StringBuilder sb = new StringBuilder(print(at.getComponentType()));
-                    sb.append("...");   //NOI18N
-                    return sb.toString();
-                } else {
-                    assert false : "Expected array: " + tm.toString() + " ( " + tm.getKind() + " )"; //NOI18N
-                }
-            }
-            return print(tm);
-        }
-
-        private String print(TypeMirror tm) {
-            StringBuilder sb;
-
-            switch (tm.getKind()) {
-                case DECLARED:
-                    DeclaredType dt = (DeclaredType) tm;
-                    sb = new StringBuilder(dt.asElement().getSimpleName().toString());
-                    List<? extends TypeMirror> typeArgs = dt.getTypeArguments();
-                    if (!typeArgs.isEmpty()) {
-                        sb.append("&lt;");
-
-                        for (Iterator<? extends TypeMirror> it = typeArgs.iterator(); it.hasNext();) {
-                            TypeMirror ta = it.next();
-                            sb.append(print(ta));
-                            if (it.hasNext()) {
-                                sb.append(", ");
-                            }
-                        }
-                        sb.append("&gt;");
-                    }
-
-                    return sb.toString();
-                case TYPEVAR:
-                    TypeVariable tv = (TypeVariable) tm;
-                    sb = new StringBuilder(tv.asElement().getSimpleName().toString());
-                    return sb.toString();
-                case ARRAY:
-                    ArrayType at = (ArrayType) tm;
-                    sb = new StringBuilder(print(at.getComponentType()));
-                    sb.append("[]");
-                    return sb.toString();
-                case WILDCARD:
-                    WildcardType wt = (WildcardType) tm;
-                    sb = new StringBuilder("?");
-                    if (wt.getExtendsBound() != null) {
-                        sb.append(" extends "); // NOI18N
-                        sb.append(print(wt.getExtendsBound()));
-                    }
-                    if (wt.getSuperBound() != null) {
-                        sb.append(" super "); // NOI18N
-                        sb.append(print(wt.getSuperBound()));
-                    }
-                    return sb.toString();
-                default:
-                    return UIUtilities.escape(tm.toString());
-            }
         }
 
         private Boolean isSelected(Element e, CompilationInfo info) {

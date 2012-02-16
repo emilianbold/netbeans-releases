@@ -56,6 +56,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
@@ -78,7 +79,7 @@ final class CallHierarchyTasks {
     private static final RequestProcessor RP = new RequestProcessor("Call Hierarchy Processor", 1); // NOI18N
     
     private static final Object LOCK = new Object();
-    private static CallTaskBase CURR_TASK;
+    private static CancellableTask CURR_TASK;
     
     public static void stop() {
         synchronized (LOCK) {
@@ -99,12 +100,7 @@ final class CallHierarchyTasks {
         RP.post(t);
     }
     
-    public static Call resolveRoot(TreePathHandle selection, boolean isCallerGraph) {
-        JavaSource js = JavaSource.forFileObject(selection.getFileObject());
-        return resolveRoot(js, new RootResolver(selection, isCallerGraph));
-    }
-    
-    public static Call resolveRoot(Lookup lookup, boolean isCallerGraph) {
+    public static void resolveRoot(Lookup lookup, boolean isCallerGraph, Task<Call> rootCallback) {
         JavaSource js = null;
         RootResolver resolver = null;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
@@ -117,15 +113,88 @@ final class CallHierarchyTasks {
             // XXX resolve Node.class
             
         }
-        
-        return resolveRoot(js, resolver);
+        postResolveRoot(js, resolver, rootCallback);
+    }   
+    
+    static void resolveRoot(TreePathHandle selection, boolean isCallerGraph, Task<Call> rootCallback) {
+        JavaSource js = JavaSource.forFileObject(selection.getFileObject());
+        postResolveRoot(js, new RootResolver(selection, isCallerGraph), rootCallback);
     }
+    
+    static void  resolveRoot(JavaSource src, int position, boolean isCallerGraph, Task<Call> rootCallback) {
+        RootResolver rr = new RootResolver(position, isCallerGraph);
+        postResolveRoot(src, rr, rootCallback);
+    }
+    
+    private static void  postResolveRoot(JavaSource src, final RootResolver rr, final Task<Call> callback) {
+        stop();
+        synchronized (callback) {
+            Task<CompilationController> ct = new Task<CompilationController>() {
+
+                @Override
+                public void run(CompilationController parameter) throws Exception {
+                    synchronized (callback) {
+                        rr.run(parameter);
+                        callback.run(rr.getRoot());
+                    }
+                }
+                
+            };
+            final Future<Void> rootResolve = ScanUtils.postUserActionTask(src, ct);
+            // still synchronized
+            if (!rootResolve.isDone()) {
+                CancellableTask t = new CancellableTask() {
+                    @Override
+                    public void cancel() {
+                        rootResolve.cancel(true);
+                        
+                        synchronized (LOCK) {
+                            if (CURR_TASK != this) {
+                                return;
+                            }
+                        }
+                        
+                        Call c = Call.createEmpty();
+                        c.setCanceled(true);
+                        try {
+                            callback.run(c);
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    CallHierarchyTopComponent.findInstance().setRunningState(false);
+                                }
+                            });
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+
+                    @Override
+                    public void run(Object parameter) throws Exception {
+                        throw new UnsupportedOperationException("Not supported yet.");
+                    }
+                };
+                synchronized (LOCK) {
+                    CURR_TASK = t;
+                }
+                try {
+                    Call tempNode = Call.createEmpty();
+                    callback.run(tempNode);
+                    CallHierarchyTopComponent.findInstance().setRunningState(true);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        } 
+    }
+    
     
     private static Call resolveRoot(JavaSource source, RootResolver resolver) {
         Call root = null;
         if (source != null && resolver != null) {
             try {
-                source.runUserActionTask(resolver, true);
+                ScanUtils.waitUserActionTask(source, resolver);
+                root = resolver.getRoot();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -155,6 +224,10 @@ final class CallHierarchyTasks {
         public void run(CompilationController javac) throws Exception {
             TreePath tpath = null;
             Element method = null;
+            
+            synchronized (this) {
+                CURR_TASK = null;
+            }
             
             javac.toPhase(JavaSource.Phase.RESOLVED);
             if (tHandle == null) {
@@ -186,11 +259,14 @@ final class CallHierarchyTasks {
         
     }
     
+    private static void notifyRunningTask(final boolean isRunning, CancellableTask t) {
+    }
+    
     private static abstract class CallTaskBase implements Runnable, CancellableTask<CompilationController> {
         
         protected final Call elmDesc;
         private final Runnable resultHandler;
-        private AtomicBoolean isCanceled = new AtomicBoolean(false);
+        AtomicBoolean isCanceled = new AtomicBoolean(false);
         protected final List<Call> result = new ArrayList<Call>();
 
         protected abstract void runTask() throws Exception;
@@ -222,7 +298,6 @@ final class CallHierarchyTasks {
         @Override
         public void cancel() {
             isCanceled.set(true);
-            RefactoringUtils.cancel = true;
         }
         
         protected boolean isCanceled() {
@@ -282,7 +357,7 @@ final class CallHierarchyTasks {
                 Set<FileObject> relevantFiles = null;
                 if (!isCanceled()) {
                     relevantFiles = JavaWhereUsedQueryPlugin.getRelevantFiles(
-                            sourceToQuery, cpInfo, false, false, false, true, null);
+                            sourceToQuery, cpInfo, false, false, false, true, null, isCanceled);
                     if (SourceUtils.isScanInProgress()) {
                         elmDesc.setIncomplete(true);
                     }

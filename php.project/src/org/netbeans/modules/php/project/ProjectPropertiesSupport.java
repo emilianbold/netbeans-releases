@@ -100,15 +100,15 @@ public final class ProjectPropertiesSupport {
         project.addWeakIgnoredFilesListener(listener);
     }
 
-    public static boolean addWeakPropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
+    public static boolean addWeakProjectPropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
         return project.addWeakPropertyChangeListener(listener);
     }
 
-    public static void addPropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
+    public static void addProjectPropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
         project.addPropertyChangeListener(listener);
     }
 
-    public static void removePropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
+    public static void removeProjectPropertyChangeListener(PhpProject project, PropertyChangeListener listener) {
         project.removePropertyChangeListener(listener);
     }
 
@@ -429,6 +429,13 @@ public final class ProjectPropertiesSupport {
      */
     public static File getPhpUnitSuite(PhpProject project) {
         return getFile(project, PhpProjectProperties.PHP_UNIT_SUITE);
+    }
+
+    /**
+     * @return file (which can be invalid!) or <code>null</code>
+     */
+    public static File getPhpUnitScript(PhpProject project) {
+        return getFile(project, PhpProjectProperties.PHP_UNIT_SCRIPT);
     }
 
     /**

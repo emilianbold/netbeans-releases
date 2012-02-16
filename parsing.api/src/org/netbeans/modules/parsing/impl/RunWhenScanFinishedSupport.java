@@ -68,25 +68,20 @@ public class RunWhenScanFinishedSupport {
     private RunWhenScanFinishedSupport() {}
 
     public static void performDeferredTasks() {
-        TaskProcessor.scheduleSpecialTask(new Runnable() {
-            @Override
-            public void run() {
-                DeferredTask[] _todo;
-                synchronized (todo) {
-                    _todo = todo.toArray(new DeferredTask[todo.size()]);
-                    todo.clear();
-                }
-                for (DeferredTask rq : _todo) {
-                    try {
-                        TaskProcessor.runUserTask(rq.task, rq.sources);
-                    } catch (ParseException e) {
-                        Exceptions.printStackTrace(e);
-                    } finally {
-                        rq.sync.taskFinished();
-                    }
-                }
+        DeferredTask[] _todo;
+        synchronized (todo) {
+            _todo = todo.toArray(new DeferredTask[todo.size()]);
+            todo.clear();
+        }
+        for (DeferredTask rq : _todo) {
+            try {
+                TaskProcessor.runUserTask(rq.task, rq.sources);
+            } catch (ParseException e) {
+                Exceptions.printStackTrace(e);
+            } finally {
+                rq.sync.taskFinished();
             }
-        }, 0);
+        }
     }
 
     public static void performScan (@NonNull final Runnable runnable) {

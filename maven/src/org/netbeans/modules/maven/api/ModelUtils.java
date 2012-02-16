@@ -328,7 +328,9 @@ public final class ModelUtils {
             return version;
         }
 
-        
+        @Override public String toString() {
+            return "LibraryDescriptor{" + "repoType=" + repoType + ", repoRoot=" + repoRoot + ", groupId=" + groupId + ", artifactId=" + artifactId + ", version=" + version + ", classifier=" + classifier + '}';
+        }
 
     }
 

@@ -54,7 +54,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Modifier;
 import javax.swing.text.Document;
-import junit.framework.TestSuite;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -62,7 +61,6 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.hints.TestUtilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -246,21 +244,21 @@ public class IntroduceHintTest extends NbTestCase {
         performFixTest("package test; public class Test {public void test(int y) {while (y != 7) {y = 3 + 4;} y = 3 + 4;}}",
                 115 - 25, 120 - 25,
                        "package test; public class Test {public void test(int y) {int name = 3 + 4; while (y != 7) {y = name;} y = name;}}",
-                new DialogDisplayerImpl(null, true, null, true),
+                new DialogDisplayerImpl(null, true, false, true),
                 5, 0);
     }
     
     public void testFix11() throws Exception {
         performFixTest("package test; import java.util.List; public class Test {public void test1() {List<? extends CharSequence> l = |test()|;} public List<? extends CharSequence> test() {return null;}}",
                        "package test; import java.util.List; public class Test {public void test1() {List<? extends CharSequence> name = test(); List<? extends CharSequence> l = name;} public List<? extends CharSequence> test() {return null;}}",
-                       new DialogDisplayerImpl("name", true, null, true),
+                       new DialogDisplayerImpl("name", true, false, true),
                        4, 0);
     }
     
     public void testFix12() throws Exception {
         performFixTest("package test; import java.util.List; public class Test {public void test1() {List<? extends CharSequence> l = null; CharSequence c = |l.get(0)|;} }",
                        "package test; import java.util.List; public class Test {public void test1() {List<? extends CharSequence> l = null;CharSequence name = l.get(0); CharSequence c = name;} }",
-                       new DialogDisplayerImpl("name", true, null, true),
+                       new DialogDisplayerImpl("name", true, false, true),
                        4, 0);
     }
     

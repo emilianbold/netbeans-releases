@@ -270,7 +270,11 @@ tokens {
 }
 
 {
-    public CppParserAction action;
+    private CppParserAction action;
+    protected CPPParser(TokenStream stream, CppParserAction action) {
+        this(stream);
+        this.action = action;
+    }
 
     // Defines for flags passed to init methods
     public static final int CPP_STATEMENT_TRACE		= 0x1;
@@ -681,7 +685,7 @@ public translation_unit:
                 /* Do not generate ambiguity warnings: we intentionally want to match everything that
                    can not be matched in external_declaration in the second alternative */
 		(options{generateAmbigWarnings = false;}:
-                    { LT(1).getText().equals(LITERAL_EXEC) && LT(2).getText().equals(LITERAL_SQL) }? (ID ID) => pro_c_statement
+                    { LT(1).getText().equals(LITERAL_EXEC) && LT(2).getText().equals(LITERAL_SQL) }? (IDENT IDENT) => pro_c_statement
                     |
                     {shouldProceed()}?
                     external_declaration 
@@ -777,7 +781,7 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
 	|
 		(LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union)) =>
 		LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union) 
-		s=scope_override ID LESSTHAN template_argument_list GREATERTHAN SEMICOLON
+		s=scope_override IDENT LESSTHAN template_argument_list GREATERTHAN SEMICOLON
 		{#external_declaration_template = #(#[CSM_TEMPLATE_EXPLICIT_INSTANTIATION, "CSM_TEMPLATE_EXPLICIT_INSTANTIATION"], #external_declaration_template);}
 	|
 		(LITERAL_template (~LESSTHAN)) =>
@@ -875,6 +879,8 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
 			}
 			dtor_head[true] dtor_body
 			{ #external_declaration_template = #(#[CSM_DTOR_TEMPLATE_DEFINITION, "CSM_DTOR_TEMPLATE_DEFINITION"], #external_declaration_template); }
+                |
+                    ((template_head)? LITERAL_using IDENT ASSIGNEQUAL) => (template_head)? alias_declaration
 		|  
 			// templated forward class decl, init/decl of static member in template
                         // Changed alternative order as a fix for IZ#138099:
@@ -959,7 +965,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
             |   cv_qualifier
             |   LITERAL_typedef
             )*
-            LITERAL_enum (LITERAL_class | LITERAL_struct)? (ID)? (COLON ts = builtin_cv_type_specifier[ts])? (LCURLY)
+            LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = builtin_cv_type_specifier[ts])? (LCURLY)
         ) =>
         {action.enum_declaration(LT(1));}
         (LITERAL___extension__!)?
@@ -1028,7 +1034,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
         (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? declaration[declOther]
         { #external_declaration = #(#[CSM_FUNCTION_LIKE_VARIABLE_DECLARATION, "CSM_FUNCTION_LIKE_VARIABLE_DECLARATION"], #external_declaration); }
     |
-        // Function declaration without ID in return type
+        // Function declaration without IDENT in return type
         // IZ 146150 : 'unexpected token: ;' message appears on 'extern int errno;' line
         (   (LITERAL___extension__)?
             (options {greedy=true;} :function_attribute_specification)?
@@ -1052,7 +1058,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
         { #external_declaration = #(#[CSM_FUNCTION_LIKE_VARIABLE_DECLARATION, "CSM_FUNCTION_LIKE_VARIABLE_DECLARATION"], #external_declaration); }
     |
         // Simple function declaration without return type
-        (ID LPAREN (simple_parameter_list)? RPAREN (EOF|SEMICOLON)
+        (IDENT LPAREN (simple_parameter_list)? RPAREN (EOF|SEMICOLON)
         ) =>
         {if (statementTrace>=1) printf("external_declaration_7[%d]: Function prototype\n", LT(1).getLine());}
         (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? declaration[declSimpleFunction]
@@ -1153,7 +1159,7 @@ decl_namespace
 		token:LITERAL_namespace
 		(
                         {action.namespace_declaration(token);}
-			(ns:ID{_td = true; name=ns.getText(); declaratorID(name,qiType);} {action.namespace_name(ns);})?
+			(ns:IDENT{_td = true; name=ns.getText(); declaratorID(name,qiType);} {action.namespace_name(ns);})?
 
 			// The following statement can be invoked to trigger selective
 			// antlr trace. Also see below
@@ -1174,7 +1180,7 @@ decl_namespace
 			// statement above
 			//{antlrTrace(false);}
 		|
-			ns2:ID{_td = true;name=ns2.getText();declaratorID((name),qiType);}
+			ns2:IDENT{_td = true;name=ns2.getText();declaratorID((name),qiType);}
 			ASSIGNEQUAL qid = qualified_id SEMICOLON! 
 			{/*end_of_stmt();*/#decl_namespace = #(#[CSM_NAMESPACE_ALIAS, name], #decl_namespace);} 
 		)                
@@ -1184,7 +1190,7 @@ namespace_alias_definition
 	{String qid; String name = "";}
 	:
 		LITERAL_namespace
-		ns2:ID{_td = true;name=ns2.getText();declaratorID((name),qiType);}
+		ns2:IDENT{_td = true;name=ns2.getText();declaratorID((name),qiType);}
 		ASSIGNEQUAL qid = qualified_id SEMICOLON!
 		{#namespace_alias_definition = #(#[CSM_NAMESPACE_ALIAS, name], #namespace_alias_definition);}
 	;
@@ -1275,6 +1281,8 @@ member_declaration_template
         {if( definition )   #member_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION, "CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION"], #member_declaration_template);
          else               #member_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION, "CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION"], #member_declaration_template);}
     |
+        (LITERAL_using IDENT ASSIGNEQUAL) => alias_declaration
+    |
                         // this rule must be after handling functions 
 			// templated forward class decl, init/decl of static member in template
 			(declaration_specifiers[true, false]
@@ -1316,7 +1324,7 @@ member_declaration
 		{ #member_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #member_declaration); }
 	|  
 		// Enum definition (don't want to backtrack over this in other alts)
-		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (ID)? (COLON ts = builtin_cv_type_specifier[ts])? LCURLY)=>
+		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = builtin_cv_type_specifier[ts])? LCURLY)=>
                 {action.enum_declaration(LT(1));}
                 (sc = storage_class_specifier)?
 		{if (statementTrace>=1) 
@@ -1481,7 +1489,7 @@ member_declaration
         // Hack to handle decls like "superclass::member",
         // to redefine access to private base class public members
         (qualified_id (EOF|SEMICOLON))=>
-        {if (statementTrace>=1) printf("member_declaration_9[%d]: Qualified ID\n", LT(1).getLine());}
+        {if (statementTrace>=1) printf("member_declaration_9[%d]: Qualified IDENT\n", LT(1).getLine());}
         visibility_redef_declaration
     |
 		// Member with a type or just a type def
@@ -1512,6 +1520,7 @@ member_declaration
 				LT(1).getLine());
 		}
 		SEMICOLON! //{end_of_stmt();}
+        |       (LITERAL_using IDENT ASSIGNEQUAL) => alias_declaration
 	|	using_declaration
         |       static_assert_declaration
 	)
@@ -1579,8 +1588,8 @@ function_definition
     // IZ 132404 : Parser failed on code taken from boost
     //	//{ beginFunctionDefinition(); }
     //	(	// Next line is equivalent to guarded predicate in PCCTS
-    //		// (SCOPE | ID)? => <<qualifiedItemIsOneOf(qiType|qiCtor)>>?
-    //              {( !(LA(1)==SCOPE || LA(1)==ID) || qualifiedItemIsOneOf(qiType | qiCtor) )}?
+    //		// (SCOPE | IDENT)? => <<qualifiedItemIsOneOf(qiType|qiCtor)>>?
+    //              {( !(LA(1)==SCOPE || LA(1)==IDENT) || qualifiedItemIsOneOf(qiType | qiCtor) )}?
     declaration_specifiers[false, false]
     (options {greedy=true;} :function_attribute_specification!)?
     function_declarator[true, false, false]
@@ -1594,8 +1603,8 @@ function_definition
     |   function_try_block[false]
     )
     //	|	// Next line is equivalent to guarded predicate in PCCTS
-    //		// (SCOPE | ID)? => <<qualifiedItemIsOneOf(qiPtrMember)>>?
-    //		//{( !(LA(1)==SCOPE||LA(1)==ID) || (qualifiedItemIsOneOf(qiPtrMember)) )}?
+    //		// (SCOPE | IDENT)? => <<qualifiedItemIsOneOf(qiPtrMember)>>?
+    //		//{( !(LA(1)==SCOPE||LA(1)==IDENT) || (qualifiedItemIsOneOf(qiPtrMember)) )}?
     //		function_declarator[true]
     //		(	options{warnWhenFollowAmbig = false;}:
     //			(declaration)*	// Possible for K & R definition
@@ -1626,7 +1635,7 @@ declaration[int kind]
         | SEMICOLON )
         {endDeclaration();}
     |
-        {kind == declSimpleFunction}? (ID LPAREN) =>
+        {kind == declSimpleFunction}? (IDENT LPAREN) =>
         {beginDeclaration();}
         init_declarator_list[kind]
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
@@ -1641,6 +1650,8 @@ declaration[int kind]
         | SEMICOLON )
         //{end_of_stmt();}
         {endDeclaration();}
+    |
+        (LITERAL_using IDENT ASSIGNEQUAL) => alias_declaration
     |
 	using_declaration	// DW 19/04/04
     |
@@ -1807,13 +1818,13 @@ qualified_type
 	{String s;}
 	: 
 		// JEL 3/29/96 removed this predicate and moved it upwards to
-		// simple_type_specifier.  This was done to allow parsing of ~ID to 
+		// simple_type_specifier.  This was done to allow parsing of ~IDENT to 
 		// be a unary_expression, which was never reached with this 
 		// predicate on
 		// {qualifiedItemIsOneOf(qiType|qiCtor)}?
 
 		s = scope_override
-                id:ID
+                id:IDENT
                 {if(s.isEmpty()) {action.simple_type_id(id);} }
 //                {if(s.isEmpty()) {action.id(id);} }
 		(options {warnWhenFollowAmbig = false;}:
@@ -1896,7 +1907,7 @@ enum_specifier
         LCURLY enumerator_list 
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | RCURLY )
-    |   id:ID     // DW 22/04/03 Suggest qualified_id here to satisfy
+    |   id:IDENT     // DW 22/04/03 Suggest qualified_id here to satisfy
         {action.enum_name(id);}
 
                      // elaborated_type_specifier        
@@ -1922,7 +1933,7 @@ enumerator_list
     ;
 
 enumerator
-	:	id:ID (ASSIGNEQUAL constant_expression)?
+	:	id:IDENT (ASSIGNEQUAL constant_expression)?
                 {action.enumerator(id);}
 		{enumElement((id.getText()));}
 	;
@@ -1942,7 +1953,7 @@ qualified_id returns [String q = ""]
 	:
 	so =  scope_override { qitem.append(so); }
 	(  
-		id:ID	(options{warnWhenFollowAmbig = false;}:
+		id:IDENT	(options{warnWhenFollowAmbig = false;}:
 				 LESSTHAN template_argument_list GREATERTHAN)?
 		{qitem.append(id.getText());}
 		|  
@@ -1965,7 +1976,7 @@ class_qualified_id returns [String q = ""]
 :
     so =  scope_override { qitem.append(so); }
     (  
-        id:ID
+        id:IDENT
         { if(so.isEmpty()) {action.class_name(id);} }
         (options{warnWhenFollowAmbig = false;}:
             LESSTHAN template_argument_list GREATERTHAN)?
@@ -1984,7 +1995,7 @@ class_qualified_id returns [String q = ""]
 
 typeID
 	:	{isTypeName((LT(1).getText()))}?
-		ID
+		IDENT
 	;
 
 init_declarator_list[int kind]
@@ -1996,8 +2007,10 @@ init_declarator[int kind]
 		(	
 			ASSIGNEQUAL 
                         (cast_array_initializer_head) => initializer
-                        |	
+                |	
 			LPAREN expression_list RPAREN
+                |
+                        array_initializer
 		)?
 	;
 
@@ -2047,7 +2060,7 @@ array_initializer:
 // only for predicates
 cast_array_initializer_head
 :
-    (AMPERSAND)? (balanceParensInExpression)+ LCURLY
+    (AMPERSAND)? (balanceParensInExpression)* LCURLY
     ;
 
 // so far this one is used in predicates only
@@ -2064,7 +2077,7 @@ class_head
 	(
             s = scope_override  
 
-            ID	
+            IDENT	
 		(LESSTHAN template_argument_list GREATERTHAN)?
                 (LITERAL_final | LITERAL_explicit)?
 		(base_clause)? 
@@ -2085,7 +2098,7 @@ class_forward_declaration
 
             s = scope_override
 
-            ID
+            IDENT
 		(LESSTHAN template_argument_list GREATERTHAN)?
                 (LITERAL_final | LITERAL_explicit)?
 		(base_clause)?
@@ -2133,7 +2146,7 @@ member_declarator_list
 
 member_declarator
 	:	
-		((ID)? COLON constant_expression)=>(ID)? COLON constant_expression
+		((IDENT)? COLON constant_expression)=>(IDENT)? COLON constant_expression
 	|  
 		declarator[declOther, 0] (LITERAL_override | LITERAL_final | LITERAL_new)?
 	;
@@ -2166,7 +2179,7 @@ declarator[int kind, int level]
         // void (__attribute__((noreturn)) ****f) (void);
         {level < 5}? (attribute_specification)=> attribute_specification!
         declarator[kind, level + 1]
-    |   //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
+    |   //{( !(LA(1)==SCOPE||LA(1)==IDENT) || qualifiedItemIsOneOf(qiPtrMember) )}?
         // VV: 23/05/06 added support for __restrict after pointers
         //i.e. void foo (char **__restrict a)
         {level < 5}? (ptr_operator)=> ptr_operator // AMPERSAND or STAR
@@ -2197,7 +2210,7 @@ restrict_declarator[int kind, int level]
         (attribute_specification)=> attribute_specification!
         restrict_declarator[kind, level]
     |
-        //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
+        //{( !(LA(1)==SCOPE||LA(1)==IDENT) || qualifiedItemIsOneOf(qiPtrMember) )}?
         (ptr_operator)=> ptr_operator // AMPERSAND or STAR
         restrict_declarator[kind, level]
     |   
@@ -2262,7 +2275,7 @@ direct_declarator[int kind, int level]
 		// DW 24/05/04 This block probably never entered as dtor selected out earlier
 		//	Note 1: In fact no dictionary entries for ctor or dtor	
 		//	Note 2: 2: "class" not recorded in CPPSymbol
-		TILDE dtor:ID {declaratorID((dtor.getText()),qiDtor);}
+		TILDE dtor:IDENT {declaratorID((dtor.getText()),qiDtor);}
 		{
                     if( reportOddWarnings ) printf("direct_declarator[%d]: Warning direct_declarator5 entered unexpectedly with %s\n", LT(1).getLine(),(dtor.getText()));
 		}
@@ -2307,7 +2320,7 @@ declarator_suffixes
 		(options {warnWhenFollowAmbig = false;}:
 		 LSQUARE (constant_expression)? RSQUARE)+
 		{declaratorArray();}
-	|	{(!((LA(1)==LPAREN)&&(LA(2)==ID))||(qualifiedItemIsOneOf(qiType|qiCtor,1)))}?
+	|	{(!((LA(1)==LPAREN)&&(LA(2)==IDENT))||(qualifiedItemIsOneOf(qiType|qiCtor,1)))}?
 		LPAREN //{declaratorParameterList(false);}
 		(parameter_list[false])?
 		RPAREN //{declaratorEndParameterList(false);}
@@ -2321,11 +2334,11 @@ declarator_suffixes
 /* I think something is weird with the context-guards for predicates;
  * as a result I manually hoist the appropriate pred from ptr_to_member
  *
- * TER: warning: seems that "ID::" will always bypass and go to 2nd alt :(
+ * TER: warning: seems that "IDENT::" will always bypass and go to 2nd alt :(
  */
 function_declarator [boolean definition, boolean allowParens, boolean symTabCheck]
     :
-        //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
+        //{( !(LA(1)==SCOPE||LA(1)==IDENT) || qualifiedItemIsOneOf(qiPtrMember) )}?
         (ptr_operator)=> ptr_operator function_declarator[definition, allowParens, symTabCheck]
     |	
         // int (i);
@@ -2360,14 +2373,14 @@ protected
 function_direct_declarator_2 [boolean definition, boolean symTabCheck] 
     {String q; CPPParser.TypeQualifier tq;}
     :
-    /* predicate indicate that plain ID is ok here; this counteracts any
+    /* predicate indicate that plain IDENT is ok here; this counteracts any
      * other predicate that gets hoisted (along with this one) that
-     * indicates that an ID is a type or whatever.  E.g.,
+     * indicates that an IDENT is a type or whatever.  E.g.,
      * another rule testing isTypeName() alone, implies that the
-     * the ID *MUST* be a type name.  Combining isTypeName() and
+     * the IDENT *MUST* be a type name.  Combining isTypeName() and
      * this predicate in an OR situation like this one:
      * ( declaration_specifiers ... | function_declarator ... )
-     * would imply that ID can be a type name OR a plain ID.
+     * would imply that IDENT can be a type name OR a plain IDENT.
      */
 /*
 		(	// fix prompted by (isdigit)() in xlocnum
@@ -2469,7 +2482,7 @@ qualified_ctor_id returns [String q = ""]
 	: 
 	so = scope_override
 	{qitem.append(so);}
-	id:ID	// DW 24/05/04 Note. Neither Ctor or Dtor recorded in dictionary
+	id:IDENT	// DW 24/05/04 Note. Neither Ctor or Dtor recorded in dictionary
 /* ****        
 //       Issue 86695 "Parser incorrect build CSM_QUALIFIED_ID branch for templated constructors"
 
@@ -2497,7 +2510,12 @@ ctor_initializer
 superclass_init
 	{String q;} 
 	: 
-	q = qualified_id LPAREN! (expression_list)? RPAREN!
+	q = qualified_id 
+        (
+            LPAREN! (expression_list)? RPAREN!
+        |
+            array_initializer
+        )
 
         {#superclass_init = #(#[CSM_CTOR_INITIALIZER, "CSM_CTOR_INITIALIZER"], #superclass_init);}
 	;
@@ -2543,7 +2561,7 @@ dtor_scope_override
         q = scope_override 
         { qitem.append(q); }
         TILDE 
-        id:ID
+        id:IDENT
         (options{warnWhenFollowAmbig = false;}:
 				 LESSTHAN template_argument_list GREATERTHAN)?
         { qitem.append('~').append(id.getText()); 
@@ -2560,7 +2578,7 @@ dtor_declarator[boolean definition]
 	:	
 	//({definition}? dtor_scope_override)
 //        dtor_scope_override
-//	TILDE ID
+//	TILDE IDENT
 
         q = qualified_dtor_id
 
@@ -2584,7 +2602,7 @@ qualified_dtor_id returns [String q = ""]
 	so = scope_override
 	{qitem.append(so);}	
     TILDE
-    id:ID
+    id:IDENT
     {   
         qitem.append("~");
         qitem.append(id.getText());
@@ -2630,7 +2648,7 @@ parameter_declaration
 	:	{beginParameterDeclaration();}
 		(
 			{!((LA(1)==SCOPE) && (LA(2)==STAR||LA(2)==LITERAL_OPERATOR)) &&
-			    (!(LA(1)==SCOPE||LA(1)==ID) ||
+			    (!(LA(1)==SCOPE||LA(1)==IDENT) ||
 			    qualifiedItemIsOneOf(qiType|qiCtor) )}?
 			declaration_specifiers[true, false]	// DW 24/3/98 Mods for K & R
 			(  
@@ -2658,7 +2676,7 @@ simple_parameter_list
 simple_parameter_declaration
     :
     declaration_specifiers[false, true]
-    (ID)*
+    (IDENT)*
     ;
 
 type_name // aka type_id
@@ -2713,7 +2731,7 @@ protected
 exception_type_id
 	{ /*TypeSpecifier*/int ts; String so; }
 	:
-	//( (so = scope_override ID) | built_in_type ) (STAR | AMPERSAND)*
+	//( (so = scope_override IDENT) | built_in_type ) (STAR | AMPERSAND)*
         parameter_declaration
 	;
 
@@ -2847,15 +2865,15 @@ template_parameter_list
  * that can be interpreted either as a parameter-declaration or a
  * type-argument (because its identifier is the name of an
  * already existing class) is taken as type-argument."
- * Therefore, any "class ID" that is seen on the input, should
+ * Therefore, any "class IDENT" that is seen on the input, should
  * match the first alternative here (it should be a type-argument).
  */
 template_parameter
 	:
-	(   ((LITERAL_class|LITERAL_typename) (ELLIPSIS)? (ID (ELLIPSIS)? )? (ASSIGNEQUAL | COMMA | GREATERTHAN)) =>
+	(   ((LITERAL_class|LITERAL_typename) (ELLIPSIS)? (IDENT (ELLIPSIS)? )? (ASSIGNEQUAL | COMMA | GREATERTHAN)) =>
 		(LITERAL_class|LITERAL_typename) 
                 (ELLIPSIS)? // support for variadic template params
-		(id:ID (ELLIPSIS)? (ASSIGNEQUAL assigned_type_name)? )?
+		(id:IDENT (ELLIPSIS)? (ASSIGNEQUAL assigned_type_name)? )?
 		{templateTypeParameter((id == null) ? "" : id.getText());}
 	|
 		template_template_parameter
@@ -2868,7 +2886,7 @@ template_parameter
 protected template_template_parameter
     :
     template_head
-	LITERAL_class ID (ASSIGNEQUAL assigned_type_name)?
+	LITERAL_class IDENT (ASSIGNEQUAL assigned_type_name)?
 	{ #template_template_parameter = #(#[CSM_TEMPLATE_TEMPLATE_PARAMETER, "CSM_TEMPLATE_TEMPLATE_PARAMETER"], #template_template_parameter);}
 
     ;
@@ -2888,7 +2906,7 @@ assigned_type_name
 
 // This rule refers to an instance of a template class or function
 template_id	// aka template_class_name
-	:	ID LESSTHAN template_argument_list GREATERTHAN
+	:	IDENT LESSTHAN template_argument_list GREATERTHAN
 	;
 
 template_argument_list
@@ -2919,11 +2937,11 @@ template_argument
         // IZ 167547 : 100% CPU core usage with C++ project.
         // This is check for too complicated tecmplates.
         // If template depth is more then 20 we just skip it.
-        ((SCOPE)? (ID SCOPE)* ID templateDepthChecker[20]) => (SCOPE)? (ID SCOPE)* ID templateDepthChecker[20]
+        ((SCOPE)? (IDENT SCOPE)* IDENT templateDepthChecker[20]) => (SCOPE)? (IDENT SCOPE)* IDENT templateDepthChecker[20]
     |
         // IZ 140991 : Parser "hangs" on Loki.
         // This is predicate for fast T<T<...>> pattern recognition.
-        ((SCOPE)? (ID SCOPE)* ID simpleBalanceLessthanGreaterthanInExpression (COMMA | GREATERTHAN)) => type_name
+        ((SCOPE)? (IDENT SCOPE)* IDENT simpleBalanceLessthanGreaterthanInExpression (COMMA | GREATERTHAN)) => type_name
     |
         (type_name (COMMA | GREATERTHAN)) => type_name
     |
@@ -2959,7 +2977,7 @@ statement_list
 
 single_statement
     :
-        (ID COLON) => compound_labeled_statement
+        (IDENT COLON) => compound_labeled_statement
     |
         statement
     ;
@@ -2993,7 +3011,7 @@ statement
 	|
                 // Issue 83996   Code completion list doesn't appear if enum defined within function (without messages)
 		// Enum definition (don't want to backtrack over this in other alts)
-		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (ID)? (COLON ts = builtin_cv_type_specifier[ts])? LCURLY)=>
+		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = builtin_cv_type_specifier[ts])? LCURLY)=>
                 (sc = storage_class_specifier)?
 		{if (statementTrace>=1) 
 			printf("statement_2[%d]: Enum definition\n",
@@ -3015,7 +3033,7 @@ statement
                 {if (statementTrace>=1) 
 			printf("statement_2[%d]: labeled_statement\n", LT(1).getLine());
 		}                
-                (ID COLON) => labeled_statement
+                (IDENT COLON) => labeled_statement
 	|
                 {if (statementTrace>=1) 
 			printf("statement_3[%d]: case_statement\n", LT(1).getLine());
@@ -3027,7 +3045,7 @@ statement
 		}	
                 default_statement
 	|
-                { LT(1).getText().equals(LITERAL_EXEC) && LT(2).getText().equals(LITERAL_SQL) }? (ID ID) => pro_c_statement
+                { LT(1).getText().equals(LITERAL_EXEC) && LT(2).getText().equals(LITERAL_SQL) }? (IDENT IDENT) => pro_c_statement
                 {if (statementTrace>=1)
 			printf("statement_13[%d]: pro_c_statement\n", LT(1).getLine());
 		}
@@ -3095,7 +3113,7 @@ compound_labeled_statement
 protected
 label
 	:
-	ID
+	IDENT
 	{#label = #([CSM_LABELED_STATEMENT, "CSM_LABELED_STATEMENT"], #label);}
 	;
 
@@ -3176,7 +3194,9 @@ condition_declaration {int ts = tsInvalid;}
         ts=type_specifier[dsInvalid, false]
         (postfix_cv_qualifier)? 
         declarator[declStatement, 0]
-        ASSIGNEQUAL assignment_expression
+        (   ASSIGNEQUAL assignment_expression
+        |   array_initializer 
+        )
     ;
 
 //	(declaration)=> declaration|	expression
@@ -3229,7 +3249,7 @@ for_statement
     LITERAL_for LPAREN!
     (
         (for_range_init_statement COLON) =>
-        for_range_init_statement COLON expression
+        for_range_init_statement COLON (expression | array_initializer)
     |
         for_init_statement
         (
@@ -3266,7 +3286,7 @@ for_range_init_statement
 
 jump_statement
 	:	
-	(	LITERAL_goto ID (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |SEMICOLON)
+	(	LITERAL_goto IDENT (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |SEMICOLON)
         {/*end_of_stmt();*/ #jump_statement = #(#[CSM_GOTO_STATEMENT, "CSM_GOTO_STATEMENT"], #jump_statement);}
 	|	LITERAL_continue (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |SEMICOLON)
         {/*end_of_stmt();*/ #jump_statement = #(#[CSM_CONTINUE_STATEMENT, "CSM_CONTINUE_STATEMENT"], #jump_statement);}
@@ -3279,8 +3299,8 @@ jump_statement
                         // because "return (a)==(b);" incorrectly handled
 /*                        
                         options{warnWhenFollowAmbig = false;}:
-			(LPAREN {(qualifiedItemIsOneOf(qiType) )}? ID RPAREN)=> 
-			LPAREN ID RPAREN (expression)?
+			(LPAREN {(qualifiedItemIsOneOf(qiType) )}? IDENT RPAREN)=> 
+			LPAREN IDENT RPAREN (expression)?
 			// This is an unsatisfactory fix
 			// for problem in xstring re
 			// "return (allocator);"
@@ -3344,6 +3364,12 @@ using_declaration
 		SEMICOLON! //{end_of_stmt();}
 	;
 
+alias_declaration
+	:	LITERAL_using
+		IDENT ASSIGNEQUAL type_name
+		SEMICOLON! //{end_of_stmt();}
+	;
+
 visibility_redef_declaration
 {String qid="";}
     :
@@ -3372,7 +3398,7 @@ static_assert_declaration
 
 pro_c_statement
     :
-        ID ID
+        IDENT IDENT
         (options {greedy=false;}:
                 balanceCurlies
             |
@@ -3537,17 +3563,17 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
                     |   
                         (literal_volatile|literal_const|LITERAL__TYPE_QUALIFIER__)*
                         (LITERAL_struct | LITERAL_union | LITERAL_class | LITERAL_enum)
-                        (options {warnWhenFollowAmbig = false;}: LITERAL_template | ID | balanceLessthanGreaterthanInExpression | SCOPE)+
+                        (options {warnWhenFollowAmbig = false;}: LITERAL_template | IDENT | balanceLessthanGreaterthanInExpression | SCOPE)+
                         (options {warnWhenFollowAmbig = false;}: lazy_base_close)?
                     |
                         // empty
                 )
             |   (LITERAL_dynamic_cast | LITERAL_static_cast | LITERAL_reinterpret_cast | LITERAL_const_cast)
                 balanceLessthanGreaterthanInExpression
-            |   {(!inTemplateParams && !searchingGreaterthen)}? (ID balanceLessthanGreaterthanInExpression) => ID balanceLessthanGreaterthanInExpression
-            |   {(inTemplateParams && !searchingGreaterthen)}? (ID balanceLessthanGreaterthanInExpression isGreaterthanInTheRestOfExpression) => ID balanceLessthanGreaterthanInExpression
+            |   {(!inTemplateParams && !searchingGreaterthen)}? (IDENT balanceLessthanGreaterthanInExpression) => IDENT balanceLessthanGreaterthanInExpression
+            |   {(inTemplateParams && !searchingGreaterthen)}? (IDENT balanceLessthanGreaterthanInExpression isGreaterthanInTheRestOfExpression) => IDENT balanceLessthanGreaterthanInExpression
             |   SCOPE
-            |   id:ID {action.id(id);}
+            |   id:IDENT {action.id(id);}
             )
         )+
 
@@ -3620,11 +3646,11 @@ balanceLessthanGreaterthanInExpression
 simpleBalanceLessthanGreaterthanInExpression
     :
         LESSTHAN
-        (   (SCOPE)? (ID SCOPE)* ID (simpleBalanceLessthanGreaterthanInExpression)?
+        (   (SCOPE)? (IDENT SCOPE)* IDENT (simpleBalanceLessthanGreaterthanInExpression)?
         |   constant
         )?
         (   COMMA 
-            (   (SCOPE)? (ID SCOPE)* ID (simpleBalanceLessthanGreaterthanInExpression)?
+            (   (SCOPE)? (IDENT SCOPE)* IDENT (simpleBalanceLessthanGreaterthanInExpression)?
             |   constant
             )
         )*
@@ -3665,7 +3691,7 @@ lazy_expression_predicate
     |   LPAREN
     |   LSQUARE
 
-    |   ID
+    |   IDENT
 
     |   constant
 
@@ -3766,7 +3792,7 @@ scope_override returns [String s = ""]
             SCOPE { sitem.append("::");} 
             (LITERAL_template)? // to support "_Alloc::template rebind<char>::other"
         )?
-        ((ID (LESSTHAN (lazy_template_argument_list)? GREATERTHAN)? SCOPE) => sp = scope_override_part[0])?
+        ((IDENT (LESSTHAN (lazy_template_argument_list)? GREATERTHAN)? SCOPE) => sp = scope_override_part[0])?
         {
             sitem.append(sp);
             s = sitem.toString();
@@ -3779,14 +3805,14 @@ scope_override_part[int level] returns [String s = ""]
         String sp = "";
     }
     :
-        id:ID (LESSTHAN template_argument_list GREATERTHAN)? SCOPE
+        id:IDENT (LESSTHAN template_argument_list GREATERTHAN)? SCOPE
         {if(level == 0) {action.id(id);} }
         (LITERAL_template)? // to support "_Alloc::template rebind<char>::other"
         {
             sitem.append(id.getText());
             sitem.append("::");
         }
-        ((ID (LESSTHAN (lazy_template_argument_list)? GREATERTHAN)? SCOPE) => sp = scope_override_part[level+1])?            
+        ((IDENT (LESSTHAN (lazy_template_argument_list)? GREATERTHAN)? SCOPE) => sp = scope_override_part[level+1])?            
         {
             sitem.append(sp);
             s = sitem.toString();

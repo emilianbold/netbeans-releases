@@ -100,25 +100,76 @@ import org.netbeans.libs.git.progress.RevisionInfoListener;
 import org.netbeans.libs.git.progress.StatusListener;
 
 /**
- *
- * @author ondra
+ * This class provides access to all supported git commands, methods that 
+ * allow you to get information about a git repository or affect the behavior 
+ * of invoked commands.
+ * <br/>
+ * An instance of this class is <strong>always</strong> bound to a local git repository.
+ * The repository (identified by a git repository root file) may not exist on disk however
+ * because obviously when cloning or initializing a repository it may not yet physically exist.
+ * 
+ * <h5>Working with this class</h5>
+ * A client of the API should follow these steps in order to run a certain git commands:
+ * <ol>
+ * <li><h6>Acquire an instance of a git client</h6>
+ * <p>Instances of a git client are provided by {@link GitRepository}. To get one call
+ * {@link GitRepository#getClient() }.</p>
+ * </li>
+ * <li><h6>Configure the client</h6>
+ * <p>Some git client commands may (or may not) require additional setup of the client to successfully finish their work.
+ * One quite usual use case is setting an instance of {@link GitClientCallback} to the client so commands like <code>push</code>,
+ * <code>fetch</code> or <code>pull</code> may connect to and access a remote repository. To set an instance of <code>GitClientCallback</code>
+ * use {@link #setCallback(org.netbeans.libs.git.GitClientCallback) } method.</p>
+ * </li>
+ * <li><h6>Attaching listeners</h6>
+ * <p>Certain git commands may take a long time to finish and they are capable of notifying the world about the progress in their work.<br/>
+ * If you want to be notified about such changes while the command is in process, attach a listener to the client 
+ * via {@link #addNotificationListener(org.netbeans.libs.git.progress.NotificationListener) }.<br/>
+ * An example can be the log command. Digging through the history may take a lot of time so if you do not want to wait for the complete result only
+ * and want to present the commit information incrementally as it is accepted one by one into the result, you can do so by adding an instance of 
+ * {@link RevisionInfoListener} to the client.</p>
+ * </li>
+ * <li><h6>Running git commands</h6>
+ * <p>When you have the client correctly set up, you may call any git command we support. The commands are mapped to appropriate methods in <code>GitClient</code>.
+ * <br/>Every method representing a git command accepts as a parameter an instance of {@link ProgressMonitor}. With that class you may affect the flow of commands - it
+ * has the ability to cancel running git commands - and listen for error or information messages the commands produce.</p>
+ * </li>
+ * @author Ondra Vrabec
  */
 public final class GitClient {
     private final DelegateListener delegateListener;
     private GitClassFactory gitFactory;
 
+    /**
+     * Used as a parameter of {@link #reset(java.lang.String, org.netbeans.libs.git.GitClient.ResetType, org.netbeans.libs.git.progress.ProgressMonitor) }
+     * to set the behavior of the command.
+     */
     public enum ResetType {
+        /**
+         * The command will only set the current HEAD but will not affect the Index 
+         * or the Working tree.
+         */
         SOFT {
             @Override
             public String toString() {
                 return "--soft"; //NOI18N
             }
-        }, MIXED {
+        },
+        /**
+         * The reset command will move the current HEAD and update the Index with
+         * the state in the new HEAD but will not affect files in the Working tree.
+         */
+        MIXED {
             @Override
             public String toString() {
                 return "--mixed"; //NOI18N
             }
-        }, HARD {
+        },
+        /**
+         * The reset command will move the current HEAD and update both the Index 
+         * and the Working tree with the state in the new HEAD.
+         */
+        HARD {
             @Override
             public String toString() {
                 return "--hard"; //NOI18N
@@ -126,9 +177,24 @@ public final class GitClient {
         }
     }
 
+    /**
+     * Used as a parameter in commands comparing two trees in the repository.
+     * Currently used as a parameter of e.g. 
+     * {@link #exportDiff(java.io.File[], org.netbeans.libs.git.GitClient.DiffMode, java.io.OutputStream, org.netbeans.libs.git.progress.ProgressMonitor) }.
+     * It tells the command what trees it is supposed to compare.
+     */
     public enum DiffMode {
+        /**
+         * Compares the current HEAD vs. the Index
+         */
         HEAD_VS_INDEX,
+        /**
+         * Compares the current HEAD vs. the Working tree
+         */
         HEAD_VS_WORKINGTREE,
+        /**
+         * Compares the Index vs. the Working tree
+         */
         INDEX_VS_WORKINGTREE
     }
     
@@ -144,9 +210,9 @@ public final class GitClient {
 
     /**
      * Adds all files under the given roots to the index
-     * @param roots
-     * @param monitor
-     * @throws GitException an error occurs
+     * @param roots files or folders to add recursively to the index
+     * @param monitor progress monitor
+     * @throws GitException an unexpected error occurs
      */
     public void add (File[] roots, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
@@ -154,6 +220,11 @@ public final class GitClient {
         cmd.execute();
     }
 
+    /**
+     * Adds a listener of any kind to the client. Git commands that support a listener will notify
+     * the appropriate ones while working.
+     * @param listener a listener to add
+     */
     public void addNotificationListener (NotificationListener listener) {
         synchronized (listeners) {
             listeners.add(listener);
@@ -161,13 +232,14 @@ public final class GitClient {
     }
 
     /**
-     * Annotates lines of a given file in a given revision
-     * @param file
-     * @param revision null for blaming a checked-out file against HEAD
-     * @param monitor
-     * @return
-     * @throws org.netbeans.libs.git.GitException.MissingObjectException
-     * @throws GitException 
+     * Annotates lines of a given file in a given revision and returns the result
+     * with annotate information.
+     * @param file file to be annotated
+     * @param revision a revision the file should be annotated in or <code>null</code> for blaming a checked-out file against HEAD
+     * @param monitor progress monitor
+     * @return annotation information
+     * @throws org.netbeans.libs.git.GitException.MissingObjectException when the revision <code>revision</code> cannot be resolved.
+     * @throws GitException an unexpected error occurs
      */
     public GitBlameResult blame (File file, String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
         Repository repository = gitRepository.getRepository();
@@ -178,12 +250,12 @@ public final class GitClient {
 
     /**
      * Prints file's content in the given revision to output stream
-     * @param file
-     * @param revision git revision, never null
-     * @param out output stream
-     * @return true if the file was found in the specified revision and printed to out, otherwise false
-     * @throws GitException
+     * @param file file to cat
+     * @param revision git revision, never <code>null</code>
+     * @param out output stream to print the content to.
+     * @return <code>true</code> if the file was found in the specified revision and printed to out, otherwise <code>false</code>
      * @throws GitException.MissingObjectException if the given revision does not exist
+     * @throws GitException an unexpected error occurs
      */
     public boolean catFile (File file, String revision, java.io.OutputStream out, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
         Repository repository = gitRepository.getRepository();
@@ -193,12 +265,16 @@ public final class GitClient {
     }
 
     /**
-     * Prints content of an index entry accordant with the given file to output stream
-     * @param file
-     * @param stage 
+     * Prints content of an index entry accordant to the given file to the given output stream
+     * @param file file whose relevant index entry to cat
+     * @param stage version of the file in the index. In case of a merge conflict there are usually more
+     *              versions of the file. <code>0</code> for normal non-conflict version,
+     *              <code>1</code> for the base version,
+     *              <code>2</code> for the first merged version ("ours") and 
+     *              <code>3</code> for the second merged version ("theirs").
      * @param out output stream
-     * @return true if the file was found in the index and printed to out, otherwise false
-     * @throws GitException
+     * @return <code>true</code> if the file was found in the index and printed to out, otherwise <code>false</code>
+     * @throws GitException an unexpected error occurs
      */
     public boolean catIndexEntry (File file, int stage, java.io.OutputStream out, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
@@ -208,11 +284,11 @@ public final class GitClient {
     }
 
     /**
-     * Checks out the index into the working copy root. Does not move HEAD.
-     * @param revision if not null, index is updated with the revision content before checking out to WC
+     * Checks out the index into the working copy root. Does not move current HEAD.
+     * @param revision if not <code>null</code>, index is updated with the revision content before checking out to WC
      * @param roots files/folders to checkout
      * @param recursively if set to <code>true</code>, all files under given roots will be checked out, otherwise only roots and direct file children will be affected.
-     * @throws GitException other error
+     * @throws GitException an unexpected error occurs
      */
     public void checkout(File[] roots, String revision, boolean recursively, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
         Repository repository = gitRepository.getRepository();
@@ -227,11 +303,11 @@ public final class GitClient {
     }
 
     /**
-     * Checks out a given revision.
-     * @param revision cannot be null. If the value equals to anything other than an existing branch name, the revision will be checked out
+     * Checks out a given revision, modifies the Index as well as the Working tree.
+     * @param revision cannot be <code>null</code>. If the value equals to anything other than an existing branch name, the revision will be checked out
      * and the working tree will be in the detached HEAD state.
-     * @param failOnConflict if set to false, the command tries to merge local changes into the new branch
-     * @throws GitException other error
+     * @param failOnConflict if set to <code>false</code>, the command tries to merge local changes into the new branch
+     * @throws GitException an unexpected error occurs
      */
     public void checkoutRevision (String revision, boolean failOnConflict, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
         if (!failOnConflict) {
@@ -245,9 +321,9 @@ public final class GitClient {
     /**
      * Cleans the working tree by recursively removing files that are not under 
      * version control starting from the given roots.
-     * @param roots
-     * @param monitor
-     * @throws GitException 
+     * @param roots files or folders to recursively remove from disk, versioned files under these files will not be deleted.
+     * @param monitor progress monitor
+     * @throws GitException an unexpected error occurs
      */
     public void clean(File[] roots, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
@@ -257,12 +333,12 @@ public final class GitClient {
     
     /**
      * Commits all changes made in the index to all files under the given roots
-     * @param roots
-     * @param commitMessage
-     * @param author
-     * @param commiter
-     * @param monitor
-     * @throws GitException an error occurs
+     * @param roots files or folders to recursively commit.
+     * @param commitMessage commit message
+     * @param author person who is the author of the changes to be committed
+     * @param commiter person who is committing the changes, may not be the same person as author.
+     * @param monitor progress monitor
+     * @throws GitException an unexpected error occurs
      */
     public GitRevisionInfo commit(File[] roots, String commitMessage, GitUser author, GitUser commiter, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
@@ -272,11 +348,12 @@ public final class GitClient {
     }
 
     /**
-     * Modifies the index. The entries representing files under the source are copied and the newly created entries represent the corresponding files under the target.
-     * @param source
-     * @param target
-     * @param monitor
-     * @throws GitException
+     * The index entries representing files under the source are copied and the newly created entries represent the corresponding files under the target.
+     * <strong>Modifies only the index</strong>.
+     * @param source source tree to copy
+     * @param target target file or folder the source should be copied onto.
+     * @param monitor progress monitor
+     * @throws GitException an unexpected error occurs
      */
     public void copyAfter (File source, File target, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
@@ -285,12 +362,12 @@ public final class GitClient {
     }
 
     /**
-     * Creates a new branch with a given name, starting at revision
-     * @param branchName
-     * @param revision
-     * @param monitor
+     * Creates a new branch with a given name, starting at the given revision
+     * @param branchName name that should be assigned to the new branch
+     * @param revision revision that should be referenced by the new branch
+     * @param monitor progress monitor
      * @return created branch
-     * @throws GitException  an error occurs
+     * @throws GitException an unexpected error occurs
      */
     public GitBranch createBranch (String branchName, String revision, ProgressMonitor monitor) throws GitException {
         CreateBranchCommand cmd = new CreateBranchCommand(gitRepository.getRepository(), getClassFactory(), branchName, revision, monitor);
@@ -300,15 +377,16 @@ public final class GitClient {
 
     /**
      * Creates a tag for any object represented by a given taggedObjectId. 
-     * If message is set to null or an empty value and signed set to false than this method creates a lightweight tag
-     * @param tagName
-     * @param taggedObject
-     * @param message
-     * @param signed
-     * @param forceUpdate
-     * @param monitor
-     * @return
-     * @throws GitException 
+     * If message is set to <code>null</code> or an empty value and signed set to <code>false</code> than this method creates a <em>lightweight tag</em>.
+     * @param tagName name of the new tag
+     * @param taggedObject object to tag
+     * @param message tag message
+     * @param signed if the tag should be signed. Currently unsupported.
+     * @param forceUpdate if a tag with the same name already exists, the method fails and throws an exception unless this is set to <code>true</code>. In that case the
+     *                    old tag is replaced with the new one.
+     * @param monitor progress monitor
+     * @return the created tag
+     * @throws GitException an unexpected error occurs
      */
     public GitTag createTag (String tagName, String taggedObject, String message, boolean signed, boolean forceUpdate, ProgressMonitor monitor) throws GitException {
         CreateTagCommand cmd = new CreateTagCommand(gitRepository.getRepository(), getClassFactory(), tagName, taggedObject, message, signed, forceUpdate, monitor);
@@ -318,11 +396,11 @@ public final class GitClient {
 
     /**
      * Deletes a given branch from the repository
-     * @param branchName
-     * @param forceDeleteUnmerged if set to true then trying to delete an unmerged branch will not fail but will forcibly delete the branch
-     * @param monitor
-     * @throws GitException.NotMergedException branch has not been fully merged yet and forceDeleteUnmerged is set to false
-     * @throws GitException 
+     * @param branchName name of a branch to delete.
+     * @param forceDeleteUnmerged if set to <code>true</code> then trying to delete an unmerged branch will not fail but will forcibly delete the branch
+     * @param monitor progress monitor
+     * @throws GitException.NotMergedException branch has not been fully merged yet and forceDeleteUnmerged is set to <code>false</code>
+     * @throws GitException an unexpected error occurs
      */
     public void deleteBranch (String branchName, boolean forceDeleteUnmerged, ProgressMonitor monitor) throws GitException.NotMergedException, GitException {
         DeleteBranchCommand cmd = new DeleteBranchCommand(gitRepository.getRepository(), getClassFactory(), branchName, forceDeleteUnmerged, monitor);
@@ -331,9 +409,9 @@ public final class GitClient {
 
     /**
      * Deletes a given tag from the repository
-     * @param tagName
-     * @param monitor
-     * @throws GitException 
+     * @param tagName name of a tag to delete
+     * @param monitor progress monitor
+     * @throws GitException an unexpected error occurs
      */
     public void deleteTag (String tagName, ProgressMonitor monitor) throws GitException {
         DeleteTagCommand cmd = new DeleteTagCommand(gitRepository.getRepository(), getClassFactory(), tagName, monitor);
@@ -342,10 +420,10 @@ public final class GitClient {
 
     /**
      * Exports a given commit in the format accepted by git am
-     * @param commit 
-     * @param out 
-     * @param monitor 
-     * @throws GitException
+     * @param commit id of a commit whose diff to export
+     * @param out output stream the diff will be printed to
+     * @param monitor progress monitor
+     * @throws GitException an unexpected error occurs
      */
     public void exportCommit (String commit, OutputStream out, ProgressMonitor monitor) throws GitException {
         ExportCommitCommand cmd = new ExportCommitCommand(gitRepository.getRepository(), getClassFactory(), commit, out, monitor, delegateListener);
@@ -353,12 +431,12 @@ public final class GitClient {
     }
     
     /**
-     * Exports changes in files under given roots to the given output stream
-     * @param roots
-     * @param mode
-     * @param out
-     * @param monitor
-     * @throws GitException 
+     * Exports uncommitted changes in files under given roots to the given output stream
+     * @param roots the diff will be exported only for modified files under these roots, can be empty to export all modifications in the whole working tree
+     * @param mode defines the compared trees 
+     * @param out output stream the diff will be printed to
+     * @param monitor progress monitor
+     * @throws GitException an unexpected error occurs
      */
     public void exportDiff (File[] roots, DiffMode mode, OutputStream out, ProgressMonitor monitor) throws GitException {
         ExportDiffCommand cmd = new ExportDiffCommand(gitRepository.getRepository(), getClassFactory(), roots, mode, out, monitor, delegateListener);
@@ -368,10 +446,10 @@ public final class GitClient {
     /**
      * Fetches remote changes for references specified in the config file under a given remote.
      * @param remote should be a name of a remote set up in the repository config file
-     * @param monitor
-     * @return 
-     * @throws GitException 
-     * @throws GitException.AuthorizationException unauthorized access
+     * @param monitor progress monitor
+     * @return result of the command with listed local reference updates
+     * @throws GitException.AuthorizationException when the authentication or authorization fails
+     * @throws GitException an unexpected error occurs
      */
     public Map<String, GitTransportUpdate> fetch (String remote, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException {
         FetchCommand cmd = new FetchCommand(gitRepository.getRepository(), getClassFactory(), remote, monitor);
@@ -381,13 +459,13 @@ public final class GitClient {
     }
     
     /**
-     * Fetches remote changes for given reference specifications.
+     * Fetches remote changes from a remote repository for given reference specifications.
      * @param remote preferably a name of a remote, but can also be directly a URL of a remote repository
-     * @param fetchRefSpecifications 
-     * @param monitor
-     * @return 
-     * @throws GitException 
-     * @throws GitException.AuthorizationException unauthorized access
+     * @param fetchRefSpecifications list of reference specifications describing the objects to fetch from the remote repository
+     * @param monitor progress monitor
+     * @return result of the command with listed local reference updates
+     * @throws GitException.AuthorizationException when the authentication or authorization fails
+     * @throws GitException an unexpected error occurs
      */
     public Map<String, GitTransportUpdate> fetch (String remote, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException {
         FetchCommand cmd = new FetchCommand(gitRepository.getRepository(), getClassFactory(), remote, fetchRefSpecifications, monitor);
@@ -397,9 +475,10 @@ public final class GitClient {
     }
     
     /**
-     * Returns all branches
-     * @param all if false then only local branches will be returned
-     * @return
+     * Returns all known branches from the repository
+     * @param all if <code>false</code> then only local (and no remote) branches will be returned
+     * @return all known branches in the repository
+     * @throws GitException an unexpected error occurs
      */
     public Map<String, GitBranch> getBranches (boolean all, ProgressMonitor monitor) throws GitException {
         ListBranchCommand cmd = new ListBranchCommand(gitRepository.getRepository(), getClassFactory(), all, monitor);
@@ -409,10 +488,10 @@ public final class GitClient {
 
     /**
      * Returns all tags in the repository
-     * @param monitor
-     * @param allTags if set to false, only commit tags, otherwise tags for all objects are returned
-     * @return
-     * @throws GitException 
+     * @param monitor progress monitor
+     * @param allTags if set to <code>false</code>, only commit tags, otherwise tags for all objects are returned
+     * @return all known tags from the repository
+     * @throws GitException an unexpected error occurs
      */
     public Map<String, GitTag> getTags (ProgressMonitor monitor, boolean allTags) throws GitException {
         ListTagCommand cmd = new ListTagCommand(gitRepository.getRepository(), getClassFactory(), allTags, monitor);
@@ -421,11 +500,11 @@ public final class GitClient {
     }
 
     /**
-     * Returns a common ancestor for given revisions or null if none found.
-     * @param revisions
-     * @param monitor
-     * @return
-     * @throws GitException 
+     * Returns a common ancestor for given revisions or <code>null</code> if none found.
+     * @param revisions revisions whose common ancestor to search
+     * @param monitor progress monitor
+     * @return common ancestor for given revisions or <code>null</code> if none found.
+     * @throws GitException an unexpected error occurs
      */
     public GitRevisionInfo getCommonAncestor (String[] revisions, ProgressMonitor monitor) throws GitException {
         GetCommonAncestorCommand cmd = new GetCommonAncestorCommand(gitRepository.getRepository(), getClassFactory(), revisions, monitor);
@@ -434,12 +513,12 @@ public final class GitClient {
     }
 
     /**
-     * Returns an ancestor revision that modified a given file in any way
+     * Returns an ancestor revision that affected a given file
      * @param file limit the result only on revision that actually modified somehow the file
-     * @param revision
-     * @param monitor
-     * @return
-     * @throws GitException 
+     * @param revision revision to start search from, only its ancestors will be investigated
+     * @param monitor progress monitor
+     * @return an ancestor of a given revision that affected the given file or <code>null</code> if none found.
+     * @throws GitException an unexpected error occurs
      */
     public GitRevisionInfo getPreviousRevision (File file, String revision, ProgressMonitor monitor) throws GitException {
         GetPreviousCommitCommand cmd = new GetPreviousCommitCommand(gitRepository.getRepository(), getClassFactory(), file, revision, monitor);
@@ -449,9 +528,10 @@ public final class GitClient {
 
     /**
      * Similar to {@link #getStatus(java.io.File[], org.netbeans.libs.git.progress.ProgressMonitor)}, but returns only conflicts.
-     * @param roots 
-     * @param monitor
-     * @return
+     * @param roots files to search the conflicts under
+     * @param monitor progress monitor
+     * @return conflicted files and their accordant statuses
+     * @throws GitException an unexpected error occurs
      */
     public Map<File, GitStatus> getConflicts (File[] roots, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
@@ -462,9 +542,9 @@ public final class GitClient {
 
     /**
      * Returns an array of statuses for files under given roots
-     * @param roots root folders or files
+     * @param roots root folders or files to search under
      * @return status array
-     * @throws GitException when an error occurs
+     * @throws GitException an unexpected error occurs
      */
     public Map<File, GitStatus> getStatus (File[] roots, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
@@ -475,10 +555,10 @@ public final class GitClient {
 
     /**
      * Returns remote configuration set up for this repository identified by a given remoteName
-     * @param remoteName
-     * @param monitor
-     * @return
-     * @throws GitException 
+     * @param remoteName name under which the remote is stored in repository's config file
+     * @param monitor progress monitor
+     * @return remote config or <code>null</code> if no remote with such name was found
+     * @throws GitException an unexpected error occurs
      */
     public GitRemoteConfig getRemote (String remoteName, ProgressMonitor monitor) throws GitException {
         return getRemotes(monitor).get(remoteName);
@@ -486,9 +566,9 @@ public final class GitClient {
 
     /**
      * Returns all remote configurations set up for this repository
-     * @param monitor
-     * @return
-     * @throws GitException 
+     * @param monitor progress monitor
+     * @return all known remote configurations
+     * @throws GitException an unexpected error occurs
      */
     public Map<String, GitRemoteConfig> getRemotes (ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
@@ -499,8 +579,11 @@ public final class GitClient {
     
     /**
      * Returns the current state of the repository this client is associated with.
+     * The state indicates what commands may be run on the repository and if the repository
+     * requires any additional commands to get into the normal state.
+     * @param monitor progress monitor
      * @return current repository state
-     * @throws GitException an error occurs
+     * @throws GitException an unexpected error occurs
      */
     public GitRepositoryState getRepositoryState (ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
@@ -509,11 +592,19 @@ public final class GitClient {
     }
 
     /**
-     * Ignores given files
-     * @param files
-     * @param monitor
-     * @return array of .gitignore modified during the ignore process
-     * @throws GitException an error occurs
+     * Returns the user from this clients repository
+     * @throws GitException an unexpected error occurs
+     */
+    public GitUser getUser() throws GitException {        
+        return getClassFactory().createUser(new PersonIdent(gitRepository.getRepository()));
+    }
+
+    /**
+     * Ignores given files and add their path into <em>gitignore</em> file.
+     * @param files files to ignore
+     * @param monitor progress monitor
+     * @return array of <em>.gitignore</em> modified during the ignore process
+     * @throws GitException an unexpected error occurs
      */
     public File[] ignore (File[] files, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
@@ -523,7 +614,10 @@ public final class GitClient {
     }
 
     /**
-     * Initializes an empty git repository in a folder specified in the constructor
+     * Initializes an empty git repository in a folder specified in the constructor. The repository must not yet exist - meaning
+     * there cannot not be a <em>.git</em> folder in the given folder - however the folder itself may exist and contain any other source files
+     * (except for git repository metadata).
+     * @param monitor progress monitor
      * @throws GitException if the repository could not be created either because it already exists inside <code>workDir</code> or cannot be created for other reasons.
      */
     public void init (ProgressMonitor monitor) throws GitException {
@@ -534,8 +628,9 @@ public final class GitClient {
 
     /**
      * Returns files that are marked as modified between the HEAD and Index.
-     * @param roots
-     * @throws GitException when an error occurs
+     * @param roots files or folders to search for modified files.
+     * @param monitor progress monitor
+     * @throws GitException an unexpected error occurs
      */
     public File[] listModifiedIndexEntries (File[] roots, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
@@ -545,12 +640,12 @@ public final class GitClient {
     }
     
     /**
-     * Returns branches in a given remote repository
+     * Returns available branches in a given remote repository
      * @param remoteRepositoryUrl url of the remote repository
-     * @param monitor
-     * @return
-     * @throws GitException 
-     * @throws GitException.AuthorizationException unauthorized access
+     * @param monitor progress monitor
+     * @return collection of available branches in the remote repository
+     * @throws GitException.AuthorizationException when the authentication or authorization fails
+     * @throws GitException an unexpected error occurs
      */
     public Map<String, GitBranch> listRemoteBranches (String remoteRepositoryUrl, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException {
         Repository repository = gitRepository.getRepository();
@@ -563,10 +658,10 @@ public final class GitClient {
     /**
      * Returns pairs tag name/id from a given remote repository
      * @param remoteRepositoryUrl url of the remote repository
-     * @param monitor
-     * @return
-     * @throws GitException 
-     * @throws GitException.AuthorizationException unauthorized access
+     * @param monitor progress monitor
+     * @return remote repository tags
+     * @throws GitException.AuthorizationException when the authentication or authorization fails
+     * @throws GitException an unexpected error occurs
      */
     public Map<String, String> listRemoteTags (String remoteRepositoryUrl, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException {
         Repository repository = gitRepository.getRepository();
@@ -578,11 +673,11 @@ public final class GitClient {
 
     /**
      * Digs through the repository's history and returns the revision information belonging to the given revision string.
-     * @param revision
-     * @param monitor
-     * @return revision
+     * @param revision revision to search in the history
+     * @param monitor progress monitor
+     * @return revision information
      * @throws GitException.MissingObjectException no such revision exists
-     * @throws GitException other error occurs
+     * @throws GitException an unexpected error occurs
      */
     public GitRevisionInfo log (String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
         Repository repository = gitRepository.getRepository();
@@ -594,11 +689,11 @@ public final class GitClient {
 
     /**
      * Digs through the repository's history and returns revisions according to the given search criteria.
-     * @param searchCriteria
-     * @param monitor 
-     * @return revisions that fall between the given boundaries
+     * @param searchCriteria criteria filtering the returned revisions
+     * @param monitor progress monitor
+     * @return revisions that follow the given search criteria
      * @throws GitException.MissingObjectException revision specified in search criteria (or head if no such revision is specified) does not exist
-     * @throws GitException other error occurs
+     * @throws GitException an unexpected error occurs
      */
     public GitRevisionInfo[] log (SearchCriteria searchCriteria, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
         Repository repository = gitRepository.getRepository();
@@ -609,11 +704,11 @@ public final class GitClient {
     
     /**
      * Merges a given revision with the current head
-     * @param revision
-     * @param monitor
+     * @param revision id of a revision to merge.
+     * @param monitor progress monitor
      * @return result of the merge
      * @throws GitException.CheckoutConflictException there are local modifications in Working Tree, merge fails in such a case
-     * @throws GitException an error occurs
+     * @throws GitException an unexpected error occurs
      */
     public GitMergeResult merge (String revision, ProgressMonitor monitor) throws GitException.CheckoutConflictException, GitException {
         Repository repository = gitRepository.getRepository();
@@ -625,14 +720,14 @@ public final class GitClient {
     /**
      * Pulls changes from a remote repository and merges a given remote branch to an active one.
      * @param remote preferably a name of a remote, but can also be directly a URL of a remote repository
-     * @param fetchRefSpecifications 
+     * @param fetchRefSpecifications list of reference specifications describing what objects to fetch from the remote repository
      * @param branchToMerge a remote branch that will be merged into an active branch
-     * @param monitor
-     * @return 
-     * @throws GitException 
-     * @throws GitException.AuthorizationException unauthorized access
+     * @param monitor progress monitor
+     * @return result of the command containing the list of updated local references
+     * @throws GitException.AuthorizationException when the authentication or authorization fails
      * @throws GitException.CheckoutConflictException there are local changes in the working tree that would result in a merge conflict
      * @throws GitException.MissingObjectException given branch to merge does not exist
+     * @throws GitException an unexpected error occurs
      */
     public GitPullResult pull (String remote, List<String> fetchRefSpecifications, String branchToMerge, ProgressMonitor monitor) throws GitException.AuthorizationException, 
             GitException.CheckoutConflictException, GitException.MissingObjectException, GitException {
@@ -643,14 +738,16 @@ public final class GitClient {
     }
     
     /**
-     * Pushes changes for given reference specifications.
-     * @param remote preferably a name of a remote, but can also be directly a URL of a remote repository
-     * @param pushRefSpecifications 
-     * @param fetchRefSpecifications 
-     * @param monitor
-     * @return 
-     * @throws GitException 
-     * @throws GitException.AuthorizationException unauthorized access
+     * Pushes changes to a remote repository specified by remote for given reference specifications.
+     * @param remote preferably a name of a remote defined in the repository's config,
+     *               but can also be directly a URL of a remote repository
+     * @param pushRefSpecifications list of reference specifications describing the list of references to push
+     * @param fetchRefSpecifications list of fetch reference specifications describing the list of local references to update
+     *                               to correctly track remote repository branches.
+     * @param monitor progress monitor
+     * @return result of the push process with information about updated local and remote references
+     * @throws GitException.AuthorizationException when the authentication or authorization fails
+     * @throws GitException an unexpected error occurs
      */
     public GitPushResult push (String remote, List<String> pushRefSpecifications, List<String> fetchRefSpecifications, ProgressMonitor monitor) throws GitException.AuthorizationException, GitException {
         PushCommand cmd = new PushCommand(gitRepository.getRepository(), getClassFactory(), remote, pushRefSpecifications, fetchRefSpecifications, monitor);
@@ -663,7 +760,8 @@ public final class GitClient {
      * Removes given files/folders from the index and/or from the working tree
      * @param roots files/folders to remove, can not be empty
      * @param cached if <code>true</code> the working tree will not be affected
-     * @param monitor
+     * @param monitor progress monitor
+     * @throws GitException an unexpected error occurs
      */
     public void remove (File[] roots, boolean cached, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
@@ -671,6 +769,11 @@ public final class GitClient {
         cmd.execute();
     }
 
+    /**
+     * Removes an already added notification listener. Such a listener will not get notifications from the 
+     * git subsystem.
+     * @param listener listener to remove.
+     */
     public void removeNotificationListener (NotificationListener listener) {
         synchronized (listeners) {
             listeners.remove(listener);
@@ -678,9 +781,10 @@ public final class GitClient {
     }
     
     /**
-     * Removes remote configuration from the config file
+     * Removes remote configuration from the repository's config file
      * @param remote name of the remote
-     * @param monitor 
+     * @param monitor progress monitor
+     * @throws GitException an unexpected error occurs
      */
     public void removeRemote (String remote, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
@@ -693,7 +797,8 @@ public final class GitClient {
      * @param source file or folder to be renamed
      * @param target target file or folder. Must not yet exist.
      * @param after set to true if you don't only want to correct the index
-     * @throws GitException
+     * @param monitor progress monitor
+     * @throws GitException an unexpected error occurs
      */
     public void rename (File source, File target, boolean after, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
@@ -706,7 +811,9 @@ public final class GitClient {
      * @param revision revision to go back to
      * @param roots files or folders to update in the index
      * @param recursively if set to <code>true</code>, all files under given roots will be affected, otherwise only roots and direct file children will be modified in the index.
-     * @throws GitException
+     * @param monitor progress monitor
+     * @throws GitException.MissingObjectException if the given revision does not exist
+     * @throws GitException an unexpected error occurs
      */
     public void reset (File[] roots, String revision, boolean recursively, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
         Repository repository = gitRepository.getRepository();
@@ -716,9 +823,11 @@ public final class GitClient {
 
     /**
      * Sets HEAD to the given revision and updates index and working copy accordingly to the given reset type
-     * @param revisionStr revision HEAD will reference to
+     * @param revision revision HEAD will reference to
      * @param resetType type of reset, see git help reset
-     * @throws GitException
+     * @param monitor progress monitor
+     * @throws GitException.MissingObjectException if the given revision does not exist
+     * @throws GitException an unexpected error occurs
      */
     public void reset (String revision, ResetType resetType, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
         Repository repository = gitRepository.getRepository();
@@ -727,14 +836,15 @@ public final class GitClient {
     }
 
     /**
-     * Reverts already committed changes
-     * @param revision
+     * Reverts already committed changes and creates an inverse commit.
+     * @param revision the id of a commit to revert
      * @param commitMessage used as the commit message for the revert commit. If set to null or an empty value, a default value will be used for the commit message
-     * @param commit if set to false, the revert modifications will not be committed but will stay in index
-     * @return 
-     * @throws org.netbeans.libs.git.GitException.MissingObjectException
+     * @param commit if set to <code>false</code>, the revert modifications will not be committed but will stay in index
+     * @param monitor progress monitor
+     * @return result of the revert command
+     * @throws GitException.MissingObjectException if the given revision does not exist
      * @throws GitException.CheckoutConflictException there are local modifications in Working Tree, merge fails in such a case
-     * @throws GitException 
+     * @throws GitException an unexpected error occurs
      */
     public GitRevertResult revert (String revision, String commitMessage, boolean commit, ProgressMonitor monitor)
             throws GitException.MissingObjectException, GitException.CheckoutConflictException, GitException {
@@ -745,7 +855,9 @@ public final class GitClient {
     }
 
     /**
-     * Sets callback for this client. Some actions (like inter-repository commands) may need it for its work.
+     * Sets credentials callback for this client.
+     * Some actions (like inter-repository commands) may need it for its work to communicate with an external repository.
+     * @param callback callback implementation providing credentials for an authentication process.
      */
     public void setCallback (GitClientCallback callback) {
         this.credentialsProvider = callback == null ? null : new JGitCredentialsProvider(callback);
@@ -753,8 +865,8 @@ public final class GitClient {
     
     /**
      * Sets the remote configuration in the configuration file.
-     * @param remoteConfig
-     * @param monitor 
+     * @param remoteConfig new remote config to store as a <em>remote</em> section in the repository's <em>config</em> file.
+     * @param monitor progress monitor
      */
     public void setRemote (GitRemoteConfig remoteConfig, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
@@ -764,23 +876,16 @@ public final class GitClient {
 
     /**
      * Unignores given files
-     * @param files
-     * @param monitor
-     * @return array of .gitignore modified during the unignore process
-     * @throws GitException an error occurs
+     * @param files files to mark unignored again and remove their respective record from <em>gitignore</em> files.
+     * @param monitor progress monitor
+     * @return array of .gitignore files modified during the unignore process
+     * @throws GitException an unexpected error occurs
      */
     public File[] unignore (File[] files, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
         UnignoreCommand cmd = new UnignoreCommand(repository, getClassFactory(), files, monitor, delegateListener);
         cmd.execute();
         return cmd.getModifiedIgnoreFiles();
-    }
-
-    /**
-     * Returns the user from this clients repository
-     */
-    public GitUser getUser() throws GitException {        
-        return getClassFactory().createUser(new PersonIdent(gitRepository.getRepository()));
     }
 
     private GitClassFactory getClassFactory () {

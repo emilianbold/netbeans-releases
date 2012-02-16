@@ -45,6 +45,7 @@ import java.io.IOException;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
@@ -54,6 +55,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
+@MIMEResolver.ExtensionRegistration(displayName="",extension="scr", mimeType="text/x-apduscr", position=8738)
 public class ApduDataObject extends MultiDataObject {
 
     public static final String MIME_TYPE = "text/x-apduscr"; // NOI18N

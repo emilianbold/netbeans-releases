@@ -43,7 +43,9 @@
 package org.netbeans.modules.javafx2.editor.fxml;
 
 import java.io.IOException;
+import javax.swing.Action;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
@@ -54,6 +56,7 @@ import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import org.openide.text.DataEditorSupport;
 
+@MIMEResolver.ExtensionRegistration(extension="fxml", mimeType="text/x-fxml+xml", position=8739, displayName="#LBL_FXML_loader_name")
 public class FXMLDataObject extends MultiDataObject {
 
     public FXMLDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
@@ -64,7 +67,21 @@ public class FXMLDataObject extends MultiDataObject {
 
     @Override
     protected Node createNodeDelegate() {
-        return new DataNode(this, Children.LEAF, getLookup());
+        return new DataNode(this, Children.LEAF, getLookup()) {
+            @Override
+            public Action getPreferredAction() {
+                for(Action a : getActions(true)) {
+                    if (a.isEnabled()) {
+                        if (a instanceof FXMLOpenAction) {
+                            return a;
+                        } else if (a instanceof FXMLEditAction) {
+                            return a;
+                        }
+                    }
+                }
+                return super.getPreferredAction();
+            }
+        };
     }
 
     @Override

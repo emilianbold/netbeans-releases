@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.trace;
 
+import com.sun.imageio.plugins.common.I18N;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -51,6 +52,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -91,12 +93,16 @@ import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Offsetable;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.impl.services.ReferenceRepositoryImpl;
 import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.ContextEntry;
 import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.DeclarationScope;
 import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.IncludeLevel;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.spi.model.services.CsmReferenceStorage;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.CharSequences;
 import org.openide.filesystems.FileUtil;
@@ -247,7 +253,7 @@ public class TraceXRef extends TraceModel {
     private static final int FACTOR = 1;
 
     public static void traceProjectRefsStatistics(CsmProject csmPrj, final Map<CharSequence, Long> times, final StatisticsParameters params, final PrintWriter printOut, final OutputWriter printErr, final CsmProgressListener callback, final AtomicBoolean canceled) {
-        final XRefResultSet<UnresolvedEntry> bag = new XRefResultSet<UnresolvedEntry>();
+        final XRefResultSet<XRefEntry> bag = new XRefResultSet<XRefEntry>();
         final boolean collect = times.isEmpty();
         Collection<CsmFile> allFiles = new ArrayList<CsmFile>();
         int i = 0;
@@ -369,15 +375,18 @@ public class TraceXRef extends TraceModel {
     };
 
     private static long analyzeFile(final CsmFile file, final StatisticsParameters params,
-            final XRefResultSet<UnresolvedEntry> bag, final PrintWriter out, final OutputWriter printErr,
+            final XRefResultSet<XRefEntry> bag, final PrintWriter out, final OutputWriter printErr,
             final AtomicBoolean canceled) {
         long time = System.currentTimeMillis();
         if (params.analyzeSmartAlgorith) {
             // for smart algorithm visit functions
             visitDeclarations(file.getDeclarations(), params, bag, out, printErr, canceled);
+        } else if (params.reportIndex) {
+            // otherwise visit active code in whole file
+            CsmFileReferences.getDefault().accept(file, new LWReportIndexVisitor(bag, printErr, canceled, params.reportIndex), params.interestedReferences);
         } else {
             // otherwise visit active code in whole file
-            CsmFileReferences.getDefault().accept(file, new LWVisitor(bag, printErr, canceled, params.reportUnresolved), params.interestedReferences);
+            CsmFileReferences.getDefault().accept(file, new LWCheckReferenceVisitor(bag, printErr, canceled, params.reportUnresolved), params.interestedReferences);
         }
         time = System.currentTimeMillis() - time;
         // get line num
@@ -395,7 +404,7 @@ public class TraceXRef extends TraceModel {
         return time;
     }
 
-    private static void visitDeclarations(Collection<? extends CsmOffsetableDeclaration> decls, StatisticsParameters params, XRefResultSet<UnresolvedEntry> bag,
+    private static void visitDeclarations(Collection<? extends CsmOffsetableDeclaration> decls, StatisticsParameters params, XRefResultSet<XRefEntry> bag,
             PrintWriter printOut, OutputWriter printErr, AtomicBoolean canceled) {
         for (CsmOffsetableDeclaration decl : decls) {
             if (CsmKindUtilities.isFunctionDefinition(decl)) {
@@ -411,14 +420,14 @@ public class TraceXRef extends TraceModel {
         }
     }
 
-    private static final class LWVisitor implements CsmFileReferences.Visitor {
+    private static final class LWCheckReferenceVisitor implements CsmFileReferences.Visitor {
 
-        private final XRefResultSet<UnresolvedEntry> bag;
+        private final XRefResultSet<XRefEntry> bag;
         private final OutputWriter printErr;
         private final AtomicBoolean canceled;
         private final boolean reportUnresolved;
 
-        public LWVisitor(XRefResultSet<UnresolvedEntry> bag, OutputWriter printErr, AtomicBoolean canceled, boolean reportUnresolved) {
+        public LWCheckReferenceVisitor(XRefResultSet<XRefEntry> bag, OutputWriter printErr, AtomicBoolean canceled, boolean reportUnresolved) {
             this.bag = bag;
             this.printErr = printErr;
             this.canceled = canceled;
@@ -436,10 +445,10 @@ public class TraceXRef extends TraceModel {
                 bag.addEntry(XRefResultSet.ContextScope.UNRESOLVED, entry);
                 if (entry == XRefResultSet.ContextEntry.UNRESOLVED || entry == XRefResultSet.ContextEntry.UNRESOLVED_MACRO_BASED || entry == XRefResultSet.ContextEntry.UNRESOLVED_BUILTIN_BASED) {
                     CharSequence text = ref.getText();
-                    UnresolvedEntry unres = bag.getUnresolvedEntry(text);
+                    UnresolvedEntry unres = (UnresolvedEntry)bag.getUnresolvedEntry(text);
                     if (unres == null) {
                         unres = new UnresolvedEntry(text, new RefLink(ref));
-                        unres = bag.addUnresolvedEntry(text, unres);
+                        unres = (UnresolvedEntry)bag.addUnresolvedEntry(text, unres);
                     }
                     unres.increment();
                 }
@@ -447,7 +456,79 @@ public class TraceXRef extends TraceModel {
         }
     }
 
-    private static void handleFunctionDefinition(final CsmFunctionDefinition fun, final StatisticsParameters params, final XRefResultSet<UnresolvedEntry> bag,
+    private static final class LWReportIndexVisitor implements CsmFileReferences.Visitor {
+
+        private final XRefResultSet<XRefEntry> bag;
+        private final OutputWriter printErr;
+        private final AtomicBoolean canceled;
+
+        public LWReportIndexVisitor(XRefResultSet<XRefEntry> bag, OutputWriter printErr, AtomicBoolean canceled, boolean reportUnresolved) {
+            this.bag = bag;
+            this.printErr = printErr;
+            this.canceled = canceled;
+        }
+
+        @Override
+        public void visit(CsmReferenceContext context) {
+            CsmReference ref = context.getReference();
+            if (canceled.get()) {
+                return;
+            }
+            XRefResultSet.ContextEntry entry = null;
+            CsmReference refFromStorage = CsmReferenceStorage.getDefault().get(ref);        
+            boolean fromStorage = refFromStorage != null && refFromStorage.getReferencedObject() != null;
+            CsmObject target = ref.getReferencedObject();
+            if (target == null) {
+                // skip all unresolved
+                if (fromStorage) {
+                    try {
+                        printErr.println("INDEXED UNRESOLVED" + ":" + ref, new RefLink(ref), true); // NOI18N
+                    } catch (IOException ioe) {
+                        // skip it
+                    }
+                }
+                return;
+            }
+            if (UIDProviderIml.isSelfUID(UIDs.get(target))) {
+                // skip all locals
+                return;
+            }
+            if (CsmKindUtilities.isParameter(target)) {
+                // skip parameters
+                return;
+            }
+            String skind;
+            entry = XRefResultSet.ContextEntry.RESOLVED;
+            if (CsmKindUtilities.isParameter(target)) {
+                skind = "PARAMETER"; //NOI18N
+            } else if(CsmKindUtilities.isDeclaration(target)) {
+                skind = ((CsmDeclaration)target).getKind().toString();
+            } else if(CsmKindUtilities.isNamespace(target)) {
+                skind = "NAMESPACE"; //NOI18N
+            } else {
+                skind = "UNKNOWN"; //NOI18N
+            }
+            if(!fromStorage) {
+                try {
+                    printErr.println(skind + ":" + ref, new RefLink(ref), false); // NOI18N
+                } catch (IOException ioe) {
+                    // skip it
+                }
+            }
+            if (entry != null) {
+                RefLink refLink = new RefLink(ref);
+                CharSequence text = ref.getText();
+                IndexedEntry indexed = (IndexedEntry)bag.getIndexedEntry(refLink);
+                if (indexed == null) {                    
+                    indexed = new IndexedEntry(text, refLink, skind);
+                    indexed = (IndexedEntry)bag.addIndexedEntry(refLink, indexed);
+                }
+                indexed.increment(fromStorage);
+            }
+        }
+    }
+    
+    private static void handleFunctionDefinition(final CsmFunctionDefinition fun, final StatisticsParameters params, final XRefResultSet<XRefEntry> bag,
             final PrintWriter printOut, final OutputWriter printErr) {
         final CsmScope scope = fun.getBody();
         if (scope != null) {
@@ -467,7 +548,7 @@ public class TraceXRef extends TraceModel {
                                 bag.addEntry(funScope, entry);
                                 if (entry == XRefResultSet.ContextEntry.UNRESOLVED) {
                                     CharSequence text = ref.getText();
-                                    UnresolvedEntry unres = bag.getUnresolvedEntry(text);
+                                    UnresolvedEntry unres = (UnresolvedEntry)bag.getUnresolvedEntry(text);
                                     if (unres == null) {
                                         RefLink refLink;
                                         if (params.reportUnresolved) {
@@ -494,7 +575,7 @@ public class TraceXRef extends TraceModel {
         CsmReference ref = context.getReference();
         CsmObject target = ref.getReferencedObject();
         if (target == null) {
-            String kind = "UNRESOVED"; //NOI18N
+            String kind = "UNRESOLVED"; //NOI18N
             entry = XRefResultSet.ContextEntry.UNRESOLVED;
             boolean important = true;
             if (CsmFileReferences.isAfterUnresolved(context)) {
@@ -815,7 +896,7 @@ public class TraceXRef extends TraceModel {
         return null;
     }
 
-    private static void traceStatistics(XRefResultSet<UnresolvedEntry> bag, StatisticsParameters params, PrintWriter printOut, OutputWriter printErr) {
+    private static void traceStatistics(XRefResultSet<XRefEntry> bag, StatisticsParameters params, PrintWriter printOut, OutputWriter printErr) {
         printOut.println("Number of analyzed contexts " + bag.getNumberOfAllContexts()); // NOI18N
         Collection<XRefResultSet.ContextScope> sortedContextScopes = XRefResultSet.sortedContextScopes(bag, false);
         int numProjectProints = 0;
@@ -849,26 +930,84 @@ public class TraceXRef extends TraceModel {
         printOut.println(unresolvedStatistics);
         String performanceStatistics = String.format("Line count: %d, time %.0f ms, \nspeed %.2f lines/sec, %.2f refs/sec", bag.getLineCount(), bag.getTimeMs(), bag.getLinesPerSec(), (double)numProjectProints / bag.getTimeSec()); // NOI18N
         printOut.println(performanceStatistics);
+        
+        if(params.reportIndex) {
+            printOut.println("Index stats:"); // NOI18N
+            Map<CharSequence, Integer> indexStats = new HashMap<CharSequence, Integer>();
+            Map<CharSequence, Integer> allStats = new HashMap<CharSequence, Integer>();
+            int totalAll = 0;
+            int totalIndex = 0;
+            
+            Collection<XRefEntry> entries = bag.getIndexedEntries(new Comparator<XRefEntry>() {
+                    @Override
+                    public int compare(XRefEntry o1, XRefEntry o2) {
+                        if(o1 instanceof IndexedEntry && o2 instanceof IndexedEntry) {
+                            return ((IndexedEntry)o2).getNrIndexed() - ((IndexedEntry)o1).getNrIndexed();
+                        }
+                        else {
+                            return 0;
+                        }
+                        
+                    }
+                });
+            for (XRefEntry entry : entries) {
+                if(entry instanceof IndexedEntry) {
+                    IndexedEntry indexed = (IndexedEntry) entry;
+                    totalAll += indexed.getNrAll();
+                    totalIndex += indexed.getNrIndexed();
+                    if(indexStats.containsKey(indexed.getKind())) {
+                        indexStats.put(indexed.getKind(), indexStats.get(indexed.getKind()) + indexed.getNrIndexed());
+                    } else {
+                        indexStats.put(indexed.getKind(), indexed.getNrIndexed());
+                    }
+                    if(allStats.containsKey(indexed.getKind())) {
+                        allStats.put(indexed.getKind(), allStats.get(indexed.getKind()) + indexed.getNrAll());
+                    } else {
+                        allStats.put(indexed.getKind(), indexed.getNrAll());
+                    }
+                }
+            }
+            String header = String.format("%20s %10s %10s %5s", "Kind", "Indexed", "Checked", "%%"); // NOI18N
+            printOut.println(header); // NOI18N
+            for (CharSequence kind : indexStats.keySet()) {
+                if(kind != null) { 
+                    String s2 = String.format("%20s %10d %10d %.2f%%", kind, indexStats.get(kind), allStats.get(kind), (double) indexStats.get(kind)*100/allStats.get(kind)); // NOI18N
+                    printOut.println(s2); // NOI18N
+                }
+            }
+            String s = String.format("%20s %10d %10d %.2f%%", "Total", totalIndex, totalAll, (double) totalIndex*100/totalAll); // NOI18N
+            printOut.println(s); // NOI18N
+        }        
+        
         if (!params.reportUnresolved) {
             return;
         }
         if (!params.analyzeSmartAlgorith) {
             // dump unresolved statistics
             if (allUnresolvedPoints > 0) {
-                Collection<UnresolvedEntry> unresolvedEntries = bag.getUnresolvedEntries(new Comparator<UnresolvedEntry>() {
+                Collection<XRefEntry> entries = bag.getUnresolvedEntries(new Comparator<XRefEntry>() {
 
                     @Override
-                    public int compare(UnresolvedEntry o1, UnresolvedEntry o2) {
-                        return o2.getNrUnnamed() - o1.getNrUnnamed();
+                    public int compare(XRefEntry o1, XRefEntry o2) {
+                        if(o1 instanceof UnresolvedEntry && o2 instanceof UnresolvedEntry) {
+                            return ((UnresolvedEntry)o2).getNrUnnamed() - ((UnresolvedEntry)o1).getNrUnnamed();
+                        }
+                        else {
+                            return 0;
+                        }
+                        
                     }
                 });
-                for (UnresolvedEntry unresolvedEntry : unresolvedEntries) {
-                    double unresolvedEntryRatio = (100.0 * unresolvedEntry.getNrUnnamed()) / ((double) allUnresolvedPoints);
-                    String msg = String.format("%20s\t|%6s\t| %.2f%% ", unresolvedEntry.getName(), unresolvedEntry.getNrUnnamed(), unresolvedEntryRatio); // NOI18N
-                    try {
-                        printErr.println(msg, unresolvedEntry.getLink(), false);
-                    } catch (IOException ex) {
-                        // skip exception
+                for (XRefEntry entry : entries) {
+                    if(entry instanceof UnresolvedEntry) {
+                        UnresolvedEntry unresolvedEntry = (UnresolvedEntry) entry;
+                        double unresolvedEntryRatio = (100.0 * unresolvedEntry.getNrUnnamed()) / ((double) allUnresolvedPoints);
+                        String msg = String.format("%20s\t|%6s\t| %.2f%% ", unresolvedEntry.getName(), unresolvedEntry.getNrUnnamed(), unresolvedEntryRatio); // NOI18N
+                        try {
+                            printErr.println(msg, unresolvedEntry.getLink(), false);
+                        } catch (IOException ex) {
+                            // skip exception
+                        }
                     }
                 }
             }
@@ -1139,13 +1278,15 @@ public class TraceXRef extends TraceModel {
         public final Set<CsmReferenceKind> interestedReferences;
         public final boolean analyzeSmartAlgorith;
         public final boolean reportUnresolved;
+        public final boolean reportIndex;
         public final int numThreads;
         public final long timeThreshold;
         public boolean printFileStatistic = true;
-        public StatisticsParameters(Set<CsmReferenceKind> kinds, boolean analyzeSmartAlgorith, boolean reportUnresolved, int numThreads, long timeThreshold) {
+        public StatisticsParameters(Set<CsmReferenceKind> kinds, boolean analyzeSmartAlgorith, boolean reportUnresolved, boolean reportIndex, int numThreads, long timeThreshold) {
             this.analyzeSmartAlgorith = analyzeSmartAlgorith;
             this.interestedReferences = kinds;
             this.reportUnresolved = reportUnresolved;
+            this.reportIndex = reportIndex;
             this.numThreads = numThreads;
             this.timeThreshold = timeThreshold;
         }
@@ -1186,7 +1327,7 @@ public class TraceXRef extends TraceModel {
         }
     }
 
-    private final static class RefLink implements OutputListener {
+    final static class RefLink implements OutputListener {
 
         private final CsmUID<CsmFile> fileUID;
         private final int offset;
@@ -1211,9 +1352,22 @@ public class TraceXRef extends TraceModel {
         @Override
         public void outputLineCleared(OutputEvent ev) {
         }
+
+        @Override
+        public boolean equals(Object o) {
+            return fileUID.getObject().equals(fileUID.getObject()) && offset == offset;            
+        }
+
+        @Override
+        public int hashCode() {
+            return offset;
+        }
     }
 
-    private final static class UnresolvedEntry {
+    private static interface XRefEntry {
+    }
+    
+    private final static class UnresolvedEntry implements XRefEntry {
 
         private final RefLink link;
         private final AtomicInteger nrUnnamed;
@@ -1258,4 +1412,66 @@ public class TraceXRef extends TraceModel {
             return this.name.hashCode();
         }
     }
+    
+    private final static class IndexedEntry implements XRefEntry {
+
+        private final RefLink link;
+        private final AtomicInteger nrIndexed;
+        private final AtomicInteger nrAll;
+        private final CharSequence name;
+        private final CharSequence kind;
+
+        public IndexedEntry(CharSequence name, RefLink link, CharSequence kind) {
+            this.link = link;
+            this.name = name;
+            this.nrIndexed = new AtomicInteger(0);
+            this.nrAll = new AtomicInteger(0);
+            this.kind = kind;
+        }
+
+        public CharSequence getName() {
+            return name;
+        }
+
+        public int getNrIndexed() {
+            return nrIndexed.get();
+        }
+
+        public int getNrAll() {
+            return nrAll.get();
+        }
+        
+        public RefLink getLink() {
+            return link;
+        }
+
+        public CharSequence getKind() {
+            return kind;
+        }
+        
+        private void increment(boolean indexed) {
+            if(indexed) {
+                nrIndexed.incrementAndGet();
+            }
+            nrAll.incrementAndGet();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final UnresolvedEntry other = (UnresolvedEntry) obj;
+            return this.name.equals(other.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return this.name.hashCode();
+        }
+    }
+    
 }

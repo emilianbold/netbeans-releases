@@ -47,8 +47,8 @@ import java.net.URL;
 import java.util.logging.Level;
 import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugzilla.Bugzilla;
@@ -65,7 +65,7 @@ public class KenaiSupportImpl extends KenaiSupport {
     }
 
     @Override
-    public Repository createRepository(KenaiProject project) {
+    public RepositoryProvider createRepository(KenaiProject project) {
         if(project == null || project.getType() != BugtrackingType.BUGZILLA) {
             return null;
         }
@@ -76,7 +76,7 @@ public class KenaiSupportImpl extends KenaiSupport {
     }
 
     @Override
-    public void setFilter(Query query, Filter filter) {
+    public void setFilter(QueryProvider query, Filter filter) {
         if(query instanceof BugzillaQuery) { // XXX assert instead of if
             BugzillaQuery bq = (BugzillaQuery) query;
             bq.getController().selectFilter(filter);
@@ -124,13 +124,13 @@ public class KenaiSupportImpl extends KenaiSupport {
     }
 
     @Override
-    public Query getAllIssuesQuery(Repository repository) {
+    public QueryProvider getAllIssuesQuery(RepositoryProvider repository) {
         assert repository instanceof KenaiRepository;
         return ((KenaiRepository)repository).getAllIssuesQuery();
     }
 
     @Override
-    public Query getMyIssuesQuery(Repository repository) {
+    public QueryProvider getMyIssuesQuery(RepositoryProvider repository) {
         assert repository instanceof KenaiRepository;
         return ((KenaiRepository)repository).getMyIssuesQuery();
     }
@@ -141,12 +141,12 @@ public class KenaiSupportImpl extends KenaiSupport {
     }
 
     @Override
-    public boolean needsLogin(Query query) {
+    public boolean needsLogin(QueryProvider query) {
         return query == ((KenaiRepository) query.getRepository()).getMyIssuesQuery();
     }
 
     @Override
-    public void refresh(Query query, boolean synchronously) {
+    public void refresh(QueryProvider query, boolean synchronously) {
         assert query instanceof BugzillaQuery;
         BugzillaQuery bq = (BugzillaQuery) query;
         if(synchronously) {
@@ -157,7 +157,7 @@ public class KenaiSupportImpl extends KenaiSupport {
     }
 
     @Override
-    public Repository findNBRepository() {
+    public RepositoryProvider findNBRepository() {
         return NBBugzillaUtils.findNBRepository();
     }
     

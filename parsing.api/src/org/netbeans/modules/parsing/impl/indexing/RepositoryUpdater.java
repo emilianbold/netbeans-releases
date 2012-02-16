@@ -60,6 +60,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -297,24 +299,70 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         /*,justification="URLs have never host part"*/)
     public void addIndexingJob(
         @NonNull final URL rootUrl,
-        Collection<? extends URL> fileUrls,
+        @NullAllowed Collection<? extends URL> fileUrls,
         boolean followUpJob,
         boolean checkEditor,
         boolean wait,
         boolean forceRefresh,
         boolean steady,
         @NonNull final LogContext logCtx) {
+        
+        LOGGER.log(
+            Level.FINE,
+            "addIndexingJob: rootUrl={0}, fileUrls={1}, followUpJob={2}, checkEditor={3}, wait={4}",    //NOI18N
+            new Object[]{
+                rootUrl,
+                fileUrls,
+                followUpJob,
+                checkEditor,
+                wait}); 
+
+        final FileListWork flw = createFileListWork(rootUrl, fileUrls, followUpJob, checkEditor, forceRefresh, steady, logCtx);        
+        if (flw != null) {
+            LOGGER.log(
+                Level.FINE,
+                "Scheduling index refreshing: root={0}, files={1}", //NOI18N
+                new Object[]{rootUrl, fileUrls});
+            scheduleWork(flw, wait);
+        }
+    }
+    
+    public void enforcedFileListUpdate(
+            @NonNull final URL rootUrl,
+            @NonNull final Collection<? extends URL> fileUrls) {        
+        final FileListWork flw = createFileListWork(rootUrl, fileUrls, false, true, true, false, null);
+        if (flw != null) {
+            LOGGER.log(
+                Level.FINE,
+                "Transient File List Update {0}",   //NOI18N
+                flw);
+            suspendSupport.runWithNoSuspend(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        flw.doTheWork();
+                    }
+                });
+        }
+    }
+    
+    @CheckForNull
+    private FileListWork createFileListWork(
+        @NonNull final URL rootUrl,
+        @NullAllowed Collection<? extends URL> fileUrls,
+        boolean followUpJob,
+        boolean checkEditor,
+        boolean forceRefresh,
+        boolean steady,
+        @NullAllowed final LogContext logCtx) {
+        
         assert rootUrl != null;
         assert PathRegistry.noHostPart(rootUrl) : rootUrl;
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("addIndexingJob: rootUrl=" + rootUrl + ", fileUrls=" + fileUrls //NOI18N
-                + ", followUpJob=" + followUpJob + ", checkEditor=" + checkEditor + ", wait=" + wait); //NOI18N
-        }
 
         FileObject root = URLMapper.findFileObject(rootUrl);
         if (root == null) {
-            LOGGER.info(rootUrl + " can't be translated to FileObject"); //NOI18N
-            return;
+            LOGGER.log(Level.INFO, "{0} can''t be translated to FileObject", rootUrl); //NOI18N
+            return null;
         }
 
         FileListWork flw = null;
@@ -327,7 +375,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         files.add(file);
                     } else {
                         if (LOGGER.isLoggable(Level.WARNING)) {
-                            LOGGER.warning(file + " does not lie under " + root + ", not indexing it"); //NOI18N
+                            LOGGER.log(Level.WARNING, "{0} does not lie under {1}, not indexing it", new Object[]{file, root}); //NOI18N
                         }
                     }
                 }
@@ -357,14 +405,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 suspendSupport,
                 logCtx);
         }
-
-        if (flw != null) {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Scheduling index refreshing: root=" + rootUrl + ", files=" + fileUrls); //NOI18N
-            }
-
-            scheduleWork(flw, wait);
-        }
+        return flw;
     }
 
     /**
@@ -1369,7 +1410,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
     public void runAsWork(@NonNull final Runnable r) {
         assert r != null;
-        final Work work = new Work(false, false, false, true, SuspendStatus.NOP, null) {
+        final Work work = new Work(false, false, false, true, SuspendSupport.NOP, null) {
             @Override
             protected boolean getDone() {
                 r.run();
@@ -3068,7 +3109,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         protected @Override boolean getDone() {
-            return scanBinary(root, BinaryIndexers.load(), null, null);
+            return scanBinary(root, BinaryIndexers.load(), null);
         }
 
         @Override
@@ -4054,38 +4095,45 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
         protected final boolean scanBinaries(final DependenciesContext ctx) {
             assert ctx != null;
-            long [] scannedRootsCnt = new long [] { 0 };
-            long [] completeTime = new long [] { 0 };
-            boolean finished = true;
-            BinaryIndexers binaryIndexers = null;
+            final AtomicInteger scannedRootsCnt = new AtomicInteger(0);
+            final BinaryIndexers binaryIndexers = ctx.newBinariesToScan.isEmpty()?
+                    null : BinaryIndexers.load();
 
-            for (URL binary : ctx.newBinariesToScan) {
-                if (isCancelled()) {
-                    finished = false;
-                    break;
-                }
-
-                if (binaryIndexers == null) {
-                    binaryIndexers = BinaryIndexers.load();
-                }
-
-                if (scanBinary(binary, binaryIndexers, scannedRootsCnt, completeTime)) {
-                    ctx.scannedBinaries.add(binary);
-                } else {
-                    finished = true;
-                    break;
-                }
-            }
-
+            final IndexBinaryWorkPool pool = new IndexBinaryWorkPool(
+                    new IndexBinaryWorkPool.Function<URL, Boolean>() {
+                        @Override
+                        public Boolean apply(URL root) {
+                            return scanBinary(
+                                    root,
+                                    binaryIndexers,
+                                    scannedRootsCnt);
+                        }
+                    },
+                    new Callable<Boolean>() {
+                        @Override
+                        public Boolean call() throws Exception {
+                            return isCancelled();
+                        }
+                    },
+                    ctx.newBinariesToScan);
+            final long binaryScanStart = System.currentTimeMillis();
+            final Pair<Boolean,Collection<? extends URL>> res = pool.execute();
+            final long binaryScanEnd = System.currentTimeMillis();
+            ctx.scannedBinaries.addAll(res.second);
             if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.info(String.format("Complete indexing of %d binary roots took: %d ms", scannedRootsCnt[0], completeTime[0])); //NOI18N
+                LOGGER.log(
+                    Level.INFO,
+                    "Complete indexing of {0} binary roots took: {1} ms",   //NOI18N
+                    new Object[] {
+                        scannedRootsCnt.get(),
+                        binaryScanEnd - binaryScanStart
+                    });
             }
             TEST_LOGGER.log(Level.FINEST, "scanBinary", ctx.newBinariesToScan);       //NOI18N
-
-            return finished;
+            return res.first;
         }
 
-        protected final boolean scanBinary(URL root, BinaryIndexers binaryIndexers, long [] scannedRootsCnt, long [] completeTime) {
+        protected final boolean scanBinary(URL root, BinaryIndexers binaryIndexers, AtomicInteger scannedRootsCnt) {
             final long tmStart = System.currentTimeMillis();
             final Map<BinaryIndexerFactory, Context> contexts = new HashMap<BinaryIndexerFactory, Context>();
             try {
@@ -4122,11 +4170,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 LOGGER.log(Level.WARNING, null, ioe);
             } finally {
                 final long time = System.currentTimeMillis() - tmStart;
-                if (completeTime != null) {
-                    completeTime[0] += time;
-                }
                 if (scannedRootsCnt != null) {
-                    scannedRootsCnt[0]++;
+                    scannedRootsCnt.incrementAndGet();
                 }
                 reportRootScan(root, time);
                 if (LOGGER.isLoggable(Level.FINE)) {
@@ -4536,100 +4581,81 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         public void schedule (Work work, boolean wait) {
-            boolean enforceWork = false;
             boolean waitForWork = false;
-
+            if (wait && Utilities.holdsParserLock()) {
+                throw new IllegalStateException("Caller holds TaskProcessor.parserLock, which may cause deadlock.");    //NOI18N
+            }
             synchronized (todo) {
                 assert work != null;
                 if (!allCancelled) {
-                      if (wait && Utilities.holdsParserLock()) {
-                        if (protectedOwners.isEmpty()) {
-                            enforceWork = true;
-                        } else {
-                            // XXX: #176049, this may happen now when versioning uses
-                            // protected mode to turn off indexing during VCS operations
-                            LOGGER.log(Level.FINE, "Won't enforce {0} when in protected mode", work); //NOI18N
-                            wait = false;
-//                            throw new IllegalStateException("Won't enforce " + work + " when in protected mode"); //NOI18N
+                    boolean canceled = false;
+                    final List<Work> follow = new ArrayList<Work>(1);
+                    if (workInProgress != null) {
+                        if (workInProgress.cancelBy(work,follow)) {
+                            canceled = true;
                         }
                     }
 
-                    if (!enforceWork) {
-                        boolean canceled = false;
-                        final List<Work> follow = new ArrayList<Work>(1);
-                        if (workInProgress != null) {
-                            if (workInProgress.cancelBy(work,follow)) {
-                                canceled = true;
-                            }
-                        }
+                    // coalesce ordinary jobs
+                    Work absorbedBy = null;
+                    if (!wait) {
+                        boolean allowAbsorb = true;
 
-                        // coalesce ordinary jobs
-                        Work absorbedBy = null;
-                        if (!wait) {
-                            boolean allowAbsorb = true;
-
-                            //XXX (#198565): don't let FileListWork forerun delete works:
-                            if (work instanceof FileListWork) {
-                                for (Work w : todo) {
-                                    if (w instanceof DeleteWork) {
-                                        allowAbsorb = false;
-                                        break;
-                                    }
-                                }
-                            }
-
-                            if (allowAbsorb) {
-                                for(Work w : todo) {
-                                    if (w.absorb(work)) {
-                                        absorbedBy = w;
-                                        break;
-                                    }
+                        //XXX (#198565): don't let FileListWork forerun delete works:
+                        if (work instanceof FileListWork) {
+                            for (Work w : todo) {
+                                if (w instanceof DeleteWork) {
+                                    allowAbsorb = false;
+                                    break;
                                 }
                             }
                         }
 
-                        if (absorbedBy == null) {
-                            LOGGER.log(Level.FINE, "Scheduling {0}", work); //NOI18N
-                            if (canceled) {
-                                todo.add(0, work);
-                                todo.addAll(1,follow);
-                            } else {
-                                todo.add(work);
+                        if (allowAbsorb) {
+                            for(Work w : todo) {
+                                if (w.absorb(work)) {
+                                    absorbedBy = w;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (absorbedBy == null) {
+                        LOGGER.log(Level.FINE, "Scheduling {0}", work); //NOI18N
+                        if (canceled) {
+                            todo.add(0, work);
+                            todo.addAll(1,follow);
+                        } else {
+                            todo.add(work);
+                        }
+                    } else {
+                        if (absorbedBy.logCtx != null) {
+                            if (work.logCtx != null) {
+                                absorbedBy.logCtx.absorb(work.logCtx);
                             }
                         } else {
-                            if (absorbedBy.logCtx != null) {
-                                if (work.logCtx != null) {
-                                    absorbedBy.logCtx.absorb(work.logCtx);
-                                }
-                            } else {
-                                absorbedBy.logCtx = work.logCtx;
-                            }
-                            if (canceled) {
-                                todo.remove(absorbedBy);
-                                todo.add(0, absorbedBy);
-                                todo.addAll(1,follow);
-                            }
-                            LOGGER.log(Level.FINE, "Work absorbed {0}", work); //NOI18N
+                            absorbedBy.logCtx = work.logCtx;
                         }
-
-                        followUpWorksSorted = false;
-                        
-                        if (!scheduled && protectedOwners.isEmpty()) {
-                            scheduled = true;
-                            LOGGER.fine("scheduled = true");    //NOI18N
-                            WORKER.submit(this);
+                        if (canceled) {
+                            todo.remove(absorbedBy);
+                            todo.add(0, absorbedBy);
+                            todo.addAll(1,follow);
                         }
-                        waitForWork = wait;
+                        LOGGER.log(Level.FINE, "Work absorbed {0}", work); //NOI18N
                     }
+
+                    followUpWorksSorted = false;
+
+                    if (!scheduled && protectedOwners.isEmpty()) {
+                        scheduled = true;
+                        LOGGER.fine("scheduled = true");    //NOI18N
+                        WORKER.submit(this);
+                    }
+                    waitForWork = wait;
                 }
             }
-
-            if (enforceWork) {
-                // XXX: this will not set the isWorking() flag, which is strictly speaking
-                // wrong, but probably won't harm anything
-                LOGGER.log(Level.FINE, "Enforcing {0}", work); //NOI18N
-                work.doTheWork();
-            } else if (waitForWork) {
+            if (waitForWork) {
                 LOGGER.log(Level.FINE, "Waiting for {0}", work); //NOI18N
                 work.waitUntilDone();
             }
@@ -4706,7 +4732,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     // delaying of these tasks was just copied from the old java.source RepositoryUpdater
                     RP.create(new Runnable() {
                         public @Override void run() {
-                            schedule(new Work(false, false, false, true, SuspendStatus.NOP, null) {
+                            schedule(new Work(false, false, false, true, SuspendSupport.NOP, null) {
                                 protected @Override boolean getDone() {
                                     if (tasks != null) {
                                         for(Runnable task : tasks) {
@@ -4784,8 +4810,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         WORKER.submit(this);
                     }
                     todo.notifyAll();
-                    RunWhenScanFinishedSupport.performDeferredTasks();
                 }
+                RunWhenScanFinishedSupport.performDeferredTasks();
             }
         }
 

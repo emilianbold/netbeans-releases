@@ -88,6 +88,8 @@ public class RelatedCMPHelper {
     private boolean generateValidationConstraints;
 
     private boolean useColumnNamesInRelationships = true;
+    private boolean generateUnresolvedRelationships = false;
+    private boolean useDefaults = false;
 
 
     private DbSchemaEjbGenerator generator;
@@ -363,7 +365,7 @@ public class RelatedCMPHelper {
             }
         }
 */
-        generator = new DbSchemaEjbGenerator(genTables, schemaElement, collectionType, useColumnNamesInRelationships);
+        generator = new DbSchemaEjbGenerator(genTables, schemaElement, collectionType, useColumnNamesInRelationships, useDefaults, generateUnresolvedRelationships);
     }
     
     public EntityClass[] getBeans() {
@@ -372,6 +374,34 @@ public class RelatedCMPHelper {
     
     public EntityRelation[] getRelations() {
         return generator.getRelations();
+    }
+
+    /**
+     * @return the generateUnresolvedRelationships
+     */
+    public boolean isGenerateUnresolvedRelationships() {
+        return generateUnresolvedRelationships;
+    }
+
+    /**
+     * @param generateUnresolvedRelationships the generateUnresolvedRelationships to set
+     */
+    public void setGenerateUnresolvedRelationships(boolean generateUnresolvedRelationships) {
+        this.generateUnresolvedRelationships = generateUnresolvedRelationships;
+    }
+
+    /**
+     * @return the useDefaults
+     */
+    public boolean isUseDefaults() {
+        return useDefaults;
+    }
+
+    /**
+     * @param useDefaults the useDefaults to set
+     */
+    public void setUseDefaults(boolean useDefaults) {
+        this.useDefaults = useDefaults;
     }
     
     private static final class GenerateTablesImpl implements GeneratedTables {

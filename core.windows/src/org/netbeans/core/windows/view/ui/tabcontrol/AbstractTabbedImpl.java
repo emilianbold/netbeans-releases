@@ -49,10 +49,7 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
-import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.Debug;
-import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.WindowManagerImpl;
+import org.netbeans.core.windows.*;
 import org.netbeans.core.windows.actions.ActionUtils;
 import org.netbeans.swing.tabcontrol.ComponentConverter;
 import org.netbeans.swing.tabcontrol.TabData;
@@ -419,6 +416,11 @@ abstract class AbstractTabbedImpl extends Tabbed {
     @Override
     public final void removeChangeListener( ChangeListener listener ) {
         cs.removeChangeListener( listener );
+    }
+
+    @Override
+    public boolean isBusy( TopComponent tc ) {
+        return WindowManagerImpl.getInstance().isTopComponentBusy( tc );
     }
 
     protected abstract ComponentConverter getComponentConverter();
