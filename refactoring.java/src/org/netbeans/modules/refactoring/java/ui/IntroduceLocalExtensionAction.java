@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.refactoring.java.ui;
 
@@ -49,30 +49,27 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-
 /**
- * Activates introduce method refactoring.
  *
- * @author Jan Becicka
+ * @author Ralph Ruijs
  */
-@ActionID(id = "org.netbeans.modules.refactoring.java.api.ui.IntroduceParameterAction", category = "Refactoring")
-@ActionRegistration(displayName = "#LBL_IntroduceParameterAction", lazy = false)
+@ActionID(id = "org.netbeans.modules.refactoring.java.api.ui.IntroduceLocalExtensionAction", category = "Refactoring")
+@ActionRegistration(displayName = "#LBL_IntroduceLocalExtensionAction", lazy = false)
 @ActionReferences({
-    @ActionReference(path = "Shortcuts", name = "OS-P"),
-    @ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "IntroduceParameterAction", position = 1650)
+    @ActionReference(path = "Shortcuts", name = "OS-X"),
+    @ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "IntroduceLocalExtensionAction", position = 1750)
 })
-public class IntroduceParameterAction extends JavaRefactoringGlobalAction {
-    
-    /** Creates a new instance of ChangeParametersAction
-     */
-    public IntroduceParameterAction() {
-        super(NbBundle.getMessage(ChangeParametersAction.class, "LBL_IntroduceParameterAction"), null); // NOI18N
+@NbBundle.Messages("LBL_IntroduceLocalExtensionAction=Introduce &Local Extension...")
+public class IntroduceLocalExtensionAction extends JavaRefactoringGlobalAction {
+
+    public IntroduceLocalExtensionAction() {
+        super(NbBundle.getMessage(IntroduceLocalExtensionAction.class, "LBL_IntroduceLocalExtensionAction"), null); // NOI18N
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
     @Override
     public final void performAction(Lookup context) {
-        JavaActionsImplementationFactory.doIntroduceParameter(context);
+        JavaActionsImplementationFactory.doIntroduceLocalExtension(context);
     }
     
     @Override
@@ -87,6 +84,6 @@ public class IntroduceParameterAction extends JavaRefactoringGlobalAction {
 
     @Override
     protected boolean enable(Lookup context) {
-        return JavaActionsImplementationFactory.canIntroduceParameter(context);
+        return JavaActionsImplementationFactory.canIntroduceLocalExtension(context);
     }
 }
