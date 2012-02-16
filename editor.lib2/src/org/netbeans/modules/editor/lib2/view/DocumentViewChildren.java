@@ -456,17 +456,27 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
         boolean updated = false;
         TextLayoutCache tlCache = docView.op.getTextLayoutCache();
         if (pCount > 0) {
+            // Ensure that the cache will fit all the necessary items (including possible extra ones).
+            // Normally the cache's limit should be big enough but for a stress testing this is necessary
+            // and it must be done before particular pViews inspection since changing capacity may throw
+            // some pViews out of the cache.
+            tlCache.setCapacityOrDefault(endIndex - startIndex + extraStartCount + extraEndCount);
+
             // Find out what needs to be rebuilt
             ParagraphView pView = get(rStartIndex);
             if (pView.isChildrenValid()) { // First pView has valid children (will not use extraStartCount)
+                tlCache.activate(pView);
                 // Search for first which has null children
-                while (++rStartIndex < rEndIndex && (pView = get(rStartIndex)).isChildrenValid()) { }
+                while (++rStartIndex < rEndIndex && (pView = get(rStartIndex)).isChildrenValid()) {
+                    tlCache.activate(pView);
+                }
 
             } else { // pView.children == null
                 for (; rStartIndex > 0 && extraStartCount > 0; extraStartCount--) {
                     pView = get(--rStartIndex);
                     // Among extraStart pViews only go back until first pView with valid children is found
                     if (pView.isChildrenValid()) {
+                        tlCache.activate(pView);
                         rStartIndex++;
                         break;
                     }
@@ -478,8 +488,10 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
                 // There will be at least one view to rebuild
                 pView = get(rEndIndex - 1);
                 if (pView.isChildrenValid()) {
+                    tlCache.activate(pView);
                     rEndIndex--;
                     while (rEndIndex > rStartIndex && (pView = get(rEndIndex - 1)).isChildrenValid()) {
+                        tlCache.activate(pView);
                         rEndIndex--;
                     }
 
@@ -487,25 +499,12 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
                     for (;rEndIndex < pCount && extraEndCount > 0; extraEndCount--) {
                         pView = get(rEndIndex++);
                         if (pView.isChildrenValid()) {
+                            tlCache.activate(pView);
                             break;
                         }
                     }
                 }
-                // First ensure that <startIndex,rStartIndex> and <rEndIndex,endIndex> are activated
-                // so that they won't get removed from the TL cache by setCapacityOrDefault()
-                // or subsequent pViews rebuilding.
-                for (int i = startIndex; i < rStartIndex; i++) {
-                    pView = get(i);
-                    tlCache.activate(pView);
-                }
-                for (int i = rEndIndex; i < endIndex; i++) {
-                    pView = get(i);
-                    tlCache.activate(pView);
-                }
-                
-                // Ensure that layout cache has sufficient size and does not drop built children directly
-                // Note: setCapacityOrDefault() drops extra entries if size is going to be lower than before
-                tlCache.setCapacityOrDefault(Math.max(rEndIndex - rStartIndex, endIndex - startIndex));
+
                 docView.op.initParagraphs(rStartIndex, rEndIndex);
                 updated = true;
                 // recompute endIndex since rebuilding could change number of paragraphs
@@ -524,7 +523,7 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
                             append(rStartIndex).append(",").append(rEndIndex). // NOI18N
                             append(">. cache integrity: ").append(tlCache.findIntegrityError()). // NOI18N
                             append(" docView:\n"); // NOI18N
-                    docView.appendViewInfo(sb, 4, null, pIndex);
+                    docView.appendViewInfo(sb, 4, "", pIndex);
                     throw new IllegalStateException(sb.toString());
                 }
                 if (!pView.isLayoutValid()) {
