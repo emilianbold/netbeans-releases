@@ -184,6 +184,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         longLiving = isLongLiving;
         if (longLiving) {
             listener = new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
                         refreshNode();
@@ -192,6 +193,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             };
             NbMavenProject.addPropertyChangeListener(project, WeakListeners.propertyChange(listener, project.getProjectWatcher()));
             listener2 = new ChangeListener() {
+                @Override
                 public void stateChanged(ChangeEvent event) {
                     refreshNode();
                 }
@@ -206,6 +208,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         setIconBase(false);
         if (longLiving) {
             RP.post(new Runnable() {
+                @Override
                 public void run() {
                     setIconBase(longLiving);
                     fireIconChange();
@@ -612,13 +615,15 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             }
         }
 
+        @Override
         public Action createContextAwareInstance(Lookup actionContext) {
             return new RemoveDependencyAction(actionContext);
         }
 
+        @Override
         public void actionPerformed(ActionEvent event) {
             final Collection<? extends Artifact> artifacts = lkp.lookupAll(Artifact.class);
-            if (artifacts.size() == 0) {
+            if (artifacts.isEmpty()) {
                 return;
             }
             Collection<? extends NbMavenProjectImpl> res = lkp.lookupAll(NbMavenProjectImpl.class);
@@ -645,6 +650,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                 }
             };
             RP.post(new Runnable() {
+                @Override
                 public void run() {
                     FileObject fo = FileUtil.toFileObject(project.getPOMFile());
                     Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
@@ -694,8 +700,10 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             putValue(Action.NAME, org.openide.util.NbBundle.getMessage(DependencyNode.class, "BTN_Exclude_Dependency"));
         }
 
+        @Override
         public void actionPerformed(ActionEvent event) {
             RP.post(new Runnable() {
+                @Override
                 public void run() {
                     org.apache.maven.shared.dependency.tree.DependencyNode rootnode = DependencyTreeFactory.createDependencyTree(project.getOriginalMavenProject(), EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
                     DependencyExcludeNodeVisitor nv = new DependencyExcludeNodeVisitor(art.getGroupId(), art.getArtifactId(), art.getType());
@@ -721,6 +729,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
 
         private void runModifyExclusions(final Artifact art, final Collection<org.apache.maven.shared.dependency.tree.DependencyNode> nds) {
             ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                @Override
                 public void performOperation(POMModel model) {
                     for (org.apache.maven.shared.dependency.tree.DependencyNode nd : nds) {
                         Artifact directArt = nd.getArtifact();
@@ -824,14 +833,16 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             }
         }
         
+        @Override
         public Action createContextAwareInstance(Lookup actionContext) {
             return new SetInCurrentAction(actionContext);
         }
 
 
+        @Override
         public void actionPerformed(ActionEvent event) {
             final Collection<? extends Artifact> artifacts = lkp.lookupAll(Artifact.class);
-            if (artifacts.size() == 0) {
+            if (artifacts.isEmpty()) {
                 return;
             }
             Collection<? extends NbMavenProjectImpl> res = lkp.lookupAll(NbMavenProjectImpl.class);
@@ -842,6 +853,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             final NbMavenProjectImpl project = prjs.iterator().next();
 
             final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                @Override
                 public void performOperation(POMModel model) {
                     for (Artifact art : artifacts) {
                         org.netbeans.modules.maven.model.pom.Dependency dep = model.getProject().findDependencyById(art.getGroupId(), art.getArtifactId(), null);
@@ -881,6 +893,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                 }
             };
             RP.post(new Runnable() {
+                @Override
                 public void run() {
                     FileObject fo = FileUtil.toFileObject(project.getPOMFile());
                     org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
@@ -897,6 +910,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             putValue(Action.NAME, org.openide.util.NbBundle.getMessage(DependencyNode.class, "BTN_Manually_install"));
         }
 
+        @Override
         public void actionPerformed(ActionEvent event) {
             File fil = InstallPanel.showInstallDialog(art);
             if (fil != null) {
@@ -913,6 +927,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             putValue(Action.NAME, org.openide.util.NbBundle.getMessage(DependencyNode.class, "BTN_Add_javadoc"));
         }
 
+        @Override
         public void actionPerformed(ActionEvent event) {
             source = InstallDocSourcePanel.showInstallDialog(true);
             if (source != null) {
@@ -920,6 +935,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             }
         }
 
+        @Override
         public void run() {
             File target = getJavadocFile();
             try {
@@ -940,6 +956,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             putValue(Action.NAME, org.openide.util.NbBundle.getMessage(DependencyNode.class, "BTN_Add_sources"));
         }
 
+        @Override
         public void actionPerformed(ActionEvent event) {
             source = InstallDocSourcePanel.showInstallDialog(false);
             if (source != null) {
@@ -947,6 +964,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             }
         }
 
+        @Override
         public void run() {
             File target = getSourceFile();
             try {
@@ -994,6 +1012,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             this.art = art;
         }
 
+        @Override
         public FileObject getRootFolder() {
             FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(art.getFile()));
             if (fo != null) {
@@ -1002,14 +1021,17 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             return null;
         }
 
+        @Override
         public String getName() {
             return art.getId();
         }
 
+        @Override
         public String getDisplayName() {
             return art.getId();
         }
 
+        @Override
         public Icon getIcon(boolean opened) {
             return null;
         }
@@ -1018,9 +1040,11 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             return true;
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
         }
     }
@@ -1086,19 +1110,19 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                 }
             }
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 DataObject dobj = getOriginal().getLookup().lookup(DataObject.class);
                 if (dobj == null) {
                     return;
                 }
                 if (javadoc) {
-                    try {
                         FileObject fil = dobj.getPrimaryFile();
                         FileObject jar = FileUtil.getArchiveFile(fil);
                         FileObject root = FileUtil.getArchiveRoot(jar);
                         String rel = FileUtil.getRelativePath(root, fil);
                         rel = rel.replaceAll("[.]class$", ".html"); //NOI18N
-                        JavadocForBinaryQuery.Result res = JavadocForBinaryQuery.findJavadoc(root.getURL());
+                        JavadocForBinaryQuery.Result res = JavadocForBinaryQuery.findJavadoc(root.toURL());
                         if (fil.isFolder()) {
                             rel = rel + "/package-summary.html"; //NOI18N
                         }
@@ -1108,9 +1132,6 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                         } else {
                             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DependencyNode.class, "ERR_No_Javadoc_Found", fil.getPath()));
                         }
-                    } catch (FileStateInvalidException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
                 } else if (!dobj.getPrimaryFile().isFolder()) {
                     Openable oc = dobj.getLookup().lookup(Openable.class);
                     if (oc != null) {
