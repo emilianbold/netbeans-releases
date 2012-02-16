@@ -41,11 +41,14 @@
  */
 package org.netbeans.modules.clientside.project.sites;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.netbeans.api.progress.ProgressHandle;
@@ -60,10 +63,15 @@ import org.openide.util.NbBundle;
  *
  */
 @NbBundle.Messages({"MSG_Progress2=Downloading site template",
-"MSG_Progress3=Unziping site template",
-"ERR_EmptyZip=ZIP file with site template is either empty or its download failed."})
+    "MSG_Progress3=Unziping site template",
+    "ERR_EmptyZip=ZIP file with site template is either empty or its download failed.",
+    "ERR_StreamError=There was a network error trying to download the site template. See IDE log for more details.",
+    "ERR_NotFoundError=The template file cannot be found at {0}"
+})
 public class SiteHelper {
 
+    private static final Logger LOGGER = Logger.getLogger(SiteHelper.class.getName());
+    
     public static void install(String url, FileObject root, ProgressHandle handle) throws IOException {
         URL u;
         try {
@@ -73,7 +81,19 @@ public class SiteHelper {
             return;
         }
         handle.progress(Bundle.MSG_Progress2());
-        unZipFile(u.openStream(), root, handle);
+        InputStream is;
+        try {
+            is = u.openStream();
+        } catch (FileNotFoundException ex) {
+            LOGGER.log(Level.INFO, "could not open stream for "+u, ex);
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.ERR_NotFoundError(url)));
+            return;
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "could not open stream for "+u, ex);
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.ERR_StreamError()));
+            return;
+        }
+        unZipFile(is, root, handle);
     }
     
     private static void unZipFile(InputStream source, FileObject projectRoot, ProgressHandle handle) throws IOException {
