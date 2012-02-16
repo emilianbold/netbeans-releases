@@ -156,6 +156,17 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         Runnable task = ContextAnalyzer.createTask(lookup, EncapsulateFieldUI.factory(lookup));
         ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.encapsulateFieldsAction()));
     }
+
+    @Override
+    public boolean canIntroduceLocalExtension(Lookup lookup) {
+        return ContextAnalyzer.canRefactorSingle(lookup, true);
+    }
+
+    @Override
+    public void doIntroduceLocalExtension(Lookup lookup) {
+        Runnable task = ContextAnalyzer.createTask(lookup, IntroduceLocalExtensionUI.factory());
+        ScanDialog.runWhenScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.encapsulateFieldsAction()));
+    }
     
     @Override
     public boolean canInline(Lookup lookup) {

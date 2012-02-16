@@ -148,4 +148,7 @@ public final class JavaRefactoringActionsFactory {
         return IntroduceParameterAction.findObject(IntroduceParameterAction.class, true);
     }
     
+    public static ContextAwareAction introduceLocalExtensionAction() {
+        return IntroduceLocalExtensionAction.findObject(IntroduceLocalExtensionAction.class, true);
+    }
 }
