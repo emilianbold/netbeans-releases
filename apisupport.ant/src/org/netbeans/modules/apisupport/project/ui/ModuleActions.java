@@ -679,11 +679,11 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                 if (findBuildXml(project) == null) {
                     return false;
                 }
-                if (Boolean.parseBoolean(project.evaluator().getProperty("is.autoload")) || Boolean.parseBoolean(project.evaluator().getProperty("is.eager"))) { // NOI18N
-                    return false; // #86395
-                }
                 if (!inIDE) {
                     return project.getTestUserDirLockFile().isFile();
+                }
+                if (Boolean.parseBoolean(project.evaluator().getProperty("is.autoload")) || Boolean.parseBoolean(project.evaluator().getProperty("is.eager"))) {
+                    return false; // #86395 but #208415
                 }
                 NbModuleType type = project.getModuleType();
                 if (type == NbModuleType.NETBEANS_ORG) {

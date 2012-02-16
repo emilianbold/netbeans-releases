@@ -81,7 +81,9 @@ public class JavaProjectSettings {
      * Returns how the package view should be displayed.
      */
     public static PackageViewType getPackageViewType() {
-        return PackageViewType.values()[prefs().getInt(PROP_PACKAGE_VIEW_TYPE, PackageViewType.PACKAGES.ordinal())];
+        int type = prefs().getInt(PROP_PACKAGE_VIEW_TYPE, -1);
+        PackageViewType[] types = PackageViewType.values();
+        return type >= 0 && type < types.length ? types[type] : PackageViewType.PACKAGES;
     }
 
     /**
