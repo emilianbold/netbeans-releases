@@ -45,6 +45,8 @@ import java.io.IOException;
 import java.util.*;
 import javax.lang.model.element.*;
 import javax.swing.text.Document;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -57,6 +59,10 @@ import org.netbeans.modules.j2ee.persistence.editor.CompletionContext;
 import org.netbeans.modules.j2ee.persistence.editor.JPAEditorUtil;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
+import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
+import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourceProvider;
+import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Node;
 
@@ -420,6 +426,17 @@ public abstract class Completor {
             }
             if(values == null && provider != null){
                 values = allKeyAndValues.get(provider).get(propertyName);
+                if(values == null && propertyName.equals(provider.getJdbcUrl())){
+   
+                    //always allow this property completion, even for container managed(it's in jta-data-source  tag, not in properties)
+                    DatabaseConnection[] cns = ConnectionManager.getDefault().getConnections();
+                    for(DatabaseConnection cn:cns){
+                        JPACompletionItem item = JPACompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
+                                cn.getDatabaseURL());
+                        results.add(item);
+                    }
+                    results.add(new JPACompletionItem.AddConnectionElementItem());
+                }
             }
             if(values != null)for (int i = 0; i < values.length; i ++) {
                     JPACompletionItem item = JPACompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
@@ -492,7 +509,7 @@ public abstract class Completor {
         String name = null;
         while(tag!=null && !"property".equals(tag.getNodeName()))tag = tag.getParentNode();//NOI18N
         if(tag != null){
-             Node nmN = tag.getAttributes().getNamedItem("name");
+             Node nmN = tag.getAttributes().getNamedItem("name");//NOI18N
              if(nmN != null){
                  name = nmN.getNodeValue();
              }
