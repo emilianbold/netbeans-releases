@@ -61,7 +61,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.queries.SourceForBinaryQuery.Result2;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -70,6 +73,7 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
@@ -102,6 +106,12 @@ public class RunFindBugs implements Analyzer {
                     } catch (URISyntaxException ex) {
                         Exceptions.printStackTrace(ex);
                     }
+                }
+
+                ClassPath compile = ClassPath.getClassPath(sr, ClassPath.COMPILE);
+
+                for (FileObject compileRoot : compile.getRoots()) {
+                    addCompileRoot(p, compileRoot);
                 }
 
                 r.setPriorityThreshold(Integer.MAX_VALUE);
@@ -190,5 +200,37 @@ public class RunFindBugs implements Analyzer {
         }
 
         return false;
+    }
+
+    private void addCompileRoot(Project p, FileObject compileRoot) {
+        Result2 sources = SourceForBinaryQuery.findSourceRoots2(compileRoot.toURL());
+
+        if (sources.preferSources()) {
+            //XXX:
+            if (sources.getRoots().length == 0) {
+                addAuxCPEntry(p, compileRoot.toURL());
+            } else {
+                for (FileObject source : sources.getRoots()) {
+                    addCompileRootAsSource(p, source);
+                }
+            }
+        } else {
+            addAuxCPEntry(p, compileRoot.toURL());
+        }
+    }
+
+    private void addCompileRootAsSource(Project p, FileObject source) {
+        for (URL br : BinaryForSourceQuery.findBinaryRoots(source.toURL()).getRoots()) {
+            addAuxCPEntry(p, br);
+        }
+    }
+
+    private void addAuxCPEntry(Project p, URL url) {
+        //XXX: need more reliable way
+        File f = FileUtil.archiveOrDirForURL(url);
+
+        if (f == null) return ;
+
+        p.addAuxClasspathEntry(f.getAbsolutePath());
     }
 }
