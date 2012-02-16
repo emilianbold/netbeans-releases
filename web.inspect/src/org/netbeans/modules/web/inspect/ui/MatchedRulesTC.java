@@ -42,6 +42,9 @@
 package org.netbeans.modules.web.inspect.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Font;
+import javax.swing.JScrollPane;
+import javax.swing.UIManager;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.windows.TopComponent;
@@ -54,7 +57,8 @@ import org.openide.util.NbBundle.Messages;
  */
 @TopComponent.Description(
         preferredID = MatchedRulesTC.ID,
-        persistenceType = TopComponent.PERSISTENCE_ALWAYS)
+        persistenceType = TopComponent.PERSISTENCE_ALWAYS,
+        iconBase = MatchedRulesTC.ICON_BASE)
 @TopComponent.Registration(
         mode = "properties", // NOI18N
         openAtStartup = false)
@@ -73,6 +77,8 @@ import org.openide.util.NbBundle.Messages;
     "HINT_MatchedRulesTC=This window shows matched style rules of an element." // NOI18N
 })
 public final class MatchedRulesTC extends TopComponent {
+    /** Icon base of the {@code TopComponent}. */
+    static final String ICON_BASE = "org/netbeans/modules/web/inspect/resources/matchedRules.png"; // NOI18N
     /** TopComponent ID. */
     public static final String ID = "MatchedRulesTC"; // NOI18N
     /** Panel shown in this {@code TopComponent}. */
@@ -93,7 +99,14 @@ public final class MatchedRulesTC extends TopComponent {
     private void initComponents() {
         setLayout(new BorderLayout());
         matchedRulesPanel = new MatchedRulesPanel();
-        add(matchedRulesPanel);
+        JScrollPane scrollPane = new JScrollPane();
+        scrollPane.setBorder(null);
+        scrollPane.setViewportView(matchedRulesPanel);
+        Font font = UIManager.getFont("Label.font"); // NOI18N
+        int unitIncrement = (int)(font.getSize()*1.5);
+        scrollPane.getHorizontalScrollBar().setUnitIncrement(unitIncrement);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(unitIncrement);
+        add(scrollPane);
     }
 
 }

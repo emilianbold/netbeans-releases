@@ -41,20 +41,18 @@
  */
 package org.netbeans.modules.web.inspect.ui;
 
-import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
+import java.util.*;
+import javax.swing.*;
 import org.netbeans.modules.web.inspect.ElementHandle;
 import org.netbeans.modules.web.inspect.PageModel;
+import org.openide.util.NbBundle;
 
 /**
- * Panel that displays CSS/style rules matching an element.
+ * Panel that displays CSS/style rules influencing an element.
  *
  * @author Jan Stola
  */
@@ -62,16 +60,12 @@ public class MatchedRulesPanel extends JPanel {
     /** Page model used by this panel. */
     private PageModel pageModel = PageModel.getDefault();
 
-    private JTextArea area;
-
     /**
      * Creates a new {@code MatchedRulesPanel}.
      */
     public MatchedRulesPanel() {
-        setLayout(new BorderLayout());
-        area = new JTextArea();
-        area.setEditable(false);
-        add(area);
+        setBackground(UIManager.getColor("TextArea.background")); // NOI18N
+        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
         pageModel.addPropertyChangeListener(createModelListener());
         update();
     }
@@ -80,36 +74,54 @@ public class MatchedRulesPanel extends JPanel {
      * Updates the data shown in the panel.
      */
     private void update() {
-        final String text;
         Collection<ElementHandle> selection = pageModel.getSelectedElements();
-        if (selection.isEmpty()) {
-            text = "nothing selected";
-        } else if (selection.size() > 1) {
-            text = "multi-selection";
-        } else {
-            ElementHandle handle = selection.iterator().next();
-            List<PageModel.RuleInfo> rules = pageModel.getMatchedRules(handle);
-            if (rules.isEmpty()) {
-                text = "no matching rules";
-            } else {
-                StringBuilder sb = new StringBuilder();
-                for (int i=rules.size()-1; i>=0; i--) {
-                    PageModel.RuleInfo rule = rules.get(i);
-                    String source = rule.getSourceURL();
-                    sb.append(source == null ? "embedded stylesheet" : source).append('\n');
-                    sb.append(rule.getSelector()).append(" {\n");
-                    for (Map.Entry<String,String> entry : rule.getStyle().entrySet()) {
-                        sb.append("    ").append(entry.getKey()).append(": ").append(entry.getValue()).append(";\n");
-                    }
-                    sb.append("}\n\n");
-                }
-                text = sb.toString();
+        final int selectionSize = selection.size();
+        final Map<ElementHandle, List<PageModel.RuleInfo>> ruleData = new IdentityHashMap<ElementHandle, List<PageModel.RuleInfo>>();
+        final ElementHandle selectedElement;
+        if (selectionSize == 1) {
+            // Pre-compute matched rules
+            selectedElement = selection.iterator().next();
+            ElementHandle element = selectedElement;
+            while (element != null) {
+                List<PageModel.RuleInfo> rules = pageModel.getMatchedRules(element);
+                ruleData.put(element, rules);
+                element = element.getParent();
             }
+        } else {
+            selectedElement = null;
         }
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                area.setText(text);
+                removeAll();
+                if (selectionSize == 1) {
+                    ElementHandle element = selectedElement;
+                    boolean first = true;
+                    while (element != null) {
+                        String title;
+                        if (first) {
+                            title = NbBundle.getMessage(MatchedRulesPanel.class, "MatchedRulesPanel.matchedRules"); // NOI18N
+                        } else {
+                            String tagName = element.getTagName().toLowerCase();
+                            title = NbBundle.getMessage(MatchedRulesPanel.class, "MatchedRulesPanel.inheritedFrom", tagName); // NOI18N
+                        }
+                        List<PageModel.RuleInfo> rules = ruleData.get(element);
+                        if (first || !rules.isEmpty()) {
+                            JPanel elementPanel = new MatchedRulesElementPanel(element, rules, title, true);
+                            elementPanel.setAlignmentX(0);
+                            add(elementPanel);
+                        }
+                        element = element.getParent();
+                        first = false;
+                    }
+                } else {
+                    String key = (selectionSize == 0) ? "MatchedRulesPanel.emptySelection" : "MatchedRulesPanel.multiSelection";
+                    String message = NbBundle.getMessage(MatchedRulesPanel.class, key); // NOI18N
+                    JLabel label = createMessageLabel(message);
+                    add(label);
+                }
+                revalidate();
+                repaint();
             }
         });
     }
@@ -129,6 +141,21 @@ public class MatchedRulesPanel extends JPanel {
                 }
             }
         };
+    }
+
+    /**
+     * Creates a label for the given message.
+     * 
+     * @param message message to show in the label.
+     * @return label for the given message.
+     */
+    private JLabel createMessageLabel(String message) {
+        JLabel label = new JLabel(message);
+        label.setEnabled(false);
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setVerticalAlignment(SwingConstants.CENTER);
+        label.setMaximumSize(new Dimension(Short.MAX_VALUE, Short.MAX_VALUE));
+        return label;
     }
 
 }
