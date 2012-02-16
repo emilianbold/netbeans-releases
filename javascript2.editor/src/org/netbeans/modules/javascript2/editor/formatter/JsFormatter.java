@@ -231,11 +231,15 @@ public class JsFormatter implements Formatter {
         }
 
         try {
-            assert SAFE_DELETE_PATTERN.matcher(oldString).matches()
-                    : oldString;
-            doc.remove(offset + offsetDiff, oldString.length());
-            doc.insertString(offset + offsetDiff, newString, null);
-            return offsetDiff + (newString.length() - oldString.length());
+            if (SAFE_DELETE_PATTERN.matcher(oldString).matches()) {
+                doc.remove(offset + offsetDiff, oldString.length());
+                doc.insertString(offset + offsetDiff, newString, null);
+                return offsetDiff + (newString.length() - oldString.length());
+            } else {
+                LOGGER.log(Level.WARNING, "Tried to remove non empty text: {0}",
+                        oldString);
+                return offsetDiff;
+            }
         } catch (BadLocationException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
@@ -244,10 +248,14 @@ public class JsFormatter implements Formatter {
 
     private int remove(BaseDocument doc, int offset, int length, int offsetDiff) {
         try {
-            assert SAFE_DELETE_PATTERN.matcher(doc.getText(offset + offsetDiff, length)).matches()
-                    : doc.getText(offset + offsetDiff, length);
-            doc.remove(offset + offsetDiff, length);
-            return offsetDiff - length;
+            if (SAFE_DELETE_PATTERN.matcher(doc.getText(offset + offsetDiff, length)).matches()) {
+                doc.remove(offset + offsetDiff, length);
+                return offsetDiff - length;
+            } else {
+                LOGGER.log(Level.WARNING, "Tried to remove non empty text: {0}",
+                        doc.getText(offset + offsetDiff, length));
+                return offsetDiff;
+            }
         } catch (BadLocationException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
