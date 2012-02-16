@@ -89,8 +89,13 @@ public class JsFormatter implements Formatter {
 
             @Override
             public void run() {
+                long startTime = System.nanoTime();
+
                 FormatTokenStream tokenStream = FormatTokenStream.create(LexUtilities.getJsTokenSequence(compilationInfo.getSnapshot()),
                         context.startOffset(), context.endOffset());
+                LOGGER.log(Level.INFO, "Format token stream creation: {0} ms", (System.nanoTime() - startTime) / 1000000);
+
+                startTime = System.nanoTime();
                 FormatVisitor visitor = new FormatVisitor(tokenStream,
                         LexUtilities.getJsTokenSequence(compilationInfo.getSnapshot()));
 
@@ -98,7 +103,9 @@ public class JsFormatter implements Formatter {
                 if (root != null) {
                     root.accept(visitor);
                 }
+                LOGGER.log(Level.INFO, "Format visitor: {0} ms", (System.nanoTime() - startTime) / 1000000);
 
+                startTime = System.nanoTime();
                 int offsetDiff = 0;
                 int indentationLevel = 0;
 
@@ -174,6 +181,7 @@ public class JsFormatter implements Formatter {
 
                     indentationLevel = updateIndentationLevel(token, indentationLevel);
                 }
+                LOGGER.log(Level.INFO, "Formatting changes: {0} ms", (System.nanoTime() - startTime) / 1000000);
             }
         });
     }
