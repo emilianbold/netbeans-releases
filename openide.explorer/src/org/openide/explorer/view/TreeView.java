@@ -448,19 +448,17 @@ public abstract class TreeView extends JScrollPane {
     }
 
     /**
-     * Get whether the quick search feature enable or not.
-     * Defaults enable (false).
+     * Get whether the quick search feature is enabled or not.
+     * Default is enabled (true).
      * @since 6.33
-     * @return true if quick search feature enabled, false
-     * otherwise.
+     * @return true if quick search feature is enabled, false otherwise.
      */
     public boolean isQuickSearchAllowed() {
         return allowedQuickSearch;
     }
     
     /**
-     * Set whether the quick search feature enable or not.
-     * Defaults enable (false).
+     * Set whether the quick search feature is enabled or not.
      * @since 6.33
      * @param allowedQuickSearch <code>true</code> if quick search shall be enabled
      */

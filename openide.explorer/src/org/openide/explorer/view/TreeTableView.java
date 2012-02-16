@@ -251,6 +251,8 @@ public class TreeTableView extends BeanTreeView {
     private TreeColumnProperty treeColumnProperty = new TreeColumnProperty();
     private int treeColumnWidth;
     private Component treeTableParent = null;
+    private QuickSearch quickSearch;
+    private Component searchpanel;
 
     /** Create TreeTableView with default NodeTableModel
      */
@@ -262,6 +264,7 @@ public class TreeTableView extends BeanTreeView {
      * @param ntm node table model
      */
     public TreeTableView(NodeTableModel ntm) {
+        setLayout(new SearchScrollPaneLayout());
         tableModel = ntm;
 
         initializeTreeTable();
@@ -469,14 +472,52 @@ public class TreeTableView extends BeanTreeView {
     @Override
     void initializeTree() {
     }
+    
+    private final Object searchConstraints = new Object();
 
+    @Override
+    public void add(Component comp, Object constraints) {
+        if (constraints == searchConstraints) {
+            searchpanel = comp;
+            constraints = null;
+        }
+        super.add(comp, constraints);
+    }
+
+    @Override
+    public void remove(Component comp) {
+        if (comp == searchpanel) {
+            searchpanel = null;
+        }
+        super.remove(comp);
+    }
+    
     /** Initialize tree and treeTable.
      */
     private void initializeTreeTable() {
         treeModel = createModel();
-        treeTable = new TreeTable(treeModel, tableModel);
+        TreeTable tt = new TreeTable(treeModel, tableModel);
+        treeTable = tt;
         tree = ((TreeTable) treeTable).getTree();
-
+        quickSearch = QuickSearch.attach(this, searchConstraints);
+        TableQuickSearchSupport tqss = new TableQuickSearchSupport(tt, tt, tt.getQuickSearchSettings());
+        quickSearch.addQuickSearchListener(tqss);
+        tt.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                quickSearch.processKeyEvent(e);
+            }
+            @Override
+            public void keyPressed(KeyEvent e) {
+                quickSearch.processKeyEvent(e);
+            }
+            @Override
+            public void keyReleased(KeyEvent e) {
+                quickSearch.processKeyEvent(e);
+            }
+        });
+        quickSearch.setPopupMenu(tqss.createSearchPopupMenu());
+        
         defaultHeaderRenderer = treeTable.getTableHeader().getDefaultRenderer();
         treeTable.getTableHeader().setDefaultRenderer(new SortingHeaderRenderer());
 
@@ -635,6 +676,16 @@ public class TreeTableView extends BeanTreeView {
             defaultTreeActionListener = null;
             treeTable.unregisterKeyboardAction(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false));
         }
+    }
+
+    @Override
+    public boolean isQuickSearchAllowed() {
+        return quickSearch.isEnabled();
+    }
+    
+    @Override
+    public void setQuickSearchAllowed(boolean allowedQuickSearch) {
+        quickSearch.setEnabled(allowedQuickSearch);
     }
 
     /** Set columns.
@@ -1238,6 +1289,42 @@ public class TreeTableView extends BeanTreeView {
         public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
             return 10;
         }
+    }
+
+    @Override
+    public Insets getInsets() {
+        Insets res = getInnerInsets();
+        res = new Insets(res.top, res.left, res.bottom, res.right);
+        if( null != searchpanel && searchpanel.isVisible() ) {
+            res.bottom += searchpanel.getPreferredSize().height;
+        }
+        return res;
+    }
+
+    private Insets getInnerInsets() {
+        Insets res = super.getInsets();
+        if( null == res ) {
+            res = new Insets(0,0,0,0);
+        }
+        return res;
+    }
+
+    private class SearchScrollPaneLayout extends ScrollPaneLayout {
+
+        public SearchScrollPaneLayout() {
+        }
+        
+        @Override
+        public void layoutContainer( Container parent ) {
+            super.layoutContainer(parent);
+            if( null != searchpanel && searchpanel.isVisible() ) {
+                Insets innerInsets = getInnerInsets();
+                Dimension prefSize = searchpanel.getPreferredSize();
+                searchpanel.setBounds(innerInsets.left, parent.getHeight()-innerInsets.bottom-prefSize.height,
+                        parent.getWidth()-innerInsets.left-innerInsets.right, prefSize.height);
+            }
+        }
+        
     }
 
     /** Invokes default action.
