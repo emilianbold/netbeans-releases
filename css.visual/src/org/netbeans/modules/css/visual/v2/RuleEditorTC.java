@@ -39,51 +39,63 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api;
+package org.netbeans.modules.css.visual.v2;
 
-//import java.util.List;
-
-import java.util.Iterator;
+import java.awt.BorderLayout;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 /**
- *
- * @author marekfukala
+ * 
+ * @author mfukala@netbeans.org
  */
-public interface Element {
+@TopComponent.Description(
+        preferredID = RuleEditorTC.ID,
+        persistenceType = TopComponent.PERSISTENCE_ALWAYS,
+        iconBase="org/netbeans/modules/css/visual/resources/css_rule.png") // NOI18N
+@TopComponent.Registration(
+        mode = "properties", // NOI18N
+        position = 900,
+        openAtStartup = false)
+@ActionID(
+        category = "Window", // NOI18N
+        id = "org.netbeans.modules.css.visual.v2.RuleEditorTC") // NOI18N
+@ActionReference(
+        path = "Menu/Window/Navigator", // NOI18N
+        position = 900)
+@TopComponent.OpenActionRegistration(
+        displayName = "#CTL_RuleEditorAction", // NOI18N
+        preferredID = RuleEditorTC.ID)
+@NbBundle.Messages({
+    "CTL_RuleEditorAction=Rule Editor", // NOI18N
+    "CTL_RuleEditorTC=Rule Editor", // NOI18N
+    "HINT_RuleEditorTC=This window is an editor of CSS rule properties" // NOI18N
+})
+public final class RuleEditorTC extends TopComponent {
+    /** TopComponent ID. */
+    public static final String ID = "RuleEditorTC"; // NOI18N
+    /** Panel shown in this {@code TopComponent}. */
+    private RuleEditorPanel panel;
 
-    public int addElement(Element e);
+    public RuleEditorTC() {
+        initComponents();
+        setName(Bundle.CTL_RuleEditorTC());
+        setToolTipText(Bundle.HINT_RuleEditorTC());
+    }
 
-    public Element removeElement(int index);
-    
-    public void insertElement(int index, Element element);
-
-    public int getElementsCount();
-    
-    public int getElementIndex(Element e);
-
-    public Element getElementAt(int index);
-    
-    public Element setElementAt(int index, Element e);
-    
-    public Iterator<Element> childrenIterator();
-
-    public void addElementListener(ElementListener listener);
-    
-    public void removeElementListener(ElementListener listener);
- 
-    //XXX what should happen to the element offsets when the model is changed
-    //by adding/removing some element. Clearly the original offsets become invalid then.
+    public void setContext(RuleContext ruleContext) {
+        panel.setContext(ruleContext);
+    }
     
     /**
-     * @return offset of the element start in the source code. 
-     * May return -1 if the element has been added to the model.
+     * Initializes the components in this {@code TopComponent}.
      */
-    public int getStartOffset();
-    
-    /**
-     * @return offset of the element end in the source code. 
-     * May return -1 if the element has been added to the model.
-     */
-    public int getEndOffset();
-    
+    private void initComponents() {
+        setLayout(new BorderLayout());
+        panel = new RuleEditorPanel();
+        add(panel, BorderLayout.CENTER);
+    }
+
 }

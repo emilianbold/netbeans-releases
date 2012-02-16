@@ -1006,7 +1006,7 @@ public class Css3ParserTest extends CssTestBase {
                 + "rule/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/cssId");
         assertNotNull(node);
         
-                
+
     }
     
     public void testGenericAtRule() {

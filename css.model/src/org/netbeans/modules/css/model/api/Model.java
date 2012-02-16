@@ -162,6 +162,7 @@ public final class Model {
         }
     }
 
+    //TODO move to the ModelTask.run() as a parameter
     public StyleSheet getStyleSheet() {
         checkModelAccess();
         return styleSheet;

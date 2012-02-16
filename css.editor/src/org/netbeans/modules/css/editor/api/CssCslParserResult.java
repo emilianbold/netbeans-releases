@@ -51,6 +51,7 @@ import org.netbeans.modules.css.editor.csl.CssAnalyser;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
+import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -62,6 +63,8 @@ public class CssCslParserResult extends ParserResult {
     private CssParserResult wrappedCssParserResult;
     private final List<Error> errors = new ArrayList<Error>();
     private AtomicBoolean analyzerErrorsComputed = new AtomicBoolean(false);
+    
+    private Model modelV2; 
 
     public CssCslParserResult(Snapshot snapshot) {
         super(snapshot);
@@ -83,6 +86,13 @@ public class CssCslParserResult extends ParserResult {
 
     public Node getParseTree() {
         return wrappedCssParserResult.getParseTree();
+    }
+    
+    public synchronized Model getModelV2() {
+        if(modelV2 == null) {
+            modelV2 = new Model(getWrappedCssParserResult());
+        }
+        return modelV2;
     }
 
     @Override
