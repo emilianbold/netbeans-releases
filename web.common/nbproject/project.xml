@@ -6,14 +6,32 @@
             <code-name-base>org.netbeans.modules.web.common</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.core</code-name-base>                
+                    <code-name-base>org.netbeans.api.annotations.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.13</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.api.progress</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.27</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.core</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
                         <specification-version>3.29</specification-version>
-                    </run-dependency>                    
-                </dependency>                                
+                    </run-dependency>
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
                     <build-prerequisite/>
@@ -22,7 +40,7 @@
                         <release-version>1</release-version>
                         <specification-version>1.25</specification-version>
                     </run-dependency>
-                </dependency>                
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.lexer</code-name-base>
                     <build-prerequisite/>
@@ -195,6 +213,7 @@
                 <package>org.netbeans.modules.web.common.refactoring</package>
                 <package>org.netbeans.modules.web.common.spi</package>
                 <package>org.netbeans.modules.web.common.spi.browser</package>
+                <package>org.netbeans.modules.web.common.spi.clientproject</package>
                 <package>org.netbeans.modules.web.common.taginfo</package>
                 <package>org.netbeans.modules.web.common.reload</package>
                 <package>org.netbeans.modules.web.common.websocket</package>

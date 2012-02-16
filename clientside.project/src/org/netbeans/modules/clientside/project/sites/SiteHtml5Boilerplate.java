@@ -39,74 +39,80 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.clientside.project.ui.wizard;
+package org.netbeans.modules.clientside.project.sites;
 
-import java.awt.Component;
+import java.awt.BorderLayout;
+import java.io.IOException;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
-import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
-import org.openide.util.ChangeSupport;
-import org.openide.util.HelpCtx;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.web.common.spi.clientproject.SiteTemplateCustomizer;
+import org.netbeans.modules.web.common.spi.clientproject.SiteTemplateImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Panel just asking for basic info.
+ *
  */
-public class ClientSideProjectWizardPanel implements WizardDescriptor.Panel,
-        WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
+@NbBundle.Messages({"LBL_Name=HTML5 Boilerplate",
+        "LBL_Description=Site template from html5boilerplate.com. Version: 3.0.1"})
+@ServiceProvider(service=SiteTemplateImplementation.class)
+public class SiteHtml5Boilerplate implements SiteTemplateImplementation {
 
-    private WizardDescriptor wizardDescriptor;
-    private ClientSideProjectPanelVisual component;
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-
-    public ClientSideProjectWizardPanel() {
+    @Override
+    public String getName() {
+        return Bundle.LBL_Name();
     }
 
-    public Component getComponent() {
-        if (component == null) {
-            component = new ClientSideProjectPanelVisual(this);
-            component.setName(NbBundle.getMessage(ClientSideProjectWizardPanel.class, "LBL_CreateProjectStep"));
+    @Override
+    public SiteTemplateCustomizer getCustomizer() {
+        return new SiteTemplateCustomizer() {
+
+            @Override
+            public void addChangeListener(ChangeListener listener) {
+            }
+
+            @Override
+            public void removeChangeListener(ChangeListener listener) {
+            }
+
+            @Override
+            public JComponent getComponent() {
+                JPanel p = new JPanel(new BorderLayout());
+                p.add(new JLabel(Bundle.LBL_Description()), BorderLayout.NORTH);
+                return p;
+            }
+
+            @Override
+            public boolean isValid() {
+                return true;
+            }
+
+            @Override
+            public String getErrorMessage() {
+                return null;
+            }
+
+            @Override
+            public String getWarningMessage() {
+                return null;
+            }
+        };
+    }
+
+    @Override
+    public void apply(FileObject p, ProgressHandle handle) {
+        try {
+            SiteHelper.install("https://github.com/h5bp/html5-boilerplate/zipball/v3.0.1", p, handle);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (Throwable ex) {
+            Exceptions.printStackTrace(ex);
         }
-        return component;
     }
-
-    public HelpCtx getHelp() {
-        return new HelpCtx(ClientSideProjectWizardPanel.class);
-    }
-
-    public boolean isValid() {
-        getComponent();
-        return component.valid(wizardDescriptor);
-    }
-
-    public final void addChangeListener(ChangeListener l) {
-        changeSupport.addChangeListener(l);
-    }
-
-    public final void removeChangeListener(ChangeListener l) {
-        changeSupport.removeChangeListener(l);
-    }
-
-    protected final void fireChangeEvent() {
-        changeSupport.fireChange();
-    }
-
-    public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor) settings;
-        component.read(wizardDescriptor);
-    }
-
-    public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor) settings;
-        component.store(d);
-    }
-
-    public boolean isFinishPanel() {
-        return true;
-    }
-
-    public void validate() throws WizardValidationException {
-        getComponent();
-        component.validate(wizardDescriptor);
-    }
+    
 }

@@ -43,70 +43,85 @@ package org.netbeans.modules.clientside.project.ui.wizard;
 
 import java.awt.Component;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- * Panel just asking for basic info.
+ *
  */
-public class ClientSideProjectWizardPanel implements WizardDescriptor.Panel,
+public class SiteTemplateWizardPanel implements WizardDescriptor.Panel,
         WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
 
+    private SiteTemplateWizard component;
     private WizardDescriptor wizardDescriptor;
-    private ClientSideProjectPanelVisual component;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    
 
-    public ClientSideProjectWizardPanel() {
-    }
-
+    @Override
     public Component getComponent() {
         if (component == null) {
-            component = new ClientSideProjectPanelVisual(this);
-            component.setName(NbBundle.getMessage(ClientSideProjectWizardPanel.class, "LBL_CreateProjectStep"));
+            component = new SiteTemplateWizard(this);
+            component.setName(NbBundle.getMessage(SiteTemplateWizard.class, "LBL_ChooseSiteStep"));
         }
         return component;
     }
 
+    @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(ClientSideProjectWizardPanel.class);
+        return new HelpCtx(SiteTemplateWizard.class);
     }
 
+    @Override
+    public void readSettings(Object settings) {
+        wizardDescriptor = (WizardDescriptor) settings;
+        component.read(wizardDescriptor);
+    }
+
+    @Override
+    public void storeSettings(Object settings) {
+        WizardDescriptor d = (WizardDescriptor) settings;
+        component.store(d);
+    }
+
+    @Override
     public boolean isValid() {
         getComponent();
         return component.valid(wizardDescriptor);
     }
 
-    public final void addChangeListener(ChangeListener l) {
+    @Override
+    public void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
 
-    public final void removeChangeListener(ChangeListener l) {
+    @Override
+    public void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
 
     protected final void fireChangeEvent() {
         changeSupport.fireChange();
     }
-
-    public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor) settings;
-        component.read(wizardDescriptor);
-    }
-
-    public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor) settings;
-        component.store(d);
-    }
-
-    public boolean isFinishPanel() {
-        return true;
-    }
-
+    
+    @Override
     public void validate() throws WizardValidationException {
         getComponent();
         component.validate(wizardDescriptor);
+    }
+
+    @Override
+    public boolean isFinishPanel() {
+        return true;
+    }
+    
+    public void apply(FileObject p, ProgressHandle handle) {
+        if (component != null) {
+            component.apply(p, handle);
+        }
     }
 }

@@ -42,49 +42,36 @@
 package org.netbeans.modules.clientside.project.ui.wizard;
 
 import java.awt.Component;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.MessageFormat;
-import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.clientside.project.ClientSideProjectUtilities;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
-import org.openide.xml.XMLUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 @TemplateRegistration(folder = "Project/ClientSide", displayName = "#ClientSideProject_displayName", 
         description = "ClientSideProjectDescription.html", 
         iconBase = "org/netbeans/modules/clientside/project/ui/resources/projecticon.png" )
-@Messages("ClientSideProject_displayName=Client Side JavaScript Application")
-public class ClientSideProjectWizardIterator implements WizardDescriptor./*
-         * Progress
-         */InstantiatingIterator {
+@Messages({"ClientSideProject_displayName=Client Side JavaScript Application",
+            "MSG_Progress1=Creating project"})
+public class ClientSideProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 
     private int index;
     private WizardDescriptor.Panel[] panels;
     private WizardDescriptor wiz;
+    
+    private SiteTemplateWizardPanel sitesPanel;
 
     public ClientSideProjectWizardIterator() {
     }
@@ -94,21 +81,23 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor./*
     }
 
     private WizardDescriptor.Panel[] createPanels() {
+        sitesPanel = new SiteTemplateWizardPanel();
         return new WizardDescriptor.Panel[]{
-                    new ClientSideProjectWizardPanel(),};
+                    new ClientSideProjectWizardPanel(),
+                    sitesPanel,
+        };
     }
 
     private String[] createSteps() {
         return new String[]{
-                    NbBundle.getMessage(ClientSideProjectWizardIterator.class, "LBL_CreateProjectStep")
+                    NbBundle.getMessage(ClientSideProjectWizardIterator.class, "LBL_CreateProjectStep"),
+                    NbBundle.getMessage(ClientSideProjectWizardIterator.class, "LBL_ChooseSiteStep"),
                 };
     }
 
-    public Set/*
-             * <FileObject>
-             */ instantiate(/*
-             * ProgressHandle handle
-             */) throws IOException {
+    public Set instantiate(ProgressHandle handle) throws IOException {
+        handle.start();
+        handle.progress(Bundle.MSG_Progress1());
         Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
         File dirF = FileUtil.normalizeFile((File) wiz.getProperty("projdir"));
         String name = (String) wiz.getProperty("name");
@@ -117,21 +106,23 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor./*
         ClientSideProjectUtilities.setupProject(dir, name);
         // Always open top dir as a project:
         resultSet.add(dir);
-//        // Look for nested projects to open as well:
-//        Enumeration<? extends FileObject> e = dir.getFolders(true);
-//        while (e.hasMoreElements()) {
-//            FileObject subfolder = e.nextElement();
-//            if (ProjectManager.getDefault().isProject(subfolder)) {
-//                resultSet.add(subfolder);
-//            }
-//        }
+
+        if (index >= 1) {
+            sitesPanel.apply(dir, handle);
+        }
 
         File parent = dirF.getParentFile();
         if (parent != null && parent.exists()) {
             ProjectChooser.setProjectsFolder(parent);
         }
 
+        handle.finish();
         return resultSet;
+    }
+
+    @Override
+    public Set instantiate() throws IOException {
+        throw new UnsupportedOperationException("never implemented - use progress one");
     }
 
     public void initialize(WizardDescriptor wiz) {
@@ -204,65 +195,4 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor./*
     public final void removeChangeListener(ChangeListener l) {
     }
 
-//    private static void unZipFile(InputStream source, FileObject projectRoot) throws IOException {
-//        try {
-//            ZipInputStream str = new ZipInputStream(source);
-//            ZipEntry entry;
-//            while ((entry = str.getNextEntry()) != null) {
-//                if (entry.isDirectory()) {
-//                    FileUtil.createFolder(projectRoot, entry.getName());
-//                } else {
-//                    FileObject fo = FileUtil.createData(projectRoot, entry.getName());
-//                    if ("nbproject/project.xml".equals(entry.getName())) {
-//                        // Special handling for setting name of Ant-based projects; customize as needed:
-//                        filterProjectXML(fo, str, projectRoot.getName());
-//                    } else {
-//                        writeFile(str, fo);
-//                    }
-//                }
-//            }
-//        } finally {
-//            source.close();
-//        }
-//    }
-//
-//    private static void writeFile(ZipInputStream str, FileObject fo) throws IOException {
-//        OutputStream out = fo.getOutputStream();
-//        try {
-//            FileUtil.copy(str, out);
-//        } finally {
-//            out.close();
-//        }
-//    }
-//
-//    private static void filterProjectXML(FileObject fo, ZipInputStream str, String name) throws IOException {
-//        try {
-//            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//            FileUtil.copy(str, baos);
-//            Document doc = XMLUtil.parse(new InputSource(new ByteArrayInputStream(baos.toByteArray())), false, false, null, null);
-//            NodeList nl = doc.getDocumentElement().getElementsByTagName("name");
-//            if (nl != null) {
-//                for (int i = 0; i < nl.getLength(); i++) {
-//                    Element el = (Element) nl.item(i);
-//                    if (el.getParentNode() != null && "data".equals(el.getParentNode().getNodeName())) {
-//                        NodeList nl2 = el.getChildNodes();
-//                        if (nl2.getLength() > 0) {
-//                            nl2.item(0).setNodeValue(name);
-//                        }
-//                        break;
-//                    }
-//                }
-//            }
-//            OutputStream out = fo.getOutputStream();
-//            try {
-//                XMLUtil.write(doc, out, "UTF-8");
-//            } finally {
-//                out.close();
-//            }
-//        } catch (Exception ex) {
-//            Exceptions.printStackTrace(ex);
-//            writeFile(str, fo);
-//        }
-//
-//    }
 }
