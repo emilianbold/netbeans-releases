@@ -50,7 +50,6 @@ import org.netbeans.lib.lexer.test.RandomCharDescriptor;
 import org.netbeans.lib.lexer.test.RandomModifyDescriptor;
 import org.netbeans.lib.lexer.test.RandomTextProvider;
 import org.netbeans.lib.lexer.test.TestRandomModify;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 
 /**
  * Test the JavaScript lexer's incremental operation. Based on Java one by Mila Metelka.

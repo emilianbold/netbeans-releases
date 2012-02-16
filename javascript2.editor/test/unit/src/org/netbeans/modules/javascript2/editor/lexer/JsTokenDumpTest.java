@@ -63,7 +63,7 @@ public class JsTokenDumpTest extends NbTestCase {
     }
 
     public void testInput() throws Exception {
-        LexerTestUtilities.checkTokenDump(this, "testfiles/testInput.js.txt",
+        LexerTestUtilities.checkTokenDump(this, "testfiles/testInput.js",
                 JsTokenId.language());
     }
 }
