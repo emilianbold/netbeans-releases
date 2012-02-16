@@ -97,10 +97,18 @@ public class SiteHelper {
                     entryName = entryName.substring(stripLen);
                 }
                 if (entry.isDirectory()) {
+                    // ignore build folder from mobile boilerplate; unrelated junk IMO.
+                    if (entryName.startsWith("build")) {
+                        continue;
+                    }
                     FileUtil.createFolder(projectRoot, entryName);
                 } else {
                     // ignore internal GIT files:
                     if (entryName.startsWith(".git") || entryName.contains("/.git")) {
+                        continue;
+                    }
+                    // ignore build folder from mobile boilerplate; unrelated junk IMO.
+                    if (entryName.startsWith("build/")) {
                         continue;
                     }
                     FileObject fo = FileUtil.createData(projectRoot, entryName);
