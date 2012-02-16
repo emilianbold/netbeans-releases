@@ -43,11 +43,7 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 
 import com.oracle.nashorn.ir.*;
 import com.oracle.nashorn.parser.TokenType;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -203,8 +199,11 @@ public class ModelUtils {
     
     public static Collection<String> resolveSemiTypeOfExpression(Node expression) {
         SemiTypeResolverVisitor visitor = new SemiTypeResolverVisitor();
-        expression.accept(visitor);
-        return visitor.getSemiTypes();
+        if (expression != null) {
+            expression.accept(visitor);
+            return visitor.getSemiTypes();
+        }
+        return new HashSet<String>();
     }
     
     public static Collection<String> resolveTypeFromSemiType(JsObject object, String type) {
