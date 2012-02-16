@@ -1002,11 +1002,11 @@ public class Css3ParserTest extends CssTestBase {
         
         //check if the #header rule is properly parsed
         Node node = NodeUtil.query(result.getParseTree(),
-                "styleSheet/bodylist/bodyset|1/"
-                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/cssId");
+                "styleSheet/body/bodyItem|1/"
+                + "rule/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/cssId");
         assertNotNull(node);
         
-                
+
     }
     
     public void testGenericAtRule() {
@@ -1018,7 +1018,7 @@ public class Css3ParserTest extends CssTestBase {
         TestUtil.dumpResult(result);
         
         Node node = NodeUtil.query(result.getParseTree(),
-                "styleSheet/bodylist/bodyset/generic_at_rule");
+                "styleSheet/body/bodyItem/generic_at_rule");
                 
         assertNotNull(node);
         

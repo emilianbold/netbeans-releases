@@ -46,23 +46,26 @@ package org.netbeans.modules.css.visual;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.visual.ui.preview.CssTCController;
+import org.netbeans.modules.css.visual.v2.RuleContext;
+import org.netbeans.modules.css.visual.v2.RuleEditorTC;
+import org.netbeans.modules.css.visual.v2.RuleNode;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.netbeans.modules.parsing.spi.*;
+import org.openide.windows.WindowManager;
 
 /**
- * 
+ *
  * @author mfukala@netbeans.org
  */
 public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParserResult> {
@@ -70,13 +73,11 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
     //static, will hold the singleton reference forever but I cannot reasonably
     //hook to gsf to be able to free this once last css component closes
     private static CssTCController windowController;
-
     private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
-    
     private boolean cancelled;
 
     private static synchronized void initializeWindowController() {
-        if(windowController == null) {
+        if (windowController == null) {
             windowController = CssTCController.getDefault();
         }
     }
@@ -91,7 +92,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
             String sourceMimeType = snapshot.getSource().getMimeType();
 
             //allow to run only on .css files
-            if(sourceMimeType.equals(CSS_MIMETYPE) && mimeType.equals(CSS_MIMETYPE)) { //NOI18N
+            if (sourceMimeType.equals(CSS_MIMETYPE) && mimeType.equals(CSS_MIMETYPE)) { //NOI18N
                 return Collections.singletonList(new CssCaretAwareSourceTask());
             } else {
                 return Collections.emptyList();
@@ -115,60 +116,99 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
     }
 
     @Override
-    public void run(CssCslParserResult result, SchedulerEvent event) {
+    public void run(final CssCslParserResult result, SchedulerEvent event) {
         cancelled = false;
+
+        if (event == null) {
+            return;
+        }
+
+        if (!(event instanceof CursorMovedSchedulerEvent)) {
+            return;
+        }
+
+        final int caretOffset = ((CursorMovedSchedulerEvent) event).getCaretOffset();
+
+        //v2 >>>
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                updateCssPropertiesWindow(result, caretOffset);
+            }
+            
+        });
+        //v2 <<<
         
-        if(event == null) {
-            return ;
-        }
-
-        if(!(event instanceof CursorMovedSchedulerEvent)) {
-            return ;
-        }
-
-        int caretOffset = ((CursorMovedSchedulerEvent)event).getCaretOffset();
-
+        
         Node root = result.getParseTree();
-        if(root != null) {
+        if (root != null) {
             //find the rule scope and check if there is an error inside it
             Node leaf = NodeUtil.findNodeAtOffset(root, caretOffset);
-            if(leaf != null) {
-                Node ruleNode = leaf.type() == NodeType.rule ?
-                    leaf :
-                    NodeUtil.getAncestorByType(leaf, NodeType.rule);
-                if(ruleNode != null) {
+            if (leaf != null) {
+                Node ruleNode = leaf.type() == NodeType.rule
+                        ? leaf
+                        : NodeUtil.getAncestorByType(leaf, NodeType.rule);
+                if (ruleNode != null) {
                     //filter out warnings
                     List<? extends Error> errors = result.getDiagnostics();
-                    for(Error e : errors) {
+                    for (Error e : errors) {
 
-                        if(e.getSeverity() == Severity.ERROR) {
-                            if(ruleNode.from() <= e.getStartPosition() &&
-                                    ruleNode.to() >= e.getEndPosition()) {
+                        if (e.getSeverity() == Severity.ERROR) {
+                            if (ruleNode.from() <= e.getStartPosition()
+                                    && ruleNode.to() >= e.getEndPosition()) {
                                 //there is an error in the selected rule
                                 CssEditorSupport.getDefault().parsedWithError(result);
-                                return ;
+                                return;
                             }
                         }
                     }
-                    
-                    if(cancelled) {
-                        return ;
+
+                    if (cancelled) {
+                        return;
                     }
 
                     //no errors found in the node
-                    CssEditorSupport.getDefault().parsed(result, ((CursorMovedSchedulerEvent)event).getCaretOffset());
-                    return ;
+                    CssEditorSupport.getDefault().parsed(result, ((CursorMovedSchedulerEvent) event).getCaretOffset());
+                    return;
                 }
             }
         }
-        
-        if(cancelled) {
-            return ;
+
+        if (cancelled) {
+            return;
         }
 
         //out of rule, lets notify the editor support anyway
-        CssEditorSupport.getDefault().parsed(result, ((CursorMovedSchedulerEvent)event).getCaretOffset());
+        CssEditorSupport.getDefault().parsed(result, ((CursorMovedSchedulerEvent) event).getCaretOffset());
+
+    }
+
+    private void updateCssPropertiesWindow(final CssCslParserResult result, final int offset) {
+        Model model = result.getModelV2();
+        
+        model.runReadTask(new Model.ModelTask() {
+
+            @Override
+            public void run(Model model) {
+                Rule match = null;
+                List<Rule> rules = model.getStyleSheet().getBody().getRules();
+                for (Rule rule : rules) {
+                    if (offset > rule.getStartOffset() && offset < rule.getEndOffset()) {
+                        match = rule;
+                        break;
+                    }
+                }
+
+                RuleEditorTC cssPropertiesTC = (RuleEditorTC) WindowManager.getDefault().findTopComponent(RuleEditorTC.ID);
+                if (cssPropertiesTC == null) {
+                    return;
+                }
+
+                RuleContext context = new RuleContext(match, result.getModelV2(), result.getSnapshot());
+                cssPropertiesTC.setContext(context);
+            }
+        });
 
     }
 }
-

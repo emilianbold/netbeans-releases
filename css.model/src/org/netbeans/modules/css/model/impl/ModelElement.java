@@ -70,6 +70,16 @@ public abstract class ModelElement implements Element {
     }
 
     @Override
+    public int getStartOffset() {
+        return context != null ? context.getNode().from() : -1;
+    }
+
+    @Override
+    public int getEndOffset() {
+        return context != null ? context.getNode().to() : -1;
+    }
+    
+    @Override
     public synchronized void addElementListener(ElementListener listener) {
         if(LISTENERS == null)  {
             LISTENERS = new ArrayList<ElementListener>();

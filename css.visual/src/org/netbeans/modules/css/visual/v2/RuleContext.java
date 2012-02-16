@@ -39,51 +39,46 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api;
+package org.netbeans.modules.css.visual.v2;
 
-//import java.util.List;
-
-import java.util.Iterator;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.Rule;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  *
  * @author marekfukala
  */
-public interface Element {
+public class RuleContext {
+    
+    private Rule rule;
+    
+    private Model model;
+    
+    private Snapshot snapshot;
 
-    public int addElement(Element e);
+    public RuleContext(Rule rule, Model model, Snapshot snapshot) {
+        this.rule = rule;
+        this.model = model;
+        this.snapshot = snapshot;
+    }
 
-    public Element removeElement(int index);
+    public Rule getRule() {
+        return rule;
+    }
     
-    public void insertElement(int index, Element element);
+    public Model getModel() {
+        return model;
+    }
 
-    public int getElementsCount();
-    
-    public int getElementIndex(Element e);
+    public RuleNode getNode() {
+        return rule == null ? null : new RuleNode(snapshot, model, rule);
+    }
 
-    public Element getElementAt(int index);
+    public Snapshot getSnapshot() {
+        return snapshot;
+    }
     
-    public Element setElementAt(int index, Element e);
     
-    public Iterator<Element> childrenIterator();
-
-    public void addElementListener(ElementListener listener);
-    
-    public void removeElementListener(ElementListener listener);
- 
-    //XXX what should happen to the element offsets when the model is changed
-    //by adding/removing some element. Clearly the original offsets become invalid then.
-    
-    /**
-     * @return offset of the element start in the source code. 
-     * May return -1 if the element has been added to the model.
-     */
-    public int getStartOffset();
-    
-    /**
-     * @return offset of the element end in the source code. 
-     * May return -1 if the element has been added to the model.
-     */
-    public int getEndOffset();
     
 }

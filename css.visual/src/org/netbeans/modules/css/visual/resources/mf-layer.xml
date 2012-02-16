@@ -96,10 +96,12 @@ made subject to such option by the copyright holder.
             <folder name="Csswsgrp">
                 <file name="CssPreviewTC.wstcgrp" url="CssPreviewTCWstcgrp.xml"/>
                 <file name="StyleBuilderTC.wstcgrp" url="StyleBuilderTCwstcgrp.xml"/>
+                <file name="RuleEditorTC.wstcgrp" url="RuleEditorTC.xml"/>
             </folder>
             <file name="CssSBwsgrp.wsgrp" url="CssSBwsgrp.xml"/>
             <folder name="CssSBwsgrp">
                 <file name="StyleBuilderTC.wstcgrp" url="StyleBuilderTCwstcgrp.xml"/>
+                <file name="RuleEditorTC.wstcgrp" url="RuleEditorTC.xml"/>
             </folder>
         </folder>
     </folder>

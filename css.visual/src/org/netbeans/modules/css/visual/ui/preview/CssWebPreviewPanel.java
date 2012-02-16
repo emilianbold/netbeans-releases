@@ -59,6 +59,8 @@ import javax.swing.filechooser.FileFilter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import org.netbeans.core.browser.api.EmbeddedBrowserFactory;
@@ -87,8 +89,12 @@ public class CssWebPreviewPanel extends javax.swing.JPanel implements CssPreview
     public CssWebPreviewPanel() {
         initComponents();
         if (EmbeddedBrowserFactory.getDefault().isEnabled()) {
-            browser = EmbeddedBrowserFactory.getDefault().createEmbeddedBrowser();
-            add(browser.getComponent(), BorderLayout.CENTER);
+            try {
+                browser = EmbeddedBrowserFactory.getDefault().createEmbeddedBrowser();
+                add(browser.getComponent(), BorderLayout.CENTER);
+            }catch(RuntimeException e) {
+                Logger.getAnonymousLogger().log(Level.INFO, "Error initializing embedded browser", e);
+            }
         } else {
             // show some error panel ???
         }
