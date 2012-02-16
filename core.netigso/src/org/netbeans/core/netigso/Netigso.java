@@ -45,6 +45,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -440,7 +441,9 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             } else if (symbolicName != null) { // NOI18N
                 if (original != null) {
                     LOG.log(Level.FINE, "Updating bundle {0}", original.getLocation());
-                    original.update();
+                    FileInputStream is = new FileInputStream(m.getJarFile());
+                    original.update(is);
+                    is.close();
                     b = original;
                 } else {
                     BundleContext bc = framework.getBundleContext();
