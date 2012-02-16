@@ -40,24 +40,19 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.wsstack.jaxws.glassfish.v3;
+package org.netbeans.modules.javaee.specs.support.bridge;
 
-import org.netbeans.modules.j2ee.deployment.plugins.spi.LookupProvider;
-import org.netbeans.modules.websvc.wsstack.api.WSStack;
-import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
-import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
 
 /**
  *
  * @author mkuchtiak
+ * @author ads
  */
-public class GlassFishV3LookupProvider implements LookupProvider {
-
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        String gfRootStr = baseContext.lookup(String.class);
-        return Lookups.fixed(WSStackFactory.createWSStack(JaxWs.class ,new GlassFishV3JaxWsStack(gfRootStr), WSStack.Source.SERVER));
+public final class IdeJaxWsStack extends AbstractJaxWsStack {
+    
+    @Override
+    public WSStackVersion getVersion() {
+        return WSStackVersion.valueOf(2,1,4,0);
     }
-
 }

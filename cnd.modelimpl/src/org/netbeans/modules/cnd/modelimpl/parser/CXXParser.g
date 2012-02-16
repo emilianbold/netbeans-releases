@@ -384,12 +384,14 @@ nested_name_specifier:
 
 nested_name_specifier returns [ name_specifier_t namequal ]
     :
-        IDENT SCOPE
+        IDENT                   {action.nested_name_specifier(input.LT(0));}
+        SCOPE 
         (
             (LITERAL_template lookup_simple_template_id_nocheck SCOPE )=> LITERAL_template simple_template_id_nocheck SCOPE
         |
             (IDENT SCOPE) =>
-                IDENT SCOPE
+                IDENT           {action.nested_name_specifier(input.LT(0));}
+                SCOPE     
         |
             (lookup_simple_template_id SCOPE)=>
                 simple_template_id SCOPE
@@ -447,7 +449,7 @@ simple_declaration_or_function_definition [decl_kind kind]
 scope Declaration;
 @init { init_declaration(CTX, kind); }
     :
-        {action.declaration(input.LT(1));}
+        {action.simple_declaration(input.LT(1));}
         decl_specifier*
         (
             SEMICOLON
@@ -471,25 +473,20 @@ scope Declaration;
                 initializer? ( COMMA init_declarator )* SEMICOLON
             )
         )
-        {action.end_declaration(input.LT(0));}
+        {action.end_simple_declaration(input.LT(0));}
     ;
 
 decl_specifier
     :
-        storage_class_specifier
-//        { $Declaration::decl_specifiers.apply_specifier($decl_specifier.start, CTX); }
+        storage_class_specifier {action.decl_specifier(action.DECL_SPECIFIER__STORAGE_CLASS_SPECIFIER, null);}
     |
-        function_specifier 
-//        { $Declaration::decl_specifiers.apply_specifier($decl_specifier.start, CTX); }
+        function_specifier      {action.decl_specifier(action.DECL_SPECIFIER__FUNCTION_SPECIFIER, null);}
     |
-        LITERAL_friend          //{action.decl_specifier($LITERAL_friend);}
-//        { $Declaration::decl_specifiers.apply_specifier($LITERAL_friend, CTX); }
+        LITERAL_friend          {action.decl_specifier(action.DECL_SPECIFIER__LITERAL_FRIEND, $LITERAL_friend);}
     |
-        LITERAL_typedef         //{action.decl_specifier($LITERAL_typedef);}
-//        { $Declaration::decl_specifiers.apply_specifier($LITERAL_typedef, CTX); }
+        LITERAL_typedef         {action.decl_specifier(action.DECL_SPECIFIER__LITERAL_TYPEDEF, $LITERAL_typedef);}
     |
-        type_specifier
-//        { $Declaration::decl_specifiers.add_type($type_specifier.ts, CTX); }
+        type_specifier          {action.decl_specifier(action.DECL_SPECIFIER__TYPE_SPECIFIER, null);}
     ;
 
 storage_class_specifier:
@@ -593,9 +590,11 @@ scope QualName;
             /* note that original rule does not allow empty nested_name_specifier for the LITERAL_template alternative */
             (
                 (lookup_nested_name_specifier)=>
-                    nested_name_specifier (IDENT | LITERAL_template simple_template_id)
+                    nested_name_specifier 
+                    (IDENT      {action.simple_type_specifier(input.LT(0));}
+                    | LITERAL_template simple_template_id)
             |
-                IDENT
+                IDENT           {action.simple_type_specifier(input.LT(0));}
             )
     ;
 
@@ -1357,7 +1356,8 @@ type_parameter:
 
 simple_template_id
     :
-        IDENT LESSTHAN { (identifier_is(IDT_TEMPLATE_NAME)) }?
+        IDENT                   {action.simple_template_id($IDENT);}
+        LESSTHAN { (identifier_is(IDT_TEMPLATE_NAME)) }?
             template_argument_list? GREATERTHAN
     ;
 lookup_simple_template_id
@@ -1368,7 +1368,8 @@ lookup_simple_template_id
 
 simple_template_id_nocheck
     :
-        IDENT LESSTHAN template_argument_list? GREATERTHAN
+        IDENT                   {action.simple_template_id_nocheck($IDENT);}
+        LESSTHAN template_argument_list? GREATERTHAN 
     ;
 lookup_simple_template_id_nocheck
     :

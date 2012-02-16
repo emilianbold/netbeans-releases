@@ -40,52 +40,46 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.wsstack.jaxws;
+package org.netbeans.modules.javaee.specs.support.bridge;
 
-import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.javaee.specs.support.api.JaxRpc;
+import org.netbeans.modules.websvc.wsstack.api.WSStack.Feature;
+import org.netbeans.modules.websvc.wsstack.api.WSStack.Tool;
+import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
+import org.netbeans.modules.websvc.wsstack.api.WSTool;
+import org.netbeans.modules.websvc.wsstack.spi.WSStackImplementation;
 
 /**
  *
  * @author mkuchtiak
+ * @author ads
  */
-public class JaxWs {
-    private UriDescriptor uriDescriptor;
-    
-    public JaxWs(UriDescriptor uriDescriptor) {
-        this.uriDescriptor = uriDescriptor;
-    }
-    
-    public UriDescriptor getWsUriDescriptor() {
-        return uriDescriptor;
-    }
-            
-    public static enum Tool implements WSStack.Tool {
-        WSIMPORT,
-        WSGEN;
+public final class IdeJaxRpcStack implements WSStackImplementation<JaxRpc> {
 
-        public String getName() {
-            return name();
-        }
-    }
-    
-    public static enum Feature implements WSStack.Feature {
-        JSR109,
-        SERVICE_REF_INJECTION,
-        TESTER_PAGE,
-        WSIT;
+    private JaxRpc jaxRpc;
 
-        public String getName() {
-            return name();
-        }
+    public IdeJaxRpcStack(JaxRpc jaxRpc) {
+        this.jaxRpc = jaxRpc;
     }
     
-    public static interface UriDescriptor {
-        /** Pattern for WSDL descriptor URI */
-        public String getDescriptorUri (String applicationRoot, String serviceName, String portName, boolean isEjb);
-        /** Pattern for Web Service URI */
-        public String getServiceUri (String applicationRoot, String serviceName, String portName, boolean isEjb);
-        /** Pattern for Tester Page URI */
-        public String getTesterPageUri (String host, String port, String applicationRoot, String serviceName, String portName, boolean isEjb);
+    @Override
+    public WSStackVersion getVersion() {
+        return WSStackVersion.valueOf(1,1,3,0);
     }
-    
+
+    @Override
+    public JaxRpc get() {
+        return jaxRpc;
+    }
+
+    @Override
+    public WSTool getWSTool(Tool toolId) {
+        throw new UnsupportedOperationException("Not supported yet.");  // NOI18N
+    }
+
+    @Override
+    public boolean isFeatureSupported(Feature feature) {
+        throw new UnsupportedOperationException("Not supported yet.");  // NOI18N
+    }
+
 }

@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.jaxrpc.wsstack.glassfish;
+package org.netbeans.modules.glassfish.javaee;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -49,11 +49,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import org.netbeans.modules.javaee.specs.support.api.JaxRpc;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Feature;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Tool;
 import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
 import org.netbeans.modules.websvc.wsstack.api.WSTool;
-import org.netbeans.modules.websvc.wsstack.jaxrpc.JaxRpc;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackImplementation;
 import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
@@ -61,8 +62,9 @@ import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
 /**
  *
  * @author mkuchtiak
+ * @author ads
  */
-public class GlassFishV3JaxRpcStack implements WSStackImplementation<JaxRpc> {
+public class Hk2JaxRpcStack implements WSStackImplementation<JaxRpc> {
     private static final String[] METRO_LIBRARIES =
             new String[] {"webservices(|-osgi).jar"}; //NOI18N
     private static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
@@ -70,19 +72,22 @@ public class GlassFishV3JaxRpcStack implements WSStackImplementation<JaxRpc> {
     private String gfRootStr;
     private JaxRpc jaxRpc;
     
-    public GlassFishV3JaxRpcStack(String gfRootStr) {
+    public Hk2JaxRpcStack(String gfRootStr) {
         this.gfRootStr = gfRootStr;
         jaxRpc = new JaxRpc();
     }
 
+    @Override
     public JaxRpc get() {
         return jaxRpc;
     }
     
+    @Override
     public WSStackVersion getVersion() {
         return WSStackVersion.valueOf(1, 1, 3, 0);
     }
 
+    @Override
     public WSTool getWSTool(Tool toolId) {
         if (toolId == JaxRpc.Tool.WCOMPILE && isMetroInstalled()) {
             return WSStackFactory.createWSTool(new JaxRpcTool(JaxRpc.Tool.WCOMPILE));
@@ -91,6 +96,7 @@ public class GlassFishV3JaxRpcStack implements WSStackImplementation<JaxRpc> {
         }
     }
     
+    @Override
     public boolean isFeatureSupported(Feature feature) {
         if (feature == JaxRpc.Feature.JSR109 && isMetroInstalled()) {
             return true;
@@ -104,10 +110,12 @@ public class GlassFishV3JaxRpcStack implements WSStackImplementation<JaxRpc> {
             this.tool = tool;
         }
 
+        @Override
         public String getName() {
             return tool.getName();
         }
 
+        @Override
         public URL[] getLibraries() {
             List<URL> cPath = new ArrayList<URL>();
             if (isMetroInstalled()) {
@@ -140,6 +148,7 @@ public class GlassFishV3JaxRpcStack implements WSStackImplementation<JaxRpc> {
             pattern = Pattern.compile(namePattern);
         }
 
+        @Override
         public boolean accept(File file) {
             return pattern.matcher(file.getName()).matches();
         }
@@ -148,7 +157,8 @@ public class GlassFishV3JaxRpcStack implements WSStackImplementation<JaxRpc> {
     
     protected File getJarName(String glassfishInstallRoot, String jarNamePattern) {
 
-        File modulesDir = new File(glassfishInstallRoot + File.separatorChar + GFV3_MODULES_DIR_NAME);
+        File modulesDir = new File(glassfishInstallRoot + File.separatorChar + 
+                GFV3_MODULES_DIR_NAME);
         int subindex = jarNamePattern.lastIndexOf("/");
         if(subindex != -1) {
             String subdir = jarNamePattern.substring(0, subindex);
