@@ -209,6 +209,9 @@ public enum NodeType {
      * error recovery rule
      */
     syncTo_IDENT_RBRACKET_LBRACE,
+    
+    syncTo_RBRACE,
+    
     synpred2_Css3,
     selectorsGroup,
     styleSheet,
