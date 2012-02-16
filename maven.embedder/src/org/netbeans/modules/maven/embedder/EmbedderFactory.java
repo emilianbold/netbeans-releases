@@ -58,7 +58,6 @@ import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
 import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.ClassWorld;
-import org.codehaus.plexus.component.repository.ComponentDescriptor;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.logging.BaseLoggerManager;
 import org.netbeans.api.annotations.common.NonNull;
@@ -126,14 +125,6 @@ public final class EmbedderFactory {
         return new File(getMavenHome(), "conf/settings.xml");
     }
 
-    private static <T> void addComponentDescriptor(DefaultPlexusContainer container, Class<T> roleClass, Class<? extends T> implementationClass, String roleHint) {
-        ComponentDescriptor<T> componentDescriptor = new ComponentDescriptor<T>();
-        componentDescriptor.setRoleClass(roleClass);
-        componentDescriptor.setImplementationClass(implementationClass.asSubclass(roleClass));
-        componentDescriptor.setRoleHint(roleHint);
-        container.addComponentDescriptor(componentDescriptor);
-    }
-    
     /**
      * #191267: suppresses logging from embedded Maven, since interesting results normally appear elsewhere.
      */
@@ -197,8 +188,6 @@ public final class EmbedderFactory {
         DefaultPlexusContainer pc = new DefaultPlexusContainer(dpcreq, new ExtensionModule());
         pc.setLoggerManager(new NbLoggerManager());
 
-        addComponentDescriptor(pc, RepositoryConnectorFactory.class, OfflineConnector.class, "offline");
-
         Properties props = new Properties();
         props.putAll(System.getProperties());
         EmbedderConfiguration configuration = new EmbedderConfiguration(pc, fillEnvVars(props), true, getSettingsXml());
@@ -210,19 +199,6 @@ public final class EmbedderFactory {
 //            wagonManager.setInteractive(false);
         } catch (ComponentLookupException ex) {
             throw new PlexusContainerException(ex.toString(), ex);
-        }
-    }
-
-    public static final class OfflineConnector implements RepositoryConnectorFactory {
-        @Override public RepositoryConnector newInstance(RepositorySystemSession session, RemoteRepository repository) throws NoRepositoryConnectorException {
-            // Throwing NoRepositoryConnectorException is ineffective because DefaultRemoteRepositoryManager will just skip to WagonRepositoryConnectorFactory.
-            // (No apparent way to suppress WRCF from the Plexus container; using "wagon" as the role hint does not work.)
-            // Could also return a no-op RepositoryConnector which would perform no downloads.
-            // But we anyway want to ensure that related code is consistently setting the offline flag on all Maven structures that require it.
-            throw new AssertionError();
-        }
-        @Override public int getPriority() {
-            return Integer.MAX_VALUE;
         }
     }
 

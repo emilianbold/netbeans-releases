@@ -47,7 +47,7 @@ package org.netbeans.modules.editor.lib;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.undo.CompoundEdit;
+import javax.swing.undo.UndoableEdit;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.GapList;
 
@@ -116,7 +116,7 @@ public final class BeforeSaveTasks {
         try {
             doc.runAtomicAsUser (new Runnable () {
                 public @Override void run () {
-                    CompoundEdit atomicEdit = EditorPackageAccessor.get().BaseDocument_markAtomicEditsNonSignificant(doc);
+                    UndoableEdit atomicEdit = EditorPackageAccessor.get().BaseDocument_markAtomicEditsNonSignificant(doc);
                     // Since these are before-save actions they should generally not prevent
                     // the save operation to succeed. Thus the possible exceptions thrown
                     // by the tasks will be notified but they will not prevent the save to succeed.
@@ -137,7 +137,7 @@ public final class BeforeSaveTasks {
 
     public interface Task {
         
-        void run(CompoundEdit edit);
+        void run(UndoableEdit edit);
 
     }
 

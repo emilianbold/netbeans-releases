@@ -39,27 +39,51 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.embedder.impl;
+package org.netbeans.modules.refactoring.java.ui;
 
-import com.google.inject.Binder;
-import com.google.inject.Module;
-import org.apache.maven.plugin.internal.PluginDependenciesResolver;
-import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
-import org.sonatype.guice.plexus.config.Roles;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author mkleint
+ * @author Ralph Ruijs
  */
-public class ExtensionModule implements Module {
+@ActionID(id = "org.netbeans.modules.refactoring.java.api.ui.IntroduceLocalExtensionAction", category = "Refactoring")
+@ActionRegistration(displayName = "#LBL_IntroduceLocalExtensionAction", lazy = false)
+@ActionReferences({
+    @ActionReference(path = "Shortcuts", name = "OS-X"),
+    @ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "IntroduceLocalExtensionAction", position = 1750)
+})
+@NbBundle.Messages("LBL_IntroduceLocalExtensionAction=Introduce &Local Extension...")
+public class IntroduceLocalExtensionAction extends JavaRefactoringGlobalAction {
 
-    public ExtensionModule() {
+    public IntroduceLocalExtensionAction() {
+        super(NbBundle.getMessage(IntroduceLocalExtensionAction.class, "LBL_IntroduceLocalExtensionAction"), null); // NOI18N
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    }
+    
+    @Override
+    public final void performAction(Lookup context) {
+        JavaActionsImplementationFactory.doIntroduceLocalExtension(context);
+    }
+    
+    @Override
+    public org.openide.util.HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
     }
 
     @Override
-    public void configure(Binder binder) {
-        binder.bind(PluginDependenciesResolver.class).to(NbPluginDependenciesResolver.class);
-        binder.bind(Roles.componentKey(RepositoryConnectorFactory.class, "offline")).to(OfflineConnector.class);
+    protected boolean asynchronous() {
+        return false;
     }
-    
+
+    @Override
+    protected boolean enable(Lookup context) {
+        return JavaActionsImplementationFactory.canIntroduceLocalExtension(context);
+    }
 }

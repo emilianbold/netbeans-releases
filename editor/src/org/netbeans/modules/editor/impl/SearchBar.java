@@ -65,7 +65,6 @@ import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.MultiKeymap;
-import org.netbeans.modules.editor.lib2.KeyEventBlocker;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.openide.awt.CloseButtonFactory;
 import org.openide.awt.Mnemonics;
@@ -94,7 +93,6 @@ public final class SearchBar extends JPanel {
     private static final int DEFAULT_INCREMANTAL_SEARCH_COMBO_WIDTH = 200;
     private static final int MAX_INCREMANTAL_SEARCH_COMBO_WIDTH = 350;
     private static final Color DEFAULT_FG_COLOR = UIManager.getColor("textText");
-    private static KeyEventBlocker blocker;
     private WeakReference<JTextComponent> actualTextComponent;
     private List<PropertyChangeListener> actualComponentListeners = new LinkedList<PropertyChangeListener>();
     private FocusAdapter focusAdapterForComponent;
@@ -131,7 +129,6 @@ public final class SearchBar extends JPanel {
         SearchBar searchbarIns = getInstance();
         if (searchbarIns.getActualTextComponent() != component) {
             searchbarIns.setActualTextComponent(component);
-            blocker = new KeyEventBlocker(component, true);
         }
         return searchbarIns;
     }
@@ -892,8 +889,6 @@ public final class SearchBar extends JPanel {
     }
 
     void gainFocus() {
-        if (blocker != null)
-            blocker.stopBlocking();
         hadFocusOnIncSearchTextField = true;
         setVisible(true);
         MutableComboBoxModel comboBoxModelIncSearch = ((MutableComboBoxModel) incSearchComboBox.getModel());
