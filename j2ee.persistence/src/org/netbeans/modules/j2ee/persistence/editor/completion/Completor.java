@@ -52,11 +52,13 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.editor.CompletionContext;
 import org.netbeans.modules.j2ee.persistence.editor.JPAEditorUtil;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.openide.util.Exceptions;
+import org.w3c.dom.Node;
 
 /**
  * Various completor for code completing XML tags and attributes in Hibername 
@@ -366,11 +368,15 @@ public abstract class Completor {
             List<JPACompletionItem> results = new ArrayList<JPACompletionItem>();
             int caretOffset = context.getCaretOffset();
             String typedChars = context.getTypedPrefix();
+            String providerClass = getProviderClass(context.getTag());
+            Project enclosingProject = FileOwnerQuery.getOwner(
+                    NbEditorUtilities.getFileObject(context.getDocument())
+                    );
+            Provider provider = ProviderUtil.getProvider(providerClass, enclosingProject);
             ArrayList<String> keys = new ArrayList<String>();
-            keys.addAll(allKeyAndValues.get(null).keySet());
-            keys.addAll(allKeyAndValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).keySet());
+            if(provider == null || Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(provider)))keys.addAll(allKeyAndValues.get(null).keySet());
+            if(provider != null)keys.addAll(allKeyAndValues.get(provider).keySet());
             String itemTexts[] = keys.toArray(new String[]{});//TODO: get proper provider
-            
             for (int i = 0; i < itemTexts.length; i ++) {
                 if (itemTexts[i].startsWith(typedChars.trim()) 
                         || itemTexts[i].startsWith( "javax.persistence." + typedChars.trim()) ) { // NOI18N
@@ -427,5 +433,18 @@ public abstract class Completor {
             }
                 
         }
+    }
+    
+    private static String getProviderClass(Node tag){
+        String name = null;
+        while(tag!=null && !"persistence-unit".equals(tag.getNodeName()))tag = tag.getParentNode();//NOI18N
+        if(tag != null){
+            for(Node ch = tag.getFirstChild(); ch != null;ch = ch.getNextSibling()){
+                if("provider".equals(ch.getNodeName())){//NOI18N
+                    name = ch.getFirstChild().getNodeValue();
+                }
+            }
+        }
+        return name;
     }
 }
