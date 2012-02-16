@@ -333,8 +333,6 @@ public class CompletionHandler implements CodeCompletionHandler {
             prefix = "";
         }
 
-        int anchor = lexOffset - prefix.length();
-
         final Document document = info.getSnapshot().getSource().getDocument(false);
         if (document == null) {
             return CodeCompletionResult.NONE;
@@ -345,12 +343,13 @@ public class CompletionHandler implements CodeCompletionHandler {
 
         try {
             CompletionRequest request = new CompletionRequest(lexOffset, astOffset, info, doc, prefix);
-            
             boolean initResult = request.initContextAttributes();
+            
             if (initResult == false) {
                 return new DefaultCompletionResult(Collections.EMPTY_LIST, false);
             }
 
+            int anchor = lexOffset - prefix.length();
             ProposalsCollector proposalsCollector = new ProposalsCollector(anchor);
 
             if (RequestHelper.isVariableDefinitionLine(request) == false) {

@@ -64,7 +64,6 @@ import org.openide.filesystems.FileObject;
 public abstract class BaseCompletion {
 
     protected static final Logger LOG = Logger.getLogger(BaseCompletion.class.getName());
-    protected int anchor;
 
     
     public abstract boolean complete(List<CompletionProposal> proposals, CompletionRequest request, int anchor);

@@ -180,7 +180,7 @@ public class TypesCompletion extends BaseCompletion {
                 LOG.log(Level.FINEST, "Number of types found:  {0}", stringTypelist.size());
 
                 for (TypeHolder singleType : stringTypelist) {
-                    addToProposalUsingFilter(addedTypes, proposals, request, singleType, onlyInterfaces);
+                    addToProposalUsingFilter(addedTypes, proposals, request, singleType, onlyInterfaces, anchor);
                 }
             }
 
@@ -235,7 +235,7 @@ public class TypesCompletion extends BaseCompletion {
                     }
 
                     for (TypeHolder type : typelist) {
-                        addToProposalUsingFilter(addedTypes, proposals, request, type, onlyInterfaces);
+                        addToProposalUsingFilter(addedTypes, proposals, request, type, onlyInterfaces, anchor);
                     }
                 }
             }
@@ -263,7 +263,7 @@ public class TypesCompletion extends BaseCompletion {
                     }
 
                     addToProposalUsingFilter(addedTypes, proposals, request,
-                            new TypeHolder(importNode.getClassName(), ek), onlyInterfaces);
+                            new TypeHolder(importNode.getClassName(), ek), onlyInterfaces, anchor);
                 }
             }
 
@@ -300,14 +300,14 @@ public class TypesCompletion extends BaseCompletion {
             LOG.log(Level.FINEST, "Number of types found:  {0}", typeList.size());
 
             for (TypeHolder element : typeList) {
-                addToProposalUsingFilter(addedTypes, proposals, request, element, onlyInterfaces);
+                addToProposalUsingFilter(addedTypes, proposals, request, element, onlyInterfaces, anchor);
             }
         }
 
         // Adding single classes
         for (String className : GroovyUtils.DEFAULT_IMPORT_CLASSES) {
             addToProposalUsingFilter(addedTypes, proposals, request,
-                    new TypeHolder(className, ElementKind.CLASS), onlyInterfaces);
+                    new TypeHolder(className, ElementKind.CLASS), onlyInterfaces, anchor);
         }
         return true;
     }
@@ -333,7 +333,7 @@ public class TypesCompletion extends BaseCompletion {
      * @param fqn
      */
     void addToProposalUsingFilter(Set<TypeHolder> alreadyPresent, List<CompletionProposal> proposals,
-            CompletionRequest request, TypeHolder type, boolean onlyInterfaces) {
+            CompletionRequest request, TypeHolder type, boolean onlyInterfaces, int anchor) {
 
         if ((onlyInterfaces && (type.getKind() != ElementKind.INTERFACE)) || alreadyPresent.contains(type)) {
             return;
