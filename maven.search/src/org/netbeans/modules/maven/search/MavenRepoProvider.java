@@ -43,7 +43,6 @@ package org.netbeans.modules.maven.search;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -81,6 +80,11 @@ public class MavenRepoProvider implements SearchProvider {
         if (s == null) {
             return;
         }
+        String q = request.getText();
+        if (q == null || q.trim().isEmpty()) {
+            //#205552
+            return;
+        }
         
         List<RepositoryInfo> loadedRepos = RepositoryQueries.getLoadedContexts();
         if (loadedRepos.isEmpty()) {
@@ -100,7 +104,7 @@ public class MavenRepoProvider implements SearchProvider {
                 }
             }
         };
-        String q = request.getText();
+
         final QueryRequest queryRequest = new QueryRequest(getQuery(q), loadedRepos, observer);
         final RequestProcessor.Task searchTask = RP.post(new Runnable() {
             @Override
@@ -178,6 +182,10 @@ public class MavenRepoProvider implements SearchProvider {
 //        fields.add(QueryField.FIELD_CLASSES);
 
         for (String one : splits) {
+            if (one.trim().isEmpty()) {
+                //#205552
+                continue;
+            }
             for (String fld : fields) {
                 QueryField f = new QueryField();
                 f.setField(fld);
@@ -188,33 +196,4 @@ public class MavenRepoProvider implements SearchProvider {
         return fq;
     }
 
-    //TODO copied from AddDependencyPanel.java, we shall somehow unify..
-    private static class Comp implements Comparator<String> {
-        private String query;
-
-        public Comp(String q) {
-            query = q;
-        }
-
-        /** Impl of comparator, sorts artifacts asfabetically with exception
-         * of items that contain current query string, which take precedence.
-         */
-        public int compare(String s1, String s2) {
-
-            int index1 = s1.indexOf(query);
-            int index2 = s2.indexOf(query);
-
-            if (index1 >= 0 || index2 >=0) {
-                if (index1 < 0) {
-                    return 1;
-                } else if (index2 < 0) {
-                    return -1;
-                }
-                return s1.compareTo(s2);
-            } else {
-                return s1.compareTo(s2);
-            }
-        }
-
-    }
 }
