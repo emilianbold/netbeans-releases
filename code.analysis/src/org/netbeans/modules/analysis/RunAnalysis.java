@@ -47,14 +47,22 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -62,6 +70,8 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.analysis.ui.AnalysisResultTopComponent;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
+import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -104,13 +114,35 @@ public class RunAnalysis {
 
                 WORKER.post(new Runnable() {
                     @Override public void run() {
-                        List<FileObject> sourceRootsToAnalyze = new ArrayList<FileObject>();
+                        List<FileObject> sourceRoots = new ArrayList<FileObject>();
+                        List<NonRecursiveFolder> nonRecursiveFolders = new ArrayList<NonRecursiveFolder>();
+                        List<FileObject> files = new ArrayList<FileObject>();
+                        Map<Project, Map<FileObject, ClassPath>> projects2RegisteredContent = projects2RegisteredContent(doCancel);
 
+                        if (doCancel.get()) return ;
+                        
                         for (Project p : OpenProjects.getDefault().getOpenProjects()) {
-                            Sources s = ProjectUtils.getSources(p);
+                            Scope projectScope = p.getLookup().lookup(Scope.class);
 
-                            for (SourceGroup sg : s.getSourceGroups("java")) { // NOI18N
-                                sourceRootsToAnalyze.add(sg.getRootFolder());
+                            if (projectScope != null) {
+                                sourceRoots.addAll(projectScope.getSourceRoots());
+                                nonRecursiveFolders.addAll(projectScope.getFolders());
+                                files.addAll(projectScope.getFiles());
+                                continue;
+                            }
+
+                            Map<FileObject, ClassPath> roots = projects2RegisteredContent.get(p);
+
+                            if (roots != null) {
+                                for (Entry<FileObject, ClassPath> e : roots.entrySet()) {
+                                    if (doCancel.get()) return;
+                                    sourceRoots.add(e.getKey());
+                                }
+                            } else {
+                                for (SourceGroup sg : ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
+                                    if (doCancel.get()) return;
+                                    sourceRoots.add(sg.getRootFolder());
+                                }
                             }
                         }
 
@@ -123,7 +155,7 @@ public class RunAnalysis {
                                 break OUTTER;
                             }
                             List<ErrorDescription> current = new ArrayList<ErrorDescription>();
-                            for (ErrorDescription ed : analyzer.analyze(sourceRootsToAnalyze, contributors[i++])) {
+                            for (ErrorDescription ed : analyzer.analyze(SPIAccessor.ACCESSOR.createContext(Scope.create(sourceRoots, nonRecursiveFolders, files), contributors[i++]))) {
                                 current.add(ed);
                             }
                             result.put(analyzer, current);
@@ -156,4 +188,38 @@ public class RunAnalysis {
         d.setVisible(true);
     }
 
+    private static Map<Project, Map<FileObject, ClassPath>> projects2RegisteredContent(AtomicBoolean cancel) {
+        Set<String> sourceIds = new HashSet<String>();
+
+        for (PathRecognizer pr : Lookup.getDefault().lookupAll(PathRecognizer.class)) {
+            Set<String> ids = pr.getSourcePathIds();
+
+            if (ids == null) continue;
+
+            sourceIds.addAll(ids);
+        }
+
+        Map<Project, Map<FileObject, ClassPath>> sourceRoots = new IdentityHashMap<Project, Map<FileObject, ClassPath>>();
+
+        for (String id : sourceIds) {
+            for (ClassPath sCP : GlobalPathRegistry.getDefault().getPaths(id)) {
+                for (FileObject root : sCP.getRoots()) {
+                    if (cancel.get()) return null;
+                    Project owner = FileOwnerQuery.getOwner(root);
+
+                    if (owner != null) {
+                        Map<FileObject, ClassPath> projectSources = sourceRoots.get(owner);
+
+                        if (projectSources == null) {
+                            sourceRoots.put(owner, projectSources = new HashMap<FileObject, ClassPath>());
+                        }
+
+                        projectSources.put(root, sCP);
+                    }
+                }
+            }
+        }
+
+        return sourceRoots;
+    }
 }

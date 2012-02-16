@@ -77,9 +77,9 @@ import org.openide.util.lookup.ServiceProvider;
 public class AnalyzerImpl implements Analyzer {
 
     @Override
-    public Iterable<? extends ErrorDescription> analyze(Collection<? extends FileObject> sourceRoots, ProgressContributor progress) {
+    public Iterable<? extends ErrorDescription> analyze(Context ctx) {
         final List<ErrorDescription> result = new ArrayList<ErrorDescription>();
-        ProgressHandleWrapper w = new ProgressHandleWrapper(progress, 10, 90);
+        ProgressHandleWrapper w = new ProgressHandleWrapper(ctx, 10, 90);
         Collection<HintDescription> hints = new ArrayList<HintDescription>();
 
         for (Entry<HintMetadata, Collection<? extends HintDescription>> e : RulesManager.getInstance().allHints.entrySet()) {
@@ -91,7 +91,7 @@ public class AnalyzerImpl implements Analyzer {
             hints.addAll(e.getValue());
         }
 
-        BatchResult candidates = BatchSearch.findOccurrences(hints, Scopes.specifiedFoldersScope(Folder.convert(sourceRoots)), w);
+        BatchResult candidates = BatchSearch.findOccurrences(hints, Scopes.specifiedFoldersScope(Folder.convert(ctx.getScope().getSourceRoots()/*XXX: other content!!!*/)), w);
         List<MessageImpl> problems = new LinkedList<MessageImpl>(candidates.problems);
 
         BatchSearch.getVerifiedSpans(candidates, w, new BatchSearch.VerifiedSpansCallBack() {

@@ -59,13 +59,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery.Result2;
-import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -90,20 +91,22 @@ import org.openide.util.lookup.ServiceProvider;
 public class RunFindBugs implements Analyzer {
 
     private static final String PREFIX_FINDBUGS = "findbugs:";
+    private static final Logger LOG = Logger.getLogger(RunFindBugs.class.getName());
     
     @Override
-    public Iterable<? extends ErrorDescription> analyze(Collection<? extends FileObject> sourceRoots, ProgressContributor progress) {
+    public Iterable<? extends ErrorDescription> analyze(Context ctx) {
+        Collection<? extends FileObject> sourceRoots = ctx.getScope().getSourceRoots();//XXX: other Scope content!!!
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         int i = 0;
 
-        progress.start(sourceRoots.size());
+        ctx.start(sourceRoots.size());
 
         for (FileObject sr : sourceRoots) {
             result.addAll(runFindBugs(sr, null));
-            progress.progress(++i);
+            ctx.progress(++i);
         }
 
-        progress.finish();
+        ctx.finish();
 
         return result;
     }
@@ -162,6 +165,10 @@ public class RunFindBugs implements Analyzer {
                 SourceLineAnnotation sourceLine = b.getPrimarySourceLineAnnotation();
 
                 if (sourceLine != null) {
+                    if (sourceLine.getStartLine() < 0) {
+                        LOG.log(Level.WARNING, "{0}, location: {1}", new Object[]{b, sourceLine.getStartLine()});
+                        continue;
+                    }
                     FileObject sourceFile = sourceRoot.getFileObject(sourceLine.getSourcePath());
 
                     if (sourceFile != null) {

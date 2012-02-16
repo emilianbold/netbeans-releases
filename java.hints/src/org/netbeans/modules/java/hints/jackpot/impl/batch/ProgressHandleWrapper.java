@@ -45,7 +45,7 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.aggregate.ProgressContributor;
+import org.netbeans.modules.analysis.spi.Analyzer.Context;
 import org.netbeans.modules.java.hints.jackpot.impl.Utilities;
 
 public final class ProgressHandleWrapper {
@@ -69,8 +69,8 @@ public final class ProgressHandleWrapper {
         this(new ProgressHandleBasedProgressHandleAbstraction(handle), parts);
     }
 
-    public ProgressHandleWrapper(ProgressContributor handle, int... parts) {
-        this(new ProgressContributorBasedProgressHandleAbstraction(handle), parts);
+    public ProgressHandleWrapper(Context handle, int... parts) {
+        this(new AnalysisContextBasedProgressHandleAbstraction(handle), parts);
     }
 
     public ProgressHandleWrapper(ProgressHandleAbstraction handle, int... parts) {
@@ -246,9 +246,9 @@ public final class ProgressHandleWrapper {
         }
     }
 
-    private static final class ProgressContributorBasedProgressHandleAbstraction implements ProgressHandleAbstraction {
-        private final ProgressContributor delegate;
-        public ProgressContributorBasedProgressHandleAbstraction(ProgressContributor delegate) {
+    private static final class AnalysisContextBasedProgressHandleAbstraction implements ProgressHandleAbstraction {
+        private final Context delegate;
+        AnalysisContextBasedProgressHandleAbstraction(Context delegate) {
             this.delegate = delegate;
         }
 

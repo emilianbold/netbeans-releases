@@ -39,66 +39,30 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.analysis.spi;
+package org.netbeans.modules.analysis;
 
-import java.awt.Image;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
-import org.netbeans.modules.analysis.SPIAccessor;
+import org.netbeans.modules.analysis.spi.Analyzer;
+import org.netbeans.modules.analysis.spi.Analyzer.Context;
 import org.netbeans.modules.refactoring.api.Scope;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author lahvac
  */
-public interface Analyzer {
+public abstract class SPIAccessor {
 
-    public Iterable<? extends ErrorDescription> analyze(Context context);
-    public String getDisplayName();
-    public String getDisplayName4Id(String id);
-    public Image  getIcon();
+    public static SPIAccessor ACCESSOR;
 
-    public static final class Context {
-        private final Scope scope;
-        private final ProgressContributor progress;
-
-        Context(Scope scope, ProgressContributor progress) {
-            this.scope = scope;
-            this.progress = progress;
-        }
-
-        public Scope getScope() {
-            return scope;
-        }
-
-        public void start(int workunits) {
-            progress.start(workunits);
-        }
-
-        public void progress(String message, int unit) {
-            progress.progress(message, unit);
-        }
-
-        public void progress(String message) {
-            progress.progress(message);
-        }
-
-        public void progress(int workunit) {
-            progress.progress(workunit);
-        }
-
-        public void finish() {
-            progress.finish();
-        }
-
-        static {
-            SPIAccessor.ACCESSOR = new SPIAccessor() {
-                @Override
-                public Context createContext(Scope scope, ProgressContributor progress) {
-                    return new Context(scope, progress);
-                }
-            };
+    static {
+        try {
+            Class.forName(Analyzer.Context.class.getName(), true, Analyzer.Context.class.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
+    public abstract Context createContext(Scope scope, ProgressContributor progress);
+    
 }
