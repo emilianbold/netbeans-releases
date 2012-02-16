@@ -42,7 +42,7 @@
 package org.netbeans.modules.javascript2.editor.formatter;
 
 import com.oracle.nashorn.ir.*;
-import java.util.List;
+import com.oracle.nashorn.parser.TokenType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -89,15 +89,9 @@ public class FormatVisitor extends NodeVisitor {
                 }
             }
 
-            Node lastStatement = null;
-            int lastStatementFinish = -1;
             for (Node statement : block.getStatements()) {
                 int finish = getFinish(statement);
                 statement.accept(this);
-                if (lastStatement == null || lastStatementFinish <= finish) {
-                    lastStatement = statement;
-                    lastStatementFinish = finish;
-                }
 
                 token = getToken(finish, null);
                 if (token != null) {
@@ -108,18 +102,16 @@ public class FormatVisitor extends NodeVisitor {
                 }
             }
 
-            // put indentation mark after last statement
-            if (lastStatement != null) {
-                token = getToken(lastStatementFinish, null);
-                if (token != null && !isScript(block)) {
-                    FormatToken formatToken = tokenStream.getToken(ts.offset());
-                    if (formatToken != null) {
-                        FormatToken next = formatToken.next();
-                        if (next != null && next.getKind() == FormatToken.Kind.AFTER_STATEMENT) {
-                            formatToken = next;
-                        }
-                        appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
+            // put indentation mark after non white token
+            token = getToken(getFinish(block), JsTokenId.BRACKET_RIGHT_CURLY);
+            if (token != null && !isScript(block)) {
+                FormatToken formatToken = previousToken(block.getStart());
+                if (formatToken != null) {
+                    FormatToken next = formatToken.next();
+                    if (next != null && next.getKind() == FormatToken.Kind.AFTER_STATEMENT) {
+                        formatToken = next;
                     }
+                    appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
                 }
             }
         }
@@ -225,14 +217,8 @@ public class FormatVisitor extends NodeVisitor {
                 }
             }
 
-            Node lastProperty = null;
-            int lastPropetyFinish = -1;
             for (Node property : objectNode.getElements()) {
                 int finish = getFinish(property);
-                if (lastProperty == null || lastPropetyFinish <= finish) {
-                    lastProperty = property;
-                    lastPropetyFinish = finish;
-                }
 
                 token = getToken(finish, null);
                 if (token != null) {
@@ -247,18 +233,16 @@ public class FormatVisitor extends NodeVisitor {
                 }
             }
 
-            // put indentation mark after last statement
-            if (lastProperty != null) {
-                token = getToken(lastPropetyFinish, null);
-                if (token != null) {
-                    FormatToken formatToken = tokenStream.getToken(ts.offset());
-                    if (formatToken != null) {
-                        FormatToken next = formatToken.next();
-                        if (next != null && next.getKind() == FormatToken.Kind.AFTER_PROPERTY) {
-                            formatToken = next;
-                        }
-                        appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
+            // put indentation mark after non white token
+            token = getToken(getFinish(objectNode), JsTokenId.BRACKET_RIGHT_CURLY);
+            if (token != null) {
+                FormatToken formatToken = previousToken(objectNode.getStart());
+                if (formatToken != null) {
+                    FormatToken next = formatToken.next();
+                    if (next != null && next.getKind() == FormatToken.Kind.AFTER_PROPERTY) {
+                        formatToken = next;
                     }
+                    appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
                 }
             }
         }
@@ -350,15 +334,42 @@ public class FormatVisitor extends NodeVisitor {
         return token;
     }
 
-    /**
-     * All this magic is because nashorn nodes and tokens don't contain the
-     * quotes for string. Due to this we call this method to add 1 to finish
-     * in case it is string literal.
-     *
-     * @param node
-     * @return
-     */
+    private FormatToken previousToken(int backstop) {
+        Token ret = null;
+        while (ts.movePrevious() && ts.offset() >= backstop) {
+            Token current = ts.token();
+            if (current.id() != JsTokenId.WHITESPACE) {
+                ret = current;
+                break;
+            }
+        }
+
+        if (ret != null) {
+            return tokenStream.getToken(ts.offset());
+        }
+        return null;
+    }
+
     private int getFinish(Node node) {
+        if (node instanceof FunctionNode) {
+            FunctionNode function = (FunctionNode) node;
+            if (node.getStart() == node.getFinish()) {
+                long lastToken = function.getLastToken();
+                int finish = node.getStart() + com.oracle.nashorn.parser.Token.descPosition(lastToken)
+                        + com.oracle.nashorn.parser.Token.descLength(lastToken);
+                // check if it is a string
+                if (com.oracle.nashorn.parser.Token.descType(lastToken).equals(TokenType.STRING)) {
+                    finish++;
+                }
+                return finish;
+            } else {
+                return node.getFinish();
+            }
+        }
+
+        // All this magic is because nashorn nodes and tokens don't contain the
+        // quotes for string. Due to this we call this method to add 1 to finish
+        // in case it is string literal.
         int finish = node.getFinish();
         ts.move(finish);
         if(!ts.moveNext()) {

@@ -54,6 +54,10 @@ public class JsFormatterTest extends JsTestBase {
         super(testName);
     }
     
+    public void testSimple() throws Exception {
+        reformatFileContents("testfiles/simple.js",new IndentPrefs(4, 4));
+    }
+
     public void testTrailingSpaces1() throws Exception {
         format("var a = 1;   \nvar b = 3;                   \n",
                 "var a = 1;\nvar b = 3;\n", new IndentPrefs(4, 4));
