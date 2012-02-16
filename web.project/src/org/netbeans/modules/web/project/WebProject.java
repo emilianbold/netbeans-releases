@@ -239,8 +239,6 @@ public final class WebProject implements Project {
     
     private AntBuildExtender buildExtender;
     
-    private BrowserSupport browserSupport;
-
     // set to true when project customizer is being closed and changes persisted
     private final ThreadLocal<Boolean> projectPropertiesSave;
     
@@ -409,11 +407,8 @@ public final class WebProject implements Project {
         whiteListUpdater = WhiteListUpdater.createWhiteListUpdater(this, evaluator());
     }
 
-    public synchronized BrowserSupport getBrowserSupport() {
-        if (browserSupport == null) {
-            browserSupport = BrowserSupport.getDefault();
-        }
-        return browserSupport;
+    public BrowserSupport getBrowserSupport() {
+        return BrowserSupport.getDefault();
     }
     
     public void setProjectPropertiesSave(boolean value) {

@@ -212,7 +212,9 @@ public final class WebBrowsers {
             Lookup.getDefault ().lookupAll(HtmlBrowser.Factory.class);
             
             Lookup.Item<HtmlBrowser.Factory> item =
-                    Lookup.getDefault ().lookupItem (new Lookup.Template<HtmlBrowser.Factory> (HtmlBrowser.Factory.class, null, fact));
+                    Lookup.getDefault ().lookupItem (
+                            new Lookup.Template<HtmlBrowser.Factory> (
+                                    HtmlBrowser.Factory.class, null, fact));
             if (item == null) {
                 continue;
             }

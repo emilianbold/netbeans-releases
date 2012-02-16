@@ -57,7 +57,8 @@ import org.openide.util.Lookup;
 public final class WebBrowserPane {
 
     private HtmlBrowser.Impl impl;
-    private final List<WebBrowserPaneListener> listeners = new CopyOnWriteArrayList<WebBrowserPaneListener>();
+    private final List<WebBrowserPaneListener> listeners = 
+        new CopyOnWriteArrayList<WebBrowserPaneListener>();
     private PropertyChangeListener listener;
     private boolean embedded;
     private HtmlBrowserComponent topComponent;
@@ -67,17 +68,23 @@ public final class WebBrowserPane {
 //        this(comp.getBrowserImpl(), null, false, comp);
 //    }
     
-    WebBrowserPane(HtmlBrowser.Impl impl, HtmlBrowser.Factory fact, boolean wrapEmbeddedBrowserInTopComponent) {
+    WebBrowserPane(HtmlBrowser.Impl impl, HtmlBrowser.Factory fact, 
+            boolean wrapEmbeddedBrowserInTopComponent) 
+    {
         this(impl, fact, wrapEmbeddedBrowserInTopComponent, null);
     }
     
-    private WebBrowserPane(HtmlBrowser.Impl impl, HtmlBrowser.Factory fact, boolean wrapEmbeddedBrowserInTopComponent, HtmlBrowserComponent comp) {
+    private WebBrowserPane(HtmlBrowser.Impl impl, HtmlBrowser.Factory fact, 
+            boolean wrapEmbeddedBrowserInTopComponent, HtmlBrowserComponent comp) 
+    {
         this.impl = impl;
         this.wrapEmbeddedBrowserInTopComponent = wrapEmbeddedBrowserInTopComponent;
         listener = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (HtmlBrowser.Impl.PROP_BROWSER_WAS_CLOSED.equals(evt.getPropertyName())) {
+                if (HtmlBrowser.Impl.PROP_BROWSER_WAS_CLOSED.equals(
+                        evt.getPropertyName())) 
+                {
                     firePaneClosed();
                 }
                 if (HtmlBrowser.Impl.PROP_URL.equals(evt.getPropertyName())) {

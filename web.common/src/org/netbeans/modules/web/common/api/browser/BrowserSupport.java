@@ -66,11 +66,11 @@ public final class BrowserSupport {
     
     private Pair currentContext;
     private URL currentURL;
-    private WebBrowserPane.WebBrowserPaneListener l;
+    private WebBrowserPane.WebBrowserPaneListener paneListener;
     private WebBrowser browser;
     private PropertyChangeListener listener;
 
-    private static BrowserSupport INST;
+    private static BrowserSupport INSTANCE = create();
     
     /**
      * Returns instance of BrowserSupport which shares WebBrowserPane
@@ -90,16 +90,13 @@ public final class BrowserSupport {
      * will have its own browser pane as well. The browser used to open URLs is
      * always the one configured in IDE Options.
      */
-    public static synchronized BrowserSupport getDefault() {
-        if (INST == null) {
-            INST = create();
-        }
-        return INST;
+    public BrowserSupport getDefault() {
+        return INSTANCE;
     }
 
     /**
      * Creates a new instance of BrowserSupport which will always use browser
-     * according to IDE Optios.
+     * according to IDE Options.
      */
     public static BrowserSupport create() {
         return new BrowserSupport();
@@ -135,9 +132,9 @@ public final class BrowserSupport {
                                 assert pane != null;
                                 // update browser pane
                                 browser = WebBrowsers.getInstance().getPreffered();
-                                pane.removeListener(l);
-                                pane = INST.browser.createNewBrowserPane();
-                                pane.addListener(l);
+                                pane.removeListener(paneListener);
+                                pane = browser.createNewBrowserPane();
+                                pane.addListener(paneListener);
                             }
                         }
                     }
@@ -145,8 +142,8 @@ public final class BrowserSupport {
                 WebBrowsers.getInstance().addPropertyChangeListener(listener);
             }
             pane = browser.createNewBrowserPane();
-            l = new ListenerImpl();
-            pane.addListener(l);
+            paneListener = new ListenerImpl();
+            pane.addListener(paneListener);
         }
         return pane;
     }
@@ -242,7 +239,8 @@ public final class BrowserSupport {
      * DOMInspectionFeature would fit here.
      */
     public Object getDOM() {
-        DOMInspectionFeature dom = getWebBrowserPane().getLookup().lookup(DOMInspectionFeature. class);
+        DOMInspectionFeature dom = getWebBrowserPane().getLookup().lookup(
+                DOMInspectionFeature. class);
         if (dom == null) {
             return null;
         }
@@ -250,7 +248,8 @@ public final class BrowserSupport {
     }
 
     public static Object getDOM(TopComponent component) {
-        DOMInspectionFeature impl = component.getLookup().lookup(DOMInspectionFeature.class);
+        DOMInspectionFeature impl = component.getLookup().lookup(
+                DOMInspectionFeature.class);
         if (impl == null) {
             return null;
         } else {

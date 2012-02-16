@@ -68,30 +68,6 @@ public class DependentFileQuery {
             }
         }
         
-        // XXX
-        
-        // I can imagine following implementations to be registered in the lookup:
-        
-        // HTMLDependentFileQueryImplementation - capable of parsing HTML files
-        // and returning TRUE for any JS file, CSS file, image file, etc. which are
-        // referenced from the given HTML document.
-        
-        // JspDependentFileQueryImplementation - returns true for any Java files,
-        // that is if any Java file is changed in a project and some JSP was deployed 
-        // from that project we must assume that Java file change has impact on JSP
-        // and JSP should be reloaded. If we are able to do better analysis of JSP
-        // file and its dependencies on Java files then this implementation can be
-        // improved. But it is P4 for now.        
-        
-        // JavaDependentFileQueryImplementation - when a Java Servlet was executed we
-        // again either say true for any Java file changes or perform calls closure to check
-        // whether Java file being tested does impact master Java file or not.
-        
-        // XXX: just for testing purposes:
-        if (dependent.getNameExt().equals("test.css") && master.getNameExt().equals("test.html")) {
-            return true;
-        }
-        
         return false;
     }
 }

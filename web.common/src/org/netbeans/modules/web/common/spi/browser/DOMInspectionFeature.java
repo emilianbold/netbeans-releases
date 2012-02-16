@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.web.common.spi.browser;
 
-import java.net.URL;
 
 /**
  * An example how access to other features provided by browser plugins could look like
