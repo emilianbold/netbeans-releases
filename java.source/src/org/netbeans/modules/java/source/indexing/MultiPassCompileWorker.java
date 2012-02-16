@@ -62,11 +62,7 @@ import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.MissingPlatformError;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import javax.annotation.processing.Processor;
 import javax.lang.model.element.TypeElement;
@@ -98,7 +94,12 @@ final class MultiPassCompileWorker extends CompileWorker {
     private static final int MEMORY_LOW = 1;
     private static final int ERR = 2;
 
-    ParsingOutput compile(final ParsingOutput previous, final Context context, JavaParsingContext javaContext, Iterable<? extends CompileTuple> files) {
+    @Override
+    ParsingOutput compile(
+            final ParsingOutput previous,
+            final Context context,
+            final JavaParsingContext javaContext,
+            final Collection<? extends CompileTuple> files) {
         final LinkedList<CompileTuple> toProcess = new LinkedList<CompileTuple>();
         final HashMap<JavaFileObject, CompileTuple> jfo2tuples = new HashMap<JavaFileObject, CompileTuple>();
         for (CompileTuple i : files) {

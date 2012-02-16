@@ -58,14 +58,7 @@ import com.sun.tools.javac.util.FatalError;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.MissingPlatformError;
 import java.io.File;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import javax.annotation.processing.Processor;
 import javax.lang.model.element.TypeElement;
@@ -94,7 +87,12 @@ import org.openide.filesystems.FileUtil;
  */
 final class OnePassCompileWorker extends CompileWorker {
 
-    ParsingOutput compile(ParsingOutput previous, final Context context, JavaParsingContext javaContext, Iterable<? extends CompileTuple> files) {
+    @Override
+    ParsingOutput compile(
+            final ParsingOutput previous,
+            final Context context,
+            final JavaParsingContext javaContext,
+            final Collection<? extends CompileTuple> files) {
         final JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(javaContext.cpInfo);
         final Map<JavaFileObject, List<String>> file2FQNs = previous != null ? previous.file2FQNs : new HashMap<JavaFileObject, List<String>>();
         final Set<ElementHandle<TypeElement>> addedTypes = previous != null ? previous.addedTypes : new HashSet<ElementHandle<TypeElement>>();
@@ -111,7 +109,9 @@ final class OnePassCompileWorker extends CompileWorker {
         JavacTaskImpl jt = null;
 
         boolean nop = true;
-        for (CompileTuple tuple : files) {
+        final SourcePrefetcher sourcePrefetcher = SourcePrefetcher.create(files);
+        while (sourcePrefetcher.hasNext())  {
+            final CompileTuple tuple = sourcePrefetcher.next();
             nop = false;
             if (context.isCancelled()) {
                 return null;
@@ -138,6 +138,7 @@ final class OnePassCompileWorker extends CompileWorker {
                     }
                     computeFQNs(file2FQNs, cut, tuple);
                 }
+                sourcePrefetcher.remove();
                 Log.instance(jt.getContext()).nerrors = 0;
             } catch (CancelAbort ca) {
                 if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
