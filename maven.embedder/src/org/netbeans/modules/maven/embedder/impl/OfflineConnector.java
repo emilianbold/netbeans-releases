@@ -41,25 +41,34 @@
  */
 package org.netbeans.modules.maven.embedder.impl;
 
-import com.google.inject.Binder;
-import com.google.inject.Module;
-import org.apache.maven.plugin.internal.PluginDependenciesResolver;
+import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.spi.connector.RepositoryConnector;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
-import org.sonatype.guice.plexus.config.Roles;
+import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 
 /**
  *
  * @author mkleint
  */
-public class ExtensionModule implements Module {
+public final class OfflineConnector implements RepositoryConnectorFactory {
 
-    public ExtensionModule() {
+    @Override
+    public RepositoryConnector newInstance(RepositorySystemSession session, RemoteRepository repository) throws NoRepositoryConnectorException {
+        // Throwing NoRepositoryConnectorException is ineffective because DefaultRemoteRepositoryManager will just skip to WagonRepositoryConnectorFactory.
+        // (No apparent way to suppress WRCF from the Plexus container; using "wagon" as the role hint does not work.)
+        // Could also return a no-op RepositoryConnector which would perform no downloads.
+        // But we anyway want to ensure that related code is consistently setting the offline flag on all Maven structures that require it.
+        // Throwing NoRepositoryConnectorException is ineffective because DefaultRemoteRepositoryManager will just skip to WagonRepositoryConnectorFactory.
+        // (No apparent way to suppress WRCF from the Plexus container; using "wagon" as the role hint does not work.)
+        // Could also return a no-op RepositoryConnector which would perform no downloads.
+        // But we anyway want to ensure that related code is consistently setting the offline flag on all Maven structures that require it.
+        throw new AssertionError();
     }
 
     @Override
-    public void configure(Binder binder) {
-        binder.bind(PluginDependenciesResolver.class).to(NbPluginDependenciesResolver.class);
-        binder.bind(Roles.componentKey(RepositoryConnectorFactory.class, "offline")).to(OfflineConnector.class);
+    public int getPriority() {
+        return Integer.MAX_VALUE;
     }
     
 }
