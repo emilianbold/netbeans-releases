@@ -202,6 +202,7 @@ public class JsFormatter implements Formatter {
             return false;
         }
 
+        // this may happen when curly bracket is on new line
         if (!next.isVirtual() && next.getText() != null) {
             String nextText = next.getText().toString();
             if(JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(nextText)
@@ -210,6 +211,7 @@ public class JsFormatter implements Formatter {
             }
         }
 
+        // search backwards for important token
         FormatToken result = null;
         for (int i = index - 1; i >= 0; i--) {
             FormatToken previous = tokens.get(i);
