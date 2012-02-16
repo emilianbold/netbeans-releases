@@ -82,11 +82,21 @@ public class ElementHandle {
     }
 
     /**
+     * Returns the handle for the parent element.
+     * 
+     * @return handle for the parent element or {@code null} if the element
+     * doesn't have a parent.
+     */
+    public ElementHandle getParent() {
+        return parent;
+    }
+
+    /**
      * Returns tag name of the element.
      * 
      * @return tag name of the element.
      */
-    private String getTagName() {
+    public String getTagName() {
         return siblingTagNames[indexInParent];
     }
 

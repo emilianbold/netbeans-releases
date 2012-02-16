@@ -414,7 +414,9 @@ NetBeans.getMatchedRules = function(handle) {
     if (document.defaultView.getMatchedCSSRules) {
         var rules = document.defaultView.getMatchedCSSRules(element);
         if (rules) {
-            for (var i=0; i<rules.length; i++) {
+            // getMatchedCSSRules returns the least specific rule first
+            // => process them in the opposite order to have the most specific first
+            for (var i=rules.length-1; i>=0; i--) {
                 var ruleInfo = new Object();
                 var rule = rules[i];
                 var url = rule.parentStyleSheet.ownerNode.getAttribute(this.ATTR_URL);
