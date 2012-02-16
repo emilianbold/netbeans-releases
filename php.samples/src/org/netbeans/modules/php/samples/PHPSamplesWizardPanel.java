@@ -76,7 +76,7 @@ public class PHPSamplesWizardPanel implements WizardDescriptor.Panel,
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(PHPSamplesWizardPanel.class);
+        return null;
     }
 
     public boolean isValid() {

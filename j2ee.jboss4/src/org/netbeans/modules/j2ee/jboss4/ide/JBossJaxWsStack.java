@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.wsstack.jaxws.glassfish.v2;
+package org.netbeans.modules.j2ee.jboss4.ide;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -51,11 +51,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+
+import org.netbeans.modules.javaee.specs.support.api.JaxWs;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Feature;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Tool;
 import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
 import org.netbeans.modules.websvc.wsstack.api.WSTool;
-import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackImplementation;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
@@ -64,23 +65,16 @@ import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
 /**
  *
  * @author mkuchtiak
+ * @author ads
  */
-public class GlassFishV2JaxWsStack implements WSStackImplementation<JaxWs> {
-    private static final String WEBSERVICES_TOOLS_JAR = "lib/webservices-tools.jar"; //NOI18N
-    private static final String WEBSERVICES_RT_JAR = "lib/webservices-rt.jar"; //NOI18N
-    
-    private static final String TOOLS_JAR = "lib/tools.jar"; //NOI18N
-    private static final String JSTL_JAR =  "lib/appserv-jstl.jar"; //NOI18N
-    private static final String JAVA_EE_JAR = "lib/javaee.jar"; //NOI18N
-    private static final String APPSERV_WS_JAR = "lib/appserv-ws.jar"; //NOI18N
-    private static final String MAIL_JAR =  "lib/mail.jar"; //NOI18N
-    private static final String ACTIVATION_JAR = "lib/activation.jar"; //NOI18N
+public class JBossJaxWsStack implements WSStackImplementation<JaxWs> {
+    private static final String JAXWS_TOOLS_JAR = "client/jaxws-tools.jar"; //NOI18N
     
     private File root;
     private String version;
     private JaxWs jaxWs;
     
-    public GlassFishV2JaxWsStack(File root) {
+    public JBossJaxWsStack(File root) {
         this.root = root;
         try {
             version = resolveImplementationVersion();
@@ -95,14 +89,17 @@ public class GlassFishV2JaxWsStack implements WSStackImplementation<JaxWs> {
         jaxWs = new JaxWs(getUriDescriptor());
     }
 
+    @Override
     public JaxWs get() {
         return jaxWs;
     }
 
+    @Override
     public WSStackVersion getVersion() {
         return WSStackFactory.createWSStackVersion(version);
     }
 
+    @Override
     public WSTool getWSTool(Tool toolId) {
         if (toolId == JaxWs.Tool.WSIMPORT) {
             return WSStackFactory.createWSTool(new JaxWsTool(JaxWs.Tool.WSIMPORT));
@@ -116,38 +113,48 @@ public class GlassFishV2JaxWsStack implements WSStackImplementation<JaxWs> {
     private JaxWs.UriDescriptor getUriDescriptor() {
         return new JaxWs.UriDescriptor() {
 
-            public String getServiceUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
-                if (isEjb) {
-                    return serviceName+"/"+portName; //NOI18N
-                } else {
-                    return (applicationRoot.length()>0 ? applicationRoot+"/" : "")+serviceName; //NOI18N
-                }
+            @Override
+            public String getServiceUri(String applicationRoot, String serviceName, 
+                    String portName, boolean isEjb) 
+            {
+                return applicationRoot+"/"+serviceName; //NOI18N
             }
 
-            public String getDescriptorUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
-                return getServiceUri(applicationRoot, serviceName, portName, isEjb)+"?wsdl"; //NOI18N
+            @Override
+            public String getDescriptorUri(String applicationRoot, 
+                    String serviceName, String portName, boolean isEjb) 
+            {
+                return getServiceUri(applicationRoot, serviceName, portName, 
+                        isEjb)+"?wsdl"; //NOI18N
             }
 
-            public String getTesterPageUri(String host, String port, String applicationRoot, String serviceName, String portName, boolean isEjb) {
-                return "http://"+host+":"+port+"/"+getServiceUri(applicationRoot, serviceName, portName, isEjb)+"?Tester"; //NOI18N
+            @Override
+            public String getTesterPageUri(String host, String port, 
+                    String applicationRoot, String serviceName, String portName, 
+                        boolean isEjb) 
+            {
+                return "";
             }
             
         };
     }
 
+    @Override
     public boolean isFeatureSupported(Feature feature) {
-        if (feature == JaxWs.Feature.JSR109 || feature == JaxWs.Feature.SERVICE_REF_INJECTION || feature == JaxWs.Feature.TESTER_PAGE || feature == JaxWs.Feature.WSIT) {
+        if (feature == JaxWs.Feature.JSR109) {
+            return true;
+        } else if (feature == JaxWs.Feature.WSIT && new File(root, 
+                "client/jbossws-metro-wsit-tools.jar").exists())  //NOI18N
+        {
             return true;
         } else {
             return false;
-        }    
+        }
     }
     
     private String resolveImplementationVersion() throws IOException {
         // take webservices-tools.jar file
-        File wsToolsJar = new File(root, WEBSERVICES_TOOLS_JAR);
-        // alternatively take appserv-ws.jar file
-        if (!wsToolsJar.exists()) wsToolsJar = new File(root, APPSERV_WS_JAR);
+        File wsToolsJar = new File(root, JAXWS_TOOLS_JAR);
         
         if (wsToolsJar.exists()) {            
             JarFile jarFile = new JarFile(wsToolsJar);
@@ -176,37 +183,66 @@ public class GlassFishV2JaxWsStack implements WSStackImplementation<JaxWs> {
             this.tool = tool;
         }
 
+        @Override
         public String getName() {
             return tool.getName();
         }
 
+        @Override
         public URL[] getLibraries() {
-            File wsToolsJar = new File(root, WEBSERVICES_TOOLS_JAR);  //NOI18N
+            
+            File clientRoot = new File(root, "client"); // NOI18N
             try {
-                if (wsToolsJar.exists()) { // WSIT installed on top
+                File loggingJar = new File(clientRoot, "jboss-common-client.jar"); // NOI18N
+                if (!loggingJar.exists()) {
+                    loggingJar = new File(clientRoot, "jboss-logging-spi.jar");  // NOI18N
+                }
+  
+                File jaxWsAPILib = new File(clientRoot, "jboss-jaxws.jar"); // NOI18N
+                // JBoss without jbossws 
+                if (jaxWsAPILib.exists()) {
                     return new URL[] {
-                        wsToolsJar.toURI().toURL(),     // NOI18N
-                        new File(root, WEBSERVICES_RT_JAR).toURI().toURL(),           // NOI18N
-                        new File(root, TOOLS_JAR).toURI().toURL(),      //NOI18N
-                        new File(root, JSTL_JAR).toURI().toURL(),       //NOI18N
-                        new File(root, JAVA_EE_JAR).toURI().toURL(),    //NOI18N
-                        new File(root, APPSERV_WS_JAR).toURI().toURL(), //NOI18N
-                        new File(root, MAIL_JAR).toURI().toURL(),       //NOI18N
-                        new File(root, ACTIVATION_JAR).toURI().toURL()  //NOI18N
+                        new File(clientRoot, "wstx.jar").toURI().toURL(),   // NOI18N
+                        new File(clientRoot, "jaxws-tools.jar").toURI().toURL(),  // NOI18N
+                        loggingJar.toURI().toURL(),
+                        new File(clientRoot, "stax-api.jar").toURI().toURL(),    // NOI18N
+                        jaxWsAPILib.toURI().toURL(),
+                        new File(clientRoot, "jbossws-client.jar").toURI().toURL(),  // NOI18N
+                        new File(clientRoot, "jboss-jaxws-ext.jar").toURI().toURL(),    // NOI18N
+                        new File(clientRoot, "jboss-saaj.jar").toURI().toURL()    // NOI18N
                     };
-                } else {                                                // regular appserver
+                }
+                jaxWsAPILib = new File(clientRoot, "jbossws-native-jaxws.jar"); // NOI18N
+                // JBoss+jbossws-native
+                if (jaxWsAPILib.exists()) {                 
                     return new URL[] {
-                        new File(root, TOOLS_JAR).toURI().toURL(),        //NOI18N
-                        new File(root, JSTL_JAR).toURI().toURL(),         //NOI18N
-                        new File(root, JAVA_EE_JAR).toURI().toURL(),      //NOI18N
-                        new File(root, APPSERV_WS_JAR).toURI().toURL(),   //NOI18N
-                        new File(root, MAIL_JAR).toURI().toURL(),         //NOI18N
-                        new File(root, ACTIVATION_JAR).toURI().toURL()    //NOI18N
+                        new File(clientRoot, "wstx.jar").toURI().toURL(),   // NOI18N
+                        new File(clientRoot, "jaxws-tools.jar").toURI().toURL(),  // NOI18N                     
+                        loggingJar.toURI().toURL(),
+                        new File(clientRoot, "stax-api.jar").toURI().toURL(),    // NOI18N
+                        jaxWsAPILib.toURI().toURL(),    // NOI18N
+                        new File(clientRoot, "jbossws-native-client.jar").toURI().toURL(),  // NOI18N
+                        new File(clientRoot, "jbossws-native-jaxws-ext.jar").toURI().toURL(),    // NOI18N
+                        new File(clientRoot, "jbossws-native-saaj.jar").toURI().toURL()    // NOI18N
+                    };
+                }
+                jaxWsAPILib = new File(clientRoot, "jaxws-api.jar"); // NOI18N
+                // JBoss+jbossws-metro
+                if (jaxWsAPILib.exists()) {
+                    return new URL[] {
+                        new File(clientRoot, "wstx.jar").toURI().toURL(),   // NOI18N
+                        new File(clientRoot, "jaxws-tools.jar").toURI().toURL(),  // NOI18N
+                        loggingJar.toURI().toURL(),
+                        new File(clientRoot, "stax-api.jar").toURI().toURL(),    // NOI18N
+                        jaxWsAPILib.toURI().toURL(),
+                        new File(clientRoot, "jbossws-metro-client.jar").toURI().toURL(),  // NOI18N
+                        new File(clientRoot, "saaj-api.jar").toURI().toURL()    // NOI18N
                     };
                 }
             } catch (MalformedURLException ex) {
                 return new URL[0];
-            } 
+            }
+            return new URL[0];
         }
         
     }

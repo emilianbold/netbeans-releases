@@ -40,24 +40,45 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.jaxrpc.wsstack.glassfish;
+package org.netbeans.modules.javaee.specs.support.api;
 
-import org.netbeans.modules.j2ee.deployment.plugins.spi.LookupProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.javaee.specs.support.bridge.IdeJaxRpcStack;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
-import org.netbeans.modules.websvc.wsstack.jaxrpc.JaxRpc;
+import org.netbeans.modules.websvc.wsstack.api.WSTool;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author mkuchtiak
+ * @author ads
  */
-public class GlassFishV3LookupProvider implements LookupProvider {
+public class JaxRpcStackSupport {
+    
+    public static WSStack<JaxRpc> getJaxWsStack(J2eePlatform j2eePlatform) {
+        return WSStack.findWSStack(j2eePlatform.getLookup(), JaxRpc.class);
+    }
+    
+    public static WSTool getJaxWsStackTool(J2eePlatform j2eePlatform, 
+            JaxRpc.Tool toolId) 
+    {
+        WSStack<JaxRpc> wsStack = WSStack.findWSStack(j2eePlatform.getLookup(), 
+                JaxRpc.class);
+        if (wsStack != null) {
+            return wsStack.getWSTool(toolId);
+        } else {
+            return null;
+        }
+    }
 
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        String gfRootStr = baseContext.lookup(String.class);
-        return Lookups.fixed(WSStackFactory.createWSStack(JaxRpc.class ,new GlassFishV3JaxRpcStack(gfRootStr), WSStack.Source.SERVER));
+    public static WSStack<JaxRpc> getIdeJaxWsStack() {
+        return RpcAccessor.IDE_STACK;
+    }
+    
+    private static class RpcAccessor {
+        private static final WSStack<JaxRpc> IDE_STACK = WSStackFactory.
+            createWSStack(JaxRpc.class, new IdeJaxRpcStack(new JaxRpc()), 
+                    WSStack.Source.IDE);
     }
 
 }

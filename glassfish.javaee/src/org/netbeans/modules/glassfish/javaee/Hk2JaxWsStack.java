@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.wsstack.jaxws.glassfish.v3;
+package org.netbeans.modules.glassfish.javaee;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -48,12 +48,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
+
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.javaee.specs.support.api.JaxWs;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Feature;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Tool;
 import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
 import org.netbeans.modules.websvc.wsstack.api.WSTool;
-import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackImplementation;
 import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
@@ -61,8 +64,9 @@ import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
 /**
  *
  * @author mkuchtiak
+ * @author ads
  */
-public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
+public class Hk2JaxWsStack implements WSStackImplementation<JaxWs> {
     private static final String[] METRO_LIBRARIES =
             new String[] {"webservices(|-osgi).jar", //NOI18N
                           "webservices-api(|-osgi).jar", //NOI18N
@@ -74,23 +78,42 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
     
     private String gfRootStr;
     private JaxWs jaxWs;
+    private Hk2JavaEEPlatformImpl platform;
     
-    public GlassFishV3JaxWsStack(String gfRootStr) {
+    public Hk2JaxWsStack(String gfRootStr, Hk2JavaEEPlatformImpl platform ) {
         this.gfRootStr = gfRootStr;
         jaxWs = new JaxWs(getUriDescriptor());
+        this.platform = platform;
     }
 
+    
+    @Override
     public JaxWs get() {
         return jaxWs;
     }
     
+    @Override
     public WSStackVersion getVersion() {
-        if (isMetroInstalled()) {
+        Set<Profile> supportedProfiles = platform.getSupportedProfiles();
+        if ( supportedProfiles.contains( Profile.JAVA_EE_6_FULL) || 
+                supportedProfiles.contains(Profile.JAVA_EE_6_WEB))
+        {
+            // gfv3ee6 GF id 
+            if (isMetroInstalled()) {
+                return WSStackVersion.valueOf(2, 2, 0, 0);
+            }
             return WSStackVersion.valueOf(2, 1, 4, 1);
         }
-        return WSStackVersion.valueOf(2, 1, 3, 0);
+        else {
+            // gfv3 GF id
+            if (isMetroInstalled()) {
+                return WSStackVersion.valueOf(2, 1, 4, 1);
+            }
+            return WSStackVersion.valueOf(2, 1, 3, 0);
+        }
     }
 
+    @Override
     public WSTool getWSTool(Tool toolId) {
         if (toolId == JaxWs.Tool.WSIMPORT) {
             return WSStackFactory.createWSTool(new JaxWsTool(JaxWs.Tool.WSIMPORT));
@@ -101,6 +124,7 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
         }
     }
     
+    @Override
     public boolean isFeatureSupported(Feature feature) {
         if (feature == JaxWs.Feature.WSIT && isMetroInstalled()) {
             return true;
@@ -115,6 +139,7 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
     private JaxWs.UriDescriptor getUriDescriptor() {
         return new JaxWs.UriDescriptor() {
 
+            @Override
             public String getServiceUri(String applicationRoot, String serviceName, 
                     String portName, boolean isEjb) 
             {
@@ -133,12 +158,21 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
                 }
             }
 
-            public String getDescriptorUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
-                return getServiceUri(applicationRoot, serviceName, portName, isEjb)+"?wsdl"; //NOI18N
+            @Override
+            public String getDescriptorUri(String applicationRoot, 
+                    String serviceName, String portName, boolean isEjb) 
+            {
+                return getServiceUri(applicationRoot, serviceName, portName, 
+                        isEjb)+"?wsdl"; //NOI18N
             }
 
-            public String getTesterPageUri(String host, String port, String applicationRoot, String serviceName, String portName, boolean isEjb) {
-                return "http://"+host+":"+port+"/"+getServiceUri(applicationRoot, serviceName, portName, isEjb)+"?Tester"; //NOI18N
+            @Override
+            public String getTesterPageUri(String host, String port, 
+                    String applicationRoot, String serviceName, String portName, 
+                        boolean isEjb) 
+            {
+                return "http://"+host+":"+port+"/"+getServiceUri(applicationRoot, 
+                        serviceName, portName, isEjb)+"?Tester"; //NOI18N
             }
             
         };
@@ -150,10 +184,12 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
             this.tool = tool;
         }
 
+        @Override
         public String getName() {
             return tool.getName();
         }
 
+        @Override
         public URL[] getLibraries() {
             List<URL> cPath = new ArrayList<URL>();
             if (isMetroInstalled()) {
@@ -186,28 +222,34 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
             pattern = Pattern.compile(namePattern);
         }
 
+        @Override
         public boolean accept(File file) {
             return pattern.matcher(file.getName()).matches();
         }
 
     }
 
-    public static File getWsJarName(String glassfishInstallRoot, String jarNamePattern) {
-        File modulesDir = new File(glassfishInstallRoot + File.separatorChar + GFV3_MODULES_DIR_NAME);
+    public static File getWsJarName(String glassfishInstallRoot, 
+            String jarNamePattern) 
+    {
+        File modulesDir = new File(glassfishInstallRoot + File.separatorChar + 
+                GFV3_MODULES_DIR_NAME);
         int subindex = jarNamePattern.lastIndexOf("/");
         if(subindex != -1) {
             String subdir = jarNamePattern.substring(0, subindex);
             jarNamePattern = jarNamePattern.substring(subindex+1);
             modulesDir = new File(modulesDir, subdir);
         }
-        File candidates[] = modulesDir.listFiles(new VersionFilter(jarNamePattern));
+        File candidates[] = modulesDir.listFiles(
+                new VersionFilter(jarNamePattern));
 
         if(candidates != null && candidates.length > 0) {
             return candidates[0]; // the first one
         } else {
             File endorsed = new File(modulesDir,"endorsed"); //NOI18N
             if (endorsed!= null && endorsed.isDirectory()) {
-                File candidates1[] = endorsed.listFiles(new VersionFilter(jarNamePattern));
+                File candidates1[] = endorsed.listFiles(
+                        new VersionFilter(jarNamePattern));
                 if (candidates1 != null && candidates1.length > 0) {
                     return candidates1[0]; // the first one
                 }

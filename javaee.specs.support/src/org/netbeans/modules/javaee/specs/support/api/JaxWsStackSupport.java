@@ -40,11 +40,11 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.wsstack.jaxws;
+package org.netbeans.modules.javaee.specs.support.api;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.websvc.wsstack.jaxws.impl.IdeJaxWsStack;
-import org.netbeans.modules.websvc.wsstack.jaxws.impl.JdkJaxWsStack;
+import org.netbeans.modules.javaee.specs.support.bridge.IdeJaxWsStack;
+import org.netbeans.modules.javaee.specs.support.bridge.JdkJaxWsStack;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.api.WSTool;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
@@ -52,17 +52,19 @@ import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 /**
  *
  * @author mkuchtiak
+ * @author ads
  */
-public class JaxWsStackProvider {
-    
-    private static WSStack<JaxWs> jdkJaxWsStack, ideJaxWsStack;
+public class JaxWsStackSupport {
     
     public static WSStack<JaxWs> getJaxWsStack(J2eePlatform j2eePlatform) {
         return WSStack.findWSStack(j2eePlatform.getLookup(), JaxWs.class);
     }
     
-    public static WSTool getJaxWsStackTool(J2eePlatform j2eePlatform, JaxWs.Tool toolId) {
-        WSStack wsStack = WSStack.findWSStack(j2eePlatform.getLookup(), JaxWs.class);
+    public static WSTool getJaxWsStackTool(J2eePlatform j2eePlatform, 
+            JaxWs.Tool toolId) 
+    {
+        WSStack<JaxWs> wsStack = WSStack.findWSStack(j2eePlatform.getLookup(), 
+                JaxWs.class);
         if (wsStack != null) {
             return wsStack.getWSTool(toolId);
         } else {
@@ -70,28 +72,20 @@ public class JaxWsStackProvider {
         }
     }
     
-    public static synchronized WSStack<JaxWs> getJdkJaxWsStack() {
-        if (jdkJaxWsStack == null) {
-            String jaxWsVersion = getJaxWsStackVersion(System.getProperty("java.version")); //NOI18N
-            if (jaxWsVersion != null) {
-                jdkJaxWsStack = WSStackFactory.createWSStack(JaxWs.class, new JdkJaxWsStack(jaxWsVersion), WSStack.Source.JDK);
-            }
-        }
-        return jdkJaxWsStack;
+    public static WSStack<JaxWs> getJdkJaxWsStack() {
+        return WsAccessor.JDK_JAX_WS_STACK;
     }
     
-    public static synchronized WSStack<JaxWs> getIdeJaxWsStack() {
-        if (ideJaxWsStack == null) {
-            ideJaxWsStack =  WSStackFactory.createWSStack(JaxWs.class, new IdeJaxWsStack(), WSStack.Source.IDE);
-        }
-        return ideJaxWsStack;
+    public static WSStack<JaxWs> getIdeJaxWsStack() {
+        return WsAccessor.IDE_JAX_WS_STACK;
     }
             
-    private static String getJaxWsStackVersion(String java_version) {
-        if (java_version.startsWith("1.6")) { //NOI18N
-            int index = java_version.indexOf("_"); //NOI18N
+    private static String getJaxWsStackVersion(String javaVersion) {
+        if (javaVersion.startsWith("1.6")) { //NOI18N
+            int index = javaVersion.indexOf("_"); //NOI18N
             if (index > 0) {
-                String releaseVersion = parseReleaseVersion(java_version.substring(index+1));
+                String releaseVersion = parseReleaseVersion(
+                        javaVersion.substring(index+1));
                 Integer rv = Integer.valueOf(releaseVersion);
                 if (rv >= 4) {
                     return "2.1.1"; //NOI18N
@@ -104,7 +98,7 @@ public class JaxWsStackProvider {
             }
         } else {
             try {
-                Float version = Float.valueOf(java_version.substring(0,3));
+                Float version = Float.valueOf(javaVersion.substring(0,3));
                 if (version > 1.6) return "2.1.3"; //NOI18N
                 else return null;
             } catch (NumberFormatException ex) {
@@ -125,5 +119,20 @@ public class JaxWsStackProvider {
             }
         }
         return buf.toString();
+    }
+    
+    private static class WsAccessor {
+        private static WSStack<JaxWs> JDK_JAX_WS_STACK;
+        private static final WSStack<JaxWs> IDE_JAX_WS_STACK = WSStackFactory.
+            createWSStack(JaxWs.class, new IdeJaxWsStack(), WSStack.Source.IDE);
+        
+        static {
+            String jaxWsVersion = getJaxWsStackVersion(
+                    System.getProperty("java.version")); //NOI18N
+            if (jaxWsVersion != null) {
+                JDK_JAX_WS_STACK = WSStackFactory.createWSStack(JaxWs.class, 
+                        new JdkJaxWsStack(jaxWsVersion), WSStack.Source.JDK);
+            }
+        }
     }
 }
