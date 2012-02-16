@@ -448,7 +448,7 @@ public abstract class TreeView extends JScrollPane {
     }
 
     /**
-     * Get whether the quick search feature is enabled or not.
+     * Test whether the quick search feature is enabled or not.
      * Default is enabled (true).
      * @since 6.33
      * @return true if quick search feature is enabled, false otherwise.
@@ -674,6 +674,7 @@ public abstract class TreeView extends JScrollPane {
     @Override
     public void validate() {
         Children.MUTEX.readAccess(new Runnable() {
+            @Override
             public void run() {
                 TreeView.super.validate();
             }
@@ -975,6 +976,7 @@ public abstract class TreeView extends JScrollPane {
             this.show = show;
         }
 
+        @Override
         public void run() {
             doShowWaitCursor(glassPane, show);
         }
@@ -1171,7 +1173,7 @@ public abstract class TreeView extends JScrollPane {
      * @param childIndices indexes of changed children
      * @return the tree path or null if there no changed children
      */
-    final static TreePath findSiblingTreePath(TreePath parentPath, int[] childIndices) {
+    static TreePath findSiblingTreePath(TreePath parentPath, int[] childIndices) {
         if (childIndices == null) {
             throw new IllegalArgumentException("Indexes of changed children are null."); // NOI18N
         }
@@ -1187,7 +1189,7 @@ public abstract class TreeView extends JScrollPane {
 
         TreeNode parent = (TreeNode) parentPath.getLastPathComponent();
         Object[] parentPaths = parentPath.getPath();
-        TreePath newSelection = null;
+        TreePath newSelection;
         
         int childCount = parent.getChildCount();
         if (childCount > 0) {
@@ -1251,6 +1253,7 @@ public abstract class TreeView extends JScrollPane {
         TreePropertyListener() {
         }
 
+        @Override
         public void vetoableChange(PropertyChangeEvent evt)
         throws PropertyVetoException {
             if (evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
@@ -1318,6 +1321,7 @@ public abstract class TreeView extends JScrollPane {
                     this.path = path;
                 }
 
+                @Override
                 public void run() {
                     if (!SwingUtilities.isEventDispatchThread()) {
                         SwingUtilities.invokeLater(this);
@@ -1385,6 +1389,7 @@ public abstract class TreeView extends JScrollPane {
                     this.path = path;
                 }
 
+                @Override
                 public void run() {
                     if (!SwingUtilities.isEventDispatchThread()) {
                         SwingUtilities.invokeLater(this);
@@ -1444,6 +1449,7 @@ public abstract class TreeView extends JScrollPane {
         /* Called whenever the value of the selection changes.
         * @param ev the event that characterizes the change.
         */
+        @Override
         public void valueChanged(TreeSelectionEvent ev) {
             TreePath[] paths = tree.getSelectionPaths();
 
@@ -1466,6 +1472,7 @@ public abstract class TreeView extends JScrollPane {
 
         /** Called under Children.MUTEX to refresh the currently selected nodes.
         */
+        @Override
         public void run() {
             if (readAccessPaths == null) {
                 return;
@@ -1508,10 +1515,12 @@ public abstract class TreeView extends JScrollPane {
             return false;
         }
             
+        @Override
         public void treeWillCollapse(TreeExpansionEvent event)
         throws ExpandVetoException {
         }
 
+        @Override
         public void treeWillExpand(TreeExpansionEvent event)
         throws ExpandVetoException {
             // prepare wait cursor and optionally show it
@@ -1531,6 +1540,7 @@ public abstract class TreeView extends JScrollPane {
         PopupAdapter() {
         }
 
+        @Override
         protected void showPopup(MouseEvent e) {
             int selRow = tree.getRowForLocation(e.getX(), e.getY());
 
@@ -1557,6 +1567,7 @@ public abstract class TreeView extends JScrollPane {
 
     final class PopupSupport extends MouseAdapter implements Runnable, FocusListener, ActionListener {
         public final Action popup = new AbstractAction() {
+                @Override
                 public void actionPerformed(ActionEvent evt) {
                     SwingUtilities.invokeLater(PopupSupport.this);
                 }
@@ -1574,6 +1585,7 @@ public abstract class TreeView extends JScrollPane {
             };
 
         //CallbackSystemAction csa;
+        @Override
         public void run() {
             Point p = getPositionForPopup();
 
@@ -1585,6 +1597,7 @@ public abstract class TreeView extends JScrollPane {
             createPopup(p.x, p.y);
         }
 
+        @Override
         public void focusGained(java.awt.event.FocusEvent ev) {
             // unregister
             ev.getComponent().removeFocusListener(this);
@@ -1597,6 +1610,7 @@ public abstract class TreeView extends JScrollPane {
             }
         }
 
+        @Override
         public void focusLost(FocusEvent ev) {
         }
 
@@ -1636,6 +1650,7 @@ public abstract class TreeView extends JScrollPane {
         }
 
         /* VK_ENTER key processor */
+        @Override
         public void actionPerformed(ActionEvent evt) {
             Node[] nodes = manager.getSelectedNodes();
             performPreferredActionOnNodes(nodes);
@@ -1711,6 +1726,7 @@ public abstract class TreeView extends JScrollPane {
                         //get transferred to the next component in the
                         //parent focusTraversalPolicy *after* our request
                         //focus completes, so focus goes into a black hole - Tim
+                        @Override
                         public void run() {
                             if( null != tree )
                                 tree.requestFocus();
@@ -1931,16 +1947,19 @@ public abstract class TreeView extends JScrollPane {
         // not allow changes in nodes during the operation being executed
         //
         @Override
+        @SuppressWarnings("ResultOfObjectAllocationIgnored")
         public void paint(final Graphics g) {
             new GuardedActions(0, g);
         }
 
         @Override
+        @SuppressWarnings("ResultOfObjectAllocationIgnored")
         protected void validateTree() {
             new GuardedActions(1, null);
         }
 
         @Override
+        @SuppressWarnings("ResultOfObjectAllocationIgnored")
         public void doLayout() {
             new GuardedActions(2, null);
         }
@@ -1984,6 +2003,7 @@ public abstract class TreeView extends JScrollPane {
         }
 
         @Override
+        @SuppressWarnings("ResultOfObjectAllocationIgnored")
         protected void processFocusEvent(FocusEvent fe) {
             new GuardedActions(3, fe);
         }
@@ -2174,6 +2194,7 @@ public abstract class TreeView extends JScrollPane {
         }
 
         /** notify the Component to autoscroll */
+        @Override
         public void autoscroll(Point cursorLoc) {
             getSupport().autoscroll(cursorLoc);
         }
@@ -2182,6 +2203,7 @@ public abstract class TreeView extends JScrollPane {
          * region or border relative to the geometry of the
          * implementing Component.
          */
+        @Override
         public Insets getAutoscrollInsets() {
             return getSupport().getAutoscrollInsets();
         }
@@ -2235,6 +2257,7 @@ public abstract class TreeView extends JScrollPane {
             private Object p1;
             final Object ret;
 
+            @SuppressWarnings({"OverridableMethodCallInConstructor", "LeakingThisInConstructor"})
             public GuardedActions(int type, Object p1) {
                 this.type = type;
                 this.p1 = p1;
@@ -2245,6 +2268,7 @@ public abstract class TreeView extends JScrollPane {
                 }
             }
 
+            @Override
             public Object run() {
                 switch (type) {
                 case 0:
@@ -2281,14 +2305,17 @@ public abstract class TreeView extends JScrollPane {
             SearchFieldListener() {
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 searchForNode();
             }
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 searchForNode();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 searchForNode();
             }
@@ -2380,11 +2407,13 @@ public abstract class TreeView extends JScrollPane {
                 }
             }
 
+            @Override
             public void focusGained(FocusEvent e) {
                 // make sure nothing is selected
                 searchTextField.select(1, 1);
             }
 
+            @Override
             public void focusLost(FocusEvent e) {
                 results.clear();
                 removeSearchField();

@@ -227,6 +227,7 @@ public class OutlineView extends JScrollPane {
     }    
     
     /** Creates a new instance of TableView */
+    @SuppressWarnings("OverridableMethodCallInConstructor")
     public OutlineView(String nodesColumnLabel) {
         treeModel = new NodeTreeModel();
         rowModel = new PropertiesRowModel();
@@ -285,11 +286,13 @@ public class OutlineView extends JScrollPane {
         final Color focusSelectionBackground = outline.getSelectionBackground();
         final Color focusSelectionForeground = outline.getSelectionForeground();
         outline.addFocusListener(new java.awt.event.FocusListener(){
+            @Override
             public void focusGained(java.awt.event.FocusEvent ev) {
                 outline.setSelectionBackground(focusSelectionBackground);
                 outline.setSelectionForeground(focusSelectionForeground);
             }
 
+            @Override
             public void focusLost(java.awt.event.FocusEvent ev) {
                 outline.setSelectionBackground(SheetCell.getNoFocusSelectionBackground());
                 outline.setSelectionForeground(SheetCell.getNoFocusSelectionForeground());
@@ -905,13 +908,16 @@ public class OutlineView extends JScrollPane {
     void showPopup(int xpos, int ypos, final JPopupMenu popup) {
         if ((popup != null) && (popup.getSubElements().length > 0)) {
             final PopupMenuListener p = new PopupMenuListener() {
+                @Override
                 public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
                     
                 }
+                @Override
                 public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
                     popup.removePopupMenuListener(this);
                     outline.requestFocus();
                 }
+                @Override
                 public void popupMenuCanceled(PopupMenuEvent e) {
                     
                 }
@@ -990,9 +996,11 @@ public class OutlineView extends JScrollPane {
      * Action registered in the component's action map.
      */
     private class PopupAction extends javax.swing.AbstractAction implements Runnable {
+        @Override
         public void actionPerformed(ActionEvent evt) {
             SwingUtilities.invokeLater(this);
         }
+        @Override
         public void run() {
             Point p = getPositionForPopup ();
             if (p == null) {
@@ -1012,6 +1020,7 @@ public class OutlineView extends JScrollPane {
 
 	PopupAdapter() {}
 	
+        @Override
         protected void showPopup (MouseEvent e) {
             int selRow = outline.rowAtPoint(e.getPoint());
 
@@ -1036,7 +1045,7 @@ public class OutlineView extends JScrollPane {
     /**
      * Called when selection in tree is changed.
      */
-    final private void callSelectionChanged (Node[] nodes) {
+    private void callSelectionChanged (Node[] nodes) {
         manager.removePropertyChangeListener (wlpc);
         manager.removeVetoableChangeListener (wlvc);
         try {
@@ -1251,6 +1260,7 @@ public class OutlineView extends JScrollPane {
      * changes in the table selection.
      */
     private class TableSelectionListener implements VetoableChangeListener, ListSelectionListener, PropertyChangeListener {
+        @Override
         public void propertyChange(java.beans.PropertyChangeEvent evt) {
             synchronized (managerLock) {
                 if (manager == null) return; // the tree view has been removed before the event got delivered
@@ -1263,6 +1273,7 @@ public class OutlineView extends JScrollPane {
             }
         }
 
+        @Override
         public void valueChanged(javax.swing.event.ListSelectionEvent listSelectionEvent) {
             int selectedRows[] = outline.getSelectedRows();
             ArrayList<Node> selectedNodes = new ArrayList<Node> (selectedRows.length);
@@ -1275,6 +1286,7 @@ public class OutlineView extends JScrollPane {
             callSelectionChanged(selectedNodes.toArray (new Node[selectedNodes.size ()]));
         }
 
+        @Override
         public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
             if (evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
                 // issue 11928 check if selecetion mode will be broken
@@ -1300,6 +1312,7 @@ public class OutlineView extends JScrollPane {
         /**
          * Invoked when an action occurs.
          */
+        @Override
         public void actionPerformed (ActionEvent e) {
             if (outline.getSelectedColumn () != 0) {
                 return;
@@ -1835,6 +1848,7 @@ public class OutlineView extends JScrollPane {
                             if (act != null) {
                                 SwingUtilities.invokeLater(
                                     new Runnable() {
+                                        @Override
                                         public void run() {
                                             r.x = 0;
                                             r.width = getWidth();
@@ -1945,6 +1959,7 @@ public class OutlineView extends JScrollPane {
                 public OutlineViewOutlineHeaderRenderer(TableCellRenderer delegate) {
                     orig = delegate;
                 }
+                @Override
                 public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                     Component oc = orig.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                     if (tooltip == null) {
@@ -1960,6 +1975,7 @@ public class OutlineView extends JScrollPane {
 
             private class NodeNestedComparator implements
                     Comparator {
+                @Override
                 public int compare (Object o1, Object o2) {
                     assert o1 instanceof Node : o1 + " is instanceof Node";
                     assert o2 instanceof Node : o2 + " is instanceof Node";
@@ -2185,6 +2201,7 @@ public class OutlineView extends JScrollPane {
         }
 
         //ScrollBar or Viewport change
+        @Override
         public void stateChanged(ChangeEvent evt) {
             if (evt.getSource() == hScrollBar.getModel()) {
                 int value = hScrollBar.getModel().getValue();

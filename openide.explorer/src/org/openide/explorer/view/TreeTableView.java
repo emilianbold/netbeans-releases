@@ -285,6 +285,7 @@ public class TreeTableView extends BeanTreeView {
         colsButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TreeTableView.class, "ACD_ColumnsSelector")); //NOI18N
         colsButton.addActionListener(
             new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent evt) {
                     selectVisibleColumns();
                 }
@@ -527,6 +528,7 @@ public class TreeTableView extends BeanTreeView {
 
         defaultActionListener = new PopupSupport();
         Action popupWrapper = new AbstractAction() {
+                @Override
                 public void actionPerformed(ActionEvent evt) {
                     SwingUtilities.invokeLater( defaultActionListener );
                 }
@@ -543,6 +545,7 @@ public class TreeTableView extends BeanTreeView {
         tree.addMouseListener(defaultActionListener);
 
         tableMouseListener = new MouseUtils.PopupMouseAdapter() {
+                    @Override
                     public void showPopup(MouseEvent mevt) {
                         if (isPopupAllowed()) {
                             if (mevt.getY() > treeTable.getHeight()) {
@@ -864,7 +867,7 @@ public class TreeTableView extends BeanTreeView {
             col = 0;
         }
 
-        Rectangle r = null;
+        Rectangle r;
 
         if (col == 0) {
             r = tree.getRowBounds(row);
@@ -900,17 +903,18 @@ public class TreeTableView extends BeanTreeView {
     /* creates List Options menu
      */
     private JMenu getListMenu(final int col) {
-        JMenu listItem = new JMenu(NbBundle.getBundle(NodeTableModel.class).getString("LBL_ListOptions"));
+        JMenu listItem = new JMenu(NbBundle.getMessage(NodeTableModel.class, "LBL_ListOptions"));
 
         if (allowHideColumns && (col > 0)) {
-            JMenu colsItem = new JMenu(NbBundle.getBundle(NodeTableModel.class).getString("LBL_ColsMenu"));
+            JMenu colsItem = new JMenu(NbBundle.getMessage(NodeTableModel.class, "LBL_ColsMenu"));
 
             boolean addColsItem = false;
 
             if (col > 1) {
-                JMenuItem moveLItem = new JMenuItem(NbBundle.getBundle(NodeTableModel.class).getString("LBL_MoveLeft"));
+                JMenuItem moveLItem = new JMenuItem(NbBundle.getMessage(NodeTableModel.class, "LBL_MoveLeft"));
                 moveLItem.addActionListener(
                     new ActionListener() {
+                        @Override
                         public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
                             treeTable.getColumnModel().moveColumn(col, col - 1);
                         }
@@ -922,10 +926,11 @@ public class TreeTableView extends BeanTreeView {
 
             if (col < tableModel.getColumnCount()) {
                 JMenuItem moveRItem = new JMenuItem(
-                        NbBundle.getBundle(NodeTableModel.class).getString("LBL_MoveRight")
+                        NbBundle.getMessage(NodeTableModel.class, "LBL_MoveRight")
                     );
                 moveRItem.addActionListener(
                     new ActionListener() {
+                        @Override
                         public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
                             treeTable.getColumnModel().moveColumn(col, col + 1);
                         }
@@ -941,13 +946,14 @@ public class TreeTableView extends BeanTreeView {
         }
 
         if (allowSortingByColumn) {
-            JMenu sortItem = new JMenu(NbBundle.getBundle(NodeTableModel.class).getString("LBL_SortMenu"));
+            JMenu sortItem = new JMenu(NbBundle.getMessage(NodeTableModel.class, "LBL_SortMenu"));
             JRadioButtonMenuItem noSortItem = new JRadioButtonMenuItem(
-                    NbBundle.getBundle(NodeTableModel.class).getString("LBL_NoSort"),
+                    NbBundle.getMessage(NodeTableModel.class, "LBL_NoSort"),
                     !getSortedNodeTreeModel().isSortingActive()
                 );
             noSortItem.addActionListener(
                 new ActionListener() {
+                    @Override
                     public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
                         noSorting();
                     }
@@ -964,6 +970,7 @@ public class TreeTableView extends BeanTreeView {
                 colItem.setHorizontalTextPosition(SwingConstants.LEFT);
                 colItem.addActionListener(
                     new ActionListener() {
+                        @Override
                         public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
                             setSortingColumn(-1);
                         }
@@ -984,6 +991,7 @@ public class TreeTableView extends BeanTreeView {
                     final int index = tableModel.translateVisibleColumnIndex(i);
                     colItem.addActionListener(
                         new ActionListener() {
+                            @Override
                             public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
                                 setSortingColumn(index);
                             }
@@ -1003,6 +1011,7 @@ public class TreeTableView extends BeanTreeView {
                     final int index = i;
                     colItem.addActionListener(
                         new ActionListener() {
+                            @Override
                             public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
                                 setSortingColumn(index);
                             }
@@ -1024,11 +1033,12 @@ public class TreeTableView extends BeanTreeView {
                 }
 
                 JRadioButtonMenuItem ascItem = new JRadioButtonMenuItem(
-                        NbBundle.getBundle(NodeTableModel.class).getString("LBL_Ascending"), !current_sort
+                        NbBundle.getMessage(NodeTableModel.class, "LBL_Ascending"), !current_sort
                     );
                 ascItem.setHorizontalTextPosition(SwingConstants.LEFT);
                 ascItem.addActionListener(
                     new ActionListener() {
+                        @Override
                         public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
                             setSortingOrder(true);
                         }
@@ -1037,11 +1047,12 @@ public class TreeTableView extends BeanTreeView {
                 sortItem.add(ascItem);
 
                 JRadioButtonMenuItem descItem = new JRadioButtonMenuItem(
-                        NbBundle.getBundle(NodeTableModel.class).getString("LBL_Descending"), current_sort
+                        NbBundle.getMessage(NodeTableModel.class, "LBL_Descending"), current_sort
                     );
                 descItem.setHorizontalTextPosition(SwingConstants.LEFT);
                 descItem.addActionListener(
                     new ActionListener() {
+                        @Override
                         public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
                             setSortingOrder(false);
                         }
@@ -1059,9 +1070,10 @@ public class TreeTableView extends BeanTreeView {
         }
 
         if (allowHideColumns) {
-            JMenuItem visItem = new JMenuItem(NbBundle.getBundle(NodeTableModel.class).getString("LBL_ChangeColumns"));
+            JMenuItem visItem = new JMenuItem(NbBundle.getMessage(NodeTableModel.class, "LBL_ChangeColumns"));
             visItem.addActionListener(
                 new ActionListener() {
+                    @Override
                     public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
                         selectVisibleColumns();
                     }
@@ -1161,6 +1173,7 @@ public class TreeTableView extends BeanTreeView {
         }
 
         //Column width
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (((TreeTable) treeTable).getTreeColumnIndex() == -1) {
                 return;
@@ -1215,6 +1228,7 @@ public class TreeTableView extends BeanTreeView {
         }
 
         //ScrollBar change
+        @Override
         public void stateChanged(ChangeEvent evt) {
             int value = hScrollBar.getModel().getValue();
             ((TreeTable) treeTable).setPositionX(value);
@@ -1270,22 +1284,27 @@ public class TreeTableView extends BeanTreeView {
             //do nothing
         }
 
+        @Override
         public boolean getScrollableTracksViewportWidth() {
             return true;
         }
 
+        @Override
         public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
             return 10;
         }
 
+        @Override
         public boolean getScrollableTracksViewportHeight() {
             return true;
         }
 
+        @Override
         public Dimension getPreferredScrollableViewportSize() {
             return this.getPreferredSize();
         }
 
+        @Override
         public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
             return 10;
         }
@@ -1336,6 +1355,7 @@ public class TreeTableView extends BeanTreeView {
         /**
          * Invoked when an action occurs.
          */
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (treeTable.getSelectedColumn() != ((TreeTable) treeTable).getTreeColumnIndex()) {
                 return;
@@ -1442,6 +1462,7 @@ public class TreeTableView extends BeanTreeView {
                             final org.openide.nodes.Children[] newChildren = new org.openide.nodes.Children[1];
                             Children.MUTEX.readAccess(new Runnable() {
 
+                                @Override
                                 public void run() {
                                     boolean origIsLeaf = getOriginal().isLeaf();
                                     boolean thisIsLeaf = isLeaf();
@@ -1457,6 +1478,7 @@ public class TreeTableView extends BeanTreeView {
                                 Children.MUTEX.postWriteRequest(
                                         new Runnable() {
 
+                                            @Override
                                             public void run() {
                                                 setChildren(newChildren[0]);
                                             }
@@ -1620,6 +1642,7 @@ public class TreeTableView extends BeanTreeView {
             if (rowComparator == null) {
                 rowComparator = new Comparator<Node>() {
 
+                    @Override
                     @SuppressWarnings("unchecked")
                     public int compare(Node n1, Node n2) {
                         if (n1 == n2) {
@@ -1651,7 +1674,7 @@ public class TreeTableView extends BeanTreeView {
                                                                 " has different parent!");
                             return 0;
                         }
-                        int res = 0;
+                        int res;
 
                         if (sortedByName) {
                             res = n1.getDisplayName().compareTo(n2.getDisplayName());
