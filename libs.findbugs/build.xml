@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="libs.findbugs">
+    <description>Builds, tests, and runs the project org.netbeans.libs.findbugs</description>
+    <property name="license.file" location="findbugs-license.txt"/>
+    <target name="-create-license.file"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
+    <target name="download-findbugs" if="download.findbugs">
+        <ant dir="downloader" target="jar" />
+        <taskdef classpath="downloader/dist/downloader.jar" classname="org.netbeans.libs.findbugs.Downloader" name="downloader" />
+        <property name="external.dir" location="build/external" />
+        <mkdir dir="${external.dir}" />
+        <downloader cache="${binaries.cache}" toDir="${external.dir}">
+            <manifest dir=".">
+                <include name="**/*.jar.external"/>
+            </manifest>
+        </downloader>
+    </target>
+    <target name="files-init" depends="projectized-common.files-init,download-findbugs" />
+    <target name="copy-downloaded" if="download.findbugs">
+        <mkdir dir="${cluster}/modules/ext" />
+        <copy todir="${cluster}/modules/ext">
+            <fileset dir="build/external">
+                <include name="*.jar" />
+            </fileset>
+        </copy>
+    </target>
+    <target name="release" depends="projectized.release,copy-downloaded"/>
+
+</project>
