@@ -54,12 +54,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
+import static org.netbeans.spi.java.project.support.ui.Bundle.*;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -70,10 +71,8 @@ class EditJarPanel extends javax.swing.JPanel {
     private EditJarSupport.Item item;
     private AntProjectHelper helper;
 
-    /** Creates new form EditJarPanel */
     private EditJarPanel() {
         initComponents();
-        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(EditJarPanel.class, "ACSD_EditJarPanel"));
     }
 
     EditJarPanel(EditJarSupport.Item item, AntProjectHelper helper) {
@@ -288,7 +287,11 @@ class EditJarPanel extends javax.swing.JPanel {
         lblSource.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditJarPanel.class, "ACSD_lblSource")); // NOI18N
         txtSource.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditJarPanel.class, "ACSD_lblSource")); // NOI18N
         btnSource.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditJarPanel.class, "ACSD_btnSource")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditJarPanel.class, "ACSD_EditJarPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+    @Messages("LBL_Edit_Jar_Panel_browse=Select JAR/folder")
     private void btnJavadocActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnJavadocActionPerformed
         // Let user search for the Jar file
         FileChooser chooser;
@@ -302,7 +305,7 @@ class EditJarPanel extends javax.swing.JPanel {
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setMultiSelectionEnabled(false);
-        chooser.setDialogTitle(NbBundle.getMessage(EditJarPanel.class, "LBL_Edit_Jar_Panel_browse"));
+        chooser.setDialogTitle(LBL_Edit_Jar_Panel_browse());
         //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
         chooser.setAcceptAllFileFilterUsed(false);
         chooser.setFileFilter(new SimpleFileFilter(
@@ -338,7 +341,7 @@ class EditJarPanel extends javax.swing.JPanel {
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setMultiSelectionEnabled(false);
-        chooser.setDialogTitle(NbBundle.getMessage(EditJarPanel.class, "LBL_Edit_Jar_Panel_browse"));
+        chooser.setDialogTitle(LBL_Edit_Jar_Panel_browse());
         //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
         chooser.setAcceptAllFileFilterUsed(false);
         chooser.setFileFilter(new SimpleFileFilter(
