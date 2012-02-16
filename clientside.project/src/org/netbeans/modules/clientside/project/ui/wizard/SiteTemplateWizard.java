@@ -178,9 +178,11 @@ public class SiteTemplateWizard extends javax.swing.JPanel {
                 }
                 site = (SiteTemplateImplementation)sitesComboBox.getSelectedItem();
                 customizer = site.getCustomizer();
-                component = customizer.getComponent();
                 if (customizer != null) {
+                    component = customizer.getComponent();
                     placeholder.add(component, BorderLayout.CENTER);
+                } else {
+                    component = null;
                 }
                 placeholder.revalidate();
             }
