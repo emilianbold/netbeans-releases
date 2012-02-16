@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import com.sun.source.util.TreePath;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
@@ -52,6 +54,7 @@ import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.api.IntroduceLocalExtensionRefactoring;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.filesystems.FileObject;
@@ -167,7 +170,18 @@ public final class IntroduceLocalExtensionUI implements RefactoringUI {
     public static class IntroduceLocalExtensionUIFactory implements JavaRefactoringUIFactory {
         @Override
         public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
-            return IntroduceLocalExtensionUI.create(handles[0], info);
+            assert handles.length == 1;
+            Element selected = handles[0].resolveElement(info);
+            TreePathHandle s = handles[0];
+            if (selected == null || !(selected.getKind().isClass())) {
+                TreePath classTreePath = JavaRefactoringUtils.findEnclosingClass(info, handles[0].resolve(info), true, true, true, true, true);
+
+                if (classTreePath == null) {
+                    return null;
+                }
+                s = TreePathHandle.create(classTreePath, info);
+            }
+            return IntroduceLocalExtensionUI.create(s, info);
         }
     }
 }
