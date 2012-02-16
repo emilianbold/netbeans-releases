@@ -112,6 +112,8 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
                 return new ExtractInterfaceRefactoringPlugin((ExtractInterfaceRefactoring) refactoring);
             } else if (refactoring instanceof ExtractSuperclassRefactoring) {
                 return new ExtractSuperclassRefactoringPlugin((ExtractSuperclassRefactoring) refactoring);
+            } else if (refactoring instanceof IntroduceLocalExtensionRefactoring) {
+                return new IntroduceLocalExtensionPlugin((IntroduceLocalExtensionRefactoring) refactoring);
             } else if (refactoring instanceof PullUpRefactoring) {
                 return new PullUpRefactoringPlugin((PullUpRefactoring)refactoring);
             } else if (refactoring instanceof PushDownRefactoring) {

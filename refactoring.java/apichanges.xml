@@ -49,8 +49,24 @@ made subject to such option by the copyright holder.
         <apidef name="JavaRefactoringAPI">Java Refactoring API</apidef>
     </apidefs>
     <changes>
+        <change id="IntroduceLocalExtension">
+            <api name="JavaRefactoringAPI"/>
+            <summary>Added support for Introduce Local Extension Refactoring.</summary>
+            <version major="1" minor="34"/>
+            <date day="8" month="2" year="2012"/>
+            <author login="ralphbenjamin"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added support for Introduce Local Extension Refactoring.
+                </p>    
+            </description>
+            <class package="org.netbeans.modules.refactoring.java.api" name="IntroduceLocalExtensionRefactoring"/>
+            <class package="org.netbeans.modules.refactoring.java.spi.ui" name="JavaActionsImplementationProvider"/>
+            <issue number="208164"/>
+        </change>
         <change id="EncapsulateFieldRefactoring-PropertyChangeSupport">
-            <api name="refactoring"/>
+            <api name="JavaRefactoringAPI"/>
             <summary>Added option to generate PropertyChangeSupport in EncapsulateFieldRefactoring.</summary>
             <version major="1" minor="32"/>
             <date day="6" month="12" year="2011"/>
@@ -65,7 +81,7 @@ made subject to such option by the copyright holder.
             <issue number="205996"/>
         </change>
         <change id="JavaMoveMembersProperties">
-            <api name="refactoring"/>
+            <api name="JavaRefactoringAPI"/>
             <summary>Added new Move Members Properties.</summary>
             <version major="1" minor="31"/>
             <date day="30" month="11" year="2011"/>
@@ -80,7 +96,7 @@ made subject to such option by the copyright holder.
             <issue number="205696"/>
         </change>
         <change id="IntroduceParameterRefactoring">
-            <api name="refactoring"/>
+            <api name="JavaRefactoringAPI"/>
             <summary>Added new refactoring and dependent change in ChangeParameterRefactoring.</summary>
             <version major="1" minor="28"/>
             <date day="29" month="8" year="2011"/>
@@ -98,7 +114,7 @@ made subject to such option by the copyright holder.
             <issue number="201399"/>
         </change>
         <change id="JavaScopeBuilder">
-            <api name="refactoring"/>
+            <api name="JavaRefactoringAPI"/>
             <summary>UI support for creating a new Scope.</summary>
             <version major="1" minor="27"/>
             <date day="17" month="8" year="2011"/>
@@ -114,7 +130,7 @@ made subject to such option by the copyright holder.
             <issue number="200572"/>
         </change>
         <change id="ChangeParameters">
-            <api name="refactoring"/>
+            <api name="JavaRefactoringAPI"/>
             <summary>Method name and return type added, to allow them to be changed from the refactoring.</summary>
             <version major="1" minor="18"/>
             <date day="19" month="7" year="2011"/>
