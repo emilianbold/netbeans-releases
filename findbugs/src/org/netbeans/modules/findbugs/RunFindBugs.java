@@ -43,6 +43,8 @@ package org.netbeans.modules.findbugs;
 
 import edu.umd.cs.findbugs.BugCollectionBugReporter;
 import edu.umd.cs.findbugs.BugInstance;
+import edu.umd.cs.findbugs.BugPattern;
+import edu.umd.cs.findbugs.DetectorFactory;
 import edu.umd.cs.findbugs.DetectorFactoryCollection;
 import edu.umd.cs.findbugs.FindBugs2;
 import edu.umd.cs.findbugs.Project;
@@ -57,6 +59,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
@@ -70,6 +73,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -79,6 +83,8 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=Analyzer.class)
 public class RunFindBugs implements Analyzer {
 
+    private static final String PREFIX_FINDBUGS = "findbugs:";
+    
     @Override
     public Iterable<? extends ErrorDescription> analyze(Collection<? extends FileObject> sourceRoots, ProgressContributor progress) {
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
@@ -88,6 +94,7 @@ public class RunFindBugs implements Analyzer {
                 FindBugs2 engine = new FindBugs2();
                 Project p = new Project();
                 BugCollectionBugReporter r = new BugCollectionBugReporter(p);
+                Preferences settings = NbPreferences.forModule(RunFindBugs.class).node("global-settings");
 
                 for (URL binary : BinaryForSourceQuery.findBinaryRoots(sr.toURL()).getRoots()) {
                     try {
@@ -101,11 +108,13 @@ public class RunFindBugs implements Analyzer {
                 r.setRankThreshold(Integer.MAX_VALUE);
                 engine.setProject(p);
                 engine.setBugReporter(r);
-                engine.setUserPreferences(UserPreferences.createDefaultUserPreferences());
+                engine.setUserPreferences(readPreferences(settings));
                 engine.setDetectorFactoryCollection(DetectorFactoryCollection.instance());
                 engine.execute();
 
                 for (BugInstance b : r.getBugCollection().getCollection()) {
+                    if (!settings.getBoolean(b.getBugPattern().getType(), isEnabledByDefault(b.getBugPattern()))) continue;
+                    
                     SourceLineAnnotation sourceLine = b.getPrimarySourceLineAnnotation();
 
                     if (sourceLine != null) {
@@ -115,7 +124,7 @@ public class RunFindBugs implements Analyzer {
                             DataObject d = DataObject.find(sourceFile);
                             EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
                             Document doc = ec.openDocument();
-                            result.add(ErrorDescriptionFactory.createErrorDescription("findbugs:" + b.getType(), Severity.VERIFIER, b.getMessageWithoutPrefix(), b.getAbridgedMessage(), ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList()), doc, sourceLine.getStartLine()));
+                            result.add(ErrorDescriptionFactory.createErrorDescription(PREFIX_FINDBUGS + b.getType(), Severity.VERIFIER, b.getMessageWithoutPrefix(), b.getAbridgedMessage(), ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList()), doc, sourceLine.getStartLine()));
                         }
                     }
                 }
@@ -137,11 +146,49 @@ public class RunFindBugs implements Analyzer {
 
     @Override
     public String getDisplayName4Id(String id) {
+        if (!id.startsWith(PREFIX_FINDBUGS)) return null;
+        
+        id = id.substring(PREFIX_FINDBUGS.length());
+
+        for (DetectorFactory df : DetectorFactoryCollection.instance().getFactories()) {
+            for (BugPattern bp : df.getReportedBugPatterns()) {
+                if (id.equals(bp.getType())) return bp.getShortDescription();
+            }
+        }
+
         return id;
     }
 
     @Override
     public Image getIcon() {
         return null;
+    }
+
+    private static UserPreferences readPreferences(Preferences settings) {
+        UserPreferences prefs = UserPreferences.createDefaultUserPreferences();
+
+        for (DetectorFactory df : DetectorFactoryCollection.instance().getFactories()) {
+            boolean enable = false;
+
+            for (BugPattern bp : df.getReportedBugPatterns()) {
+                enable |= settings.getBoolean(bp.getType(), prefs.isDetectorEnabled(df));
+            }
+
+            prefs.enableDetector(df, enable);
+        }
+
+        return prefs;
+    }
+
+    public static boolean isEnabledByDefault(BugPattern bp) {
+        DetectorFactoryCollection dfc = DetectorFactoryCollection.instance();
+
+        for (DetectorFactory df : dfc.getFactories()) {
+            if (df.getReportedBugPatterns().contains(bp)) {
+                return UserPreferences.createDefaultUserPreferences().isDetectorEnabled(df);
+            }
+        }
+
+        return false;
     }
 }
