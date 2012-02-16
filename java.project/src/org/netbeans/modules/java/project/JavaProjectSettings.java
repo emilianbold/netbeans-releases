@@ -67,7 +67,11 @@ public class JavaProjectSettings {
         /**
          * The package view should be displayed as a tree of folders.
          */
-        TREE;
+        TREE,
+        /**
+         * #53192: the package view should be displayed as a tree of folders with unique subcomponents collapsed.
+         */
+        REDUCED_TREE;
     }
 
     public static final String PROP_PACKAGE_VIEW_TYPE = "packageViewType"; //NOI18N

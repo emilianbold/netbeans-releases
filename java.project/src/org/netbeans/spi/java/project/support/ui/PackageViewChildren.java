@@ -1054,7 +1054,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                 // must be annotated; general package icon is returned instead
                 return ImageUtilities.loadImage(PackageDisplayUtils.PACKAGE);
             }
-            return PackageDisplayUtils.getIcon(folder, path.replace('/', '.'), isLeaf() );
+            return PackageDisplayUtils.getIcon(folder, isLeaf());
         }
         
         private Image getMyOpenedIcon(int type) {
@@ -1121,7 +1121,9 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             return getCookie(DataFolder.class);
         }
         
-        private boolean isValidPackageName(String name) {
+    }
+    
+    static boolean isValidPackageName(String name) {
             if (name.length() == 0) {
                 //Fast check of default pkg
                 return true;
@@ -1156,7 +1158,6 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                 delimExpected = !delimExpected;
             }
             return delimExpected;
-        }
     }
     
     private static final class NoFoldersContainer 

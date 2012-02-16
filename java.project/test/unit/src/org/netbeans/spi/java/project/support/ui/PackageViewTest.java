@@ -62,21 +62,27 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeOp;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.test.MockLookup;
@@ -1046,16 +1052,22 @@ public class PackageViewTest extends NbTestCase {
         FileUtil.createData(r, "museum/of/bad/Art.java");
         FileUtil.createData(r, "net/pond/aquafowl/PrettyDuckling.java");
         FileUtil.createData(r, "net/pond/aquafowl/UglyDuckling.java");
+        FileUtil.createData(r, "net/pond/aquafowl/KRTEK");
         Grp g = new Grp();
         Node n = PackageView.createPackageView(g);
         assertTree("Test{a.goo.man.is.har.to{Find.java}, m.of.contemporary{Art.java}, n.pon.aquafowl{PrettyDuckling.java}}", n);
         g.nonsense();
         assertTree("Test{a.goo.man.is.har.to{Find.java}, m.of.bad{Art.java}, n.pon.aquafowl{UglyDuckling.java}}", n);
         g = new Grp();
-        n = new TreeRootNode(g);
+        n = new TreeRootNode(g, false);
         assertTree("Test{a{good{man{is{hard{to{Find.java}}}}}}, museum{of{contemporary{Art.java}}}, net{pond{aquafowl{PrettyDuckling.java}}}}", n);
         g.nonsense();
         assertTree("Test{a{good{man{is{hard{to{Find.java}}}}}}, museum{of{bad{Art.java}}}, net{pond{aquafowl{UglyDuckling.java}}}}", n);
+        g = new Grp();
+        n = new TreeRootNode(g, true);
+        assertTree("Test{a.good.man.is.hard.to{Find.java}, museum.of.contemporary{Art.java}, net.pond.aquafowl{PrettyDuckling.java}}", n);
+        g.nonsense();
+        assertTree("Test{a.good.man.is.hard.to{Find.java}, museum.of.bad{Art.java}, net.pond.aquafowl{UglyDuckling.java}}", n);
     }
 
     public void testMemoryLeak() throws Exception { // #99804
@@ -1084,5 +1096,122 @@ public class PackageViewTest extends NbTestCase {
             return name + kidNames;
         }
     }
+
+    private SourceGroup sampleGroup() throws IOException {
+        FileObject r = FileUtil.createMemoryFileSystem().getRoot();
+        FileUtil.createData(r, "org/netbeans/api/stuff/Stuff.java");
+        FileUtil.createData(r, "org/netbeans/modules/stuff/Bundle.properties");
+        FileUtil.createData(r, "org/netbeans/modules/stuff/StuffUtils.java");
+        FileUtil.createData(r, "org/netbeans/modules/stuff/resources/stuff.png");
+        FileUtil.createData(r, "org/netbeans/spi/stuff/StuffImplementation.java");
+        FileUtil.createData(r, "org/netbeans/spi/stuff/support/AbstractStuffImplementation.java");
+        SourceGroup g = new SimpleSourceGroup(r);
+        return g;
+    }
+
+    public void testTreeBasics() throws Exception {
+        SourceGroup g = sampleGroup();
+        Node n = new TreeRootNode(g, false);
+        assertTree("TestGroup{org{netbeans{api{stuff{Stuff.java}}, modules{stuff{resources{stuff.png}, Bundle.properties, StuffUtils.java}}, spi{stuff{support{AbstractStuffImplementation.java}, StuffImplementation.java}}}}}", n);
+        // XXX test PathFinder
+    }
+
+    public void testReducedTreeBasics() throws Exception { // #53192
+        SourceGroup g = sampleGroup();
+        Node n = new TreeRootNode(g, true);
+        assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, modules.stuff{resources{stuff.png}, Bundle.properties, StuffUtils.java}, spi.stuff{support{AbstractStuffImplementation.java}, StuffImplementation.java}}}", n);
+        FileObject r = g.getRootFolder();
+        FileUtil.createData(r, "README.txt");
+        DataFolder.findFolder(r).children(); // force refresh
+        assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, modules.stuff{resources{stuff.png}, Bundle.properties, StuffUtils.java}, spi.stuff{support{AbstractStuffImplementation.java}, StuffImplementation.java}}, README.txt}", n);
+        r.getFileObject("org/netbeans/modules/stuff").delete();
+        DataFolder.findFolder(r.getFileObject("org/netbeans/modules")).children();
+        assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, modules{}, spi.stuff{support{AbstractStuffImplementation.java}, StuffImplementation.java}}, README.txt}", n);
+        r.getFileObject("org/netbeans/modules").delete();
+        DataFolder.findFolder(r.getFileObject("org/netbeans")).children();
+        assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, spi.stuff{support{AbstractStuffImplementation.java}, StuffImplementation.java}}, README.txt}", n);
+        FileUtil.createData(r, "org/netbeans/spi/Oops.java");
+        DataFolder.findFolder(r.getFileObject("org/netbeans/spi")).children();
+        assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, spi{stuff{support{AbstractStuffImplementation.java}, StuffImplementation.java}, Oops.java}}, README.txt}", n);
+        r.getFileObject("org/netbeans/spi/Oops.java").delete();
+        DataFolder.findFolder(r.getFileObject("org/netbeans/spi")).children();
+        assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, spi.stuff{support{AbstractStuffImplementation.java}, StuffImplementation.java}}, README.txt}", n);
+        r.getFileObject("README.txt").delete();
+        DataFolder.findFolder(r).children();
+        assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, spi.stuff{support{AbstractStuffImplementation.java}, StuffImplementation.java}}}", n);
+        r.getFileObject("org/netbeans/spi/stuff/StuffImplementation.java").delete();
+        DataFolder.findFolder(r.getFileObject("org/netbeans/spi/stuff")).children();
+        assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, spi.stuff.support{AbstractStuffImplementation.java}}}", n);
+    }
+
+    public void testReducedTreeRename() throws Exception {
+        final AtomicReference<Node> node = new AtomicReference<Node>();
+        final AtomicReference<String> newName = new AtomicReference<String>();
+        SourceGroup g = sampleGroup();
+        final FileObject rootFolder = g.getRootFolder();
+        Node r = new TreeRootNode(g, true);
+        Node n = NodeOp.findPath(r, new String[] {"org.netbeans", "modules.stuff"});
+        n.setName("modules.stuph");
+        assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, modules.stuph{resources{stuff.png}, Bundle.properties, StuffUtils.java}, spi.stuff{support{AbstractStuffImplementation.java}, StuffImplementation.java}}}", r);
+        n = NodeOp.findPath(r, new String[] {"org.netbeans", "modules.stuph"});
+        n.setName("modulez.stuph");
+        assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, modulez.stuph{resources{stuff.png}, Bundle.properties, StuffUtils.java}, spi.stuff{support{AbstractStuffImplementation.java}, StuffImplementation.java}}}", r);
+        MockLookup.setInstances(new PackageRenameHandler() {
+            @Override public void handleRename(Node _node, String _newName) {
+                node.set(_node);
+                newName.set(_newName);
+            }
+        }, new ClassPathProvider() {
+            @Override public ClassPath findClassPath(FileObject file, String type) {
+                if (type.equals(ClassPath.SOURCE) && (file == rootFolder || FileUtil.isParentOf(rootFolder, file))) {
+                    return ClassPathSupport.createClassPath(rootFolder);
+                } else {
+                    return null;
+                }
+            }
+        });
+        n = NodeOp.findPath(r, new String[] {"org.netbeans", "api.stuff"});
+        n.setName("api.stuph");
+        assertEquals(n, node.get());
+        assertEquals("org.netbeans.api.stuph", newName.get());
+        assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, modulez.stuph{resources{stuff.png}, Bundle.properties, StuffUtils.java}, spi.stuff{support{AbstractStuffImplementation.java}, StuffImplementation.java}}}", r);
+    }
+
+    public void testReducedTreeDelete() throws Exception {
+        SourceGroup g = sampleGroup();
+        Node r = new TreeRootNode(g, true);
+        assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, modules.stuff{resources{stuff.png}, Bundle.properties, StuffUtils.java}, spi.stuff{support{AbstractStuffImplementation.java}, StuffImplementation.java}}}", r);
+        Node n = NodeOp.findPath(r, new String[] {"org.netbeans", "modules.stuff"});
+        n.destroy();
+        assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, spi.stuff{support{AbstractStuffImplementation.java}, StuffImplementation.java}}}", r);
+    }
+
+    public void testReducedTreePathFinder() throws Exception {
+        SourceGroup g = sampleGroup();
+        final Node r = new TreeRootNode(g, true);
+        final FileObject rootFolder = g.getRootFolder();
+        final TreeRootNode.PathFinder pf = new TreeRootNode.PathFinder(g, true);
+        class A {
+            void assertPath(String expected, String resource) {
+                FileObject f = rootFolder.getFileObject(resource);
+                assertNotNull(resource, f);
+                Node n = pf.findPath(r, f);
+                if (expected == null) {
+                    assertNull(resource, n);
+                } else {
+                    assertNotNull(resource, n);
+                    assertEquals(expected, Arrays.toString(NodeOp.createPath(n, r)));
+                }
+            }
+        }
+        new A().assertPath("[org.netbeans, api.stuff, Stuff.java]", "org/netbeans/api/stuff/Stuff.java");
+        new A().assertPath("[org.netbeans, api.stuff]", "org/netbeans/api/stuff");
+        new A().assertPath(null, "org/netbeans/api"); // displayed only in Files
+        new A().assertPath("[org.netbeans, spi.stuff, StuffImplementation.java]", "org/netbeans/spi/stuff/StuffImplementation.java");
+        new A().assertPath("[org.netbeans, spi.stuff, support]", "org/netbeans/spi/stuff/support");
+        new A().assertPath("[org.netbeans, spi.stuff, support, AbstractStuffImplementation.java]", "org/netbeans/spi/stuff/support/AbstractStuffImplementation.java");
+    }
+
+    // XXX test reduced tree copy & paste, drag & drop
 
 }

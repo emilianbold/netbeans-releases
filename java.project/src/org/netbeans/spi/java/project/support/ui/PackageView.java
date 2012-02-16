@@ -300,7 +300,9 @@ public class PackageView {
                 case PACKAGES:
                     return new PackageRootNode(group);
                 case TREE:
-                    return new TreeRootNode(group);
+                    return new TreeRootNode(group, false);
+                case REDUCED_TREE:
+                    return new TreeRootNode(group, true);
                 default:
                     assert false : "Unknown PackageView Type"; //NOI18N
                     return new PackageRootNode(group);
@@ -338,7 +340,7 @@ public class PackageView {
         
         public Icon getIcon() {
             if ( icon == null ) {
-                Image image = PackageDisplayUtils.getIcon(pkg, pkgname, empty);                
+                Image image = PackageDisplayUtils.getIcon(pkg, empty);                
                 icon = image2icon.get(image);
                 if ( icon == null ) {            
                     icon = new ImageIcon( image );
