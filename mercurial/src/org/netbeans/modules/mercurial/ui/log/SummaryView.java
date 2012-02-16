@@ -95,6 +95,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
         private RepositoryRevision revision;
         private List<Event> events = new ArrayList<Event>(10);
+        private List<Event> dummyEvents;
         private SearchHistoryPanel master;
         private String complexRevision;
         private final PropertyChangeListener list;
@@ -103,10 +104,12 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         public HgLogEntry (RepositoryRevision revision, SearchHistoryPanel master) {
             this.revision = revision;
             this.master = master;
+            this.dummyEvents = Collections.<Event>emptyList();
             if (revision.isEventsInitialized()) {
                 refreshEvents();
                 list = null;
             } else {
+                prepareDummyEvents();
                 revision.addPropertyChangeListener(RepositoryRevision.PROP_EVENTS_CHANGED, list = WeakListeners.propertyChange(this, revision));
             }
         }
@@ -114,6 +117,11 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         @Override
         public Collection<Event> getEvents () {
             return events;
+        }
+
+        @Override
+        public Collection<Event> getDummyEvents () {
+            return dummyEvents;
         }
 
         @Override
@@ -227,6 +235,14 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             return revision;
         }
 
+        void prepareDummyEvents () {
+            ArrayList<Event> evts = new ArrayList<Event>(revision.getDummyEvents().length);
+            for (RepositoryRevision.Event event : revision.getDummyEvents()) {
+                evts.add(new HgLogEvent(master, event));
+            }
+            dummyEvents = evts;
+        }
+
         void refreshEvents () {
             ArrayList<Event> evts = new ArrayList<Event>(revision.getEvents().length);
             for (RepositoryRevision.Event event : revision.getEvents()) {
@@ -234,6 +250,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             }
             List<Event> oldEvents = new ArrayList<Event>(events);
             List<Event> newEvents = new ArrayList<Event>(evts);
+            dummyEvents.clear();
             events = evts;
             eventsChanged(oldEvents, newEvents);
         }

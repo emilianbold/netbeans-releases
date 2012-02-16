@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
 
 /**
  * The node that is rendered in the IssuesTable. It gets values to display from an
- * Issue which serves as the 'data' 'visual' node.
+ * IssueProvider which serves as the 'data' 'visual' node.
  * 
  * @author Tomas Stupka
  */
@@ -76,7 +76,7 @@ public abstract class IssueNode extends AbstractNode {
 
     public static final String LABEL_NAME_SUMMARY          = "issue.summary";     // NOI18N
 
-    private Issue issue;
+    private IssueProvider issue;
 
     private String htmlDisplayName;
     private Action preferedAction = new AbstractAction() {
@@ -87,13 +87,13 @@ public abstract class IssueNode extends AbstractNode {
 
     /**
      * Creates a {@link IssueNode}
-     * @param issue - the {@link Issue} to be represented by this IssueNode
+     * @param issue - the {@link IssueProvider} to be represented by this IssueNode
      */
-    public IssueNode(Issue issue) {
+    public IssueNode(IssueProvider issue) {
         this(Children.LEAF, issue);
     }
 
-    private IssueNode(Children children, Issue issue) {
+    private IssueNode(Children children, IssueProvider issue) {
         super(children, Lookups.fixed(issue));
         this.issue = issue;
         initProperties();
@@ -110,12 +110,12 @@ public abstract class IssueNode extends AbstractNode {
         });
     }
 
-    protected Issue getIssue() {
+    protected IssueProvider getIssue() {
         return issue;
     }
     
     /**
-     * Returns the properties to be shown in the Issue Table according to the ColumnDescriptors returned by
+     * Returns the properties to be shown in the IssueProvider Table according to the ColumnDescriptors returned by
      * {@link Query#getColumnDescriptors() }
      *
      * @return properites
@@ -204,7 +204,7 @@ public abstract class IssueNode extends AbstractNode {
                 return e.getLocalizedMessage();
             }
         }
-        public Issue getIssue() {
+        public IssueProvider getIssue() {
             return IssueNode.this.issue;
         }
         public int compareTo(IssueProperty o) {
@@ -242,7 +242,7 @@ public abstract class IssueNode extends AbstractNode {
             super(LABEL_NAME_SEEN,
                   Boolean.class,
                   "", // NOI18N
-                  NbBundle.getMessage(Issue.class, "CTL_Issue_Seen_Desc")); // NOI18N
+                  NbBundle.getMessage(IssueProvider.class, "CTL_Issue_Seen_Desc")); // NOI18N
         }
         public Boolean getValue() {
             return IssueCacheUtils.wasSeen(issue);
@@ -264,8 +264,8 @@ public abstract class IssueNode extends AbstractNode {
         public RecentChangesProperty() {
             super(LABEL_RECENT_CHANGES,
                   String.class,
-                  NbBundle.getMessage(Issue.class, "CTL_Issue_Recent"), // NOI18N
-                  NbBundle.getMessage(Issue.class, "CTL_Issue_Recent_Desc")); // NOI18N
+                  NbBundle.getMessage(IssueProvider.class, "CTL_Issue_Recent"), // NOI18N
+                  NbBundle.getMessage(IssueProvider.class, "CTL_Issue_Recent_Desc")); // NOI18N
         }
         public String getValue() {
             return IssueCacheUtils.getRecentChanges(getIssue());

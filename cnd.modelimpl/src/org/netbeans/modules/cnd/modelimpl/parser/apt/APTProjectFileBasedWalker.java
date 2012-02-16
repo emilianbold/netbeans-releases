@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.modelimpl.parser.apt;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTAbstractWalker;
@@ -99,7 +100,13 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
                             CndUtils.assertTrue(inclFileOwner.getFileSystem() == resolvedPath.getFileSystem(), "Different FS for " + path + ": " + inclFileOwner.getFileSystem() + " vs " + resolvedPath.getFileSystem()); // NOI18N
                         }
                         try {
+                            APTPreprocHandler.State stateBefore = getPreprocHandler().getState();
+                            assert !stateBefore.isCleaned();
                             included = includeAction(inclFileOwner, path, mode, apt, postIncludeState);
+                            if (included != null) {
+                                putNodeProperty(apt, APTPreprocHandler.State.class, stateBefore);
+                                putNodeProperty(apt, CsmFile.class, included);
+                            }
                         } catch (FileNotFoundException ex) {
                             APTUtils.LOG.log(Level.WARNING, "APTProjectFileBasedWalker: file {0} not found", new Object[] {path});// NOI18N
                             DiagnosticExceptoins.register(ex);

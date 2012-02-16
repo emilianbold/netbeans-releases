@@ -51,7 +51,12 @@ made subject to such option by the copyright holder.
 
 <map version="2.0">
 
+
+<!-- ================================ TOC Menu IDs ================================ -->
 <mapID target="dbschema" url="dbschema.html" />
-<mapID target="dbschema_ctxhelp_wizard" url="dbschema.html" />
 <mapID target="dbschema_recapture" url="dbschema_recapture.html" />
+
+<!-- ================ CSH Help IDs for New Database Schema wizard ================= -->
+<mapID target="dbschema_ctxhelp_wizard" url="csh-dbschema-wizard1.html" />
+<mapID target="dbschema_ctxhelp_capture_tables" url="csh-dbschema-wizard2.html" />
 </map>

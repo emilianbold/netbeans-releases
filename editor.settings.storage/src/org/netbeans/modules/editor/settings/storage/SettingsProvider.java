@@ -66,6 +66,7 @@ import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.fontscolors.FontColorSettingsImpl;
 import org.netbeans.modules.editor.settings.storage.preferences.PreferencesImpl;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.AbstractLookup;
@@ -77,6 +78,11 @@ import org.openide.util.lookup.ProxyLookup;
  *
  *  @author Jan Jancura
  */
+@MIMEResolver.Registration(
+    displayName="#EditorResolver",
+    resource="mime-resolvers.xml",
+    position=330
+)
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.MimeDataProvider.class)
 public final class SettingsProvider implements MimeDataProvider {
 

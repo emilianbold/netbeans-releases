@@ -119,12 +119,6 @@ Other names may be trademarks of their respective owners.
 <mapID target="managing_a_module" url="configure/modules/managing_a_module.html" />
 <mapID target="managing_updatecenters" url="configure/modules/updatecenters.html" />
 
-<!-- Plugin manager csh topics -->
-<mapID target="org.netbeans.modules.autoupdate.ui.SettingsTab" url="configure/modules/csh_plug_settings.html" />
-<mapID target="org.netbeans.modules.autoupdate.ui.UnitTab.UPDATE" url="configure/modules/csh_plug_updates.html" />
-<mapID target="org.netbeans.modules.autoupdate.ui.UnitTab.AVAILABLE" url="configure/modules/csh_plug_newplugs.html" />
-<mapID target="org.netbeans.modules.autoupdate.ui.UnitTab.INSTALLED" url="configure/modules/csh_plug_installed.html" />
-<mapID target="org.netbeans.modules.autoupdate.ui.UnitTab.LOCAL" url="configure/modules/csh_plug_downloaded.html" />
 
 <mapID target="shortcuts.kybd" url="shortcuts/kybdshortcuts.html" />
 <mapID target="shortcuts.menus" url="shortcuts/menucuts.html" />
@@ -153,6 +147,13 @@ Other names may be trademarks of their respective owners.
 <mapID target="javascript_debugger_advanced_options" url="javascript/options.html" />
 
 <!-- ================================ begin CSH IDs ================================ -->
+
+<!-- Plugin manager csh topics -->
+<mapID target="org.netbeans.modules.autoupdate.ui.SettingsTab" url="configure/modules/csh_plug_settings.html" />
+<mapID target="org.netbeans.modules.autoupdate.ui.UnitTab.UPDATE" url="configure/modules/csh_plug_updates.html" />
+<mapID target="org.netbeans.modules.autoupdate.ui.UnitTab.AVAILABLE" url="configure/modules/csh_plug_newplugs.html" />
+<mapID target="org.netbeans.modules.autoupdate.ui.UnitTab.INSTALLED" url="configure/modules/csh_plug_installed.html" />
+<mapID target="org.netbeans.modules.autoupdate.ui.UnitTab.LOCAL" url="configure/modules/csh_plug_downloaded.html" />
 
 <!-- Projects window :-->
 <mapID target="ProjectTab_Projects" url="project/csh/proj_project_window.html" />

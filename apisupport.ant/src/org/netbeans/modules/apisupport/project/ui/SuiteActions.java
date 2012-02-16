@@ -48,6 +48,7 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -421,7 +422,7 @@ public final class SuiteActions implements ActionProvider, ExecProject {
      */
     public ExecutorTask invokeActionImpl(String command, Lookup context) throws IllegalArgumentException, IOException {
         String[] targetNames;
-        Properties p = null;
+        Properties p = new Properties();
 
         if (command.equals(ActionProvider.COMMAND_BUILD)) {
             targetNames = new String[] {"build"}; // NOI18N
@@ -429,20 +430,6 @@ public final class SuiteActions implements ActionProvider, ExecProject {
             targetNames = new String[] {"clean"}; // NOI18N
         } else if (command.equals(ActionProvider.COMMAND_REBUILD)) {
             targetNames = new String[] {"clean", "build"}; // NOI18N
-        } else if (command.equals(ActionProvider.COMMAND_RUN)) {
-            if (project.getTestUserDirLockFile().isFile()) {
-                // #141069: lock file exists, run with bogus option
-                p = new Properties();
-                p.setProperty(ModuleActions.TEST_USERDIR_LOCK_PROP_NAME, ModuleActions.TEST_USERDIR_LOCK_PROP_VALUE);
-            }
-            targetNames = new String[] {"run"}; // NOI18N
-        } else if (command.equals(ActionProvider.COMMAND_DEBUG)) {
-            if (project.getTestUserDirLockFile().isFile()) {
-                // #141069: lock file exists, run with bogus option
-                p = new Properties();
-                p.setProperty(ModuleActions.TEST_USERDIR_LOCK_PROP_NAME, ModuleActions.TEST_USERDIR_LOCK_PROP_VALUE);
-            }
-            targetNames = new String[] {"debug"}; // NOI18N
         } else if (command.equals(ActionProvider.COMMAND_TEST)) {
             targetNames = new String[] {"test"}; // NOI18N
         } else if (command.equals(COMMAND_BUILD_ZIP)) {
@@ -468,6 +455,8 @@ public final class SuiteActions implements ActionProvider, ExecProject {
         } else {
             targetNames = new String[] {command};
         }
+
+        ModuleActions.setRunArgsIde(project, new SuiteProperties(project, project.getHelper(), project.getEvaluator(), Collections.<NbModuleProject>emptySet()), command, p, project.getTestUserDirLockFile());
         
         return ActionUtils.runTarget(findBuildXml(project), targetNames, p);
     }

@@ -44,11 +44,11 @@ package org.netbeans.modules.profiler.selector.api.builders;
 
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.profiler.selector.api.SelectionTreeBuilderType;
 import org.netbeans.modules.profiler.selector.api.nodes.ProjectNode;
 import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
 import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
  * A default "package view" {@linkplain SelectionTreeBuilder} implementation 
@@ -60,9 +60,8 @@ public class PackageSelectionTreeViewBuilder extends ProjectSelectionTreeBuilder
         this(project, false);
     }
 
-    @NbBundle.Messages("PackageSelectionTreeViewBuilder_PackageView=Package View")
     public PackageSelectionTreeViewBuilder(Lookup.Provider project, boolean isPreferred) {
-        super(new Type("package-view", Bundle.PackageSelectionTreeViewBuilder_PackageView()), isPreferred, project); // NOI18N
+        super(new SelectionTreeBuilderType("package-view", Bundle.PackageSelectionTreeViewBuilder_PackageView()), isPreferred, project); // NOI18N
     }
 
     @Override
@@ -73,6 +72,5 @@ public class PackageSelectionTreeViewBuilder extends ProjectSelectionTreeBuilder
     @Override
     final public int estimatedNodeCount() {
         return 1;
-    }
-
+    }    
 }

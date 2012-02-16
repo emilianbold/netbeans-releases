@@ -1316,13 +1316,13 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String JRE_INSTALLER_FILE_NAME =
             "{jre-installer-file}";
     public static final String CAB_INSTALLER_FILE_SJ =
-            "sj170020.cab";
+            "sj170030.cab";
     public static final String CAB_INSTALLER_FILE_SS =
-            "ss170020.cab";
+            "ss170030.cab";
     public static final String CAB_INSTALLER_FILE_ST =
-            "st170020.cab";
+            "st170030.cab";
     public static final String CAB_INSTALLER_FILE_SZ =
-            "sz170020.cab";
+            "sz170030.cab";
     public static final String ERROR_JDK_INSTALL_SCRIPT_RETURN_NONZERO_KEY =
             "CL.error.jdk.installation.return.nonzero";//NOI18N
     public static final String ERROR_JDK_UNINSTALL_SCRIPT_RETURN_NONZERO_KEY =

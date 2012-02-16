@@ -172,8 +172,7 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
     
     private URL getClassesUrl() {
         if (classesUrl == null) {
-            File classesDir = project.getClassesDirectory();
-            classesUrl = classesDir != null ? FileUtil.urlForArchiveOrDir(classesDir) : null;
+            classesUrl = FileUtil.urlForArchiveOrDir(project.getClassesDirectory());
         }
         return classesUrl;
     }

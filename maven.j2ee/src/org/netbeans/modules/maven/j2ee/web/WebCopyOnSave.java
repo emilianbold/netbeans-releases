@@ -316,9 +316,13 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
     }
 
     private FileObject findWebDocRoot(FileObject child) {
-        FileObject documentBase = getWebModule().getDocumentBase();
-        if (documentBase != null && FileUtil.isParentOf(documentBase, child)) {
-            return documentBase;
+        WebModule webModule = getWebModule();
+
+        if (webModule != null) {
+            FileObject documentBase = webModule.getDocumentBase();
+            if (documentBase != null && FileUtil.isParentOf(documentBase, child)) {
+                return documentBase;
+            }
         }
         return null;
     }

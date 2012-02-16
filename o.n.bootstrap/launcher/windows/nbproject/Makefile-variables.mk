@@ -14,3 +14,14 @@ CND_ARTIFACT_PATH_nbexec=nbexec.dll
 CND_PACKAGE_DIR_nbexec=dist/nbexec/Cygwin-Windows/package
 CND_PACKAGE_NAME_nbexec=libwindows.dll.tar
 CND_PACKAGE_PATH_nbexec=dist/nbexec/Cygwin-Windows/package/libwindows.dll.tar
+#
+# include compiler specific variables
+#
+# dmake command
+ROOT:sh = test -f nbproject/private/Makefile-variables.mk || \
+	(mkdir -p nbproject/private && touch nbproject/private/Makefile-variables.mk)
+#
+# gmake command
+.PHONY: $(shell test -f nbproject/private/Makefile-variables.mk || (mkdir -p nbproject/private && touch nbproject/private/Makefile-variables.mk))
+#
+include nbproject/private/Makefile-variables.mk

@@ -46,9 +46,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.MessageFormat;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
 class QueryResultHandleImpl extends QueryResultHandle implements ActionListener {
 
 
-    private final Query query;
+    private final QueryProvider query;
     private final String label;
     private final String tooltip;
     private final Filter filter;
@@ -75,7 +75,7 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
     private static MessageFormat unseenTooltipFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultUnseenTooltip"));     // NOI18N
     private static MessageFormat newTooltipFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultNewTooltip"));           // NOI18N
 
-    QueryResultHandleImpl(Query query, String label, String tooltip, Filter filter, ResultType type) {
+    QueryResultHandleImpl(QueryProvider query, String label, String tooltip, Filter filter, ResultType type) {
         this.query = query;
         this.label = label;
         this.tooltip = tooltip;
@@ -108,8 +108,8 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
         BugtrackingUtil.openQuery(query, null, true);
     }
 
-    static QueryResultHandleImpl forStatus(Query query, int status) {
-        Issue[] issues;
+    static QueryResultHandleImpl forStatus(QueryProvider query, int status) {
+        IssueProvider[] issues;
         switch(status) {
 
             case IssueCache.ISSUE_STATUS_ALL:
@@ -167,9 +167,9 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
         }
     }
 
-    static QueryResultHandle getAllChangedResult(Query query) {
+    static QueryResultHandle getAllChangedResult(QueryProvider query) {
         int notIssues = 0;
-        Issue[] issues = query.getIssues(IssueCache.ISSUE_STATUS_NOT_SEEN);
+        IssueProvider[] issues = query.getIssues(IssueCache.ISSUE_STATUS_NOT_SEEN);
         notIssues = issues != null ? issues.length : 0;
         
         return new QueryResultHandleImpl(

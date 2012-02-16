@@ -57,7 +57,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.localhistory.LocalHistory;
-import org.netbeans.modules.localhistory.LocalHistorySettings;
+import org.netbeans.modules.versioning.ui.history.HistorySettings;
 import org.netbeans.modules.localhistory.utils.FileUtils;
 import org.netbeans.modules.turbo.CustomProviders;
 import org.netbeans.modules.turbo.Turbo;
@@ -152,7 +152,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             // XXX consider also touching the parent - yes (collisions, ...)
             writeHistoryForFile(parent, new HistoryEntry[] {new HistoryEntry(ts, from, to, TOUCHED)}, true);
         }
-        fireChanged(file);
+        fireChanged(file, ts);
     }
 
     @Override
@@ -167,7 +167,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 // fireChanged(file) handled in scope of async copy 
             } else {                
                 storeChangedSync(file, ts);
-                fireChanged(file);
+                fireChanged(file, ts);
             }
         } else {
             try {
@@ -175,7 +175,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             } catch (IOException ioe) {
                 LocalHistory.LOG.log(Level.WARNING, null, ioe);
             }
-            fireChanged(file);
+            fireChanged(file, ts);
         }
     }
 
@@ -223,7 +223,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                         // release
                         lockedFolders.remove(storeFile.getParentFile());
                         backup.delete();
-                        fireChanged(file);
+                        fireChanged(file, ts);
                         LocalHistory.LOG.log(Level.FINE, "finnished copy file {0} into storage file {1}", new Object[]{backup, storeFile}); // NOI18N
                     }
                 }
@@ -232,7 +232,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         } else {
             // something went wrong - lets copy the file synchronously
             storeChangedSync(file, ts);
-            fireChanged(file);
+            fireChanged(file, ts);
         }
     }
     
@@ -243,7 +243,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         } catch (IOException ioe) {
             LocalHistory.LOG.log(Level.WARNING, null, ioe);
         }
-        fireChanged(file);
+        fireChanged(file, ts);
     }
 
     private void fileDeleteImpl(File file, String from, String to, long ts) throws IOException {
@@ -281,7 +281,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         } catch (IOException ioe) {
             LocalHistory.LOG.log(Level.WARNING, null, ioe);
         }
-        fireChanged(to);
+        fireChanged(to, ts);
     }
 
     @Override
@@ -291,7 +291,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         } catch (IOException ioe) {
             LocalHistory.LOG.log(Level.WARNING, null, ioe);
         }
-        fireChanged(from);
+        fireChanged(from, ts);
     }
 
     static File getStorageRootFile() {
@@ -505,7 +505,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             storeFile.delete();
         }
         // XXX delete from parent history
-        fireDeleted(file);
+        fireDeleted(file, ts);
     }
 
     @Override
@@ -588,7 +588,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     @Override
-    public synchronized void setLabel(File file, long ts, String label) {
+    public synchronized StoreEntry setLabel(File file, long ts, String label) {
         File labelsFile = getLabelsFile(file);
         File parent = labelsFile.getParentFile();
         if(!parent.exists()) {
@@ -659,6 +659,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         } catch (IOException ex) {
             LocalHistory.LOG.log(Level.SEVERE, null, ex);
         }
+        
+        return getStoreEntry(file, ts);
     }
 
     @Override
@@ -781,7 +783,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 }
                 if(ts < now - ttl) {
                     if(labels.size() > 0) {
-                        if(LocalHistorySettings.getInstance().getCleanUpLabeled()) {
+                        if(HistorySettings.getInstance().getCleanUpLabeled()) {
                             // remove label and file
                         labels.remove(ts);
                             f.delete();                            
@@ -879,12 +881,12 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
     }
 
-    private void fireChanged(File file) {
-        listenersSupport.fireVersioningEvent(EVENT_HISTORY_CHANGED, file);
+    private void fireChanged(File file, long ts) {
+        listenersSupport.fireVersioningEvent(EVENT_HISTORY_CHANGED, new Object[] {file, ts});
     }
 
-    private void fireDeleted(File file) {
-        listenersSupport.fireVersioningEvent(EVENT_ENTRY_DELETED, file);
+    private void fireDeleted(File file, long ts) {
+        listenersSupport.fireVersioningEvent(EVENT_ENTRY_DELETED, new Object[] {file, ts});
     }
 
     private void touch(File file, StoreDataFile data) throws IOException {

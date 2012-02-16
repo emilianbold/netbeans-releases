@@ -53,7 +53,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport.BugtrackingType;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -73,7 +73,7 @@ abstract class KenaiRepositories {
     /**
      * Holds already created kenai repositories
      */
-    private Map<String, Repository> repositoriesMap = Collections.synchronizedMap(new HashMap<String, Repository>());
+    private Map<String, RepositoryProvider> repositoriesMap = Collections.synchronizedMap(new HashMap<String, RepositoryProvider>());
 
     protected KenaiRepositories() { }
 
@@ -91,23 +91,23 @@ abstract class KenaiRepositories {
 
 
     /**
-     * Returns a {@link Repository} representing the given {@link KenaiProject}
+     * Returns a {@link RepositoryProvider} representing the given {@link KenaiProject}
      *
      * @param kp
      * @return
      */
-    public Repository getRepository(KenaiProject kp) {
+    public RepositoryProvider getRepository(KenaiProject kp) {
         return getRepository(kp, true);
     }
 
     /**
-     * Returns a {@link Repository} representing the given {@link KenaiProject}.
+     * Returns a {@link RepositoryProvider} representing the given {@link KenaiProject}.
      *
      * @param kp KenaiProject
-     * @param forceCreate determines if a Repository instance should be created if it doesn't already exist
+     * @param forceCreate determines if a RepositoryProvider instance should be created if it doesn't already exist
      * @return
      */
-    public Repository getRepository(KenaiProject kp, boolean forceCreate) {
+    public RepositoryProvider getRepository(KenaiProject kp, boolean forceCreate) {
 
         String repositoryKey = kp.getWebLocation().toString();
         BugtrackingManager.LOG.log(Level.FINER, "requesting repository for {0}", repositoryKey);  // NOI18N
@@ -120,7 +120,7 @@ abstract class KenaiRepositories {
 
         Object lock = getKenaiLock(kp, support);
         synchronized(lock) { // synchronize for a kenai instance and bugtracking type
-            Repository repository = repositoriesMap.get(repositoryKey);
+            RepositoryProvider repository = repositoriesMap.get(repositoryKey);
             if(repository == null && forceCreate) {
                 repository = support.createRepository(kp);
                 if(repository != null) {
@@ -131,7 +131,7 @@ abstract class KenaiRepositories {
             BugtrackingManager.LOG.log(
                     Level.FINER,
                     "returning repository {0}:{1} for {2}", // NOI18N
-                    new Object[]{repository != null ? repository.getDisplayName() : "null", repository != null ? repository.getUrl() : "", repositoryKey});  // NOI18N
+                    new Object[]{repository != null ? repository.getInfo().getDisplayName() : "null", repository != null ? repository.getInfo().getUrl() : "", repositoryKey});  // NOI18N
             return repository;
         }
     }
@@ -176,7 +176,7 @@ abstract class KenaiRepositories {
      * @return  array of repositories collected from the projects
      *          (never {@code null})
      */
-    public abstract Repository[] getRepositories(boolean allOpenProjects);
+    public abstract RepositoryProvider[] getRepositories(boolean allOpenProjects);
 
     //--------------------------------------------------------------------------
 
@@ -188,7 +188,7 @@ abstract class KenaiRepositories {
     private static class DefaultImpl extends KenaiRepositories {
 
         @Override
-        public Repository[] getRepositories(boolean allOpenProjects) {
+        public RepositoryProvider[] getRepositories(boolean allOpenProjects) {
             if("true".equals(System.getProperty("netbeans.bugtracking.noOpenProjects", "false"))) {
                 allOpenProjects = false; 
             }
@@ -197,13 +197,13 @@ abstract class KenaiRepositories {
                                                    getProjectsViewProjects())
                                            : getDashboardProjects();
 
-            Repository[] result = new Repository[kenaiProjects.length];
+            RepositoryProvider[] result = new RepositoryProvider[kenaiProjects.length];
 
             EnumSet<BugtrackingType> reluctantSupports = EnumSet.noneOf(BugtrackingType.class);
             int count = 0;
             for (KenaiProject p : kenaiProjects) {
                 if(!reluctantSupports.contains(p.getType())) {
-                    Repository repo = getRepository(p);
+                    RepositoryProvider repo = getRepository(p);
                     if (repo != null) {
                         result[count++] = repo;
                     } else {

@@ -96,7 +96,7 @@ public class AstUtil {
         StringBuilder l = new StringBuilder();
         for( ; token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
-                case CPPTokenTypes.ID:
+                case CPPTokenTypes.IDENT:
                     if (l.length()>0) {
                         l.append('.');
                     }
@@ -114,7 +114,7 @@ public class AstUtil {
 
     private static AST findIdToken(AST ast) {
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
-            if( token.getType() == CPPTokenTypes.ID ) {
+            if( token.getType() == CPPTokenTypes.IDENT ) {
                 return token;
             }
             else if( token.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
@@ -161,7 +161,7 @@ public class AstUtil {
             if( type == limitingTokenType && limitingTokenType >= 0 ) {
                 return null;
             }
-            else if( type == CPPTokenTypes.ID ) {
+            else if( type == CPPTokenTypes.IDENT ) {
                 return AstUtil.getText(token);
             }
             else if( type == CPPTokenTypes.CSM_QUALIFIED_ID ) {
@@ -170,7 +170,7 @@ public class AstUtil {
 		}
                 AST last = getLastChild(token);
                 if( last != null) {
-                    if( last.getType() == CPPTokenTypes.ID ) {
+                    if( last.getType() == CPPTokenTypes.IDENT ) {
                         return AstUtil.getText(last);
                     }
                     else {
@@ -183,7 +183,7 @@ public class AstUtil {
                                 sb.append(next.getText());
                             }
                             return sb.toString();
-                        } else if (first.getType() == CPPTokenTypes.ID){
+                        } else if (first.getType() == CPPTokenTypes.IDENT){
                             return AstUtil.getText(first);
                         }
                     }
@@ -223,7 +223,7 @@ public class AstUtil {
                         qn = type;
                     }
                     continue;
-                case CPPTokenTypes.ID:
+                case CPPTokenTypes.IDENT:
                     if (i == 0 && qn == null) {
                         qn = type;
                     }

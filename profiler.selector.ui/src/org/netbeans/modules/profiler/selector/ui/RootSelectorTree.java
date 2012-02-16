@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.profiler.selector.ui;
 
+import java.awt.BorderLayout;
+import java.awt.event.MouseEvent;
 import org.netbeans.modules.profiler.api.ProgressDisplayer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,24 +54,27 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import javax.swing.SwingUtilities;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeWillExpandListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.ExpandVetoException;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.*;
+import javax.swing.event.*;
+import javax.swing.tree.*;
 import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
 import org.netbeans.lib.profiler.ui.SwingWorker;
 import org.netbeans.lib.profiler.ui.UIUtils;
+import org.netbeans.lib.profiler.ui.components.CellTipManager;
 import org.netbeans.lib.profiler.ui.components.JCheckTree;
 import org.netbeans.lib.profiler.ui.components.tree.CheckTreeNode;
+import org.netbeans.lib.profiler.utils.formatting.DefaultMethodNameFormatter;
+import org.netbeans.lib.profiler.utils.formatting.MethodNameFormatterFactory;
+import org.netbeans.modules.profiler.api.GestureSubmitter;
+import org.netbeans.modules.profiler.api.ProfilerDialogs;
+import org.netbeans.modules.profiler.api.java.SourceClassInfo;
+import org.netbeans.modules.profiler.api.java.SourceMethodInfo;
+import org.netbeans.modules.profiler.selector.api.nodes.*;
 import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
-import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
-import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
+import org.netbeans.modules.profiler.selector.api.SelectionTreeBuilderType;
 import org.netbeans.modules.profiler.utilities.trees.NodeFilter;
+import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -86,7 +91,49 @@ import org.openide.util.NbBundle;
     "MSG_ApplyingSelection=Applying Selection...",
     "NodeLoadingMessage=Loading..."
 })
-public class RootSelectorTree extends JCheckTree {
+public class RootSelectorTree extends JPanel {
+    final private static MethodNameFormatterFactory methodFormatterFactory = MethodNameFormatterFactory.getDefault(new DefaultMethodNameFormatter(DefaultMethodNameFormatter.VERBOSITY_FULLCLASSMETHOD));
+    private JCheckTree tree = new JCheckTree() {
+        @Override
+        public String getToolTipText(MouseEvent event) {
+            TreePath tp = tree.getPathForLocation(event.getX(), event.getY());
+                
+            if (tp != null && tp.getPathCount() > 1) {
+                while (tp != null) {
+                    TreeNode n = (TreeNode)tp.getLastPathComponent();
+
+                    if (n instanceof SelectorNode) {
+                        if (tp.getPathCount() == 2) {
+                            return ((SelectorNode)n).getDisplayName();
+                        }
+
+                        String txt = null;
+                        if (n instanceof PackageNode) {
+                            txt = ((PackageNode)n).getPackageInfo().getBinaryName();
+                        } else if (n instanceof ClassNode) {
+                            txt = ((ClassNode)n).getClassInfo().getQualifiedName();
+                        } else  if (n instanceof MethodNode) {
+                            SourceMethodInfo mi = ((MethodNode)n).getMethodInfo();
+                            txt = methodFormatterFactory.getFormatter().formatMethodName(mi.getClassName(), mi.getName(), mi.getSignature()).toFormatted();
+                        } else if (n instanceof ConstructorNode) {
+                            SourceMethodInfo mi = ((ConstructorNode)n).getMethodInfo();
+                            txt = methodFormatterFactory.getFormatter().formatMethodName(mi.getClassName(), mi.getName(), mi.getSignature()).toFormatted();
+                        }
+
+                        if (txt != null) {
+                            if (txt.isEmpty()) {
+                                txt = PackageNode.DEFAULT_NAME;
+                            }
+                            return txt;
+                        }
+                    }
+                    tp = tp.getParentPath();
+                }
+            }
+            return super.getToolTipText(event);
+        }
+    };
+    
     final private static NodeFilter<SelectorNode> DEFAULT_FILTER_INNER = new NodeFilter<SelectorNode>() {
 
         @Override
@@ -105,25 +152,17 @@ public class RootSelectorTree extends JCheckTree {
     public static final String SELECTION_TREE_VIEW_LIST_PROPERTY = "SELECTION_TREE_VIEW_LIST"; // NO18N
     private final Set<SourceCodeSelection> currentSelectionSet = new HashSet<SourceCodeSelection>();
     private ProgressDisplayer progress = ProgressDisplayer.DEFAULT;
-    private NodeFilter<SelectorNode> nodeFilter = DEFAULT_FILTER_INNER;
+//    private NodeFilter<SelectorNode> nodeFilter = DEFAULT_FILTER_INNER;
     private Lookup context = Lookup.EMPTY;
-    private SelectionTreeBuilder.Type builderType = null;
+    private SelectionTreeBuilderType builderType = null;
+    private SearchPanel searchPanel = null;
+    final private TreePathSearch.ClassIndex ci;
+    private Cancellable cancellHandler;
 
-    public RootSelectorTree(BuilderUsageCalculator usageCalculator) {
-        this(ProgressDisplayer.DEFAULT, DEFAULT_FILTER_INNER);
-    }
-
-    public RootSelectorTree(ProgressDisplayer pd) {
-        this(pd, DEFAULT_FILTER_INNER);
-    }
-
-    public RootSelectorTree(NodeFilter<SelectorNode> filter) {
-        this(ProgressDisplayer.DEFAULT, filter);
-    }
-
-    public RootSelectorTree(ProgressDisplayer pd, NodeFilter<SelectorNode> filter) {
+    public RootSelectorTree(ProgressDisplayer pd, TreePathSearch.ClassIndex ci) {
         this.progress = pd;
-        this.nodeFilter = filter;
+        this.ci = ci;
+//        this.nodeFilter = filter;
         init();
     }
 
@@ -132,11 +171,17 @@ public class RootSelectorTree extends JCheckTree {
 
         firePropertyChange(SELECTION_TREE_VIEW_LIST_PROPERTY, null, null);
     }
+    
+    public void setCancelHandler(Cancellable cancellable) {
+        this.cancellHandler = cancellable;
+    }
 
+    private AtomicBoolean isActive = new AtomicBoolean(true);
     public void setSelection(final SourceCodeSelection[] selection) {
         new SwingWorker(false) {
             
             protected void doInBackground() {
+                isActive.set(true);
                 removeSelection(getSelection());
                 applySelection(selection);
             }
@@ -152,7 +197,16 @@ public class RootSelectorTree extends JCheckTree {
                         cl.countDown();
                     }
                 });
-                progress.showProgress(Bundle.MSG_ApplyingSelection());
+                progress.showProgress(Bundle.MSG_ApplyingSelection(), new ProgressDisplayer.ProgressController() {
+                    @Override
+                    public boolean cancel() {
+                        isActive.set(false);
+                        if (cancellHandler != null) {
+                            cancellHandler.cancel();
+                        }
+                        return true;
+                    }
+                });
                 
                 try {
                     cl.await();
@@ -169,7 +223,7 @@ public class RootSelectorTree extends JCheckTree {
                         RootSelectorTree.this.setEnabled(true);
                     }
                 });
-                treeDidChange();
+                tree.treeDidChange();
             }
 
             @Override
@@ -185,16 +239,16 @@ public class RootSelectorTree extends JCheckTree {
         return currentSelectionSet.toArray(new SourceCodeSelection[currentSelectionSet.size()]);
     }
 
-    public List<SelectionTreeBuilder.Type> getBuilderTypes() {
+    public List<SelectionTreeBuilderType> getBuilderTypes() {
 //      **** useful for testing *******
 //      return Collections.EMPTY_LIST;
 //      *******************************
         class TypeEntry {
 
-            SelectionTreeBuilder.Type type;
+            SelectionTreeBuilderType type;
             int frequency;
 
-            public TypeEntry(SelectionTreeBuilder.Type type) {
+            public TypeEntry(SelectionTreeBuilderType type) {
                 this.type = type;
                 frequency = 0;
             }
@@ -226,13 +280,14 @@ public class RootSelectorTree extends JCheckTree {
 
         for (SelectionTreeBuilder builder : context.lookupAll(SelectionTreeBuilder.class)) {
             if (builder.estimatedNodeCount() == -1) continue; // builder can't build the tree for some reason
-            SelectionTreeBuilder.Type type = builder.getType();
+            SelectionTreeBuilderType type = builder.getType();
             TypeEntry te = new TypeEntry(type);
             if (entries.contains(te)) {
                 int index = entries.indexOf(te);
                 te = entries.get(index);
                 te.frequency += builder.isPreferred() ? 2 : 1;
             } else {
+                te.frequency = builder.isPreferred() ? 2 : 1;
                 entries.add(te);
             }
         }
@@ -241,9 +296,9 @@ public class RootSelectorTree extends JCheckTree {
 
             @Override
             public int compare(TypeEntry o1, TypeEntry o2) {
-                if (o1.frequency > o2.frequency) {
+                if (o1.frequency < o2.frequency) {
                     return 1;
-                } else if (o1.frequency < o2.frequency) {
+                } else if (o1.frequency > o2.frequency) {
                     return -1;
                 } else {
                     return 0;
@@ -251,7 +306,7 @@ public class RootSelectorTree extends JCheckTree {
             }
         });
 
-        List<SelectionTreeBuilder.Type> types = new ArrayList<SelectionTreeBuilder.Type>(entries.size());
+        List<SelectionTreeBuilderType> types = new ArrayList<SelectionTreeBuilderType>(entries.size());
         for (TypeEntry entry : entries) {
             types.add(entry.type);
         }
@@ -259,7 +314,7 @@ public class RootSelectorTree extends JCheckTree {
         return types;
     }
 
-    public void setBuilderType(SelectionTreeBuilder.Type type) {
+    public void setBuilderType(SelectionTreeBuilderType type) {
         builderType = type;
         refreshTree();
     }
@@ -270,9 +325,16 @@ public class RootSelectorTree extends JCheckTree {
      * Should be called right before trying to show the selector tree
      */
     public void reset() {
-        setModel(DEFAULTMODEL);
+        isActive.set(true);
+        tree.setModel(DEFAULTMODEL);
         currentSelectionSet.clear();
         context = Lookup.EMPTY;
+        sCont = null;
+        searchPanel.reset();
+    }
+
+    public void setRowHeight(int rowHeight) {
+        tree.setRowHeight(rowHeight);
     }
 
     public static boolean canBeShown(Lookup ctx) {
@@ -280,9 +342,124 @@ public class RootSelectorTree extends JCheckTree {
     }
 
     private void init() {
-        UIUtils.makeTreeAutoExpandable(this, true);
-        this.addCheckTreeListener(new CheckTreeListener() {
+        /*** Disable celltips, enable tooltips ***/
+        CellTipManager.sharedInstance().unregisterComponent(tree);
+        ToolTipManager.sharedInstance().registerComponent(tree);
+        /*****************************************/
+        
+        setBorder(BorderFactory.createEmptyBorder());
+        setLayout(new BorderLayout());
+        UIUtils.makeTreeAutoExpandable(tree, true);
+        
+        setupTreeNodeToggleLogic();
+        addTreeLazyOpening();
 
+        tree.setRootVisible(false);
+        tree.setShowsRootHandles(true);
+        tree.setModel(DEFAULTMODEL);
+        
+        JScrollPane scrollPane = new JScrollPane(tree, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        add(scrollPane, BorderLayout.CENTER);
+
+        searchPanel = new SearchPanel(tree) {
+
+            @Override
+            protected void performFind() {
+                tree.requestFocus();
+                findNode(getSearchText());
+            }
+
+            @Override
+            protected void performNext() {
+                tree.requestFocus();
+                find(false);
+            }
+
+            @Override
+            protected void performPrevious() {
+                tree.requestFocus();
+                find(true);
+            }
+
+            @Override
+            protected void onCancel() {
+                tree.requestFocus();
+            }
+
+            @Override
+            protected void onClose() {
+                searchPanel.setPermanent(false);
+            }
+        };
+        
+        add(searchPanel, BorderLayout.SOUTH);
+        
+        scrollPane.setPreferredSize(tree.getPreferredSize());
+        
+        invalidate();
+        revalidate();
+        repaint();
+    }
+
+    private void addTreeLazyOpening() {
+        tree.addTreeWillExpandListener(new TreeWillExpandListener() {
+
+            private volatile boolean openingSubtree = false;
+
+            @Override
+            public void treeWillCollapse(TreeExpansionEvent event)
+                    throws ExpandVetoException {
+            }
+
+            @Override
+            public void treeWillExpand(final TreeExpansionEvent event)
+                    throws ExpandVetoException {
+                TreeNode node = (TreeNode) event.getPath().getLastPathComponent();
+
+                if (!(node instanceof DefaultMutableTreeNode)) {
+                    return;
+                }
+
+                final DefaultMutableTreeNode myNode = (DefaultMutableTreeNode) node;
+
+                if (myNode.getChildCount() == -1) {
+                    if (openingSubtree) {
+                        throw new ExpandVetoException(event);
+                    }
+
+                    openingSubtree = true;
+
+                    new SwingWorker() {
+
+                        @Override
+                        protected void doInBackground() {
+                            checkNodeChildren(myNode, false);
+                        }
+
+                        @Override
+                        protected void nonResponding() {
+                            progress.showProgress(Bundle.NodeLoadingMessage());
+                        }
+
+                        @Override
+                        protected void done() {
+                            progress.close();
+
+                            tree.expandPath(event.getPath());
+                            doLayout();
+                            openingSubtree = false;
+                        }
+                    }.execute();
+                    throw new ExpandVetoException(event);
+                } else {
+                    checkNodeChildren(myNode, false);
+                }
+            }
+        });
+    }
+
+    private void setupTreeNodeToggleLogic() {
+        tree.addCheckTreeListener(new JCheckTree.CheckTreeListener() {
             @Override
             public void checkTreeChanged(Collection<CheckTreeNode> nodes) {
             }
@@ -342,7 +519,7 @@ public class RootSelectorTree extends JCheckTree {
 
                         toRemove.addAll(signatures);
 
-                        TreeNode root = (TreeNode) getModel().getRoot();
+                        TreeNode root = (TreeNode) tree.getModel().getRoot();
                         Collection<SourceCodeSelection> selection = new ArrayList<SourceCodeSelection>();
                         int firstLevelCnt = root.getChildCount();
 
@@ -359,66 +536,72 @@ public class RootSelectorTree extends JCheckTree {
                 }
             }
         });
-        this.addTreeWillExpandListener(new TreeWillExpandListener() {
-
-            private volatile boolean openingSubtree = false;
-
-            @Override
-            public void treeWillCollapse(TreeExpansionEvent event)
-                    throws ExpandVetoException {
-            }
-
-            @Override
-            public void treeWillExpand(final TreeExpansionEvent event)
-                    throws ExpandVetoException {
-                TreeNode node = (TreeNode) event.getPath().getLastPathComponent();
-
-                if (!(node instanceof DefaultMutableTreeNode)) {
-                    return;
-                }
-
-                final DefaultMutableTreeNode myNode = (DefaultMutableTreeNode) node;
-
-                if (myNode.getChildCount() == -1) {
-                    if (openingSubtree) {
-                        throw new ExpandVetoException(event);
-                    }
-
-                    openingSubtree = true;
-
-                    new SwingWorker() {
-
-                        @Override
-                        protected void doInBackground() {
-                            checkNodeChildren(myNode, false);
-                        }
-
-                        @Override
-                        protected void nonResponding() {
-                            progress.showProgress(Bundle.NodeLoadingMessage());
-                        }
-
-                        @Override
-                        protected void done() {
-                            progress.close();
-
-                            expandPath(event.getPath());
-                            doLayout();
-                            openingSubtree = false;
-                        }
-                    }.execute();
-                    throw new ExpandVetoException(event);
-                } else {
-                    checkNodeChildren(myNode, false);
-                }
-            }
-        });
-
-        this.setRootVisible(false);
-        this.setShowsRootHandles(true);
-        this.setModel(DEFAULTMODEL);
     }
 
+    private TreePathSearch sCont;
+    private AtomicBoolean searchInProgress = new AtomicBoolean(false);
+    
+    private void findNode(final String searchText) {
+        GestureSubmitter.logRMSSearch(searchText);
+        
+        sCont = new TreePathSearch((TreeNode)tree.getModel().getRoot(), searchText, ci);
+        find(false);
+    }
+    
+    @NbBundle.Messages({
+        "MSG_SEARCHING=Searching...",
+        "CAP_SEARCHRSLT=Search Results",
+        "MSG_NOMATCH=No results available"
+    })
+    private void find(final boolean backward) {
+        if (sCont == null) {
+            // todo display warning
+            return;
+        }
+        if (searchInProgress.compareAndSet(false, true)) {
+            new SwingWorker(true) {
+                volatile private TreePath rsltPath;
+                volatile private ProgressDisplayer pd;
+                @Override
+                protected void doInBackground() {
+                    rsltPath = backward ? sCont.back() : sCont.forward();
+                }
+
+                @Override
+                protected void nonResponding() {
+                    pd = progress.showProgress(Bundle.MSG_SEARCHING(), new ProgressDisplayer.ProgressController() {
+
+                        @Override
+                        public boolean cancel() {
+                            if (sCont != null) {
+                                sCont.cancel();
+                            }
+                            return true;
+                        }
+                    });
+                }
+
+                @Override
+                protected void done() {
+                    try {
+                        if (pd != null) {
+                            pd.close();
+                        }
+                        if (rsltPath != null) {
+                            tree.makeVisible(rsltPath);
+                            tree.setSelectionPath(rsltPath);
+                            tree.scrollPathToVisible(rsltPath);
+                        } else {
+                            ProfilerDialogs.displayWarning(Bundle.MSG_NOMATCH(), Bundle.CAP_SEARCHRSLT(), null);
+                        }
+                    } finally {
+                        searchInProgress.set(false);
+                    }
+                }
+            }.execute();
+        }
+    }
+    
     private static void checkNodeChildren(final DefaultMutableTreeNode myNode, boolean recurse) {
         checkNodeChildren(myNode, recurse, null);
     }
@@ -446,12 +629,15 @@ public class RootSelectorTree extends JCheckTree {
             }
         }
     }
-
+    
     private void applySelection(SourceCodeSelection[] selections) {
-        TreeNode root = (TreeNode) this.getModel().getRoot();
+        if (!isActive.get()) return;
+        
+        TreeNode root = (TreeNode) tree.getModel().getRoot();
         Enumeration childrenEnum = root.children();
 
         while (childrenEnum.hasMoreElements()) {
+            if (!isActive.get()) return;
             Object child = childrenEnum.nextElement();
 
             if (child instanceof SelectorNode) {
@@ -465,6 +651,7 @@ public class RootSelectorTree extends JCheckTree {
     }
 
     private void applySelection(SelectorNode node, SourceCodeSelection selection) {
+        if (!isActive.get()) return;
         SourceCodeSelection signature = node.getSignature();
 
         if (signature != null) {
@@ -482,6 +669,7 @@ public class RootSelectorTree extends JCheckTree {
         Enumeration childrenEnum = node.children();
 
         while (childrenEnum.hasMoreElements()) {
+            if (!isActive.get()) return;
             Object child = childrenEnum.nextElement();
 
             if (child instanceof SelectorNode) {
@@ -491,7 +679,7 @@ public class RootSelectorTree extends JCheckTree {
     }
 
     private void removeSelection(SourceCodeSelection[] selections) {
-        TreeNode root = (TreeNode) this.getModel().getRoot();
+        TreeNode root = (TreeNode) tree.getModel().getRoot();
         Enumeration childrenEnum = root.children();
 
         while (childrenEnum.hasMoreElements()) {
@@ -572,15 +760,15 @@ public class RootSelectorTree extends JCheckTree {
     }
 
     private void refreshTree() {
-        setModel(new DefaultTreeModel(new DefaultMutableTreeNode(Bundle.RootSelectorTree_LoadingString())));
-        setRootVisible(true);
-        setShowsRootHandles(false);
+        tree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode(Bundle.RootSelectorTree_LoadingString())));
+        tree.setRootVisible(true);
+        tree.setShowsRootHandles(false);
 
-        setRootVisible(false);
-        setShowsRootHandles(true);
-        setModel(new DefaultTreeModel(getTreeRoot()));
+        tree.setRootVisible(false);
+        tree.setShowsRootHandles(true);
+        tree.setModel(new DefaultTreeModel(getTreeRoot()));
         applyCurrentSelection();
-        treeDidChange();
+        tree.treeDidChange();
     }
 
     private DefaultMutableTreeNode getTreeRoot() {
@@ -600,17 +788,18 @@ public class RootSelectorTree extends JCheckTree {
     }
 
     private void applyCurrentSelection() {
-        TreeNode root = (TreeNode) this.getModel().getRoot();
-        Enumeration childrenEnum = root.children();
-
-        while (childrenEnum.hasMoreElements()) {
-            Object child = childrenEnum.nextElement();
-
-            if (child instanceof SelectorNode) {
-                for (SourceCodeSelection selection : currentSelectionSet) {
-                    applySelection((SelectorNode) child, selection);
-                }
-            }
-        }
+        setSelection(currentSelectionSet.toArray(new SourceCodeSelection[currentSelectionSet.size()]));
+//        TreeNode root = (TreeNode) tree.getModel().getRoot();
+//        Enumeration childrenEnum = root.children();
+//
+//        while (childrenEnum.hasMoreElements()) {
+//            Object child = childrenEnum.nextElement();
+//
+//            if (child instanceof SelectorNode) {
+//                for (SourceCodeSelection selection : currentSelectionSet) {
+//                    applySelection((SelectorNode) child, selection);
+//                }
+//            }
+//        }
     }
 }

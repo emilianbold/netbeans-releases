@@ -32,6 +32,7 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
@@ -52,6 +53,12 @@ import org.openide.windows.TopComponent;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
+@MIMEResolver.ExtensionRegistration(
+    displayName="#TPLResolver",
+    extension="tpl",
+    mimeType="text/x-tpl",
+    position=373
+)
 public class TplDataObject extends MultiDataObject implements CookieSet.Factory {
 
     private transient TplEditorSupport tplEditorSupport;

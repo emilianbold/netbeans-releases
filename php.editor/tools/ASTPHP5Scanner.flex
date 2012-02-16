@@ -288,6 +288,7 @@ LNUM=[0-9]+
 DNUM=([0-9]*[\.][0-9]+)|([0-9]+[\.][0-9]*)
 EXPONENT_DNUM=(({LNUM}|{DNUM})[eE][+-]?{LNUM})
 HNUM="0x"[0-9a-fA-F]+
+BNUM="0b"[01]+
 //LABEL=[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*
 LABEL=[[:letter:]_\x7f-\xff][[:letter:][:digit:]_\x7f-\xff]*
 NAMESPACE_SEPARATOR=[\\]
@@ -323,7 +324,7 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 	return createFullSymbol(ASTPHP5Symbols.T_EXIT);
 }
 
-<ST_IN_SCRIPTING>"function"|"cfunction" {
+<ST_IN_SCRIPTING>"function" {
 	return createSymbol(ASTPHP5Symbols.T_FUNCTION);
 }
 
@@ -797,11 +798,15 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
     return createFullSymbol(ASTPHP5Symbols.T_DNUMBER);
 }
 
+<ST_IN_SCRIPTING>{BNUM} {
+    return createFullSymbol(ASTPHP5Symbols.T_DNUMBER);
+}
+
 <ST_VAR_OFFSET>0|([1-9][0-9]*) {
 	return createFullSymbol(ASTPHP5Symbols.T_NUM_STRING);
 }
 
-<ST_VAR_OFFSET>{LNUM}|{HNUM} { /* treat numbers (almost) as strings inside encapsulated strings */
+<ST_VAR_OFFSET>{LNUM}|{HNUM}|{BNUM} { /* treat numbers (almost) as strings inside encapsulated strings */
     return createFullSymbol(ASTPHP5Symbols.T_NUM_STRING);
 }
 

@@ -41,12 +41,21 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 
 /**
  * @author nick
  */
-public class CppParserEmptyActionImpl implements CppParserAction {
+public class CppParserEmptyActionImpl implements CppParserActionEx {
+    private final Deque<CsmFile> files;
+
+    CppParserEmptyActionImpl(CsmFile file) {
+        files = new ArrayDeque<CsmFile>();
+        files.push(file);
+    }
 
     @Override
     public void enum_declaration(Token token) {
@@ -120,5 +129,40 @@ public class CppParserEmptyActionImpl implements CppParserAction {
     @Override
     public void namespace_name(Token token) {
     }
-    
+
+    @Override
+    public void class_declaration(Token token) {
+    }
+
+    @Override
+    public void end_class_declaration(Token token) {
+    }
+
+    @Override
+    public void class_kind(Token token) {
+    }
+
+    @Override
+    public void simple_type_id(Token token) {
+    }
+
+    @Override
+    public void pushFile(CsmFile file) {
+        files.push(file);
+    }
+
+    @Override
+    public CsmFile popFile() {
+        CsmFile out = files.peek();
+        files.pop();
+        return out;
+    }
+
+    @Override
+    public void declaration(Token token) {
+    }
+
+    @Override
+    public void end_declaration(Token token) {
+    }
 }

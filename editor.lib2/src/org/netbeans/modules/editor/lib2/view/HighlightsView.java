@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -86,12 +87,21 @@ public class HighlightsView extends EditorView {
     /**
      * TextLayout or null if not initialized (or cleared).
      */
-    private TextLayout textLayout; // 36 + 4 = 40
+    private TextLayout textLayout; // 36 + 4 = 40 bytes
+    
+    /**
+     * Cache width since TextLayout.getCaretInfo() is non-trivial.
+     */
+    private float width; // 40 + 4 = 44 bytes
+    
+    /**
+     * Last successful text layout breaking should speed up repetitive line wrapping.
+     */
+    private TextLayoutBreakInfo breakInfo; // 44 + 4 = 48 bytes
 
-    public HighlightsView(int offset, int length, AttributeSet attributes) {
+    public HighlightsView(int length, AttributeSet attributes) {
         super(null);
         assert (length > 0) : "length=" + length + " <= 0"; // NOI18N
-        this.rawEndOffset = offset + length;
         this.length = length;
         this.attributes = attributes;
     }
@@ -100,10 +110,14 @@ public class HighlightsView extends EditorView {
     public float getPreferredSpan(int axis) {
         checkTextLayoutValid();
         float span = (axis == View.X_AXIS)
-            ? Math.abs(TextLayoutUtils.getWidth(textLayout)) // Could be negative
+            ? getWidth()
             : TextLayoutUtils.getHeight(textLayout);
         // Round to integer to avoid visual artifacts (one of several lines smaller than others etc.)
         return (int) Math.ceil(span);
+    }
+    
+    float getWidth() {
+        return width;
     }
     
     @Override
@@ -150,21 +164,40 @@ public class HighlightsView extends EditorView {
         return textLayout;
     }
     
-    void setTextLayout(TextLayout textLayout) {
+    void setTextLayout(TextLayout textLayout, float width) {
         this.textLayout = textLayout;
+        this.width = width;
+    }
+    
+    TextLayoutBreakInfo getBreakInfo() {
+        return breakInfo;
+    }
+
+    public void setBreakInfo(TextLayoutBreakInfo breakInfo) {
+        this.breakInfo = breakInfo;
     }
     
     TextLayout createPartTextLayout(int shift, int length) {
         checkTextLayoutValid();
-        DocumentView docView = getDocumentView();
-        Document doc = docView.getDocument();
-        CharSequence docText = DocumentUtilities.getText(doc);
-        int startOffset = getStartOffset();
-        String text = docText.subSequence(startOffset + shift, startOffset + shift + length).toString();
-        if (docView.op.isNonPrintableCharactersVisible()) {
-            text = text.replace(' ', DocumentViewOp.PRINTING_SPACE);
+        if (breakInfo == null) {
+            breakInfo = new TextLayoutBreakInfo(textLayout.getCharacterCount());
         }
-        return docView.op.createTextLayout(text, ViewUtils.getFirstAttributes(getAttributes()));
+        TextLayout partTextLayout = breakInfo.findPartTextLayout(shift, length);
+        if (partTextLayout == null) {
+            DocumentView docView = getDocumentView();
+            Document doc = docView.getDocument();
+            CharSequence docText = DocumentUtilities.getText(doc);
+            int startOffset = getStartOffset();
+            String text = docText.subSequence(startOffset + shift, startOffset + shift + length).toString();
+            if (docView.op.isNonPrintableCharactersVisible()) {
+                text = text.replace(' ', DocumentViewOp.PRINTING_SPACE);
+            }
+            AttributeSet attrs = ViewUtils.getFirstAttributes(getAttributes());
+            Font font = ViewUtils.getFont(attrs, docView.op.getDefaultFont());
+            partTextLayout = docView.op.createTextLayout(text, font);
+            breakInfo.add(shift, length, partTextLayout);
+        }
+        return partTextLayout;
     }
 
     ParagraphView getParagraphView() {
@@ -231,7 +264,7 @@ public class HighlightsView extends EditorView {
     private void checkTextLayoutValid() {
         DocumentView docView;
         assert (textLayout != null) : "TextLayout is null in " + this + // NOI18N
-                (((docView = getDocumentView()) != null) ? "\nDOC-VIEW:\n" + docView.toStringDetailUnlocked() : ""); // NOI18N
+                (((docView = getDocumentView()) != null) ? "\nDOC-VIEW:\n" + docView.toStringDetailNeedsLock() : ""); // NOI18N
     }
 
     @Override

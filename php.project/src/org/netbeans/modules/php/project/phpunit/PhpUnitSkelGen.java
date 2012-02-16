@@ -87,14 +87,10 @@ public final class PhpUnitSkelGen extends PhpProgram {
         return new PhpUnitSkelGen(command).validate();
     }
 
-    @NbBundle.Messages("PhpUnitSkelGen.prefix=Skeleton generator script: {0}")
+    @NbBundle.Messages("PhpUnitSkelGen.script.label=Skeleton generator script")
     @Override
     public String validate() {
-        String error = FileUtils.validateFile(getProgram(), false);
-        if (error == null) {
-            return null;
-        }
-        return Bundle.PhpUnitSkelGen_prefix(error);
+        return FileUtils.validateFile(Bundle.PhpUnitSkelGen_script_label(), getProgram(), false);
     }
 
     @NbBundle.Messages("PhpUnitSkelGen.test.generating=Creating test file for {0}")

@@ -79,14 +79,10 @@ public final class Doctrine2Script extends PhpProgram {
         return new Doctrine2Script(command).validate();
     }
 
-    @NbBundle.Messages("Doctrine2Script.prefix=Doctrine2 script: {0}")
+    @NbBundle.Messages("Doctrine2Script.script.label=Doctrine2 script")
     @Override
     public String validate() {
-        String error = FileUtils.validateFile(getProgram(), false);
-        if (error == null) {
-            return null;
-        }
-        return Bundle.Doctrine2Script_prefix(error);
+        return FileUtils.validateFile(Bundle.Doctrine2Script_script_label(), getProgram(), false);
     }
 
 }

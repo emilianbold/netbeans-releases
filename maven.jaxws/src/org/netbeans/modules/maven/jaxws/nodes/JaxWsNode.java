@@ -519,14 +519,20 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
                         JavaSource javaSource = JavaSource.forFileObject(fe.getFile());
                         if (javaSource!=null) {
 
-                            CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+                            CancellableTask<CompilationController> task = 
+                                new CancellableTask<CompilationController>() 
+                                {
                                 @Override
-                                public void run(CompilationController controller) throws IOException {
+                                public void run(CompilationController controller) 
+                                    throws IOException 
+                                {
                                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                                    TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
+                                    TypeElement typeElement = SourceUtils.
+                                        getPublicTopLevelElement(controller);
                                     if (typeElement!=null) {
                                         // check service name
-                                        newServiceName[0] = getServiceName(controller, typeElement);
+                                        newServiceName[0] = getServiceName(
+                                                controller, typeElement);
                                     }
                                 }
                                 @Override
@@ -583,19 +589,18 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
 
     private String getServiceName(CompilationController controller, TypeElement classElement) {
          // check service name
-        TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
-        if (wsElement != null) {
-            List<? extends AnnotationMirror> annotations = classElement.getAnnotationMirrors();
-
-            for (AnnotationMirror anMirror : annotations) {
-                if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
-                    java.util.Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
-                    for (java.util.Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : expressions.entrySet()) {
-                        if (entry.getKey().getSimpleName().contentEquals("serviceName")) { //NOI18N
-                            return (String)expressions.get(entry.getKey()).getValue();
-                        }
-                    }
-                }
+        AnnotationMirror anMirror = _RetoucheUtil.getAnnotation(controller,
+                classElement, "javax.jws.WebService");          // NOI18N
+        if ( anMirror == null ){
+            return null;
+        }
+        java.util.Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = 
+                anMirror.getElementValues();
+        for (java.util.Map.Entry<? extends ExecutableElement, 
+                ? extends AnnotationValue> entry : expressions.entrySet())
+        {
+            if (entry.getKey().getSimpleName().contentEquals("serviceName")) { // NOI18N
+                return (String) expressions.get(entry.getKey()).getValue();
             }
         }
         return null;
@@ -617,10 +622,12 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
-                AnnotationMirror handlerAnnotation = _RetoucheUtil.getAnnotation(controller, typeElement, "javax.jws.HandlerChain"); //NOI18N
+                AnnotationMirror handlerAnnotation = _RetoucheUtil.
+                    getAnnotation(controller, typeElement, "javax.jws.HandlerChain"); //NOI18N
                 if (handlerAnnotation != null) {
                     isNew[0] = false;
-                    Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = handlerAnnotation.getElementValues();
+                    Map<? extends ExecutableElement, ? extends AnnotationValue> 
+                        expressions = handlerAnnotation.getElementValues();
                     for (ExecutableElement ex : expressions.keySet()) {
                         if (ex.getSimpleName().contentEquals("file")) {   //NOI18N
                             handlerFileName[0] = (String) expressions.get(ex).getValue();
@@ -818,21 +825,17 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = SourceUtils.getPublicTopLevelElement(controller);
-                    TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
-                    if (typeElement != null && wsElement != null) {
-                        boolean foundWsAnnotation = resolveServiceUrl(controller, typeElement, wsElement, serviceName, name);
+                    if ( typeElement == null ){
+                        return;
+                    }
+                        boolean foundWsAnnotation = resolveServiceUrl(controller, 
+                                typeElement, serviceName, name);
                         if (!foundWsAnnotation) {
-                            TypeElement wsProviderElement = controller.getElements().getTypeElement("javax.xml.ws.WebServiceProvider"); //NOI18N
-                            List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
-                            for (AnnotationMirror anMirror : annotations) {
-                                if (controller.getTypes().isSameType(wsProviderElement.asType(), anMirror.getAnnotationType())) {
-                                    isProvider[0] = true;
-                                }
-                            }
+                            isProvider[0] = _RetoucheUtil.getAnnotation(controller, 
+                                    typeElement, "javax.xml.ws.WebServiceProvider")!=null;//NOI18N
                         }
                         if (!inEjbProject) {
                             serviceInfo.setEjb(isStatelessEjb(controller, typeElement));
-                        }
                     }
                 }
 
@@ -865,48 +868,44 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         serviceInfo.setPortName(name[0]);
     }
 
-    private boolean isStatelessEjb(CompilationController controller, TypeElement targetElement) {
-        boolean foundEjbAnnotation = false;
-        TypeElement statelessElement = controller.getElements().getTypeElement("javax.ejb.Stateless"); //NOI18N
-        if (statelessElement != null) {
-            List<? extends AnnotationMirror> annotations = targetElement.getAnnotationMirrors();
-            for (AnnotationMirror anMirror : annotations) {
-                if (controller.getTypes().isSameType(statelessElement.asType(), anMirror.getAnnotationType())) {
-                    foundEjbAnnotation = true;
-                    break;
-                } // end if
-            } // end for
-        }
-        return foundEjbAnnotation;
+    private boolean isStatelessEjb(CompilationController controller, 
+            TypeElement targetElement) 
+    {
+        return _RetoucheUtil.getAnnotation(controller, targetElement, 
+                "javax.ejb.Stateless") !=null;
     }
 
-    private boolean resolveServiceUrl(CompilationController controller, TypeElement targetElement, TypeElement wsElement, String[] serviceName, String[] name) throws IOException {
+    private boolean resolveServiceUrl(CompilationController controller, 
+            TypeElement targetElement, String[] serviceName, 
+            String[] name) throws IOException 
+    {
         boolean foundWsAnnotation = false;
-        List<? extends AnnotationMirror> annotations = targetElement.getAnnotationMirrors();
-        for (AnnotationMirror anMirror : annotations) {
-            if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
-                foundWsAnnotation = true;
-                Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
-                for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : expressions.entrySet()) {
-                    if (entry.getKey().getSimpleName().contentEquals("serviceName")) { //NOI18N
-                        serviceName[0] = (String) expressions.get(entry.getKey()).getValue();
-                        if (serviceName[0] != null) {
-                            serviceName[0] = URLEncoder.encode(serviceName[0], "UTF-8"); //NOI18N
-                        }
-                    } else if (entry.getKey().getSimpleName().contentEquals("name")) { //NOI18N
-                        name[0] = (String) expressions.get(entry.getKey()).getValue();
-                        if (name[0] != null) {
-                            name[0] = URLEncoder.encode(name[0], "UTF-8"); //NOI18N
-                        }
-                    }
-                    if (serviceName[0] != null && name[0] != null) {
-                        break;
-                    }
+        AnnotationMirror anMirror = _RetoucheUtil.getAnnotation(controller, 
+                targetElement, "javax.jws.WebService");   // NOI18N
+        if ( anMirror == null ){
+            return false;
+        }
+        Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = 
+            anMirror.getElementValues();
+        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : 
+                expressions.entrySet()) 
+        {
+            if (entry.getKey().getSimpleName().contentEquals("serviceName")) { //NOI18N
+                serviceName[0] = (String) expressions.get(entry.getKey()).getValue();
+                if (serviceName[0] != null) {
+                    serviceName[0] = URLEncoder.encode(serviceName[0], "UTF-8"); //NOI18N
                 }
+            } else if (entry.getKey().getSimpleName().contentEquals("name")) { //NOI18N
+                name[0] = (String) expressions.get(entry.getKey()).getValue();
+                if (name[0] != null) {
+                    name[0] = URLEncoder.encode(name[0], "UTF-8"); //NOI18N
+                }
+            }
+            if (serviceName[0] != null && name[0] != null) {
                 break;
-            } // end if
-        } // end for
-        return foundWsAnnotation;
+            }
+        }
+        return true;
     }
     
     private class ServerContextInfo {

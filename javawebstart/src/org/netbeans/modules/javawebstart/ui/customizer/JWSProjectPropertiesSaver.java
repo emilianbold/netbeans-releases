@@ -60,7 +60,7 @@ public class JWSProjectPropertiesSaver implements J2SECustomPropertySaver {
 
     @Override
     public void save(Project project) {
-        JWSProjectProperties prop = JWSProjectProperties.getInstance(project.getLookup());
+        JWSProjectProperties prop = JWSProjectProperties.getInstanceIfExists(project.getLookup());
         if(prop != null) {
             JWSProjectPropertiesUtils.updateMasterFiles(prop, project);
             JWSProjectPropertiesUtils.savePropsAndUpdateMetaFiles(prop, project);

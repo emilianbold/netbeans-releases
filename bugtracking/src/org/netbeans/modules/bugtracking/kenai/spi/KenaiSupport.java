@@ -61,20 +61,20 @@ public abstract class KenaiSupport {
     }
     
     /**
-     * Creates a {@link Repository} for the given {@link KenaiProject}
+     * Creates a {@link RepositoryProvider} for the given {@link KenaiProject}
      *
      * @param project
      * @return
      */
-    public abstract Repository createRepository(KenaiProject project);
+    public abstract RepositoryProvider createRepository(KenaiProject project);
     
     /**
-     * Creates a {@link Repository} for the given {@link KenaiProject}
+     * Creates a {@link RepositoryProvider} for the given {@link KenaiProject}
      *
      * @param project
      * @return
      */
-    public Repository findNBRepository() {
+    public RepositoryProvider findNBRepository() {
         return null;
     }
 
@@ -83,21 +83,21 @@ public abstract class KenaiSupport {
      * @param query
      * @param filter
      */
-    public abstract void setFilter(Query query, Filter filter);
+    public abstract void setFilter(QueryProvider query, Filter filter);
 
     /**
      * Returns the default "All Issues" query for the given repository
      * 
      * @return
      */
-    public abstract Query getAllIssuesQuery(Repository repository);
+    public abstract QueryProvider getAllIssuesQuery(RepositoryProvider repository);
 
     /**
      * Returns the default "My Issues" query for the given repository
      *
      * @return
      */
-    public abstract Query getMyIssuesQuery(Repository repository);
+    public abstract QueryProvider getMyIssuesQuery(RepositoryProvider repository);
     
     /**
      * Determines the bugtracking type
@@ -114,7 +114,7 @@ public abstract class KenaiSupport {
      * @param query
      * @return true if login needed, otherwise false
      */
-    public abstract boolean needsLogin(Query query);
+    public abstract boolean needsLogin(QueryProvider query);
 
     /**
      * Refreshes the given query
@@ -122,5 +122,5 @@ public abstract class KenaiSupport {
      * @param query
      * @param synchronously
      */
-    public abstract void refresh(Query query, boolean synchronously);
+    public abstract void refresh(QueryProvider query, boolean synchronously);
 }

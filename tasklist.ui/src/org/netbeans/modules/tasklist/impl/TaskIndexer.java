@@ -120,7 +120,7 @@ public class TaskIndexer extends CustomIndexer {
                     LOG.log(Level.FINE, "Cannot find file [%0] under root [%1]", new Object[] {idx.getRelativePath(), root});
                     continue;
                 }
-                if (firstScan){
+                if (firstScan || scope instanceof CurrentEditorScanningScope){
                     isInScope = scope.isInScope(fo);
                     firstScan = false;
                 }

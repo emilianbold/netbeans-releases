@@ -44,22 +44,11 @@
 
 package org.netbeans.modules.openide.filesystems.declmime;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.io.*;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.openide.filesystems.declmime.FileElement.Type;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -85,7 +74,7 @@ public final class MIMEResolverImpl {
     // enable some tracing
     private static final Logger ERR = Logger.getLogger(MIMEResolverImpl.class.getName());
         
-    private static final boolean CASE_INSENSITIVE = Utilities.getOperatingSystem() == Utilities.OS_VMS;
+    static final boolean CASE_INSENSITIVE = Utilities.getOperatingSystem() == Utilities.OS_VMS;
 
     // notification limit in bytes for reading file content. It should not exceed 4192 (4kB) because it is read in one disk touch.
     private static final int READ_LIMIT = 4000;
@@ -98,7 +87,32 @@ public final class MIMEResolverImpl {
     private static final int USER_DEFINED_MIME_RESOLVER_POSITION = 10;
 
     public static MIMEResolver forDescriptor(FileObject fo) {
+        return forDescriptor(fo, true);
+    }
+    static MIMEResolver forDescriptor(FileObject fo, boolean warn) {
+        if (warn && !isUserDefined(fo)) {
+            ERR.log(Level.WARNING, "Ineffective registration of resolver {0} use @MIMEResolver.Registration! See bug #191777.", fo.getPath());
+            if (ERR.isLoggable(Level.FINE)) {
+                try {
+                    ERR.fine(fo.asText());
+                } catch (IOException ex) {
+                    ERR.log(Level.FINE, null, ex);
+                }
+            }
+        }
         return new Impl(fo);
+    }
+
+    static MIMEResolver forStream(FileObject def, byte[] serialData) throws IOException {
+        return new Impl(def, serialData);
+    }
+    
+    static byte[] toStream(MIMEResolver mime) throws IOException {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        DataOutputStream dos = new DataOutputStream(os);
+        ((Impl)mime).writeExternal(dos);
+        dos.close();
+        return os.toByteArray();
     }
 
     /** Check whether given resolver is declarative. */
@@ -127,12 +141,18 @@ public final class MIMEResolverImpl {
      * {@literal {image/jpeg=[jpg, jpeg], image/gif=[]}}.
      */
     public static Map<String, Set<String>> getMIMEToExtensions(FileObject fo) {
+        Impl impl;
         if (!fo.hasExt("xml")) { // NOI18N
-            return Collections.emptyMap();
+            impl = FileUtil.getConfigObject(fo.getPath(), Impl.class);
+            if (impl == null) {
+                return Collections.emptyMap();
+            }
+            impl.init();
+        } else {
+            impl = new Impl(fo);
+            impl.parseDesc();
         }
         Map<String, Set<String>> result = new HashMap<String, Set<String>>();
-        Impl impl = new Impl(fo);
-        impl.parseDesc();
         FileElement[] elements = impl.smell;
         if (elements != null) {
             for (FileElement fileElement : elements) {
@@ -200,7 +220,7 @@ public final class MIMEResolverImpl {
             return false;
         }
         FileUtil.runAtomicAction(new Runnable() {
-
+            @Override
             public void run() {
                 Document document = XMLUtil.createDocument("MIME-resolver", null, "-//NetBeans//DTD MIME Resolver 1.1//EN", "http://www.netbeans.org/dtds/mime-resolver-1_1.dtd");  //NOI18N
                 for (String mimeType : mimeToExtensions.keySet()) {
@@ -272,9 +292,78 @@ public final class MIMEResolverImpl {
         return orderedResolvers.values();
     }
 
+    private static FileElement extensionElem(List<String> exts, String mimeType) {
+        FileElement e = new FileElement();
+        for (String ext : exts) {
+            e.fileCheck.addExt(ext);
+        }
+        e.setMIME(mimeType);
+        return e;
+    }
+
+
+    private static MIMEResolver forExts(FileObject def, String mimeType, List<String> exts) throws IOException {
+        FileElement[] e = { extensionElem(exts, mimeType) };
+        return new Impl(def, e, mimeType);
+    }
+
+    private static MIMEResolver forXML(FileObject def, 
+        String mimeType, List<String> exts, List<String> acceptExts,
+        String elem, List<String> namespace, List<String> dtds
+    ) throws IOException {
+        FileElement e = new FileElement();
+        for (String ext : exts) {
+            e.fileCheck.addExt(ext);
+        }
+        e.rule = new XMLMIMEComponent(elem, namespace, dtds);
+        e.setMIME(mimeType);
+        if (acceptExts.isEmpty()) {
+            return new Impl(def, new FileElement[] { e }, mimeType);
+        } else {
+            FileElement direct = extensionElem(acceptExts, mimeType);
+            return new Impl(def, new FileElement[] { e, direct }, mimeType);
+        }
+    }
+
+    /** factory method for {@link MIMEResolver.Registration} */
+    public static MIMEResolver create(FileObject fo) throws IOException {
+        byte[] arr = (byte[]) fo.getAttribute("bytes");
+        if (arr != null) {
+            return forStream(fo, arr);
+        }
+        String mimeType = (String) fo.getAttribute("mimeType"); // NOI18Ns
+        String element = (String) fo.getAttribute("element"); // NOI18N
+        List<String> exts = readArray(fo, "ext."); // NOI18N
+        if (element != null) {
+            List<String> accept = readArray(fo, "accept."); // NOI18N
+            List<String> nss = readArray(fo, "ns."); // NOI18N
+            List<String> dtds = readArray(fo, "doctype."); // NOI18N
+            return forXML(fo, mimeType, exts, accept, element, nss, dtds);
+        }
+        
+        if (!exts.isEmpty()) {
+            return forExts(fo, mimeType, exts);
+        }
+        throw new IllegalArgumentException("" + fo);
+    }
+
+    private static List<String> readArray(FileObject fo, final String prefix) {
+        List<String> exts = new ArrayList<String>();
+        int cnt = 0;
+        for (;;) {
+            String ext = (String) fo.getAttribute(prefix + cnt++);
+            if (ext == null) {
+                break;
+            }
+            exts.add(ext);
+        }
+        return exts;
+    }
+    
+
     // MIMEResolver ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    private static class Impl extends MIMEResolver {
+    private static final class Impl extends MIMEResolver {
         // This file object describes rules that drive ths instance
         private final FileObject data;
 
@@ -288,19 +377,38 @@ public final class MIMEResolverImpl {
         };
 
         // Resolvers in reverse order
-        private FileElement[] smell = null;
+        private FileElement[] smell;
                 
-        private short state = DescParser.INIT;
+        private short state;
 
-        private String[] implResolvableMIMETypes = null;
+        private String[] implResolvableMIMETypes;
 
         @SuppressWarnings("deprecation")
         Impl(FileObject obj) {
-            if (ERR.isLoggable(Level.FINE)) ERR.fine("MIMEResolverImpl.Impl.<init>(" + obj + ")");  // NOI18N
+            if (ERR.isLoggable(Level.FINE)) ERR.log(Level.FINE, "MIMEResolverImpl.Impl.<init>({0})", obj);  // NOI18N
+            state = DescParser.INIT;
             data = obj;
             data.addFileChangeListener(FileUtil.weakFileChangeListener(listener, data));
         }
 
+        @SuppressWarnings("deprecation")
+        private Impl(FileObject def, byte[] serialData) throws IOException {
+            data = def;
+            state = DescParser.LOAD;
+            ByteArrayInputStream is = new ByteArrayInputStream(serialData);
+            DataInputStream dis = new DataInputStream(is);
+            readExternal(dis);
+
+        }
+        @SuppressWarnings("deprecation")
+        private Impl(FileObject def, FileElement[] arr, String... mimeType) throws IOException {
+            this.data = def;
+            this.implResolvableMIMETypes = mimeType;
+            this.smell = arr;
+            this.state = DefaultParser.PARSED;
+        }
+
+        @Override
         public String findMIMEType(FileObject fo) {
             if (fo.hasExt("xml") && fo.getPath().startsWith(MIME_RESOLVERS_PATH)) { // NOI18N
                 // do not try to check ourselves!
@@ -322,7 +430,7 @@ public final class MIMEResolverImpl {
                         // if file matches conditions and exit element is present, do not continue in loop and return null
                         return null;
                     }
-                    if (ERR.isLoggable(Level.FINE)) ERR.fine("MIMEResolverImpl.findMIMEType(" + fo + ")=" + s);  // NOI18N
+                    if (ERR.isLoggable(Level.FINE)) ERR.log(Level.FINE, "MIMEResolverImpl.findMIMEType({0})={1}", new Object[]{fo, s});  // NOI18N
                     return s;
                 }
             }
@@ -348,7 +456,7 @@ public final class MIMEResolverImpl {
                 if (parser.state == DescParser.ERROR) {
                     ERR.fine("MIMEResolverImpl.Impl parsing error!");
                 } else {
-                    StringBuffer buf = new StringBuffer();
+                    StringBuilder buf = new StringBuilder();
                     buf.append("Parse: ");
                     for (int i = 0; i<smell.length; i++)
                         buf.append('\n').append(smell[i]);
@@ -370,10 +478,39 @@ public final class MIMEResolverImpl {
         /** For debug purposes. */
         @Override
         public String toString() {
-            return "MIMEResolverImpl.Impl[" + data.getPath() + "]";  // NOI18N
+            return "MIMEResolverImpl.Impl[" + data + "]";  // NOI18N
         }
 
+        public void writeExternal(DataOutput out) throws IOException {
+            init();
+            if (state == DescParser.ERROR) {
+                throw new IOException();
+            }
+            Util.writeStrings(out, implResolvableMIMETypes);
+            out.writeInt(smell.length);
+            for (FileElement fe : smell) {
+                fe.writeExternal(out);
+            }
+        }
 
+        private void readExternal(DataInput in) throws IOException {
+            if (state != DescParser.LOAD) {
+                throw new IOException();
+            }
+            try {
+                implResolvableMIMETypes = Util.readStrings(in);
+                smell = new FileElement[in.readInt()];
+                for (int i = 0; i < smell.length; i++) {
+                    smell[i] = new FileElement();
+                    smell[i].readExternal(in);
+                }
+                state = DescParser.PARSED;
+            } finally {
+                if (state == DescParser.LOAD) {
+                    state = DescParser.ERROR;
+                }
+            }
+        }
     }
 
     
@@ -391,7 +528,7 @@ public final class MIMEResolverImpl {
         private short file_state = INIT;
         
         // references active resolver component
-        private MIMEComponent component = null;        
+        private XMLMIMEComponent component = null;        
         private String componentDelimiter = null;
         // holds level of pattern element
         private int patternLevel = 0;
@@ -551,13 +688,8 @@ public final class MIMEResolverImpl {
 
                     } else if (RESOLVER.equals(qName)) {
 
-                        if (template[0].fileCheck.exts == null 
-                            && template[0].fileCheck.mimes == null 
-                            && template[0].fileCheck.fatts == null
-                            && template[0].fileCheck.patterns == null
-                            && template[0].fileCheck.names == null
-                            && template[0].fileCheck.magic == null) {
-                                error();  // at least one must be specified
+                        if (!template[0].fileCheck.isValid()) {
+                            error();  // at least one must be specified
                         }
 
                         s = atts.getValue(MIME); if (s == null) error();
@@ -604,7 +736,7 @@ public final class MIMEResolverImpl {
             }
         }
 
-        private void enterComponent(String name, MIMEComponent component) {
+        private void enterComponent(String name, XMLMIMEComponent component) {
             this.component = component;
             componentDelimiter = name;
 
@@ -650,496 +782,4 @@ public final class MIMEResolverImpl {
             if (state == IN_COMPONENT) component.characters(data, offset, len);
         }
     }       
-    
-    /**
-     * Represents a resolving process made using a <tt>file</tt> element.
-     * <p>
-     * Responsible for pairing and performing fast check followed by optional
-     * rules and if all matches returning MIME type.
-     */
-    private static class FileElement {
-        FileElement() {}
-        
-        private Type fileCheck = new Type();
-        private String mime = null;
-        private MIMEComponent rule = null;
-        // unique string to mark exit condition
-        private static final String EXIT_MIME_TYPE = "mime-type-to-exit";  //NOI18N
-
-        private String[] getExtensions() {
-            return fileCheck.exts;
-        }
-        
-        private String getMimeType() {
-            return mime;
-        }
-        
-        private boolean isExit() {
-            return fileCheck.exit;
-        }
-
-        private void setMIME(String mime) {
-            if ("null".equals(mime)) return;  // NOI18N
-            this.mime = mime;
-        }
-        
-        private String resolve(FileObject file) {
-                        
-            try {
-                if (fileCheck.accept(file)) {
-                    if (rule != null && !rule.acceptFileObject(file)) {
-                        return null;
-                    }
-                    if (isExit() || mime == null) {
-                        // all matched but exit element was found or mime attribute of resolver element is null => escape this resolver
-                        return EXIT_MIME_TYPE;
-                    }
-                    // all matched
-                    return mime;
-                }
-            } catch (IOException io) {
-                Logger.getLogger(MIMEResolverImpl.class.getName()).log(Level.INFO, null, io);
-            }
-            return null;
-        }
-        
-        /**
-         * For debug puroses only.
-         */
-        @Override
-        public String toString() {
-            StringBuffer buf = new StringBuffer();
-            buf.append("FileElement(");
-            buf.append(fileCheck).append(' ');
-            buf.append(rule).append(' ');
-            buf.append("Result:").append(mime);
-            return buf.toString();
-        }
-    }
-
-        
-    /**
-     * Hold data from XML document and performs first stage check according to them.
-     * <p>
-     * The first stage check is resonsible for filtering files according  to their 
-     * attributes provided by lower layers.
-     * <p>
-     * We could generate hardwired class bytecode on a fly.
-     */
-    private static class Type {
-        Type() {}
-        private String[] exts;
-        private static final String EMPTY_EXTENSION = "";  //NOI18N
-        private String[] mimes;
-        private String[] fatts;
-        private List<FilePattern> patterns;
-        private FilePattern lastAddedPattern = null;
-        private List<FileName> names;
-        private String[] vals;   // contains null or value of attribute at the same index
-        private byte[]   magic;
-        private byte[]   mask;
-        private boolean exit = false;
-
-        /** Used to search in the file for given pattern in given range. If there is an inner
-         * pattern element, it is used only if outer is fulfilled. Searching starts
-         * always from the beginning of the file. For example:
-         * <p>
-         * Pattern &lt;?php in first 255 bytes
-         * <pre>
-         *      &lt;pattern value="&lt;?php" range="255"/&gt;
-         * </pre>
-         * </p>
-         * <p>
-         * Pattern &lt;HTML&gt;> or &lt;html&gt; in first 255 bytes and pattern &lt;?php in first 4000 bytes.
-         * <pre>
-         *      &lt;pattern value="&lt;HTML&gt;" range="255" ignorecase="true"&gt;
-         *          &lt;pattern value="&lt;?php" range="4000"/&gt;
-         *      &lt;/pattern&gt;
-         * </pre>
-         * </p>
-         */
-        private class FilePattern {
-            // case sensitive by default
-            private static final boolean DEFAULT_IGNORE_CASE = false;
-            private final String value;
-            private final int range;
-            private final boolean ignoreCase;
-            private FilePattern inner;
-            private final byte[] bytes;
-            private final int valueLength;
-
-            public FilePattern(String value, int range, boolean ignoreCase) {
-                this.value = value;
-                this.valueLength = value.length();
-                if (ignoreCase) {
-                    this.bytes = value.toLowerCase().getBytes();
-                } else {
-                    this.bytes = value.getBytes();
-                }
-                this.range = range;
-                this.ignoreCase = ignoreCase;
-            }
-
-            public void setInner(FilePattern inner) {
-                this.inner = inner;
-            }
-
-            private boolean match(byte b, AtomicInteger pointer) {
-                if (b == bytes[pointer.get()]) {
-                    return pointer.incrementAndGet() >= valueLength;
-                } else {
-                    pointer.set(0);
-                    return false;
-                }
-            }
-
-            /** Read from given file and compare byte-by-byte if pattern
-             * appers in given range.
-             */
-            public boolean match(FileObject fo) throws IOException {
-                InputStream is = null;
-                boolean matched = false;
-                try {
-                    is = fo.getInputStream();  // it is CachedInputStream, so you can call getInputStream and read more times without performance penalty
-                    byte[] byteRange = new byte[range];
-                    int read = is.read(byteRange);
-                    AtomicInteger pointer = new AtomicInteger(0);
-                    for (int i = 0; i < read; i++) {
-                        byte b = byteRange[i];
-                        if (ignoreCase) {
-                            b = (byte) Character.toLowerCase(b);
-                        }
-                        if (match(b, pointer)) {
-                            matched = true;
-                            break;
-                        }
-                    }
-                } finally {
-                    try {
-                        if (is != null) {
-                            is.close();
-                        }
-                    } catch (IOException ioe) {
-                        // already closed
-                    }
-                }
-                if (matched) {
-                    if (inner == null) {
-                        return true;
-                    } else {
-                        return inner.match(fo);
-                    }
-                }
-                return false;
-            }
-
-            @Override
-            public String toString() {
-                return "[" + value + ", " + range + ", " + ignoreCase + (inner != null ? ", " + inner : "") + "]";
-            }
-        }
-
-        /** Used to compare filename with given name.
-         * For example:
-         * <p>
-         * Filename matches makefile, Makefile, MaKeFiLe, mymakefile, gnumakefile, makefile1, ....
-         * <pre>
-         *      &lt;name name="makefile" substring="true"/&gt;
-         * </pre>
-         * </p>
-         * <p>
-         * Filename exactly matches rakefile or Rakefile.
-         * <pre>
-         *      &lt;name name="rakefile" ignorecase="false"/&gt;
-         *      &lt;name name="Rakefile" ignorecase="false"/&gt;
-         * </pre>
-         * </p>
-         */
-        private class FileName {
-
-            // case insensitive by default
-            private static final boolean DEFAULT_IGNORE_CASE = true;
-            private static final boolean DEFAULT_SUBSTRING = false;
-            private final String name;
-            private final boolean substring;
-            private final boolean ignoreCase;
-
-            public FileName(String name, boolean substring, boolean ignoreCase) {
-                if (ignoreCase) {
-                    this.name = name.toLowerCase();
-                } else {
-                    this.name = name;
-                }
-                this.substring = substring;
-                this.ignoreCase = ignoreCase;
-            }
-
-            public boolean match(FileObject fo) {
-                String nameAndExt = fo.getNameExt();
-                if (ignoreCase) {
-                    nameAndExt = nameAndExt.toLowerCase();
-                }
-                if (substring) {
-                    return nameAndExt.contains(name);
-                } else {
-                    return nameAndExt.equals(name);
-                }
-            }
-
-            @Override
-            public String toString() {
-                return "[" + name + ", " + substring + ", " + ignoreCase + "]";
-            }
-        }
-
-        /**
-         * For debug purposes only.
-         */
-        @Override
-        public String toString() {
-            int i = 0;
-            StringBuffer buf = new StringBuffer();
-
-            buf.append("fast-check(");
-            
-            if (exts != null) {
-                buf.append("exts:");            
-                for (i = 0; i<exts.length; i++)
-                    buf.append(exts[i]).append(", ");
-            }
-            
-            if (mimes != null) {
-                buf.append("mimes:");
-                for (i = 0; i<mimes.length; i++)
-                    buf.append(mimes[i]).append(", ");
-            }
-            
-            if (fatts != null) {
-                buf.append("file-attributes:");
-                for (i = 0; i<fatts.length; i++)
-                    buf.append(fatts[i]).append("='").append(vals[i]).append("', ");
-            }
-
-            if (patterns != null) {
-                buf.append("patterns:");
-                for (FilePattern pattern : patterns) {
-                    buf.append(pattern.toString()).append(", ");
-                }
-            }
-
-            if (names != null) {
-                buf.append("names:");
-                for (FileName name : names) {
-                    buf.append(name.toString()).append(", ");
-                }
-            }
-
-            if (magic != null) {
-                buf.append("magic:").append(XMLUtil.toHex(magic, 0, magic.length));
-            }
-            
-            if (mask != null) {
-                buf.append("mask:").append(XMLUtil.toHex(mask, 0, mask.length));
-            }
-
-            buf.append(')');
-            
-            return buf.toString();
-        }
-        
-        private void addExt(String ext) {
-            exts = Util.addString(exts, ext);
-        }
-
-        private void addMIME(String mime) {
-            mimes = Util.addString(mimes, mime.toLowerCase());
-        }
-        
-        private void addAttr(String name, String value) {
-            fatts = Util.addString(fatts, name);
-            vals = Util.addString(vals, value);
-        }
-
-        private void addPattern(String value, int range, boolean ignoreCase) {
-            if (patterns == null) {
-                patterns = new ArrayList<FilePattern>();
-            }
-            lastAddedPattern = new FilePattern(value, range, ignoreCase);
-            patterns.add(lastAddedPattern);
-        }
-
-        private void addInnerPattern(String value, int range, boolean ignoreCase) {
-            FilePattern inner = new FilePattern(value, range, ignoreCase);
-            lastAddedPattern.setInner(inner);
-            lastAddedPattern = inner;
-        }
-
-        private void addName(String name, boolean substring, boolean ignoreCase) {
-            if (names == null) {
-                names = new ArrayList<FileName>();
-            }
-            names.add(new FileName(name, substring, ignoreCase));
-        }
-
-        private boolean setMagic(byte[] magic, byte[] mask) {
-            if (magic == null) return true;
-            if (mask != null && magic.length != mask.length) return false;            
-            this.magic = magic;
-            if (mask != null) {
-                this.mask = mask;
-                for (int i = 0; i<mask.length; i++) {
-                    this.magic[i] &= mask[i];
-                }
-            }
-            return true;
-        }
-
-        private void setExit() {
-            exit = true;
-        }
-
-        @SuppressWarnings("deprecation")
-        private static String getMIMEType(String extension) {
-            return FileUtil.getMIMEType(extension);
-        }
-
-        /** #26521, 114976 - ignore not readable and windows' locked files. */
-        private static void handleIOException(FileObject fo, IOException ioe) throws IOException {
-            if (fo.canRead()) {
-                if (!Utilities.isWindows() || !(ioe instanceof FileNotFoundException) || !fo.isValid() || !fo.getName().toLowerCase().contains("ntuser")) {//NOI18N
-                    throw ioe;
-                }
-            }
-        }
-
-        private boolean accept(FileObject fo) throws IOException {
-            // check for resource extension
-            if (exts != null) {
-                String ext = fo.getExt();
-                if (ext == null) {
-                    ext = EMPTY_EXTENSION;
-                }
-                if (!Util.contains(exts, ext, CASE_INSENSITIVE)) {
-                    return false;
-                }
-            }
-            
-            // check for resource mime type
-
-            if (mimes != null) {
-                boolean match = false;
-                String s = getMIMEType(fo.getExt());  //from the very first implementation there is still question "how to obtain resource MIME type as classified by lower layers?"
-                if (s == null) return false;
-
-                // RFC2045; remove content type paramaters and ignore case
-                int l = s.indexOf(';');
-                if (l>=0) s = s.substring(0, l);
-                s = s.toLowerCase();
-
-                for (int i = mimes.length -1 ; i>=0; i--) {
-                    if (s.equals(mimes[i])) {
-                        match = true;
-                        break;
-                    }
-
-                    // RFC3023; allows "+xml" suffix
-                    if (mimes[i].length() > 0 && mimes[i].charAt(0) == '+' && s.endsWith(mimes[i])) {
-                        match = true;
-                        break;
-                    }
-                }
-                if (!match) return false;
-            }
-            
-            // check for magic
-            
-            if (magic != null) {
-                byte[] header = new byte[magic.length];
-
-                // fetch header
-
-                InputStream in = null;
-                try {
-                    in = fo.getInputStream();
-                    int read = in.read(header);
-                    if (read < 0) {
-                        return false;
-                    }
-                } catch (IOException openex) {
-                    handleIOException(fo, openex);
-                    return false;
-                } finally {
-                    try {
-                        if (in != null) {
-                            in.close();
-                        }
-                    } catch (IOException ioe) {
-                        // already closed
-                    }
-                }
-
-                // compare it
-
-                for (int i = 0; i < magic.length; i++) {
-                    if (mask != null) {
-                        header[i] &= mask[i];
-                    }
-                    if (magic[i] != header[i]) {
-                        return false;
-                    }
-                }
-            }
-            
-            // check for fileobject attributes
-
-            if (fatts != null) {
-                for (int i = fatts.length -1 ; i>=0; i--) {
-                    Object attr = fo.getAttribute(fatts[i]);
-                    if (attr != null) {
-                        if (!attr.toString().equals(vals[i]) && vals[i] != null) return false;
-                    } else {
-                        return false;
-                    }
-                }
-            }
-
-            // check for patterns in file
-            if (patterns != null) {
-                try {
-                    boolean matched = false;
-                    for (FilePattern pattern : patterns) {
-                        if(pattern.match(fo)) {
-                            // at least one pattern matched => escape loop, otherwise continue
-                            matched = true;
-                            break;
-                        }
-                    }
-                    if (!matched) {
-                        return false;
-                    }
-                } catch (IOException ioe) {
-                    handleIOException(fo, ioe);
-                    return false;
-                }
-            }
-
-            // check file name
-            if (names != null) {
-                boolean matched = false;
-                for (FileName name : names) {
-                    if(name.match(fo)) {
-                        // at least one matched => escape loop, otherwise continue
-                        matched = true;
-                        break;
-                    }
-                }
-                if (!matched) {
-                    return false;
-                }
-            }
-
-            // all templates matched
-            return true;
-        }
-    }
 }

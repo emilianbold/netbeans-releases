@@ -49,8 +49,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 import javax.lang.model.element.ElementKind;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -62,14 +60,12 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappings;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
@@ -98,7 +94,7 @@ import org.openide.util.NbBundle;
  * see NNCompletionProvider and NNCompletionQuery as nb 5.5 precursors for this class 
  * @author sp153251
  */
-@MimeRegistration(mimeType = "text/x-java", service = CompletionProvider.class)//NOI18N
+@MimeRegistration(mimeType = "text/x-java", service = CompletionProvider.class, position = 400)//NOI18N
 public class JPACodeCompletionProvider implements CompletionProvider {
 
     @Override
@@ -186,12 +182,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
                         anchorOffset = -1;
                         Source source = Source.create(doc);
                         if (source != null) {
-                            Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singletonList(source), getTask());
-                            if (!f.isDone()) {
-                                component.putClientProperty("completion-active", Boolean.FALSE); //NOI18N
-                                resultSet.setWaitText(NbBundle.getMessage(JPACodeCompletionProvider.class, "scanning-in-progress")); //NOI18N
-                                f.get();
-                            }
+                            ParserManager.parse(Collections.singletonList(source), getTask());
                             if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                                 if (results != null) {
                                     resultSet.addAllItems(results);

@@ -95,7 +95,7 @@ final class Call implements CallDescriptor {
     private boolean leaf;
     /** collection of references might not be complete */
     private boolean canceled = false;
-    private enum State { CANCELED, BROKEN }
+    private enum State { CANCELED, BROKEN, INCOMPLETE }
     private State state;
 
     private Call() {
@@ -146,6 +146,16 @@ final class Call implements CallDescriptor {
             this.state = State.CANCELED;
         }
     }
+    
+    void setIncomplete(boolean state) {
+        if (state) {
+            this.state = State.INCOMPLETE;
+        }
+    }
+    
+    public boolean isIncomplete() {
+        return this.state == State.INCOMPLETE;
+    }
 
     void setBroken() {
         this.state = State.BROKEN;
@@ -166,6 +176,17 @@ final class Call implements CallDescriptor {
         if (occurrences != null && !occurrences.isEmpty()) {
             occurrences.get(0).open();
         }
+    }
+    
+    /**
+     * Creates an empty Call, which will be eventually replaced by the real item
+     * 
+     * @return empty Call node, which must be replaced by the real one.
+     */
+    public static Call createEmpty() {
+        Call c = new Call();
+        c.setIncomplete(true);
+        return c;
     }
     
     public static Call createRoot(CompilationInfo javac, TreePath selection, Element selectionElm, boolean isCallerGraph) {

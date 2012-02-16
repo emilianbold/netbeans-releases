@@ -171,6 +171,14 @@ public final class PhpUnit extends PhpProgram {
         return getCustom(PhpOptions.getInstance().getPhpUnit());
     }
 
+    public static PhpUnit forProject(PhpProject project) throws InvalidPhpProgramException {
+        File script = ProjectPropertiesSupport.getPhpUnitScript(project);
+        if (script == null) {
+            return null;
+        }
+        return getCustom(script.getAbsolutePath());
+    }
+
     public static PhpUnit getCustom(String command) throws InvalidPhpProgramException {
         String error = validate(command);
         if (error != null) {
@@ -333,7 +341,7 @@ public final class PhpUnit extends PhpProgram {
         String relativeSourcePath = FileUtil.getRelativePath(sourcesDirectory, source.getParent());
         assert relativeSourcePath != null : String.format("Relative path must be found for sources %s and folder %s", sourcesDirectory, source.getParent());
 
-        File relativeTestDirectory = new File(getTestDirectory(project), relativeSourcePath.replace('/', File.separatorChar)); // NOI18N
+        File relativeTestDirectory = PhpProjectUtils.resolveFile(getTestDirectory(project), relativeSourcePath);
 
         return new File(relativeTestDirectory, PhpUnit.makeTestFile(className));
     }
@@ -661,14 +669,10 @@ public final class PhpUnit extends PhpProgram {
         return String.format(filename, i == 0 ? "" : i); // NOI18N
     }
 
-    @NbBundle.Messages("PhpUnit.script.error=PHPUnit: {0}")
+    @NbBundle.Messages("PhpUnit.script.label=PHPUnit script")
     @Override
     public String validate() {
-        String error = FileUtils.validateFile(getProgram(), false);
-        if (error != null) {
-            return Bundle.PhpUnit_script_error(error);
-        }
-        return null;
+        return FileUtils.validateFile(Bundle.PhpUnit_script_label(), getProgram(), false);
     }
 
     public static String validate(String command) {

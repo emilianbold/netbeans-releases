@@ -72,6 +72,7 @@ import javax.swing.plaf.synth.SynthLookAndFeel;
 import javax.swing.plaf.synth.SynthPainter;
 import javax.swing.plaf.synth.SynthStyle;
 import javax.swing.plaf.synth.SynthStyleFactory;
+import org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer;
 import org.openide.awt.HtmlRenderer;
 
 /**
@@ -190,6 +191,16 @@ public final class GtkViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         // draw bump (dragger)
         drawBump(g, index, x + 4, y + 6, BUMP_WIDTH, height - 8);
         
+        boolean slidedOut = false;
+        WinsysInfoForTabbedContainer winsysInfo = displayer.getContainerWinsysInfo();
+        if( null != winsysInfo && winsysInfo.isSlidedOutContainer() )
+            slidedOut = false;
+        if( isTabBusy( index ) && !slidedOut ) {
+            Icon busyIcon = BusyTabsSupport.getDefault().getBusyIcon( isSelected( index ) );
+            txtWidth -= busyIcon.getIconWidth() - 3 - TXT_X_PAD;
+            busyIcon.paintIcon( displayer, g, x+TXT_X_PAD, y+(height-busyIcon.getIconHeight())/2);
+            x += busyIcon.getIconWidth() + 3;
+        }
         // draw text in right color
         Color txtC = UIManager.getColor("textText"); //NOI18N
         HtmlRenderer.renderString(text, g, x + TXT_X_PAD, y + fm.getAscent()

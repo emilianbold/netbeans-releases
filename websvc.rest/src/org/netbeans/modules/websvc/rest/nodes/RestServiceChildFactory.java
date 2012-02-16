@@ -85,9 +85,10 @@ class RestServiceChildFactory extends ChildFactory {
             RestServicesModel model = getModel();
             assert model != null : "null model"; // NOI18N
             if (model != null) {
-                model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>()
+                model.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>()
                 {
 
+                    @Override
                     public Void run( RestServicesMetadata metadata )
                             throws IOException
                     {

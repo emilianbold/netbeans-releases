@@ -222,9 +222,13 @@ public final class OpenProjectList {
         getDefault().LOAD.waitFinished();
     }
 
-    static void preferredProject(Project lazyP) {
+    static void preferredProject(final Project lazyP) {
         if (lazyP != null) {
-            getDefault().LOAD.preferredProject(Collections.singleton(lazyP.getProjectDirectory()));
+            OPENING_RP.post(new Runnable() {
+                @Override public void run() {
+                    getDefault().LOAD.preferredProject(Collections.singleton(lazyP.getProjectDirectory()));
+                }
+            });
         }
     }
 

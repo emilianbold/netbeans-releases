@@ -41,11 +41,13 @@
  */
 package org.netbeans.modules.javafx2.scenebuilder;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.ExecutionService;
@@ -55,8 +57,10 @@ import org.openide.loaders.DataObject;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputListener;
+import org.openide.windows.OutputWriter;
 
 @ServiceProvider(service=FXMLOpener.class)
 /**
@@ -64,8 +68,136 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public final class SceneBuilderFXMLOpener extends FXMLOpener {
     final private static Logger LOG = Logger.getLogger(SceneBuilderFXMLOpener.class.getName());
+    final private static OutputWriter EMPTY_WRITER = new OutputWriter(new Writer(){
+        @Override
+        public void close() throws IOException {
+            // ignore
+        }
+
+        @Override
+        public void flush() throws IOException {
+            // ignore
+        }
+
+        @Override
+        public void write(char[] cbuf, int off, int len) throws IOException {
+            // ignore
+        }
+    }) {
+      @Override
+        public void println(String s, OutputListener l) throws IOException {
+            // ignore
+        }
+
+        @Override
+        public void reset() throws IOException {
+            // ignore
+        }  
+    };
     
-    final private ExecutionDescriptor descriptor = new ExecutionDescriptor().frontWindow(true).controllable(true);
+    final private static Reader EMPTY_READER = new Reader() {
+
+        @Override
+        public int read(char[] cbuf, int off, int len) throws IOException {
+            return -1;
+        }
+
+        @Override
+        public void close() throws IOException {
+            // ignore
+        }
+    };
+    
+    final private InputOutput NULL_IO = new InputOutput() {
+        private boolean closed = true;
+        
+        @Override
+        public OutputWriter getOut() {
+            closed = false;
+            return EMPTY_WRITER;
+        }
+
+        @Override
+        public Reader getIn() {
+            return EMPTY_READER;
+        }
+
+        @Override
+        public OutputWriter getErr() {
+            return EMPTY_WRITER;
+        }
+
+        @Override
+        public void closeInputOutput() {
+            closed = true;
+        }
+
+        @Override
+        public boolean isClosed() {
+            return closed;
+        }
+
+        @Override
+        public void setOutputVisible(boolean value) {
+            // ignore
+        }
+
+        @Override
+        public void setErrVisible(boolean value) {
+            // ignore
+        }
+
+        @Override
+        public void setInputVisible(boolean value) {
+            // ignore
+        }
+
+        @Override
+        public void select() {
+            // ignore
+        }
+
+        @Override
+        public boolean isErrSeparated() {
+            return false;
+        }
+
+        @Override
+        public void setErrSeparated(boolean value) {
+            // ignore
+        }
+
+        @Override
+        public boolean isFocusTaken() {
+            return false;
+        }
+
+        @Override
+        public void setFocusTaken(boolean value) {
+            // ignore
+        }
+
+        @Override
+        public Reader flushReader() {
+            return EMPTY_READER;
+        }
+    };
+    
+    final private ExecutionDescriptor descriptor = new ExecutionDescriptor().frontWindow(true).controllable(false).inputOutput(NULL_IO).rerunCondition(new ExecutionDescriptor.RerunCondition() {
+
+        @Override
+        public void addChangeListener(ChangeListener listener) {
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener listener) {
+        }
+
+        @Override
+        public boolean isRerunPossible() {
+            return false;
+        }
+    });
     
     private Settings settings = Settings.getInstance();
  
@@ -75,7 +207,7 @@ public final class SceneBuilderFXMLOpener extends FXMLOpener {
     }
 
     @Override
-    @Messages("LBL_SceneBuilder_Out=SceneBuilder")
+    @Messages("LBL_SceneBuilder_Out=JavaFX Scene Builder")
     public boolean open(Lookup context) {
         String execPath = getExecutablePath();
         if (execPath == null) {
@@ -116,11 +248,7 @@ public final class SceneBuilderFXMLOpener extends FXMLOpener {
     private String getExecutablePath() {
         Home home = settings.getSelectedHome();
         if (home != null && home.isValid()) {
-            String postfix = ""; // NOI18N
-            if (Utilities.isWindows()) {
-                postfix = ".exe"; // NOI18N
-            }
-            return home.getPath() + File.separator + "bin" + File.separator + "scenebuilder" + postfix; // NOI18N
+            return home.getLauncherPath();
         }
         return null;
     }

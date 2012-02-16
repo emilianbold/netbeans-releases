@@ -45,6 +45,7 @@ package org.netbeans.modules.localhistory;
 
 import java.io.File;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.util.VersioningEvent;
@@ -102,6 +103,10 @@ public class LocalHistoryVCS extends VersioningSystem {
         return LocalHistory.getInstance().getVCSInterceptor();
     }
 
+    public VCSHistoryProvider getVCSHistoryProvider() {
+        return LocalHistory.getInstance().getVCSHistoryProvider();
+    }
+    
     void managedFilesChanged() {
         fireVersionedFilesChanged();
     }

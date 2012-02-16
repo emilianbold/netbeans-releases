@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.bugtracking.kenai;
 
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 
 /**
  *
@@ -50,5 +50,5 @@ import org.netbeans.modules.bugtracking.spi.Query;
  */
 interface QueryDescriptor {
     public boolean isPredefined();
-    public Query getQuery();
+    public QueryProvider getQuery();
 }

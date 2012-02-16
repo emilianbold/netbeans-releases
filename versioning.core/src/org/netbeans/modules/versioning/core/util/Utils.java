@@ -84,6 +84,10 @@ public final class Utils {
 
     private Utils() { }
     
+    public static VersioningSystem getLocalHistory(File file) {
+        return VersioningManager.getInstance().getLocalHistory(VCSFileProxy.createFileProxy(file));
+    }
+    
     /**
      * Stop managing the given path by the given versioning system
      * 

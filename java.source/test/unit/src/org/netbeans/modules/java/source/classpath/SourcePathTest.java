@@ -45,19 +45,24 @@ package org.netbeans.modules.java.source.classpath;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.source.ClassIndexTestCase;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class SourcePathTest extends NbTestCase {
+public class SourcePathTest extends ClassIndexTestCase {
     
     public SourcePathTest (String name) {
         super (name);
@@ -75,34 +80,26 @@ public class SourcePathTest extends NbTestCase {
         final File r2 = new File (wd,"root2"); //NOI18N
         r2.mkdir();
         
-        final ClassPath base = ClassPathSupport.createClassPath(new URL[] {
-            r1.toURI().toURL(),
-            r2.toURI().toURL(),
-        });
+        final ClassPathImplementation baseImpl = ClassPathSupport.createClassPathImplementation(
+            Arrays.asList(new PathResourceImplementation[] {
+                ClassPathSupport.createResource(r1.toURI().toURL()),
+                ClassPathSupport.createResource(r2.toURI().toURL())
+            }));
+        final ClassPath base = ClassPathFactory.createClassPath(baseImpl);
         
-        final ClassPath sp1 = SourcePath.sources(base, true);
-        assertEquals (base,sp1); 
+        final ClassPath sp1 = ClassPathFactory.createClassPath(SourcePath.filtered(baseImpl, true));
+        assertEquals (base,sp1);
         
-        final ClassPath sp2 = SourcePath.sources(base, false);
+        final ClassPath sp2 = ClassPathFactory.createClassPath(SourcePath.filtered(baseImpl, false));
         assertTrue (sp2.entries().isEmpty());
         
-        ClassIndexManager.getDefault().writeLock(new IndexManager.Action<Void>() {
-            public Void run() throws IOException, InterruptedException {
-                ClassIndexManager.getDefault().createUsagesQuery(base.entries().get(0).getURL(), true);
-                return null;
-            }
-        });
+        ensureRootValid(base.entries().get(0).getURL());
         assertEquals(1,sp2.entries().size());
         assertEquals(base.entries().get(0).getURL(), sp2.entries().get(0).getURL());
-        ClassIndexManager.getDefault().writeLock(new IndexManager.Action<Void>() {
-            public Void run() throws IOException, InterruptedException {
-                ClassIndexManager.getDefault().createUsagesQuery(base.entries().get(1).getURL(), true);
-                return null;
-            }
-        });
+        ensureRootValid(base.entries().get(1).getURL());
         assertEquals (base,sp2);
         
-        final ClassPath sp3 = SourcePath.sources(base, false);
+        final ClassPath sp3 = ClassPathFactory.createClassPath(SourcePath.filtered(baseImpl, false));
         assertEquals (base,sp3);
     }
     

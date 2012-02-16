@@ -1273,7 +1273,9 @@ public class HgCommand {
         } catch (HgException ex) {
             HgUtils.notifyException(ex);
         } finally {
-            logger.closeLog();
+            if(logger != null) {
+                logger.closeLog();
+            }
         }
 
         return messages.toArray(new HgLogMessage[0]);
@@ -1318,7 +1320,7 @@ public class HgCommand {
      * @param String revision which the revision to start from.
      * @return File for the previous name of the file
      */
-    private static File getPreviousName(File repository, File file, String revision) throws HgException {
+    private static File getPreviousName(File repository, File file, String revision, boolean tryHard) throws HgException {
         if (repository == null ) return null;
         if (revision == null ) return null;
 
@@ -1347,15 +1349,17 @@ public class HgCommand {
         } catch (HgException e) {
             Mercurial.LOG.log(Level.WARNING, "command: {0}", HgUtils.replaceHttpPassword(command)); // NOI18N
             Mercurial.LOG.log(e instanceof HgException.HgCommandCanceledException ? Level.FINE : Level.INFO, null, e); // NOI18N
-            throw new HgException(e.getMessage());
+            throw e;
         } finally {
             Utils.deleteRecursively(tempFolder);
         }
-        String[] fileNames = list.get(0).split("\t");
-        for (int j = 0; j < fileNames.length / 2; ++j) {
-            File name = new File(repository, fileNames[2 * j]);
-            if (name.equals(file)) {
-               return new File(repository, fileNames[2 * j + 1]);
+        if(!tryHard) {
+            String[] fileNames = list.get(0).split("\t");
+            for (int j = 0; j < fileNames.length / 2; ++j) {
+                File name = new File(repository, fileNames[2 * j]);
+                if (name.equals(file)) {
+                    return new File(repository, fileNames[2 * j + 1]);
+                }
             }
         }
         return null;
@@ -1811,6 +1815,10 @@ public class HgCommand {
         doCat(repository, file, outFile, null, true, logger); //NOI18N
     }
 
+    public static void doCat(File repository, File file, File outFile, String revision, OutputLogger logger) throws HgException {
+        doCat(repository, file, outFile, revision, logger, true);
+    }
+    
     /**
      * Retrieves the specified revision of the specified file to the
      * specified output file.
@@ -1823,11 +1831,15 @@ public class HgCommand {
      * @return List<String> cmdOutput of all the log entries
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static void doCat(File repository, File file, File outFile, String revision, OutputLogger logger) throws HgException {
+    public static void doCat(File repository, File file, File outFile, String revision, OutputLogger logger, boolean tryHard) throws HgException {
         doCat(repository, file, outFile, revision, true, logger); //NOI18N
     }
 
     public static void doCat(File repository, File file, File outFile, String revision, boolean retry, OutputLogger logger) throws HgException {
+        doCat(repository, file, outFile, revision, retry, logger, true);
+    }
+    
+    public static void doCat(File repository, File file, File outFile, String revision, boolean retry, OutputLogger logger, boolean tryHard) throws HgException {
         if (repository == null) return;
         if (file == null) return;
 
@@ -1873,7 +1885,7 @@ public class HgCommand {
             } else {
                 // Perhaps the file has changed its name
                 String newRevision = Integer.toString(Integer.parseInt(revision)+1);
-                File prevFile = getPreviousName(repository, file, newRevision);
+                File prevFile = getPreviousName(repository, file, newRevision, tryHard);
                 if (prevFile != null) {
                     doCat(repository, prevFile, outFile, revision, false, logger); //NOI18N
                 }
@@ -3682,7 +3694,7 @@ public class HgCommand {
             if (proc != null)  {
                 proc.destroy();
             }
-            throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_CANCELLED"));
+            throw new HgException.HgCommandCanceledException(NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_CANCELLED"));
         }catch(IOException e){
             // Hg does not seem to be returning error status != 0
             // even when it fails when for instance adding an already tracked file to

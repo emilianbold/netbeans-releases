@@ -43,17 +43,14 @@
 
 package org.netbeans.modules.profiler.selector.api.nodes;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.icons.LanguageIcons;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.api.java.SourcePackageInfo;
-import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 
 /**
@@ -70,6 +67,10 @@ public class PackageNode extends ContainerNode {
      * A private implementation of package children
      */
     private static class PackageChildren extends SelectorChildren<PackageNode> {
+        public PackageChildren(PackageNode parent) {
+            super(parent);
+        }
+        
         @Override
         protected List<SelectorNode> prepareChildren(PackageNode parent) {
             List<SelectorNode> nodes = new ArrayList<SelectorNode>();
@@ -131,8 +132,19 @@ public class PackageNode extends ContainerNode {
     /** Creates a new instance of PackageNode */
     public PackageNode(SourcePackageInfo pkg, ContainerNode parent) {
         super(pkg != null ? pkg.getSimpleName() : Bundle.LBL_Unknown(), 
-              stripName(defaultizeName(pkg != null ? pkg.getBinaryName() : Bundle.LBL_Unknown())), 
-              Icons.getIcon(LanguageIcons.PACKAGE), parent);
+              defaultizeName(pkg != null ? pkg.getBinaryName() : Bundle.LBL_Unknown()), 
+              Icons.getIcon(LanguageIcons.PACKAGE), parent, Lookups.singleton(pkg));
+        
+        boolean flat = false;
+        Collection<SourcePackageInfo> subpkgs = pkg.getSubpackages();
+        while (subpkgs.size() == 1) {
+            pkg = subpkgs.iterator().next();
+            subpkgs = pkg.getSubpackages();
+            flat = true;
+        }
+        if (flat) {
+            updateDisplayName(defaultizeName(pkg != null ? pkg.getBinaryName() : Bundle.LBL_Unknown()));
+        }
         
         this.pkg = pkg;
         if (pkg != null) {
@@ -142,12 +154,16 @@ public class PackageNode extends ContainerNode {
 
     @Override
     final protected SelectorChildren getChildren() {
-        return new PackageChildren();
+        return new PackageChildren(this);
     }
 
     @Override
     final public SourceCodeSelection getSignature() {
         return signature;
+    }
+    
+    final public SourcePackageInfo getPackageInfo() {
+        return pkg;
     }
 
     private List<ClassNode> getContainedClasses() {
@@ -176,15 +192,5 @@ public class PackageNode extends ContainerNode {
     
     private static String defaultizeName(String name) {
         return ((name == null) || (name.length() == 0)) ? DEFAULT_NAME : name;
-    }
-
-    private static String stripName(String name) {
-        int lastDot = name.lastIndexOf('.'); // NOI18N
-
-        if (lastDot > -1) {
-            return name.substring(lastDot + 1);
-        }
-
-        return name;
     }
 }

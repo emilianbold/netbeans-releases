@@ -50,7 +50,8 @@ import org.openide.util.HelpCtx;
 import java.awt.event.ActionEvent;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugzilla.commands.ValidateCommand;
 import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
 import org.openide.util.NbBundle;
@@ -87,13 +88,12 @@ public class ReportNBIssueAction extends SystemAction {
                 if(!checkLogin(repo)) {
                     return;
                 }
-                Issue.open(repo, null);
+                IssueProvider.open(repo, null);
             }
         });
     }
 
     static boolean checkLogin(final BugzillaRepository repo) {
-        BugzillaConfig.getInstance().setupCredentials(repo);
         if(repo.getUsername() != null && !repo.getUsername().equals("")) {
             return true;
         }
@@ -105,7 +105,7 @@ public class ReportNBIssueAction extends SystemAction {
             ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ReportNBIssueAction.class, "MSG_CONNECTING_2_NBORG")); // NOI18N
             handle.start();
             try {
-                repo.getExecutor().execute(cmd, false, false, false);
+                repo.getExecutor().execute(cmd, false, false);
             } finally {
                 handle.finish();
             }
@@ -114,7 +114,7 @@ public class ReportNBIssueAction extends SystemAction {
                 continue;
             }
             // everythings fine, store the credentials ...
-            BugzillaConfig.getInstance().putRepository(repo.getID(), repo);
+            KenaiUtil.addRepository(repo);
             return true;
         }
         repo.setCredentials(null, null, null, null); // reset

@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.model;
 
 import java.util.Collections;
 import java.util.logging.Level;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.openide.filesystems.FileObject;
@@ -93,6 +94,19 @@ public class UtilitiesTest extends NbTestCase {
                 "    </modules>\n" +
                 "</project>\n",
                 pom.asText().replace("\r\n", "\n"));
+    }
+
+    public void testPerformNothing() throws Exception {
+        FileObject pom = TestFileUtils.writeFile(FileUtil.toFileObject(getWorkDir()), "p0m.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>\n" +
+                "    <modelVersion>4.0.0</modelVersion>\n" +
+                "    <groupId>grp</groupId>\n" +
+                "    <artifactId>art</artifactId>\n" +
+                "    <version>1.0</version>\n" +
+                "</project>\n");
+        CharSequence log = Log.enable(logRoot(), Level.FINE);
+        Utilities.performPOMModelOperations(pom, Collections.<ModelOperation<POMModel>>emptyList());
+        assertFalse(log.toString(), log.toString().contains("changes in"));
     }
 
 }

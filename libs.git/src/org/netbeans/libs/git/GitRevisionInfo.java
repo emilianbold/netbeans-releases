@@ -63,6 +63,9 @@ import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 
 /**
+ * Provides information about a certain commit, usually is returned by 
+ * git commit or log command.
+ * 
  * @author Jan Becicka
  */
 public final class GitRevisionInfo {
@@ -78,57 +81,53 @@ public final class GitRevisionInfo {
     }
 
     /**
-     * revision string
-     * @return
+     * @return id of the commit
      */
     public String getRevision () {
         return ObjectId.toString(revCommit.getId());
     }
 
     /**
-     * returns short message
-     * @return
+     * @return the first line of the commit message.
      */
     public String getShortMessage () {
         return revCommit.getShortMessage();
     }
 
     /**
-     * returns full message
-     *
-     * @return
+     * @return full commit message
      */
     public String getFullMessage () {
         return revCommit.getFullMessage();
     }
 
     /**
-     * getter for commit time, time is in milliseconds
-     * @return
+     * @return time this commit was created in milliseconds.
      */
     public long getCommitTime () {
         return (long) revCommit.getCommitTime() * 1000;
     }
 
     /**
-     * returns author of this change set
-     * @return
+     * @return author of the commit
      */
     public GitUser getAuthor () {
         return GitClassFactoryImpl.getInstance().createUser(revCommit.getAuthorIdent());
     }
 
     /**
-     * returns committer of this change set
-     * @return
+     * @return person who actually committed the changes, may or may not be the same as a return value of the <code>getAuthor</code> method.
      */
     public GitUser getCommitter () {
         return GitClassFactoryImpl.getInstance().createUser(revCommit.getCommitterIdent());
     }
     
     /**
-     * files affected by this change set
-     * @return
+     * Returns the information about the files affected (modified, deleted or added) by this commit.
+     * <strong>First time call should not be done from the EDT.</strong> When called for the first time the method execution can take a big amount of time
+     * because it compares the commit tree with its parents and identifies the modified files. 
+     * Any subsequent call to the first <strong>successful</strong> call will return the cached value and will be fast.
+     * @return files affected by this change set
      * @throws GitException when an error occurs
      */
     public java.util.Map<java.io.File, GitFileInfo> getModifiedFiles () throws GitException {
@@ -145,8 +144,7 @@ public final class GitRevisionInfo {
     }
     
     /**
-     * Returns parents of this commit
-     * @return 
+     * @return commit ids of this commit's parents
      */
     public String[] getParents () {
         String[] parents = new String[revCommit.getParentCount()];
@@ -236,6 +234,79 @@ public final class GitRevisionInfo {
         } finally {
             revWalk.release();
             walk.release();
+        }
+    }
+    
+    /**
+     * Provides information about what happened to a file between two different commits.
+     * If the file is copied or renamed between the two commits, you can get the path
+     * of the original file.
+     */
+    public static final class GitFileInfo {
+
+        /**
+         * State of the file in the second commit in relevance to the first commit.
+         */
+        public static enum Status {
+            ADDED,
+            MODIFIED,
+            RENAMED,
+            COPIED,
+            REMOVED,
+            UNKNOWN
+        }
+
+        private final String relativePath;
+        private final String originalPath;
+        private final Status status;
+        private final File file;
+        private final File originalFile;
+
+        GitFileInfo (File file, String relativePath, Status status, File originalFile, String originalPath) {
+            this.relativePath = relativePath;
+            this.status = status;
+            this.file = file;
+            this.originalFile = originalFile;
+            this.originalPath = originalPath;
+        }
+
+        /**
+         * @return relative path of the file to the root of the repository
+         */
+        public String getRelativePath() {
+            return relativePath;
+        }
+
+        /**
+         * @return the relative path of the original file this file was copied or renamed from.
+         *         For other statuses than <code>COPIED</code> or <code>RENAMED</code> it may be <code>null</code> 
+         *         or the same as the return value of <code>getPath</code> method
+         */
+        public String getOriginalPath() {
+            return originalPath;
+        }
+
+        /**
+         * @return state of the file between the two commits
+         */
+        public Status getStatus() {
+            return status;
+        }
+
+        /**
+         * @return the file this refers to
+         */
+        public File getFile () {
+            return file;
+        }
+
+        /**
+         * @return the original file this file was copied or renamed from.
+         *         For other statuses than <code>COPIED</code> or <code>RENAMED</code> it may be <code>null</code> 
+         *         or the same as the return value of <code>getFile</code> method
+         */
+        public File getOriginalFile () {
+            return originalFile;
         }
     }
     

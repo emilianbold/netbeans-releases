@@ -48,6 +48,8 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
@@ -100,13 +102,8 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
         
         this.component = component;
         updateEnabled();
-        EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
-
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                updateEnabled();
-            }
-        });
+        PropertyChangeListener editorRegistryListener = new EditorRegistryListener(this);
+        EditorRegistry.addPropertyChangeListener(editorRegistryListener);
     }
 
     private void updateEnabled() {
@@ -324,6 +321,26 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
             }
         }
     } // End of MyGaGaButton class
+
+    private static final class EditorRegistryListener implements PropertyChangeListener {
+        
+        private final Reference<ToggleBookmarkAction> actionRef;
+        
+        EditorRegistryListener(ToggleBookmarkAction action) {
+            actionRef = new WeakReference<ToggleBookmarkAction>(action);
+        }
+        
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            ToggleBookmarkAction action = actionRef.get();
+            if (action != null) {
+                action.updateEnabled();
+            } else {
+                EditorRegistry.removePropertyChangeListener(this); // EditorRegistry fires frequently so remove this way
+            }
+        }
+
+    }
 
 }
 

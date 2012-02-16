@@ -71,6 +71,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 })
 public class HyperlinkProviderImpl implements HyperlinkProvider {
     
+    @Override
     public boolean isHyperlinkPoint(Document doc, int offset) {
         TokenHierarchy th = TokenHierarchy.get(doc);
         TokenSequence<XMLTokenId> xml = th.tokenSequence(XMLTokenId.language());
@@ -98,6 +99,7 @@ public class HyperlinkProviderImpl implements HyperlinkProvider {
         return false;
     }
 
+    @Override
     public int[] getHyperlinkSpan(Document doc, int offset) {
         TokenHierarchy th = TokenHierarchy.get(doc);
         TokenSequence<XMLTokenId> xml = th.tokenSequence(XMLTokenId.language());
@@ -125,6 +127,7 @@ public class HyperlinkProviderImpl implements HyperlinkProvider {
         return null;
     }
 
+    @Override
     public void performClickAction(Document doc, int offset) {
         TokenHierarchy th = TokenHierarchy.get(doc);
         TokenSequence<XMLTokenId> xml = th.tokenSequence(XMLTokenId.language());
@@ -154,7 +157,7 @@ public class HyperlinkProviderImpl implements HyperlinkProvider {
                     DataObject dobj;
                     try {
                         dobj = DataObject.find(file);
-                        EditCookie edit = dobj.getCookie(EditCookie.class);
+                        EditCookie edit = dobj.getLookup().lookup(EditCookie.class);
                         if (edit != null) {
                             edit.edit();
                         }

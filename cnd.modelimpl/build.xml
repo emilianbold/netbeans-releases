@@ -79,6 +79,10 @@ made subject to such option by the copyright holder.
         <property name="antlr3.jar" location="${nb_all}/libs.antlr3.devel/external/antlr-3.3.jar"/>
         <property name="antlr3.evaluator.grammar.dir" location="src/org/netbeans/modules/cnd/modelimpl/impl/services/evaluator/parser"/>
 
+         <!-- New C++ Parser -->
+        <property name="antlr3.cppparser.output.dir" location="src/org/netbeans/modules/cnd/modelimpl/parser/generated"/>
+        <property name="antlr3.cppparser.grammar.dir" location="src/org/netbeans/modules/cnd/modelimpl/parser"/>
+
          <!-- Open Fortran Parser -->
          <property name="open.fortran.parser.src.dir" location="external"/>
     </target>
@@ -88,6 +92,7 @@ made subject to such option by the copyright holder.
             <srcfiles dir="${antlr.apt.output.dir}" includes="APTTokenTypes.txt"/>
             <srcfiles dir="${antlr.grammar.dir}" includes="*.g"/>
             <srcfiles dir="${antlr3.evaluator.grammar.dir}" includes="*.g"/>
+            <srcfiles dir="${antlr3.cppparser.grammar.dir}" includes="*.g"/>
         </uptodate>
         <echo message="antlr checkUptodate result: ${antlr.up-to-date}"/>
     </target>
@@ -103,6 +108,7 @@ made subject to such option by the copyright holder.
 		-->
 
         <delete dir="${antlr3.evaluator.output.dir}"/>
+        <delete dir="${antlr3.cppparser.output.dir}"/>
     </target>
     
     <target name="antlr" depends="init-antlr, check-up-to-date" unless="antlr.up-to-date">
@@ -173,6 +179,26 @@ made subject to such option by the copyright holder.
             match='^public class FortranParser_FortranParser2 (.*)'
             replace='@SuppressWarnings({"unchecked", "cast", "fallthrough"}) public class FortranParser_FortranParser2 \1'
             flags="mg" />
+
+        <!-- CXX Parser -->
+        <mkdir dir="${antlr3.cppparser.output.dir}"/>
+        <copy file="${antlr.output.dir}/APTTokenTypes.tokens"
+                    tofile="${antlr3.cppparser.output.dir}/APTTokenTypes.tokens"
+                    overwrite="true"/>
+
+        <echo message="ANTLR Parser Generator   Version 3.3" />
+        <java classname="org.antlr.Tool" fork="true" failonerror="true">
+            <arg value="-o"/>
+            <arg value="${antlr3.cppparser.output.dir}"/>
+            <arg value="${antlr3.cppparser.grammar.dir}/CXXParser.g"/>
+            <classpath path="${antlr3.jar}"/>
+        </java>
+
+        <replaceregexp file="${antlr3.cppparser.output.dir}/CXXParser.java"
+            match='^public class CXXParser (.*)'
+            replace='@SuppressWarnings({"unchecked", "cast", "fallthrough"}) public class CXXParser \1'
+            flags="mg" />
+
 
         <!-- Expression evaluator -->
         <mkdir dir="${antlr3.evaluator.output.dir}"/>

@@ -56,8 +56,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 
@@ -99,13 +99,13 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
 
         nl.reset();
         q.refresh();
-        Issue[] is = q.getIssues();
+        IssueProvider[] is = q.getIssues();
         assertEquals(1, is.length);
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        List<Issue> il = nl.getIssues(IssueCache.ISSUE_STATUS_ALL);
+        List<IssueProvider> il = nl.getIssues(IssueCache.ISSUE_STATUS_ALL);
         assertEquals(1, il.size());
-        Issue i = il.get(0);
+        IssueProvider i = il.get(0);
         assertEquals(summary, i.getSummary());
         assertEquals(id1, i.getID());
 
@@ -134,7 +134,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         BugzillaQuery q = new BugzillaQuery(QUERY_NAME, QueryTestUtil.getRepository(), p, true, false, true);
         TestQueryNotifyListener nl = new TestQueryNotifyListener(q);
 
-        Issue[] issues = q.getIssues();
+        IssueProvider[] issues = q.getIssues();
         assertEquals(0, nl.issues.size());
 
         nl.reset();
@@ -143,7 +143,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         assertTrue(nl.finished);
         assertEquals(1, nl.getIssues(IssueCache.ISSUE_STATUS_ALL).size());
         assertEquals(1, q.getIssues().length);
-        Issue i = q.getIssues()[0];
+        IssueProvider i = q.getIssues()[0];
         assertEquals(summary1, i.getSummary());
         assertEquals(id1, i.getID());
 
@@ -168,7 +168,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         assertEquals(2, issues.length);
         List<String> summaries = new ArrayList<String>();
         List<String> ids = new ArrayList<String>();
-        for(Issue issue : issues) {
+        for(IssueProvider issue : issues) {
             summaries.add(issue.getSummary());
             ids.add(issue.getID());
         }
@@ -181,7 +181,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         assertEquals(2, issues.length);
         summaries = new ArrayList<String>();
         ids = new ArrayList<String>();
-        for(Issue issue : issues) {
+        for(IssueProvider issue : issues) {
             summaries.add(issue.getSummary());
             ids.add(issue.getID());
         }
@@ -256,9 +256,9 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
 
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        List<Issue> il = nl.getIssues(IssueCache.ISSUE_STATUS_ALL);
+        List<IssueProvider> il = nl.getIssues(IssueCache.ISSUE_STATUS_ALL);
         assertEquals(1, il.size());
-        Issue i = il.get(0);
+        IssueProvider i = il.get(0);
         assertEquals(summary, i.getSummary());
         assertEquals(id1, i.getID());
 
@@ -271,9 +271,9 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         assertTrue(q.isSaved());
         // create a new repo instance and check if our query is between them
         repository = QueryTestUtil.getRepository();
-        Query[] queries = repository.getQueries();
+        QueryProvider[] queries = repository.getQueries();
         boolean bl = false;
-        for (Query query : queries) {
+        for (QueryProvider query : queries) {
             bl = query.getDisplayName().equals(name);
             if(bl) break;
         }
@@ -310,9 +310,9 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
 
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        List<Issue> il = nl.getIssues(IssueCache.ISSUE_STATUS_ALL);
+        List<IssueProvider> il = nl.getIssues(IssueCache.ISSUE_STATUS_ALL);
         assertEquals(1, il.size());
-        Issue i = il.get(0);
+        IssueProvider i = il.get(0);
         assertEquals(summary, i.getSummary());
         assertEquals(id1, i.getID());
     }
@@ -328,7 +328,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         QueryController c = q.getController();
         h.waitUntilDone();
 
-        Query[] qs = QueryTestUtil.getRepository().getQueries();
+        QueryProvider[] qs = QueryTestUtil.getRepository().getQueries();
         int queriesCount = qs.length;
 
         QueryListener ql = new QueryListener();
@@ -382,10 +382,10 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         int saved = 0;
         int removed = 0;
         public void propertyChange(PropertyChangeEvent evt) {
-            if(evt.getPropertyName().equals(Query.EVENT_QUERY_REMOVED)) {
+            if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_REMOVED)) {
                 removed++;
             }
-            if(evt.getPropertyName().equals(Query.EVENT_QUERY_SAVED)) {
+            if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_SAVED)) {
                 saved++;
             }
         }

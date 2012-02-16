@@ -52,6 +52,7 @@ import java.util.Set;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.CharTokenizer;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.TokenStream;
@@ -381,10 +382,16 @@ public class DocumentUtil {
         }
     }
          
-    //<editor-fold defaultstate="collapsed" desc="Analyzers Implementation">                
-    private static class LCWhitespaceTokenizer extends WhitespaceTokenizer {
+    //<editor-fold defaultstate="collapsed" desc="Analyzers Implementation">      
+    // in Lucene 3.5, WhitespaceTokenizer became final class; isTokenChar was copied.
+    private static class LCWhitespaceTokenizer extends CharTokenizer {
         LCWhitespaceTokenizer (final Reader r) {
             super (r);
+        }
+
+        @Override
+        protected boolean isTokenChar(int c) {
+            return !Character.isWhitespace(c);
         }
         
         protected char normalize(char c) {

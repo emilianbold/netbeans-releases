@@ -60,6 +60,7 @@ public class TplTopLexerBatchTest extends TestCase {
 
     @Override
     protected void setUp() throws java.lang.Exception {
+        resetSmartyOptions();
         // Set-up testing environment
         LexerTestUtilities.setTesting(true);
     }
@@ -201,6 +202,38 @@ public class TplTopLexerBatchTest extends TestCase {
         SmartyOptions.getInstance().setSmartyVersion(Version.SMARTY3);
         TokenSequence ts = createTokenSequence(text);
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "LDELIM");
+    }
+
+    public void testIssue205742() {
+        String text = "{** End of \"AREA\" *}";
+
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, "*");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, "*");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, "E");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, "n");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, "d");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, "o");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, "f");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, "\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, "A");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, "R");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, "E");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, "A");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, "\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_COMMENT, "*");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+    }
+
+    private void resetSmartyOptions() {
+        SmartyOptions.getInstance().setDefaultOpenDelimiter("{");
+        SmartyOptions.getInstance().setDefaultCloseDelimiter("}");
+        SmartyOptions.getInstance().setSmartyVersion(Version.SMARTY3);
     }
 
     private TokenSequence createTokenSequence(String text) {

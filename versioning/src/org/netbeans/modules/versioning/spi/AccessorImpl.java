@@ -44,6 +44,9 @@
 package org.netbeans.modules.versioning.spi;
 
 import org.netbeans.modules.versioning.Accessor;
+import org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry;
+import org.netbeans.modules.versioning.spi.VCSHistoryProvider.MessageEditProvider;
+import org.netbeans.modules.versioning.spi.VCSHistoryProvider.RevisionProvider;
 
 /**
  * Make it possible to hide contructors and factory methods in VCSContext.
@@ -55,6 +58,16 @@ final class AccessorImpl extends Accessor {
     @Override
     public VCSContext createVCSContext(org.netbeans.modules.versioning.core.spi.VCSContext delegate) {
         return new VCSContext(delegate);
+    }
+
+    @Override
+    public RevisionProvider getRevisionProvider(HistoryEntry entry) {
+        return entry.getRevisionProvier();
+    }
+
+    @Override
+    public MessageEditProvider getMessageEditProvider(HistoryEntry entry) {
+        return entry.getMessageEditProvider();
     }
 
     

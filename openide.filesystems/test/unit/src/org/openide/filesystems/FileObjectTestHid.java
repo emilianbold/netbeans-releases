@@ -1575,7 +1575,7 @@ public class FileObjectTestHid extends TestBaseHid {
         checkSetUp();
         FileObject fo;
         try {
-            fo = FileUtil.createData(root, "file.jarda"); // file with completely strange extension
+            fo = FileUtil.createData(root, "file.jess"); // file with completely strange extension
         } catch (IOException iex) {
             fsAssert(
             "Does not seem to be writeable. So there was expected.",
@@ -1585,7 +1585,7 @@ public class FileObjectTestHid extends TestBaseHid {
         }
         FileLock lock = fo.lock();
         
-        InputStream is = getClass ().getResourceAsStream("FileObjectTestHid.class");
+        InputStream is = getClass ().getResourceAsStream(getClass().getName().substring(getClass().getName().lastIndexOf('.')+1)+".class");
         OutputStream os = fo.getOutputStream (lock);
         FileUtil.copy (is, os);
         is.close ();
@@ -3111,7 +3111,7 @@ public class FileObjectTestHid extends TestBaseHid {
             String path2 = path1 + f2.getNameExt();
             assertNull("No query for " + uri1, uri1.getQuery());
             assertNull("No fragment for " + uri1, uri1.getFragment());
-            URI uri2 = new URI(uri1.getScheme(), uri1.getHost(), path2, null);
+            URI uri2 = new URI(uri1.getScheme(), uri1.getUserInfo(), uri1.getHost(), uri1.getPort(), path2, null, null);
             Repository.getDefault().addFileSystem(fs); // so that fFO will work
             FileObject[] fos;
             try {

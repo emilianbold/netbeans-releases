@@ -64,6 +64,9 @@ Contributor(s):
             <file name="TestProjectDirectUsageReferencesAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getDirectUsageReferencesAction"/>
             </file>
+            <file name="TestProjectIndexUsageReferencesAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getIndexReferencesAction"/>
+            </file>
             <file name="TestProjectSmartCompletionAnalyzerAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getSmartCompletionAnalyzerAction"/>
             </file>
@@ -144,6 +147,10 @@ Contributor(s):
                 <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/SwitchIndexAction.instance"/>
                 <attr name="position" intvalue="3100"/>
             </file>            
+            <file name="TestProjectIndexUsageReferencesAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestProjectIndexUsageReferencesAction.instance"/>
+                <attr name="position" intvalue="3200"/>
+            </file>
         </folder>
     </folder>
     <folder name="Shortcuts">

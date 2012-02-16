@@ -75,7 +75,9 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
                 <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-mobility-editor-PPCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-mobility-editor-PPCompletionProvider.instance">
+                        <attr name="position" intvalue="700" />
+                    </file>
                 </folder>
                 <file name="org-netbeans-modules-mobility-editor-ConfigurationHighlightsLayer.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>

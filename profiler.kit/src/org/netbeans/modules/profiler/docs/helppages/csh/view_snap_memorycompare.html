@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Liveness Comparison</title>
+        <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Liveness Comparison</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>The Liveness Comparison window enables you to
+        view a comparison of two memory snapshots.
+        The Liveness Comparison window opens in the main
+        editor window after you choose the Compare Memory
+        Snapshots command and select the two memory snapshots.</p>
+
+        <p>The window displays a table that lists the
+        live allocated objects at the time the snapshots were taken.
+        The IDE compares the two snapshot and for each live object 
+        displays the changes that occurred between the
+        snapshots in the number of live instances, age and the amount of memory occupied by 
+        the live instances.</p>
+                    
+        <p>The table in the Liveness Comparison window contains the following columns:</p>
+        <ul>
+            <li><b>Class Name - Live Allocated Objects.</b> Name of the class or allocated object.</li>
+            <li><b>Live Bytes.</b> Graphic display of the relative amount of memory currently occupied by live instances of the class.</li>
+            <li><b>Live Bytes.</b> Memory size in bytes that is currently occupied by the live instances of the class. </li>
+            <li><b>Live Objects.</b> Number of current live instances of the class</li>
+            <li><b>Allocated Objects.</b> Number of all instances of the class created since the application was started or since the results were last reset.</li>
+            <li><b>Average Age.</b> Average age in generations of live instances of the class.</li>
+            <li><b>Generations.</b> Number of different generations (garbage collections survived) of live instances of the class.</li>
+        </ul>
+        <p>You click a column header to sort the order that the results are displayed. </p>
+        <p>You can load the source <tt>.java</tt> file of a class by right-clicking in 
+            the row for the class and choosing Go To Source.</p>
+        <p>You can filter the list by class name by typing the filter criteria in the 
+        Class Name Filter at the bottom of the window. Only classes that contain 
+        the filter term will be displayed in the table.</p>
+
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../snap_taking.html">Taking a Snapshot</a></dd>
+            <dd><a href="../snapshots.html">Exploring Snapshots</a></dd>
+            <dd><a href="../profile_analyze_short.html">Analyzing CPU Performance</a></dd>
+            <dd><a href="../profile_results.html">About Profiling Results</a></dd>
+        </dl>
+        <hr>
+        <small><a href="../../credits.html">Legal
+Notices</a></small>
+        <table border="0" cellpadding="50">
+        <tr><td>&nbsp;</td></tr>
+    </table>
+    </body>
+</html>

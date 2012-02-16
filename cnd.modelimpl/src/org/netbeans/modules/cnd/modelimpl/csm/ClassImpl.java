@@ -102,6 +102,14 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         inheritances = new ArrayList<CsmUID<CsmInheritance>>(0);
         kind = findKind(ast);
     }
+
+    private ClassImpl(NameHolder name, CsmDeclaration.Kind kind, CsmFile file, int startOffset, int endOffset) {
+        super(name, file, startOffset, endOffset);
+        members = new ArrayList<CsmUID<CsmMember>>();
+        friends = new ArrayList<CsmUID<CsmFriend>>(0);
+        inheritances = new ArrayList<CsmUID<CsmInheritance>>(0);
+        this.kind = kind;
+    }
     
     private ClassImpl(CsmFile file, CsmScope scope, String name, CsmDeclaration.Kind kind, int startOffset, int endOffset) {
         super(name, name, file, startOffset, endOffset);
@@ -121,7 +129,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return classImpl;
     }
 
-    protected void init(CsmScope scope, AST ast, boolean register) {
+    public void init(CsmScope scope, AST ast, boolean register) {
         initScope(scope);
         temporaryRepositoryRegistration(register, this);
         initClassDefinition(scope);
@@ -131,6 +139,25 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
     }
 
+    public void init2(CsmScope scope, AST ast, boolean register) {
+        initScope(scope);
+//        temporaryRepositoryRegistration(register, this);
+        initClassDefinition(scope);
+        render(ast, !register);
+        if (register) {
+            register(getScope(), false);
+        }
+    }
+    
+    public void init3(CsmScope scope, boolean register) {
+        initScope(scope);
+        temporaryRepositoryRegistration(register, this);
+        initClassDefinition(scope);
+        if (register) {
+            register(getScope(), false);
+        }
+    }
+    
     private void initClassDefinition(CsmScope scope) {
         ClassImpl.ClassMemberForwardDeclaration fd = findClassDefinition(scope);
         if (fd != null && CsmKindUtilities.isClass(this)) {
@@ -143,7 +170,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
     }
 
-    protected final void render(AST ast, boolean localClass) {
+    public final void render(AST ast, boolean localClass) {
         new ClassAstRenderer(getContainingFile(), CsmVisibility.PRIVATE, localClass).render(ast);
         leftBracketPos = initLeftBracketPos(ast);
     }
@@ -390,6 +417,110 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     @Override
     public List<CsmTemplateParameter> getTemplateParameters() {
         return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
+    }
+    
+    
+    public static class ClassBuilder implements CsmObjectBuilder {
+        
+        private CharSequence name;// = CharSequences.empty();
+        private int nameStartOffset;
+        private int nameEndOffset;
+        private CsmDeclaration.Kind kind = CsmDeclaration.Kind.CLASS;
+        private CsmFile file;
+        private int startOffset;
+        private int endOffset;
+        private CsmObjectBuilder parent;
+
+        private NamespaceImpl namespace;
+        private CsmScope scope;
+        private ClassImpl instance;
+        private List<CsmOffsetableDeclaration> declarations = new ArrayList<CsmOffsetableDeclaration>();
+
+        public void setKind(Kind kind) {
+            this.kind = kind;
+        }
+        
+        public void setName(CharSequence name, int startOffset, int endOffset) {
+            if(this.name == null) {
+                this.name = name;
+                this.nameStartOffset = startOffset;
+                this.nameEndOffset = endOffset;
+            }
+        }
+
+        public void setFile(CsmFile file) {
+            this.file = file;
+        }
+        
+        public void setEndOffset(int endOffset) {
+            this.endOffset = endOffset;
+        }
+
+        public void setStartOffset(int startOffset) {
+            this.startOffset = startOffset;
+        }
+
+        public void setParent(CsmObjectBuilder parent) {
+            this.parent = parent;
+        }
+
+        public void addDeclaration(CsmOffsetableDeclaration decl) {
+            this.declarations.add(decl);
+        }
+        
+        public ClassImpl getClassDefinitionInstance() {
+            if(instance != null) {
+                return instance;
+            }
+            MutableDeclarationsContainer container = null;
+            if (parent == null) {
+                container = (FileImpl) file;
+            } else {
+                if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
+                    container = ((NamespaceDefinitionImpl.NamespaceBuilder)parent).getNamespaceDefinitionInstance();
+                }
+            }
+            if(container != null && name != null) {
+                CsmOffsetableDeclaration decl = container.findExistingDeclaration(startOffset, name, kind);
+                if (decl != null && ClassImpl.class.equals(decl.getClass())) {
+                    instance = (ClassImpl) decl;
+                }
+            }
+            return instance;
+        }
+        
+        public CsmScope getScope() {
+            if(scope != null) {
+                return scope;
+            }
+            if (parent == null) {
+                scope = (NamespaceImpl) file.getProject().getGlobalNamespace();
+            } else {
+                if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
+                    scope = ((NamespaceDefinitionImpl.NamespaceBuilder)parent).getNamespace();
+                }
+            }
+            return scope;
+        }
+        
+        public ClassImpl create() {
+            ClassImpl cls = getClassDefinitionInstance();
+            if (cls == null && name != null && getScope() != null) {
+                NameHolder nameHolder = NameHolder.createName(name, nameStartOffset, nameEndOffset);
+                cls = new ClassImpl(nameHolder, kind, file, startOffset, endOffset);
+                cls.init3(getScope(), true);
+//                temporaryRepositoryRegistration(true, cls);
+                if (nameHolder != null) {
+                    nameHolder.addReference(file, cls);
+                }
+                if(parent != null) {
+                    ((NamespaceDefinitionImpl.NamespaceBuilder)parent).addDeclaration(cls);
+                } else {
+                    ((FileImpl)file).addDeclaration(cls);
+                }
+            }
+            return cls;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -898,7 +1029,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 AST colonAST;
                 if (idAST == null) {
                     break;
-                } else if (idAST.getType() == CPPTokenTypes.ID) {
+                } else if (idAST.getType() == CPPTokenTypes.IDENT) {
                     colonAST = idAST.getNextSibling();
                 } else if (idAST.getType() == CPPTokenTypes.COLON){
                     colonAST = idAST;

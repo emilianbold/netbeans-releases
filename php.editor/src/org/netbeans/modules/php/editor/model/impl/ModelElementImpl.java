@@ -64,7 +64,7 @@ import org.netbeans.modules.php.editor.index.PHPElement;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Union2;
 
@@ -371,7 +371,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         FileObject fo = getFileObject();
         if (fo != null) {
             try {
-                return Repository.getDefault().getDefaultFileSystem().equals(fo.getFileSystem());
+                return FileUtil.getConfigRoot().getFileSystem().equals(fo.getFileSystem());
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }

@@ -49,6 +49,7 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementHeaders;
@@ -59,6 +60,7 @@ import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PushDownRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -67,11 +69,11 @@ import org.openide.util.NbBundle;
  *
  * @author Pavel Flaska, Jan Becicka
  */
-public class PushDownRefactoringUI implements RefactoringUI {
+public class PushDownRefactoringUI implements RefactoringUI, JavaRefactoringUIFactory {
     // reference to pull up refactoring this UI object corresponds to
-    private final PushDownRefactoring refactoring;
+    private PushDownRefactoring refactoring;
     // initially selected members
-    private final Set initialMembers;
+    private Set initialMembers;
     // UI panel for collecting parameters
     private PushDownPanel panel;
     
@@ -80,7 +82,7 @@ public class PushDownRefactoringUI implements RefactoringUI {
     /** Creates a new instance of PushDownRefactoringUI
      * @param selectedElements Elements the refactoring action was invoked on.
      */
-    public PushDownRefactoringUI(TreePathHandle selectedElements, CompilationInfo info) {
+    private PushDownRefactoringUI(TreePathHandle selectedElements, CompilationInfo info) {
         initialMembers = new HashSet();
         TreePathHandle selectedPath = resolveSelection(selectedElements, info);
 
@@ -103,6 +105,9 @@ public class PushDownRefactoringUI implements RefactoringUI {
             // user notification is provided by PushDownRefactoringPlugin.preCheck
             refactoring = new PushDownRefactoring(selectedElements);
         }
+    }
+
+    private PushDownRefactoringUI() {
     }
     
     // --- IMPLEMENTATION OF RefactoringUI INTERFACE ---------------------------
@@ -179,6 +184,19 @@ public class PushDownRefactoringUI implements RefactoringUI {
         }
 
         return path == resolvedPath ? source : TreePathHandle.create(path, javac);
+    }
+
+    @Override
+    public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
+        assert handles.length == 1;
+        TreePathHandle selectedElement = PullUpRefactoringUI.findSelectedClassMemberDeclaration(handles[0], info);
+                    return selectedElement != null
+                            ? new PushDownRefactoringUI(selectedElement, info)
+                            : null;
+    }
+    
+    public static JavaRefactoringUIFactory factory() {
+        return new PushDownRefactoringUI();
     }
 
 }
