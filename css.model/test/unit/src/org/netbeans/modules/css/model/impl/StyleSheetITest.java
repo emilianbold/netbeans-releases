@@ -63,7 +63,7 @@ public class StyleSheetITest extends ModelTestBase {
     
     public void testCreateStyleSheet() throws IOException, InterruptedException {
         Model model = new Model();
-        StyleSheet styleSheet = model.getStyleSheet();
+        StyleSheet styleSheet = getStyleSheet(model);
 
         ElementFactory factory = model.getElementFactory();
         Body body = factory.createBody();
@@ -96,7 +96,7 @@ public class StyleSheetITest extends ModelTestBase {
 
         CssParserResult result = TestUtil.parse(code);
         Model model = new Model(code, NodeUtil.query(result.getParseTree(), "styleSheet"));
-        StyleSheet styleSheet = model.getStyleSheet();
+        StyleSheet styleSheet = getStyleSheet(model);
         assertNotNull(styleSheet);
 
         Collection<Rule> rules = styleSheet.getBody().getRules();

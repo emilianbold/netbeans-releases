@@ -131,7 +131,7 @@ public final class Model {
 
             @Override
             public void run() {
-                runnable.run(Model.this);
+                runnable.run(Model.this.getStyleSheet());
             }
         });
     }
@@ -149,7 +149,7 @@ public final class Model {
 
             @Override
             public void run() {
-                runnable.run(Model.this);
+                runnable.run(Model.this.getStyleSheet());
             }
         });
     }
@@ -162,8 +162,8 @@ public final class Model {
         }
     }
 
-    //TODO move to the ModelTask.run() as a parameter
-    public StyleSheet getStyleSheet() {
+    //for tests only
+    StyleSheet getStyleSheet() {
         checkModelAccess();
         return styleSheet;
     }
@@ -255,7 +255,6 @@ public final class Model {
 
         }
 
-
     }
 
     /**
@@ -272,7 +271,7 @@ public final class Model {
 
     public static interface ModelTask {
 
-        public void run(Model model);
+        public void run(StyleSheet styleSheet);
         
     }
     

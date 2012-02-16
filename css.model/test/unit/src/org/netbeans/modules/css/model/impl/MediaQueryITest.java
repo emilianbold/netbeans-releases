@@ -83,68 +83,74 @@ public class MediaQueryITest extends ModelTestBase {
                 );
         
         Media media = f.createMedia(mql, rule);
-        Body body = f.createBody();
+        final Body body = f.createBody();
         body.addMedia(media);
         
-        StyleSheet styleSheet = model.getStyleSheet();
-        styleSheet.setBody(body);
-        
-        //test query the created model
-        
-        Body qbody = styleSheet.getBody();
-        assertNotNull(qbody);
-        
-        List<Media> medias = qbody.getMedias();
-        assertNotNull(medias);
-        assertEquals(1, medias.size());
-        
-        Media qmedia = medias.get(0);
-        assertNotNull(qmedia);
-        
-        List<Page> pages = qmedia.getPages();
-        assertNotNull(pages);
-        assertEquals(0, pages.size());
-        
-        List<Rule> rules = qmedia.getRules();
-        assertNotNull(rules);
-        assertEquals(1, rules.size());
-        
-        MediaQueryList qmq = qmedia.getMediaQueryList();
-        assertNotNull(qmq);
-        
-        List<MediaQuery> mqs = qmq.getMediaQueries();
-        assertNotNull(mqs);
-        assertEquals(1, mqs.size());
-        
-        MediaQuery mq1 = mqs.get(0);
-        assertNotNull(mq1);
-        
-        MediaQueryOperator mqo1 = mq1.getMediaQueryOperator();
-        assertNotNull(mqo1);
-        assertEquals("ONLY", mqo1.getContent().toString());
-        
-        MediaType mt1 = mq1.getMediaType();
-        assertNotNull(mt1);
-        assertEquals("screen", mt1.getContent().toString());
-        
-        Collection<MediaExpression> mes1 = mq1.getMediaExpressions();
-        assertNotNull(mes1);
-        assertEquals(1, mes1.size());
-        
-        MediaExpression me1 = mes1.iterator().next();
-        assertNotNull(me1);
-        
-        MediaFeature mf = me1.getMediaFeature();
-        assertNotNull(mf);
-        assertEquals("min-device-width", mf.getContent().toString());
-        
-        Expression expr = me1.getExpression();
-        assertNotNull(expr);
-        assertEquals("1000px", expr.getContent().toString());
-        
-        
-//        Utils.dump(styleSheet);
-        
+        model.runWriteTask(new Model.ModelTask() {
+
+            @Override
+            public void run(StyleSheet styleSheet) {
+                styleSheet.setBody(body);
+
+                //test query the created model
+
+                Body qbody = styleSheet.getBody();
+                assertNotNull(qbody);
+
+                List<Media> medias = qbody.getMedias();
+                assertNotNull(medias);
+                assertEquals(1, medias.size());
+
+                Media qmedia = medias.get(0);
+                assertNotNull(qmedia);
+
+                List<Page> pages = qmedia.getPages();
+                assertNotNull(pages);
+                assertEquals(0, pages.size());
+
+                List<Rule> rules = qmedia.getRules();
+                assertNotNull(rules);
+                assertEquals(1, rules.size());
+
+                MediaQueryList qmq = qmedia.getMediaQueryList();
+                assertNotNull(qmq);
+
+                List<MediaQuery> mqs = qmq.getMediaQueries();
+                assertNotNull(mqs);
+                assertEquals(1, mqs.size());
+
+                MediaQuery mq1 = mqs.get(0);
+                assertNotNull(mq1);
+
+                MediaQueryOperator mqo1 = mq1.getMediaQueryOperator();
+                assertNotNull(mqo1);
+                assertEquals("ONLY", mqo1.getContent().toString());
+
+                MediaType mt1 = mq1.getMediaType();
+                assertNotNull(mt1);
+                assertEquals("screen", mt1.getContent().toString());
+
+                Collection<MediaExpression> mes1 = mq1.getMediaExpressions();
+                assertNotNull(mes1);
+                assertEquals(1, mes1.size());
+
+                MediaExpression me1 = mes1.iterator().next();
+                assertNotNull(me1);
+
+                MediaFeature mf = me1.getMediaFeature();
+                assertNotNull(mf);
+                assertEquals("min-device-width", mf.getContent().toString());
+
+                Expression expr = me1.getExpression();
+                assertNotNull(expr);
+                assertEquals("1000px", expr.getContent().toString());
+
+
+        //        Utils.dump(styleSheet);
+
+            }
+        });
+
         assertEquals("@media ONLY screen AND ( min-device-width : 1000px)  {\n"
                 + "\n"
                 + ".myclass {\n"
@@ -153,18 +159,13 @@ public class MediaQueryITest extends ModelTestBase {
                 + "}\n"
                 + "\n\n"
                 + "}", model.getModelSource().toString());
-
+        
     }
     
     public void testParseMediaQuery() throws BadLocationException, ParseException {
         String source = "@media screen and (color), projection and (color) { div { color: red; } }";
-        CssParserResult result = TestUtil.parse(source);
         
-//        TestUtil.dumpResult(result);
-        
-        Model model = new Model(result);
-        
-        StyleSheet styleSheet = model.getStyleSheet();
+        StyleSheet styleSheet = createStyleSheet(source);
         assertNotNull(styleSheet);
         
 //        Utils.dump(styleSheet);
@@ -227,13 +228,8 @@ public class MediaQueryITest extends ModelTestBase {
     public void testParseMediaQuery2() throws BadLocationException, ParseException {
         String source = "@media aural and (device-aspect-ratio: 16/9) { div { color:red; } }";
         
-        CssParserResult result = TestUtil.parse(source);
+        StyleSheet styleSheet = createStyleSheet(source);
         
-//        TestUtil.dumpResult(result);
-        
-        Model model = new Model(result);
-        
-        StyleSheet styleSheet = model.getStyleSheet();
         assertNotNull(styleSheet);
         
 //        Utils.dump(styleSheet);

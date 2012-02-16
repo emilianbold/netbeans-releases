@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.model;
 
 import java.io.PrintWriter;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -51,6 +52,7 @@ import org.netbeans.modules.css.lib.api.properties.model.Box;
 import org.netbeans.modules.css.lib.api.properties.model.Edge;
 import org.netbeans.modules.css.lib.api.properties.model.MarginWidth;
 import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.util.Exceptions;
@@ -74,6 +76,23 @@ public class ModelTestBase extends NbTestCase {
         //disable checking for model access so tests doesn't have to use 
         //the Model.runRead/WriteModel(...) methods
         ModelAccess.checkModelAccess = false;
+    }
+    
+    //for testing only - leaking model!
+    protected StyleSheet getStyleSheet(Model model) {
+        final AtomicReference<StyleSheet> ssref = new AtomicReference<StyleSheet>();
+        model.runReadTask(new Model.ModelTask() {
+
+            @Override
+            public void run(StyleSheet styleSheet) {
+                ssref.set(styleSheet);
+            }
+        });
+        return ssref.get();        
+    }
+    
+    protected StyleSheet createStyleSheet(String source) {
+        return getStyleSheet(createModel(source));
     }
 
     protected Model createModel(String source) {

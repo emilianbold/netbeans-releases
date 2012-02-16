@@ -63,8 +63,7 @@ public class PropertyModelFactoryTest extends ModelTestBase {
         model.runReadTask(new Model.ModelTask() {
 
             @Override
-            public void run(Model model) {
-                StyleSheet styleSheet = model.getStyleSheet();
+            public void run(StyleSheet styleSheet) {
                 Declaration d = styleSheet.getBody().getRules().get(0).getDeclarations().getDeclarations().get(0);
                 assertNotNull(d);
 
