@@ -68,14 +68,15 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.java.project.PackageDisplayUtils;
 import org.netbeans.modules.java.project.JavaProjectSettings;
+import org.netbeans.modules.java.project.PackageDisplayUtils;
+import static org.netbeans.spi.java.project.support.ui.Bundle.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
@@ -156,9 +157,10 @@ public class PackageView {
      *       true PackageItems will be created.
      * @param showProgress whether to show a progress handle or not
      */
+    @Messages({"# {0} - root folder", "PackageView.find_packages_progress=Finding packages in {0}"})
     static void findNonExcludedPackages(PackageViewChildren children, Collection<PackageItem> target, FileObject fo, SourceGroup group, boolean showProgress) {
         if (showProgress) {
-            ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(PackageView.class, "PackageView.find_packages_progress", FileUtil.getFileDisplayName(fo)));
+            ProgressHandle progress = ProgressHandleFactory.createHandle(PackageView_find_packages_progress(FileUtil.getFileDisplayName(fo)));
             progress.start(1000);
             findNonExcludedPackages(children, target, fo, group, progress, 0, 1000);
             progress.finish();
