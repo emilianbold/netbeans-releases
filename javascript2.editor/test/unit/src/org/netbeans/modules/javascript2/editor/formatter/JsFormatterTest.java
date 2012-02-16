@@ -63,10 +63,6 @@ public class JsFormatterTest extends JsTestBase {
         format("var a = 1;   \nvar b = 3;                   \n         \n",
                 "var a = 1;\nvar b = 3;\n\n", new IndentPrefs(4, 4));
     }
-    
-    public void testTrailingSpaces3() throws Exception {
-        reformatFileContents("testfiles/formatter/functions1.js",new IndentPrefs(4, 4));
-    }
 
     public void testIndentation1() throws Exception {
         format("\n var a = 1;   \n        var b = 3;                   \n",
@@ -78,15 +74,27 @@ public class JsFormatterTest extends JsTestBase {
                 "var a = 1;\nvar b = 3;\n", new IndentPrefs(4, 4));
     }
 
-    public void testIndentation3() throws Exception {
+    public void testFunctions1() throws Exception {
+        reformatFileContents("testfiles/formatter/functions1.js",new IndentPrefs(4, 4));
+    }
+
+    public void testFunctions2() throws Exception {
         reformatFileContents("testfiles/formatter/functions2.js",new IndentPrefs(4, 4));
     }
 
-    public void testFormatting1() throws Exception {
+    public void testFunctions3() throws Exception {
         reformatFileContents("testfiles/formatter/functions3.js",new IndentPrefs(4, 4));
     }
 
-    public void testFormatting2() throws Exception {
+    public void testFunctions4() throws Exception {
         reformatFileContents("testfiles/formatter/functions4.js",new IndentPrefs(4, 4));
+    }
+
+    public void testObjects1() throws Exception {
+        reformatFileContents("testfiles/formatter/objects1.js",new IndentPrefs(4, 4));
+    }
+
+    public void testFormatting1() throws Exception {
+        reformatFileContents("testfiles/formatter/formatting1.js",new IndentPrefs(4, 4));
     }
 }

@@ -125,11 +125,7 @@ public final class FormatToken {
         INDENTATION_DEC,
 
         AFTER_STATEMENT,
-
-        AFTER_FUNCTION_KEYWORD,
-        AFTER_FUNCTION_NAME,
-        //AFTER_FUNCTION_PARAMETER,
-        AFTER_FUNCTION,
+        AFTER_PROPERTY,
 
         BEFORE_BINARY_OPERATOR,
         AFTER_BINARY_OPERATOR,

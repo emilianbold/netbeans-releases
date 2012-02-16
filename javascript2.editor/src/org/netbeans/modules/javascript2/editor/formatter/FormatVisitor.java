@@ -73,6 +73,7 @@ public class FormatVisitor extends NodeVisitor {
     public Node visit(Block block, boolean onset) {
         if (onset && (block instanceof FunctionNode || isScript(block)
                 || block.getStart() != block.getFinish())) {
+
             // indentation mark
             Token token = getToken(block.position(), JsTokenId.BRACKET_LEFT_CURLY);
             if (token != null && !isScript(block)) {
@@ -89,13 +90,16 @@ public class FormatVisitor extends NodeVisitor {
             }
 
             Node lastStatement = null;
+            int lastStatementFinish = -1;
             for (Node statement : block.getStatements()) {
+                int finish = getFinish(statement);
                 statement.accept(this);
-                if (lastStatement == null || lastStatement.getFinish() <= statement.getFinish()) {
+                if (lastStatement == null || lastStatementFinish <= finish) {
                     lastStatement = statement;
+                    lastStatementFinish = finish;
                 }
 
-                token = getToken(statement.getFinish(), null);
+                token = getToken(finish, null);
                 if (token != null) {
                     FormatToken formatToken = tokenStream.getToken(ts.offset());
                     if (formatToken != null) {
@@ -106,7 +110,7 @@ public class FormatVisitor extends NodeVisitor {
 
             // put indentation mark after last statement
             if (lastStatement != null) {
-                token = getToken(lastStatement.getFinish(), null);
+                token = getToken(lastStatementFinish, null);
                 if (token != null && !isScript(block)) {
                     FormatToken formatToken = tokenStream.getToken(ts.offset());
                     if (formatToken != null) {
@@ -175,54 +179,6 @@ public class FormatVisitor extends NodeVisitor {
 
     @Override
     public Node visit(FunctionNode functionNode, boolean onset) {
-        if (onset && !isScript(functionNode)) {
-            int position = functionNode.position();
-            getToken(position, JsTokenId.KEYWORD_FUNCTION);
-
-            FormatToken formatToken = tokenStream.getToken(ts.offset());
-            if (formatToken != null) {
-                appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_FUNCTION_KEYWORD));
-            }
-
-            // identifier
-            IdentNode node = functionNode.getIdent();
-            if (node != null) {
-                Token token = nextToken(JsTokenId.IDENTIFIER);
-                if (token != null) {
-                    formatToken = tokenStream.getToken(ts.offset());
-                    if (formatToken != null) {
-                        appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_FUNCTION_NAME));
-                    }
-                }
-            }
-
-            // left bracket
-            nextToken(JsTokenId.BRACKET_LEFT_PAREN);
-
-            // parameters
-            List<IdentNode> params = functionNode.getParameters();
-            if (!params.isEmpty()) {
-                for(int i = 0; i < params.size(); i++) {
-                    nextToken(JsTokenId.IDENTIFIER);
-                    if (i < (params.size() - 1)) {
-                        // comma
-                        nextToken(JsTokenId.OPERATOR_COMMA);
-//                        formatToken = tokenStream.getToken(ts.offset());
-//                        if (formatToken != null) {
-//                            appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_FUNCTION_PARAMETER));
-//                        }
-                   }
-                }
-            }
-
-            // right bracket
-            nextToken(JsTokenId.BRACKET_RIGHT_PAREN);
-            formatToken = tokenStream.getToken(ts.offset());
-            if (formatToken != null) {
-                appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_FUNCTION));
-            }
-        }
-
         visit((Block) functionNode, onset);
         return null;
     }
@@ -259,6 +215,54 @@ public class FormatVisitor extends NodeVisitor {
 
     @Override
     public Node visit(ObjectNode objectNode, boolean onset) {
+        if (onset) {
+            // indentation mark
+            Token token = getToken(objectNode.position(), JsTokenId.BRACKET_LEFT_CURLY);
+            if (token != null) {
+                FormatToken formatToken = tokenStream.getToken(ts.offset());
+                if (formatToken != null) {
+                    appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+                }
+            }
+
+            Node lastProperty = null;
+            int lastPropetyFinish = -1;
+            for (Node property : objectNode.getElements()) {
+                int finish = getFinish(property);
+                if (lastProperty == null || lastPropetyFinish <= finish) {
+                    lastProperty = property;
+                    lastPropetyFinish = finish;
+                }
+
+                token = getToken(finish, null);
+                if (token != null) {
+                    FormatToken formatToken = tokenStream.getToken(ts.offset());
+                    if (formatToken != null) {
+                        FormatToken next = formatToken.next();
+                        if (next != null && next.getKind() == FormatToken.Kind.AFTER_COMMA) {
+                            formatToken = next;
+                        }
+                        appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_PROPERTY));
+                    }
+                }
+            }
+
+            // put indentation mark after last statement
+            if (lastProperty != null) {
+                token = getToken(lastPropetyFinish, null);
+                if (token != null) {
+                    FormatToken formatToken = tokenStream.getToken(ts.offset());
+                    if (formatToken != null) {
+                        FormatToken next = formatToken.next();
+                        if (next != null && next.getKind() == FormatToken.Kind.AFTER_PROPERTY) {
+                            formatToken = next;
+                        }
+                        appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
+                    }
+                }
+            }
+        }
+
         return super.visit(objectNode, onset);
     }
 
@@ -346,26 +350,26 @@ public class FormatVisitor extends NodeVisitor {
         return token;
     }
 
-    private Token nextToken(JsTokenId expected) {
-        if (nextToken != null) {
-            Token token = nextToken;
-            nextToken = null;
-            return token;
+    /**
+     * All this magic is because nashorn nodes and tokens don't contain the
+     * quotes for string. Due to this we call this method to add 1 to finish
+     * in case it is string literal.
+     *
+     * @param node
+     * @return
+     */
+    private int getFinish(Node node) {
+        int finish = node.getFinish();
+        ts.move(finish);
+        if(!ts.moveNext()) {
+            return finish;
+        }
+        Token<? extends JsTokenId> token = ts.token();
+        if (token.id() == JsTokenId.STRING_END) {
+            return finish + 1;
         }
 
-        while (ts.moveNext() && (ts.token().id() == JsTokenId.WHITESPACE
-                || ts.token().id() == JsTokenId.BLOCK_COMMENT
-                || ts.token().id() == JsTokenId.LINE_COMMENT
-                || ts.token().id() == JsTokenId.DOC_COMMENT
-                || ts.token().id() == JsTokenId.EOL)) {
-        }
-
-        Token token = ts.token();
-        if (expected != token.id()) {
-            nextToken = token;
-            return null;
-        }
-        return token;
+        return finish;
     }
 
     private boolean isScript(Node node) {

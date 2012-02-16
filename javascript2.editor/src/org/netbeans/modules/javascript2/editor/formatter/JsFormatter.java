@@ -184,7 +184,8 @@ public class JsFormatter implements Formatter {
             return false;
         }
         FormatToken next = token.next();
-        if (next.getKind() == FormatToken.Kind.AFTER_STATEMENT) {
+        if (next.getKind() == FormatToken.Kind.AFTER_STATEMENT
+                || next.getKind() == FormatToken.Kind.AFTER_PROPERTY) {
             return false;
         }
 
@@ -194,14 +195,16 @@ public class JsFormatter implements Formatter {
             FormatToken.Kind kind = previous.getKind();
             if (kind == FormatToken.Kind.SOURCE_START
                     || kind == FormatToken.Kind.TEXT
-                    || kind == FormatToken.Kind.AFTER_STATEMENT) {
+                    || kind == FormatToken.Kind.AFTER_STATEMENT
+                    || kind == FormatToken.Kind.AFTER_PROPERTY) {
                 result = previous;
                 break;
             }
         }
         if (result == null
                 || result.getKind() == FormatToken.Kind.SOURCE_START
-                || result.getKind() == FormatToken.Kind.AFTER_STATEMENT) {
+                || result.getKind() == FormatToken.Kind.AFTER_STATEMENT
+                || result.getKind() == FormatToken.Kind.AFTER_PROPERTY) {
             return false;
         }
         String text = result.getText().toString();
